@@ -25,13 +25,8 @@ import otgviewer.shared.RuleType;
 import t.common.client.components.ItemSelector;
 import t.model.SampleClass;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.SuggestBox;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * Data and widgets that help the user input a rule but do not need to be sent to the server when

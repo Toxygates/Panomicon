@@ -18,31 +18,18 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.*;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A widget that displays times and doses for a number of compounds in a grid layout. For each
@@ -59,7 +46,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   protected final SampleServiceAsync sampleService;
 
   protected Screen screen;
-  protected final String majorParameter, mediumParameter, minorParameter, timeParameter;
   protected final DataSchema schema;
 
   protected List<String> mediumValues = new ArrayList<String>();
@@ -86,10 +72,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     rootPanel.setWidth("730px");
     mainPanel = new VerticalPanel();
     this.schema = screen.schema();
-    this.majorParameter = schema.majorParameter();
-    this.mediumParameter = schema.mediumParameter();
-    this.minorParameter = schema.minorParameter();
-    this.timeParameter = schema.timeParameter();
     try {
       mediumValues = new ArrayList<String>();
       String[] mvs = schema.sortedValues(schema.mediumParameter());
@@ -102,7 +84,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
       logger.warning("Unable to sort medium parameters");
     }
 
-    logger.info("Medium: " + mediumParameter + " minor: " + minorParameter);
+    logger.info("Medium: " + schema.mediumParameter().id() + 
+        " minor: " + schema.minorParameter().id());
 
     HorizontalPanel selectionPanel = Utils.mkHorizontalPanel();
     mainPanel.add(selectionPanel);
@@ -110,12 +93,11 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     selectionPanel.setSpacing(2);
 
     this.hasDoseTimeGUIs = hasDoseTimeGUIs;
-    String mtitle = schema.title(majorParameter);
+    String mtitle = schema.majorParameter().title();
     emptyMessage = "Please select at least one " + mtitle;
 
-    grid.setStylePrimaryName("highlySpaced");
+    grid.addStyleName("timeDoseGrid");
     grid.setWidth("100%");
-    grid.setHeight("400px");
     grid.setBorderWidth(0);
     mainPanel.add(grid);
   }
@@ -167,12 +149,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   private void fetchMinor() {
     fetchingMinor = true;
     logger.info("Fetch minor");
-    sampleService.parameterValues(chosenSampleClass, minorParameter,
+    sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(),
         new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
+          @Override
           public void handleSuccess(String[] times) {
             try {
               // logger.info("Sort " + times.length + " times");
-              schema.sort(minorParameter, times);
+              schema.sort(schema.minorParameter(), times);
               minorValues = Arrays.asList(times);
               drawGridInner(grid);
               fetchingMinor = false;
@@ -182,6 +165,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
             }
           }
 
+          @Override
           public void handleFailure(Throwable caught) {
             super.handleFailure(caught);
             fetchingMinor = false;
@@ -205,7 +189,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     availableUnits = new ArrayList<Pair<Unit, Unit>>();
     String[] compounds = chosenCompounds.toArray(new String[0]);
     final String[] fetchingForCompounds = compounds;
-    sampleService.units(chosenSampleClass, majorParameter, compounds,
+    sampleService.units(chosenSampleClass, schema.majorParameter().id(), compounds,
         new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
           @Override
@@ -252,7 +236,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
       r++;
     }
 
-    grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
     // This will eventually draw the unit UIs
     lazyFetchMinor();
   }
@@ -301,8 +284,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
           hp.add(guiForDoseTime(d, t));
         }
         SimplePanel sp = new SimplePanel(hp);
-        sp.setStylePrimaryName("invisibleBorder");
-        grid.setWidget(r, d + 1, hp);
+        sp.addStyleName("doseTimeBox");
+        grid.setWidget(r, d + 1, sp);
       }
       r++;
     }
@@ -313,9 +296,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
         HorizontalPanel hp = Utils.mkHorizontalPanel(true);
         for (int t = 0; t < numMin; ++t) {
           SampleClass sc = new SampleClass();
-          sc.put(majorParameter, chosenCompounds.get(c));
-          sc.put(mediumParameter, mediumValues.get(d));
-          sc.put(minorParameter, minorValues.get(t));
+          sc.put(schema.majorParameter(), chosenCompounds.get(c));
+          sc.put(schema.mediumParameter(), mediumValues.get(d));
+          sc.put(schema.minorParameter(), minorValues.get(t));
           sc.mergeDeferred(chosenSampleClass);
           Unit unit = new Unit(sc, new Sample[] {});
           allUnits.add(new Pair<Unit, Unit>(unit, null));
@@ -327,7 +310,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
         }
 
         SimplePanel sp = new SimplePanel(hp);
-        sp.setStylePrimaryName("border");
+        sp.addStyleName("compoundDoseTimeBox");
         grid.setWidget(r, d + 1, sp);
       }
       r++;

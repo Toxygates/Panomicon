@@ -1,0 +1,577 @@
+@external '*';
+
+/******************************************************************************
+Variables
+******************************************************************************/
+
+@def GLOBAL_LEFT_PADDING 11px;
+
+@def MENUBARPANEL_COLOR #363636;
+@def MENUBAR_PIP_COLOR #7e7e7e;
+@def MENUBARITEM_COLOR #f1f1f1;
+@def MENUBARITEM_SELECTED_COLOR #b5b5b5;
+@def MENUBAR_HELP_COLOR #fcee21;
+
+@def NAVLINK_TEXT_COLOR #a1a1a1;
+@def NAVLINK_BORDER_COLOR #595959;
+@def NAVLINK_DISABLED_COLOR #585858;
+
+@def DARK_BORDER_COLOR #656565;
+@def LIGHT_BORDER_COLOR #C2C2C2;
+@def DARK_ROW_COLOR #F2F2F2;
+@def LIGHT_ROW_COLOR #FFFFFF;
+
+/**
+ * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
+ */
+@def GROUP0_COLOR #8582b5;
+@def GROUP1_COLOR #7ac653;
+@def GROUP2_COLOR #c3534d;
+@def GROUP3_COLOR #90c1ab;
+@def GROUP4_COLOR #504239;
+@def GROUP5_COLOR #c1a54a;
+@def GROUP6_COLOR #b354b3;
+
+/******************************************************************************
+Global
+******************************************************************************/
+body, .gwt-Button {
+	font-family: TimesNewRoman, Times New Roman, Times, Baskerville, serif;
+}
+
+body {
+	font-size: 11pt;
+}
+
+a, a:visited  {
+	color: black;
+	text-decoration-style: dotted;
+}
+
+button {
+	font-size: 1em;
+}
+
+/******************************************************************************
+App elements 
+******************************************************************************/
+.toxygatesTitle {
+	font-family: "Play", sans-serif;
+	font-size: 36pt;
+}
+
+.compoundSelector {
+	margin: 0 0 0 1em;
+}
+
+.analysisTools {
+	margin: 1px 0 0 0;
+	background: MENUBARITEM_COLOR;
+}
+
+.gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
+	background: MENUBARPANEL_COLOR;
+	color: white;
+	font-size: 1.25em;
+	padding-left: 8px;
+}
+
+.gwt-DialogBox .Caption {
+	font-size: 1.25em;
+}
+
+/**************************************	
+Menu bar
+**************************************/
+@def MENUBARPANEL_HEIGHT 56px;
+
+.menuBarPanel {
+	padding-left: GLOBAL_LEFT_PADDING;
+	background: MENUBARPANEL_COLOR;
+}
+
+.gwt-MenuBar table {
+	border-spacing: 0;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem {
+	color: white;
+	position: relative;
+	/* This border needs to be the same color as the menuBarPanel background. It ensures 
+	   correct positioning of the partial border :before pseudo-element, and also prevents
+	   the pixels on the border from changing color when mousing over the menu item (this
+	   is why we can't just use transparent instead of setting the same color). 
+	*/
+	border-left: solid 1px MENUBARPANEL_COLOR;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem:before {
+	content: "";
+	width: 1px;
+	height: 5px;
+	background: MENUBAR_PIP_COLOR;
+	position: absolute;
+	top: 1px;
+	left: -1px;
+}
+
+.gwt-MenuItem-disabled {
+	color: DarkGray;
+}
+
+#helpMenu {
+	color: MENUBAR_HELP_COLOR;
+	/* This does the same thing as the border-left in .gwt-MenuBar-horizontal .gwt-MenuItem,
+	   except for the :after pseudo-element. */
+	border-right: solid 1px MENUBARPANEL_COLOR;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem:after {
+	content: "";
+	width: 1px;
+	height: 5px;
+	background: MENUBAR_PIP_COLOR;
+	position: absolute;
+	top: 1px;
+	right: -1px;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem-selected {
+	background: MENUBARITEM_SELECTED_COLOR;
+}
+
+.gwt-MenuBar-vertical .gwt-MenuItem,
+.gwt-MenuBar-vertical .gwt-MenuItemSeparator {
+	background: MENUBARITEM_COLOR;
+}
+
+.gwt-MenuBar-vertical .gwt-MenuItem-selected {
+	background: MENUBARITEM_SELECTED_COLOR;
+}
+
+.gwt-MenuBar-vertical .subMenuIcon {
+	background: MENUBARITEM_COLOR;
+}
+
+.gwt-MenuBar-vertical .subMenuIcon-selected {
+	background: MENUBARITEM_SELECTED_COLOR;
+}
+
+.feedbackMenuItem {
+	font-weight: bold;
+	color: green;
+}
+
+.menuSeparatorCaption {
+	font-style: italic;
+	font-size: 0.75em;
+}
+
+.gwt-MenuBarPopup {
+	margin-left: 1px;
+}
+
+/**************************************	
+Top-level navigation links 
+**************************************/
+@def NAVPANEL_HEIGHT 35px;
+
+.navPanel {
+	height: 100%;
+	float: left;
+	margin-left: GLOBAL_LEFT_PADDING;
+}
+
+.navOuterPanel {
+	height: 100%;
+	background: MENUBARPANEL_COLOR;
+	float: left;
+}
+
+.navlink {
+	height: NAVPANEL_HEIGHT;
+	line-height: NAVPANEL_HEIGHT;
+	text-align: center;
+	font-size: 1.15em;
+	color: NAVLINK_TEXT_COLOR;
+	margin: 0;
+	padding: 0 10px;
+	border-right: solid 1px NAVLINK_BORDER_COLOR;
+	border-top: solid 1px NAVLINK_BORDER_COLOR;
+}
+
+.navlink-enabled:hover {
+	background: white;
+	color: black;
+	cursor: pointer;
+}
+
+.navlink-disabled {
+	color: NAVLINK_DISABLED_COLOR;
+}
+
+.navlink-enabled {
+	cursor: pointer;
+}
+
+.navlink-first {
+	border-left: solid 1px NAVLINK_BORDER_COLOR;
+}
+
+.navlink-current {
+	background: white;
+	color: black;
+	border-top: none;
+}
+
+/**************************************	
+Gene set editor 
+**************************************/
+.resizingListBox {
+	font-size: 13px;
+}
+
+.geneSetInnerPanel {
+	background: MENUBARITEM_COLOR;
+	padding: 5px;
+	border: grey solid 1px;
+	margin: 2px;
+}
+
+/**************************************	
+Time-dose grids 
+**************************************/
+.timeDoseGrid {
+	margin: 5px;
+}
+
+.doseTimeBox {
+	margin: 1px;
+	border: solid white 1px;
+}
+
+.compoundDoseTimeBox {
+	margin: 1px;
+	border: solid black 1px;
+}
+
+.selectionGridSectionHeading {
+	font-weight: bold;
+	font-size: 1.1em;
+	margin: 2px;
+}
+
+/**************************************	
+Status panel 
+**************************************/
+.statusPanel {
+	background: White;
+	text-align: left;
+	color: black;
+}
+
+.statusBorder {
+	margin: 1px;
+	border: solid DarkBlue 1px;
+}
+
+.groupLabel {
+	margin: 2px;
+	white-space: nowrap;
+	float: left;
+}
+
+.guideBar {
+	background: LemonChiffon;
+	color: black;
+	text-align: left;
+	padding: 4px;
+	font-size: large;
+}
+
+/**************************************	
+Tables
+**************************************/
+.dataGridHeader, .cellTableHeader {
+	border-bottom: 1px solid DARK_BORDER_COLOR;
+	padding: 4px;
+  	line-height: 20px;
+}
+
+.dataGridCell, .cellTableCell {
+	padding: 4px;
+	line-height: 20px;
+}
+
+.darkBorderLeft {
+	border-left: 1px solid DARK_BORDER_COLOR;
+}
+
+.lightBorderLeft {
+	border-left: 1px solid LIGHT_BORDER_COLOR;
+}
+
+.dataGridEvenRow, .cellTableEvenRow {
+	background: LIGHT_ROW_COLOR;
+}
+
+.dataGridOddRow, .cellTableOddRow {
+	background: DARK_ROW_COLOR;
+}
+
+/**************************************	
+Expression table
+**************************************/
+.majorHeader {
+	text-align: left;
+	border-bottom: none;
+	color: white;
+}
+
+.whiteBorderLeft {
+	border-left: 1px solid white;
+}
+
+.highlightedRow {
+	font-style: italic;
+	font-weight: bold;
+}
+
+.dataColumn {
+	color: Black;
+}
+
+.extraColumn {
+	color: Black;
+}
+
+.associationValue {
+	clear: left;
+}
+
+/**************************************	
+Groups
+**************************************/
+
+.Group0 {
+	color: GROUP0_COLOR;
+}
+
+.Group1 {
+	color: GROUP1_COLOR;
+}
+
+.Group2 {
+	color: GROUP2_COLOR;
+}
+
+.Group3 {
+	color: GROUP3_COLOR;
+}
+
+.Group4 {
+	color: GROUP4_COLOR;
+}
+
+.Group5 {
+	color: GROUP5_COLOR;
+}
+
+.Group6 {
+	color: GROUP6_COLOR;
+}
+
+.Group0-background {
+	background: GROUP0_COLOR;
+}
+
+.Group1-background {
+	background: GROUP1_COLOR;
+}
+
+.Group2-background {
+	background: GROUP2_COLOR;
+}
+
+.Group3-background {
+	background: GROUP3_COLOR;
+}
+
+.Group4-background {
+	background: GROUP4_COLOR;
+}
+
+.Group5-background {
+	background: GROUP5_COLOR;
+}
+
+.Group6-background {
+	background: GROUP6_COLOR;
+}
+
+/**************************************	
+Sample Search
+**************************************/
+.samplesearch-label {
+	color: silver;
+}
+
+.samplesearch-rootpanel {
+	
+}
+
+.samplesearch-andpanel {
+	margin: 1px;
+}
+
+.samplesearch-orpanel {
+	margin: 1px;
+	border-top: solid grey 1px;
+	border-bottom: solid grey 1px;
+}
+
+.samplesearch-atomicpanel {
+	margin: 1px;
+	padding: 1px;
+	background: MENUBARITEM_COLOR;
+}
+
+/**************************************	
+Data sources information
+**************************************/
+.metadata-info {
+	margin: 5px;
+}
+
+.metadata-info-title {
+	font-size: 1.1em;
+	font-weight: bold;
+	margin: 0.5em;
+	margin-right: 3em;
+}
+
+.metadata-info-heading {
+	font-size: 1.2em;
+	font-weight: bold;
+	margin: 0.5em;
+	border-top: solid black 1px;
+	border-bottom: solid black 1px;
+}
+
+.metadata-info-comment {
+	margin: 0.5em;
+}
+
+.metadata-grid {
+	width: 700px;
+}
+
+.metadata-firstColumn {
+	width: 200px;
+}
+
+/**************************************	
+Probe selector
+**************************************/
+.watermark {
+	font-style: italic;
+	color: DarkGray;
+}
+
+.suggestion-keyword {
+	text-align: left;
+}
+
+.suggestion-reference {
+	text-align: right;
+	color: DarkGray;
+	font-style: italic;
+	font-size: 0.75em;
+}
+
+/**************************************	
+Sample details
+**************************************/
+.numericalParameterAbove {
+	color: red;
+	font-weight: bold;
+	width: 10em;
+}
+
+.numericalParameterBelow {
+	color: blue;
+	font-weight: bold;
+	width: 10em;
+}
+
+.numericalParameterPathological {
+	color: red;
+	width: 10em;
+}
+
+.numericalParameterHealthy {
+	
+}
+
+.sampleDetailTitleColumn {
+	width: 12.5em;
+}
+
+.sampleDetailDataColumn {
+	width: 10em;
+}
+
+/******************************************************************************
+Non-semantic 
+******************************************************************************/
+.slightlySpaced {
+	margin: 2px;
+}
+
+.slightlySpacedLeftRight {
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+.colored {
+	background: MENUBARITEM_COLOR;
+}
+
+.heading {
+	font-size: 1.2em;
+	color: #777;
+	margin: 5px;
+	text-align: center;
+}
+
+.emphasized {
+	font-weight: bold;
+}
+
+.clickCell {
+	cursor: pointer;
+}
+
+.table-cell {
+	display: table-cell;
+}
+
+.width-fix {
+	padding-right: 10px;
+}
+
+/******************************************************************************
+Miscellaneous
+******************************************************************************/
+::-webkit-scrollbar {
+	width: 7px;
+	height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+	width: 7px;
+	height: 7px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	background: rgba(0, 0, 0, 0.3);
+}

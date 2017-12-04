@@ -18,17 +18,12 @@
 
 package t.common.shared.sample;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
 
 /**
  * A sample class with associated samples.
@@ -51,48 +46,65 @@ public class Unit extends SampleClass {
     return samples;
   }
 
-  public void averageAttributes(NumericalBioParamValue[] params) {
-    Sample first = samples[0];
-    for (NumericalBioParamValue p : params) {
-      if (first.sampleClass().get(p.id) != null) {
-        double sum = 0.0;
-        for (Sample sample : samples) {
-          sum += Double.parseDouble(sample.sampleClass().get(p.id));
-        }
-        put(p.id, Double.toString(sum));
-      }
-    }
-    // TODO: maybe some exception checking for when conversion to double fails, or when
-    // some of the later samples are missing a parameter that the first sample had
-  }
+  // TODO: get rid of the AttributeSet dependency once we refactor SampleClass to store Attributes
+  public void computeAllAttributes(AttributeSet attributeSet, boolean overwrite) {
+    Set<Attribute> computedAttribs = new HashSet<Attribute>();
 
-  public void concatenateAttributes(StringBioParamValue[] params) {
-    String separator = "/";
-
-    Sample firstSample = samples[0];
-    for (StringBioParamValue p : params) {
-      if (firstSample.sampleClass().get(p.id) != null) {
-        HashSet<String> values = new HashSet<String>();
-        String concatenation = "";
-
-        Boolean firstIteration = true;
-        for (Sample sample : samples) {
-          String newValue = sample.sampleClass().get(p.id);
-          if (!values.contains(newValue)) {
-            values.add(newValue);
-            if (!firstIteration) {
-              concatenation += separator;
-            } else {
-              firstIteration = false;
-            }
-            concatenation += newValue;
+    for (Sample sample : samples) {
+      for (Attribute key : sample.getKeys()) {
+        if (!computedAttribs.contains(key) && (overwrite || !contains(key))) {
+          computedAttribs.add(key);
+          if (key.isNumerical()) {
+            averageAttribute(key);
+          } else {
+            concatenateAttribute(key);
           }
         }
-        put(p.id, concatenation);
       }
     }
-    // TODO: maybe more robust handling of when only some of the samples have a value for
-    // a given parameter. Or maybe we can assume that won't happen.
+  }
+
+  public void averageAttribute(Attribute attr) {
+    int count = 0;
+    double sum = 0.0;
+    for (Sample sample : samples) {
+      if (sample.contains(attr)) {
+        try {
+          sum += Double.parseDouble(sample.get(attr).replace(",", ""));
+          count++;
+        } catch (NumberFormatException e) {
+        }
+      }
+    }
+    if (count > 0) {
+      put(attr, Double.toString(sum / count));
+    }
+  }
+
+  public void concatenateAttribute(Attribute attr) {
+    String separator = " / ";
+
+    HashSet<String> values = new HashSet<String>();
+    String concatenation = "";
+
+    Boolean foundFirstValue = true;
+    for (Sample sample : samples) {
+      if (sample.contains(attr)) {
+        String newValue = sample.get(attr);
+        if (!values.contains(newValue)) {
+          values.add(newValue);
+          if (!foundFirstValue) {
+            concatenation += separator;
+          } else {
+            foundFirstValue = false;
+          }
+          concatenation += newValue;
+        }
+      }
+    }
+    if (!foundFirstValue) {
+      put(attr, concatenation);
+    }
   }
 
   public static Unit[] formUnits(DataSchema schema, Sample[] samples) { 
@@ -128,7 +140,7 @@ public class Unit extends SampleClass {
     return r.toArray(new Sample[0]);
   }
 
-  public static boolean contains(Unit[] units, String param, String value) {
+  public static boolean contains(Unit[] units, Attribute param, String value) {
     return SampleClass.filter(units, param, value).size() > 0;
   }
 }

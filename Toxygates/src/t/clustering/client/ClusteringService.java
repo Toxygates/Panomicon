@@ -21,9 +21,9 @@ package t.clustering.client;
 
 import java.util.List;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-
 import t.clustering.shared.Algorithm;
+
+import com.google.gwt.user.client.rpc.RemoteService;
 
 /**
  * A clustering service to generate heatmaps.

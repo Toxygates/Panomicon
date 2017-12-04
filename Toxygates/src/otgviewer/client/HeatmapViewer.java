@@ -1,30 +1,18 @@
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
+import java.util.*;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.clustering.shared.Algorithm;
-import t.common.shared.ClusteringList;
-import t.common.shared.StringList;
-import t.common.shared.ValueType;
+import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.MatrixServiceAsync;
+
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * Adapts the HeatmapDialog for use inside otgviewer.

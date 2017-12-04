@@ -20,9 +20,7 @@
 
 package t.common.shared
 
-import t.clustering.shared.Algorithm
-import t.clustering.shared.Methods
-import t.clustering.shared.Distances
+import t.clustering.shared._
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner

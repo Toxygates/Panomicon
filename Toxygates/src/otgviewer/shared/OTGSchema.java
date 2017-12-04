@@ -18,14 +18,14 @@
 
 package otgviewer.shared;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import static otg.model.sample.OTGAttribute.TestType;
 
-import t.common.shared.AType;
-import t.common.shared.DataSchema;
-import t.common.shared.ValueType;
+import java.util.*;
+
+import otg.model.sample.OTGAttribute;
+import t.common.shared.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {
@@ -33,10 +33,11 @@ public class OTGSchema extends DataSchema {
       "4 day", "8 day", "15 day", "29 day"};
   public static String[] allDoses = new String[] {"Control", "Low", "Middle", "High"};
 
-  public String[] sortedValues(String parameter) throws Exception {
-    if (parameter.equals("exposure_time")) {
+  @Override
+  public String[] sortedValues(Attribute parameter) throws Exception {
+    if (parameter.equals(OTGAttribute.ExposureTime)) {
       return allTimes;
-    } else if (parameter.equals("dose_level")) {
+    } else if (parameter.equals(OTGAttribute.DoseLevel)) {
       return allDoses;
     } else {
       throw new Exception("Invalid parameter (not sortable): " + parameter);
@@ -44,8 +45,8 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public String[] filterValuesForDisplay(ValueType vt, String parameter, String[] from) {
-    if (parameter.equals("dose_level") && (vt == null || vt == ValueType.Folds)) {
+  public String[] filterValuesForDisplay(ValueType vt, Attribute parameter, String[] from) {
+    if (parameter.equals(OTGAttribute.DoseLevel) && (vt == null || vt == ValueType.Folds)) {
       ArrayList<String> r = new ArrayList<String>();
       for (String s : from) {
         if (!isControlValue(s)) {
@@ -59,8 +60,8 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public void sort(String parameter, String[] values) throws Exception {
-    if (parameter.equals("exposure_time")) {
+  public void sort(Attribute parameter, String[] values) throws Exception {
+    if (parameter.equals(OTGAttribute.ExposureTime)) {
       sortTimes(values);
     } else {
       super.sort(parameter, values);
@@ -68,7 +69,7 @@ public class OTGSchema extends DataSchema {
   }
 
   public void sortDoses(String[] doses) throws Exception {
-    sort("dose_level", doses);
+    sort(OTGAttribute.DoseLevel, doses);
   }
 
   // TODO validity check units and exposure times before we subject
@@ -115,52 +116,41 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public String majorParameter() {
-    return "compound_name";
+  public Attribute majorParameter() {
+    return OTGAttribute.Compound;
   }
 
   @Override
-  public String mediumParameter() {
-    return "dose_level";
+  public Attribute mediumParameter() {
+    return OTGAttribute.DoseLevel;
   }
 
   @Override
-  public String minorParameter() {
-    return "exposure_time";
+  public Attribute minorParameter() {
+    return OTGAttribute.ExposureTime;
   }
 
   @Override
-  public String timeParameter() {
-    return "exposure_time";
+  public Attribute timeParameter() {
+    return OTGAttribute.ExposureTime;
   }
 
   @Override
-  public String timeGroupParameter() {
-    return "dose_level";
+  public Attribute timeGroupParameter() {
+    return OTGAttribute.DoseLevel;
   }
+
+  private Attribute[] macroParams = new Attribute[] {OTGAttribute.Organism, OTGAttribute.TestType,
+      OTGAttribute.Organ, OTGAttribute.Repeat};
 
   @Override
-  public String title(String parameter) {
-    if (parameter.equals("exposure_time")) {
-      return "Time";
-    } else if (parameter.equals("compound_name")) {
-      return "Compound";
-    } else if (parameter.equals("dose_level")) {
-      return "Dose";
-    } else {
-      return "???";
-    }
-  }
-
-  private String[] macroParams = new String[] {"organism", "test_type", "organ_id", "sin_rep_type"};
-
-  public String[] macroParameters() {
+  public Attribute[] macroParameters() {
     return macroParams;
   }
 
   @Override
   public boolean isSelectionControl(SampleClass sc) {
-    return sc.get("dose_level").equals("Control");
+    return sc.get(OTGAttribute.DoseLevel).equals("Control");
   }
 
   @Override
@@ -168,28 +158,26 @@ public class OTGSchema extends DataSchema {
     return (value != null) && ("Control".equals(value));
   }
 
-  // @Override
-  // public Unit selectionControlUnitFor(Unit u) {
-  // Unit u2 = new Unit(u, new OTGSample[] {});
-  // u2.put("dose_level", "Control");
-  // return u2;
-  // }
-
   @Override
-	public String[] majorParamSharedControl() {
-		return new String[] { "Shared_control" };
-	}
+  @Deprecated
+  public String[] majorParamSharedControl() {
+    return new String[] {"Shared_control"};
+  }
 
-private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
+  private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
       // AType.Enzymes,
-      AType.GOBP, AType.GOCC, AType.GOMF,
+      AType.GOBP,
+      AType.GOCC,
+      AType.GOMF,
       // needs repair
       // AType.Homologene,
       AType.KEGG,
       // needs repair
       // AType.OrthProts,
-      AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene};
+      AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene,
+      AType.MiRNA};
 
+  @Override
   public AType[] associations() {
     return associations;
   }
@@ -211,6 +199,7 @@ private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
   }
 
   // TODO as above.
+  @Override
   public String organismPlatform(String organism) {
     if (organism.equals("Human")) {
       return "HG-U133_Plus_2";
@@ -226,15 +215,17 @@ private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
   /**
    * TODO this is brittle
    */
+  @Override
   public int numDataPointsInSeries(SampleClass sc) {
-    if (sc.get("test_type") != null && sc.get("test_type").equals("in vitro")) {
+    if (sc.get(TestType) != null && sc.get(TestType).equals("in vitro")) {
       return 3;
     }
     return 4;
   }
 
   @Override
-  public String[] chartParameters() {
-    return new String[] {minorParameter(), mediumParameter(), majorParameter(), "organism"};
+  public Attribute[] chartParameters() {
+    return new Attribute[] {minorParameter(), mediumParameter(), majorParameter(),
+        OTGAttribute.Organism};
   }
 }

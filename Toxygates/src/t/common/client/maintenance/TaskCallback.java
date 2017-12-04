@@ -21,20 +21,19 @@ package t.common.client.maintenance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import t.common.client.rpc.MaintenanceOperationsAsync;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 
-import t.common.client.HasLogger;
-import t.common.client.rpc.MaintenanceOperationsAsync;
-
 public class TaskCallback implements AsyncCallback<Void> {
   final String title;
   final MaintenanceOperationsAsync maintenanceOps;
-  final HasLogger hl;
+  final Logger log;
   
-  public TaskCallback(HasLogger hl, String title, MaintenanceOperationsAsync maintenanceOps) {
-    this.hl = hl;
+  public TaskCallback(Logger l, String title, MaintenanceOperationsAsync maintenanceOps) {
+    this.log = l;
     this.title = title;
     this.maintenanceOps = maintenanceOps;
   }
@@ -63,10 +62,9 @@ public class TaskCallback implements AsyncCallback<Void> {
   public void onFailure(Throwable caught) {
     Window.alert("Failure: " + caught.getMessage());
 
-    Logger l = hl.getLogger();
-    l.log(Level.SEVERE, "TaskCallback error", caught);
+    log.log(Level.SEVERE, "TaskCallback error", caught);
     if (caught.getCause() != null) {
-      l.log(Level.SEVERE, "TaskCallback cause", caught.getCause());
+      log.log(Level.SEVERE, "TaskCallback cause", caught.getCause());
     }
 
     handleFailure(caught);

@@ -18,39 +18,19 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
+
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.Algorithm;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public abstract class ClusteringSelector extends DataListenerWidget implements RequiresResize {
 
@@ -189,8 +169,8 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
   
   private void updateClusteringList() {
     // filter probe clusterings with current list selection
-    Collection<ProbeClustering> filter1 = ProbeClustering.filterByAlgorithm(probeClusterings, lastAlgorithm);
-    Collection<ProbeClustering> filter2 = ProbeClustering.filterByClustering(filter1, clustering.getSelected());
+    Collection<ProbeClustering> filter1 = ProbeClustering.filterByAlgorithm(probeClusterings, lastAlgorithm);    
+    Collection<ProbeClustering> filter2 = ProbeClustering.filterByClustering(filter1, clustering.getSelected());    
     for (Entry<String, ClListBox> e : params.entrySet()) {
       filter2 = ProbeClustering.filterByParam(filter2, e.getKey(), e.getValue().getSelected());
     }
@@ -201,7 +181,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     }
     
     cluster.setLists(items);
-    // TODO consider behavior of ListChooser
+
     // Reset selection of cluster to avoid loading problem here.
     // Note: even if the clustering changed, if the clustering has the same cluster name
     // as previous clustering, it would not load probes expected.
@@ -243,7 +223,8 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     selector.setWidget(2, 0, paramTitlesContainer);
     selector.setWidget(2, 1, paramListsContainer);
 
-    cluster = new ListChooser(new ArrayList<StringList>(), "probes", false) {
+    cluster = new ListChooser(new ArrayList<StringList>(), ProbeClustering.PROBE_CLUSTERING_TYPE, 
+      false) {
       @Override
       protected void itemsChanged(List<String> items) {
         loadedProbes.clear();
@@ -257,6 +238,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
 
     addButton = new Button("Add probes >>");
     addButton.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent e) {
         clusterChanged(new ArrayList<String>(loadedProbes));
       }
@@ -269,7 +251,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     vp.add(addButton);
 
     HorizontalPanel hp = Utils.wideCentered(vp);
-    hp.setStylePrimaryName("colored");
+    hp.addStyleName("colored");
 
     dp.add(Utils.wideCentered(hp));
     

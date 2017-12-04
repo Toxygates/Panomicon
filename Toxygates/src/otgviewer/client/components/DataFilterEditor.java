@@ -18,25 +18,22 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
-
-import t.model.SampleClass;
-import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
+import t.common.shared.SharedUtils;
+import t.model.SampleClass;
+import t.model.sample.Attribute;
+
 public class DataFilterEditor extends DataListenerWidget {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
   final SCListBox[] selectors;
-  private final SampleServiceAsync sampleService;
-  private final String[] parameters;
+  private final Attribute[] parameters;
   protected final Logger logger;
 
   class SCListBox extends ListBox {
@@ -69,7 +66,7 @@ public class DataFilterEditor extends DataListenerWidget {
       }
     }
 
-    void setItemsFrom(List<SampleClass> scs, String key) {
+    void setItemsFrom(List<SampleClass> scs, Attribute key) {
       setItems(new ArrayList<String>(SampleClass.collect(scs, key)));
     }
 
@@ -123,9 +120,6 @@ public class DataFilterEditor extends DataListenerWidget {
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");
-    sampleService = screen.manager.sampleService();
-
-    update();
 
     parameters = screen.schema().macroParameters();
     selectors = new SCListBox[parameters.length];
@@ -141,16 +135,6 @@ public class DataFilterEditor extends DataListenerWidget {
       });
 
     }
-  }
-
-  public void update() {
-    sampleService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this,
-        "Unable to obtain sample classes from server") {
-      @Override
-      public void handleSuccess(SampleClass[] result) {
-        setAvailable(result);
-      }
-    });
   }
 
   public void setAvailable(SampleClass[] sampleClasses) {

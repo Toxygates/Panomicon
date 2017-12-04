@@ -23,15 +23,10 @@ package t.db
 import friedrich.util.formats.TSVFile
 import t.Factory
 import t.sample.SampleSet
+import t.model.sample.Attribute
+import t.model.sample.AttributeSet
 
 trait ParameterSet {
-  def all: Iterable[SampleParameter]
-  def required: Iterable[SampleParameter]
-  def highLevel: Iterable[SampleParameter]
-  def previewDisplay: Iterable[SampleParameter] = required
-  lazy val byId = Map() ++ all.map(x => x.identifier -> x)
-  lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)
-
   /**
    * Retrieve the set of control samples corresponding to a given sample.
    */
@@ -42,26 +37,27 @@ trait ParameterSet {
    * This is a naive implementation which needs to be overridden if control samples are
    * shared between multiple treated groups.
    */
-  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]):
-    Iterable[(Iterable[Sample], Iterable[Sample])] = {
+  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
     ss.groupBy(controlSamples(metadata, _)).toSeq.map(sg => {
       sg._2.partition(!metadata.isControl(_))
     })
   }
-
 }
 
 trait Metadata extends SampleSet {
   def samples: Iterable[Sample]
 
-  def parameterSet: ParameterSet
+  def attributes: AttributeSet
 
   def parameterMap(s: Sample): Map[String, String] =
-    Map() ++ parameters(s).map(x => x._1.identifier -> x._2)
+    Map() ++ attributes(s).map(x => x._1.id -> x._2)
   /**
    * Obtain all available values for a given parameter.
    */
   def parameterValues(identifier: String): Set[String]
+
+  def attributeValues(attr: Attribute): Set[String] =
+    parameterValues(attr.id)
 
   override def parameter(s: Sample, identifier: String): Option[String] =
     parameterMap(s).get(identifier)
@@ -69,15 +65,23 @@ trait Metadata extends SampleSet {
   /**
    * Does this metadata set have information about the given sample?
    */
-  def contains(s: Sample): Boolean = !parameters(s).isEmpty
+  def contains(s: Sample): Boolean = !attributes(s).isEmpty
 
   def platform(s: Sample): String = parameter(s, "platform_id").get
 
   def isControl(s: Sample): Boolean = false
 
-    /**
+  /**
    * Obtain a new metadata set after applying a mapping function to one
    * of the parameters.
    */
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata
+
+  def controlSamples(s: Sample): Iterable[Sample] = ???
+
+  def treatedControlGroups(ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
+    ss.groupBy(controlSamples(_)).toSeq.map(sg => {
+      sg._2.partition(!isControl(_))
+    })
+  }
 }

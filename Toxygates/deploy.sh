@@ -4,7 +4,6 @@ TGCP=war/WEB-INF/classes
 TOOLCP=../OTGTool/classes
 
 function makeWar {
-    VERSION=$1
     OUTPUT=toxygates-template.war
     cp -r $TOOLCP/friedrich $TGCP
     cp -r $TOOLCP/otg $TGCP
@@ -14,7 +13,7 @@ function makeWar {
     rm WEB-INF/web.xml
     [ ! -d csv ] && mkdir csv
     rm csv/*.csv
-    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template *.zip
+    jar cf $OUTPUT toxygates images csv *.pdf *.css *.html.template *.zip
     #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
@@ -48,6 +47,7 @@ rm $WARLIB/kyotocabinet*jar
 rm $WARLIB/scala-library.jar
 #These should not be deployed in a servlet context
 rm $WARLIB/servlet-api*.jar
+rm $WARLIB/javax.servlet-api*.jar
 rm $WARLIB/javaee-api*jar
 rm $WARLIB/scalatest*jar
 rm $WARLIB/gwt-user.jar

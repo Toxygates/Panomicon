@@ -21,34 +21,30 @@
 package t
 
 import scala.language.existentials
-import t.sparql.Triplestore
-import t.db.Series
-import t.db.SeriesBuilder
-import t.db.Metadata
-import t.db.ParameterSet
-import t.db.file.TSVMetadata
-import t.db.kyotocabinet.KCSeriesDB
-import t.db.kyotocabinet.KCIndexDB
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.MatrixDBReader
-import t.db.PExprValue
-import t.db.BasicExprValue
-import t.db.MatrixContext
-import t.db.ExprValue
-import t.db.TransformingWrapper
-import t.db.MatrixDB
+
 import org.eclipse.rdf4j.repository.RepositoryConnection
 
-//TODO should BaseConfig be invariant between applications?
+import t.db._
+import t.db.kyotocabinet._
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.model.sample.AttributeSet
+import t.sparql.Triplestore
+
+/*
+ * Note: it is not clear whether
+ * BaseConfig should be invariant between applications. 
+ * Currently OTGBConfig is the concrete OTG version of this. 
+ */
 trait BaseConfig {
   def triplestore: TriplestoreConfig
   def data: DataConfig
 
-  //TODO Should this be in context?
+  /*
+   * Note: this might be better in the context instead.
+   */
   def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
-  def sampleParameters: ParameterSet
+  def attributes: AttributeSet
 
   def appName: String
 }
@@ -56,13 +52,8 @@ trait BaseConfig {
 case class TriplestoreConfig(url: String, updateUrl: String,
   user: String, pass: String, repository: String) {
   lazy val triplestore: RepositoryConnection = {
-    if (repository != null && repository != "") {
-      println("RemoteRepository connect to " + url)
-      Triplestore.connectRemoteRepository(this)
-    } else {
-      println("SPARQLRepository connect to " + this.url + " and " + this.updateUrl)
-      Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
-    }
+    println("SPARQLRepository connect to " + this.url + " and " + this.updateUrl)
+    Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
   }
 
   def get = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)

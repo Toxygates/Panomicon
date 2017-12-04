@@ -23,19 +23,14 @@ package t.db
 import scala.collection.{ Map => CMap }
 
 import scala.collection.JavaConversions._
+import t.model.sample.Attribute
 
 trait SampleClassLike {
-  def constraints: CMap[String, String]
+  def constraints: CMap[Attribute, String]
 
-  @deprecated("Query by SampleParameter instead.", "June 2017")
-  def apply(key: String): String = constraints(key)
+  def apply(key: Attribute): String = constraints(key)
 
-  @deprecated("Query by SampleParameter instead.", "June 2017")
-  def get(key: String): Option[String] = constraints.get(key)
-
-  def apply(key: SampleParameter): String = apply(key.id)
-
-  def get(key: SampleParameter): Option[String] = get(key.id)
+  def get(key: Attribute): Option[String] = constraints.get(key)
 
   def ++(other: SampleClassLike) =
     new t.model.SampleClass(constraints ++ other.constraints)

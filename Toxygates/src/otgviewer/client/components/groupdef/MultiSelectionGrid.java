@@ -18,29 +18,22 @@
 
 package otgviewer.client.components.groupdef;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
-
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import t.model.sample.Attribute;
 
 /**
  * A SelectionTDGrid with multiple sections, one for each data filter. Dispatches compound and
@@ -74,7 +67,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
         g.compoundsChanged(chosenCompounds);
       }
       Label l = new Label(SampleClassUtils.label(sc, scr.schema()));
-      l.setStylePrimaryName("heavyEmphasized");
+      l.addStyleName("selectionGridSectionHeading");
       vp.add(l);
       vp.add(g);
     }
@@ -95,6 +88,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
+  @Override
   public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
     List<Pair<Unit, Unit>> fullAvailability = allAvailable();
     if (listener != null) {
@@ -141,11 +135,6 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
-  List<String> compoundsFor(SampleClass sc) {
-    SelectionTDGrid g = findOrCreateSection(scr, sc, false);
-    return g.chosenCompounds;
-  }
-
   void setSelection(Unit[] selection) {
     logger.info("Set selection: " + selection.length + " units ");
     if (selection.length > 0) {
@@ -158,7 +147,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
     expectedSelection = selection;
 
-    final String majorParam = scr.schema().majorParameter();
+    final Attribute majorParam = scr.schema().majorParameter();
     Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
     for (Unit u : selection) {
       SampleClass sc = SampleClassUtils.asMacroClass(u, schema);
@@ -186,9 +175,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
       if (tg != currentGrid && tg.getSelectedUnits(true).size() == 0) {
         vp.remove(i);
         vp.remove(i - 1);
-        sections.remove(tg.chosenSampleClass);
+        sections.remove(tg.state().sampleClass);
         clearEmptySections();
-        // TODO not the best flow logic
         return;
       }
     }

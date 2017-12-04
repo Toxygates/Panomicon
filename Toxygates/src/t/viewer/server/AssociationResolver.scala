@@ -1,19 +1,20 @@
 package t.viewer.server
 
-import t.viewer.shared.Association
-import t.db.DefaultBio
-import t.sparql.SampleFilter
+import scala.collection.{ Set => CSet }
+
+import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
-import t.viewer.shared.Association
+import t.db.DefaultBio
 import t.model.SampleClass
 import t.platform.Probe
-import t.sparql.Probes
-import Association._
 import t.sparql._
+import t.sparql.Probes
+import t.sparql.SampleFilter
 import t.sparql.secondary._
 import t.viewer.server.Conversions._
-import t.common.server.ScalaUtils.gracefully
-import scala.collection.{Set => CSet}
+
+import t.viewer.shared.Association
+import t.viewer.shared.Association._
 
 /**
  * Helper class to look up probe associations from a variety of sources
@@ -55,7 +56,7 @@ class AssociationResolver(probeStore: Probes,
       case _ => throw new Exception("Unexpected annotation type")
     }
 
-  val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
+  val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
   val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))
 
   def queryOrEmpty[T](f: () => BBMap): BBMap = {
@@ -65,11 +66,11 @@ class AssociationResolver(probeStore: Probes,
   private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
     queryOrEmpty(() => associationLookup(t, sc, aprobes))
 
-  def standardMapping(m: BBMap): MMap[String, (String, String)] =
-    m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
+  def standardMapping(m: BBMap): MMap[String, (String, String, Option[String])] =
+    m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier, p.additionalInfo))
 
   def resolve(implicit sf: SampleFilter): Array[Association] = {
     val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(sf)))).seq
-    m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
+    m1.map(p => new Association(p._1, convertAssociations(p._2))).toArray
   }
 }

@@ -18,77 +18,42 @@
 
 package t.viewer.client.table;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.cell.client.*;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.builder.shared.SpanBuilder;
+import com.google.gwt.dom.builder.shared.TableRowBuilder;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.*;
+
 import otgviewer.client.StandardColumns;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
-import t.common.shared.AType;
-import t.common.shared.DataSchema;
-import t.common.shared.GroupUtils;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.DataColumn;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
-import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.Synthetic;
+import t.viewer.shared.*;
 import t.viewer.shared.table.SortKey;
-
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.cellview.client.PageSizePager;
-import com.google.gwt.user.cellview.client.SimplePager;
-import com.google.gwt.user.cellview.client.SimplePager.Resources;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.AsyncDataProvider;
-import com.google.gwt.view.client.HasData;
-import com.google.gwt.view.client.NoSelectionModel;
-import com.google.gwt.view.client.Range;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -114,9 +79,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final int MAX_PAGE_SIZE = 250;
   private final int PAGE_SIZE_INCREMENT = 50;
 
+  private final String COLUMN_WIDTH = "10em";
+
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-
+  
   private HorizontalPanel tools, analysisTools;
   // We enable/disable this button when the value type changes
   private Button foldChangeBtn = new Button("Add fold-change difference");
@@ -124,7 +91,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected ListBox tableList = new ListBox();
 
   private final MatrixServiceAsync matrixService;
-  private final otgviewer.client.Resources resources;
+  private final t.common.client.Resources resources;
 
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
@@ -143,11 +110,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   /**
    * Names of the probes currently displayed
    */
-  private String[] displayedAtomicProbes;
+  private String[] displayedAtomicProbes = new String[0];
   /**
    * Names of the (potentially merged) probes being displayed
    */
-  private String[] displayedProbes;
+  private String[] displayedProbes = new String[0];
 
   private boolean loadedData = false;
   private ManagedMatrixInfo matrixInfo = null;
@@ -162,14 +129,78 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   private CheckBox pcb;
 
-  public ExpressionTable(Screen _screen, boolean withPValueOption) {
-    super(_screen);
+  protected class HeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
+    AbstractCellTable.Style style;
+
+    public HeaderBuilder(AbstractCellTable<ExpressionRow> table) {
+      super(table, false);
+      style = getTable().getResources().style();
+    }
+
+    private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount,
+        String styleNames) {
+      SpanBuilder spanBuilder = rowBuilder.startTH().colSpan(columnCount)
+          .className(style.header() + " majorHeader " + styleNames).startSpan();
+      spanBuilder.title(group.tooltipText(screen.schema())).text(group.getName()).endSpan();
+      rowBuilder.endTH();
+    }
+
+    private void buildBlankHeader(TableRowBuilder rowBuilder, int columnCount) {
+      rowBuilder.startTH().colSpan(columnCount).endTH();
+    }
+
+    @Override
+    protected boolean buildHeaderOrFooterImpl() {
+      if (columnSections.size() > 0) {
+        TableRowBuilder rowBuilder = startRow();
+        for (int i = 0; i < columnSections.size(); i++) {
+          String sectionName = columnSections.get(i);
+          int numSectionColumns = sectionColumnCount.get(sectionName);
+          if (numSectionColumns > 0) {
+            if (sectionName == "data") {
+              int groupColumnCount = 1;
+              Group group = matrixInfo.columnGroup(0);
+              // Iterate through data columns, and build a group header whenever
+              // we switch groups, and also at the end of the iteration.
+              boolean first = true;
+              for (int j = 1; j < matrixInfo.numDataColumns(); j++) {
+                if (displayPColumns || !matrixInfo.isPValueColumn(j)) {
+                  Group nextGroup = matrixInfo.columnGroup(j);
+                  if (group != nextGroup) {
+                    String borderStyle = first ? "darkBorderLeft" : "whiteBorderLeft";
+                    String groupStyle = group.getStyleName() + "-background";
+                    buildGroupHeader(rowBuilder, group, groupColumnCount,
+                        borderStyle + " " + groupStyle);
+                    first = false;
+                    groupColumnCount = 0;
+                  }
+                  groupColumnCount++;
+                  group = nextGroup;
+                }
+              }
+              String groupStyle = group.getStyleName() + "-background";
+              buildGroupHeader(rowBuilder, group, groupColumnCount,
+                  "whiteBorderLeft " + groupStyle);
+            } else {
+              buildBlankHeader(rowBuilder, numSectionColumns);
+            }
+          }
+        }
+      }
+      return super.buildHeaderOrFooterImpl();
+    }
+  }
+
+  public ExpressionTable(Screen _screen, boolean withPValueOption,
+      TableStyle style) {
+    super(_screen, style);
     this.withPValueOption = withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
     screen = _screen;
 
-    grid.setStylePrimaryName("exprGrid");
+    grid.setHeaderBuilder(new HeaderBuilder(grid));
+    grid.addStyleName("exprGrid");
     grid.setPageSize(INIT_PAGE_SIZE);
 
     grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
@@ -179,6 +210,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     makeTools();
     makeAnalysisTools();
     setEnabled(false);
+  }
+  
+  public void setStyle(TableStyle style) {
+    this.style = style;
   }
 
   protected boolean isMergeMode() {
@@ -230,7 +265,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     tools = Utils.mkHorizontalPanel();
 
     HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
-    horizontalPanel.setStylePrimaryName("colored");
+    horizontalPanel.addStyleName("colored");
     horizontalPanel.addStyleName("slightlySpaced");
     tools.add(horizontalPanel);
 
@@ -246,7 +281,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    Resources r = GWT.create(Resources.class);
+    SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
 
     SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
       @Override
@@ -256,12 +291,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       @Override
+      public void previousPage() {
+        super.previousPage();
+        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+      }
+
+      @Override
       public void setPage(int index) {
         super.setPage(index);
         Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
       }
     };
-    sp.setStylePrimaryName("slightlySpaced"); 
+    sp.addStyleName("slightlySpaced");
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
 
@@ -275,7 +316,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     };
 
-    pager.setStylePrimaryName("slightlySpaced");
+    pager.addStyleName("slightlySpaced");
     horizontalPanel.add(pager);
 
     if (withPValueOption) {
@@ -337,7 +378,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void makeAnalysisTools() {
     analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.setStylePrimaryName("colored2");
+    analysisTools.addStyleName("analysisTools");
 
     analysisTools.add(groupsel1);
     groupsel1.setVisibleItemCount(1);
@@ -391,8 +432,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     } else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
       Window.alert("Please select two different groups to perform " + name + ".");
     } else {
-      final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
-      final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
+      final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1)).get();
+      final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2)).get();
       synth.setGroups(g1, g2);
       matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
@@ -434,29 +475,36 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   @Override
   protected void setupColumns() {
     super.setupColumns();
-    ensureSection("synthetic");
 
     TextCell tc = new TextCell();
 
+    Group previousGroup = null;
     for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
+
+        Group group = matrixInfo.columnGroup(i);
+        String groupStyle = group == null ? "dataColumn" : group.getStyleName();
+        String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
+        String style = groupStyle + " " + borderStyle;
+
         ColumnInfo ci =
-            new ColumnInfo(matrixInfo.columnName(i), 
-                matrixInfo.columnHint(i), true, false, true,
-                matrixInfo.columnFilter(i).active());
-        ci.setCellStyleNames("dataColumn");
+            new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
+                COLUMN_WIDTH, style, false, true, matrixInfo.columnFilter(i).active());
+        ci.setHeaderStyleNames(style);
+
+        previousGroup = group;
         addColumn(valueCol, "data", ci);
-        Group g = matrixInfo.columnGroup(i);
-        if (g != null) {
-          valueCol.setCellStyleNames(g.getStyleName());
-        }
       }
     }
     
+    ensureSection("synthetic");
+    boolean first = true;
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
-      addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i);
-    }    
+      String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
+      first = false;
+      addSynthColumn(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), i, borderStyle);
+    }
   }
 
   @Override
@@ -478,11 +526,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new ToolCell(this);
   }
 
-  private void addSynthColumn(String title, String tooltip, int matIndex) {
+  private void addSynthColumn(String title, String tooltip, int matIndex, String borderStyle) {
     TextCell tc = new TextCell();    
     Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, matIndex);    
-    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
-    info.setCellStyleNames("extraColumn");
+    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, COLUMN_WIDTH,
+        "extraColumn " + borderStyle, false, true, false);
+    info.setHeaderStyleNames(borderStyle);
     info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
   }
@@ -491,7 +540,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
     Header<SafeHtml> superHeader = super.getColumnHeader(info);
     if (info.filterable()) {
-      return new FilteringHeader(superHeader.getValue(), info.filterActive());
+      FilteringHeader header = new FilteringHeader(superHeader.getValue(), info.filterActive());
+      header.setHeaderStyleNames(info.headerStyleNames());
+      return header;
     } else {
       return superHeader;
     }
@@ -523,19 +574,19 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     // Identify a click on the filter image.
     // TODO use a more robust identification method (!!)
-    boolean isFilterClick =
+    boolean shouldFilterClick =
         ((target.startsWith("<img") || target.startsWith("<IMG")) && 
             (target.indexOf("width:12") != -1 || // most browsers
             target.indexOf("WIDTH: 12") != -1 || // IE9
         target.indexOf("width: 12") != -1)); // IE8
-    if (isFilterClick) {
+    if (shouldFilterClick) {
       // Identify the column that was filtered.
       int col = columnAt(x);
       ExpressionColumn ec = (ExpressionColumn) grid.getColumn(col);
       editColumnFilter(ec.matrixColumn());
     }
-    // If we return true, the click will be passed on to the other widgets
-    return !isFilterClick;
+    // If we return true, the click will not be passed on to the other widgets
+    return shouldFilterClick;
   }
   
   protected void editColumnFilter(int column) {
@@ -586,30 +637,30 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   @Override
   protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
-    SafeHtmlCell shc = new SafeHtmlCell();
+    SafeHtmlCell htmlCell = new SafeHtmlCell();
     List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 
-    r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", initVisibility(StandardColumns.GeneID),
-        initWidth(StandardColumns.GeneID)) {
+    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
+        StandardColumns.GeneID, style) {        
       @Override
       protected String formLink(String value) {
         return AType.formGeneLink(value);
       }
 
       @Override
-      protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+      protected Collection<AssociationValue> getLinkableValues(ExpressionRow er) {
         String[] geneIds = er.getGeneIds(); // basis for the URL
         String[] labels = er.getGeneIdLabels();
-        List<Pair<String, String>> r = new ArrayList<Pair<String, String>>();
+        List<AssociationValue> r = new ArrayList<AssociationValue>();
         for (int i = 0; i < geneIds.length; i++) {
-          r.add(new Pair<String, String>(labels[i], geneIds[i]));
+          r.add(new AssociationValue(labels[i], geneIds[i], null));
         }
         return r;
       }
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Symbol",
-        initVisibility(StandardColumns.GeneSym), initWidth(StandardColumns.GeneSym)) {
+    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
+        StandardColumns.GeneSym, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getGeneSyms());
@@ -617,16 +668,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe Title",
-        initVisibility(StandardColumns.ProbeTitle), initWidth(StandardColumns.ProbeTitle)) {
+    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
+        StandardColumns.ProbeTitle, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getAtomicProbeTitles());
       }
     });
 
-    r.add(new LinkingColumn<ExpressionRow>(shc, "Probe", initVisibility(StandardColumns.Probe),
-        initWidth(StandardColumns.Probe)) {
+    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
+        StandardColumns.Probe, style) {        
 
       @Override
       protected String formLink(String value) {
@@ -634,8 +685,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       @Override
-      protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-        return Pair.duplicate(Arrays.asList(er.getAtomicProbes()));
+      protected Collection<AssociationValue> getLinkableValues(ExpressionRow er) {
+        List<AssociationValue> r = new LinkedList<AssociationValue>();
+        for (String probe: er.getAtomicProbes()) {
+          r.add(new AssociationValue(probe, probe, null));
+        }        
+        return r;
       }
 
     });
@@ -645,25 +700,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     r.addAll(super.initHideableColumns(schema));
 
     return r;
-  }
-
-  protected boolean initVisibility(StandardColumns col) {
-    return col != StandardColumns.GeneID;
-  }
-
-  protected String initWidth(StandardColumns col) {
-    switch (col) {
-      case Probe:
-        return "8em";
-      case GeneSym:
-        return "10em";
-      case ProbeTitle:
-        return "18em";
-      case GeneID:
-        return "12em";
-      default:
-        return "15em";
-    }
   }
 
   /**
@@ -880,7 +916,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               logger.info("Data successfully loaded");
             } else {
               Window
-                  .alert("No data was available for this gene set.\nThe view will switch to default selection.");
+                  .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
+                      "\nThe view will switch to default selection. (Wrong species?)");
               onGettingExpressionFailed();
             }
           }
@@ -889,29 +926,24 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   protected void onGettingExpressionFailed() {}
 
-  private void asyncDisplayCharts() {
-    GWT.runAsync(new CodeDownload(logger) {      
+  private void displayCharts() {
+    final Charts cgf = new Charts(screen, chosenColumns);
+    ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
+    final String[] probes = dispRow.getAtomicProbes();
+    cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
       @Override
-      public void onSuccess() {
-        final Charts cgf = new Charts(screen, chosenColumns);
-        ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
-        final String[] probes = dispRow.getAtomicProbes();
-        cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
-          @Override
-          public void acceptCharts(final AdjustableGrid<?, ?> cg) {
-            Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
-          }
+      public void acceptCharts(final AdjustableGrid<?, ?> cg) {
+        Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
+      }
 
-          @Override
-          public void acceptBarcodes(Sample[] bcs) {
-            chartBarcodes = bcs;
-          }
-        });
-        Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
-      }      
+      @Override
+      public void acceptBarcodes(Sample[] bcs) {
+        chartBarcodes = bcs;
+      }
     });
+    Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
-  
+
   /**
    * This cell displays an image that can be clicked to display charts.
    */
@@ -928,11 +960,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       Utils.ensureVisualisationAndThen(new Runnable() {
         @Override
         public void run() {
-          asyncDisplayCharts();
+          displayCharts();
         }
       });
     }
   }
-
-
 }

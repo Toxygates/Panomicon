@@ -7,26 +7,16 @@
 
 	<context-param>
 		<param-name>repositoryURL</param-name>
-		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value>
+		<param-value>http://localhost:3030/Toxygates/query</param-value>		
 	</context-param>
-	<context-param>
-		<param-name>repositoryName</param-name>
-		<param-value>ttest</param-value>
-	</context-param>
+	
 	<context-param>		
 		<param-name>instanceName</param-name>
 		<!-- The concrete parameter value will be filled in by
 		scripts like new_instance.public.sh -->
 		<param-value>##instanceName##</param-value>		
 	</context-param>
-	<context-param>
-		<param-name>repositoryUser</param-name>
-		<param-value>ttest</param-value>
-	</context-param>
-	<context-param>
-		<param-name>repositoryPassword</param-name>
-		<param-value>ttest</param-value>
-	</context-param>	
+
 	<context-param>
 		<param-name>dataDir</param-name>
 		<param-value>kcchunk:/opt/toxygates-chunk</param-value>
@@ -64,7 +54,7 @@
 	</context-param>
 	<context-param>
 		<param-name>updateURL</param-name>
-		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value>  
+		<param-value>http://localhost:3030/Toxygates/update</param-value>
 	</context-param>
 	
 	
@@ -97,9 +87,14 @@
 
 	<servlet-mapping>
 		<servlet-name>sparqlServlet</servlet-name>
-		<url-pattern>/toxygates/sparql</url-pattern>
+		<url-pattern>/toxygates/probe</url-pattern>
 	</servlet-mapping>
 
+	<servlet-mapping>
+		<servlet-name>sparqlServlet</servlet-name>
+		<url-pattern>/toxygates/sample</url-pattern>
+	</servlet-mapping>
+	
 	<servlet-mapping>
 		<servlet-name>seriesServlet</servlet-name>
 		<url-pattern>/toxygates/series</url-pattern>

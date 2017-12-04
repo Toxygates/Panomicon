@@ -25,6 +25,9 @@ import t.platform.ProbeRecord
 import t.util.TempFiles
 import t.platform.BioParameter
 import t.platform.BioParameters
+import t.model.sample.BasicAttribute
+import t.model.sample.AttributeSet
+import t.BaseConfig
 
 object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
@@ -36,10 +39,12 @@ object Platforms extends RDFClass {
   def context(name: String) = defaultPrefix + "/" + name
 }
 
-class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF {
+class Platforms(baseConfig: BaseConfig) extends 
+  ListManager(baseConfig.triplestore) {
   import Triplestore._
   import Platforms._
 
+  def config = baseConfig.triplestore
   def itemClass = Platforms.itemClass
   def defaultPrefix = Platforms.defaultPrefix
 
@@ -49,7 +54,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     addWithTimestamp(name, comment)
 
     if (biological) {
-      ts.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
+      triplestore.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
     }
 
     val probes = new Probes(config)
@@ -58,22 +63,18 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     try {
       for (g <- definitions.par.toList.grouped(1000)) {
         val ttl = Probes.recordsToTTL(tempFiles, name, g)
-        ts.addTTL(ttl, Platforms.context(name))
+        triplestore.addTTL(ttl, Platforms.context(name))
       }
     } finally {
       tempFiles.dropAll
     }
   }
 
-  //TODO test
-  def isBiological(name: String): Boolean =
-    platformTypes.get(name) == Some(biologicalPlatform)
-
   /**
    * Note, the map may only be partially populated
    */
   def platformTypes: Map[String, String] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?type where { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?type WHERE { ?item a $itemClass; rdfs:label ?l ; " +
       s"$platformType ?type } ").map(x => {
       x("l") -> x("type")
     })
@@ -86,14 +87,30 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       x
     }
 
+  def populateAttributes(into: AttributeSet): Unit = {
+    val timeout: Int = 60000
+     val attribs = triplestore.mapQuery(s"""$tPrefixes
+        |SELECT DISTINCT * WHERE {
+        |  ?p $platformType $biologicalPlatform.
+        |  GRAPH ?p {
+        |    ?probe a t:probe; rdfs:label ?id; t:type ?type; t:section ?section;
+        |    t:label ?title.
+        |  }
+        |}""".stripMargin, timeout)
+
+     for (a <- attribs) {
+       val at = into.findOrCreate(a("id"), a("title"), a("type"), a("section"))
+       println(s"Create attribute $at")
+     }
+  }
+
   /**
    * Obtain the bio-parameters in all bio platforms
    */
   def bioParameters: BioParameters = {
     val timeout: Int = 60000
 
-    //TODO test this
-    val attribs = ts.mapQuery(s"""$tPrefixes
+    val attribs = triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {
         |  ?p $platformType $biologicalPlatform.
         |  GRAPH ?p {
@@ -107,7 +124,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       kvs = Map() ++ values.map(_._2)
     ) yield (id -> kvs)
 
-    val bps = ts.mapQuery(s"""$tPrefixes
+    val bps = triplestore.mapQuery(s"""$tPrefixes
       |SELECT ?id ?desc ?sec ?type ?lower ?upper WHERE {
       |  ?p $platformType $biologicalPlatform.
       |  GRAPH ?p {
@@ -117,17 +134,21 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       |   }
       |}""".stripMargin, timeout)
 
-    val bpcons = bps.map(x => BioParameter(x("id"), x("desc"), x("type"),
+      //TODO
+    val attribSet = otg.model.sample.AttributeSet.getDefault
+
+    val bpcons = bps.map(x => BioParameter(
+        attribSet.findOrCreate(x("id"), x("desc"), x("type")),
       x.get("sec"),
       x.get("lower").map(_.toDouble), x.get("upper").map(_.toDouble),
       attribMaps.get(x("id")).getOrElse(Map())))
 
-    new BioParameters(Map() ++ bpcons.map(b => b.key -> b))
+    new BioParameters(Map() ++ bpcons.map(b => b.attribute -> b))
   }
 
   override def delete(name: String): Unit = {
     super.delete(name)
-    ts.update(s"$tPrefixes\n " +
+    triplestore.update(s"$tPrefixes\n " +
       s"drop graph <$defaultPrefix/$name>")
   }
 

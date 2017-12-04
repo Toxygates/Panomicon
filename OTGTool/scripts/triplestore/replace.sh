@@ -50,20 +50,20 @@ case $INPUT in
     exit 1
 esac
 
-URLBASE="http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/$REPO"
+URLBASE="http://localhost:3030/$REPO"
 USER=x
 PASS=y
 
 QUERY="DROP GRAPH <$GRAPH>"
-curl -u $USER:$PASS "$URLBASE/statements" --data-urlencode update="$QUERY" 
+curl -u $USER:$PASS "$URLBASE/" --data-urlencode update="$QUERY" 
 
 if [[ "$NAMED" == "yes" ]]
 then
   #insert into a named graph
-  curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/rdf-graphs/service?graph=$GRAPH" --data-binary @$INPUT
+  curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/data?graph=$GRAPH" --data-binary @$INPUT
 else
   #graph names are already present in the raw data
-  curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/statements" --data-binary @$INPUT
+  curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/" --data-binary @$INPUT
 fi
 
 #If the annotation comments are unwanted, uncomment the following and exit.
@@ -75,4 +75,4 @@ cat > temp.trig <<EOF
 
 <$GRAPH> { <$GRAPH> a t:annotation; rdfs:label "$TITLE"; t:comment "$COMMENT". }
 EOF
-curl -u $USER:$PASS -H "Content-type:application/x-trig" -X POST "$URLBASE/statements" --data-binary @temp.trig
+curl -u $USER:$PASS -H "Content-type:application/x-trig" -X POST "$URLBASE/" --data-binary @temp.trig

@@ -22,26 +22,28 @@ package t.db.file
 
 import friedrich.util.formats.TSVFile
 import t.db.ParameterSet
-import t.db.Sample
-import t.db.Metadata
+import t.db._
 import t.Factory
+import t.model.sample._
+import t.model.sample.Helpers._
+import scala.collection.JavaConversions._
 
 /**
  * Metadata that is read from a TSV file.
  */
 object TSVMetadata {
-  def apply(fact: Factory, file: String, parameters: ParameterSet): Metadata = {
+  def apply(fact: Factory, file: String, attributes: AttributeSet): Metadata = {
     val metadata: Map[String, Seq[String]] = {
       val columns = TSVFile.readMap("", file)
       columns.flatMap(x => {
         val lc = x._1.toLowerCase().trim
         //Normalise the upper/lowercase-ness and remove unknown columns
         val trimmed = x._2.map(_.trim)
-        parameters.byIdLowercase.get(lc).map(_.identifier -> trimmed)
+        attributes.byIdLowercase.get(lc).map(_.id -> trimmed)
       })
     }
 
-    val req = parameters.required.map(_.identifier).map(_.toLowerCase)
+    val req = attributes.getRequired().map(_.id).map(_.toLowerCase)
     val neColumns = req.filter(!metadata.keySet.contains(_))
     if (!neColumns.isEmpty) {
       println(s"The following columns are missing in $file: $neColumns")
@@ -56,7 +58,7 @@ object TSVMetadata {
       }
       uniqueIds += id
     }
-    fact.metadata(metadata, parameters)
+    fact.metadata(metadata, attributes)
   }
 }
 
@@ -64,9 +66,9 @@ object TSVMetadata {
  * Metadata based on a map indexed by column.
  */
 class MapMetadata(val metadata: Map[String, Seq[String]],
-    val parameterSet: ParameterSet) extends Metadata {
+    val attributes: AttributeSet) extends Metadata {
 
-  val requiredColumns = parameterSet.required.map(_.identifier.toLowerCase)
+  val requiredColumns = attributes.getRequired.map(_.id.toLowerCase)
 
   def samples: Iterable[Sample] = {
     val ids = metadata("sample_id")
@@ -83,21 +85,21 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
     }
   }
 
-  override def parameters(s: Sample): Seq[(t.db.SampleParameter, String)] = {
+  override def attributes(s: Sample): Seq[(Attribute, String)] = {
     val idx = getIdx(s)
-    metadata.map(column => (parameterSet.byId(column._1), column._2(idx))).toSeq
+    metadata.map(column => (attributes.byId(column._1), column._2(idx))).toSeq
   }
 
   def parameterValues(identifier: String): Set[String] =
     metadata(identifier).toSet
 
-  override def parameter(s: Sample, identifier: String): Option[String] = {
+  override def attribute(s: Sample, attribute: Attribute): Option[String] = {
     val idx = getIdx(s)
-    Some(metadata(identifier)(idx))
+    metadata.get(attribute.id).map(_(idx))
   }
 
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {
     val nm = metadata + (key -> metadata(key).map(f))
-    fact.metadata(nm, parameterSet)
+    fact.metadata(nm, attributes)
   }
 }

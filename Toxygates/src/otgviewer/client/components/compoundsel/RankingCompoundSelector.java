@@ -20,36 +20,24 @@
 
 package otgviewer.client.components.compoundsel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.IdentityColumn;
-import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import java.util.*;
 
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.shared.MatchResult;
-import otgviewer.shared.RankRule;
-import otgviewer.shared.Series;
+import otgviewer.client.components.*;
+import otgviewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.model.SampleClass;
 import t.common.shared.SharedUtils;
+import t.model.SampleClass;
 import t.viewer.client.Analytics;
-import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
+
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RankingCompoundSelector extends CompoundSelector {
 
@@ -185,18 +173,13 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(final String value, final List<Series> ss) {
-      GWT.runAsync(new CodeDownload(logger) {        
+      Charts cgf = new Charts(screen, new SampleClass[] {w.state().sampleClass});
+      cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
         @Override
-        public void onSuccess() {
-          Charts cgf = new Charts(screen, new SampleClass[] {w.chosenSampleClass});
-          cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
-            @Override
-            public void acceptCharts(ChartGrid<?> cg) {
-              Utils.displayInPopup("Charts", cg, DialogPosition.Side);
-            }
-          }, screen);          
-        }        
-      });
+        public void acceptCharts(ChartGrid<?> cg) {
+          Utils.displayInPopup("Charts", cg, DialogPosition.Side);
+        }
+      }, screen);
     }
   }
 

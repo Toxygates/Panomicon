@@ -22,7 +22,7 @@ package otg.sparql
 
 import t.TTestSuite
 import scala.collection.JavaConversions._
-import otg.Species._
+import t.platform.Species._
 import t.platform.Probe
 import t.sparql._
 import t.sparql.Triplestore

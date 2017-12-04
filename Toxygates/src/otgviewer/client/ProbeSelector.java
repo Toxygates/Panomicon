@@ -20,16 +20,6 @@ package otgviewer.client;
 
 import java.util.Arrays;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.TermSuggestBox;
-import t.common.client.components.ResizingListBox;
-import t.common.shared.SharedUtils;
-import t.common.shared.Term;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.ProbeServiceAsync;
-
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -37,17 +27,15 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.VerticalPanel;
+
+import otgviewer.client.components.*;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.SharedUtils;
+import t.common.shared.Term;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 /**
  * An interface component that helps users to select probes using some kind of higher level concept
@@ -83,10 +71,10 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     VerticalPanel topVp = new VerticalPanel();
     topVp.setWidth(CHILD_WIDTH);
     topVp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    topVp.setStylePrimaryName("slightlySpaced");
+    topVp.addStyleName("slightlySpaced");
 
     Label searchLabel = new Label(label);
-    searchLabel.setStylePrimaryName("slightlySpaced");
+    searchLabel.addStyleName("slightlySpaced");
     searchLabel.setWidth("95%");
     topVp.add(searchLabel);
 
@@ -145,13 +133,14 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     if (withButton) {
       addButton = new Button("Add probes >>");
       addButton.addClickHandler(new ClickHandler() {
+        @Override
         public void onClick(ClickEvent e) {
           probesChanged(loadedProbes);
         }
       });
       addButton.setEnabled(false);
       HorizontalPanel hp = Utils.wideCentered(addButton);
-      hp.setStylePrimaryName("slightlySpaced");
+      hp.addStyleName("slightlySpaced");
       hp.setWidth(CHILD_WIDTH);
       dp.addSouth(hp, 35);
     }
@@ -179,12 +168,14 @@ abstract public class ProbeSelector extends DataListenerWidget implements
    */
   public AsyncCallback<String[]> retrieveProbesCallback() {
     return new PendingAsyncCallback<String[]>(this) {
+      @Override
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get probes.");
         // itemHandler.clear();
         addButton.setEnabled(false);
       }
 
+      @Override
       public void handleSuccess(String[] probes) {
         if (!withButton) {
           probesChanged(probes);
@@ -204,6 +195,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       // collapsing them
       probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(this, 
           "Unable to get gene symbols for probes") {
+        @Override
         public void handleSuccess(String[][] syms) {
           deferredAddProbes(probes, syms);
         }

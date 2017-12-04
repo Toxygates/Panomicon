@@ -20,25 +20,24 @@
 
 package t.sparql
 
-import t.db.Sample
-import t.db.SampleParameter
-import t.db.Metadata
-import t.db.ParameterSet
+import t.db._
 import t.Factory
+import t.model.sample.CoreParameter._
+import t.model.sample.Attribute
+import t.model.sample.AttributeSet
 
 /**
  * Metadata from a triplestore.
- * The graph to be queried can be influenced by setting
- * os.batchURI.
+ * @param sampleStore The triplestore to be queried.
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
-    querySet: Iterable[SampleParameter] = Seq())
+class TriplestoreMetadata(sampleStore: Samples, val attributes: AttributeSet,
+    querySet: Iterable[Attribute] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
   override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
 
-  override def parameters(s: Sample): Seq[(SampleParameter, String)] = {
+  override def attributes(s: Sample): Seq[(Attribute, String)] = {
     sampleStore.parameterQuery(s.identifier, querySet).collect( {
       case (sp, Some(s)) => (sp, s)
     })
@@ -51,31 +50,4 @@ class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
 
   //TODO
   override def isControl(s: Sample) = ???
-}
-
-/**
- * Caching triplestore metadata that reads all the data once and stores it.
- */
-class CachingTriplestoreMetadata(os: Samples, parameterSet: ParameterSet,
-    querySet: Iterable[SampleParameter] = Seq())(implicit sf: SampleFilter)
-    extends TriplestoreMetadata(os, parameterSet, querySet) {
-
-  val useQuerySet = (querySet.map(_.identifier).toSeq :+ "sample_id").distinct
-
-  lazy val rawData = {
-    val raw = os.sampleAttributeQuery(useQuerySet)(sf)()
-    Map() ++ raw.map(r => r("sample_id") -> r)
-  }
-
-  println(rawData take 10)
-
-  lazy val data =
-    rawData.map(r => (r._1 -> r._2.map { case (k,v) => parameterSet.byId(k) -> v }))
-
-  println(data take 10)
-
-  override def parameters(s: Sample) = data.getOrElse(s.sampleId, Map()).toSeq
-
-  override def parameterValues(identifier: String): Set[String] =
-    data.map(_._2(parameterSet.byId(identifier))).toSet
 }

@@ -18,12 +18,10 @@
 
 package t.common.shared;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 /**
  * A SampleMultiFilter is a filter for SampleClass and HasClass. For each key, several permitted
@@ -33,19 +31,19 @@ import t.model.SampleClass;
  */
 public class SampleMultiFilter {
 
-  private Map<String, Set<String>> constraints = new HashMap<String, Set<String>>();
+  private Map<Attribute, Set<String>> constraints = new HashMap<Attribute, Set<String>>();
 
   public SampleMultiFilter() {}
 
-  public SampleMultiFilter(Map<String, Set<String>> constr) {
+  public SampleMultiFilter(Map<Attribute, Set<String>> constr) {
     constraints = constr;
   }
 
-  public boolean contains(String key) {
+  public boolean contains(Attribute key) {
     return constraints.containsKey(key);
   }
 
-  public void addPermitted(String key, String value) {
+  public void addPermitted(Attribute key, String value) {
     if (constraints.containsKey(key)) {
       constraints.get(key).add(value);
     } else {
@@ -55,7 +53,7 @@ public class SampleMultiFilter {
     }
   }
 
-  public void addPermitted(String key, String[] value) {
+  public void addPermitted(Attribute key, String[] value) {
     for (String v : value) {
       addPermitted(key, v);
     }
@@ -69,7 +67,7 @@ public class SampleMultiFilter {
    * @return
    */
   public boolean accepts(SampleClass sc) {
-    for (String k : constraints.keySet()) {
+    for (Attribute k : constraints.keySet()) {
       Set<String> vs = constraints.get(k);
       if (!sc.contains(k) || !vs.contains(sc.get(k))) {
         return false;
@@ -85,7 +83,7 @@ public class SampleMultiFilter {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (String k : constraints.keySet()) {
+    for (Attribute k : constraints.keySet()) {
       sb.append(k + ":(");
       for (String v : constraints.get(k)) {
         sb.append(v + ",");

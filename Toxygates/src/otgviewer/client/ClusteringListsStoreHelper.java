@@ -17,16 +17,11 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import otgviewer.client.components.Screen;
 import t.clustering.shared.Algorithm;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
@@ -40,7 +35,7 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
 
   @Override
   protected void init() {
-    for (ItemList il : screen.chosenClusteringList) {
+    for (ItemList il : screen.state().chosenClusteringList) {
       if (il instanceof ClusteringList) {
         ClusteringList sl = (ClusteringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);

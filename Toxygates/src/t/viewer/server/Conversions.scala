@@ -20,24 +20,31 @@
 
 package t.viewer.server
 
+import java.util.{ HashMap => JHMap }
+import java.util.{ HashSet => JHSet }
+
 import scala.collection.JavaConversions._
+import scala.collection.{ Map => CMap }
+import scala.collection.{ Set => CSet }
 import scala.language.implicitConversions
-import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
-import scala.collection.{Map => CMap, Set => CSet}
-import t.db.{ExprValue => TExprValue}
+
 import t.common.shared.FirstKeyedPair
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
+import t.db.{ExprValue => TExprValue}
+import t.platform.Species
+import otg.model.sample.OTGAttribute
+import t.viewer.shared.AssociationValue
 
 object Conversions {
-	implicit def asSpecies(sc: t.model.SampleClass): otg.Species.Species =
-	  otg.Species.withName(sc.get("organism"))
+	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
+	  Species.withName(sc.get(OTGAttribute.Organism))
 
 	def asJavaSample(s: t.db.Sample): Sample =
     new Sample(s.sampleId, s.sampleClass)
 
 	def asScalaSample(s: Sample) =
-	  new t.db.Sample(s.id, s.sampleClass, None)
+	  new t.db.Sample(s.id, s.sampleClass)
 
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
@@ -47,12 +54,16 @@ object Conversions {
   def asJavaPair[T,U](v: (T, U)) = new t.common.shared.FirstKeyedPair(v._1, v._2)
 
    //Convert from scala coll types to serialization-safe java coll types.
-  def convertPairs(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[FirstKeyedPair[String, String]]] = {
-    val r = new JHMap[String, JHSet[FirstKeyedPair[String, String]]]
-    val mm: CMap[String, CSet[FirstKeyedPair[String, String]]] = m.map(k => (k._1 -> k._2.map(asJavaPair(_))))
+	def convertAssociations(m: CMap[String, CSet[(String, String, Option[String])]]):
+	  JHMap[String, JHSet[AssociationValue]] = {
+	  val r = new JHMap[String, JHSet[AssociationValue]]
+	    val mm: CMap[String, CSet[AssociationValue]] =
+	      m.map(k =>
+	        (k._1 -> k._2.map(x => new AssociationValue(x._1, x._2, x._3.getOrElse(null))))
+	          )
     addJMultiMap(r, mm)
     r
-  }
+	}
 
    def convert(m: CMap[String, CSet[String]]): JHMap[String, JHSet[String]] = {
     val r = new JHMap[String, JHSet[String]]
@@ -69,4 +80,8 @@ object Conversions {
       }
     }
   }
+
+  def asJDouble(x: Option[Double]): java.lang.Double =
+    x.map(new java.lang.Double(_)).getOrElse(null)
+
 }

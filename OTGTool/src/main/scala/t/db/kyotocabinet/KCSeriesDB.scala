@@ -21,24 +21,20 @@
 package t.db.kyotocabinet
 
 import java.nio.ByteBuffer
-import scala.annotation.tailrec
+
 import kyotocabinet.DB
-import t.db.ProbeMap
-import t.db.SeriesDB
-import otg.Context
-import t.db.BasicExprValue
-import t.db.MatrixContext
-import t.db.Series
-import t.db.SeriesBuilder
-import t.db.SeriesPoint
+import t.db._
 import t.global.KCDBRegistry
-import t.platform.Probe
 
 object KCSeriesDB {
   val c20g = 20l * 1204 * 1204 * 1024
   val c1g = 1l * 1204 * 1204 * 1024
   val c4g = 1l * 1204 * 1204 * 1024
-  //TODO possibly re-tune this
+  
+  /*
+   * The seriesDB options may need to be re-tuned at some point,
+   * although they work fine currently
+   */
   val options = s"#bnum=10000000#apow=1#pccap=$c1g"
 
   /**

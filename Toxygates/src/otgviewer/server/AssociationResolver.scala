@@ -1,21 +1,16 @@
 package otgviewer.server
 
-import otg.Species._
+import t.platform.Species._
+import otg.sparql.OTGSamples
 import otg.sparql.Probes
 import t.common.shared.AType
 import t.model.SampleClass
 import t.platform.Probe
 import t.sparql._
-import t.sparql.SampleFilter
-import t.sparql.secondary.B2RKegg
-import t.sparql.secondary.ChEMBL
-import t.sparql.secondary.Compound
-import t.sparql.secondary.CompoundTargets
-import t.sparql.secondary.DrugBank
-import t.sparql.secondary.Protein
-import t.sparql.secondary.Uniprot
-import t.viewer.server.Conversions._
-import otg.sparql.OTGSamples
+import t.sparql.secondary._
+import t.sparql.toBioMap
+import t.viewer.server.intermine.IntermineConnector
+import t.viewer.server.intermine.TargetmineColumns
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
@@ -26,6 +21,7 @@ class AssociationResolver(probeStore: Probes,
     uniprot: Uniprot,
     chembl: ChEMBL,
     drugBank: DrugBank,
+    targetmine: Option[IntermineConnector],
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String]) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
@@ -66,6 +62,19 @@ class AssociationResolver(probeStore: Probes,
       })
     }
 
+    def resolveMiRNA(probes: Iterable[Probe]): BBMap = {
+      val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
+  
+      val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)        
+      
+      val viaGeneAnnotation = toBioMap(isNotMirna, (_: Probe).genes) combine
+          mirnaResolver.forGenes(probes.flatMap(_.genes))
+          
+      immediateLookup ++ viaGeneAnnotation
+    }
+    
+    lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
+
     override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])(implicit sf: SampleFilter): BBMap = {
       at match {
         case _: AType.GOMF.type       => probeStore.mfGoTerms(probes)
@@ -79,6 +88,7 @@ class AssociationResolver(probeStore: Probes,
         case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
         case _: AType.EC.type         => probeStore.ecLookup(probes)
         case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
+        case _: AType.MiRNA.type      => resolveMiRNA(probes)
         case _                        => super.associationLookup(at, sc, probes)
       }
     }

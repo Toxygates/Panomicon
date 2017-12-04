@@ -20,19 +20,13 @@ package otgviewer.client.components;
 
 import static t.common.client.Utils.makeButtons;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import t.common.client.Command;
 import t.common.client.DataRecordSelector;
 import t.common.shared.Dataset;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
 public class DatasetSelector extends Composite {
   final static private String message = "Please select the datasets you want to work with.";

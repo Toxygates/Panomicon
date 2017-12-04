@@ -18,7 +18,13 @@
 
 package otgviewer.client.charts;
 
+import static otg.model.sample.OTGAttribute.Organism;
+
 import java.util.List;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -26,19 +32,11 @@ import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.ProbeServiceAsync;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A grid to display time (or dose) series charts for a number of probes and doses (or times).
@@ -111,9 +109,9 @@ abstract public class ChartGrid<D extends Data> extends Composite {
             probe = rowFilters.get(r);
           }
           if (org != null) {
-            sc.put("organism", org);
+            sc.put(Organism, org);
           }
-          String colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
+          Attribute colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
           sc.put(colKey, minsOrMeds[c]);
           tables[r * osize + o][c] = dataset.makeData(sc, probe);
         }
@@ -123,6 +121,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     if (!rowsAreMajors) {
       probeService.geneSyms(rowFilters.toArray(new String[0]),
           new PendingAsyncCallback<String[][]>(screen) {
+            @Override
             public void handleSuccess(String[][] results) {
               for (int i = 0; i < results.length; ++i) {
                 g.setWidget(i * 2 + 1, 0,
@@ -160,14 +159,15 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     return max;
   }
 
-  void adjustAndDisplay(int tableColumnCount, double minVal, double maxVal) {
-    final int width = totalWidth / minsOrMeds.length; // width of each individual chart
-    final int osize = organisms.size();
+  void adjustAndDisplay(ChartStyle style, int tableColumnCount, double minVal, double maxVal) {
+    int width = totalWidth / minsOrMeds.length; // width of each individual chart
+    int osize = organisms.size();
+    ChartStyle innerStyle = style.withWidth(width);
     for (int c = 0; c < minsOrMeds.length; ++c) {
       for (int r = 0; r < rowFilters.size(); ++r) {
         for (int o = 0; o < osize; ++o) {
           String label = organisms.get(o) + ":" + rowFilters.get(r);
-          displayAt(r * osize + o, c, width, minVal, maxVal, tableColumnCount, label);
+          displayAt(innerStyle, r * osize + o, c, minVal, maxVal, tableColumnCount, label);
         }
       }
     }
@@ -182,7 +182,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * @param width
    * @param columnCount
    */
-  private void displayAt(final int row, final int column, final int width, final double minVal,
+  private void displayAt(final ChartStyle style, final int row, final int column, final double minVal,
       final double maxVal, final int columnCount, String label) {
     final D dt = tables[row][column];
 
@@ -195,14 +195,16 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     }
     final HTML downloadLink = new HTML();
     VerticalPanel vp = new VerticalPanel();
-    vp.add(chartFor(dt, width, minVal, maxVal, column, columnCount, downloadLink, false));
+    final ChartStyle innerStyle = style.withDownloadLink(downloadLink);
+    
+    vp.add(chartFor(dt, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount));
     Anchor a = new Anchor("Download");
     a.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         // Larger chart
         VerticalPanel vp = new VerticalPanel();
-        Widget w = chartFor(dt, width, minVal, maxVal, column, columnCount, downloadLink, true);
+        Widget w = chartFor(dt, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount);
         vp.add(w);
         vp.add(downloadLink);
         Utils.displayInPopup("Large chart", vp, DialogPosition.Center);
@@ -214,6 +216,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     g.setWidget(row * 2 + 2, column, vp);
   }
 
-  abstract protected Widget chartFor(final D dt, int width, double minVal, double maxVal,
-      int column, int columnCount, HTML downloadLink, boolean bigMode);
+  abstract protected Widget chartFor(final D dt, ChartStyle style,
+                                     double minVal, double maxVal,
+                                     int column, int columnCount);
 }

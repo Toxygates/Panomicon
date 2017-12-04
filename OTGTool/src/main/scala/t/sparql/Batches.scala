@@ -42,8 +42,8 @@ object Batches extends RDFClass {
     for (s <- samples) {
       fout.write(s"<${Samples.defaultPrefix}/${s.identifier}>\n")
       fout.write(s"  a <$tRoot/sample>; rdfs:label" + "\"" + s.identifier + "\"; \n")
-      val params = md.parameters(s).map(
-        p => s"<$tRoot/${p._1.identifier}> " + "\"" + TRDF.escape(p._2) + "\"")
+      val params = md.attributes(s).map(
+        p => s"<$tRoot/${p._1.id}> " + "\"" + TRDF.escape(p._2) + "\"")
       fout.write(params.mkString(";\n  ") + ".")
       fout.write("\n\n")
     }
@@ -68,14 +68,14 @@ abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config
     s"<$batchPrefix/$name> $memberRelation <$groupPrefix/$group>"
 
   def addMember(name: String, instance: String): Unit =
-    ts.update(s"$tPrefixes\n INSERT DATA { ${memberRelation(name, instance)} . } ")
+    triplestore.update(s"$tPrefixes\n INSERT DATA { ${memberRelation(name, instance)} . } ")
 
   //TODO verify that this works
   def removeMember(name: String, instance: String): Unit =
-    ts.update(s"$tPrefixes\n DELETE DATA { ${memberRelation(name, instance)} . } ")
+    triplestore.update(s"$tPrefixes\n DELETE DATA { ${memberRelation(name, instance)} . } ")
 
   def listGroups(name: String): Seq[String] =
-    ts.simpleQuery(s"""$tPrefixes
+    triplestore.simpleQuery(s"""$tPrefixes
         |SELECT ?gl WHERE {
         |  <$batchPrefix/$name> $memberRelation ?gr .
         |  ?gr rdfs:label ?gl; a $groupClass .
@@ -109,7 +109,7 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   def listAccess(name: String): Seq[String] = listGroups(name)
 
   def numSamples: Map[String, Int] = {
-    val r = ts.mapQuery(s"""$tPrefixes
+    val r = triplestore.mapQuery(s"""$tPrefixes
       |SELECT (count(distinct ?s) as ?n) ?l WHERE {
       |  GRAPH ?x {
       |    ?s a t:sample .
@@ -124,7 +124,7 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   }
 
   def datasets: Map[String, String] = {
-    Map() ++ ts.mapQuery(s"""$tPrefixes
+    Map() ++ triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?l ?dataset WHERE {
         |  ?item a $itemClass; rdfs:label ?l ;
         |  ${Datasets.memberRelation} ?ds. ?ds a ${Datasets.itemClass}; rdfs:label ?dataset .
@@ -135,13 +135,13 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
 
   def samples(batch: String): Iterable[String] = {
     val prefix = Samples.defaultPrefix
-    ts.simpleQuery(s"$tPrefixes SELECT ?l WHERE " +
+    triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
       s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
   }
 
   override def delete(name: String): Unit = {
     super.delete(name)
-    ts.update(s"$tPrefixes\n " +
+    triplestore.update(s"$tPrefixes\n " +
       s"DROP GRAPH <$defaultPrefix/$name>")
   }
 

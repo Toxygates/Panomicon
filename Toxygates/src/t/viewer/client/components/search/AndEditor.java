@@ -1,14 +1,12 @@
 package t.viewer.client.components.search;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.search.AndMatch;
 import t.common.shared.sample.search.MatchCondition;
+import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 
 import com.google.gwt.user.client.ui.Label;
@@ -23,7 +21,7 @@ public class AndEditor extends MatchEditor {
   
   VerticalPanel panel = Utils.mkVerticalPanel(true);
   
-  public AndEditor(@Nullable MatchEditor parent, Collection<BioParamValue> parameters) {
+  public AndEditor(@Nullable MatchEditor parent, Collection<Attribute> parameters) {
     super(parent, parameters);
     initWidget(panel);
     OrEditor o = newOr();

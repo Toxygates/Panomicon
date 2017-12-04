@@ -18,32 +18,22 @@
 
 package otgviewer.client.components.compoundsel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.NoSelectionModel;
+
+import otgviewer.client.components.*;
 import t.common.client.components.SetEditor;
 import t.common.shared.ItemList;
-import t.model.SampleClass;
 import t.common.shared.StringList;
+import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.NoSelectionModel;
 
 /**
  * This widget is for selecting a compound or a set of compounds using various data sources.
@@ -68,11 +58,11 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();
     dp = new DockLayoutPanel(Unit.PX);
-    this.majorParameter = screen.schema().majorParameter();
+    this.majorParameter = screen.schema().majorParameter().id();
 
     initWidget(dp);
     Label lblCompounds = new Label(heading);
-    lblCompounds.setStylePrimaryName("heading");
+    lblCompounds.addStyleName("heading");
     dp.addNorth(lblCompounds, 40);
     north = lblCompounds;
 

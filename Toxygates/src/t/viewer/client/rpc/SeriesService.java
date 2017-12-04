@@ -20,9 +20,7 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.MatchResult;
-import otgviewer.shared.RankRule;
-import otgviewer.shared.Series;
+import otgviewer.shared.*;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.viewer.shared.NoSuchProbeException;

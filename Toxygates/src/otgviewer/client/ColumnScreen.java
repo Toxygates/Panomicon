@@ -22,47 +22,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.components.compoundsel.CompoundSelector;
-import otgviewer.client.components.groupdef.GroupInspector;
-import t.common.shared.DataSchema;
-import t.model.SampleClass;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.SampleColumn;
-import t.viewer.client.Utils;
-import t.viewer.client.components.search.SearchDialog;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.FilterTools;
+import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import otgviewer.client.components.groupdef.GroupInspector;
+import t.common.shared.DataSchema;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleColumn;
+import t.model.sample.AttributeSet;
+import t.viewer.client.StorageParser;
+import t.viewer.client.Utils;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
  */
-public class ColumnScreen extends Screen {
+public class ColumnScreen extends DataFilterScreen {
   public static String key = "columns";
 
   private GroupInspector gi;
   private CompoundSelector cs;
   private FilterTools filterTools;
-  private SampleServiceAsync sampleService;
 
   public ColumnScreen(ScreenManager man) {
-    super("Sample groups", key, false, man, resources.groupDefinitionHTML(), resources
-        .groupDefinitionHelp());
-    
-    this.sampleService = man.sampleService();
+    super("Sample groups", key, false, man, man.resources().groupDefinitionHTML(), 
+        man.resources().groupDefinitionHelp());
 
-    String majorParam = man.schema().majorParameter();
-    cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {
+    cs = new CompoundSelector(this, man.schema().majorParameter().title(), true, true) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
@@ -70,7 +60,7 @@ public class ColumnScreen extends Screen {
       }
     };
     this.addListener(cs);
-    cs.setStylePrimaryName("compoundSelector");
+    cs.addStyleName("compoundSelector");
 
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
@@ -82,18 +72,6 @@ public class ColumnScreen extends Screen {
     super.addToolbars();   
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools);
    
-    boolean isDev = manager().appInfo().instanceName().equals("dev");
-    if (isDev) {
-      Button searchButton = new Button("Search...");
-      searchButton.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent arg0) {
-          search();
-        }
-      });
-      hp.add(searchButton);
-    }
-   
     addToolbar(hp, 45);
     addLeftbar(cs, 350);
   }
@@ -103,6 +81,7 @@ public class ColumnScreen extends Screen {
     return false;
   }
 
+  @Override
   public Widget content() {
     gi = factory().groupInspector(cs, this);
     this.addListener(gi);
@@ -124,6 +103,7 @@ public class ColumnScreen extends Screen {
     });
 
     Button b2 = new Button("Next: View data", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         if (gi.chosenColumns().size() == 0) {
           Window.alert("Please define and activate at least one group.");
@@ -138,42 +118,25 @@ public class ColumnScreen extends Screen {
   }
 
   @Override
-  public void loadState(StorageParser p, DataSchema schema) {
-    super.loadState(p, schema);
+  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+    super.loadState(p, schema, attributes);
     if (visible) {
       try {
         List<Group> ics =
             loadColumns(p, schema(), "inactiveColumns", new ArrayList<SampleColumn>(gi
-                .existingGroupsTable().inverseSelection()));
+                .existingGroupsTable().inverseSelection()), attributes());
         if (ics != null && ics.size() > 0) {
           logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0]
               + " ... ");
           gi.inactiveColumnsChanged(ics);
         } else {
-          logger.info("No i. columns available");
+          logger.info("No inactive columns available");
         }
 
       } catch (Exception e) {
-        logger.log(Level.WARNING, "Unable to load i. columns", e);
+        logger.log(Level.WARNING, "Unable to load inactive columns", e);
         Window.alert("Unable to load inactive columns.");
       }
-    }
-  }
-  
-  protected void search() {
-    SearchDialog sd = new SearchDialog(appInfo(),
-        sampleService, chosenSampleClass);
-    Utils.displayInPopup("Sample search conditions", 
-        sd, DialogPosition.Center);
-  }
-
-  @Override
-  public void changeSampleClass(SampleClass sc) {
-    // On this screen, ignore the blank sample class set by
-    // DataListenerWidget
-    if (!sc.getMap().isEmpty()) {
-      super.changeSampleClass(sc);
-      storeSampleClass(getParser());
     }
   }
 

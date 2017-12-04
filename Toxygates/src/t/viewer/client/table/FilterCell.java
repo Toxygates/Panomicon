@@ -20,8 +20,8 @@
 
 package t.viewer.client.table;
 
-import t.common.client.Resources;
 import t.common.client.ImageClickCell;
+import t.common.client.Resources;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.safehtml.shared.SafeHtml;

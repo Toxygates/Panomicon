@@ -4,33 +4,33 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
+
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A service that provides information about samples, datasets, and 
  * related objects.
  */
+
+@RemoteServiceRelativePath("sample")
 public interface SampleService extends RemoteService {
   
-  void chooseDatasets(Dataset[] enabled) throws TimeoutException;
-  
   /**
-   * Obtain all sample classes in the triple store
+   * Choose the visible datasets.
    * 
-   * @return
+   * @param enabled 
+   * @return sample classes in the new dataset view.
+   * @throws TimeoutException
    */
-  @Deprecated
-  SampleClass[] sampleClasses() throws TimeoutException;
+  SampleClass[] chooseDatasets(Dataset[] enabled) throws TimeoutException;
   
   String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
       throws TimeoutException;
@@ -105,6 +105,15 @@ public interface SampleService extends RemoteService {
   /**
    * Obtain annotations for a set of samples
    * 
+   * @param samples
+   * @param attributes the attributes to fetch
+   * @return
+   */
+  Annotation[] annotations(Sample[] samples, Attribute[] attributes) throws TimeoutException;
+
+  /**
+   * Obtain annotations for a set of samples
+   * 
    * @param column
    * @param importantOnly If true, a smaller set of core annotations will be obtained. If false, all
    *        annotations will be obtained.
@@ -121,9 +130,12 @@ public interface SampleService extends RemoteService {
    */
   String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
   
-  Sample[] sampleSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
+  RequestResult<Pair<Sample, Pair<Unit, Unit>>> sampleSearch(SampleClass sampleClass,
+      MatchCondition condition, int maxResults) throws TimeoutException;
 
-  Unit[] unitSearch(SampleClass sampleClass, MatchCondition condition)
+  RequestResult<Pair<Unit, Unit>> unitSearch(SampleClass sampleClass, MatchCondition condition,
+      int maxResults)
       throws TimeoutException;
 
+  String prepareCSVDownload(SampleLike[] samples, Attribute[] attributes) throws TimeoutException;
 }

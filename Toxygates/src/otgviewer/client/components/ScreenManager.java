@@ -21,12 +21,10 @@ package otgviewer.client.components;
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import otgviewer.client.rpc.SparqlServiceAsync;
-import t.viewer.client.rpc.UserDataServiceAsync;
+import t.viewer.client.StorageParser;
+import t.viewer.client.rpc.*;
+import otgviewer.client.rpc.SampleServiceAsync;
+import otgviewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -52,7 +50,7 @@ public interface ScreenManager extends ProvidesResize {
    * Invalidate all screens' "configured" state and subsequently attempt their reconfiguration.
    * Precondition: all screens must have been displayed at least once using Screen.show()
    */
-  void deconfigureAll(Screen from);
+  void reconfigureAll(Screen from);
 
   /**
    * Test whether the given screen is configured.
@@ -77,8 +75,6 @@ public interface ScreenManager extends ProvidesResize {
   
   void reloadAppInfo(final AsyncCallback<AppInfo> handler);
 
-  SparqlServiceAsync sparqlService();
-  
   SampleServiceAsync sampleService();
   
   ProbeServiceAsync probeService();

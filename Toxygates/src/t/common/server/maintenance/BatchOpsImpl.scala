@@ -20,25 +20,27 @@
 
 package t.common.server.maintenance
 
-import t.viewer.server.rpc.TServiceServlet
-import t.common.shared.maintenance.MaintenanceException
+import scala.collection.JavaConversions._
+
+import javax.annotation.Nullable
 import t.BatchManager
 import t.TaskRunner
-import t.common.shared.maintenance.Batch
-import t.common.shared.maintenance.MaintenanceConstants._
-import t.util.TempFiles
 import t.Tasklet
-import t.sparql.SampleFilter
-import t.sparql.Datasets
-import t.sparql.Batches
-import scala.collection.JavaConversions._
-import t.common.shared.ManagedItem
-import t.sparql.TRDF
 import t.common.shared.Dataset
-import t.db.Metadata
-import javax.annotation.Nullable
-import t.db.SampleParameter
+import t.common.shared.ManagedItem
+import t.common.shared.maintenance.Batch
 import t.common.shared.maintenance.BatchUploadException
+import t.common.shared.maintenance.MaintenanceConstants._
+import t.common.shared.maintenance.MaintenanceException
+import t.db.Metadata
+import t.model.sample.Attribute
+import t.sparql.Batches
+import t.sparql.Datasets
+import t.sparql.SampleFilter
+import t.sparql.TRDF
+import t.util.TempFiles
+
+import t.viewer.server.rpc.TServiceServlet
 
 /**
  * Routines for servlets that support the management of batches.
@@ -86,11 +88,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       var md: Metadata = null
       try {
         md = factory.tsvMetadata(metaFile.getAbsolutePath(),
-          context.config.sampleParameters)
+          context.config.attributes)
       } catch {
         case e: Exception =>
           e.printStackTrace()
-          throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file.")
+          throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file. " + e.getMessage)
       }
 
       checkMetadata(md)
@@ -169,18 +171,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     bs.setComment(b.getTitle, TRDF.escape(b.getComment))
   }
 
-  protected def overviewParameters: Seq[SampleParameter] =
-    context.config.sampleParameters.required.toSeq
+  protected def overviewParameters: Seq[Attribute] =
+    context.config.attributes.getRequired.toSeq
 
   def batchParameterSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.samples
     val params = overviewParameters
-    val paramIds = params.map(_.identifier)
     val batchURI = Batches.packURI(batch.getTitle)
     val sf = SampleFilter(None, Some(batchURI))
-    val data = samples.sampleAttributeQuery(paramIds)(sf)()
-    val titles = params.map(_.humanReadable).toArray
-    val adata = data.map(row => paramIds.map(c => row(c)).toArray).toArray
+    val data = samples.sampleAttributeValueQuery(params)(sf)()
+    val titles = params.map(_.title).toArray
+    val adata = data.map(row => params.map(c => row(c.id)).toArray).toArray
     Array(titles) ++ adata
   }
 

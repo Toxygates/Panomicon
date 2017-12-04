@@ -1,66 +1,54 @@
 package t.common.server.sample.search
 
-import t.viewer.server
-import t.viewer.server.Conversions._
-import t.viewer.server.Annotations
-import t.db.SampleParameter
-import t.platform.ControlGroup
+import otg.model.sample.OTGAttribute._
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition
-import t.db.Metadata
+import t.db.SimpleVarianceSet
+import t.db.VarianceSet
+import t.model.SampleClass
+import t.model.sample.AttributeSet
+import t.model.sample.CoreParameter
+import t.sparql.SampleFilter
+import t.sparql.Samples
+import t.viewer.server.UnitsHelper
+import t.common.shared.sample.Unit
 
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 
-  def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, ControlGroup],
-    samples: Iterable[Sample],
-    searchParams: Iterable[SampleParameter]) =
-      new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
+  def apply(samples: Iterable[Sample], condition: MatchCondition,
+      unitsHelper: UnitsHelper, attributes: AttributeSet) = {
 
-  def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
-    (sample: Sample) => sample
+    val unitsAndVarianceSets = Map() ++
+      unitsHelper.formControlUnitsAndVarianceSets(samples).flatMap {
+        case (treatedUnit, (controlUnit, varianceSet)) =>
+          treatedUnit.getSamples.map(_ -> ((treatedUnit, controlUnit), varianceSet))
+    }
 
-  def formControlGroups(metadata: Metadata, annotations:Annotations) = (samples: Iterable[Sample]) =>
-    annotations.controlGroups(samples, metadata)
+    val treatedSamples = unitsAndVarianceSets.map(_._1)
+    val unitsAndVarianceSetsById = Map() ++ unitsAndVarianceSets.map {
+      case(sample, stuff) =>
+        sample.get(CoreParameter.SampleId) -> stuff
+    }
 
+    val units = unitsAndVarianceSetsById.mapValues(_._1)
+    val varianceSets = unitsAndVarianceSetsById.mapValues(_._2)
+
+    new IndividualSearch(condition, varianceSets, units, treatedSamples)
+  }
 }
 
-class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, ControlGroup], samples: Iterable[Sample], searchParams: Iterable[SampleParameter])
-    extends AbstractSampleSearch[Sample](schema, metadata, condition,
-        controlGroups, samples, searchParams)  {
+class IndividualSearch(condition: MatchCondition, varianceSets: Map[String, VarianceSet],
+    units: Map[String, (Unit, Unit)], samples: Iterable[Sample])
+    extends AbstractSampleSearch[Sample](condition, varianceSets, samples)  {
 
-  def sampleParamValue(sample: Sample, param: SampleParameter): Option[Double] = {
-    try {
-      metadata.parameter(asScalaSample(sample), param.identifier) match {
-        case Some("NA") => None
-        case Some(s)    => Some(s.toDouble)
-        case None       => None
-      }
-    } catch {
-      case nf: NumberFormatException => None
-    }
+  lazy val pairedResults = results.map(sample => (sample,
+      units(sample.get(CoreParameter.SampleId))))
+
+  protected def zTestSampleSize(s: Sample): Int = 1
+
+  protected def sortObject(sample: Sample): (String, Int, Int) = {
+    (sample.get(Compound), doseLevelMap.getOrElse((sample.get(DoseLevel)), Int.MaxValue),
+        exposureTimeMap.getOrElse((sample.get(ExposureTime)), Int.MaxValue))
   }
-
-  def time(sample: Sample): String =
-    sample.get(schema.timeParameter())
-
-  /**
-   * Insert additional parameter information in the sample (the parameters
-   * that were used in the match condition).
-   * The mutable sample class is modified in place.
-   */
-  def postMatchAdjust(sample: Sample): Sample = {
-      val ss = asScalaSample(sample)
-      for (
-        p <- searchParams;
-        v <- metadata.parameter(ss, p.identifier)
-      ) {
-        sample.sampleClass().put(p.identifier, v)
-      }
-      sample
-    }
-
-  def zTestSampleSize(s: Sample): Int = 1
 }

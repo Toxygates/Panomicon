@@ -18,34 +18,20 @@
 
 package otgviewer.client.charts;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.GroupUtils;
-import t.common.shared.SampleMultiFilter;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
+import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A chart grid where the user can interactively choose what kind of charts to display (for example,
@@ -83,16 +69,13 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     this.factory = factory;
     schema = screen.schema();
 
-    Set<String> os = new HashSet<String>();
+    // TODO use schema somehow to handle organism propagation   
+    organisms = groups.stream().
+        flatMap(g -> g.collect(OTGAttribute.Organism)).
+        distinct().collect(Collectors.toList());
 
-    // TODO use schema somehow to handle organism propagation
-    for (Group g : groups) {
-      os.addAll(g.collect("organism"));
-    }
-    organisms = new ArrayList<String>(os);
-
-    String majorParam = screen.schema().majorParameter();
-    this.majorVals = new ArrayList<String>(GroupUtils.collect(groups, majorParam));
+    Attribute majorParam = screen.schema().majorParameter();
+    this.majorVals = GroupUtils.collect(groups, majorParam).collect(Collectors.toList());
     this.valueType = vt;
 
     vp = Utils.mkVerticalPanel();
@@ -102,7 +85,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     HorizontalPanel hp = Utils.mkHorizontalPanel();
     vp.add(hp);
 
-    hp.setStylePrimaryName("colored");
+    hp.addStyleName("colored");
     hp.setWidth("100%");
 
     HorizontalPanel ihp = Utils.mkHorizontalPanel();
@@ -112,8 +95,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     chartCombo = new ListBox();
     ihp.add(chartCombo);
 
-    String medTitle = schema.title(schema.mediumParameter());
-    String minTitle = schema.title(schema.minorParameter());
+    String medTitle = schema.mediumParameter().title();
+    String minTitle = schema.minorParameter().title();
 
     chartCombo.addItem("Expression vs " + minTitle + ", fixed " + medTitle + ":");
     chartCombo.addItem("Expression vs " + medTitle + ", fixed " + minTitle + ":");
@@ -123,6 +106,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     ihp.add(chartSubtypeCombo);
 
     chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
+      @Override
       public void onChange(ChangeEvent event) {
         lastSubtype = chartSubtypes.get(chartSubtypeCombo.getSelectedIndex());
         computedWidth = 0;
@@ -131,6 +115,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
     });
     chartCombo.addChangeHandler(new ChangeHandler() {
+      @Override
       public void onChange(ChangeEvent event) {
         lastType = chartCombo.getSelectedIndex();
         lastSubtype = null;
@@ -187,7 +172,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private void gridFor(final boolean vsMinor, final String[] columns, final String[] useMajors,
       final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
 
-    String columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
+    Attribute columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
     String[] preColumns =
         (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
     final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);
@@ -211,7 +196,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       public void accept(List<ChartSample> samples) {
         allSamples.addAll(samples);
         DS ct =
-            factory.dataset(samples, samples, vsMinor ? source.minorVals() : source.mediumVals(),
+            factory.dataset(samples, vsMinor ? source.minorVals() : source.mediumVals(),
                 vsMinor);
 
         ChartGrid<D> cg =
@@ -235,7 +220,9 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
             }
           }
           for (ChartGrid<D> gr : intoList) {
-            gr.adjustAndDisplay(maxCols, minVal, maxVal);
+            gr.adjustAndDisplay(
+              new ChartStyle(0, false, null, false),
+              maxCols, minVal, maxVal);
           }
         }
       }
@@ -274,11 +261,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
       final boolean vsTime = chartCombo.getSelectedIndex() == 0;
       if (groups != null) {
-        Set<String> majors = new HashSet<String>();
-        for (Group g : groups) {
-          majors.addAll(SampleClassUtils.getMajors(schema, g));
-        }
-        String[] majorsA = majors.toArray(new String[0]);
+        String[] majorsA = groups.stream().flatMap(g -> SampleClassUtils.getMajors(schema, g)).
+            distinct().toArray(String[]::new);        
         SimplePanel sp = makeGridPanel(majorsA);
         ivp.add(sp);
         expectedGrids += 1;
@@ -301,8 +285,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
    * @return
    */
   private String findPreferredItem(boolean isMed) {
-    final String medParam = schema.mediumParameter();
-    final String minParam = schema.minorParameter();
+    final Attribute medParam = schema.mediumParameter();
+    final Attribute minParam = schema.minorParameter();
     if (lastSubtype != null) {
       if (lastSubtype.equals(SELECTION_ALL)) {
         return lastSubtype;
@@ -325,7 +309,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       logger.info("Unit: " + u);
       if (isMed) {
         final String[] useMeds =
-            schema.filterValuesForDisplay(valueType, schema.mediumParameter(), source.mediumVals());
+            schema.filterValuesForDisplay(valueType, schema.mediumParameter(),
+                source.mediumVals());
 
         String med = u.get(medParam);
         if (Arrays.binarySearch(useMeds, med) != -1) {

@@ -7,19 +7,6 @@ public class BatchUploadException extends MaintenanceException {
   public boolean metadataWasBad;
   public boolean normalizedDataWasBad;
 
-  /*
-   * public BatchUploadException() { idWasBad = false; metadataWasBad = false; normalizedDataWasBad
-   * = false; }
-   * 
-   * public BatchUploadException(String message, Throwable cause) { super(message, cause); idWasBad
-   * = false; metadataWasBad = false; normalizedDataWasBad = false; }
-   * 
-   * public BatchUploadException(String message) { this(message, null); }
-   * 
-   * public BatchUploadException(Throwable cause) { super(cause); idWasBad = false; metadataWasBad =
-   * false; normalizedDataWasBad = false; }
-   */
-
   /**
    * GWT constructor
    */

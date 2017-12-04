@@ -21,29 +21,20 @@
 package otg.sparql
 
 import scala.collection.JavaConversions._
-import otg.Species._
-import scala.annotation.tailrec
-import otg.Context
+
+import t.platform.Species._
 import t.TriplestoreConfig
-import t.sparql.QueryUtils
-import t.sparql.Triplestore
-import t.db.ProbeMap
-import t.db.DefaultBio
-import t.db.Store
-import t.sparql._
-import t.sparql.secondary.Protein
-import t.sparql.secondary.Gene
-import t.sparql.secondary.GOTerm
-import t.platform.OrthologMapping
+import t.db._
 import t.platform.Probe
+import t.sparql._
+import t.sparql.secondary._
 import t.sparql.secondary.B2RKegg
 
 // TODO: quite a bit of code from here should be lifted up
 class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
   import Probes._
 
-  val prefixes = s"""$commonPrefixes
-    |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>""".stripMargin
+  val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
   def proteins(pr: Probe): Iterable[Protein] = withAttributes(List(pr)).flatMap(_.proteins)
   def genes(pr: Probe): Iterable[Gene] = withAttributes(List(pr)).flatMap(_.genes)
@@ -55,7 +46,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |    ?p a t:probe ; t:entrez ?x .
       |  }
       |}""".stripMargin
-     makeMultiMap(ts.mapQuery(query).map(x => (Probe.unpack(x("p")), Gene(x("x")))))
+     makeMultiMap(triplestore.mapQuery(query).map(x => (Probe.unpack(x("p")), Gene(x("x")))))
   }
 
   //TODO share query-forming code with superclass instead of totally overriding it
@@ -74,7 +65,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  }
       |  ?g rdfs:label ?plat.
       |} """.stripMargin
-	  val r = ts.mapQuery(q, 20000)
+	  val r = triplestore.mapQuery(q, 20000)
 
 	  r.groupBy(_("pr")).map(_._2).map(g => {
 	    val p = Probe(g(0)("l"))
@@ -93,17 +84,17 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
 	      })
   }
 
-  //TODO the platform constraint will only work on Owlim, not Fuseki (with RDF1.1 strings)
   override def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
     val query = s"""$prefixes
       |SELECT DISTINCT ?s WHERE {
       |  GRAPH ?g {
       |    ?p a $itemClass; t:symbol ?s.
-      |    ?s ${prefixStringMatch(title + "*")}
       |  }
-      |  ${platform.map(x => "?g rdfs:label \"" + x + "\"").getOrElse("")}
-      |} LIMIT 10""".stripMargin
-    ts.mapQuery(query).map(x => Probe(x("s")))
+      |  ${platform.map(x => "?g rdfs:label \"" + x + "\".").getOrElse("")}
+      |  FILTER REGEX(STR(?s), "^$title.*", "i")
+      |}
+      |LIMIT 10""".stripMargin
+    triplestore.mapQuery(query).map(x => Probe(x("s")))
   }
 
   /**
@@ -122,7 +113,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  }
       |  ?g rdfs:label ?plat }""".stripMargin
 
-    val r = ts.mapQuery(query).map(
+    val r = triplestore.mapQuery(query).map(
       x => (symbols.find(s =>
         s.toLowerCase == x("gene").toLowerCase)
         .getOrElse(null) -> Probe.unpack(x("p"))))
@@ -162,9 +153,15 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
     //convert e.g. EC:3.6.3.1 into 3.6.3.1
     simpleRelationQuery(probes, "t:" + t.platform.affy.EC.key).
       mapValues(
-        _.map(x => x.copy(identifier = x.identifier.replace("EC:", "")))
+        _.map(x => x.copy(
+            identifier = x.identifier.replace("EC:", ""),
+            name = x.identifier.replace("EC:", "")
+            ))
         )
   }
+
+  def mirnaAccessionLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
+    simpleRelationQuery(probes, "t:accession")
 
   def unigeneLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:" + t.platform.affy.Unigene.key)

@@ -18,11 +18,15 @@
 
 package otgviewer.shared;
 
+import static otg.model.sample.OTGAttribute.*;
+
 import java.io.Serializable;
 
+import otg.model.sample.OTGAttribute;
 import t.common.shared.HasClass;
 import t.common.shared.sample.ExpressionValue;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 /**
  * An expression value series that fixes all parameters except one, which varies on the x-axis.
@@ -44,7 +48,7 @@ public class Series implements HasClass, Serializable {
    * @param sc Sample class parameters
    * @param values Data points
    */
-  public Series(String title, String probe, String independentParam, SampleClass sc,
+  public Series(String title, String probe, OTGAttribute independentParam, SampleClass sc,
       ExpressionValue[] values) {
     _values = values;
     _title = title;
@@ -55,6 +59,7 @@ public class Series implements HasClass, Serializable {
 
   private SampleClass _sc;
 
+  @Override
   public SampleClass sampleClass() {
     return _sc;
   }
@@ -65,24 +70,17 @@ public class Series implements HasClass, Serializable {
     return _probe;
   }
 
-  private String _independentParam;
+  private OTGAttribute _independentParam;
 
-  public String independentParam() {
+  public OTGAttribute independentParam() {
     return _independentParam;
   }
 
   // TODO users should access the sample class instead
   @Deprecated
   public String timeDose() {
-    // TODO don't hardcode this
-    String fixedParam = _independentParam.equals("exposure_time") ? "dose_level" : "exposure_time";
+    Attribute fixedParam = _independentParam == ExposureTime ? DoseLevel : ExposureTime;
     return _sc.get(fixedParam);
-  }
-
-  // TODO users should access the sample class instead
-  @Deprecated
-  public String compound() {
-    return _sc.get("compound_name");
   }
 
   private ExpressionValue[] _values;
@@ -97,13 +95,7 @@ public class Series implements HasClass, Serializable {
     return _title;
   }
 
-  // TODO users should access the sample class instead
-  @Deprecated
-  public String organism() {
-    return _sc.get("organism");
-  }
-
-  public String get(String key) {
+  public String get(Attribute key) {
     return _sc.get(key);
   }
 }

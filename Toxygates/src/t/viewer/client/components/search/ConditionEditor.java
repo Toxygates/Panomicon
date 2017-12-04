@@ -2,8 +2,8 @@ package t.viewer.client.components.search;
 
 import java.util.Collection;
 
-import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.search.MatchCondition;
+import t.model.sample.Attribute;
 
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -17,7 +17,7 @@ public class ConditionEditor extends MatchEditor {
   private SimplePanel panel = new SimplePanel();
   private AndEditor root;
   
-  public ConditionEditor(Collection<BioParamValue> parameters) {
+  public ConditionEditor(Collection<Attribute> parameters) {
     super(null, parameters);
     clear();   
     initWidget(panel);

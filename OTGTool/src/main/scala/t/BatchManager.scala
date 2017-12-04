@@ -21,37 +21,14 @@
 package t
 
 import scala.Vector
+import scala.collection.JavaConversions._
 
-import otg.sparql.OTGSamples
-import t.db.ExprValue
-import t.db.Log2Data
-import t.db.LookupFailedException
-import t.db.MatrixContext
-import t.db.MatrixDBReader
-import t.db.MatrixDBWriter
-import t.db.MatrixInsert
-import t.db.Metadata
-import t.db.PExprValue
-import t.db.ProbeIndex
-import t.db.ProbeMap
-import t.db.Sample
-import t.db.SampleIndex
-import t.db.SampleMap
-import t.db.Series
-import t.db.SeriesBuilder
-import t.db.SimplePFoldValueInsert
+import t.db._
 import t.db.file.CSVRawExpressionData
 import t.db.file.PFoldValueBuilder
-import t.db.kyotocabinet.KCIndexDB
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.kyotocabinet.KCSeriesDB
+import t.db.kyotocabinet._
 import t.global.KCDBRegistry
-import t.sparql.Batches
-import t.sparql.Platforms
-import t.sparql.SampleFilter
-import t.sparql.TRDF
-import t.sparql.Triplestore
-import t.sparql.TriplestoreMetadata
+import t.sparql._
 import t.util.TempFiles
 
 /**
@@ -67,8 +44,6 @@ object BatchManager extends ManagerTool {
     if (args.size < 1) {
       showHelp()
     }
-
-    startTaskRunner()
 
     args(0) match {
       case "add" =>
@@ -89,7 +64,7 @@ object BatchManager extends ManagerTool {
           case Some(ml) =>
             KCDBRegistry.setMaintenance(true)
             for (mf <- ml) {
-              val md = factory.tsvMetadata(mf, config.sampleParameters)
+              val md = factory.tsvMetadata(mf, config.attributes)
               val dataFile = mf.replace(".meta.tsv", ".data.csv")
 
               val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
@@ -106,7 +81,7 @@ object BatchManager extends ManagerTool {
                 "Please specify a data file with -data")
             val callFile = stringOption(args, "-calls")
 
-            val md = factory.tsvMetadata(metaFile, config.sampleParameters)
+            val md = factory.tsvMetadata(metaFile, config.attributes)
             addTasklets(bm.add(title, comment,
               md, dataFile, callFile,
               append, config.seriesBuilder))
@@ -116,7 +91,6 @@ object BatchManager extends ManagerTool {
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
         val rdfOnly = booleanOption(args, "-rdfonly")
-        // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
         addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
@@ -145,7 +119,6 @@ object BatchManager extends ManagerTool {
         val len = Integer.parseInt(args(3))
         val bm = new BatchManager(context)
         val db = config.data.absoluteDBReader(context.matrix)
-        //TODO don't cast here
         val kdb = db.asInstanceOf[KCMatrixDB]
         try {
           kdb.dumpKeys(args(1), args(2), len)
@@ -170,29 +143,19 @@ object BatchManager extends ManagerTool {
           }
         }
       case "sampleCheck" =>
-        //TODO: do not access the db files directly
+        //TODO: do not access the db files directly (obtain readers instead)
         sampleCheck(config.data.exprDb,
           args.size > 1 && args(1) == "delete")
         sampleCheck(config.data.foldDb,
           args.size > 1 && args(1) == "delete")
       case _ => showHelp()
     }
-
-    try {
-      Thread.sleep(2000)
-      waitForTasklets()
-    } finally {
-      KCDBRegistry.closeWriters
-      stopTaskRunner()
-    }
   }
 
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
-    val db = KCMatrixDB.get(dbf, true)
-    //TODO don't cast here
-    val kdb = db.asInstanceOf[KCMatrixDB]
+    val kdb = KCMatrixDB.get(dbf, true)
 
     try {
       val ss = kdb.allSamples(true, Set())
@@ -204,16 +167,12 @@ object BatchManager extends ManagerTool {
         kdb.allSamples(true, unknowns)
       }
     } finally {
-      db.release
+      kdb.release
     }
   }
 
-  def verifyExists(bs: Batches, batch: String): Unit = {
-    if (!bs.list.contains(batch)) {
-      val msg = s"Batch $batch does not exist"
-      throw new Exception(msg)
-    }
-  }
+  def verifyExists(bs: Batches, batch: String): Unit =
+    bs.verifyExists(batch)
 
   def showHelp() {
     throw new Exception("Please specify a command (add/delete/list/list-access/enable/disable)")
@@ -249,8 +208,8 @@ class BatchManager(context: Context) {
     }
   }
 
-  val requiredParameters = config.sampleParameters.required.map(_.identifier)
-  val hlParameters = config.sampleParameters.highLevel.map(_.identifier)
+  val requiredParameters = config.attributes.getRequired.map(_.id)
+  val hlParameters = config.attributes.getHighLevel.map(_.id)
 
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
@@ -267,13 +226,15 @@ class BatchManager(context: Context) {
     r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, ts)
 
-    // Note that we rely on these maps not being read until they are needed
+    // Note that we rely on probe maps, sample maps etc in matrixContext
+    // not being read until they are needed
     // (after addSampleIDs has run!)
     // TODO: more robust updating of maps
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    //TODO logging directly to TaskRunner is controversial
+    //TODO logging directly to TaskRunner is controversial.
+    //Would be better to log from inside the tasklets.
     r :+= addExprData(metadata, dataFile, callFile,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
@@ -313,7 +274,7 @@ class BatchManager(context: Context) {
 
       val bsamples = batches.samples(title).toSet
 
-      val ps = new Platforms(config.triplestore)
+      val ps = new Platforms(config)
       val platforms = ps.list.toSet
       val existingSamples = samples.list.toSet
       for (s <- md.samples; p = md.platform(s)) {
@@ -384,8 +345,7 @@ class BatchManager(context: Context) {
     new Tasklet("Insert sample RDF data") {
       def run() {
         val tempFiles = new TempFiles()
-        val samples = new OTGSamples(config)
-        val summaries = sb.enums.map(e => AttribValueSummary(samples, e))
+        val summaries = sb.enums.map(e => AttribValueSummary(context.samples, e))
 
         try {
           //TODO check existence of samples
@@ -402,7 +362,10 @@ class BatchManager(context: Context) {
             val context = Batches.context(title)
             ts.addTTL(ttl, context)
             percentComplete += 1000.0 * 100.0 / total
-            //TODO cancellation check
+            /*
+             * This task is atomic and cannot be interrupted mid-run, since it
+             * usually quick
+             */
           }
 
           for (s <- summaries) {
@@ -461,6 +424,12 @@ class BatchManager(context: Context) {
   }
 
   def deleteFoldData(title: String)(implicit mc: MatrixContext) =
+    deleteExtFormatData(title, "Delete fold data")
+
+  def deleteExprData(title: String)(implicit mc: MatrixContext) =
+    deleteExtFormatData(title, "Delete normalized intensity data")
+
+  private def deleteExtFormatData(title: String, taskName: String)(implicit mc: MatrixContext) =
     new Tasklet("Delete fold data") {
       def run() {
         val bs = new Batches(config.triplestore)
@@ -478,28 +447,12 @@ class BatchManager(context: Context) {
       }
     }
 
-  //TODO unify with deleteFoldData above once DB formats are unified
-  def deleteExprData(title: String)(implicit mc: MatrixContext) =
-    new Tasklet("Delete normalized intensity data") {
-      def run() {
-        val bs = new Batches(config.triplestore)
-        val ss = bs.samples(title).map(Sample(_))
-         if (ss.isEmpty) {
-          log("Nothing to do, batch has no samples")
-          return
-        }
-        val db = config.data.extWriter(config.data.exprDb)
-        try {
-          deleteFromDB(db, ss)
-        } finally {
-          db.release()
-        }
-      }
-    }
-
   def addEnums(md: Metadata, sb: SeriesBuilder[_])(implicit mc: MatrixContext) =
     new Tasklet("Add enum values") {
-      //TODO these cannot be deleted currently
+      /*
+       * Note: enums currently cannot be deleted. We may eventually need a system
+       * to rebuild enum databases.
+       */
       def run() {
         val db = KCIndexDB(config.data.enumIndex, true)
         for (
@@ -555,7 +508,7 @@ class BatchManager(context: Context) {
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val tsmd = new TriplestoreMetadata(samples, config.sampleParameters)(sf)
+      val tsmd = new TriplestoreMetadata(samples, config.attributes)(sf)
 
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points

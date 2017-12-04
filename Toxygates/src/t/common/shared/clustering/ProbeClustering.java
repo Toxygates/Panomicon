@@ -19,14 +19,9 @@
 package t.common.shared.clustering;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 
 @SuppressWarnings("serial")
@@ -74,7 +69,8 @@ public class ProbeClustering implements Serializable {
     }
     path.add(cl.cluster);
 
-    return new ProbeClustering(cl, new StringList(PROBE_CLUSTERING_TYPE, SharedUtils.packList(path, "###"), list.items()));
+    return new ProbeClustering(cl, new StringList(PROBE_CLUSTERING_TYPE, list.name(), 
+      list.items()));
   }
 
   public static Collection<ProbeClustering> filterByAlgorithm(Collection<ProbeClustering> from,

@@ -19,20 +19,12 @@
  */
 
 package t
-import java.lang.System
+
 import scala.collection.JavaConversions._
-import t.db.MatrixInsert
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.RawExpressionData
-import t.db.SimplePFoldValueInsert
-import t.global.KCDBRegistry
-import t.db.Sample
-import t.db.MatrixDBReader
-import t.db.MatrixContext
-import t.db.PExprValue
-import t.db.FoldPExpr
-import t.db.ExprValue
-import t.db.MatrixDBWriter
+
+import t.db._
+import t.sparql.Batches
+import t.sparql.SampleClassFilter
 
 /**
  * Mid-level copy tool for copying matrix data between different formats.
@@ -45,19 +37,28 @@ object MatrixManager extends ManagerTool {
     def config = context.config
     def factory = context.factory
 
+    def samplesInBatch(batch: String) = {
+      val sf = t.sparql.SampleFilter(None, Some(Batches.packURI(batch)))
+      context.samples.samples(SampleClassFilter())(sf)
+    }
+    
     def matcopy[E >: Null <: ExprValue](from: MatrixDBReader[E],
-      getDB: () => MatrixDBWriter[PExprValue],
+      batch: Option[String],
+      getDB: () => MatrixDBWriter[PExprValue],      
       formVal: E => FoldPExpr,
       label: String)(implicit mat: MatrixContext) {
       val allProbes = mat.probeMap.keys.toSeq.sorted
-      val allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)).toSeq)
-      for (ss <- allSamples.grouped(50)) {
+      def allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)).toSeq)
+      
+      val useSamples = batch.map(samplesInBatch).getOrElse(allSamples)
+      
+      for (ss <- useSamples.grouped(50)) {
         val vs = from.valuesInSamples(ss, allProbes)
         val svs = Map() ++ (ss zip vs)
         val raw = new RawExpressionData {
           val samples = ss
           def data(s: Sample) = Map() ++
-            svs(s).filter(_.present).map(v => v.probe -> formVal(v))
+            svs(s).filter(!from.isEmptyValue(_)).map(v => v.probe -> formVal(v))
         }
         val t = new SimplePFoldValueInsert(getDB, raw).
           insert(s"$label")
@@ -74,16 +75,21 @@ object MatrixManager extends ManagerTool {
         val dataParams = (Map() ++ mapAsScalaMap(System.getenv())) + ("T_DATA_DIR" -> todir)
         val toDConfig = m.getDataConfig(dataParams)
         val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
+        //If the batch is specified, only that batch will be copied.
+        //Otherwise, all batches are copied.
+        val batch = stringOption(args, "-batch")
 
         implicit val mat = context.matrix
 
         //No log-2 wrap
         matcopy[PExprValue](config.data.foldsDBReaderNowrap(mat),
+            batch,
           () => toDConfig.extWriter(toDConfig.foldDb),
           v => (v.value, v.call, v.p),
           "Insert folds")
 
         matcopy[ExprValue](mat.absoluteDBReader,
+            batch,
           () => toDConfig.extWriter(toDConfig.exprDb),
           v => (v.value, v.call, 0.0),
           "Insert absolute values")

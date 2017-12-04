@@ -21,27 +21,25 @@
 package otgviewer.server
 
 import scala.collection.JavaConversions._
-import t.model.SampleClass
-import t.common.shared.AType
+
 import org.junit.runner.RunWith
-import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import otgviewer.server.rpc.SparqlServiceImpl
-import t.viewer.shared.TimeoutException
-import t.sparql.secondary.ChEMBL
-import t.sparql.secondary.DrugBank
-import t.sparql.secondary.Uniprot
-import t.sparql.secondary.B2RKegg
-import t.sparql.secondary.LocalUniprot
-import t.sparql.SampleFilter
+
 import otg.OTGBConfig
+import t.TTestSuite
+import t.common.shared.AType
+import t.model.SampleClass
+import t.sparql.SampleFilter
+import t.sparql.secondary._
+import otg.model.sample.OTGAttribute
+import t.model.sample.Attribute
 
 object AssociationResolverTest {
 
-  val testClass = Map("sin_rep_type" -> "Single",
-    "organism" -> "Rat",
-    "organ_id" -> "Liver",
-    "test_type" -> "in vivo")
+  val testClass: Map[Attribute, String] = Map(OTGAttribute.Repeat -> "Single",
+    OTGAttribute.Organism -> "Rat",
+    OTGAttribute.Organ -> "Liver",
+    OTGAttribute.TestType -> "in vivo")
 
   def testSampleClass = new SampleClass(testClass)
 }
@@ -70,6 +68,7 @@ class AssociationResolverTest extends TTestSuite {
   def ar(types: Array[AType]) = new AssociationResolver(probeStore,
       sampleStore,
       b2rKegg, uniprot, chembl, drugBank,
+      None,
       sc, types, probes
       )
 

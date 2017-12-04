@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,27 +20,29 @@
 
 package otgviewer.server.rpc
 
-import t.db.Metadata
 import t.common.shared.maintenance.MaintenanceException
+
+import t.db.Metadata
+import t.model.sample._
+import t.model.sample.CoreParameter._
+import otg.model.sample.OTGAttribute._
 
 class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
   with OTGServiceServlet {
 
   //See MaintenanceServiceServlet
   //TODO: factor out
-  override protected def overviewParameters: Seq[t.db.SampleParameter] = {
-    val r = Vector("organism", "test_type", "sin_rep_type", "organ_id",
-        "compound_name", "dose_level", "exposure_time",
-        "platform_id", "control_group")
-    r.map(context.config.sampleParameters.byId)
+  override protected def overviewParameters: Seq[Attribute] = {
+    Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel, ExposureTime,
+      Platform, ControlGroup)
   }
 
   override protected def checkMetadata(md: Metadata): Unit = {
     super.checkMetadata(md)
     //See OTGSeries.enums.
     //May create new: organ ID, compound name, exposure time
-    val mayNotCreateNew = Seq("sin_rep_type", "test_type", "organism",
-        "dose_level")
+    val mayNotCreateNew = Seq(Repeat, TestType, Organism,
+      DoseLevel).map(_.id)
 
      val enums = context.matrix.enumMaps
      for (p <- mayNotCreateNew) {
@@ -52,7 +54,7 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
        }
      }
 
-    val pfs = md.parameterValues("platform_id")
+    val pfs = md.parameterValues(Platform.id)
     pfs.find(!context.probes.platformsAndProbes.keySet.contains(_)) match {
       case Some(pf) =>
         throw new MaintenanceException(s"Metadata error: the platform_id $pf is unknown.")
@@ -61,7 +63,7 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
 
     try {
       //TODO consider how we handle new time points, test
-      val timeUnits = md.parameterValues("exposure_time").map(_.split(" ")(1))
+      val timeUnits = md.parameterValues(ExposureTime.id).map(_.split(" ")(1))
       val accepted = Seq("hr", "day")
       timeUnits.find(!accepted.contains(_)) match {
         case Some(v) =>

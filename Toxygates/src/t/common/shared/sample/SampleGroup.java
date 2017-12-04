@@ -20,11 +20,12 @@ package t.common.shared.sample;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.model.sample.Attribute;
 
 /**
  * A way of grouping microarray samples. Unique colors for each group can be generated.
@@ -35,14 +36,17 @@ import t.common.shared.SharedUtils;
 public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable,
     Comparable<SampleGroup<?>> {
 
-  /**
-   * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
-   */
-  public static final String[] groupColors = new String[] {"#8582B5", "#7AC653", "#C3534D",
-      "#90C1AB", "#504239", "#C1A54A", "#B354B3"};
+  public static String[] groupColors;
+
+  public static void setColors(String[] colors) {
+    if (groupColors != null) {
+      throw new RuntimeException("Colors have already been set");
+    } else {
+      groupColors = colors;
+    }
+  }
 
   private static int nextColor = 0;
-
 
   public SampleGroup() {}
 
@@ -74,18 +78,25 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return _samples;
   }
 
+  @Override
   public S[] getSamples() {
     return _samples;
+  }
+  
+  public boolean containsSample(String sampleId) {
+    return Arrays.stream(_samples).anyMatch(s -> s.id().equals(sampleId));
   }
 
   public String getName() {
     return name;
   }
 
+  @Override
   public String getShortTitle(DataSchema schema) {
     return name;
   }
 
+  @Override
   public String toString() {
     return name;
   }
@@ -106,6 +117,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return colorIndexOf(color);
   }
 
+  @Override
   public String pack() {
     StringBuilder s = new StringBuilder();
     s.append("Group:::");
@@ -143,17 +155,13 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return other instanceof SampleGroup;
   }
 
-  public Set<String> collect(String parameter) {
+  public Stream<String> collect(Attribute parameter) {
     return SampleClassUtils.collectInner(Arrays.asList(_samples), parameter);
   }
 
-  public static <S extends Sample, G extends SampleGroup<S>> Set<String> collectAll(
-      Iterable<G> from, String parameter) {
-    Set<String> r = new HashSet<String>();
-    for (G g : from) {
-      r.addAll(g.collect(parameter));
-    }
-    return r;
+  public static <S extends Sample, G extends SampleGroup<S>> 
+  Stream<String> collectAll(Collection<G> from, Attribute parameter) {
+    return from.stream().flatMap(g -> g.collect(parameter)).distinct();    
   }
 
 }

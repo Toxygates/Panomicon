@@ -21,9 +21,7 @@
 package t.common.client.rpc;
 
 import t.common.shared.ManagedItem;
-import t.common.shared.maintenance.MaintenanceException;
-import t.common.shared.maintenance.OperationResults;
-import t.common.shared.maintenance.Progress;
+import t.common.shared.maintenance.*;
 
 /**
  * Common maintenance operations for a RPC service.

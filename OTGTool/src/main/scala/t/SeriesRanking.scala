@@ -20,14 +20,11 @@
 
 package t
 
-import t.db.Series
 import t.util.SafeMath
-import t.db.SeriesDB
+import t.db._
 import friedrich.data.Statistics
-import t.db.ExprValue
-import t.db.MatrixContext
 
-class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit context: MatrixContext) {
+abstract class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit context: MatrixContext) {
   protected def getScores(mt: SeriesRanking.RankType): Iterable[(S, Double)] = {
     mt.matchOneProbe(this, key.probe)
   }
@@ -36,13 +33,13 @@ class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit co
    * This method is currently the only entry point used by the web application.
    * Returns (compound, dose, score)
    */
-  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)] = List()
-  //TODO implement the general case
+  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)] 
+
 }
 
-/**
- * TODO fix issues (not all rank rules deterministic currently),
- * lift into T
+/*
+ * Note: some of the rules might not be deterministic (in the case where only a
+ * partial ordering is imposed by the scoring function). 
  */
 object SeriesRanking {
   import Statistics._
@@ -122,7 +119,11 @@ object SeriesRanking {
           score -= 1
         }
       }
-      //score -= (4 - s.values.size) //penalise missing data heavily (TODO: reconsider!)
+      
+      /*
+       * We penalise missing data heavily. This may be worth reconsidering.
+       */
+      //score -= (4 - s.values.size) 
       score
     }
   }

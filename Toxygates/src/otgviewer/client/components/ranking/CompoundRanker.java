@@ -18,17 +18,15 @@
 
 package otgviewer.client.components.ranking;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-import otgviewer.client.GeneOracle;
-import otgviewer.client.Resources;
-import otgviewer.client.StringListsStoreHelper;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.*;
+import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
@@ -36,17 +34,8 @@ import t.common.shared.ItemList;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
@@ -61,7 +50,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
   final GeneOracle oracle;
   List<String> availableCompounds = chosenCompounds;
 
-  protected final SparqlServiceAsync sparqlService;
+  protected final ProbeServiceAsync probeService;
+  protected final SampleServiceAsync sampleService;
 
   protected VerticalPanel csVerticalPanel = new VerticalPanel();
   protected List<String> rankProbes = new ArrayList<String>();
@@ -82,7 +72,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
     oracle = new GeneOracle(screen);
     schema = screen.schema();
     resources = screen.resources();
-    sparqlService = _screen.manager().sparqlService();
+    probeService = _screen.manager().probeService();
+    sampleService = _screen.manager().sampleService();
 
     selector.addListener(this);
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
@@ -92,8 +83,9 @@ abstract public class CompoundRanker extends DataListenerWidget {
         // We override this to pull in the probes, because they
         // may need to be converted from gene symbols.
 
-        sparqlService.identifiersToProbes(probes, true, false, false, null,
+        probeService.identifiersToProbes(probes, true, false, false, null,
             new PendingAsyncCallback<String[]>(this) {
+              @Override
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
                 saveAction();
@@ -103,9 +95,10 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
       @Override
       protected void itemsChanged(List<String> items) {
-        sparqlService.identifiersToProbes(items.toArray(new String[0]), true, 
+        probeService.identifiersToProbes(items.toArray(new String[0]), true, 
             false, false, null,
             new PendingAsyncCallback<String[]>(this) {
+              @Override
               public void handleSuccess(String[] resolved) {
                 setProbeList(Arrays.asList(resolved));
               }
@@ -118,7 +111,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         screen.storeItemLists(getParser(screen));
       }
     };
-    listChooser.setStylePrimaryName("colored");
+    listChooser.addStyleName("colored");
     selector.addListener(listChooser);
 
     csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -155,6 +148,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     csVerticalPanel.add(hp);
 
     hp.add(new Button("Rank", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         performRanking();
       }
@@ -270,22 +264,24 @@ abstract public class CompoundRanker extends DataListenerWidget {
   @Override
   public void availableCompoundsChanged(List<String> compounds) {
     super.availableCompoundsChanged(compounds);
-    availableCompounds = compounds;
-    for (RuleInputHelper rih : inputHelpers) {
-      rih.availableCompoundsChanged(compounds);
+    if (!compounds.equals(availableCompounds)) {
+      for (RuleInputHelper rih : inputHelpers) {
+        rih.availableCompoundsChanged(compounds);
+      }
     }
+    availableCompounds = compounds;
   }
 
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
-    listChooser.setLists(StringListsStoreHelper.compileLists(this));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     super.clusteringListsChanged(lists);     
-    listChooser.setLists(StringListsStoreHelper.compileLists(this));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
   }
   
   

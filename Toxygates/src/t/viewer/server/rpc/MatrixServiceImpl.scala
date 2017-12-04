@@ -23,35 +23,23 @@ package t.viewer.server.rpc
 import java.util.ArrayList
 import java.util.{ List => JList }
 import java.util.logging.Logger
-import org.apache.commons.lang.StringUtils
+
 import javax.annotation.Nullable
 import t.Context
-import t.common.server.ScalaUtils
 import t.clustering.server.RClustering
+import t.clustering.shared.Algorithm
+import t.common.server.ScalaUtils
 import t.common.shared.ValueType
 import t.common.shared.sample.ExpressionRow
 import t.common.shared.sample.Group
-import t.common.shared.sample.Sample
-import t.clustering.shared.Algorithm
 import t.db.MatrixContext
 import t.platform.OrthologMapping
 import t.platform.Probe
 import t.sparql.makeRich
 import t.viewer.client.rpc.MatrixService
-import t.viewer.server.CSVHelper
-import t.viewer.server.Configuration
-import t.viewer.server.ExprMatrix
-import t.viewer.server.Feedback
-import t.viewer.server.ManagedMatrix
-import t.viewer.server.MatrixController
-import t.viewer.shared.ColumnFilter
-import t.viewer.shared.ManagedMatrixInfo
-import t.viewer.shared.Synthetic
+import t.viewer.server._
+import t.viewer.shared._
 import t.viewer.shared.table.SortKey
-import t.viewer.shared.NoDataLoadedException
-import t.viewer.shared.FullMatrix
-import t.clustering.client.ClusteringService
-import t.clustering.server.RandomData
 
 object MatrixServiceImpl {
 

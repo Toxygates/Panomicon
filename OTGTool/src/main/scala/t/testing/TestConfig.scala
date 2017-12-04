@@ -20,9 +20,7 @@
 
 package t.testing
 
-import t.DataConfig
-import t.TriplestoreConfig
-import t.BaseConfig
+import t._
 import otg.OTGBConfig
 import t.ChunkDataConfig
 
@@ -33,7 +31,10 @@ object TestConfig {
   //	val tsConfig = new TriplestoreConfig("http://localhost:3030/data/sparql",
   //	    "http://localhost:3030/data/update", null, null, null)
 
-  //TODO replace with in-memory triplestore or similar
+  /*
+   * Triplestore tests currently depend on this server.
+   * In the future, we might use an in-memory triplestore instead.
+   */
   val tsConfig = new TriplestoreConfig("http://monomorphic.org:3030/Toxygates/query",
     null, "x", "y", "")
   val config = new OTGBConfig(tsConfig, dataConfig)

@@ -20,7 +20,7 @@
 
 package t.sparql.secondary
 
-import otg.Species._
+import t.platform.Species._
 import t.sparql.Triplestore
 import t.sparql._
 import org.eclipse.rdf4j.repository.RepositoryConnection

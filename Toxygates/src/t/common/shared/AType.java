@@ -28,9 +28,8 @@ import javax.annotation.Nullable;
  */
 public enum AType {
   KEGG("KEGG pathways") {
-    // TODO construct proper link
     public String formLink(String value) {
-      return value;
+      return "http://www.genome.jp/dbget-bin/www_bget?path:" + value;
     }
   },
   Chembl("CHEMBL compounds") {
@@ -109,6 +108,12 @@ public enum AType {
       return formProteinLink(value);
     }
   },
+  MiRNA("MicroRNA") {
+    public String formLink(String value) {
+      //example: MIMAT0000376
+      return "http://www.mirbase.org/cgi-bin/mature.pl?mature_acc=" + value;
+    }
+  },  
   // Enzymes("Kegg Enzymes") {
   // public String formLink(String value) { return value; }
   // },
@@ -118,7 +123,7 @@ public enum AType {
     }
   },
   KEGGOSA("O.Sativa orth. pathways") {
-    // TODO construct proper link
+    //Not used currently (Tritigate legacy)
     public String formLink(String value) {
       return value;
     }

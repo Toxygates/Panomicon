@@ -18,29 +18,18 @@
 
 package otgviewer.client.charts;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Series;
-import t.common.shared.DataSchema;
-import t.common.shared.HasClass;
-import t.common.shared.SampleMultiFilter;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.ExpressionValue;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.FullMatrix;
 
@@ -58,15 +47,15 @@ abstract public class DataSource {
 
   protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
 
-  protected String[] _minorVals;
-  protected String[] _mediumVals;
+  protected String[] minorVals;
+  protected String[] mediumVals;
 
   String[] minorVals() {
-    return _minorVals;
+    return minorVals;
   }
 
   String[] mediumVals() {
-    return _mediumVals;
+    return mediumVals;
   }
 
   protected DataSchema schema;
@@ -78,11 +67,10 @@ abstract public class DataSource {
 
   protected void initParams(List<? extends HasClass> from, boolean controlMedVals) {
     try {
-      String minorParam = schema.minorParameter();
-      String medParam = schema.mediumParameter();
-      Set<String> minorVals = SampleClassUtils.collectInner(from, minorParam);
-      _minorVals = minorVals.toArray(new String[0]);
-      schema.sort(minorParam, _minorVals);
+      Attribute minorParam = schema.minorParameter();
+      Attribute medParam = schema.mediumParameter();
+      minorVals = SampleClassUtils.collectInner(from, minorParam).toArray(String[]::new);      
+      schema.sort(minorParam, minorVals);
 
       Set<String> medVals = new HashSet<String>();
       for (HasClass f : from) {
@@ -91,8 +79,8 @@ abstract public class DataSource {
           medVals.add(schema.getMedium(f));
         }
       }
-      _mediumVals = medVals.toArray(new String[0]);
-      schema.sort(medParam, _mediumVals);
+      mediumVals = medVals.toArray(new String[0]);
+      schema.sort(medParam, mediumVals);
     } catch (Exception e) {
       logger.log(Level.WARNING, "Unable to sort chart data", e);
     }
@@ -114,15 +102,14 @@ abstract public class DataSource {
       applyPolicy(policy, chartSamples);
       acceptor.accept(chartSamples);
     } else {
-      // We store these in a set since we may be getting the same samples several times
-      Set<ChartSample> r = new HashSet<ChartSample>();
-      for (ChartSample s : chartSamples) {
-        if (smf.accepts(s)) {
-          r.add(s);
-          s.color = policy.colorFor(s);
-        }
+      // We may be getting the same samples several times
+      List<ChartSample> r = chartSamples.stream().filter(s -> smf.accepts(s)).distinct().
+          collect(Collectors.toList());
+      
+      for (ChartSample s: r) {
+        s.color = policy.colorFor(s);
       }
-      acceptor.accept(new ArrayList<ChartSample>(r));
+      acceptor.accept(r);
     }
   }
 
@@ -193,15 +180,12 @@ abstract public class DataSource {
         final SampleAcceptor acceptor) {
       logger.info("Dynamic source: load for " + smf);
 
-      final List<Sample> useSamples = new ArrayList<Sample>();
-      for (Sample b : samples) {
-        if (smf.accepts(b)) {
-          useSamples.add(b);
-        }
-      }
+      
+      Sample[] useSamples = Arrays.stream(samples).filter(s -> smf.accepts(s)).
+          toArray(Sample[]::new);
 
       chartSamples.clear();
-      Group g = new Group(schema, "temporary", useSamples.toArray(new Sample[0]));
+      Group g = new Group(schema, "temporary", useSamples);
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
       matrixService.getFullData(gs, probes, false, type,
@@ -209,7 +193,7 @@ abstract public class DataSource {
 
             @Override
             public void handleSuccess(final FullMatrix mat) {
-              addSamplesFromBarcodes(useSamples.toArray(new Sample[0]), mat.rows());
+              addSamplesFromBarcodes(useSamples, mat.rows());
               getLoadedSamples(smf, policy, acceptor);
             }
           });
@@ -248,6 +232,7 @@ abstract public class DataSource {
       final List<Group> groups = new ArrayList<Group>();
       final List<Unit> useUnits = new ArrayList<Unit>();
       int i = 0;
+      
       for (Unit u : units) {
         if (smf.accepts(u)) {
           Group g = new Group(schema, "g" + i, u.getSamples());

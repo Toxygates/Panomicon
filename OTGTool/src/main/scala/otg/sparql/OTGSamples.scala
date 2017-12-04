@@ -23,80 +23,76 @@ package otg.sparql
 import otg.Pathology
 import t.BaseConfig
 import t.db.Sample
+import t.sparql._
 import t.sparql.{ Filter => TFilter }
-import t.sparql.Query
-import t.sparql.SampleClassFilter
-import t.sparql.SampleFilter
-import t.sparql.Samples
-import t.db.SampleParameters._
+import t.model.sample.CoreParameter._
+import otg.model.sample.OTGAttribute._
+import t.model.sample.Attribute
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   import t.sparql.scToSparql
 
-  val prefixes = commonPrefixes + """
-    |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>""".stripMargin
+  val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
-  //TODO case with no attributes won't work
-  //TODO consider lifting up
   def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
-    val filterString = if(filter.constraints.isEmpty) "" else
-        s"""|  FILTER(
-        |    ${standardAttributes.map(a => filter.get(a).map(f =>
-              s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
-        |  )""".stripMargin
+    val standardPred = standardAttributes.filter(isPredicateAttribute)
 
-    val batchFilter = filter.get("batchGraph")
+    val filterString = if(filter.constraints.isEmpty) "" else
+        s"""|
+            |  FILTER(
+            |    ${standardPred.map(attribute => filter.get(attribute).map(value =>
+                  s"?${attribute.id} = " + "\"" + value + "\"")).flatten.mkString(" && ")}
+            |  )""".stripMargin
+
+    val batchFilter = filter.get(Batch)
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
 
     Query(prefixes,
       s"""SELECT * WHERE {
         |  GRAPH $batchFilterQ {
-        |    ?x a t:sample; rdfs:label ?id;
-        |    ${standardAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
-        |""".stripMargin,
+        |    ?x a $itemClass; rdfs:label ?id;
+        |    ${standardPred.map(a => s"t:${a.id} ?${a.id}").mkString("; ")} .""".stripMargin,
 
-      s"""|} ${sf.standardSampleFilters}
-        |  $filterString
+      s"""|} ${sf.standardSampleFilters} $filterString
         |  }""".stripMargin,
 
-      eval = ts.mapQuery(_, 20000).map(x => {
-        val sc = SampleClassFilter(adjustSample(x, batchFilter)) ++ filter
-        Sample(x("id"), sc, Some(x(ControlGroup.id)))
+      eval = triplestore.mapQuery(_, 20000).map(x => {
+        val attributeValues = convertMapToAttributes(adjustSample(x, batchFilter), bc.attributes)
+        Sample(x("id"), SampleClassFilter(attributeValues) ++ filter)
        })
      )
   }
 
-  def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]] = {
-    //TODO case with no attributes
+  def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]] = {
     //TODO may be able to lift up to superclass and generalise
+    val hlPred = hlAttributes.filter(isPredicateAttribute)
 
-    val vars = hlAttributes.map(a => s"?$a").mkString(" ")
-    val r = ts.mapQuery(s"""$prefixes
+    val vars = hlPred.map(a => s"?${a.id}").mkString(" ")
+    val r = triplestore.mapQuery(s"""$prefixes
        |SELECT DISTINCT $vars WHERE {
        |  GRAPH ?batchGraph {
-       |    ?x a t:sample;
-       |    ${hlAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
+       |    ?x a $itemClass;
+       |    ${hlPred.map(a => s"t:${a.id} ?${a.id}").mkString("; ")} .
        |  }
        |  ${sf.standardSampleFilters}
        |}""".stripMargin)
-    r.map(adjustSample(_))
+    r.map(s => convertMapToAttributes(adjustSample(s), bc.attributes))
   }
 
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =
-    sampleAttributeQuery("compound_name").constrain(filter)()
+    sampleAttributeQuery(Compound).constrain(filter)()
 
   def pathologyQuery(constraints: String): Vector[Pathology] = {
-    val r = ts.mapQuery(s"""$prefixes
+    val r = triplestore.mapQuery(s"""$prefixes
       |SELECT DISTINCT ?spontaneous ?grade ?topography ?finding ?image WHERE {
-      |  $constraints
-      |  ?x t:pathology ?p .
-      |  ?p local:find_id ?f; local:topo_id ?t; local:grade_id ?g;
-      |  local:spontaneous_flag ?spontaneous .
-      |  ?f local:label ?finding .
-      |  OPTIONAL { ?x t:pathology_digital_image ?image . }
-      |  OPTIONAL { ?t local:label ?topography . }
-      |  ?g local:label ?grade.
+      |  GRAPH ?gr1 { $constraints }
+      |  GRAPH ?gr2 { ?x t:pathology ?p . OPTIONAL { ?x t:pathology_digital_image ?image . } }
+      |  GRAPH ?gr3 { ?p local:find_id ?f; local:topo_id ?t;
+      |    local:grade_id ?g; local:spontaneous_flag ?spontaneous . }
+      |  GRAPH ?gr4 { ?f local:label ?finding . }
+      |  GRAPH ?gr5 { OPTIONAL { ?g local:label ?grade . } }
+      |  GRAPH ?gr6 { OPTIONAL { ?t local:label ?topography . } }
       |}""".stripMargin)
 
       //TODO clean up the 1> etc

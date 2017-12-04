@@ -18,18 +18,19 @@
 
 package otgviewer.client.components.ranking;
 
+import static otg.model.sample.OTGAttribute.Compound;
+import static otg.model.sample.OTGAttribute.DoseLevel;
+
 import java.util.List;
+
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.model.SampleClass;
-
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.TextBox;
 
 public class FullRuleInputHelper extends RuleInputHelper {
 
@@ -62,6 +63,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
 
   final static int REQUIRED_COLUMNS = 6;
 
+  @Override
   protected RuleType[] ruleTypes() {
     return RuleType.values();
   }
@@ -81,10 +83,10 @@ public class FullRuleInputHelper extends RuleInputHelper {
       return;
     }
     final String selCompound = refCompound.getItemText(selIndex);
-    SampleClass sc = ranker.chosenSampleClass.copy();
-    sc.put("compound_name", selCompound);
+    SampleClass sc = ranker.state().sampleClass.copy();
+    sc.put(Compound, selCompound);
 
-    ranker.sparqlService.parameterValues(sc, "dose_level", new PendingAsyncCallback<String[]>(
+    ranker.sampleService.parameterValues(sc, DoseLevel.id(), new PendingAsyncCallback<String[]>(
         ranker.selector, "Unable to retrieve dose levels.") {
 
       @Override
@@ -98,6 +100,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     });
   }
 
+  @Override
   protected void rankTypeChanged() {
     RuleType rt = rankType.value();
     switch (rt) {
@@ -145,7 +148,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
         double[] data;
         String[] ss = syntheticCurveText.getText().split(" ");
         RankRule r = new RankRule(rt, probe);
-        SampleClass sc = ranker.chosenSampleClass;
+        SampleClass sc = ranker.state().sampleClass.copy();
         int expectedPoints = ranker.schema.numDataPointsInSeries(sc);
 
         if (ss.length != expectedPoints) {
@@ -179,11 +182,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     syntheticCurveText.setText("");
   }
 
-  void sampleClassChanged(SampleClass sc) {
-    refCompound.clear();
-    refDose.clear();
-  }
-
+  @Override
   void availableCompoundsChanged(List<String> compounds) {
     refCompound.clear();
     refDose.clear();

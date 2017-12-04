@@ -33,11 +33,17 @@ object MatrixInsert {
     }
 }
 
-//TODO possibly deprecate this. Currently used only in tests
+/*
+ * Note: this is currently only used in tests, but kept around as an example
+ * of how to use multiple database formats
+ */
 abstract class BasicValueInsert[E <: ExprValue](val db: MatrixDBWriter[E],
     raw: RawExpressionData)(implicit mc: MatrixContext) extends MatrixInsert[E](raw)
 
-//TODO possibly deprecate this. Currently used only in tests
+/*
+ * Note: this is currently only used in tests, but kept around as an example
+ * of how to use multiple database formats
+ */
 class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[BasicExprValue](raw) {
   lazy val db = KCMatrixDB.get(dbfile, true)
@@ -47,7 +53,7 @@ class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 }
 
 /**
- * As above but with p-values.
+ * As above but with p-values. All expression database files currently use this format.
  */
 class SimplePFoldValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[PExprValue](raw) {

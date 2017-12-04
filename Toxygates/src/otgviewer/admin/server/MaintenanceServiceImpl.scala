@@ -21,15 +21,14 @@
 package otgviewer.admin.server
 
 import otgviewer.server.rpc.OTGServiceServlet
+import t.model.sample._
+import t.model.sample.CoreParameter._
+import otg.model.sample.OTGAttribute._
 
 class MaintenanceServiceImpl extends t.admin.server.MaintenanceServiceImpl
   with OTGServiceServlet {
 
-  override protected def overviewParameters: Seq[t.db.SampleParameter] = {
-    val r = Vector("organism", "test_type", "sin_rep_type", "organ_id",
-        "compound_name", "dose_level", "exposure_time",
-        "platform_id", "control_group")
-    r.map(context.config.sampleParameters.byId)
-  }
-
+  override protected def overviewParameters: Seq[Attribute] =
+    Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel,
+      ExposureTime, Platform, ControlGroup)
 }

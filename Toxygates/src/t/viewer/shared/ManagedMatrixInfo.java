@@ -19,9 +19,7 @@
 package t.viewer.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -38,6 +36,7 @@ public class ManagedMatrixInfo implements Serializable {
   private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 
   // Per-column information
+  private List<String> shortColumnNames = new ArrayList<String>();
   private List<String> columnNames = new ArrayList<String>();
   private List<String> columnHints = new ArrayList<String>();
   private List<Group> columnGroups = new ArrayList<Group>();
@@ -70,7 +69,7 @@ public class ManagedMatrixInfo implements Serializable {
    * @param samples The samples actually displayed in this column (may be a subset of the ones in
    *        the base group)
    */
-  public void addColumn(boolean synthetic, String name, String hint,
+  public void addColumn(boolean synthetic, String shortName, String name, String hint,
       ColumnFilter defaultFilter,
       Group baseGroup, boolean isPValue, Sample[] samples) {
     if (synthetic) {
@@ -79,6 +78,7 @@ public class ManagedMatrixInfo implements Serializable {
       numDataColumns++;
     }
 
+    shortColumnNames.add(shortName);
     columnNames.add(name);
     columnHints.add(hint);
     columnGroups.add(baseGroup);
@@ -87,10 +87,17 @@ public class ManagedMatrixInfo implements Serializable {
     this.samples.add(samples);
   }
 
+  public void addColumn(boolean synthetic, String name, String hint,
+      ColumnFilter defaultFilter,
+      Group baseGroup, boolean isPValue, Sample[] samples) {
+    addColumn(synthetic, name, name, hint, defaultFilter, baseGroup, isPValue, samples);
+  }
+
   public void removeSynthetics() {
     numSynthetics = 0;
     int n = numDataColumns;
     //The standard implementation of subList can't be serialised by GWT
+    shortColumnNames = new ArrayList<String>(shortColumnNames.subList(0, n));
     columnNames = new ArrayList<String>(columnNames.subList(0, n));
     columnHints = new ArrayList<String>(columnHints.subList(0, n));
     columnGroups = new ArrayList<Group>(columnGroups.subList(0, n));
@@ -105,9 +112,9 @@ public class ManagedMatrixInfo implements Serializable {
    */
   public ManagedMatrixInfo addAllNonSynthetic(ManagedMatrixInfo other) {
     for (int c = 0; c < other.numDataColumns(); c++) {
-      addColumn(false, other.columnName(c), other.columnHint(c),
-          other.columnFilter(c),
-          other.columnGroup(c), other.isPValueColumn(c), other.samples(c));
+      addColumn(false, other.shortColumnName(c), other.columnName(c),
+          other.columnHint(c), other.columnFilter(c), other.columnGroup(c),
+          other.isPValueColumn(c), other.samples(c));
     }
     return this;
   }
@@ -149,6 +156,14 @@ public class ManagedMatrixInfo implements Serializable {
    */
   public String columnName(int column) {
     return columnNames.get(column);
+  }
+
+  /**
+   * @param column Column index. Must be 0 <= i < numColumns.
+   * @return A short name for the column.
+   */
+  public String shortColumnName(int column) {
+    return shortColumnNames.get(column);
   }
 
   /**

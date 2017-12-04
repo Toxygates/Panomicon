@@ -18,38 +18,25 @@
 
 package otgviewer.client;
 
+import static otg.model.sample.OTGAttribute.*;
+
 import java.util.List;
 import java.util.logging.Level;
-
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-import t.model.SampleClass;
-import t.model.SampleParameter;
-import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
 
 /**
- * A time and dose grid that can show some variable as a heat map. The variable is supplied as a
+ * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a
  * microarray sample annotation.
- * 
- * @author johan
- *
  */
 public class AnnotationTDGrid extends TimeDoseGrid {
 
@@ -70,6 +57,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     toolPanel.add(annotationSelector);
     annotationButton = new Button("Show");
     annotationButton.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         reloadAnnotations();
         Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION,
@@ -85,13 +73,15 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
-      sc.put("compound_name", compounds.get(0));
+      sc.put(Compound, compounds.get(0));
       sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
           this, "Unable to get samples") {
+        @Override
         public void handleSuccess(Sample[] bcs) {
 
           sampleService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
               AnnotationTDGrid.this, "Unable to get annotations.") {
+            @Override
             public void handleSuccess(Annotation a) {
               for (BioParamValue e : a.getAnnotations()) {
                 if (e instanceof NumericalBioParamValue) {
@@ -118,12 +108,13 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       final String compound, final String dose, final String time) {
 
     SampleClass sc = chosenSampleClass.copy();
-    sc.put("dose_level", dose);
-    sc.put(SampleParameter.ExposureTime.id(), time);
-    sc.put("compound_name", compound);
+    sc.put(DoseLevel, dose);
+    sc.put(ExposureTime, time);
+    sc.put(Compound, compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
         "Unable to retrieve barcodes for the group definition.") {
+      @Override
       public void handleSuccess(Sample[] barcodes) {
         processAnnotationBarcodes(annotation, row, col, time, barcodes);
       }
@@ -145,6 +136,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     Group g = new Group(schema, "temporary", barcodes, null);
     sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
         "Unable to get annotations.") {
+      @Override
       public void handleSuccess(Annotation[] as) {
         double sum = 0;
         int n = 0;
@@ -222,11 +214,11 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
   @Override
   protected Widget guiForUnit(Unit unit) {
-    int time = minorValues.indexOf(unit.get(timeParameter));
-    int compound = chosenCompounds.indexOf(unit.get(majorParameter));
-    int dose = mediumValues.indexOf(unit.get(mediumParameter));
-    HTML r = new HTML(unit.get(timeParameter));
-    r.setStylePrimaryName("slightlySpaced");
+    int time = minorValues.indexOf(unit.get(schema.timeParameter()));
+    int compound = chosenCompounds.indexOf(unit.get(schema.majorParameter()));
+    int dose = mediumValues.indexOf(unit.get(schema.mediumParameter()));
+    HTML r = new HTML(unit.get(schema.timeParameter()));
+    r.addStyleName("slightlySpaced");
     labels[compound][minorValues.size() * dose + time] = r;
     return r;
   }

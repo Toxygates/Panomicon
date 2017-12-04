@@ -18,53 +18,26 @@
 
 package t.viewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.ResizableTextArea;
-import t.common.client.components.SetEditor;
-import t.common.client.components.StringSelectionTable;
-import t.common.shared.ItemList;
-import t.common.shared.SharedUtils;
-import t.common.shared.StringList;
-import t.viewer.client.Utils;
-
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ResizeComposite;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.StackLayoutPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.VerticalPanel;
+
+import otgviewer.client.components.*;
+import t.common.client.components.SetEditor;
+import t.common.client.components.StringSelectionTable;
+import t.common.shared.*;
+import t.viewer.client.Utils;
 
 /**
  * A StackedListEditor unifies multiple different methods of editing a list of strings. Strings can
@@ -73,7 +46,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
-  private static Logger logger = SharedUtils.getLogger("sle");
+  // private static Logger logger = SharedUtils.getLogger("sle");
 
   /**
    * A selection method that allows the user to edit a list as text, freely. Items are separated by
@@ -150,6 +123,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       }
     }
 
+    @Override
     public String getTitle() {
       return "Edit/paste";
     }
@@ -190,6 +164,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
       final BrowseCheck bc = this;
       this.selTable = new StringSelectionTable("", itemTitle) {
+        @Override
         protected void selectionChanged(Set<String> selected) {
           BrowseCheck.logger.info("Send selection " + selected.size());
           parentSelector.setSelection(selected, bc);
@@ -201,6 +176,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       dlp.addSouth(hp, 36);
 
       sortButton = new Button("Sort by name", new ClickHandler() {
+        @Override
         public void onClick(ClickEvent ce) {
           List<String> items = new ArrayList<String>(parentSelector.availableItems());
           Collections.sort(items);
@@ -228,6 +204,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       }));
 
       hp.add(new Button("Unselect all", new ClickHandler() {
+        @Override
         public void onClick(ClickEvent ce) {
           List<String> empty = new ArrayList<String>();
           setSelection(empty);
@@ -238,13 +215,14 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       dlp.add(scrollPanel);
     }
 
+    @Override
     public String getTitle() {
       return "Browse";
     }
 
     @Override
     public void setSelection(Collection<String> items) {
-      logger.info("Receive selection " + items.size());
+      // logger.info("Receive selection " + items.size());
       selTable.setSelection(items);
       selTable.table().redraw();
     }
@@ -311,7 +289,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
           sle.listsChanged(itemLists);
         }
       };
-      listChooser.setStylePrimaryName("colored");
+      listChooser.addStyleName("colored");
       parent.addListener(listChooser);
       northVp.add(listChooser);
       dlp.addNorth(northVp, 30);
@@ -371,6 +349,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * @param items
    * @return Valid items.
    */
+  @Override
   public Set<String> validateItems(List<String> items) {
     HashSet<String> r = new HashSet<String>();
     Iterator<String> i = items.iterator();
@@ -438,10 +417,12 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     }
   }
 
+  @Override
   public Set<String> getSelection() {
     return selectedItems;
   }
 
+  @Override
   public void setItems(List<String> items, boolean clearSelection) {
     setItems(items, clearSelection, false);
   }
@@ -476,9 +457,10 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * @param from The selection method that triggered the change, or null if the change was triggered
    *        externally. These items should already be validated.
    */
+  @Override
   public void setSelection(Collection<String> items, @Nullable SetEditor<String> from) {
-    logger.info("Receive selection " + items.size() + " from "
-        + (from != null ? from.getClass().toString() : "null"));
+    //logger.info("Receive selection " + items.size() + " from "
+    // + (from != null ? from.getClass().toString() : "null"));
     for (SelectionMethod<String> m : methods) {
       if (m != from) {
         m.setSelection(items);
@@ -491,6 +473,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     triggerChange();
   }
 
+  @Override
   public void setSelection(Collection<String> items) {
     setSelection(items, null);
   }
@@ -535,6 +518,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     Window.alert("Technical error: no such selection method in StackedListEditor");
   }
 
+  @Override
   public List<Suggestion> getSuggestions(String request) {
     String lc = request.toLowerCase();
     List<Suggestion> r = new ArrayList<Suggestion>();
@@ -557,6 +541,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     return r;
   }
   
+  @Override
   public List<String> availableItems() {
     return new LinkedList<String>(availableItems);
   }

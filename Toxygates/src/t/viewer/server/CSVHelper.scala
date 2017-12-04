@@ -30,19 +30,19 @@ object CSVHelper {
    */
   trait CSVFile {
     def write(out: String) {
-      println("Rows " + rows + " cols " + columns)
+      println("Rows " + rowCount + " cols " + colCount)
 
       val outb = new java.io.BufferedWriter(new java.io.FileWriter(out))
       var x = 0
       var y = 0
-      while (x < columns && y < rows) {
+      while (x < colCount && y < rowCount) {
 
         outb.write(format(apply(x, y)))
-        if (x < columns - 1) {
+        if (x < colCount - 1) {
           outb.write(",")
         }
         x += 1
-        if (x == columns) {
+        if (x == colCount) {
           x = 0
           y += 1
           outb.write("\n")
@@ -66,8 +66,8 @@ object CSVHelper {
       }
     }
 
-    def columns: Int
-    def rows: Int
+    def colCount: Int
+    def rowCount: Int
 
     /**
      * Obtain the item at the specified coordinate.
@@ -75,12 +75,6 @@ object CSVHelper {
     def apply(x: Int, y: Int): Any
 
   }
-
-  def writeCSV(namePrefix: String, dir: String, urlbase: String,
-    rowTitles: Seq[String], colTitles: Seq[String],
-    data: Seq[Seq[Any]]): String =
-    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
-      data)
 
   /**
    * Write expression values to a CSV files.
@@ -99,16 +93,12 @@ object CSVHelper {
       throw new Exception("No data supplied")
     }
 
-    val cal = Calendar.getInstance
-    val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
-
-    //TODO pass the file prefix in from outside
-    val file = s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
-    val fullName = dir + "/" + file
+    val name = filename(namePrefix, dir, urlbase)
+    val fullName = dir + "/" + name
 
     new CSVFile {
-    	def columns = textCols.size + colTitles.size + 1
-    	def rows = expr.size + 1
+    	def colCount = textCols.size + colTitles.size + 1
+    	def rowCount = expr.size + 1
       def apply(x: Int, y: Int) = if (y == 0) {
         if (x == 0) {
           ""
@@ -128,6 +118,31 @@ object CSVHelper {
       }
     }.write(fullName)
 
-    urlbase + "/" + file
+    urlbase + "/" + name
+  }
+
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+    csvFile: CSVFile): String = {
+    val name = filename(namePrefix, dir, urlbase)
+    val fullName = dir + "/" + name
+
+    csvFile.write(fullName)
+
+    urlbase + "/" + name
+  }
+
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+    rowTitles: Seq[String], colTitles: Seq[String],
+    data: Seq[Seq[Any]]): String =
+    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
+      data)
+
+  private def filename(namePrefix: String, dir: String, urlbase: String):
+    String = {
+    val cal = Calendar.getInstance
+    val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
+
+    //TODO pass the file prefix in from outside
+    s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
   }
 }

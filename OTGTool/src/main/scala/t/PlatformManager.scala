@@ -20,24 +20,27 @@
 
 package t
 
-import t.sparql.Platforms
-import t.platform.PlatformDefFile
-import t.util.TempFiles
-import t.platform.affy.AffymetrixConverter
 import t.db.kyotocabinet.KCIndexDB
+import t.global.KCDBRegistry
+import t.platform.PlatformDefFile
+import t.platform.affy.Converter
+import t.sparql.Platforms
 import t.sparql.Probes
 import t.sparql.TRDF
-import t.global.KCDBRegistry
+import t.util.TempFiles
 
 /**
  * Platform/probe management CLI
  */
 object PlatformManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
-    val platforms = new Platforms(context.config.triplestore)
+
+    val manager = new PlatformManager(context)
     if (args.size < 1) {
       showHelp()
     }
+    val platforms = new Platforms(context.config)
+    
     try {
       args(0) match {
         case "add" =>
@@ -47,11 +50,14 @@ object PlatformManager extends ManagerTool {
             "Please specify a definition file with -input")
           val defns = new PlatformDefFile(inputFile).records
           val comment = stringOption(args, "-comment").getOrElse("")
-          platforms.redefine(title, comment, false, defns) //TODO
+          addTasklets(manager.add(title, comment, inputFile, false, false))
+          
+          //Redefine only syntax
+//          platforms.redefine(title, comment, false, defns) 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
             "Please specify a title with -title")
-          platforms.delete(title)
+          manager.delete(title)
         case "list" =>
           for (p <- platforms.list) {
             println(p)
@@ -72,11 +78,14 @@ class PlatformManager(context: Context) {
   import TRDF._
   def config = context.config
 
-  //TODO consider representing affymetrixFormat and bioFormat
-  //as a different type, since they are mutually exclusive
+  /*
+   * Note: AffymetrixFormat and BioFormat might be represented differently,
+   * e.g. with case objects or enums.
+   * They are mutually exclusive.
+   */
   def add(title: String, comment: String,
     inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Iterable[Tasklet] = {
-    val pf = new Platforms(config.triplestore)
+    val pf = new Platforms(config)
     var r = Vector[Tasklet]()
     r :+= consistencyCheck(title)
 
@@ -104,9 +113,9 @@ class PlatformManager(context: Context) {
       def run() {
         val tf = new TempFiles()
         try {
-          val platforms = new Platforms(config.triplestore)
+          val platforms = new Platforms(config)
           val temp = tf.makeNew("TPLATFORM", "tsv")
-          AffymetrixConverter.convert(file, temp.getAbsolutePath())
+          Converter.convert(file, temp.getAbsolutePath())
           val defns = new PlatformDefFile(temp.getAbsolutePath()).records
           for (d <- defns) {
             checkValidIdentifier(d.id, "probe ID")
@@ -123,7 +132,7 @@ class PlatformManager(context: Context) {
             val tg = groups.next
             val ttl = Probes.recordsToTTL(tf, title, tg)
             pcomp += g.toDouble * 100.0 / total
-            platforms.ts.addTTL(ttl, Platforms.context(title))
+            platforms.triplestore.addTTL(ttl, Platforms.context(title))
           }
         } finally {
           tf.dropAll()
@@ -141,7 +150,7 @@ class PlatformManager(context: Context) {
     new Tasklet("Add platform (RDF)") {
       def run() {
         val defns = new PlatformDefFile(file).records
-        val platforms = new Platforms(config.triplestore)
+        val platforms = new Platforms(config)
         platforms.redefine(title, TRDF.escape(comment), biological, defns)
       }
     }
@@ -176,7 +185,7 @@ class PlatformManager(context: Context) {
 
   def deleteRDF(title: String): Tasklet = new Tasklet("Delete platform") {
     def run() {
-      val platforms = new Platforms(config.triplestore)
+      val platforms = new Platforms(config)
       platforms.delete(title)
     }
   }

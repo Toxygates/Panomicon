@@ -18,14 +18,10 @@
 
 package t.common.client.maintenance;
 
-import static t.common.shared.maintenance.MaintenanceConstants.callPrefix;
-import static t.common.shared.maintenance.MaintenanceConstants.dataPrefix;
-import static t.common.shared.maintenance.MaintenanceConstants.metaPrefix;
+import static t.common.shared.maintenance.MaintenanceConstants.*;
 
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
 public class BatchUploader extends ItemUploader {
   UploadWrapper metadata, data, calls;

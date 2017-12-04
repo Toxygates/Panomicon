@@ -24,6 +24,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent._
 
 import friedrich.util.CmdLineOptions
+import t.global.KCDBRegistry
 
 /**
  * Management tool for T framework applications.
@@ -38,9 +39,9 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     TriplestoreConfig(
       requireEnv(env, "T_TS_URL", "Please specify triplestore URL"),
       env.getOrElse("T_TS_UPDATE_URL", null),
-      requireEnv(env, "T_TS_USER", "Please specify triplestore username"),
-      requireEnv(env, "T_TS_PASS", "Please specify triplestore password"),
-      requireEnv(env, "T_TS_REPO", "Please specify triplestore repository"))
+      env.getOrElse("T_TS_USER", null),
+      env.getOrElse("T_TS_PASS", null),
+      env.getOrElse("T_TS_REPO", null))
 
   def getDataConfig(env: CMap[String, String]): DataConfig =
     factory.dataConfig(
@@ -68,9 +69,15 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     }
 
     try {
+      startTaskRunner()
       handleArgs(args)
+      Thread.sleep(2000)
+      waitForTasklets()
     } catch {
       case e: Exception => e.printStackTrace
+    } finally {
+      KCDBRegistry.closeWriters
+      stopTaskRunner()
     }
     sys.exit(0) // Get rid of lingering threads
   }
@@ -85,10 +92,46 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       case "batch"    => BatchManager(args.drop(1))
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
-      case "matrix" => MatrixManager(args.drop(1), this)
+      case "matrix"   => MatrixManager(args.drop(1), this)
       case "help"     => showHelp()
     }
   }
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  /**
+   * Run the task runner and monitor its progress on the console
+   */
+  def startTaskRunner() {
+    TaskRunner.start()
+    Future {
+      while (TaskRunner.currentTask != None) {
+        for (m <- TaskRunner.logMessages) {
+          println(m)
+        }
+        TaskRunner.currentTask match {
+          case Some(t) => println(s"${t.name} - ${t.percentComplete}%")
+          case _       =>
+        }
+        Thread.sleep(2000)
+      }
+    }
+  }
+
+  def waitForTasklets() {
+    while (TaskRunner.waitingForTask || TaskRunner.queueSize() > 0) {
+      Thread.sleep(1000)
+    }
+  }
+
+  def stopTaskRunner() {
+    TaskRunner.shutdown()
+    TaskRunner.errorCause match {
+      case None    => //all good
+      case Some(e) => throw e
+    }
+  }
+
 }
 
 trait ManagerTool extends CmdLineOptions {
@@ -104,41 +147,6 @@ trait ManagerTool extends CmdLineOptions {
     if (args.size < n) {
       showHelp()
       throw new Exception("Insufficient arguments")
-    }
-  }
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  /**
-   * Run the task runner and monitor its progress on the console
-   */
-  def startTaskRunner() {
-    TaskRunner.start()
-    Future {
-       while (TaskRunner.currentTask != None) {
-        for (m <- TaskRunner.logMessages) {
-          println(m)
-        }
-        TaskRunner.currentTask match {
-          case Some(t) => println(s"${t.name} - ${t.percentComplete}%")
-          case _       =>
-        }
-        Thread.sleep(2000)
-      }
-    }
-  }
-
-  def stopTaskRunner() {
-    TaskRunner.shutdown()
-    TaskRunner.errorCause match {
-      case None    => //all good
-      case Some(e) => throw e
-    }
-  }
-
-  def waitForTasklets() {
-    while (TaskRunner.waitingForTask || TaskRunner.queueSize() > 0) {
-      Thread.sleep(1000)
     }
   }
 

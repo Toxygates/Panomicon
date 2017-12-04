@@ -20,8 +20,9 @@
 
 package t.viewer.server
 
-import t.sparql.Datasets
 import t.common.shared.Dataset
+
+import t.sparql.Datasets
 
 /**
  * This trait provides conversion into t.common.sharedDataset

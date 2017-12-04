@@ -20,10 +20,7 @@ package otgviewer.client.charts.google;
 
 import java.util.List;
 
-import otgviewer.client.charts.AdjustableGrid;
-import otgviewer.client.charts.ChartSample;
-import otgviewer.client.charts.DataSource;
-import otgviewer.client.charts.Factory;
+import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
@@ -36,9 +33,9 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   @Override
-  public GDTDataset dataset(List<ChartSample> samples, List<ChartSample> allSamples,
+  public GDTDataset dataset(List<ChartSample> samples,
       String[] categories, boolean categoriesAreMins) {
-    return new GDTDataset(samples, allSamples, categories, categoriesAreMins);
+    return new GDTDataset(samples, categories, categoriesAreMins);
   }
 
   @Override

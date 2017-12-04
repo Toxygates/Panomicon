@@ -20,21 +20,14 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import otgviewer.client.DataScreen;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
-import t.common.shared.clustering.ProbeClustering;
-import t.viewer.client.CodeDownload;
-import t.viewer.client.Utils;
-
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.DataScreen;
+import t.common.shared.*;
+import t.common.shared.clustering.ProbeClustering;
+import t.viewer.client.Utils;
 
 public class GeneSetToolbar extends DataListenerWidget {
 
@@ -57,30 +50,22 @@ public class GeneSetToolbar extends DataListenerWidget {
   private void makeTool() {
     selector = Utils.mkHorizontalPanel(true);
     selector.setHeight(DataScreen.STANDARD_TOOL_HEIGHT + "px");
-    selector.setStylePrimaryName("colored");
+    selector.addStyleName("colored");
     selector.addStyleName("slightlySpaced");
 
     lblSelected = new Label();
 
     btnNew = new Button("New", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
-        GWT.runAsync(new CodeDownload(logger) {
-          public void onSuccess() {
-            geneSetEditorNew();
-          }
-        });
+      public void onClick(ClickEvent event) {        
+        geneSetEditorNew();          
       }
     });
 
     btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        GWT.runAsync(new CodeDownload(logger) {
-          public void onSuccess() {
-            geneSetEditorEdit();
-          }
-        });
+        geneSetEditorEdit();        
       }
     });
     btnEdit.setEnabled(false);
@@ -99,22 +84,7 @@ public class GeneSetToolbar extends DataListenerWidget {
   }
 
   private GeneSetEditor geneSetEditor() {
-    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
-    gse.addSaveActionHandler(new SaveActionHandler() {
-      @Override
-      public void onSaved(String title, List<String> items) {
-        String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
-            title, itemsArray));
-        screen.probesChanged(itemsArray);
-        screen.updateProbes();
-      }
-
-      @Override
-      public void onCanceled() {}
-    });
-    addListener(gse);
-    return gse;
+    return GeneSetEditor.make(screen, this);
   }
 
   public Widget selector() {

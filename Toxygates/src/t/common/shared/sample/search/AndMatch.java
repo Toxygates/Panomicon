@@ -1,11 +1,9 @@
 package t.common.shared.sample.search;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-import t.common.shared.sample.BioParamValue;
+import t.model.sample.Attribute;
 
 @SuppressWarnings("serial")
 public class AndMatch implements MatchCondition, Serializable {
@@ -19,8 +17,8 @@ public class AndMatch implements MatchCondition, Serializable {
   }
 
   @Override
-  public Collection<BioParamValue> neededParameters() {
-    Set<BioParamValue> r = new HashSet<BioParamValue>();
+  public Collection<Attribute> neededParameters() {
+    Set<Attribute> r = new HashSet<Attribute>();
     for (MatchCondition mc: conditions) {
       r.addAll(mc.neededParameters());
     }

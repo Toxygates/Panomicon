@@ -23,4 +23,7 @@ package t
 package object db {
 //(expr value, call, p)
   type FoldPExpr = (Double, Char, Double)
+  
+  type ProbeMap = LookupMap[Int]
+  type SampleMap = LookupMap[Int]
 }

@@ -28,6 +28,7 @@ import scala.collection.JavaConversions._
 import t.model.SampleClass
 
 import t.TTestSuite
+import t.model.sample.BasicAttribute
 
 @RunWith(classOf[JUnitRunner])
 class SampleMultiFilterTest extends TTestSuite {
@@ -41,30 +42,36 @@ class SampleMultiFilterTest extends TTestSuite {
   def jmap[T,U](x: Map[T, U]): java.util.Map[T, U] =
     new java.util.HashMap(mapAsJavaMap(x))
 
+  val x = new BasicAttribute("x", "x", false, null)
+  val y = new BasicAttribute("y", "y", false, null)
+  val z = new BasicAttribute("y", "y", false, null)
+  val c = new BasicAttribute("a", "a", false, null)
+  val b = new BasicAttribute("b", "b", false, null)
+
   test("Empty") {
     val smf = new SampleMultiFilter(jmap(Map()))
-    val sc = new SampleClass(jmap(Map("a" -> "x")))
+    val sc = new SampleClass(jmap(Map(c -> "x")))
     assert(smf.accepts(sc))
   }
 
   test("Accept") {
-    val smf = new SampleMultiFilter(jmap(Map("a" -> jset("x"))))
-    smf.addPermitted("a", "y")
-    val sc = new SampleClass(jmap(Map("a" -> "x")))
+    val smf = new SampleMultiFilter(jmap(Map(c -> jset("x"))))
+    smf.addPermitted(c, "y")
+    val sc = new SampleClass(jmap(Map(c -> "x")))
     assert(smf.accepts(sc))
   }
 
   test("Fail 1") {
     val smf = new SampleMultiFilter(jmap(Map()))
-    smf.addPermitted("a", "y")
-    val sc = new SampleClass(jmap(Map("a" -> "x")))
+    smf.addPermitted(c, "y")
+    val sc = new SampleClass(jmap(Map(c -> "x")))
     assert(!smf.accepts(sc))
   }
 
   test("Fail 2") {
     val smf = new SampleMultiFilter(jmap(Map()))
-    smf.addPermitted("a", "y")
-    val sc = new SampleClass(jmap(Map("b" -> "y")))
+    smf.addPermitted(c, "y")
+    val sc = new SampleClass(jmap(Map(b -> "y")))
     assert(!smf.accepts(sc))
   }
 }

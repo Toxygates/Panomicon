@@ -41,9 +41,20 @@ trait RawExpressionData {
   def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] =
     Map() ++ ss.map(s => s -> data(s))
 
-  def call(x: Sample, probe: String) = data(x)(probe)._2
-  def expr(x: Sample, probe: String) = data(x)(probe)._1
-  def p(x: Sample, probe: String) = data(x)(probe)._3
+  /**
+   * Obtain a call value. 
+   */
+  def call(x: Sample, probe: String): Option[Char] = data(x).get(probe).map(_._2)
+  
+  /**
+   * Obtain an expression value. 
+   */
+  def expr(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._1)
+  
+  /**
+   * Obtain a p-value. 
+   */
+  def p(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._3)
 
   def probes: Iterable[String] = probesInSamples
 

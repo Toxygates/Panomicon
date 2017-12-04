@@ -20,25 +20,18 @@ package otgviewer.client.charts.google;
 
 import java.util.List;
 
-import otgviewer.client.charts.ChartGrid;
-import otgviewer.client.charts.Factory;
+import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.Sample;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.ChartArea;
-import com.google.gwt.visualization.client.DataTable;
-import com.google.gwt.visualization.client.Selection;
+import com.google.gwt.visualization.client.*;
 import com.google.gwt.visualization.client.events.ReadyHandler;
 import com.google.gwt.visualization.client.events.SelectHandler;
-import com.google.gwt.visualization.client.visualizations.corechart.AxisOptions;
-import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.Options;
+import com.google.gwt.visualization.client.visualizations.corechart.*;
 
 /**
  * A ChartGrid that uses the Google Visualization API.
@@ -63,18 +56,14 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
     return bigMode ? 170 * 2 : 170;
   }
 
-  /**
+  /*
    * We normalise the column count of each data table when displaying it in order to force the
    * charts to have equally wide bars. (To the greatest extent possible)
-   * 
-   * @param row
-   * @param column
-   * @param width
-   * @param columnCount
    */
   @Override
-  protected Widget chartFor(final GDTData gdt, int width, double minVal, double maxVal, int column,
-      int columnCount, final HTML downloadLink, boolean bigMode) {
+  protected Widget chartFor(final GDTData gdt, ChartStyle style,
+      double minVal, double maxVal, int column,
+      int columnCount) {
     final DataTable dt = gdt.data();
     AxisOptions ao = AxisOptions.create();
 
@@ -90,18 +79,16 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 
     Options o = GVizCharts.createChartOptions();
 
-    int fw = adjustWidth(width, bigMode);
-    int fh = adjustHeight(170, bigMode);
+    int fw = adjustWidth(style.width, style.bigMode);
+    int fh = adjustHeight(170, style.bigMode);
     o.setWidth(fw);
     o.setHeight(fh);
     o.setVAxisOptions(ao);
 
-    // TODO: this is a hack to distinguish between creating series charts or not
-    // (if we are, columnCount is 2)
-    if (columnCount > 2) {
+    if (!style.isSeries) {
       ChartArea ca = ChartArea.create();
-      ca.setWidth(bigMode ? fw * 0.7 : fw - 75);
-      ca.setHeight(bigMode ? fh * 0.8 : fh - 75);
+      ca.setWidth(style.bigMode ? fw * 0.7 : fw - 75);
+      ca.setHeight(style.bigMode ? fh * 0.8 : fh - 75);
       o.setChartArea(ca);
     }
 
@@ -116,7 +103,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           int row = s.getRow();
           String bc = dt.getProperty(row, col, "barcode");
           if (bc != null) {
-            Sample b = Sample.unpack(bc);
+            Sample b = Sample.unpack(bc, screen.attributes());
             screen.displaySampleDetail(b);
           }
         }
@@ -126,13 +113,13 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
       @Override
       public void onReady(ReadyEvent event) {
         String URI = imageURI(c.getJso());
-        downloadLink.setHTML("<a target=_blank href=\"" + URI + "\">Download</a>");
+        style.downloadLink.setHTML("<a target=_blank href=\"" + URI + "\">Download</a>");
       }
     });
     return c;
   }
 
   private static native String imageURI(JavaScriptObject coreChart) /*-{
-	  return coreChart.getImageURI();
-	}-*/;
+    return coreChart.getImageURI();
+  }-*/;
 }

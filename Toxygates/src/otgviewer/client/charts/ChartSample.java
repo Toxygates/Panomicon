@@ -90,35 +90,6 @@ public class ChartSample implements HasClass {
     return probe;
   }
 
-  // TODO do we need hashCode and equals for this class?
-  // See getSamples below where we use a Set<ChartSample>
-  @Override
-  public int hashCode() {
-    int r = 0;
-    if (sample != null) {
-      r = sample.hashCode();
-    } else {
-      r = r * 41 + sc.hashCode();
-      r = r * 41 + ((Double) value).hashCode();
-    }
-    return r;
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    if (other instanceof ChartSample) {
-      if (sample != null) {
-        return (sample == ((ChartSample) other).sample);
-      } else {
-        ChartSample ocs = (ChartSample) other;
-        return sc.equals(((ChartSample) other).sampleClass()) && ocs.value == value
-            && ocs.call == call;
-      }
-    } else {
-      return false;
-    }
-  }
-
   public String formattedValue() {
     String r = (label != null ? label : "");
     return r + "\n" + Utils.formatNumber(value()) + ":" + call();

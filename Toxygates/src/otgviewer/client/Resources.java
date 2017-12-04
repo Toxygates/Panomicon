@@ -18,10 +18,24 @@
 
 package otgviewer.client;
 
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.resources.client.*;
 
 public interface Resources extends t.common.client.Resources {
+
+  public interface OtgCssResource extends CssResource {
+    String group0_color();
+    String group1_color();
+    String group2_color();
+    String group3_color();
+    String group4_color();
+    String group5_color();
+    String group6_color();
+    int menubarpanel_height();
+    int navpanel_height();
+  }
+
+  @Source("otgviewer/client/OTGViewer.gss")
+  OtgCssResource otgViewerStyle();
 
   @Source("help/default.html")
   TextResource defaultHelpHTML();
@@ -49,6 +63,12 @@ public interface Resources extends t.common.client.Resources {
 
   @Source("help/compoundRanking.png")
   ImageResource compoundRankingHelp();
+  
+  @Source("help/sampleSearch.html")
+  TextResource sampleSearchHTML();
+
+  @Source("help/sampleSearch.png")
+  ImageResource sampleSearchHelp();
 
   @Source("help/start.html")
   TextResource startHTML();

@@ -20,25 +20,11 @@
 
 package otg
 
-import scala.annotation.tailrec
-import friedrich.util.CmdLineOptions
-import t.db.MatrixDB
-import t.db.SeriesDB
-import t.db.kyotocabinet.KCMatrixDB
-import otg.sparql.OTGSamples
-import otg.Species._
-import t.db.MatrixDBReader
-import t.db.kyotocabinet.KCSeriesDB
+import t.platform.Species._
+import otg.model.sample.OTGAttribute._
+import t.db._
 import t.db.{ Series => TSeries }
-import t.db.MatrixContext
-import t.db.SeriesBuilder
-import t.db.SeriesPoint
-import t.db.Sample
-import t.db.Metadata
-import t.db.ExprValue
-import t.db.BasicExprValue
-import t.db.SampleParameters._
-import t.db.SampleParameter
+import t.model.sample.Attribute
 
 //TODO all parameters are nullable - use options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
@@ -50,14 +36,16 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
 
   def asSingleProbeKey = copy(probe = probe, compound = null, dose = null)
 
-  override def constraints: Map[String, String] = Map(
-       "test_type" -> testType,
-       "organ_id" -> organ,
-       "organism" -> organism,
-       "compound_name" -> compound,
-       DoseLevel.id -> dose,
-       "sin_rep_type" -> repeat
-       ).filter(_._2 != null)
+  override def constraints: Map[Attribute, String] = {
+    val map: Map[Attribute, String] = Map(TestType -> testType,
+       Organ -> organ,
+       Organism -> organism,
+       Compound -> compound,
+       DoseLevel -> dose,
+       Repeat -> repeat
+       )
+    map.filter(_._2 != null)
+  }
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {
@@ -66,7 +54,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
   private def rem(mc: MatrixContext, key: String): Map[Int, String] =
     mc.reverseEnumMaps(key)
-  private def rem(mc: MatrixContext, key: SampleParameter): Map[Int, String] =
+  private def rem(mc: MatrixContext, key: Attribute): Map[Int, String] =
     rem(mc, key.id)
 
   def build(sampleClass: Long, probe: Int)(implicit mc: MatrixContext): OTGSeries = {
@@ -110,12 +98,12 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
     val r = for (r <- rs; o <- os; s <- ss; c <- cs; d <- ds; t <- ts)
       yield OTGSeries(r, o, s, group.probe, c, d, t, empty)
-    println("Generated keys:" + r.mkString("\n\t"))
+    //println("Generated keys:" + r.mkString("\n\t"))
     r
   }
 
   def buildEmpty(x: Sample, md: Metadata) = {
-    val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
+    val paramMap = Map() ++ md.attributes(x).map(x => x._1.id -> x._2)
         val r = paramMap("sin_rep_type")
         val d = paramMap(DoseLevel.id)
         val o = paramMap("organ_id")
@@ -140,7 +128,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         x <- xs;
         exprs = from.valuesInSample(x, Seq());
         presentExprs = exprs.filter(_.present);
-        time = md.parameter(x, ExposureTime).get
+        time = md.attribute(x, ExposureTime).get
       ) yield (time, x, presentExprs)
 
       val byTime = for (
@@ -188,7 +176,10 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   def sortTimes(items: Iterable[String]): Seq[String] =
     items.toList.sortWith(isBefore)
 
-  //TODO we don't currently use dose series
+    /*
+     * Note: we don't currently use dose series; this might be untested/
+     * inadequate
+     */
   val expectedDoses = List("Low", "Middle", "High")
 
   def expectedTimes(key: OTGSeries): Seq[String] = {

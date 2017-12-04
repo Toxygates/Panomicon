@@ -20,21 +20,11 @@
 
 package t.testing
 
-import t.db.Metadata
-import otg.Species._
-import t.db.ProbeMap
-import t.db.SampleMap
-import t.db.MatrixContext
-import t.db.MatrixDBReader
-import t.db.PExprValue
-import t.db.ExprValue
-import t.db.SeriesBuilder
-import t.db.testing.TestData
-import t.db.kyotocabinet.KCMatrixDB
+import t.platform.Species._
+import t.db._
 import t.db.kyotocabinet.KCExtMatrixDB
-import t.db.MatrixDB
-import t.db.ExtMatrixDB
-import t.db.SeriesDB
+import t.db.kyotocabinet.KCMatrixDB
+import t.db.testing.TestData
 
 class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   val enumMaps: Map[String, Map[String, Int]] = Map(),

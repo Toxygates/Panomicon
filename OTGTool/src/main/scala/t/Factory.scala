@@ -25,19 +25,22 @@ import t.db.ParameterSet
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.db.file.MapMetadata
 import t.db.Metadata
+import t.model.sample.AttributeSet
 
-//TODO consider making ts, data constructor parameters
-//then store them and the resulting context, baseconfig
+/*
+ * Note: It may be a good idea to make ts and data constructor parameters,
+ * and then store them and the resulting context, baseconfig 
+ */
 abstract class Factory {
   def samples(config: BaseConfig): Samples
 
   def probes(config: TriplestoreConfig): Probes
 
-  def tsvMetadata(file: String, sp: ParameterSet): Metadata =
-    TSVMetadata(this, file, sp)
+  def tsvMetadata(file: String, attr: AttributeSet): Metadata =
+    TSVMetadata(this, file, attr)
 
-  def metadata(data: Map[String, Seq[String]], sp: ParameterSet): Metadata =
-    new MapMetadata(data, sp)
+  def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
+    new MapMetadata(data, attr)
 
   def context(ts: TriplestoreConfig, data: DataConfig): Context
 

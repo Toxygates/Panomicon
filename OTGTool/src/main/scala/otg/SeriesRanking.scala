@@ -21,11 +21,8 @@
 package otg
 
 import friedrich.data.Statistics
-import t.db.SeriesDB
-import t.db.Series
-import t.db.ExprValue
-import t.db.MatrixContext
 import t.util.SafeMath
+import t.db._
 
 class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGSeries)
 (implicit context: OTGContext) extends t.SeriesRanking[OTGSeries](db, key) {
@@ -39,7 +36,9 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
 
   override protected def getScores(mt: RankType): Iterable[(OTGSeries, Double)] = {
     mt match {
-      case r: ReferenceCompound[OTGSeries] => {
+      //TODO modify ReferenceCompound API to be able to check for type argument at runtime
+      //or stop trying to match the type argument
+      case r: ReferenceCompound[OTGSeries @unchecked] => {
         r.init(db, key.copy(compound = r.compound, dose = r.dose)) //init this once and reuse it across all the compounds
       }
       case _ => {}

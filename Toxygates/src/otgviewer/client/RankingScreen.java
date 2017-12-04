@@ -22,20 +22,16 @@ import static t.common.client.Utils.makeScrolled;
 
 import java.util.List;
 
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Widget;
+
 import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
-import t.model.SampleClass;
 
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
-
-public class RankingScreen extends Screen {
+public class RankingScreen extends DataFilterScreen {
 
   public static final String key = "rank";
 
@@ -44,7 +40,9 @@ public class RankingScreen extends Screen {
   private ScrollPanel sp;
 
   public RankingScreen(ScreenManager man) {
-    super("Compound ranking", key, false, man);
+    super("Compound ranking", key, false, man,
+        man.resources().compoundRankingHTML(),
+        man.resources().compoundRankingHelp());
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this) {
       @Override
@@ -58,8 +56,7 @@ public class RankingScreen extends Screen {
     };
     this.addListener(filterTools);
 
-    String majorParam = man.schema().majorParameter();
-    cs = new RankingCompoundSelector(this, man.schema().title(majorParam)) {
+    cs = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
@@ -67,7 +64,7 @@ public class RankingScreen extends Screen {
       }
     };
     this.addListener(cs);
-    cs.setStylePrimaryName("compoundSelector");
+    cs.addStyleName("compoundSelector");
   }
 
   @Override
@@ -77,6 +74,7 @@ public class RankingScreen extends Screen {
     addLeftbar(cs, 350);
   }
 
+  @Override
   public Widget content() {
     CompoundRanker cr = factory().compoundRanker(this, cs);
     sp = makeScrolled(cr);
@@ -89,40 +87,14 @@ public class RankingScreen extends Screen {
   }
 
   @Override
-  public void changeSampleClass(SampleClass sc) {
-    // On this screen, ignore the blank sample class set by
-    // DataListenerWidget
-    if (!sc.getMap().isEmpty()) {
-      super.changeSampleClass(sc);
-      storeSampleClass(getParser());
-    }
-  }
-
-  @Override
   public void resizeInterface() {
     // Test carefully in IE8, IE9 and all other browsers if changing this method
     cs.resizeInterface();
     super.resizeInterface();
   }
 
-  public void show() {
-    super.show();
-  }
-
   @Override
   public String getGuideText() {
     return "Specify at least one gene symbol to rank compounds according to their effect.";
-  }
-
-  @Override
-  protected TextResource getHelpHTML() {
-    return resources.compoundRankingHTML();
-  }
-
-  @Override
-  protected ImageResource getHelpImage() {
-    return resources.compoundRankingHelp();
-  }
-
-  
+  }  
 }

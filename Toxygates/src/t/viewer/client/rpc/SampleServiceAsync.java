@@ -2,25 +2,18 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SampleServiceAsync {
 
-  void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
-
-  @Deprecated
-  void sampleClasses(AsyncCallback<SampleClass[]> callback);
+  void chooseDatasets(Dataset[] enabled, AsyncCallback<SampleClass[]> callback);
 
   void parameterValues(Dataset[] ds, SampleClass sc, String parameter,
       AsyncCallback<String[]> callback);
@@ -48,15 +41,20 @@ public interface SampleServiceAsync {
 
   void annotations(Sample barcode, AsyncCallback<Annotation> callback);
 
+  void annotations(Sample[] samples, Attribute[] attributes, AsyncCallback<Annotation[]> callback);
+
   void annotations(HasSamples<Sample> column, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);
   
   void prepareAnnotationCSVDownload(HasSamples<Sample> column, 
       AsyncCallback<String> callback);
 
-  void sampleSearch(SampleClass sampleClass, MatchCondition condition,
-      AsyncCallback<Sample[]> callback);
+  void sampleSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
+      AsyncCallback<RequestResult<Pair<Sample, Pair<Unit, Unit>>>> callback);
 
-  void unitSearch(SampleClass sampleClass, MatchCondition condition,
-      AsyncCallback<Unit[]> callback);
+  void unitSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
+      AsyncCallback<RequestResult<Pair<Unit, Unit>>> callback);
+
+  void prepareCSVDownload(SampleLike[] samples, Attribute[] attributes,
+      AsyncCallback<String> callback);
 }

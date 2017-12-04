@@ -20,18 +20,15 @@
 
 package otg
 
-import t.db.SeriesDB
-import t.db.kyotocabinet.KCSeriesDB
+import t.db._
+import t.db.kyotocabinet._
 import org.scalatest.junit.JUnitRunner
-import otg.Species._
+import t.platform.Species._
 import t.testing.TestConfig
 import t.db.testing.TestData
 import t.TTestSuite
-import t.db.BasicExprValue
-import t.db.SeriesPoint
-import t.db.kyotocabinet.KCExtMatrixDB
 import org.junit.runner.RunWith
-import t.db.SampleParameters._
+import otg.model.sample.OTGAttribute.ExposureTime
 
 import scala.collection.JavaConversions._
 

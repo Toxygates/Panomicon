@@ -21,19 +21,13 @@
 package t.db.testing
 
 import kyotocabinet.DB
-import t.db.ExtMatrixDB
-import t.db.MatrixDB
-import t.db.PExprValue
-import t.db.ProbeIndex
-import t.db.RawExpressionData
-import t.db.Sample
-import t.db.SampleIndex
+import t.db._
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 import t.platform.OrthologMapping
-import t.db.Metadata
-import t.db.SampleParameter
-import t.db.SampleParameters._
+import t.model.sample.Attribute
+import t.model.sample.CoreParameter._
+import otg.model.sample.OTGAttribute._
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -45,15 +39,15 @@ object TestData {
     Map() ++ ss.zipWithIndex
 
   val enumMaps = Map(
-    "compound_name" -> mm(Seq("acetaminophen", "methapyrilene", "cocoa", "water")),
+    Compound.id -> mm(Seq("acetaminophen", "methapyrilene", "cocoa", "water")),
     DoseLevel.id -> mm(Seq("Control", "Low", "Middle", "High", "Really high")),
-    "organism" -> mm(Seq("Giraffe", "Squirrel", "Rat", "Mouse", "Human")),
+    Organism.id -> mm(Seq("Giraffe", "Squirrel", "Rat", "Mouse", "Human")),
     ExposureTime.id -> mm(Seq("3 hr", "6 hr", "9 hr", "24 hr")),
-    "sin_rep_type" -> mm(Seq("Single", "Repeat")),
-    "organ_id" -> mm(Seq("Liver", "Kidney")),
-    "test_type" -> mm(Seq("Vitro", "Vivo")))
+    Repeat.id -> mm(Seq("Single", "Repeat")),
+    Organ.id -> mm(Seq("Liver", "Kidney")),
+    TestType.id -> mm(Seq("Vitro", "Vivo")))
 
-  private def em(k: SampleParameter) = enumMaps(k.id).keySet
+  private def em(k: Attribute) = enumMaps(k.id).keySet
   private def em(k: String) = enumMaps(k).keySet
   def enumValues(key: String) = em(key)
 
@@ -65,17 +59,52 @@ object TestData {
     "" + c
   }
 
+  def randomNumber(mean: Double, range: Double) =
+    Math.random * range + (mean - range/2)
+
+  def liverWeight(dose: String, individual: String) =
+    if (dose == "Control" || individual == "2")
+      3 //healthy
+    else
+      randomNumber(5, 0.2) //abnormal individual_id 1, 3
+
+  def kidneyWeight(dose: String, individual: String) = {
+    val sigma = 0.1
+    val mean = 2.0
+    dose match {
+      case "Control" => // Rigged for the above mean and standard deviation
+        if (individual == "1")
+          mean - sigma * 2.0 / scala.math.sqrt(2)
+        else
+          mean + sigma / scala.math.sqrt(2)
+      case "Really high" =>
+        2.19 // Out of normal range for unit search, but not sample search
+      case "High" => // normal range for unit search
+        if (individual == "1")
+          2.0
+        else if (individual == "2")
+          2.5 // out of normal range for sample search
+        else // (individual == "3")
+          1.5 // ditto
+      case "Middle" => // All 3 individuals (and unit) below range
+          1.5
+      case _ => // "Low" => healthy
+        2.0
+    }
+  }
+
   val ids = (0 until (5 * 4 * 3 * 4)).toStream.iterator
   val samples = for (
     dose <- em(DoseLevel); time <- em(ExposureTime);
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
-    s = Sample("s" + ids.next,
-        Map(DoseLevel.id -> dose, Individual.id -> ind,
-          ExposureTime.id -> time, "compound_name" -> compound,
-          "sin_rep_type" -> "Single", "organ_id" -> "Liver",
-          "test_type" -> "Vivo", "organism" -> "Rat",
-          ControlGroup.id -> cgroup(time, compound))
-        )
+    values: Map[Attribute, String] = Map(DoseLevel -> dose, Individual -> ind,
+          ExposureTime -> time, Compound -> compound,
+          Repeat -> "Single", Organ -> "Liver",
+          TestType -> "Vivo", Organism -> "Rat",
+          LiverWeight -> liverWeight(dose, ind).toString,
+          KidneyWeight -> kidneyWeight(dose, ind).toString,
+          ControlGroup -> cgroup(time, compound));
+    s = Sample("s" + ids.next, values)
   ) yield s
 
   def randomExpr(): (Double, Char, Double) = {

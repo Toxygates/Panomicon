@@ -31,7 +31,10 @@ object Tasklet {
 }
 
 /**
- * TODO consider replacing with Futures
+ * Tasklets are named, small, interruptible tasks
+ * designed to run in sequence on a single thread dedicated to Tasklet running.
+ * Note: it may be possible to achieve a simpler design by using Futures instead
+ *  (with the andThen mechanism)
  */
 abstract class Tasklet(val name: String) {
   import scala.concurrent.ExecutionContext.Implicits.global

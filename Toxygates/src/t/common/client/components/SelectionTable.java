@@ -18,19 +18,14 @@
 
 package t.common.client.components;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.SharedUtils;
-
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -38,6 +33,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
+
+import t.common.shared.SharedUtils;
 
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
@@ -51,9 +48,16 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
   private ListDataProvider<T> provider = new ListDataProvider<T>();
   private static Logger logger = SharedUtils.getLogger("st");
 
+  public interface Resources extends CellTable.Resources {
+    @Override
+    @Source("t/viewer/client/table/Tables.gss")
+    CellTable.Style cellTableStyle();
+  }
+
   public SelectionTable(final String selectColTitle, boolean fixedLayout) {
     super();
-    table = new CellTable<T>();
+    Resources resources = GWT.create(Resources.class);
+    table = new CellTable<T>(15, resources);
     initWidget(table);
 
     selectColumn = new Column<T, Boolean>(new CheckboxCell()) {
@@ -71,7 +75,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
           selected.remove(object);
         }
         selectionChanged(selected);
-        table.redraw();
+        table.redrawRow(index);
       }
     });
 
@@ -113,13 +117,15 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     setSelection(new HashSet<T>(selected));
   }
 
+  @Override
   public void setSelection(Collection<T> selection) {
     clearSelection();
-    logger.info("Received selection " + selection.size());
+    // logger.info("Received selection " + selection.size());
     selected = new HashSet<T>(selection);
     table.redraw();
   }
 
+  @Override
   public Set<T> getSelection() {
     return new HashSet<T>(selected);
   }
@@ -144,22 +150,25 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     selected.remove(t);
   }
 
+  @Override
   public List<T> availableItems() {
     return provider.getList();
   }
 
+  @Override
   public Set<T> validateItems(List<T> items) {
     return new HashSet<T>(items);
   }
 
+  @Override
   public List<Suggestion> getSuggestions(String request) {
     return new ArrayList<Suggestion>();
   }
 
+  @Override
   public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector) {
     setSelection(items);
   }
-
 
   /**
    * Get an item that was selected by highlighting a row (not by ticking a check box)
@@ -181,6 +190,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     for (T item : provider.getList()) {
       ((CheckboxCell) selectColumn.getCell()).clearViewData(provider.getKey(item));
     }
+    table.redraw();
   }
 
   public void setItems(List<T> data) {
@@ -193,6 +203,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
    * @param data
    * @param clearSelection
    */
+  @Override
   public void setItems(List<T> data, boolean clearSelection) {
     logger.info("Set items " + data.size() + " clear: " + clearSelection);
     provider.setList(new ArrayList<T>(data));

@@ -19,9 +19,6 @@
 package t.common.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @SuppressWarnings("serial")
 public class Pair<T, U> implements Serializable {
@@ -62,29 +59,4 @@ public class Pair<T, U> implements Serializable {
     }
     return false;
   }
-
-  public static <A, B> List<A> mapFirst(Collection<Pair<A, B>> pairs) {
-    List<A> r = new ArrayList<A>();
-    for (Pair<A, B> p : pairs) {
-      r.add(p.first());
-    }
-    return r;
-  }
-
-  public static <A, B> List<B> mapSecond(Collection<Pair<A, B>> pairs) {
-    List<B> r = new ArrayList<B>();
-    for (Pair<A, B> p : pairs) {
-      r.add(p.second());
-    }
-    return r;
-  }
-
-  public static <A> List<Pair<A, A>> duplicate(Collection<A> items) {
-    List<Pair<A, A>> r = new ArrayList<Pair<A, A>>();
-    for (A a : items) {
-      r.add(new Pair<A, A>(a, a));
-    }
-    return r;
-  }
-
 }

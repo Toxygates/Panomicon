@@ -18,16 +18,10 @@
 
 package t.common.client.maintenance;
 
-import gwtupload.client.IUploader;
-import gwtupload.client.SingleUploader;
-import gwtupload.client.Uploader;
-import gwtupload.client.IUploader.OnCancelUploaderHandler;
-import gwtupload.client.IUploader.OnFinishUploaderHandler;
-import gwtupload.client.IUploader.OnStartUploaderHandler;
+import com.google.gwt.user.client.ui.*;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import gwtupload.client.*;
+import gwtupload.client.IUploader.*;
 
 /**
  * Handles the uploading of a single file.
@@ -44,7 +38,7 @@ public class UploadWrapper extends Composite {
     initWidget(vp);
     Label l = new Label(description);
     vp.add(l);
-    vp.setStylePrimaryName("uploader");
+    vp.addStyleName("uploader");
     vp.setHeight("80px");
     vp.setWidth("250px");
 
@@ -79,13 +73,15 @@ public class UploadWrapper extends Composite {
 
   void setFinished() {
     finished = true;
+    statusLabel.addStyleDependentName("success");
+    statusLabel.removeStyleDependentName("failure");
     statusLabel.setText("OK");
-    statusLabel.setStylePrimaryName("success");
   }
 
   void setFailure() {
     finished = false;
-    statusLabel.setStylePrimaryName("failure");
+    statusLabel.addStyleDependentName("failure");
+    statusLabel.removeStyleDependentName("success");
     statusLabel.setText("Please upload a file");
   }
 

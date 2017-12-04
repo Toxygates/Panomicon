@@ -2,13 +2,13 @@ package t.viewer.client.table;
 
 import javax.annotation.Nullable;
 
+import t.viewer.client.Utils;
+
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
-
-import t.viewer.client.Utils;
 
 /**
  * A text column that can potentially display tooltips for each cell.

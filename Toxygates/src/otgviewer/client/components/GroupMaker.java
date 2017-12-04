@@ -18,16 +18,14 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
+import t.model.sample.Attribute;
 
 public class GroupMaker {
 
@@ -49,7 +47,7 @@ public class GroupMaker {
       return r;
     }
 
-    final String medParam = schema.mediumParameter(), minParam = schema.minorParameter();
+    final Attribute medParam = schema.mediumParameter(), minParam = schema.minorParameter();
 
     int maxLen = 0;
     String maxKey = "";

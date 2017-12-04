@@ -19,19 +19,15 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import otgviewer.client.components.Screen;
+import t.common.shared.ItemList;
+import t.common.shared.StringList;
+import t.viewer.client.StorageParser;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
-
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.StorageParser;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
 
 public abstract class ItemListsStoreHelper {
 
@@ -56,7 +52,7 @@ public abstract class ItemListsStoreHelper {
    * Obtain current item lists
    */
   protected void init() {
-    for (ItemList il : screen.chosenItemLists) {
+    for (ItemList il : screen.state().itemLists) {
       if (il instanceof StringList) {
         StringList sl = (StringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);

@@ -17,19 +17,12 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
-import t.common.client.HasLogger;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
+import t.viewer.client.ClientState;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
@@ -135,10 +128,10 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
    * @param parent
    * @return
    */
-  public static List<StringList> compileLists(DataListenerWidget parent) {    
+  public static List<StringList> compileLists(ClientState parentState) {    
     List<ItemList> r = new ArrayList<ItemList>();
-    r.addAll(parent.chosenItemLists);
-    r.addAll(parent.chosenClusteringList);
+    r.addAll(parentState.itemLists);
+    r.addAll(parentState.chosenClusteringList);
     return compileLists(r);    
   }
   
@@ -168,7 +161,7 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
    * @param items
    * @return
    */
-  public static List<ItemList> rebuildLists(HasLogger log,
+  public static List<ItemList> rebuildLists(Logger log,
       Collection<StringList> items) {
     List<ItemList> r = new ArrayList<ItemList>();
     Map<String, ClusterBuilder> clusterBuilders = new HashMap<String, ClusterBuilder>();
@@ -177,14 +170,14 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
       if (sl.name().startsWith(CLUSTER_PREFIX)) {
         String[] spl = sl.name().split(":");
         if (spl.length != 2) {                     
-          log.getLogger().warning("Unable to reconstruct cluster with name: " + sl.name());          
+          log.warning("Unable to reconstruct cluster with name: " + sl.name());          
           continue;
         }         
         String nameWithIdx = spl[1]; //e.g. "MyCluster 2"
         
         String[] spl2 = spl[1].split("\\s+");
         if (spl2.length < 2) {
-          log.getLogger().warning("Unable to reconstruct cluster with name: " + sl.name());
+          log.warning("Unable to reconstruct cluster with name: " + sl.name());
           continue;
         }
         String baseName = spl2[0]; //e.g. "MyCluster"

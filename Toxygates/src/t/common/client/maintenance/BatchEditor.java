@@ -20,21 +20,16 @@
 
 package t.common.client.maintenance;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.VerticalPanel;
-
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.BatchUploadException;
-import t.common.shared.maintenance.Instance;
-//import t.viewer.client.Analytics;
+import t.common.shared.maintenance.*;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 abstract public class BatchEditor extends ManagedItemEditor {
   @Nullable protected BatchUploader uploader;
@@ -70,6 +65,8 @@ abstract public class BatchEditor extends ManagedItemEditor {
   
   abstract protected String datasetForBatch();
   
+  protected void onBatchUploadBegan() {}
+
   @Override
   protected void triggerEdit() {
     if (idText.getValue().equals("")) {
@@ -83,13 +80,12 @@ abstract public class BatchEditor extends ManagedItemEditor {
 
     if (addNew) {
       if (uploader.canProceed()) {
-        batchOps.addBatchAsync(b, new TaskCallback(this, "Upload batch", batchOps) {
+        batchOps.addBatchAsync(b, new TaskCallback(logger, "Upload batch", batchOps) {
 
           @Override
           public void onSuccess(Void result) {
             super.onSuccess(result);
-//            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
-//                Analytics.ACTION_BEGIN_DATA_UPLOAD);
+            onBatchUploadBegan();
           }
 
           @Override
@@ -105,6 +101,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
 
           @Override
           protected void handleFailure(Throwable caught) {
+            Window.alert("Error during upload: " + caught.getMessage());
             if (caught instanceof BatchUploadException) {
               BatchUploadException exception = (BatchUploadException) caught;
               if (exception.idWasBad) {

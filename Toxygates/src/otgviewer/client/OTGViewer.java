@@ -36,11 +36,12 @@ public class OTGViewer extends TApplication {
   protected void initScreens() {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
+    addScreenSeq(new SampleSearchScreen(this));
     addScreenSeq(new DataScreen(this));
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
-    addScreenSeq(new SampleDetailScreen(this));
-    
+    addScreenSeq(new SampleDetailScreen(this));    
+
     if (factory.hasMyData()) {      
       addScreenSeq(new MyDataScreen(this));
     }
@@ -53,20 +54,26 @@ public class OTGViewer extends TApplication {
     return schema;
   }
 
-  final private UIFactory factory = initFactory();
+  private UIFactory factory;
 
-  private UIFactory initFactory() {
+  @Override
+  protected void setupUIBase() {
+    initFactory();
+    super.setupUIBase();
+  }
+
+  private void initFactory() {
+    UIFactory f;
     //TODO hardcoding these instance names here may be controversial
     // - think of a better way of handling this
-    UIFactory f;
-    if (instanceName().equals("toxygates") ||
-        instanceName().equals("tg-update")) {
+    if (appInfo().instanceName().equals("toxygates")
+        || appInfo().instanceName().equals("tg-update")) {
       f = new ClassicOTGFactory();
     } else {
       f = new OTGFactory();
     }    
     logger.info("Using factory: " + f.getClass().toString());
-    return f;
+    factory = f;
   }
   
   @Override

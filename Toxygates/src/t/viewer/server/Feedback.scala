@@ -21,14 +21,16 @@
 package t.viewer.server
 
 import java.util.Properties
-import javax.mail.Session
-import javax.mail.internet.MimeMessage
-import javax.mail.internet.InternetAddress
-import javax.mail.Message
-import javax.mail.Address
-import javax.mail.Transport
+
 import scala.Array.canBuildFrom
 import scala.language.implicitConversions
+
+import javax.mail.Address
+import javax.mail.Message
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 object Feedback {
 

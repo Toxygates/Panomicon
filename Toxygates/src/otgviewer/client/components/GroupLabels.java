@@ -20,36 +20,29 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import t.common.shared.DataSchema;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.SampleClassUtils;
-import t.model.SampleClass;
-import t.viewer.client.Utils;
-
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.*;
+
+import t.common.shared.DataSchema;
+import t.common.shared.sample.Group;
+import t.viewer.client.Utils;
 
 public class GroupLabels extends Composite {
 
   protected List<Group> groups;
   protected DataSchema schema;
-  private FlowPanel fpo;
+  private FlowPanel flowPanel;
   protected Screen screen;
 
   final static int LABEL_MAX_LEN = 40;
 
   public GroupLabels(Screen screen, DataSchema schema, List<Group> groups) {
-    fpo = new FlowPanel();
+    flowPanel = new FlowPanel();
     this.groups = groups;
     this.schema = schema;
     this.screen = screen;
-    initWidget(fpo);
+    initWidget(flowPanel);
     showSmall();
   }
 
@@ -57,30 +50,24 @@ public class GroupLabels extends Composite {
     return ":" + g.getTriples(schema, 2, ", ");
   }
 
-  //TODO move some of the style code to CSS
   private void show(List<Group> groups) {
-    fpo.clear();
-    for (Group g : groups) {
-      FlowPanel fp = new FlowPanel();
-      fp.setStylePrimaryName("statusBorder");
-      SampleClass sc = g.getSamples()[0].sampleClass();
-      String tip =
-          SampleClassUtils.label(sc, schema) + ":\n" + g.getTriples(schema, -1, ", ");
-      Label l = Utils.mkEmphLabel(g.getName());
-      l.setWordWrap(false);
-      l.getElement().getStyle().setMargin(2, Unit.PX);
-      l.setStylePrimaryName(g.getStyleName());
-      l.addStyleName("grouplabel");
-      Utils.floatLeft(fp, l);
-      l.setTitle(tip);
-      l = new Label(groupDetailString(g));
-      l.getElement().getStyle().setMargin(2, Unit.PX);
-      l.setStylePrimaryName(g.getStyleName());
-      UIObject.setStyleName(l.getElement(), "grouplabel", true);
-      Utils.floatLeft(fp, l);
-      l.setTitle(tip);
-      l.setWordWrap(false);
-      Utils.floatLeft(fpo, fp);
+    flowPanel.clear();
+    for (Group group : groups) {
+      FlowPanel groupPanel = new FlowPanel();
+      groupPanel.addStyleName("statusBorder");
+      String tip = group.tooltipText(schema);
+
+      Label shortLabel = new Label(group.getName());
+      Label longLabel = new Label(groupDetailString(group));
+      Label[] labels = {shortLabel, longLabel};
+      for (Label label : labels) {
+        label.addStyleName(group.getStyleName());
+        label.addStyleName("groupLabel");
+        label.setTitle(tip);
+        groupPanel.add(label);
+      }
+
+      Utils.addAndFloatLeft(flowPanel, groupPanel);
     }
   }
 
@@ -93,7 +80,7 @@ public class GroupLabels extends Composite {
           showSmall();
         }
       });
-      Utils.floatLeft(fpo, b);
+      Utils.addAndFloatLeft(flowPanel, b);
     }
     screen.resizeInterface();
   }
@@ -108,7 +95,7 @@ public class GroupLabels extends Composite {
           showAll();
         }
       });
-      Utils.floatLeft(fpo, b);
+      Utils.addAndFloatLeft(flowPanel, b);
     } else {
       show(groups);
     }

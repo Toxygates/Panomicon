@@ -18,48 +18,25 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
+
+import otgviewer.client.*;
+import otgviewer.client.rpc.ProbeServiceAsync;
+import t.common.client.components.ResizingDockLayoutPanel;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.*;
+import t.common.shared.sample.Group;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RadioButton;
-import com.google.gwt.user.client.ui.StackLayoutPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.ClusteringSelector;
-import otgviewer.client.GeneOracle;
-import otgviewer.client.ProbeSelector;
-import otgviewer.client.StringListsStoreHelper;
-import otgviewer.client.rpc.SparqlServiceAsync;
-import t.common.client.components.ResizingDockLayoutPanel;
-import t.common.client.components.ResizingListBox;
-import t.common.shared.ItemList;
-import t.common.shared.SharedUtils;
-import t.common.shared.Term;
-import t.common.shared.sample.Group;
-import t.viewer.client.Analytics;
-import t.model.SampleClass;
-import t.viewer.client.Utils;
+import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -72,7 +49,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private final Screen screen;
 
-  private final SparqlServiceAsync sparqlService;
+  private final ProbeServiceAsync probeService;
 
   private final GeneOracle oracle;
 
@@ -105,11 +82,37 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     this.screen = screen;
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
-    sparqlService = screen.manager.sparqlService();
+    probeService = screen.manager.probeService();
 
     initWindow();
   }
 
+  /**
+   * Construct a gene set editor in a DataScreen and set up listeners
+   * appropriately.
+   * @param screen
+   * @param parent
+   * @return
+   */
+  public static GeneSetEditor make(final DataScreen screen, final DataListenerWidget parent) {
+    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
+    gse.addSaveActionHandler(new SaveActionHandler() {
+      @Override
+      public void onSaved(String title, List<String> items) {
+        String[] itemsArray = items.toArray(new String[0]);
+        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
+            title, itemsArray));
+        screen.probesChanged(itemsArray);
+        screen.updateProbes();
+      }
+
+      @Override
+      public void onCanceled() {}
+    });
+    parent.addListener(gse);
+    return gse;
+  }
+  
   /*
    * Override this function to handle post save event and what genes were saved
    */
@@ -146,7 +149,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     addProbeSelectionTools(probeSelStack);
 
     Label l = new Label("Selected probes");
-    l.setStylePrimaryName("heading");
+    l.addStyleName("heading");
 
     probesList = new ResizingListBox(74);
     probesList.setMultipleSelect(true);
@@ -239,7 +242,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     bottomContainer.add(bottomContent);
 
     l = new Label("Title:");
-    l.setStylePrimaryName("heading");
+    l.addStyleName("heading");
     l.addStyleName("table-cell");
 
     titleText = new TextBox();
@@ -317,11 +320,11 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       protected void getProbes(Term term) {
         switch (term.getAssociation()) {
           case KEGG:
-            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
+            probeService.probesForPathway(term.getTermString(),
                 getAllSamples(), retrieveProbesCallback());
             break;
           case GO:
-            sparqlService.probesForGoTerm(term.getTermString(), getAllSamples(),
+            probeService.probesForGoTerm(term.getTermString(), getAllSamples(),
                 retrieveProbesCallback());
             break;
           default:
@@ -348,7 +351,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   private VerticalPanel innerVP(String l) {
     VerticalPanel vpii = Utils.mkVerticalPanel();
     vpii.setWidth("100%");
-    vpii.setStylePrimaryName("colored-margin");
+    vpii.addStyleName("geneSetInnerPanel");
 
     Label label = new Label(l);
     vpii.add(label);
@@ -377,6 +380,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     customProbeText.setWidth("95%");
 
     vpii.add(new Button("Add manual list", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ev) {
         String text = customProbeText.getText();
         String[] split = text.split("[\n ,\t]");
@@ -397,6 +401,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       vpii.add(sb);
       sb.setWidth("95%");
       vpii.add(new Button("Add gene", new ClickHandler() {
+        @Override
         public void onClick(ClickEvent ev) {
           String[] gs = new String[1];
           if (sb.getText().length() == 0) {
@@ -412,11 +417,13 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       vpii = innerVP("Match by partial probe name:");
       vpi.add(vpii);
 
-      // TODO "filter" function as well as "add"
+      //In the future, we might have a "filter" function for intersection,
+      //in addition to "add" (which is effectively a union)
       final TextBox tb = new TextBox();
       vpii.add(tb);
       tb.setWidth("95%");
       vpii.add(new Button("Add", new ClickHandler() {
+        @Override
         public void onClick(ClickEvent ev) {
           String[] gs = new String[1];
           if (tb.getText().length() == 0) {
@@ -447,11 +454,13 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     if (probes.length > 0) {
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
-      sparqlService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
+      probeService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
+        @Override
         public void onSuccess(String[][] syms) {
           deferredAddProbes(probesInOrder, syms);
         }
 
+        @Override
         public void onFailure(Throwable caught) {
           Window.alert("Unable to get gene symbols for probes.");
         }
@@ -464,10 +473,11 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    sparqlService.identifiersToProbes(probes, true, false, titleMatch, 
+    probeService.identifiersToProbes(probes, true, false, titleMatch, 
         screen.getAllSamples(),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain manual probes (technical error).") {
+          @Override
           public void handleSuccess(String[] probes) {
             if (probes.length == 0) {
               Window.alert("No matching probes were found.");
@@ -504,8 +514,9 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       SampleClass sc = screen.chosenColumns.get(0).samples()[0].sampleClass();
       logger.info("Target lookup for: " + sc.toString());
 
-      sparqlService.probesTargetedByCompound(sc, compound, service, homologs,
+      probeService.probesTargetedByCompound(sc, compound, service, homologs,
           new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
+            @Override
             public void handleSuccess(String[] probes) {
               if (probes.length == 0) {
                 Window.alert("No matching probes were found.");
@@ -525,7 +536,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 
     VerticalPanel vpi = Utils.mkVerticalPanel(true);
-    vpi.setStylePrimaryName("colored");
+    vpi.addStyleName("colored");
     Label l = new Label(label);
     vpi.add(l);
 
@@ -610,11 +621,9 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   @Override
   public void columnsChanged(List<Group> cs) {
     super.columnsChanged(cs);
-    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
+    Stream<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
-    for (String c : compounds) {
-      compoundList.addItem(c);
-    }
+    compounds.forEach(c -> compoundList.addItem(c));    
   }
 
   public void createNew(String[] initProbes) {

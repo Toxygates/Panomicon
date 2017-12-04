@@ -20,11 +20,10 @@
 
 package otg
 
-import t.BaseConfig
-import otg.platform.SSOrthTTL
 import friedrich.util.CmdLineOptions
-import t.DataConfig
-import t.TriplestoreConfig
+import otg.platform.SSOrthTTL
+
+import t._
 
 object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
   override protected def handleArgs(args: Array[String])(implicit context: Context) {
@@ -52,7 +51,9 @@ object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
 case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends BaseConfig {
   def seriesBuilder = OTGSeries
 
-  def sampleParameters = otg.db.OTGParameterSet
+//  def sampleParameters = otg.db.OTGParameterSet
 
   def appName = "Toxygates"
+
+  def attributes = otg.model.sample.AttributeSet.getDefault
 }

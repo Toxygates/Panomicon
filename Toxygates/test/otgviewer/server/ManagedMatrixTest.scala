@@ -20,16 +20,17 @@
 
 package otgviewer.server
 
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+import otgviewer.server.rpc.Conversions._
+import t.TTestSuite
+
 import t.common.shared.sample._
 import t.db.testing._
 import t.db.testing.TestData._
-import org.scalatest.FunSuite
-import otgviewer.server.rpc.Conversions._
-import t.TTestSuite
-import t.viewer.server.NormalizedBuilder
 import t.viewer.server.ExtFoldBuilder
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import t.viewer.server.NormalizedBuilder
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {

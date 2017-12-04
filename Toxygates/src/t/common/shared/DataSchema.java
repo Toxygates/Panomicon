@@ -24,7 +24,9 @@ import java.util.Comparator;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.Sample;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 
 /**
@@ -35,7 +37,7 @@ import t.model.SampleClass;
 @SuppressWarnings("serial")
 public abstract class DataSchema implements Serializable {
 
-  String[] defaultChartParameters = new String[3];
+  Attribute[] defaultChartParameters = new Attribute[3];
 
   public DataSchema() {
     defaultChartParameters[0] = majorParameter();
@@ -46,28 +48,31 @@ public abstract class DataSchema implements Serializable {
   /**
    * All the possible values, in their natural order, for a sortable parameter.
    */
-  public abstract String[] sortedValues(String parameter) throws Exception;
+  public abstract String[] sortedValues(Attribute parameter) throws Exception;
 
   /**
    * Ordered values for a sortable parameter, which should be displayed to the user in the context
    * of a given list of sample classes.
    */
   // TODO move ValueType or avoid depending on here
-  public String[] sortedValuesForDisplay(@Nullable ValueType vt, String parameter) throws Exception {
+  public String[] sortedValuesForDisplay(@Nullable ValueType vt, Attribute parameter)
+      throws Exception {
     return filterValuesForDisplay(vt, parameter, sortedValues(parameter));
   }
 
   // TODO move ValueType or avoid depending on here
-  public String[] filterValuesForDisplay(@Nullable ValueType vt, String parameter, String[] from) {
+  public String[] filterValuesForDisplay(@Nullable ValueType vt, Attribute parameter,
+      String[] from) {
     return from;
   }
 
   /**
    * Sort values from the given sortable parameter in place.
    */
-  public void sort(String parameter, String[] values) throws Exception {
+  public void sort(Attribute parameter, String[] values) throws Exception {
     final String[] sorted = sortedValues(parameter);
     Arrays.sort(values, new Comparator<String>() {
+      @Override
       public int compare(String e1, String e2) {
         Integer i1 = SharedUtils.indexOf(sorted, e1);
         Integer i2 = SharedUtils.indexOf(sorted, e2);
@@ -85,57 +90,49 @@ public abstract class DataSchema implements Serializable {
    * 
    * @return
    */
-  public abstract String majorParameter();
+  public abstract Attribute majorParameter();
 
   /**
    * Used for columns in the time/dose selection grid
    * 
    * @return
    */
-  public abstract String mediumParameter();
+  public abstract Attribute mediumParameter();
 
   /**
    * Used for subcolumns (checkboxes) in the time/dose selection grid
    * 
    * @return
    */
-  public abstract String minorParameter();
+  public abstract Attribute minorParameter();
 
   /**
    * Used for charts
    * 
    * @return
    */
-  public abstract String timeParameter();
+  public abstract Attribute timeParameter();
 
   /**
    * Used to group charts in columns, when possible
    * 
    * @return
    */
-  public abstract String timeGroupParameter();
+  public abstract Attribute timeGroupParameter();
 
-  public abstract String[] macroParameters();
+  public abstract Attribute[] macroParameters();
 
-  public String[] chartParameters() {
+  public Attribute[] chartParameters() {
     return defaultChartParameters;
   }
-
-  /**
-   * Human-readable title
-   * 
-   * @param parameter
-   * @return
-   */
-  public abstract String title(String parameter);
 
   public boolean isSelectionControl(SampleClass sc) {
     return false;
   }
 
   public boolean isControlValue(String parameter, String value) {
-    return (parameter.equals(mediumParameter()) && isControlValue(value))
-        || (parameter.equals(majorParameter()) && isMajorParamSharedControl(value));
+    return (parameter.equals(mediumParameter().id()) && isControlValue(value))
+        || (parameter.equals(majorParameter().id()) && isMajorParamSharedControl(value));
   }
 
   /**
@@ -146,6 +143,14 @@ public abstract class DataSchema implements Serializable {
    */
   public boolean isControlValue(String value) {
     return false;
+  }
+
+  public boolean isControl(SampleClass s) {
+    return isControlValue(s.get(mediumParameter()));
+  }
+
+  public boolean isControl(Sample s) {
+    return isControlValue(s.get(mediumParameter()));
   }
 
   @Deprecated

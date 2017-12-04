@@ -20,19 +20,10 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
 import t.common.client.components.ItemSelector;
 import t.viewer.client.Analytics;
@@ -88,10 +79,14 @@ public class FilterEditor extends Composite {
       @Override
       public void onClick(ClickEvent event) {
         try {
-          Double newVal = parseNumber(input.getText());
-          ColumnFilter newFilt = new ColumnFilter(newVal, filterType.value());
-          onChange(newFilt);
-          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_FILTER_COLUMN);
+          if (input.getText() == "") {
+            onChange(new ColumnFilter(null, filterType.value()));
+          } else {
+            Double newVal = parseNumber(input.getText());
+            ColumnFilter newFilt = new ColumnFilter(newVal, filterType.value());
+            onChange(newFilt);
+            Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_FILTER_COLUMN);
+          }
         } catch (NumberFormatException e) {
           Window.alert("Invalid number format.");
         }

@@ -18,76 +18,39 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
+import com.google.gwt.core.client.*;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.MetaElement;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.*;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.*;
 import otgviewer.client.components.Screen.QueuedAction;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.ProbeService;
+import otgviewer.client.rpc.ProbeServiceAsync;
+import otgviewer.client.rpc.SampleService;
+import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
+import t.common.shared.sample.*;
+import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
-import t.viewer.client.rpc.MatrixService;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.rpc.SeriesService;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.UserDataService;
-import t.viewer.client.rpc.UserDataServiceAsync;
+import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
 
 /**
@@ -98,12 +61,10 @@ import t.viewer.shared.AppInfo;
 abstract public class TApplication implements ScreenManager, EntryPoint {
   private static Resources resources = GWT.create(Resources.class);
 
-  private static SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-      .create(SparqlService.class);
-
-  private static SampleServiceAsync sampleService = sparqlService;
-  private static ProbeServiceAsync probeService = sparqlService;
-  
+  private static SampleServiceAsync sampleService = (SampleServiceAsync) GWT
+      .create(SampleService.class);
+  private static ProbeServiceAsync probeService = (ProbeServiceAsync) GWT
+      .create(ProbeService.class);
   private static MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
       .create(MatrixService.class);
   private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
@@ -149,55 +110,78 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   protected AppInfo appInfo = null;
 
+  protected Resources.OtgCssResource css = resources.otgViewerStyle();
+
+  @Override
   public AppInfo appInfo() {
     return appInfo;
   }
 
+  @Override
   public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
 
-    @Nullable String existingKey = getParser().getItem("userDataKey");
-    sparqlService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
+    @Nullable
+    String existingKey = getParser().getItem("userDataKey");
+    probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
+      @Override
       public void onSuccess(AppInfo result) {
         l.info("Got appInfo");
         wait.hide();
         appInfo = result;
         handler.onSuccess(result);
       }
+
+      @Override
       public void onFailure(Throwable caught) {
         wait.hide();
         l.log(Level.WARNING, "Failed to obtain appInfo", caught);
         handler.onFailure(caught);
-      }      
+      }
     });
   }
-  
+
   /**
    * This is the entry point method.
    */
+  @Override
   public void onModuleLoad() {
+    String[] colors = new String[] {css.group0_color(), css.group1_color(), css.group2_color(),
+        css.group3_color(), css.group4_color(), css.group5_color(), css.group6_color()};
+    SampleGroup.setColors(colors);
 
+    css.ensureInjected();
+
+    GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {      
+      @Override
+      public void onUncaughtException(Throwable e) {
+        logger.log(Level.WARNING, "Exception", e);
+      }
+    });
+    
     reloadAppInfo(new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
         setupUIBase();
         prepareScreens();
+        loadPersistedState();
       }
 
       @Override
       public void onFailure(Throwable caught) {
-        Window.alert("Failed to obtain application information.");        
+        Window.alert("Failed to obtain application information.");
       }
     });
 
     Logger l = SharedUtils.getLogger();
     l.info("onModuleLoad() finished");
-  } 
-  
+  }
+
   protected void setupUIBase() {
     menuBar = setupMenu();
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
       public void onValueChange(ValueChangeEvent<String> vce) {
         showScreenForToken(vce.getValue(), false);
       }
@@ -206,8 +190,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     rootPanel = RootLayoutPanel.get();
 
     Window.addResizeHandler(new ResizeHandler() {
+      @Override
       public void onResize(ResizeEvent event) {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+          @Override
           public void execute() {
             resizeInterface();
           }
@@ -218,34 +204,37 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mainDockPanel = new DockLayoutPanel(Unit.PX);
     rootPanel.add(mainDockPanel);
 
-    mainDockPanel.addNorth(menuBar, 35);
+    FlowPanel menuBarPanel = new FlowPanel();
+    menuBarPanel.add(menuBar);
+    menuBarPanel.addStyleName("menuBarPanel");
+    mainDockPanel.addNorth(menuBarPanel, css.menubarpanel_height());
 
     HorizontalPanel navOuter = Utils.mkHorizontalPanel();
     navOuter.setWidth("100%");
-    navOuter.setStylePrimaryName("navOuterPanel");
-    
+    navOuter.addStyleName("navOuterPanel");
+
     navPanel = Utils.mkHorizontalPanel();
-    navPanel.setStylePrimaryName("navPanel");
+    navPanel.addStyleName("navPanel");
     navOuter.add(navPanel);
-    mainDockPanel.addNorth(navOuter, 35);
+    mainDockPanel.addNorth(navOuter, css.navpanel_height());
   }
-  
+
   protected void readURLParameters(Screen scr) {
     readImportedProbes(scr);
     readGroupURLparameters(scr);
   }
-  
+
   protected void readImportedProbes(final Screen scr) {
     Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
-    
+
     if (appInfo.importedGenes() != null) {
       String[] igs = appInfo.importedGenes();
       l.info("Probes from appInfo/POST request size: " + igs.length);
       useProbes = igs;
     }
-    
-    //appInfo.importedGenes overrides GET parameters    
+
+    // appInfo.importedGenes overrides GET parameters
     Map<String, List<String>> params = Window.Location.getParameterMap();
     if (useProbes == null && params.containsKey("probes")) {
       List<String> pl = params.get("probes");
@@ -255,67 +244,68 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       }
     }
     if (useProbes != null && useProbes.length > 0) {
-      final String[] pr = useProbes;      
-      scr.enqueue(new QueuedAction("Set probes from URL/POST") {        
+      final String[] pr = useProbes;
+      scr.enqueue(new QueuedAction("Set probes from URL/POST") {
         @Override
         public void run() {
-          sparqlService.identifiersToProbes(pr, true, true, false, null,
+          probeService.identifiersToProbes(pr, true, true, false, null,
               new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
+                @Override
                 public void handleSuccess(String[] probes) {
-                  if (Arrays.equals(probes, scr.chosenProbes)) {
+                  if (Arrays.equals(probes, scr.state().probes)) {
                     return;
                   }
                   scr.probesChanged(probes);
                   scr.storeState(scr);
                   if (scr instanceof DataScreen) {
-                    //Force a data reload
+                    // Force a data reload
                     ((DataScreen) scr).updateProbes();
                   }
                 }
-              });        
+              });
         }
       });
     }
-    
+
   }
-  
+
   protected void readGroupURLparameters(final Screen scr) {
-    Logger l = SharedUtils.getLogger();    
+    Logger l = SharedUtils.getLogger();
     Map<String, List<String>> params = Window.Location.getParameterMap();
 
     final List<String[]> useGroups = new ArrayList<String[]>();
     final List<String> groupNames = new ArrayList<String>();
-    if (params.containsKey("group")) {      
-      for (String g: params.get("group")) {
+    if (params.containsKey("group")) {
+      for (String g : params.get("group")) {
         l.info("Group from URL: " + g);
         String[] spl = g.split(",");
         if (spl.length >= 2) {
           groupNames.add(spl[0]);
           useGroups.add(Arrays.copyOfRange(spl, 1, spl.length));
         }
-      }      
+      }
     }
-   
+
     if (useGroups.size() > 0) {
-      scr.enqueue(new QueuedAction("Set columns from URL") {        
+      scr.enqueue(new QueuedAction("Set columns from URL") {
         @Override
         public void run() {
-          sparqlService.samplesById(useGroups, new PendingAsyncCallback<List<Sample[]>>(scr, 
+          sampleService.samplesById(useGroups, new PendingAsyncCallback<List<Sample[]>>(scr,
               "Failed to look up samples") {
+            @Override
             public void handleSuccess(List<Sample[]> samples) {
               int i = 0;
               List<Group> finalGroups = new ArrayList<Group>();
-              for (Sample[] ss: samples) {                
+              for (Sample[] ss : samples) {
                 Group g = new Group(schema(), groupNames.get(i), ss);
                 i += 1;
                 finalGroups.add(g);
               }
-              if (finalGroups.size() > 0 && !
-                  finalGroups.equals(scr.chosenColumns())) {
+              if (finalGroups.size() > 0 && !finalGroups.equals(scr.chosenColumns())) {
                 scr.columnsChanged(finalGroups);
                 scr.storeState(scr);
                 if (scr instanceof DataScreen) {
-                  //Force a data reload
+                  // Force a data reload
                   ((DataScreen) scr).updateProbes();
                 }
               }
@@ -323,18 +313,17 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
           });
         }
       });
-    }     
+    }
   }
 
-  private void prepareScreens() {       
+  private void prepareScreens() {
     initScreens(); // Need access to the nav. panel
-    showScreenForToken(History.getToken(), true);    
-    deconfigureAll(pickScreen(History.getToken()));
+    showScreenForToken(History.getToken(), true);
+    reconfigureAll(pickScreen(History.getToken()));
   }
 
   protected static Storage tryGetStorage() {
     Storage r = Storage.getLocalStorageIfSupported();
-    // TODO concurrency an issue for GWT here?
     if (r == null) {
       Window
           .alert("Local storage must be supported in the web browser. The application cannot continue.");
@@ -343,11 +332,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   private StorageParser parser;
-  
+
   protected String storageParserPrefix() {
     return instanceName();
   }
-  
+
+  @Override
   public StorageParser getParser() {
     if (parser != null) {
       return parser;
@@ -370,8 +360,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * In the HTML head, e.g.: <meta name="instanceName" content="toxygates"> .
    * 
-   * TODO: this information is also available via AppInfo and we should move towards
-   * using only that.
+   * TODO: this information is also available via AppInfo and we should move towards using only
+   * that. Except we now only use it in storageParserPrefix, which is needed for getting AppInfo in
+   * the first place...
    * 
    * @return
    */
@@ -388,7 +379,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     toolsMenuBar = new MenuBar(true);
     MenuItem mi = new MenuItem("Tools", toolsMenuBar);
     postMenuItems.add(mi);
-    
+
     setupToolsMenu(toolsMenuBar);
 
     MenuBar hm = new MenuBar(true);
@@ -397,9 +388,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mi.getElement().setId("helpMenu");
 
     mi = new MenuItem("Leave feedback...", new Command() {
+      @Override
       public void execute() {
-        FeedbackForm feedbackDialog = new FeedbackForm(currentScreen, currentScreen,
-            "kenji@nibiohn.go.jp, y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com");
+        FeedbackForm feedbackDialog =
+            new FeedbackForm(currentScreen, currentScreen,
+                "kenji@nibiohn.go.jp, y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com");
         feedbackDialog.display("Leave feedback", DialogPosition.Center);
       }
     });
@@ -407,36 +400,42 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mi.addStyleName("feedbackMenuItem");
 
     hm.addItem(new MenuItem("Help for this screen...", new Command() {
+      @Override
       public void execute() {
         currentScreen.showHelp();
       }
     }));
-    
+
     hm.addItem(new MenuItem("Data sources...", new Command() {
+      @Override
       public void execute() {
         showDataSources();
       }
     }));
 
     hm.addItem(new MenuItem("Download user guide...", new Command() {
+      @Override
       public void execute() {
         Window.open(appInfo.userGuideURL(), "_blank", "");
       }
     }));
 
     hm.addItem(new MenuItem("Display guide messages", new Command() {
+      @Override
       public void execute() {
         currentScreen.showGuide();
       }
     }));
 
     hm.addItem(new MenuItem("About Toxygates...", new Command() {
+      @Override
       public void execute() {
         Utils.showHelp(getAboutHTML(), getAboutImage());
       }
     }));
 
     hm.addItem(new MenuItem("Version history...", new Command() {
+      @Override
       public void execute() {
         Utils.showHelp(getVersionHTML(), null);
       }
@@ -444,11 +443,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     return menuBar;
   }
-  
+
   protected void setupToolsMenu(MenuBar toolsMenuBar) {
-    
+
   }
-  
+
   protected void showDataSources() {
     VerticalPanel vp = new VerticalPanel();
     vp.add(MetadataInfo.fromPlatforms(appInfo.platforms()));
@@ -467,42 +466,29 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel.clear();
     for (int i = 0; i < workflow.size(); ++i) {
       final Screen s = workflow.get(i);
-      //String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
+      // String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
       String link = s.getTitle();
-      final Label l = new Label(link);
-      l.addStyleName("navlink");
+      final Label label = new Label(link);
+      label.setStylePrimaryName("navlink");
       if (s.enabled() && s != current) {
-        l.addClickHandler(new ClickHandler() {
+        label.addClickHandler(new ClickHandler() {
+          @Override
           public void onClick(ClickEvent e) {
             History.newItem(s.key());
           }
         });
-        l.setStylePrimaryName("navlink-enabled");
-        
-        l.addMouseOverHandler(new MouseOverHandler() {          
-          @Override
-          public void onMouseOver(MouseOverEvent event) {
-            l.setStylePrimaryName("navlink-mouseover");            
-          }
-        });
-        l.addMouseOutHandler(new MouseOutHandler() {          
-          @Override
-          public void onMouseOut(MouseOutEvent event) {
-            l.setStylePrimaryName("navlink-enabled");            
-          }
-        });
-        
+        label.addStyleDependentName("enabled");
       } else {
         if (s == current) {
-          l.setStylePrimaryName("navlink-current");
+          label.addStyleDependentName("current");
         } else {
-          l.setStylePrimaryName("navlink-disabled");
+          label.addStyleDependentName("disabled");
         }
       }
-      if (i > 0) {
-        l.addStyleName("navlink-inner");
-      }            
-      navPanel.add(l);      
+      if (i == 0) {
+        label.addStyleDependentName("first");
+      }
+      navPanel.add(label);
     }
   }
 
@@ -533,7 +519,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         toolsMenuBar.removeItem(mi);
       }
     }
-    currentScreen = s;    
+    currentScreen = s;
     menuBar.clearItems();
     List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
     allItems.addAll(s.menuItems());
@@ -574,6 +560,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * Proceed if the screen is ready.
    */
+  @Override
   public void attemptProceed(String to) {
     Screen s = pickScreen(to);
     if (s.enabled()) {
@@ -612,7 +599,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   @Override
-  public void deconfigureAll(Screen from) {
+  public void reconfigureAll(Screen from) {
     for (Screen s : workflow) {
       if (s != from) {
         s.setConfigured(false);
@@ -620,7 +607,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
     for (Screen s : workflow) {
       if (s != from) {
-        s.loadState(s);
+        s.loadState(s, appInfo.attributes());
         s.tryConfigure();
       }
     }
@@ -651,32 +638,51 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     rootPanel.onResize();
   }
 
+  @Override
   public Resources resources() {
     return resources;
   }
 
-  public SparqlServiceAsync sparqlService() {
-    return sparqlService;
-  }
-
+  @Override
   public SampleServiceAsync sampleService() {
     return sampleService;
   }
-  
+
+  @Override
   public ProbeServiceAsync probeService() {
     return probeService;
   }
-  
+
+  @Override
   public SeriesServiceAsync seriesService() {
     return seriesService;
   }
 
+  @Override
   public MatrixServiceAsync matrixService() {
     return matrixService;
   }
-  
+
+  @Override
   public UserDataServiceAsync userDataService() {
     return userDataService;
   }
 
+  /**
+   * Persisted items that are to be applied at application startup,
+   * when all screens have been initialised.
+   */
+  protected List<PersistedState<?>> getPersistedItems() {
+    return new ArrayList<>();
+  }
+
+  protected void loadPersistedState() {
+    for (PersistedState<?> ps: getPersistedItems()) {
+      ps.loadAndApply(getParser());
+    }
+    for (Screen s: screens.values()) {
+      s.loadPersistedState();
+    }
+  }
+  
 }

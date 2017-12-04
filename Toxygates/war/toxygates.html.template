@@ -7,15 +7,11 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=9">
-	<meta name="uitype" content="adjuvant">
+	<meta http-equiv="X-UA-Compatible" content="IE=9">	
 	<!--  This parameter is filled in by scripts like new_instance.public.sh -->
 	<meta name="instanceName" content="##instanceName##">
-	
-    <!--                                                               -->
-    <!-- Consider inlining CSS to reduce the number of requested files -->
-    <!--                                                               -->
-    <link type="text/css" rel="stylesheet" href="OTGViewer.css">
+
+    <link rel="stylesheet" href="gwt-clean.css" type="text/css"/>
     <!-- Now needed for user data screen -->
     <link type="text/css" rel="stylesheet" href="AdminConsole.css">
 	<link href='http://fonts.googleapis.com/css?family=Play:400,700' rel='stylesheet' type='text/css'>

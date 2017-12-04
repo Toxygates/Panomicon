@@ -26,21 +26,15 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-
 import t.common.client.Command;
-import t.common.client.HasLogger;
 import t.common.shared.ManagedItem;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
-public abstract class ManagedItemEditor extends Composite implements HasLogger {
+
+public abstract class ManagedItemEditor extends Composite {
 
   protected VerticalPanel vp;
   /**
@@ -145,12 +139,6 @@ public abstract class ManagedItemEditor extends Composite implements HasLogger {
    */
   protected void onError() {}
 
-  final Logger logger = Logger.getLogger("ManagedItemEditor");
-
-  @Override
-  public Logger getLogger() {
-    return logger;
-  }
-
+  protected final Logger logger = Logger.getLogger("ManagedItemEditor");
 
 }

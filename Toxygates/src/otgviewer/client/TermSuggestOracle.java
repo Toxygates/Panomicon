@@ -19,26 +19,20 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import otgviewer.client.components.ExactMatchHandler;
-import otgviewer.client.components.HasExactMatchHandler;
-import otgviewer.client.components.Screen;
-import t.common.shared.AType;
-import t.common.shared.Pair;
-import t.common.shared.Term;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import java.util.*;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
+import otgviewer.client.components.*;
+import t.common.shared.*;
+import t.viewer.client.rpc.ProbeServiceAsync;
+
 public class TermSuggestOracle extends SuggestOracle implements
     HasExactMatchHandler<Term> {
 
-  private final SparqlServiceAsync sparqlService;
+  private final ProbeServiceAsync probeService;
 
   private String lastRequest = "";
 
@@ -46,7 +40,7 @@ public class TermSuggestOracle extends SuggestOracle implements
       new ArrayList<ExactMatchHandler<Term>>();
 
   public TermSuggestOracle(Screen screen) {
-    sparqlService = screen.manager().sparqlService();
+    probeService = screen.manager().probeService();
   }
 
   @Override
@@ -70,7 +64,7 @@ public class TermSuggestOracle extends SuggestOracle implements
   }
 
   public void getSuggestions(final Request request, final Callback callback) {
-    sparqlService.keywordSuggestions(request.getQuery(), 5,
+    probeService.keywordSuggestions(request.getQuery(), 5,
         new AsyncCallback<Pair<String, AType>[]>() {
           @Override
           public void onSuccess(Pair<String, AType>[] result) {
@@ -147,10 +141,10 @@ public class TermSuggestOracle extends SuggestOracle implements
     private String getFullDisplayString(String display, String reference) {
       StringBuffer sb = new StringBuffer();
       sb.append("<div class=\"suggest-item\">");
-      sb.append("<div class=\"suggest-keyword\">");
+      sb.append("<div class=\"suggestion-keyword\">");
       sb.append(display);
       sb.append("</div>");
-      sb.append("<div class=\"suggest-reference\">");
+      sb.append("<div class=\"suggestion-reference\">");
       sb.append(reference);
       sb.append("</div>");
       sb.append("</div>");

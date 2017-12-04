@@ -1,0 +1,37 @@
+<H3>Sample search</H3>
+
+<p>
+This screen provides a way to search for samples based on values of biological parameters, and to form sample groups from search results.
+
+<h4>Units and samples</h4>
+<p>A sample unit groups together all the samples that were obtained under the same conditions, i.e., a certain amount of time after receiving a certain dose of a certain compound. In Toxygates, each unit contains three samples. A unit search will find units whose biological parameters, when averaged, match the specified search criteria. A sample search will, instead, find individual samples whose biological parameters match the search criteria.
+
+<h4>Performing a search</h4>
+<p>In order to perform a search, the user must first specify the search criteria. A simple search criterion consists of a biological parameter and a condition that that parameter must meet. For example, "Kidney Weight Left" and "Low" would match units (or samples) whose left kidney weight in grams was low relative to the distribution of left kidney weight among control samples for that unit (or sample). 
+
+<p>Here are descriptions of the possible search conditions:
+
+<dl>
+<dt>Above limit and Below limit</dt> <dd>These conditions simply check the values of biological parameters against a user-provided threshold. Above limit means that the value of a biological parameter (averaged over a unit, in the case of a unit search, or for a single sample, in the case of a sample search) must be above that threshold. Below limit means that the value must be below that threshold.</dd>
+<dt>Low, Normal range, and High</dt> <dd>These conditions check the values of biological parameters against the distribution of the control group for a unit or sample. Low (and High) match values that are more than a certain distance lower (or higher) than the mean of the corresponding control group, whereas Normal range matches values that are within that distance from the mean. For sample search, the threshold distance is two standard deviations (of the control samples' distribution). For unit search, the threshold is two standard deviations, divided by the square root of the number of samples in the (treated) sample unit.</dd>
+</dl>
+
+<p>
+More complex criteria can be built up by creating disjunctions (OR-conditions) and conjunctions (AND-conditions) of simple search criteria. An OR-condition can be built up by adding further search criteria to the right of existing criteria, and will match units (or samples) that meet at least one of the conditions provided. An AND-condition can be built up by adding further search criteria to below existing criteria, and will match units (or samples) that meet all of the conditions provided.
+
+<p>
+Once conditions have been specified, a search can be run by clicking on the Unit Search or Sample Search buttons.
+
+<h4>Viewing search results</h4>
+<p>
+Once computed, search results will be shown in a table below the search criteria area. Columns will be shown for the Compound, Dose Level, Exposure Time, and Sample ID for each result, as well as all of the biological parameters in the search conditions. The search results will be sorted by Compound, then Dose Level, and then by Exposure Time. Mousing over values in the search results will show unrounded values for numerical biological parameters, as well as all Sample IDs for a unit in the case of unit search.
+
+<p>
+In addition, for unit searches the inspect icons to the right of the Sample ID column will open a window showing the sample details (all biological parameter values) for all samples in the unit and the corresponding control group. 
+
+<h4>Saving sample groups (only available in Unit Search)</h4>
+<p>To create a sample group from the results of a search, select units by clicking on the check box on the far left of the table for the units desired, then click on the Save Sample Group button. A sample group created from the Sample search screen will be activated automatically, so that data for it will be immediately visible in the View data screen. To activate/reactivate, delete, or edit these sample groups, use the Sample groups screen as usual.
+
+<h4>CSV download and biological parameter display</h4>
+<p>
+Additional functionality can be accessed from the menu at the top of the screen. From the View menu you can display additional biological parameters for each unit or sample in the search results. From the File menu you can request a CSV download of the currently visible search results. The columns in the CSV file will correspond to the columns currently displayed for the search results, including any additional biological parameter columns that have been enabled from the View menu. 

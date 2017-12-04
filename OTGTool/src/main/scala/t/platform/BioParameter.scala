@@ -1,6 +1,5 @@
 package t.platform
 
-import t.db.SampleParameter
 import t.db.file.TSVMetadata
 import t.db.file.MapMetadata
 import t.db.Metadata
@@ -9,28 +8,39 @@ import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
 import t.sample.SampleSet
-import t.db.SampleParameters._
+import t.model.sample.Attribute
+import t.model.sample.BasicAttribute
+import otg.model.sample.OTGAttribute._
+import scala.collection.JavaConversions._
 
-case class BioParameter(key: String, label: String, kind: String,
+/**
+ * Construct a BioParameter object.
+ * @param attributes attributes of the bio parameter (not sample attributes) -
+ *  tentative functionality for describing bio parameters in platforms
+ */
+case class BioParameter(attribute: Attribute,
     section: Option[String],
     lowerBound: Option[Double], upperBound: Option[Double],
     attributes: Map[String, String] = Map()) {
 
-  /**
-   * Obtain an equivalent SampleParameter (for lookup purposes)
-   */
-  def sampleParameter = SampleParameter(key, label)
+  def key: String = attribute.id
+
+  def label: String = attribute.title
+
+  def kind: String = {
+    if (attribute.isNumerical()) "numerical" else "text"
+  }
 }
 
-class BioParameters(lookup: Map[String, BioParameter]) {
-  def apply(key: String) = lookup(key)
-  def get(key: String) = lookup.get(key)
+class BioParameters(lookup: Map[Attribute, BioParameter]) {
+  def apply(key: Attribute) = lookup(key)
+  def get(key: Attribute) = lookup.get(key)
 
   /**
-   * Obtain the set as sample parameters, sorted by section and label.
+   * Obtain the set as attributes, sorted by section and label.
    */
-  def sampleParameters: Seq[SampleParameter] = lookup.values.toSeq.
-    sortBy(p => (p.section, p.label)).map(_.sampleParameter)
+  def sampleParameters: Seq[Attribute] = lookup.values.toSeq.
+    sortBy(p => (p.section, p.label)).map(_.attribute)
 
   /**
    * Extract bio parameters with accurate low and high threshold for a given
@@ -43,59 +53,35 @@ class BioParameters(lookup: Map[String, BioParameter]) {
 
     new BioParameters(Map() ++
       (for (
-        (id, param) <- lookup;
+        (attr, param) <- lookup;
         lb = param.attributes.get(s"lowerBound_$normalTime").
           map(_.toDouble).orElse(param.lowerBound);
         ub = param.attributes.get(s"upperBound_$normalTime").
           map(_.toDouble).orElse(param.upperBound);
-        edited = BioParameter(id, param.label, param.kind, param.section, lb, ub,
+        edited = BioParameter(attr, param.section, lb, ub,
           param.attributes)
-      ) yield (id -> edited)))
+      ) yield (attr -> edited)))
   }
 
   def all = lookup.values
 }
 
 /**
- * Helper to compute statistical values for samples belonging to the same treated/control group.
- * Will eagerly retrieve and process all parameters for the samples upon construction.
+ * A VarianceSet that retrieves attribute values from a SampleSet
  */
-class ControlGroup(bps: BioParameters, samples: SampleSet,
-    val controlSamples: Iterable[Sample]) {
-  println(s"Control group for $controlSamples")
-  val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime))
+class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends t.db.VarianceSet {
+  val paramVals = samples.map(Map() ++ sampleSet.attributes(_))
 
-  val allParamVals = byTime.filter(_._1 != None).
-    map(ss => ss._1.get -> ss._2.map(Map() ++ samples.parameters(_)))
+  def varAndMean(param: Attribute): Option[(Double, Double)] = {
+    val vs = paramVals.flatMap(_.get(param))
+    val nvs = vs.flatMap(BioParameter.convert)
 
-  private def varAndMean(param: SampleParameter, time: String): Option[(Double, Double)] = {
-    allParamVals.get(time) match {
-      case None => None
-      case Some(pvs) =>
-        val vs = pvs.flatMap(_.get(param))
-        val nvs = vs.flatMap(BioParameter.convert)
-
-        if (nvs.size < 2) {
-          None
-        } else {
-          Some((variance(nvs.toArray), mean(nvs.toArray)))
-        }
+    if (nvs.size < 2) {
+      None
+    } else {
+      Some((variance(nvs.toArray), mean(nvs.toArray)))
     }
   }
-
-  def lowerBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
-    varAndMean(param, time).map {
-      case (v, m) =>
-        val sd = Math.sqrt(v)
-        m - 2 / Math.sqrt(testSampleSize) * sd
-    }
-
-  def upperBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
-    varAndMean(param, time).map {
-      case (v, m) =>
-        val sd = Math.sqrt(v)
-        m + 2 / Math.sqrt(testSampleSize) * sd
-    }
 }
 
 object BioParameter {
@@ -107,9 +93,9 @@ object BioParameter {
 
   def main(args: Array[String]) {
      val f = new otg.Factory
-     val params = otg.db.OTGParameterSet
-     val data = TSVMetadata(f, args(0), params)
-     var out = Map[SampleParameter, Seq[String]]()
+     val attrs = otg.model.sample.AttributeSet.getDefault
+     val data = TSVMetadata(f, args(0), attrs)
+     var out = Map[Attribute, Seq[String]]()
 
      for (time <- data.parameterValues(ExposureTime.id)) {
        val ftime = time.replaceAll("\\s+", "")
@@ -118,26 +104,26 @@ object BioParameter {
          val m = data.parameterMap(s)
          m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
        })
-       val rawValues = samples.map(s => data.parameters(s))
-       for (param <- params.all; if params.isNumerical(param)) {
-         if (!out.contains(param)) {
-           out += param -> Seq()
+       val rawValues = samples.map(s => data.attributes(s))
+       for (attr <- attrs.getAll; if attr.isNumerical()) {
+         if (!out.contains(attr)) {
+           out += attr -> Seq()
          }
 
-        val rawdata = rawValues.map(_.find( _._1 == param).get).map(x => convert(x._2))
+        val rawdata = rawValues.map(_.find( _._1 == attr).get).map(x => convert(x._2))
         if (!rawdata.isEmpty) {
           val v = variance(rawdata.flatten.toArray)
           val m = mean(rawdata.flatten.toArray)
           val sd = Math.sqrt(v)
           val upper = m + 2 * sd
           val lower = m - 2 * sd
-          out += param -> (out(param) :+ s"lowerBound_$ftime=$lower")
-          out += param -> (out(param) :+ s"upperBound_$ftime=$upper")
+          out += attr -> (out(attr) :+ s"lowerBound_$ftime=$lower")
+          out += attr -> (out(attr) :+ s"upperBound_$ftime=$upper")
         }
        }
      }
      for ((k, vs) <- out) {
-       println(k.identifier + "\t" + vs.mkString(","))
+       println(k.id + "\t" + vs.mkString(","))
      }
   }
 }

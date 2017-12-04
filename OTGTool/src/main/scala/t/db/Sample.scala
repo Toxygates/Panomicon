@@ -22,11 +22,13 @@ package t.db
 
 import t.model.SampleClass
 import t.model.shared.SampleClassHelper
+import t.model.sample.Attribute
+import t.model.sample.SampleLike
 
 /**
  * A sample.
  */
-case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[String]) {
+case class Sample(sampleId: String, sampleClass: SampleClass) {
 
   def dbCode(implicit context: MatrixContext): Int =
     context.sampleMap.pack(sampleId)
@@ -47,12 +49,12 @@ case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[Str
   /**
    * Convenience method to obtain a parameter from the sample class.
    */
-  def get(key: SampleParameter): Option[String] = Option(sampleClass.get(key.id))
+  def get(key: Attribute): Option[String] = Option(sampleClass.get(key))
 
   /**
    * Convenience method to obtain a parameter from the sample class.
    */
-  def apply(key: SampleParameter): String = sampleClass(key.id)
+  def apply(key: Attribute): String = sampleClass(key)
 }
 
 object Sample {
@@ -66,11 +68,26 @@ object Sample {
     }
   }
 
-  def apply(code: Int)(implicit context: MatrixContext): Sample = {
-    new Sample(identifierFor(code), SampleClassHelper(), None)
+  def numericalValue(sample: SampleLike, key: Attribute): Option[Double] = {
+    if (key.isNumerical) {
+      Option(sample.get(key)) match {
+        case Some(v) => try {
+          Some(v.toDouble)
+        } catch {
+          case e: NumberFormatException => None
+        }
+        case None    => None
+      }
+    } else {
+      throw new IllegalArgumentException(s"Tried to get numerical value of non-numerical attribute $key")
+    }
   }
 
-  def apply(id: String) = new Sample(id, SampleClassHelper(), None)
+  def apply(code: Int)(implicit context: MatrixContext): Sample = {
+    new Sample(identifierFor(code), SampleClassHelper())
+  }
 
-  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClassHelper(map), None)
+  def apply(id: String) = new Sample(id, SampleClassHelper())
+
+  def apply(id: String, map: Map[Attribute, String]) = new Sample(id, SampleClassHelper(map))
 }

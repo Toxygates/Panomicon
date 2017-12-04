@@ -21,20 +21,20 @@
 package t.viewer.server
 
 import t.common.shared.sample.ExpressionValue
-import t.viewer.server.Conversions._
-import t.viewer.shared.ManagedMatrixInfo
-import t.viewer.shared.Synthetic
-import t.db.MatrixDBReader
-import t.common.shared.sample.{Sample => SSample, Unit => TUnit}
 import t.common.shared.sample.Group
-import t.db.Sample
-import t.db.PExprValue
+import t.common.shared.sample.{ Sample => SSample }
+import t.common.shared.sample.{ Unit => TUnit }
+import t.db.BasicExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
-import t.db.BasicExprValue
-import t.common.shared.sample.EVArray
+import t.db.MatrixDBReader
+import t.db.PExprValue
+import t.db.Sample
+import t.viewer.server.Conversions._
 import t.viewer.shared.ColumnFilter
-import t.viewer.shared.FilterType
+import t.viewer.shared.ManagedMatrixInfo
+import t.viewer.shared.Synthetic
+import otg.model.sample.OTGAttribute
 
 /**
  * Routines for loading a ManagedMatrix
@@ -67,9 +67,11 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val samples = TUnit.collectBarcodes(tus)
 
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, g.toString, g.toString + ": average of treated samples",
-        ColumnFilter.emptyAbsGT, g,
-        false, samples)
+
+    val shortName = g.toString // TODO change this based on whether log2fold or normalized intensity
+    info.addColumn(false, shortName, g.toString,
+        g.toString + ": average of treated samples", // TODO change this as well, accordingly
+        ColumnFilter.emptyAbsGT, g, false, samples)
     val d = data.map(vs => Seq(mean(selectIdx(vs, treatedIdx))))
 
     (d, info)
@@ -95,7 +97,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
         columnsFor(g, sortedSamples, data)
     }).seq
 
-    //TODO try to avoid adjoining lots of small matrices
     val (groupedData, info) = cols.par.reduceLeft((p1, p2) => {
       val d = (p1._1 zip p2._1).map(r => r._1 ++ r._2)
       val info = p1._2.addAllNonSynthetic(p2._2)
@@ -104,7 +105,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
     val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
 
-    //TODO: avoid EVArray building
     val ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 
@@ -150,7 +150,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
   //TODO use schema
   protected def treatedAndControl(g: Group) =
-    g.getUnits().partition(_.get("dose_level") != "Control")
+    g.getUnits().partition(_.get(OTGAttribute.DoseLevel) != "Control")
 }
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
@@ -205,10 +205,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
   protected def columnInfo(g: Group) = {
     val (tus, cus) = treatedAndControl(g)
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, colNames(g)(0),
+    info.addColumn(false, "Treated", colNames(g)(0),
         colNames(g)(0) + ": average of treated samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectBarcodes(tus))
-    info.addColumn(false, colNames(g)(1),
+    info.addColumn(false, "Control", colNames(g)(1),
         colNames(g)(1) + ": average of control samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectBarcodes(cus))
     info
@@ -251,10 +251,10 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     val tus = treatedAndControl(g)._1
     val samples = TUnit.collectBarcodes(tus)
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, colNames(g)(0),
-        colNames(g)(0) + ": average of treated samples",
+    info.addColumn(false, "Log2-fold", colNames(g)(0),
+        colNames(g)(0) + ": log2-fold change of treated versus control",
         ColumnFilter.emptyAbsGT, g, false, samples)
-    info.addColumn(false, colNames(g)(1),
+    info.addColumn(false, "P-value", colNames(g)(1),
         colNames(g)(1) + ": p-values of treated against control",
         ColumnFilter.emptyLT, g, true,
         Array[SSample]())
@@ -445,8 +445,10 @@ class ManagedMatrix(val initProbes: Seq[String],
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
         //TODO
-        val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
-        val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
+        val g1s = test.getGroup1.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
+          .map(_.id)
+        val g2s = test.getGroup2.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
+          .map(_.id)
 
         val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat

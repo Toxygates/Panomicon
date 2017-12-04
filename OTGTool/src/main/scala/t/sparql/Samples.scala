@@ -23,20 +23,28 @@ package t.sparql
 import t.BaseConfig
 import t.TriplestoreConfig
 import t.db.Sample
-import t.db.SampleParameter
 import t.sparql.{ Filter => TFilter }
+import t.model.sample.Attribute
+import scala.collection.JavaConversions._
+import t.model.sample.CoreParameter._
+import t.model.SampleClass
+import t.model.sample.AttributeSet
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
   val itemClass = "t:sample"
 }
 
+/**
+ * Generates SPARQL fragments to filter samples by
+ * instances, batches, and datasets
+ */
 case class SampleFilter(instanceURI: Option[String] = None,
   batchURI: Option[String] = None,
   datasetURIs: List[String] = List()) {
 
-  def visibilityRel(v: String) = instanceURI match {
-    case Some(u) => s"$v ${Batches.memberRelation} <$u> ."
+  def visibilityRel(variable: String) = instanceURI match {
+    case Some(u) => s"$variable ${Batches.memberRelation} <$u> ."
     case None    => ""
   }
 
@@ -55,10 +63,10 @@ case class SampleFilter(instanceURI: Option[String] = None,
     case Some(bu) => s" FILTER(?batchGraph = <$bu>)."
   }
 
-  def standardSampleFilters = s"\n$instanceFilter " +
+  def standardSampleFilters = s"$instanceFilter " +
     s"?batchGraph ${Datasets.memberRelation} ?dataset. " +
     s"?dataset a ${Datasets.itemClass}." +
-    s"$datasetFilter $batchFilter\n"
+    s"$datasetFilter $batchFilter"
 }
 
 abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
@@ -69,8 +77,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def itemClass: String = Samples.itemClass
   def defaultPrefix = Samples.defaultPrefix
 
-  val standardAttributes = bc.sampleParameters.required.map(_.identifier)
-  val hlAttributes = bc.sampleParameters.highLevel.map(_.identifier)
+  val standardAttributes = bc.attributes.getRequired.toSeq
+  val hlAttributes = bc.attributes.getHighLevel.toSeq
   val tsCon: TriplestoreConfig = bc.triplestore
 
   val hasRelation = "t:hasSample"
@@ -78,40 +86,50 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     s"<${Batches.defaultPrefix}/$batch> $hasRelation <$defaultPrefix/$sample>"
 
   def addSamples(batch: String, samples: Iterable[String]): Unit = {
-    ts.update(tPrefixes + " " +
+    triplestore.update(tPrefixes + " " +
       "insert data { " +
       samples.map(s => hasRelation(batch, s)).mkString(". ") +
       samples.map(s => s"$defaultPrefix/$s a $itemClass.").mkString(" ") +
       " }")
   }
 
-  //TODO is this the best way to handle URI/title conversion?
-  //Is such conversion needed?
-  protected def adjustSample(m: Map[String, String],
+  /**
+   * Adjust parameters of the sample after loading from the triplestore.
+   */
+  protected def adjustSample(map: Map[String, String],
                              overrideBatch: Option[String] = None): Map[String, String] = {
-    var r = if (m.contains("dataset")) {
-      m + ("dataset" -> Datasets.unpackURI(m("dataset")))
+    var result = if (map.contains("dataset")) {
+      map + ("dataset" -> Datasets.unpackURI(map("dataset")))
     } else {
-      m
+      map
     }
-    overrideBatch match {
-      case Some(ob) => r + ("batchGraph" -> ob)
-      case _ => r
+    result = overrideBatch match {
+      case Some(ob) => result + ("batchGraph" -> ob)
+      case _ => result
     }
-    r
+    result
+  }
+
+  /**
+   * Converts the keys in a Map from String to Attribute using the supplied
+   * AttributeSet. Keys not found in the AttributeSet will be ommitted.
+   */
+  protected def convertMapToAttributes(map: Map[String, String],
+      attributeSet: AttributeSet): Map[Attribute, String] = {
+    map.map(x => Option(bc.attributes.byId(x._1)) -> x._2)
+      .collect { case (Some(attrib), value) => (attrib, value) }
   }
 
   protected def graphCon(g: Option[String]) = g.map("<" + _ + ">").getOrElse("?g")
 
   /**
-   * The sample query must query for ?batchGraph and ?dataset.
+   * Constructs a sample query that respects a SampleClassFilter and normal SampleFilter
    */
   def sampleQuery(sc: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
   def samples() = ???
 
   def samples(sc: SampleClassFilter)(implicit sf: SampleFilter): Seq[Sample] =
-
     sampleQuery(sc)(sf)()
 
   def allValuesForSampleAttribute(attribute: String,
@@ -119,13 +137,16 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     val g = graphCon(graphURI)
 
     val q = tPrefixes +
-      s"SELECT DISTINCT ?q WHERE { GRAPH $g { ?x a t:sample; t:$attribute ?q } }"
-    ts.simpleQuery(q)
+      s"SELECT DISTINCT ?q WHERE { GRAPH $g { ?x a $itemClass; t:$attribute ?q } }"
+    triplestore.simpleQuery(q)
   }
 
+  /**
+   * Find the platforms represented in a set of samples
+   */
   def platforms(samples: Iterable[String]): Iterable[String] = {
-    ts.simpleQuery(tPrefixes + " SELECT distinct ?p WHERE { GRAPH ?batchGraph { " +
-      "?x a t:sample; rdfs:label ?id; t:platform_id ?p }  " +
+    triplestore.simpleQuery(tPrefixes + " SELECT DISTINCT ?p WHERE { GRAPH ?batchGraph { " +
+      s"?x a $itemClass; rdfs:label ?id; t:platform_id ?p }  " +
       multiFilter("?id", samples.map("\"" + _ + "\"")) +
       " }")
   }
@@ -135,36 +156,80 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
 
-  def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
+  def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]]
 
-  def parameters(sample: Sample): Seq[(SampleParameter, String)] =
-    parameters(sample, Seq())
+  def attributes(sample: Sample): Seq[(Attribute, String)] =
+    attributes(sample, Seq())
 
-  override def parameters(sample: Sample,
-    querySet: Iterable[SampleParameter]): Seq[(SampleParameter, String)] =
+  override def attributes(sample: Sample,
+    querySet: Iterable[Attribute]): Seq[(Attribute, String)] =
     parameterQuery(sample.sampleId, querySet).collect {
       case (sp, Some(v)) => (sp, v)
     }
 
   /**
-   * If the querySet is ordered, we preserve the ordering in the result
+   * Can the given predicate ID be queried as a predicate of a sample?
+   */
+  protected def isPredicateAttribute(attribute: Attribute): Boolean =
+    attribute != Batch
+
+  /**
+   * Get parameter values for a set of samples. Values will only be returned
+   * for samples that have values for *all* of the parameters requested.
+   * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
+   */
+  def sampleAttributeValues(samples: Iterable[String],
+    queryAttribs: Iterable[Attribute] = Seq()): Map[String, Seq[(Attribute, Option[String])]] = {
+
+    val queryParams = (if (queryAttribs.isEmpty) {
+      bc.attributes.getAll.toSeq
+    } else {
+      queryAttribs
+    }).toSeq.filter(a => isPredicateAttribute(a))
+    val withIndex = queryParams.zipWithIndex
+    val vars = withIndex.map("?k" + _._2 + " ").mkString
+    val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
+    val sampleIds = samples.map("\"" + _ + "\" ").mkString
+    val sampleIdsXsd = samples.map("\"" + _ + "\"^^xsd:string ").mkString
+
+    val queryResult = triplestore.mapQuery(s"""$tPrefixes
+      |SELECT ?label $vars WHERE {
+      |  GRAPH ?g {
+      |    $triples
+      |    ?x rdfs:label ?label. VALUES ?label {$sampleIds $sampleIdsXsd}
+      |  }
+      |}""".stripMargin)
+
+    val groupedResult = queryResult.groupBy(_.get("label"))
+
+    Map() ++ (for {
+      idOption <- groupedResult.keys
+      sampleId <- idOption
+      paramsForId = groupedResult(Some(sampleId)).head
+    } yield sampleId -> withIndex.map(x => (x._1, paramsForId.get("k" + x._2))))
+  }
+
+  /**
+   * Get parameter values, if present, for a given sample
+   * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
    */
   def parameterQuery(sample: String,
-    querySet: Iterable[SampleParameter] = Seq()): Seq[(SampleParameter, Option[String])] = {
+    querySet: Iterable[Attribute] = Seq()): Seq[(Attribute, Option[String])] = {
 
+    //val attrs = otg.model.sample.AttributeSet.getDefault
     val queryParams = (if (querySet.isEmpty) {
-      bc.sampleParameters.all
+      bc.attributes.getAll.toSeq
     } else {
       querySet
-    }).toSeq
+    }).toSeq.filter(a => isPredicateAttribute(a))
 
     val withIndex = queryParams.zipWithIndex
-    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.identifier + " ?k" + x._2 + ". } ")
+    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ")
     val query = "SELECT * WHERE { GRAPH ?batchGraph { " +
       "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
       "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +
       triples.mkString + " } } "
-    val r = ts.mapQuery(tPrefixes + query)
+    val r = triplestore.mapQuery(tPrefixes + '\n' + query)
     if (r.isEmpty) {
       List()
     } else {
@@ -173,32 +238,78 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     }
   }
 
-   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+  /**
+   * Get all distinct values for an attribute inside specified SampleFilter
+   */
+  def sampleAttributeQuery(attribute: Attribute)(implicit sf: SampleFilter): Query[Seq[String]] = {
+    if (!isPredicateAttribute(attribute)) {
+      throw new Exception("Invalid query")
+    }
+
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
-        "?x t:" + attribute + " ?q . ",
+        "?x t:" + attribute.id + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
-      ts.simpleQueryNonQuiet)
+      triplestore.simpleQueryNonQuiet)
   }
 
-  def sampleAttributeQuery(attribute: Seq[String])
+  /**
+   * Get all distinct values for a set of attributes inside specified SampleFilter
+   */
+  def sampleAttributeValueQuery(attributes: Seq[Attribute])
     (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
+    val pattr = attributes.filter(isPredicateAttribute)
 
     Query(tPrefixes,
-      "SELECT DISTINCT " + attribute.map("?" + _).mkString(" ") +
+      "SELECT DISTINCT * " +
         " WHERE { GRAPH ?batchGraph { " +
         "?x " +
-          attribute.map(x => s"t:$x ?$x").mkString("; "),
+          pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
-      ts.mapQuery(_, 10000))
+      triplestore.mapQuery(_, 10000))
   }
 
-  def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
+  /**
+   * For all samples within a specified sample class, create Sample objects
+   * storing the sample's ID as well as all specified attributes. Samples
+   * missing any of the specified attributes, however, will not be fetched.
+   * Does not support specification of batch graph in the SampleClassFilter.
+   * @param attributes
+   * @param sampleClassFilter
+   */
+  def sampleAttributeQuery(attributes: Iterable[Attribute], sampleClassFilter: SampleClassFilter =
+    SampleClassFilter())
+    (implicit sampleFilter: SampleFilter): Query[Seq[Sample]] = {
+
+    val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ SampleId).distinct
+    val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
+
+    val sampleClassFilterString = if (sampleClassFilter.constraints.isEmpty) "" else
+      s"""|
+          |    FILTER( ${filterAttributes.map(a => s"?${a.id} = " + "\"" +
+                           sampleClassFilter.constraints(a) + "\"").mkString(" && ") } )""".stripMargin
+
+    Query(tPrefixes,
+        s"""SELECT ${ queryAttributes.map('?' + _.id).mkString(" ") }
+           |  WHERE { GRAPH ?batchGraph {
+           |    ?x ${ (queryAttributes ++ filterAttributes).distinct.map(a => s"t:${a.id} ?${a.id}").mkString("; ") }
+           |""".stripMargin,
+        s"""} ${sampleFilter.standardSampleFilters} $sampleClassFilterString
+           |  }""".stripMargin,
+        triplestore.mapQuery(_, 20000).map(s => {
+          val sampleClass = new SampleClass(convertMapToAttributes(s, bc.attributes)
+              ++ sampleClassFilter.constraints)
+          Sample(s(SampleId.id), sampleClass)
+          }
+    ))
+  }
+
+  def attributeValues(filter: TFilter, attribute: Attribute)(implicit sf: SampleFilter) =
     sampleAttributeQuery(attribute).constrain(filter)()
 
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
-    val q = tPrefixes +
+    val q = tPrefixes + '\n' +
       "SELECT DISTINCT ?l ?sid WHERE { " +
       s"?g a ${SampleGroups.itemClass}. " +
       sf.visibilityRel("?g") +
@@ -207,7 +318,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     //Note that ?sid is the rdfs:label of samples
 
-    val mq = ts.mapQuery(q)
+    val mq = triplestore.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
     val withAttributes = sampleQuery(SampleClassFilter())(sf).constrain(

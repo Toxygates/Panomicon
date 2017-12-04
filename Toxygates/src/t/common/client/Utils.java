@@ -18,23 +18,21 @@
 
 package t.common.client;
 
-import java.util.List;
+import java.util.*;
 
 import t.common.shared.ManagedItem;
+import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.SafeHtmlHeader;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 
 public class Utils {
@@ -105,5 +103,23 @@ public class Utils {
     } else {
       return sf.format(v);
     }
+  }
+  
+  public static String packSampleClass(SampleClass sc) {
+    StringBuilder sb = new StringBuilder();
+    for (Attribute k : sc.getKeys()) {
+      sb.append(k.id() + ",,,");
+      sb.append(sc.get(k) + ",,,");
+    }
+    return sb.toString();
+  }
+  
+  public static SampleClass unpackSampleClass(AttributeSet attributes, String value) {
+    String[] spl = value.split(",,,");
+    Map<Attribute, String> d = new HashMap<Attribute, String>();
+    for (int i = 0; i < spl.length; i += 2) {
+      d.put(attributes.byId(spl[i]), spl[i + 1]);
+    }
+    return new SampleClass(d);
   }
 }

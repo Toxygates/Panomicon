@@ -1,18 +1,17 @@
 package t.viewer.server.rpc
 
-import t.common.shared.sample.Group
-import t.common.shared.ValueType
-import t.db.MatrixContext
-import t.viewer.server.MatrixController
+import scala.collection.JavaConversions._
+
 import org.apache.commons.lang.StringUtils
+
+import t.common.shared.ValueType
 import t.platform.Probe
 import t.sparql.Probes
-import scala.collection.JavaConversions._
-import java.util.{List => JList, ArrayList}
+import t.viewer.server.MatrixController
 
 class ClusteringData(controller: MatrixController,
                      probeStore: Probes,
-                     rows: Seq[String],                     
+                     rows: Seq[String],
                      valueType: ValueType) extends t.clustering.server.ClusteringData {
 
   val mm = controller.managedMatrix

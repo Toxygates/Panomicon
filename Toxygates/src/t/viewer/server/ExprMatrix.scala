@@ -22,11 +22,11 @@ package t.viewer.server
 
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
+
 import friedrich.data.immutable._
+import t.common.shared.sample.ExpressionRow
 import t.db.BasicExprValue
 import t.db.ExprValue
-import t.common.shared.sample.ExpressionRow
-import t.util.SafeMath
 
 object ExprMatrix {
   val ttest = new TTest()

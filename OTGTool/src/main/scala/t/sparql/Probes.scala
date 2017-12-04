@@ -25,14 +25,9 @@ import java.io._
 import t.TriplestoreConfig
 import t.db.DefaultBio
 import t.db.ProbeMap
-import t.platform.OrthologGroup
-import t.platform.OrthologMapping
-import t.platform.Probe
-import t.platform.ProbeRecord
-import t.platform.SimpleProbe
-import t.sparql.secondary.GOTerm
-import t.sparql.secondary.Gene
-import t.sparql.secondary.Protein
+import t.platform._
+//TODO try to remove this dependency
+import t.sparql.secondary._
 import t.util.TempFiles
 
 object Probes extends RDFClass {
@@ -89,7 +84,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Obtain all ortholog groups in the given platforms.
-   * TODO!
    */
   def orthologs(platforms: Iterable[String]): Iterable[OrthologGroup] = {
     val q = tPrefixes +
@@ -99,19 +93,19 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
           |} """.stripMargin +
       multiFilter("?platform", platforms)
 
-    val r = ts.mapQuery(q)
+    val r = triplestore.mapQuery(q)
     val byTitle = r.groupBy(_("title"))
     for (
       (title, entries) <- byTitle;
-      probes = entries.map(x => SimpleProbe(x("probe"), x("platform")))
+      probes = entries.map(x => OrthologousProbe(x("probe"), x("platform")))
     ) yield OrthologGroup(title, probes)
   }
 
   def orthologMappings: Iterable[OrthologMapping] = {
-    val msq = ts.simpleQuery(tPrefixes +
+    val msq = triplestore.simpleQuery(tPrefixes + '\n' +
       "SELECT DISTINCT ?om WHERE { ?om a t:ortholog_mapping. }")
     msq.map(m => {
-      val mq = ts.mapQuery(s"$tPrefixes SELECT * { GRAPH <$m> { ?x t:hasOrtholog ?o } }")
+      val mq = triplestore.mapQuery(s"$tPrefixes SELECT * { GRAPH <$m> { ?x t:hasOrtholog ?o } }")
       val rs = mq.groupBy(_("x")).map(_._2.map(_("o")))
       println(s"Ortholog mapping $m size ${rs.size}")
       OrthologMapping(m, rs.map(_.map(p => Probe.unpack(p).identifier)))
@@ -120,12 +114,12 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   def forPlatform(platformName: String): Iterable[String] = {
     val platform = s"<${Platforms.defaultPrefix}/$platformName>"
-    ts.simpleQuery(tPrefixes +
-      s"""|SELECT ?l WHERE {
-            |  GRAPH $platform {
-            |    ?p a ${Probes.itemClass}; rdfs:label ?l .
-            |  }
-            |}""".stripMargin)
+    triplestore.simpleQuery(s"""$tPrefixes
+        |SELECT ?l WHERE {
+        |  GRAPH $platform {
+        |    ?p a ${Probes.itemClass}; rdfs:label ?l .
+        |  }
+        |}""".stripMargin)
   }
 
   def platformsAndProbes: Map[String, Iterable[Probe]] =
@@ -135,8 +129,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * Read all platforms. Slow.
    */
   private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
-    val query = tPrefixes +
-    """|SELECT DISTINCT ?gl ?pl ?ent WHERE {
+    val query = s"""$tPrefixes
+       |SELECT DISTINCT ?gl ?pl ?ent WHERE {
        |  GRAPH ?g {
        |    ?p a t:probe; rdfs:label ?pl.
        |    OPTIONAL {
@@ -144,9 +138,9 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |    }
        |   } . ?g rdfs:label ?gl .
        |}""".stripMargin
-       
-    val r = ts.mapQuery(query, 30000).map(x => (x("gl"), x("pl"), x.get("ent")))
-    
+
+    val r = triplestore.mapQuery(query, 30000).map(x => (x("gl"), x("pl"), x.get("ent")))
+
     //Note that probes might have multiple entrez records
     val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
       (probeId, probes) <- probes.groupBy(_._2);
@@ -158,13 +152,13 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def numProbes(): Map[String, Int] = {
-    val r = ts.mapQuery(tPrefixes +
-        s"""|SELECT (count(distinct ?p) as ?n) ?l WHERE {
-            |  ?pl a ${Platforms.itemClass} ; rdfs:label ?l .
-            |  GRAPH ?pl {
-            |    ?p a t:probe.
-            |   }
-            | } GROUP BY ?l""".stripMargin)
+    val r = triplestore.mapQuery(s"""$tPrefixes
+        |SELECT (count(distinct ?p) as ?n) ?l WHERE {
+        |  ?pl a ${Platforms.itemClass} ; rdfs:label ?l .
+        |  GRAPH ?pl {
+        |    ?p a t:probe.
+        |   }
+        | } GROUP BY ?l""".stripMargin)
     if (r(0).keySet.contains("l")) {
       Map() ++ r.map(x => x("l") -> x("n").toInt)
     } else {
@@ -175,15 +169,15 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   def probeQuery(identifiers: Iterable[String], relation: String,
     timeout: Int = 10000): Query[Seq[String]] =
-    Query(tPrefixes +
-      s"""|SELECT DISTINCT ?p WHERE {
-          |  GRAPH ?g {
-          |   ?p a t:probe.
-          |   ?p $relation ?filt.""".stripMargin +
+    Query(s"""$tPrefixes
+        |SELECT DISTINCT ?p WHERE {
+        |  GRAPH ?g {
+        |   ?p a t:probe.
+        |   ?p $relation ?filt.""".stripMargin +
         multiFilter("?filt", identifiers),
       //multiUnionObj("?p ", relation, identifiers),
           "   } ",
-      eval = ts.simpleQuery(_, false, timeout))
+      eval = triplestore.simpleQuery(_, false, timeout))
 
   protected def emptyCheck[T, U](in: Iterable[T])(f: => Iterable[U]): Iterable[U] = {
     if (in.isEmpty) {
@@ -194,7 +188,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   protected def simpleMapQueryNoEmptyCheck(query: String): MMap[Probe, DefaultBio] = {
-    val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) ->
+    val r = triplestore.mapQuery(query).map(x => Probe.unpack(x("probe")) ->
       DefaultBio(x("result"), x("result")))
     makeMultiMap(r)
   }
@@ -263,11 +257,11 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     val (p1, q1) = probeToGene
     val (p2, q2) = kegg.attributes(pw)
     val q = s"$p2\n SELECT DISTINCT ?p {\n $q2 \n $q1\n }"
-    ts.simpleQuery(q).map(Probe.unpack)
+    triplestore.simpleQuery(q).map(Probe.unpack)
   }
 
   /**
-   * based on a set of entrez gene ID's (numbers), return the
+   * Based on a set of entrez gene ID's (numbers), return the
    * corresponding probes.
    */
   def forGenes(genes: Iterable[Gene]): Iterable[Probe] =
@@ -296,20 +290,22 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     emptyCheck(uniprots) {
       val query = tPrefixes + "SELECT ?prot WHERE { GRAPH ?g { " + multiUnionObj("?pr", "t:swissprot",
         uniprots.map(p => "\"" + p.identifier + "\". BIND(\"" + p.identifier + "\" AS ?prot)").toSet) + " } }"
-      ts.simpleQuery(query).map(Protein(_))
+      triplestore.simpleQuery(query).map(Protein(_))
     }
 
-  //TODO
+  /**
+   * Retrieve all genes. In most cases, subclasses should override this method.
+   */
   def allGeneIds(): MMap[Probe, Gene] = emptyMMap()
 
   def forTitlePatterns(patterns: Iterable[String]): Iterable[Probe] = {
-    val query = tPrefixes +
-      """|SELECT DISTINCT ?p WHERE {
+    val query = s"""$tPrefixes
+         |SELECT DISTINCT ?p WHERE {
          |  GRAPH ?g {
          |    ?p a t:probe ; rdfs:label ?l . """.stripMargin +
       caseInsensitiveMultiFilter("?l", patterns.map("\"" + _ + "\"")) +
       " } } "
-    ts.simpleQuery(query).map(Probe.unpack)
+    triplestore.simpleQuery(query).map(Probe.unpack)
   }
 
   /*
@@ -320,18 +316,19 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
     def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
 
-    val q = tPrefixes +
-      """|SELECT * WHERE {
+    val q = s"""$tPrefixes
+         |SELECT * WHERE {
          |  GRAPH ?g {
          |    ?pr rdfs:label ?l .
          |    OPTIONAL { ?pr t:title ?title. }
          |    OPTIONAL { ?pr t:swissprot ?prot. }
          |    ?pr a t:probe . """.stripMargin +
       multiFilter("?pr", probes.map(p => bracket(p.pack))) + " } ?g rdfs:label ?plat } "
-    val r = ts.mapQuery(q, 20000)
+    val r = triplestore.mapQuery(q, 20000)
 
     r.groupBy(_("pr")).map(_._2).map(g => {
       val p = Probe(g(0)("l"))
+      
       //TODO!
       val tritiTitle = (g.map(_.get("gene")) ++
         g.map(_.get("protid"))).flatten.toSet.mkString(", ")
@@ -346,7 +343,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
-    Vector() //TODO
+    ???
   }
 
   /**
@@ -359,22 +356,22 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
     //oboInOwl:id is a trick to distinguish GO terms from KEGG pathways, mostly
 
-    val query = tPrefixes +
-    s"""|PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
+    val query = s"""$tPrefixes
+        |PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
         |SELECT DISTINCT ?got ?gotn WHERE {
         |  GRAPH ?g {
         |    ?got rdfs:label ?gotn ; oboInOwl:id ?id
         |  } """.stripMargin +
     "FILTER regex(STR(?gotn), \".*" + pattern + ".*\", \"i\")" +
     s"} LIMIT ${maxSize}"
-    ts.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
+    triplestore.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
   }
 
   //TODO A better solution is to have the URI of the GOTerm as a starting point to find the
   //probes.
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
-    val query = tPrefixes +
-    s"""|SELECT DISTINCT ?probe WHERE {
+    val query = s"""$tPrefixes
+        |SELECT DISTINCT ?probe WHERE {
         |  GRAPH ?g {
         |    ?got rdfs:label ?label.
         |  }
@@ -387,7 +384,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
         |      UNION { ?probe t:go ?got . }
         |  }
         |}""".stripMargin
-    ts.simpleQuery(query).map(Probe.unpack)
+    triplestore.simpleQuery(query).map(Probe.unpack)
   }
 
   protected def unpackGoterm(term: String) = term.split(".org/obo/")(1).replace("_", ":")
@@ -401,8 +398,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * Use go:name instead of go:synonym to ensure we get a single name back.
    */
   protected def goTerms(constraint: String, probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
-    val query = tPrefixes +
-      s"""|PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
+    val query = s"""$tPrefixes
+          |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
           |SELECT DISTINCT ?got ?gotname ?probe WHERE {
           |  GRAPH ?g {
           |    ?probe a t:probe .
@@ -416,13 +413,13 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     <http://purl.obolibrary.org/obo/GO_0008150>) )
           |}""".stripMargin
 
-    val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) -> GOTerm(unpackGoterm(x("got")), x("gotname")))
+    val r = triplestore.mapQuery(query).map(x => Probe.unpack(x("probe")) -> GOTerm(unpackGoterm(x("got")), x("gotname")))
     makeMultiMap(r)
   }
 
   def probeLists(instanceURI: Option[String]): MMap[String, Probe] = {
-    val q = tPrefixes +
-      s"""|SELECT DISTINCT ?list ?probeLabel WHERE {
+    val q = s"""$tPrefixes
+          |SELECT DISTINCT ?list ?probeLabel WHERE {
           |  GRAPH ?g1 {""".stripMargin +
       instanceURI.map(u =>
         s"?g a ${ProbeLists.itemClass}; ${Instances.memberRelation} <$u>. ").getOrElse("") +
@@ -432,7 +429,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       "}"
 
    //May be slow
-    val mq = ts.mapQuery(q, 20000)
+    val mq = triplestore.mapQuery(q, 20000)
     makeMultiMap(mq.map(x => x("list") -> Probe(x("probeLabel"))))
   }
 
@@ -445,10 +442,30 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def annotationsAndComments: Iterable[(String, String)] = {
-    val q = tPrefixes +
-    """|SELECT DISTINCT ?title ?comment WHERE {
-       |  ?x a t:annotation; rdfs:label ?title; t:comment ?comment
+    val q = s"""$tPrefixes
+       |SELECT DISTINCT ?title ?comment WHERE {
+       |  GRAPH ?x {
+       |    ?x a t:annotation; rdfs:label ?title; t:comment ?comment
+       |  }
        |} """.stripMargin
-    ts.mapQuery(q).map(x => (x("title"), x("comment")))
+    triplestore.mapQuery(q).map(x => (x("title"), x("comment")))
+  }
+
+  /**
+   * MiRNA association sources.
+   * Format: (name, empirical, scores available?, suggested limit)
+   */
+  def mirnaSources: Iterable[(String, Boolean, Boolean, Option[Double])] = {
+    val q = s"""$tPrefixes
+      |SELECT DISTINCT ?title ?empirical ?hasScores ?suggestedLimit WHERE {
+      |  GRAPH ?g {
+      |    ?g a t:mirnaSource; rdfs:label ?title; t:hasScores ?hasScores;
+      |      t:empirical ?empirical.
+      |    OPTIONAL { ?g t:suggestedLimit ?suggestedLimit }.
+      |  }""".stripMargin
+      triplestore.mapQuery(q).map(x =>
+        (x("title"), x("empirical").toBoolean, x("hasScores").toBoolean,
+            x.get("suggestedLimit").map(_.toDouble))
+        )
   }
 }

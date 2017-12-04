@@ -20,17 +20,13 @@
 
 package t.db.kyotocabinet.chunk
 
-import t.db.PExprValue
-import t.db.MatrixDB
-import t.db.ExprValue
-import t.db.ProbeMap
-import t.db.Sample
-import t.db.MatrixContext
 import java.nio.ByteBuffer
-import t.db.ExtMatrixDB
-import t.global.KCDBRegistry
+
 import kyotocabinet.DB
+import t.db._
+import t.db.ExtMatrixDB
 import t.db.kyotocabinet.KyotoCabinetDB
+import t.global.KCDBRegistry
 
 /**
  * A vector-chunk of adjacent values in a vector in the matrix.
@@ -210,8 +206,10 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   /**
-   * TODO this operation is slow for the chunk database.
-   * Forces a full traversal
+   * Obtain all samples.
+   * This operation is slow for the chunk database (all current expression 
+   * databases).
+   * Forces a full traversal.
    */
   def allSamples: Iterable[Sample] =
     allChunks(List()).map(x => Sample(x._1))

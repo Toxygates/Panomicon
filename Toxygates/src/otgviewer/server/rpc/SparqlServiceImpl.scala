@@ -21,39 +21,32 @@
 package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
-import scala.collection.{ Set => CSet }
 
 import otg.OTGContext
-import otg.Species.Human
+import t.platform.Species.Human
 import otg.sparql._
-import otg.sparql.Probes
-import otgviewer.shared.OTGSchema
 import otgviewer.shared.Pathology
-import t.BaseConfig
-import t.DataConfig
-import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
-import t.model.SampleClass
 import t.common.shared.sample._
+import t.model.SampleClass
 import t.platform.Probe
 import t.sparql._
-import t.sparql.TriplestoreMetadata
 import t.sparql.secondary._
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
+import t.viewer.server.intermine.IntermineConnector
+import t.viewer.server.intermine.Intermines
+import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
-import t.viewer.shared.AppInfo
-import otgviewer.server.AssociationResolver
-
-import t.model.SampleClass
+import otgviewer.server.AppInfoLoader
 
 /**
  * This servlet is reponsible for making queries to RDF stores.
  * Future: May be split into a sample service and a probe service.
  */
 class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet
-  with otgviewer.client.rpc.SparqlService {
+  with otgviewer.client.rpc.ProbeService with otgviewer.client.rpc.SampleService {
 
   private def probeStore: otg.sparql.Probes = context.probes
   private def sampleStore: otg.sparql.OTGSamples = context.samples
@@ -61,16 +54,24 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
   var homologene: B2RHomologene = _
+  var targetmine: Option[IntermineConnector] = None
 
   override def localInit(c: Configuration) {
     super.localInit(c)
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
+
+    val mines = new Intermines(c.intermineInstances)
+    mines.byTitle.get("TargetMine") match {
+      case Some(tg) =>
+        targetmine = Some(new IntermineConnector(tg, platformsCache))
+      case None =>
+    }
   }
 
-  override protected def refreshAppInfo(): AppInfo = {
-    val r = super.refreshAppInfo()
+  override protected def reloadAppInfo = {
+    val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load
     r.setPredefinedGroups(predefinedGroups)
     r
   }
@@ -125,21 +126,11 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
         otgviewer.server.rpc.Conversions.asJava(_))
 
   override def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] =
+    _probes: Array[String]): Array[Association] = safely {
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
+        targetmine,
         sc, types, _probes).resolve
-
-  override def staticAnnotationInfo: Seq[(String, String)] = {
-     /*
-     * Note: the only data sources hardcoded here should be the ones
-     * whose provisioning is independent of SPARQL data that we
-     * control. For example, the ones obtained solely from remote
-     * sources.
-     */
-    Seq(
-      ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
-      ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql")
-      )
   }
+
 }

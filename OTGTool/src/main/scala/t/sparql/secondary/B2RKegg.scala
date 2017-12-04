@@ -20,12 +20,9 @@
 
 package t.sparql.secondary
 
-import otg.Species._
+import t.platform.Species._
 import t.sparql._
-import t.db.DefaultBio
-import t.db.GenBioObject
-import t.db.Store
-import t.db.StoredBioObject
+import t.db._
 import org.eclipse.rdf4j.repository.RepositoryConnection
 
 /**
@@ -132,9 +129,9 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
    */
   def forGenes(genes: Iterable[Gene]): MMap[Gene, Pathway] = {
     def convert(uri: String, g: Gene): String = {
-      //convert from e.g. http://bio2rdf.org/kegg:map03010
+      //convert from e.g. http://bio2rdf.org/kegg:map03010 to rno003010
       val taxon = g.keggShortCode.toLowerCase
-      "http://www.genome.jp/dbget-bin/www_bget?path:" + taxon + uri.split("map")(1)
+      taxon + uri.split("map")(1)
     }
 
     val r = mapQuery(prefixes +

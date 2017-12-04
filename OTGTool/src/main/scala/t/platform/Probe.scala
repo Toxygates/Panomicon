@@ -49,12 +49,17 @@ case class Probe(val identifier: String, override val name: String = "",
   }
 
   def pack = Probes.defaultPrefix + "/" + identifier
+  
+  //TODO consider best location of this
+  def isMiRna: Boolean = {
+    identifier.contains("-miR-") ||
+      identifier.contains("-let-")
+  }
 }
 
-//TODO consider retiring SimpleProbe
-case class SimpleProbe(id: String, platformId: String = "")
+case class OrthologousProbe(id: String, platformId: String = "")
 
-case class OrthologGroup(title: String, probes: Iterable[SimpleProbe]) {
+case class OrthologGroup(title: String, probes: Iterable[OrthologousProbe]) {
   def id = title // TODO reconsider
   def subIds: Iterable[String] = probes.map(_.id)
   def platforms: Iterable[String] = probes.map(_.platformId).toSet

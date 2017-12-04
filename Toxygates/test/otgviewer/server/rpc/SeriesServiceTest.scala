@@ -20,14 +20,13 @@
 
 package otgviewer.server.rpc
 
-import org.scalatest.BeforeAndAfter
-import t.viewer.server.Configuration
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+import otgviewer.server.AssociationResolverTest
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
-import org.junit.runner.RunWith
 import t.TTestSuite
-import org.scalatest.junit.JUnitRunner
-import otgviewer.server.AssociationResolverTest
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {

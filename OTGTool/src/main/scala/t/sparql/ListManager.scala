@@ -39,14 +39,21 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   //URI prefix
   def defaultPrefix: String
 
-  lazy val ts = config.get
+  lazy val triplestore = config.get
 
   def close() {
-    ts.close()
+    triplestore.close()
   }
 
   def list(): Seq[String] = {
-    ts.simpleQuery(s"$tPrefixes\n SELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
+    triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
+  }
+  
+  def verifyExists(item: String): Unit = {
+    if (!list.contains(item)) {
+      val msg = s"$item of class $itemClass does not exist"
+      throw new Exception(msg)
+    }
   }
 
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -57,19 +64,19 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     }
     val encodedDate = dateFormat.format(new Date())
 
-    ts.update(s"$tPrefixes\n INSERT DATA { <$defaultPrefix/$name> a $itemClass ; " +
+    triplestore.update(s"$tPrefixes\n INSERT DATA { <$defaultPrefix/$name> a $itemClass ; " +
       " rdfs:label \"" + name + "\"; t:comment \"" + comment + "\"; " +
       " t:timestamp \"" + encodedDate + "\". " +
       " }")
   }
 
   def add(name: String): Unit = {
-    ts.update(s"$tPrefixes\n INSERT DATA { <$defaultPrefix/$name> a $itemClass ; " +
+    triplestore.update(s"$tPrefixes\n INSERT DATA { <$defaultPrefix/$name> a $itemClass ; " +
       " rdfs:label \"" + name + "\" }")
   }
 
   private def attributeQuery[T](attr: String, decode: String => T): Map[String, T] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes SELECT ?l ?att WHERE { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?att WHERE { ?item a $itemClass; rdfs:label ?l ; " +
       s"$attr ?att } ").map(x => {
       x("l") -> decode(x("att"))
     })
@@ -85,20 +92,20 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     attributeQuery("t:publicComment", x => x)
 
   def delete(name: String): Unit = {
-    ts.update(s"$tPrefixes\n " +
+    triplestore.update(s"$tPrefixes\n " +
       s"DELETE { <$defaultPrefix/$name> ?p ?o. } \n" +
       s"WHERE { <$defaultPrefix/$name> ?p ?o. } ")
 
-    ts.update(s"$tPrefixes\n " +
+    triplestore.update(s"$tPrefixes\n " +
       s"DELETE { ?s ?p <$defaultPrefix/$name> . } \n" +
       s"WHERE { ?s ?p <$defaultPrefix/$name> . } ")
   }
 
   def updateSinglePredicate(name: String, key: String, value: String): Unit = {
-       ts.update(s"$tPrefixes\n " +
+       triplestore.update(s"$tPrefixes\n " +
         s"DELETE { <$defaultPrefix/$name> $key ?o. } \n" +
         s"WHERE { <$defaultPrefix/$name> $key ?o. } ")
-    ts.update(s"$tPrefixes\n " +
+    triplestore.update(s"$tPrefixes\n " +
         s"INSERT DATA { <$defaultPrefix/$name> $key $value }")
   }
 

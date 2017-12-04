@@ -24,13 +24,13 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import otg.OTGContext
-import otg.Species.Rat
+import t.platform.Species.Rat
 import t.TTestSuite
-import t.db.SampleParameters._
 import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
 import otg.OTGSeries
+import otg.model.sample.OTGAttribute._
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
@@ -44,23 +44,23 @@ class OTGSamplesTest extends TTestSuite {
   }
 
   val baseConstraints = Map(
-    "organism" -> "Rat",
-    "test_type" -> "in vivo")
+    Organism -> "Rat",
+    TestType -> "in vivo")
 
   val fullConstraints = SampleClassHelper(Map(
-      "organ_id" -> "Liver",
-      "sin_rep_type" -> "Single") ++ baseConstraints)
+      Organ -> "Liver",
+      Repeat -> "Single") ++ baseConstraints)
 
   implicit val sampleFilter = SampleFilter()
 
   test("organs") {
     val sf = SampleClassFilter(
         SampleClassHelper(Map(
-      "organ_id" -> "Kidney",
-      "sin_rep_type" -> "Repeat") ++ baseConstraints)
+      Organ -> "Kidney",
+      Repeat -> "Repeat") ++ baseConstraints)
       ).filterAll
 
-    val os = samples.sampleAttributeQuery("organ_id").
+    val os = samples.sampleAttributeQuery(Organ).
       constrain(sf)()
 
     os.toSet should (contain("Kidney"))
@@ -69,7 +69,7 @@ class OTGSamplesTest extends TTestSuite {
   test("dose levels") {
     val sf = SampleClassFilter(fullConstraints).filterAll
 
-    val ds = samples.sampleAttributeQuery(DoseLevel.id).
+    val ds = samples.sampleAttributeQuery(DoseLevel).
       constrain(sf)()
 
     //TODO use the unified DataSchema instead
@@ -79,7 +79,7 @@ class OTGSamplesTest extends TTestSuite {
   test("times") {
     val sf = SampleClassFilter(fullConstraints).filterAll
 
-    val ts = samples.sampleAttributeQuery(ExposureTime.id).
+    val ts = samples.sampleAttributeQuery(ExposureTime).
       constrain(sf)()
 
     //TODO use the unified DataSchema instead

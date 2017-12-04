@@ -25,22 +25,30 @@ import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
 import t.model.SampleClass
+import t.model.sample.BasicAttribute
+import t.model.sample.Attribute
 
 @RunWith(classOf[JUnitRunner])
 class SampleClassTest extends TTestSuite {
 
-  val testMap = Map("x" -> "x",
-      "y" -> "y",
-      "z" -> "z")
+  val x = new BasicAttribute("x", "x", false, null)
+  val y = new BasicAttribute("y", "y", false, null)
+  val z = new BasicAttribute("y", "y", false, null)
+  val c = new BasicAttribute("a", "a", false, null)
+  val b = new BasicAttribute("b", "b", false, null)
 
-  def scWith(m: Map[String, String]) =
+  val testMap: Map[Attribute, String] = Map(x -> "x",
+      y -> "y",
+      z -> "z")
+
+  def scWith(m: Map[Attribute, String]) =
     new SampleClass(mapAsJavaMap(m))
 
   val testSc = scWith(testMap)
-  val small = scWith(Map("x" -> "x"))
-  val big = scWith(testMap + ("a" -> "a"))
-  val unrel = scWith(Map("b" -> "b"))
-  val incomp = scWith(Map("x" -> "y"))
+  val small = scWith(Map(x -> "x"))
+  val big = scWith(testMap + (c -> "a"))
+  val unrel = scWith(Map(b -> "b"))
+  val incomp = scWith(Map(x -> "y"))
 
   test("equality") {
     assert(scWith(testMap) == testSc)
@@ -61,7 +69,8 @@ class SampleClassTest extends TTestSuite {
   }
 
   test("collect") {
-    assert(SampleClass.collect(seqAsJavaList(List(testSc, incomp)), "x").toSet
+    assert(SampleClass.collect(seqAsJavaList(List(testSc, incomp)),
+      new BasicAttribute("x", "whatever", false, null)).toSet
         == Set("x", "y"))
   }
 }

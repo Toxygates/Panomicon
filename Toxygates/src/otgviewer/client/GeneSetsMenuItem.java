@@ -18,37 +18,22 @@
 
 package otgviewer.client;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.MenuItemSeparator;
-
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.GeneSetEditor;
-import otgviewer.client.components.SaveActionHandler;
+import otgviewer.client.components.*;
 import t.clustering.shared.Algorithm;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.SharedUtils;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
-import t.viewer.client.CodeDownload;
+import t.viewer.client.ClientState;
+
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.ui.*;
 
 public class GeneSetsMenuItem extends DataListenerWidget {
 
@@ -117,9 +102,10 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createUserSets() {
+    ClientState state = screen.state();
     root.addSeparator(new MenuItemCaptionSeparator("User sets"));
 
-    List<StringList> geneSets = StringList.pickProbeLists(screen.chosenItemLists, null);
+    List<StringList> geneSets = StringList.pickProbeLists(state.itemLists, null);
     ensureSorted(geneSets);
 
     for (final StringList sl : geneSets) {
@@ -137,10 +123,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createUserClusterings() {
+    ClientState state = screen.state();
     root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
 
     List<ClusteringList> clusterings =
-        ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
+        ClusteringList.pickUserClusteringLists(state.chosenClusteringList, null);
     ensureSorted(clusterings);
 
     for (final ClusteringList cl : clusterings) {
@@ -307,14 +294,15 @@ public class GeneSetsMenuItem extends DataListenerWidget {
             .confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
           return;
         }
-
+        
+        ClientState state = screen.state();
         StringListsStoreHelper helper = 
             new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
         helper.delete(sl.name());
         Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_DELETE_GENE_SET);
         // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
-            && sl.name().equals(screen.chosenGeneSet.name())) {
+        if (state.geneSet != null && sl.type().equals(state.geneSet.type())
+            && sl.name().equals(state.geneSet.name())) {
           switchToAllProbes();
         }
       }
@@ -349,9 +337,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
             new ClusteringListsStoreHelper(
                 ClusteringList.USER_CLUSTERING_TYPE, screen);
         helper.delete(cl.name());
+        ClientState state = screen.state();
+        
         // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (screen.chosenGeneSet != null && cl.type().equals(screen.chosenGeneSet.type())
-            && cl.name().equals(screen.chosenGeneSet.name())) {
+        if (state.geneSet != null && cl.type().equals(state.geneSet.type())
+            && cl.name().equals(state.geneSet.name())) {
           switchToAllProbes();
         }
       }
@@ -361,7 +351,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand addNewClustering() {
     return new Command() {
       public void execute() {
-        HeatmapViewer.show(screen, screen.et.getValueType());
+        HeatmapViewer.show(screen, screen.expressionTable.getValueType());
       }
     };
   }
@@ -386,58 +376,21 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void ensureSorted(List<? extends ItemList> list) {
-    // TODO consider ordering
     Collections.sort(list, new Comparator<ItemList>() {
       @Override
       public int compare(ItemList o1, ItemList o2) {
         return o1.name().compareTo(o2.name());
       }
     });
-
-    // new Comparator<ItemList>() {
-    // @Override
-    // public int compare(ItemList o1, ItemList o2) {
-    // String name1 = o1.name();
-    // String name2 = o2.name();
-    // if (name1.length() == name2.length()) {
-    // return name1.compareTo(name2);
-    // }
-    // return (name1.length() < name2.length() ? -1 : 1);
-    // }
-    // });
   }
 
   private void geneSetEditor(@Nullable final StringList list) {
-    
-    GWT.runAsync(new CodeDownload(logger) {
-      public void onSuccess() {
-        if (list != null) {
-          geneSetEditorAsync().edit(list.name());
-        } else {
-          geneSetEditorAsync().createNew(screen.displayedAtomicProbes());
-        }
-      }
-    });
-  }
-  
-  private GeneSetEditor geneSetEditorAsync() {
-    // TODO same code as GeneSetToolbar
-    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
-    gse.addSaveActionHandler(new SaveActionHandler() {
-      @Override
-      public void onSaved(String title, List<String> items) {
-        String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
-            title, itemsArray));
-        screen.probesChanged(itemsArray);
-        screen.updateProbes();
-      }
-
-      @Override
-      public void onCanceled() {}
-    });
-    addListener(gse);
-    return gse;
+    GeneSetEditor gse = GeneSetEditor.make(screen, this); 
+    if (list != null) {
+      gse.edit(list.name());
+    } else {
+      gse.createNew(screen.displayedAtomicProbes());
+    } 
   }
 
   /**

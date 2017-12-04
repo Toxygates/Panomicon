@@ -35,7 +35,7 @@ class Instances(config: TriplestoreConfig) extends ListManager(config) {
   def itemClass: String = Instances.itemClass
 
   def listAccess(name: String): Seq[String] = {
-    ts.simpleQuery(s"$tPrefixes\n select ?bn where " +
+    triplestore.simpleQuery(s"$tPrefixes\n select ?bn where " +
       s"{ ?batch $memberRelation <$defaultPrefix/$name> . " +
       "?batch rdfs:label ?bn .}")
   }

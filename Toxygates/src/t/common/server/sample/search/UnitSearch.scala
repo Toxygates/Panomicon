@@ -1,105 +1,61 @@
 package t.common.server.sample.search
 
-import t.viewer.server.Conversions._
-import t.viewer.server.Annotations
-import t.db.SampleParameter
-import t.platform.ControlGroup
-import org.stringtemplate.v4.ST
+import scala.collection.JavaConversions._
+
+import otg.model.sample.OTGAttribute._
 import t.common.shared.DataSchema
 import t.common.shared.sample.Unit
 import t.common.shared.sample.search.MatchCondition
-import t.db.Metadata
+import t.db.SimpleVarianceSet
+import t.db.VarianceSet
+import t.model.SampleClass
+import t.model.sample.AttributeSet
+import t.model.sample.CoreParameter
+import t.sparql.SampleFilter
+import t.sparql.Samples
+import t.viewer.server.UnitsHelper
+import t.common.shared.sample.Sample
 
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
-  def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Unit, ControlGroup],
-    samples: Iterable[Unit],
-    searchParams: Iterable[SampleParameter]) =
-      new UnitSearch(schema, metadata, condition, controlGroups, samples, searchParams)
+  def apply(samples: Iterable[Sample], condition: MatchCondition,
+      unitsHelper: UnitsHelper, attributes: AttributeSet) = {
 
-  /**
-   * Preprocess a Unit to prepare it for searching. For each search parameter,
-   * computes the average value for samples in the unit, and stores it as the
-   * parameter value for the unit.
-   */
-  //
-  def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
-    (unit: Unit) => {
-      val samples = unit.getSamples
-      for (param <- searchParams) {
-        val paramId = param.identifier
+    val controlUnitsAndVarianceSets = unitsHelper.formControlUnitsAndVarianceSets(samples)
 
-        unit.put(paramId, try {
-          var sum: Option[Double] = None
-          var count: Int = 0;
+    val units = controlUnitsAndVarianceSets.map(_._1)
+    units.map(_.concatenateAttribute(CoreParameter.SampleId))
+    units.map(u => condition.neededParameters.map(u.averageAttribute(_)))
 
-          for (sample <- samples) {
-            val scalaSample = asScalaSample(sample)
-
-            sum = metadata.parameter(scalaSample, paramId) match {
-              case Some("NA") => sum
-              case Some(str)  => {
-                count = count + 1
-                sum match {
-                  case Some(x) => Some(x + str.toDouble)
-                  case None    => Some(str.toDouble)
-                }
-              }
-              case None       => sum
-            }
-          }
-
-          sum match {
-            case Some(x) => {
-              (x / count).toString()
-            }
-            case None    => null
-          }
-        } catch {
-          case nf: NumberFormatException => null
-        })
-      }
-      unit
-    }
-
-  def formControlGroups(metadata: Metadata, annotations:Annotations) = (units: Iterable[Unit]) => {
-    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)
-    Map() ++
-      units.map(unit => {
-        unit.getSamples.headOption match {
-          case Some(s) => Some(unit -> sampleControlGroups(s))
-          case _ => None
+    val controlUnitsAndVarianceSetsbyID = Map() ++
+        controlUnitsAndVarianceSets.map { case (unit, stuff) =>
+          unit.get(CoreParameter.SampleId) -> stuff
         }
-      }).flatten
+    val controlUnits = controlUnitsAndVarianceSetsbyID.mapValues(_._1)
+    val varianceSets = controlUnitsAndVarianceSetsbyID.mapValues(_._2)
+
+    new UnitSearch(condition, varianceSets, controlUnits, units, attributes)
   }
 }
 
-class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Unit, ControlGroup], samples: Iterable[Unit], searchParams: Iterable[SampleParameter])
-    extends AbstractSampleSearch[Unit](schema, metadata, condition,
-        controlGroups, samples, searchParams)  {
+class UnitSearch(condition: MatchCondition,
+    varianceSets: Map[String, VarianceSet], controlUnits: Map[String, Unit],
+    samples: Iterable[Unit], attributes: AttributeSet)
+    extends AbstractSampleSearch[Unit](condition, varianceSets, samples)  {
 
-  def sampleParamValue(unit: Unit, param: SampleParameter): Option[Double] = {
-    try {
-      Option(unit.get(param.identifier)) match {
-        case Some(v) => Some(v.toDouble)
-        case None    => None
-      }
-    } catch {
-      case nf: NumberFormatException => None
-    }
+  lazy val pairedResults = results.map(unit => (unit,
+      controlUnits(unit.get(CoreParameter.SampleId))))
+
+  override protected def postProcessSample(sample: Unit): Unit = {
+    sample.computeAllAttributes(attributes, false)
+    sample
   }
 
-  def time(unit: Unit): String = {
-    unit.get(schema.timeParameter())
-  }
-
-  def postMatchAdjust(unit: Unit): Unit = {
-    unit
-  }
-
-  def zTestSampleSize(unit: Unit): Int = {
+  protected def zTestSampleSize(unit: Unit): Int =
     unit.getSamples().length
+
+  protected def sortObject(unit: Unit): (String, Int, Int) = {
+    (unit.get(Compound), doseLevelMap.getOrElse((unit.get(DoseLevel)), Int.MaxValue),
+        exposureTimeMap.getOrElse((unit.get(ExposureTime)), Int.MaxValue))
   }
 }

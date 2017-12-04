@@ -19,22 +19,16 @@
 package t.viewer.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.Dataset;
-import t.common.shared.Platform;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
-import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.StringBioParamValue;
+import t.model.sample.AttributeSet;
 import t.viewer.shared.intermine.IntermineInstance;
+import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * Container for various client side application parameters.
@@ -54,11 +48,10 @@ public class AppInfo implements Serializable {
 
   private String[] annotationTitles;
   private String[] annotationComments;
-  private IntermineInstance[] intermineInstances;
+  private IntermineInstance[] intermineInstances;  
+  private MirnaSource[] mirnaSources;
   
-  private BioParamValue[] bioParameters;
-  private NumericalBioParamValue[] numericalParameters;
-  private StringBioParamValue[] stringParameters;
+  private AttributeSet attributes;
   
   private String userKey;
   
@@ -66,50 +59,26 @@ public class AppInfo implements Serializable {
   
   public AppInfo() {}
 
-  public AppInfo(String instanceName_, String pathologyTermsURL_, IntermineInstance[] instances,
-      String applicationName_, String userKey_) {
-    instanceName = instanceName_;
-    pathologyTermsURL = pathologyTermsURL_;    
-    applicationName = applicationName_;
-    userKey = userKey_;
-    intermineInstances = instances;
-    // NB does not set datasets or platforms
-  }
-
-  public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists, IntermineInstance[] instances, String appName, String userKey) {
-    this(instanceName_, "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf",
-        instances, appName, userKey);
-    this.datasets = datasets;
-    this.platforms = platforms;
-    this.predefProbeLists = probeLists;
-  }
-
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
       List<StringList> probeLists, IntermineInstance[] instances,
       List<ProbeClustering> probeClusterings, String appName,
       String userKey,
       String[][] annotationInfo,
-      BioParamValue[] bioParameters) {
-    this(instanceName_, datasets, platforms, probeLists,
-        instances, appName, userKey);
+      AttributeSet attributes,
+      MirnaSource[] mirnaSources) {
+    this.instanceName = instanceName_;
+    this.pathologyTermsURL = "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf";    
+    this.applicationName = appName;
+    this.userKey = userKey;
+    this.intermineInstances = instances;    
+    this.datasets = datasets;
+    this.platforms = platforms;
+    this.predefProbeLists = probeLists;
     this.probeClusterings = probeClusterings;
     this.annotationTitles = annotationInfo[0];
     this.annotationComments = annotationInfo[1];
-    this.bioParameters = bioParameters;
-
-    List<NumericalBioParamValue> numericalParams = new LinkedList<NumericalBioParamValue>();
-    List<StringBioParamValue> stringParams = new LinkedList<StringBioParamValue>();
-    for (BioParamValue param : bioParameters) {
-      if (param instanceof NumericalBioParamValue) {
-        numericalParams.add((NumericalBioParamValue) param);
-      } else if (param instanceof StringBioParamValue) {
-        stringParams.add((StringBioParamValue) param);
-      }
-    }
-    numericalParameters =
-        numericalParams.toArray(new NumericalBioParamValue[0]);
-    stringParameters = stringParams.toArray(new StringBioParamValue[0]);
+    this.attributes = attributes;
+    this.mirnaSources = mirnaSources;
   }
 
   public String welcomeHtmlURL() {
@@ -166,24 +135,20 @@ public class AppInfo implements Serializable {
     return annotationComments;
   }
   
-  public BioParamValue[] bioParameters() {
-    return bioParameters;
+  public AttributeSet attributes() {
+    return attributes;
   }
   
-  public NumericalBioParamValue[] numericalParameters() {
-    return numericalParameters;
-  }
-
-  public StringBioParamValue[] stringParameters() {
-    return stringParameters;
-  }
-
   public String getUserKey() {
     return userKey;
   }
   
   public IntermineInstance[] intermineInstances() { 
     return intermineInstances; 
+  }
+  
+  public MirnaSource[] mirnaSources() {
+    return mirnaSources;
   }
   
   /**
@@ -198,4 +163,6 @@ public class AppInfo implements Serializable {
   public void setImportedGenes(String[] genes) {
     importedGenes = genes;
   }
+  
+  
 }

@@ -18,44 +18,27 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.Resources;
-import otgviewer.client.SampleDetailScreen;
-import otgviewer.client.UIFactory;
-import t.common.client.HasLogger;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.viewer.client.Utils;
-import t.viewer.shared.AppInfo;
-
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.PushButton;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.*;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.model.sample.AttributeSet;
+import t.viewer.client.*;
+import t.viewer.shared.AppInfo;
 
 /**
  * Screens are a high level building block for user interfaces. Sequences of screens can form a
@@ -65,8 +48,7 @@ import com.google.gwt.user.client.ui.Widget;
  * depend on data that is selected in earlier screens.
  */
 public class Screen extends DataListenerWidget implements 
-  RequiresResize, ProvidesResize, HasLogger {
-  protected static Resources resources = GWT.create(Resources.class);
+  RequiresResize, ProvidesResize {
 
   protected DockLayoutPanel rootPanel;
 
@@ -81,7 +63,6 @@ public class Screen extends DataListenerWidget implements
    * Is this screen currently visible?
    */
   protected boolean visible = false;
-  private Label viewLabel = new Label();
   private boolean showGroups = false;
 
   /**
@@ -138,10 +119,12 @@ public class Screen extends DataListenerWidget implements
       this.name = name;
     }
 
+    @Override
     public int hashCode() {
       return name.hashCode();
     }
 
+    @Override
     public boolean equals(Object other) {
       if (other instanceof QueuedAction) {
         return name.equals(((QueuedAction) other).name);
@@ -149,6 +132,7 @@ public class Screen extends DataListenerWidget implements
       return false;
     }
 
+    @Override
     abstract public void run();
   }
 
@@ -187,15 +171,13 @@ public class Screen extends DataListenerWidget implements
 
     initWidget(rootPanel);
     manager = man;
-    viewLabel.setWordWrap(false);
-    viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
     this.key = key;
     this.logger = SharedUtils.getLogger(key);
     setTitle(title);
   }
 
   public Screen(String title, String key, boolean showGroups, ScreenManager man) {
-    this(title, key, showGroups, man, resources.defaultHelpHTML(), null);
+    this(title, key, showGroups, man, man.resources().defaultHelpHTML(), null);
   }
 
   public ScreenManager manager() {
@@ -214,8 +196,12 @@ public class Screen extends DataListenerWidget implements
     return manager.schema();
   }
 
+  public AttributeSet attributes() {
+    return manager.appInfo().attributes();
+  }
+
   public Resources resources() {
-    return resources;
+    return manager.resources();    
   }
 
   /**
@@ -268,17 +254,16 @@ public class Screen extends DataListenerWidget implements
     r.setHeight("30px");
     r.add(content);
     r.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-    r.setStylePrimaryName(styleName);
+    r.addStyleName(styleName);
     return r;
   }
 
   public void initGUI() {
     statusPanel = new FlowPanel();
-    statusPanel.setStylePrimaryName("statusPanel");
+    statusPanel.addStyleName("statusPanel");
     Utils.floatLeft(statusPanel);
 
     spOuter = mkStandardToolbar(statusPanel, "statusPanel");
-    statusPanel.setStylePrimaryName("statusPanel");
     guideBar = mkStandardToolbar(mkGuideTools(), "guideBar");
 
     addToolbars(); // must be called before rootPanel.add()
@@ -302,8 +287,9 @@ public class Screen extends DataListenerWidget implements
 
     PushButton i;
     if (helpAvailable()) {
-      i = new PushButton(new Image(resources.help()));
-      i.setStylePrimaryName("slightlySpaced");
+      i = new PushButton(new Image(resources().help()));
+      i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
+      i.addStyleName("slightlySpaced");
       i.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -313,8 +299,9 @@ public class Screen extends DataListenerWidget implements
       hpi.add(i);
     }
 
-    i = new PushButton(new Image(resources.close()));
-    i.setStylePrimaryName("slightlySpaced");
+    i = new PushButton(new Image(resources().close()));
+    i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
+    i.addStyleName("slightlySpaced");
     final Screen sc = this;
     i.addClickHandler(new ClickHandler() {
       @Override
@@ -346,7 +333,7 @@ public class Screen extends DataListenerWidget implements
   public void show() {
     rootPanel.forceLayout();
     visible = true;
-    loadState(this);
+    loadState(this, attributes());
     if (showGuide) {
       showToolbar(guideBar);
     } else {
@@ -358,8 +345,8 @@ public class Screen extends DataListenerWidget implements
   }
 
   @Override
-  public void loadState(StorageParser p, DataSchema schema) {
-    super.loadState(p, schema);
+  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+    super.loadState(p, schema, attributes);
     String v = p.getItem("OTG.showGuide");
     if (v == null || v.equals("yes")) {
       showGuide = true;
@@ -386,19 +373,12 @@ public class Screen extends DataListenerWidget implements
     }
   }
 
-  /**
-   * The standard status panel contains a label that indicates the current data set, and
-   * descriptions of the currently defined groups.
-   */
-
   protected void updateStatusPanel() {
     // statusPanel.setWidth(Window.getClientHeight() + "px");
     statusPanel.clear();
-    statusPanel.add(viewLabel);
-    Utils.floatLeft(viewLabel);
     if (showGroups) {
       Collections.sort(chosenColumns);
-      Utils.floatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns));
+      Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns));
     }
   }
 
@@ -473,6 +453,7 @@ public class Screen extends DataListenerWidget implements
    */
   private void deferredResize() {
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
       public void execute() {
         resizeInterface();
       }
@@ -535,7 +516,7 @@ public class Screen extends DataListenerWidget implements
 
   protected TextResource getHelpHTML() {
     if (helpHTML == null) {
-      return resources.defaultHelpHTML();
+      return resources().defaultHelpHTML();
     } else {
       return helpHTML;
     }
@@ -564,7 +545,20 @@ public class Screen extends DataListenerWidget implements
       }
     }
   }
+  
+  /**
+   * Persisted items that are to be applied once at application startup.
+   */
+  public List<PersistedState<?>> getPersistedItems() {
+    return new ArrayList<>();
+  }
 
+  public void loadPersistedState() {
+    for (PersistedState<?> ps: getPersistedItems()) {
+      ps.loadAndApply(getParser());
+    }
+  }
+    
   /**
    * Display the sample detail screen and show information about the given barcode. TODO: this
    * method should probably be somewhere else.

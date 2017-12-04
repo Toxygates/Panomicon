@@ -18,36 +18,28 @@
 
 package otgviewer.client.charts;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import static t.model.sample.CoreParameter.ControlGroup;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
 import otgviewer.client.charts.google.GVizFactory;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Series;
-import t.common.shared.DataSchema;
-import t.common.shared.GroupUtils;
-import t.common.shared.Pair;
-import t.common.shared.SampleMultiFilter;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class Charts {
 
@@ -61,7 +53,7 @@ public class Charts {
     void acceptBarcodes(Sample[] barcodes);
   }
 
-  private final Logger logger = SharedUtils.getLogger("cgf");
+  private final Logger logger = SharedUtils.getLogger("charts");
 
   protected final SampleServiceAsync sampleService;
   protected final SeriesServiceAsync seriesService;
@@ -85,9 +77,13 @@ public class Charts {
 
     List<SampleClass> scs = new ArrayList<SampleClass>();
     for (Group g : groups) {
-      SampleClass sc = SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(),
-          schema);
-      scs.add(sc);
+      for (Unit unit : g.getUnits()) {
+        SampleClass unitClass = unit.getSamples()[0].sampleClass();
+        SampleClass sc = SampleClassUtils.asMacroClass(unitClass,
+            schema);
+        sc.put(ControlGroup, unitClass.get(ControlGroup));
+        scs.add(sc);
+      }
     }
 
     this.sampleClasses = scs.toArray(new SampleClass[0]);
@@ -117,7 +113,7 @@ public class Charts {
       final Screen screen) {
     // TODO get from schema or data
     try {
-      final String majorParam = schema.majorParameter();
+      final Attribute majorParam = schema.majorParameter();
       final String[] medVals = schema.sortedValuesForDisplay(null, schema.mediumParameter());
       schema.sort(schema.timeParameter(), times);
       DataSource cds = new DataSource.SeriesSource(schema, series, times);
@@ -127,7 +123,7 @@ public class Charts {
 
         @Override
         public void accept(final List<ChartSample> samples) {
-          GDTDataset ds = factory.dataset(samples, samples, times, true);
+          GDTDataset ds = factory.dataset(samples, times, true);
           List<String> filters = new ArrayList<String>();
           for (Series s : series) {
             if (rowsAreCompounds && !filters.contains(s.get(majorParam))) {
@@ -138,11 +134,14 @@ public class Charts {
           }
 
           List<String> organisms =
-              new ArrayList<String>(SampleClass.collect(Arrays.asList(sampleClasses), "organism"));
+                  new ArrayList<String>(
+                      SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
           ChartGrid<?> cg =
               factory.grid(screen, ds, filters, organisms, rowsAreCompounds, medVals, false, 400);
-          cg.adjustAndDisplay(cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
+          cg.adjustAndDisplay(
+            new ChartStyle(0, true, null, false),
+            cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
           acceptor.acceptCharts(cg);
         }
 
@@ -155,12 +154,14 @@ public class Charts {
 
   public void makeRowCharts(final Screen screen, final Sample[] barcodes, final ValueType vt,
       final String[] probes, final AChartAcceptor acceptor) {
-    Set<String> organisms = Group.collectAll(groups, "organism");
+    String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
-    String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]);
+    String[] majorVals =
+        GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
 
-    if (organisms.size() > 1) {
-      sampleService.units(sampleClasses, schema.majorParameter(), majorVals,
+    if (organisms.length > 1) {
+      logger.info("Get rows for chart based on units");
+      sampleService.units(sampleClasses, schema.majorParameter().id(), majorVals,
           new AsyncCallback<Pair<Unit, Unit>[]>() {
 
             @Override
@@ -175,7 +176,8 @@ public class Charts {
             }
           });
     } else if (barcodes == null) {
-      sampleService.samples(sampleClasses, schema.majorParameter(), majorVals,
+      logger.info("Get rows for chart based on sample classes");
+      sampleService.samples(sampleClasses, schema.majorParameter().id(), majorVals,
           new AsyncCallback<Sample[]>() {
 
             @Override
@@ -192,6 +194,7 @@ public class Charts {
             }
           });
     } else {
+      logger.info("Already had samples for chart");
       // We already have the necessary samples, can finish immediately
       finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
     }
@@ -199,9 +202,10 @@ public class Charts {
 
   private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
       Sample[] barcodes, AChartAcceptor acceptor) {
-    DataSource cds =
+    DataSource dataSource =
         new DataSource.DynamicExpressionRowSource(schema, probes, vt, barcodes, screen);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, cds, groups, vt);
+    logger.info("Finish charts with " + dataSource);
+    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);
   }
 
@@ -212,9 +216,10 @@ public class Charts {
       treated.add(u.first());
     }
 
-    DataSource cds =
+    DataSource dataSource =
         new DataSource.DynamicUnitSource(schema, probes, vt, treated.toArray(new Unit[0]), screen);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, cds, groups, vt);
+    logger.info("Finish charts with " + dataSource);
+    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);
   }
 }

@@ -22,32 +22,26 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{List => JList}
+
 import scala.Array.canBuildFrom
-import scala.collection.JavaConversions.asJavaCollection
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
-import otgviewer.server.rpc.Conversions
-import otgviewer.server.rpc.Conversions.asJava
+
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.MatchResult
 import otgviewer.shared.RankRule
 import otgviewer.shared.{Series => SSeries}
-import t.BaseConfig
-import t.viewer.client.rpc.SeriesService
-import t.model.SampleClass
-import t.db.MatrixContext
-import t.db.SeriesDB
-import t.db.Series
-import t.sparql.Probes
 import t.SeriesRanking
-import t.viewer.server.Conversions._
 import t.common.shared.Dataset
-import t.sparql.Datasets
-import t.sparql.SampleFilter
-import t.viewer.server.Configuration
-import t.viewer.shared.NoSuchProbeException
-import t.sparql.SampleClassFilter
+import t.db._
+import t.sparql._
 import t.model.SampleClass
+import t.viewer.client.rpc.SeriesService
+import t.viewer.server.Configuration
+import t.viewer.server.Conversions._
+import t.viewer.shared.NoSuchProbeException
+import otg.model.sample.OTGAttribute
+import otg.model.sample.OTGAttribute
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
@@ -58,10 +52,12 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   protected def getDB(): SeriesDB[S]
 
-  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S] = new SeriesRanking(db, key)
+  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S]
 
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
+
+  protected def attributes = baseConfig.attributes
 
   override def localInit(config: Configuration): Unit = {
     this.config = config
@@ -71,8 +67,11 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     val dsTitles = ds.map(_.getTitle).distinct.toList
     implicit val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = dsTitles.map(Datasets.packURI(_)))
+
+    val majAttr = schema.majorParameter()
+
     context.samples.attributeValues(SampleClassFilter(sc).filterAll,
-      schema.majorParameter()).toSet
+      majAttr).toSet
   }
 
   def rankedCompounds(ds: Array[Dataset], sc: SampleClass,
@@ -93,7 +92,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
     val db = getDB()
     try {
-      val key: S = new SSeries("", probesRules.head._1, "dose_level", sc, Array.empty)
+      val key: S = new SSeries("", probesRules.head._1,
+          OTGAttribute.DoseLevel, sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
@@ -129,7 +129,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       compound: String): SSeries = {
     val db = getDB()
     try {
-      val key: S = new SSeries("", probe, "dose_level", sc, Array.empty)
+      val key: S = new SSeries("", probe, OTGAttribute.DoseLevel, sc, Array.empty)
       asShared(db.read(key).head)
     } finally {
       db.release()
@@ -144,8 +144,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     try {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p, "dose_level",
-              sc.copyWith("compound_name", c), Array.empty)))))
+          db.read(fromShared(new SSeries("", p, OTGAttribute.DoseLevel,
+              sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))
       val jss = ss.map(asShared)

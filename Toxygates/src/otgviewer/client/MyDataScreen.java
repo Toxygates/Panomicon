@@ -20,33 +20,22 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ListDataProvider;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.Utils;
-import t.common.client.maintenance.BatchEditor;
-import t.common.client.maintenance.BatchPanel;
-import t.common.client.maintenance.ListDataCallback;
-import t.common.client.maintenance.TaskCallback;
+import t.common.client.maintenance.*;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
+import t.viewer.client.Analytics;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
 public class MyDataScreen extends Screen {
@@ -78,6 +67,7 @@ public class MyDataScreen extends Screen {
     setUserKey(key);    
   }
   
+  @Override
   public Widget content() {
     final Set<String> instancesForBatch = new HashSet<String>();       
     instancesForBatch.add(appInfo().instanceName());
@@ -90,7 +80,7 @@ public class MyDataScreen extends Screen {
       @Override
       protected boolean confirmAddNew() {
         String hasSeen = MyDataScreen.this.getParser().getItem(HAS_SEEN_WARNING);
-        if (hasSeen.equals("true")) {
+        if ("true".equals(hasSeen)) { // hasSeen might be null
           return true;
         }
         final String message = "NIBIOHN will take reasonable precautions to protect " +
@@ -119,6 +109,12 @@ public class MyDataScreen extends Screen {
             new ArrayList<Instance>(), userData) {
           ListBox visList;
           
+          @Override
+          protected void onBatchUploadBegan() {
+            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+                Analytics.ACTION_BEGIN_DATA_UPLOAD);
+          }
+
           @Override
           protected void onFinishOrAbort() {
             db.hide();
@@ -227,7 +223,8 @@ public class MyDataScreen extends Screen {
   }
   
   private void deleteBatch(Batch b) {
-    userData.deleteBatchAsync(b, new TaskCallback(this, "Delete batch", userData) {
+    userData.deleteBatchAsync(b, new TaskCallback(logger, "Delete batch", userData) {
+      @Override
       public void onCompletion() {
         refreshBatches();
       }          

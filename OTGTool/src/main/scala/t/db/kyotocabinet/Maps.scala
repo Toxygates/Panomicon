@@ -21,9 +21,7 @@
 package t.db.kyotocabinet
 
 import t.DataConfig
-import t.db.ProbeIndex
-import t.db.ProbeMap
-import t.db.SampleIndex
+import t.db._
 
 class Maps(data: DataConfig) {
 

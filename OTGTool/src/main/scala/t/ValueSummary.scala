@@ -20,9 +20,7 @@
 
 package t
 
-import otg.sparql.OTGSamples
-import t.db.Metadata
-import t.db.Sample
+import t.db._
 import t.sparql.Samples
 
 abstract class ValueSummary(valueName: String) {
@@ -58,8 +56,8 @@ case class AttribValueSummary(samples: Samples, attribName: String)
 
   def check(md: Metadata, samples: Iterable[Sample]) {
     for (
-      s <- samples; a <- md.parameters(s);
-      if (a._1.identifier == attribName)
+      s <- samples; a <- md.attributes(s);
+      if (a._1.id == attribName)
     ) {
       check(a._2)
     }

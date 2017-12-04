@@ -20,17 +20,14 @@
 
 package t.db.file
 
-import friedrich.util.CmdLineOptions
 import java.io._
-import org.apache.commons.math3.stat.inference.TTest
-import t.db.RawExpressionData
-import t.db.Metadata
-import t.db.Sample
-import t.db.PExprValue
-import t.db.ExprValue
-import otg.Factory
+
 import scala.Vector
-import t.db.FoldPExpr
+
+import org.apache.commons.math3.stat.inference.TTest
+
+import friedrich.util.CmdLineOptions
+import t.db._
 
 /**
  * log-2 fold values constructed from the input data
@@ -47,16 +44,16 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * This method may return values for more samples than the one requested. Callers should
    * inspect the results for efficiency.
    */
-  def values(s: Sample): Iterable[(Sample, String, E)] = {
+  def values(s: Sample): Seq[(Sample, String, E)] = {
     println("Compute control values")
-    val groups = md.parameterSet.treatedControlGroups(md, input.samples)
+    val groups = md.treatedControlGroups(input.samples)
     var r = Vector[(Sample, String, E)]()
 
     for ((ts, cs) <- groups;
       if ts.toSet.contains(s)) {
       println("Control barcodes: " + cs)
       println("Treated: " + ts)
-      r ++= makeFolds(cs, ts)
+      r ++= makeFolds(cs.toSeq, ts.toSeq)
     }
 
     for (s <- r.map(_._1).distinct) {
@@ -69,8 +66,8 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
   /**
    * Construct fold values for a sample group.
    */
-  protected def makeFolds(controlSamples: Iterable[Sample],
-      treatedSamples: Iterable[Sample]): Iterable[(Sample, String, E)]
+  protected def makeFolds(controlSamples: Seq[Sample],
+      treatedSamples: Seq[Sample]): Seq[(Sample, String, E)]
 
   /**
    * Compute a control sample (as a mean).
@@ -78,14 +75,15 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * @param calls: calls for each barcode (probe -> call)
    * @param cbs: control barcodes.
    */
-  protected def controlMeanSample(cbs: Iterable[Sample], from: RawExpressionData): Map[String, Double] = {
+  protected def controlMeanSample(controlSamples: Seq[Sample], from: RawExpressionData): Map[String, Double] = {
     var controlValues = Map[String, Double]()
 
     for (probe <- from.probes) {
-      val eval = cbs.map(from.expr(_, probe)).sum / cbs.size
-      val acalls = cbs.map(from.call(_, probe)).toList.distinct
-      //      val call = acalls.reduce(safeCall)
-      controlValues += (probe -> eval)
+      val usableVals = controlSamples.flatMap(from.expr(_, probe))
+      if (usableVals.size > 0) {
+        val mean = usableVals.sum / usableVals.size
+        controlValues += (probe -> mean)
+      }
     }
     controlValues
   }
@@ -119,8 +117,8 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
   //TODO: factor out some code shared with the superclass
 
-  override protected def makeFolds(controlSamples: Iterable[Sample],
-    treatedSamples: Iterable[Sample]): Iterable[(Sample, String, PExprValue)] = {
+  override protected def makeFolds(controlSamples: Seq[Sample],
+    treatedSamples: Seq[Sample]): Seq[(Sample, String, PExprValue)] = {
 
     val cached = input.cached(controlSamples ++ treatedSamples)
 
@@ -129,12 +127,12 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     val l2 = Math.log(2)
     var pVals = Map[String, Double]()
 
+    val controlData = controlSamples.map(cached.data)
+    val treatedData = treatedSamples.map(cached.data)
+      
     for (probe <- cached.probes) {
-      val controlData = controlSamples.map(cached.data)
-      val treatedData = treatedSamples.map(cached.data)
-
-      val cs = controlData.map(_(probe)._1)
-      val ts = treatedData.map(_(probe)._1)
+      val cs = controlData.flatMap(_.get(probe)).map(_._1)
+      val ts = treatedData.flatMap(_.get(probe)).map(_._1)
       val pval = if (cs.size >= 2 && ts.size >= 2) {
         tt.tTest(cs.toArray, ts.toArray)
       } else {
@@ -146,11 +144,16 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     for (x <- treatedSamples) {
       println(x)
       r ++= cached.probes.map(p => {
-        val control = controlMean(p)
-        val foldVal = Math.log(cached.expr(x, p) / control) / l2
-        val pacall = foldPACall(foldVal, controlSamples.map(cached.call(_, p)),
-          treatedSamples.map(cached.call(_, p)))
-        (x, p, PExprValue(foldVal, pVals(p), pacall))
+        (cached.expr(x, p), controlMean.get(p)) match {
+          case (Some(v), Some(control)) =>
+            val foldVal = Math.log(v / control) / l2
+            val controlCalls = controlSamples.flatMap(cached.call(_, p))
+            val treatedCalls = treatedSamples.flatMap(cached.call(_, p))
+            val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
+              (x, p, PExprValue(foldVal, pVals(p), pacall))
+          case _ =>
+            (x, p, PExprValue(Double.NaN, Double.NaN, 'A'))
+        }
       })
     }
     r
@@ -182,9 +185,10 @@ object FoldBuilder extends CmdLineOptions {
     val mdfile = require(stringOption(args, "-metadata"),
       "Please specify metadata file with -metadata")
 
-    val factory = new otg.Factory //TODO
+      //TODO - avoid/clarify dependency from t.db -> otg
+    val factory = new otg.Factory 
 
-    val md = factory.tsvMetadata(mdfile, otg.db.OTGParameterSet)
+    val md = factory.tsvMetadata(mdfile, otg.model.sample.AttributeSet.getDefault)
     val data = new CSVRawExpressionData(List(input), List(calls),
         Some(md.samples.size), println)
     val builder = new PFoldValueBuilder(md, data)

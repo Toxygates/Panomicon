@@ -23,7 +23,7 @@ package otg.sparql
 import org.scalatest.junit.JUnitRunner
 
 import otg._
-import otg.Species._
+import t.platform.Species._
 import t.TTestSuite
 import t.sparql._
 import t.sparql.secondary._
