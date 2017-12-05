@@ -74,7 +74,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    * Initial number of items to show per page at a time (but note that this number can be adjusted
    * by the user in the 0-250 range)
    */
-  private final int INIT_PAGE_SIZE = 50;
+  public final static int SUGGESTED_INIT_PAGE_SIZE = 50;
+  final private int initPageSize;
+  
   private final int MAX_PAGE_SIZE = 250;
   private final int PAGE_SIZE_INCREMENT = 50;
 
@@ -193,23 +195,25 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   public ExpressionTable(Screen _screen, boolean withPValueOption,
-      TableStyle style, String matrixId) {
+      TableStyle style, String matrixId, int initPageSize, boolean withPager) {
     super(_screen, style);
     this.withPValueOption = withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
     this.matrixId = matrixId;
+    this.initPageSize = initPageSize;
     screen = _screen;
 
     grid.setHeaderBuilder(new HeaderBuilder(grid));
-    grid.addStyleName("exprGrid");
-    grid.setPageSize(INIT_PAGE_SIZE);
+    grid.addStyleName("exprGrid");    
 
     grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     asyncProvider.addDataDisplay(grid);
 
-    makeTools();
+    //Note: might factor out the "tools" into a separate polymorphic class that might or might not be used
+    makeTools(withPager);
+    //Same here
     makeAnalysisTools();
     setEnabled(false);
   }
@@ -275,7 +279,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   /**
    * The main (navigation) tool panel
    */
-  private void makeTools() {
+  private void makeTools(boolean withPager) {
     tools = Utils.mkHorizontalPanel();
 
     HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
@@ -295,43 +299,47 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
 
-    SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
-      @Override
-      public void nextPage() {
-        super.nextPage();
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-      }
+    if (withPager) {
 
-      @Override
-      public void previousPage() {
-        super.previousPage();
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-      }
-
-      @Override
-      public void setPage(int index) {
-        super.setPage(index);
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-      }
-    };
-    sp.addStyleName("slightlySpaced");
-    horizontalPanel.add(sp);
-    sp.setDisplay(grid);
-
-    PageSizePager pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
-      @Override
-      protected void onRangeOrRowCountChanged() {
-        super.onRangeOrRowCountChanged();
-        if (getPageSize() > MAX_PAGE_SIZE) {
-          setPageSize(MAX_PAGE_SIZE);
+      SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
+      SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
+        @Override
+        public void nextPage() {
+          super.nextPage();
+          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
         }
-      }
-    };
 
-    pager.addStyleName("slightlySpaced");
-    horizontalPanel.add(pager);
+        @Override
+        public void previousPage() {
+          super.previousPage();
+          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+        }
+
+        @Override
+        public void setPage(int index) {
+          super.setPage(index);
+          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+        }
+      };
+      sp.addStyleName("slightlySpaced");
+      horizontalPanel.add(sp);
+      sp.setDisplay(grid);
+
+      PageSizePager pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
+        @Override
+        protected void onRangeOrRowCountChanged() {
+          super.onRangeOrRowCountChanged();
+          if (getPageSize() > MAX_PAGE_SIZE) {
+            setPageSize(MAX_PAGE_SIZE);
+          }
+        }
+      };
+
+      pager.addStyleName("slightlySpaced");
+      horizontalPanel.add(pager);
+      pager.setDisplay(grid);
+    }
 
     if (withPValueOption) {
       pcb = new CheckBox("p-value columns");
@@ -354,8 +362,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         }
       });
     }
-
-    pager.setDisplay(grid);
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
@@ -904,7 +910,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected void setMatrix(ManagedMatrixInfo matrix) {
     matrixInfo = matrix;
     asyncProvider.updateRowCount(matrix.numRows(), true);
-    int displayRows = (matrix.numRows() > INIT_PAGE_SIZE) ? INIT_PAGE_SIZE : matrix.numRows();
+    int displayRows = (matrix.numRows() > initPageSize) ? initPageSize: matrix.numRows();
     grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
     setEnabled(true);
   }
