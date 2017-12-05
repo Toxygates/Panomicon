@@ -80,11 +80,9 @@
 }
 
 .dataGridHoveredRow, .cellTableHoveredRow {
-  background: #eee;
 }
 
 .dataGridHoveredRowCell, .cellTableHoveredRowCell {
-  border: selectionBorderWidth solid #eee;
 }
 
 .dataGridKeyboardSelectedRow, .cellTableKeyboardSelectedRow {

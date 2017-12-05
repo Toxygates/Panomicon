@@ -22,14 +22,14 @@ import static t.common.client.Utils.makeScrolled;
 
 import java.util.List;
 
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
+import t.viewer.client.Utils;
 
 public class RankingScreen extends DataFilterScreen {
 
@@ -70,7 +70,8 @@ public class RankingScreen extends DataFilterScreen {
   @Override
   protected void addToolbars() {
     super.addToolbars();
-    addToolbar(filterTools, 45);
+    HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
+    addToolbar(hp, 0);
     addLeftbar(cs, 350);
   }
 

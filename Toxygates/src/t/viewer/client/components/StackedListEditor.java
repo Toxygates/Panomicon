@@ -172,7 +172,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
         }
       };
 
-      HorizontalPanel hp = Utils.mkWidePanel();
+      HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+      hp.setWidth("100%");
       dlp.addSouth(hp, 36);
 
       sortButton = new Button("Sort by name", new ClickHandler() {
@@ -184,10 +185,11 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
           sortButton.setEnabled(false);
         }
       });
+      sortButton.addStyleName("lightButton");
       hp.add(sortButton);
       sortButton.setEnabled(false);
 
-      hp.add(new Button("Select all", new ClickHandler() {
+      Button selectAllButton = new Button("Select all", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           List<String> items = selTable.getItems();
@@ -201,16 +203,21 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
           setSelection(sel);
           parentSelector.setSelection(sel, bc);
         }
-      }));
+      });
+      selectAllButton.addStyleName("lightButton");
+      hp.add(selectAllButton);
 
-      hp.add(new Button("Unselect all", new ClickHandler() {
+      Button unselectAllButton = new Button("Unselect all", new ClickHandler() {
         @Override
         public void onClick(ClickEvent ce) {
           List<String> empty = new ArrayList<String>();
           setSelection(empty);
           parentSelector.setSelection(empty, bc);
         }
-      }));
+      });
+      unselectAllButton.addStyleName("lightButton");
+      hp.add(unselectAllButton);
+
       scrollPanel = new ScrollPanel(selTable);
       dlp.add(scrollPanel);
     }
@@ -292,7 +299,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       listChooser.addStyleName("colored");
       parent.addListener(listChooser);
       northVp.add(listChooser);
-      dlp.addNorth(northVp, 30);
+      dlp.addNorth(northVp, 37);
     }
 
     createSelectionMethods(methods, itemTitle, maxAutoSel, withFreeEdit);

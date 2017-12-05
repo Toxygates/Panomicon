@@ -24,6 +24,17 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
@@ -34,16 +45,6 @@ import t.model.SampleClass;
 import t.model.sample.CoreParameter;
 import t.viewer.client.*;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.cell.client.TextButtonCell;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
@@ -71,6 +72,12 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
   protected final Logger logger = SharedUtils.getLogger("group");
   private final SampleServiceAsync sampleService;
+
+  public interface ButtonCellResources extends ButtonCellBase.DefaultAppearance.Resources {
+    @Override
+    @Source("otgviewer/client/ButtonCellBase.gss")
+    Style buttonCellBaseStyle();
+  }
 
   public GroupInspector(CompoundSelector cs, Screen scr) {
     compoundSel = cs;
@@ -147,8 +154,11 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         
         makeGroupColumns(table);
 
+        ButtonCellResources resources = GWT.create(ButtonCellResources.class);
+        TextButtonCell.Appearance appearance = new TextButtonCell.DefaultAppearance(resources);
+
         // We use TextButtonCell instead of ButtonCell since it has setEnabled
-        final TextButtonCell editCell = new TextButtonCell();
+        final TextButtonCell editCell = new TextButtonCell(appearance);
 
         Column<Group, String> editColumn = new Column<Group, String>(editCell) {
           @Override
@@ -165,7 +175,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         });
         table.addColumn(editColumn, "");
 
-        final TextButtonCell deleteCell = new TextButtonCell();
+        final TextButtonCell deleteCell = new TextButtonCell(appearance);
         Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
           @Override
           public String getValue(Group g) {

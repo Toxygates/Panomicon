@@ -35,7 +35,7 @@ Variables
 /******************************************************************************
 Global
 ******************************************************************************/
-body, .gwt-Button {
+body, .gwt-Button, .buttonCellBase {
 	font-family: TimesNewRoman, Times New Roman, Times, Baskerville, serif;
 }
 
@@ -69,6 +69,10 @@ App elements
 	background: MENUBARITEM_COLOR;
 }
 
+.filterTools {
+	margin: GLOBAL_LEFT_PADDING 5px 5px GLOBAL_LEFT_PADDING;
+}
+
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
 	background: MENUBARPANEL_COLOR;
 	color: white;
@@ -78,6 +82,35 @@ App elements
 
 .gwt-DialogBox .Caption {
 	font-size: 1.25em;
+}
+
+.gwt-Button, .buttonCellBase {
+  	margin: 0;
+	padding: 5px 7px;
+	text-decoration: none;
+	cursor: pointer;
+	cursor: hand;
+	color: MENUBARITEM_COLOR;
+	background: MENUBARPANEL_COLOR;
+	border: none;
+	border-radius: 0px;
+	-moz-border-radius: 0px;
+}
+.gwt-Button:active, .buttonCellBase:active {
+}
+.gwt-Button:hover, .buttonCellBase:hover {
+}
+.gwt-Button[disabled] {
+	cursor: default;
+	color: #888;
+}
+.gwt-Button[disabled]:hover, .buttonCellBase[disabled]:hover {
+}
+
+.lightButton {
+	color: black;
+	background: MENUBARITEM_COLOR;
+	border: 1px solid MENUBAR_PIP_COLOR;
 }
 
 /**************************************	
@@ -95,7 +128,7 @@ Menu bar
 }
 
 .gwt-MenuBar-horizontal .gwt-MenuItem {
-	color: white;
+	color: MENUBARITEM_COLOR;
 	position: relative;
 	/* This border needs to be the same color as the menuBarPanel background. It ensures 
 	   correct positioning of the partial border :before pseudo-element, and also prevents
@@ -319,8 +352,8 @@ Tables
 	background: DARK_ROW_COLOR;
 }
 
-.sideExpressionTable {
-	margin-top: 50px;
+.dataGridHoveredRow, .cellTableHoveredRow {
+	background: #D0D0D0;
 }
 
 /**************************************	
@@ -351,6 +384,10 @@ Expression table
 
 .associationValue {
 	clear: left;
+}
+
+.sideExpressionTable {
+	margin-top: 50px;
 }
 
 /**************************************	
@@ -530,11 +567,6 @@ Non-semantic
 ******************************************************************************/
 .slightlySpaced {
 	margin: 2px;
-}
-
-.slightlySpacedLeftRight {
-	margin-left: 2px;
-	margin-right: 2px;
 }
 
 .colored {
