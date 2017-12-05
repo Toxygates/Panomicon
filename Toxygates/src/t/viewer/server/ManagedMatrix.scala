@@ -459,6 +459,13 @@ class ManagedMatrix(val initProbes: Seq[String],
   def addSynthetic(s: Synthetic): Unit = {
     _synthetics :+= s
     addSyntheticInner(s)
+     Option(s.initFilter) match {
+      case Some(f) =>
+        val col = current.columns - 1
+        currentInfo.setColumnFilter(col, f)
+        filterAndSort()
+      case _ =>
+    }
   }
 
   /**
@@ -505,15 +512,7 @@ class ManagedMatrix(val initProbes: Seq[String],
         
         current = current.appendStatic(inOrder, precomp.getName)
       case _ => throw new Exception("Unexpected test type")
-    }
-    
-    Option(s.initFilter) match {
-      case Some(f) =>
-        val col = current.columns - 1
-        currentInfo.setColumnFilter(col, f)
-        filterAndSort()
-      case _ =>
-    }
+    }   
   }
 
   protected def reapplySynthetics(): Unit = {
