@@ -352,6 +352,10 @@ Tables
 	background: DARK_ROW_COLOR;
 }
 
+.dataGridHoveredRow, .cellTableHoveredRow {
+	background: #D0D0D0;
+}
+
 /**************************************	
 Expression table
 **************************************/
