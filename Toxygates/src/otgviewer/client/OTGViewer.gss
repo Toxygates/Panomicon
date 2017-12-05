@@ -107,6 +107,12 @@ App elements
 .gwt-Button[disabled]:hover {
 }
 
+.lightButton {
+	color: black;
+	background: MENUBARITEM_COLOR;
+	border: 1px solid MENUBAR_PIP_COLOR;
+}
+
 /**************************************	
 Menu bar
 **************************************/

@@ -185,10 +185,11 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
           sortButton.setEnabled(false);
         }
       });
+      sortButton.addStyleName("lightButton");
       hp.add(sortButton);
       sortButton.setEnabled(false);
 
-      hp.add(new Button("Select all", new ClickHandler() {
+      Button selectAllButton = new Button("Select all", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           List<String> items = selTable.getItems();
@@ -202,16 +203,21 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
           setSelection(sel);
           parentSelector.setSelection(sel, bc);
         }
-      }));
+      });
+      selectAllButton.addStyleName("lightButton");
+      hp.add(selectAllButton);
 
-      hp.add(new Button("Unselect all", new ClickHandler() {
+      Button unselectAllButton = new Button("Unselect all", new ClickHandler() {
         @Override
         public void onClick(ClickEvent ce) {
           List<String> empty = new ArrayList<String>();
           setSelection(empty);
           parentSelector.setSelection(empty, bc);
         }
-      }));
+      });
+      unselectAllButton.addStyleName("lightButton");
+      hp.add(unselectAllButton);
+
       scrollPanel = new ScrollPanel(selTable);
       dlp.add(scrollPanel);
     }

@@ -133,6 +133,7 @@ public class ListChooser extends DataListenerWidget {
     }
 
     Button b = new Button("Save");
+    b.addStyleName("lightButton");
     b.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -142,6 +143,7 @@ public class ListChooser extends DataListenerWidget {
     hp.add(b);
 
     b = new Button("Delete");
+    b.addStyleName("lightButton");
     b.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {

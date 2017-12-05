@@ -52,6 +52,7 @@ public class FilterTools extends DataListenerWidget {
     filterTools.addStyleName("filterTools");
 
     Button b = new Button("Data...");
+    b.addStyleName("lightButton");
     filterTools.add(b);
     b.addClickHandler(new ClickHandler() {
       @Override
