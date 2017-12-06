@@ -24,13 +24,14 @@ Variables
 /**
  * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
  */
-@def GROUP0_COLOR #8582b5;
-@def GROUP1_COLOR #7ac653;
-@def GROUP2_COLOR #c3534d;
-@def GROUP3_COLOR #90c1ab;
-@def GROUP4_COLOR #504239;
-@def GROUP5_COLOR #c1a54a;
-@def GROUP6_COLOR #b354b3;
+@def GROUP0_COLOR #FF7300;
+@def GROUP1_COLOR #328D9C;
+@def GROUP2_COLOR #87548C;
+@def GROUP3_COLOR #E2038D;
+@def GROUP4_COLOR #C70000;
+@def GROUP5_COLOR #83B200;
+@def GROUP6_COLOR #784E00;
+@def GROUP7_COLOR #2EA7DB;
 
 /******************************************************************************
 Global
