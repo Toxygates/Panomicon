@@ -84,7 +84,6 @@ class ManagedMatrix(val initProbes: Seq[String],
   protected var _synthetics: Vector[Synthetic] = Vector()
   protected var _sortColumn: Option[Int] = None
   protected var _sortAscending: Boolean = false
-  protected var _sortAuxTable: Option[ExprMatrix] = None
 
   protected var requestProbes: Seq[String] = initProbes
 
@@ -98,7 +97,6 @@ class ManagedMatrix(val initProbes: Seq[String],
 
   /**
    * What is the current sort column?
-   * Undefined if the last sort operation was done by an aux table.
    */
   def sortColumn: Option[Int] = _sortColumn
 
@@ -125,8 +123,6 @@ class ManagedMatrix(val initProbes: Seq[String],
     filterAndSort()
   }
 
-  def probesForAuxTable: Seq[String] = rawGrouped.orderedRowKeys
-
   protected def filterAndSort(): Unit = {
     def f(r: RowData): Boolean = {
       for (
@@ -147,11 +143,9 @@ class ManagedMatrix(val initProbes: Seq[String],
 
     //TODO avoid selecting here
     current = current.selectNamedRows(requestProbes).filterRows(f)
-    (_sortColumn, _sortAuxTable) match {
-      case (Some(sc), _) => sort(sc, _sortAscending)
-      case (_, Some(sat)) =>
-        sortWithAuxTable(sat, _sortAscending)
-      case (None, None) =>
+    _sortColumn match {
+      case Some(sc) => sort(sc, _sortAscending)
+      case _ =>
         throw new Exception("Insufficient sort parameters")
     }
   }
@@ -178,21 +172,6 @@ class ManagedMatrix(val initProbes: Seq[String],
     _sortColumn = Some(col)
     _sortAscending = ascending
     current = current.sortRows(sortRows(col, ascending))
-    updateRowInfo()
-  }
-
-  /**
-   * Adjoin a temporary table consisting of the same rows and one column.
-   * Sort everything by that column, then discard the temporary table.
-   */
-  def sortWithAuxTable(adj: ExprMatrix, ascending: Boolean): Unit = {
-    _sortColumn = None
-    _sortAscending = ascending
-    _sortAuxTable = Some(adj)
-    val col = current.columns
-    val sortMat = adj.selectNamedRows(current.orderedRowKeys)
-    current =
-      current.modifyJointly(sortMat, _.sortRows(sortRows(col, ascending)))._1
     updateRowInfo()
   }
 
@@ -287,5 +266,5 @@ class ManagedMatrix(val initProbes: Seq[String],
       m
     }
   }
-
 }
+
