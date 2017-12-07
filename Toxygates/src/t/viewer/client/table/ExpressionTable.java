@@ -488,6 +488,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
         String style = groupStyle + " " + borderStyle;
 
+        logger.info(matrixInfo.shortColumnName(i) + " " + 
+            matrixInfo.columnFilter(i).threshold + " " + matrixInfo.columnFilter(i).active());
         ColumnInfo ci =
             new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
                 COLUMN_WIDTH, style, false, true, matrixInfo.columnFilter(i).active());
@@ -503,7 +505,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
       String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
       first = false;
-      addSynthColumn(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), i, borderStyle);
+      addSynthColumn(matrixInfo, i, borderStyle);
     }
   }
 
@@ -526,11 +528,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new ToolCell(this);
   }
 
-  private void addSynthColumn(String title, String tooltip, int matIndex, String borderStyle) {
+  private void addSynthColumn(ManagedMatrixInfo matrixInfo, int column, String borderStyle) {
     TextCell tc = new TextCell();    
-    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, matIndex);    
-    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, COLUMN_WIDTH,
-        "extraColumn " + borderStyle, false, true, false);
+    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, column);
+    
+    ColumnInfo info = new ColumnInfo(matrixInfo.shortColumnName(column), 
+      matrixInfo.columnHint(column), 
+      true, false, COLUMN_WIDTH,
+        "extraColumn " + borderStyle, false, true, 
+        matrixInfo.columnFilter(column).active());
     info.setHeaderStyleNames(borderStyle);
     info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
