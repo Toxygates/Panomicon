@@ -69,8 +69,7 @@ object ManagedMatrix {
  *  The final view is obtained by filtering this (if requested).
  */
 
-class ManagedMatrix(val initProbes: Seq[String],
-    //TODO visibility of these members
+class CoreMatrix(val initProbes: Seq[String],
     val currentInfo: ManagedMatrixInfo,
     val rawUngrouped: ExprMatrix,
     var rawGrouped: ExprMatrix,
@@ -81,7 +80,6 @@ class ManagedMatrix(val initProbes: Seq[String],
 
   var current: ExprMatrix = rawGrouped
 
-  protected var _synthetics: Vector[Synthetic] = Vector()
   protected var _sortColumn: Option[Int] = None
   protected var _sortAscending: Boolean = false
 
@@ -140,7 +138,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     }
 
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
-
+    
     //TODO avoid selecting here
     current = current.selectNamedRows(requestProbes).filterRows(f)
     _sortColumn match {
@@ -150,7 +148,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     }
   }
 
-  private def sortRows(col: Int, ascending: Boolean)(v1: RowData, v2: RowData): Boolean = {
+  private final def sortRows(col: Int, ascending: Boolean)(v1: RowData, v2: RowData): Boolean = {
     val ev1 = v1(col)
     val ev2 = v2(col)
     if (ev1.call == 'A' && ev2.call != 'A') {
@@ -175,7 +173,49 @@ class ManagedMatrix(val initProbes: Seq[String],
     updateRowInfo()
   }
 
-  def removeSynthetics(): Unit = {
+  /**
+   * Reset modifications such as filtering, sorting and probe selection.
+   */
+  def resetSortAndFilter(): Unit = {
+    current = rawGrouped
+    updateRowInfo()
+  }
+
+  private def updateRowInfo() {
+    currentInfo.setNumRows(current.rows)
+    currentInfo.setAtomicProbes(current.annotations.flatMap(_.atomics).toArray)
+  }
+
+  /**
+   * Obtain the current info for this matrix.
+   */
+  def info: ManagedMatrixInfo = currentInfo
+
+  /**
+   * Obtain a view of a matrix with the log-2 transform
+   * potentially applied.
+   */
+  private[server] def finalTransform(m: ExprMatrix): ExprMatrix = {
+    if (log2Transform) {
+      m.map(e => ManagedMatrix.log2(e))
+    } else {
+      m
+    }
+  }
+}
+
+/**
+ * Synthetic column management.
+ * 
+ * The only info members that can change once a matrix has been constructed
+ * is data relating to the synthetic columns (since they can be manually
+ * added and removed).
+ */
+trait Synthetics extends CoreMatrix {
+    
+  protected var _synthetics: Vector[Synthetic] = Vector()
+
+   def removeSynthetics(): Unit = {
     _synthetics = Vector()
     val dataColumns = 0 until currentInfo.numDataColumns()
     current = current.selectColumns(dataColumns)
@@ -223,48 +263,24 @@ class ManagedMatrix(val initProbes: Seq[String],
       case _ => throw new Exception("Unexpected test type")
     }
   }
-
+  
   protected def reapplySynthetics(): Unit = {
     for (s <- _synthetics) {
       addSyntheticInner(s)
     }
   }
-
-  /**
-   * Reset modifications such as filtering, sorting and probe selection.
-   * Synthetics are restored after resetting.
-   */
-  def resetSortAndFilter(): Unit = {
-    //drops synthetic columns
-    current = rawGrouped
-    //note - we keep the synthetic column info (such as filters) in the currentInfo
-    updateRowInfo()
+  
+  override def resetSortAndFilter(): Unit = {
+    super.resetSortAndFilter()
     reapplySynthetics()
-  }
-
-  private def updateRowInfo() {
-    currentInfo.setNumRows(current.rows)
-    currentInfo.setAtomicProbes(current.annotations.flatMap(_.atomics).toArray)
-  }
-
-  /**
-   * Obtain the current info for this matrix.
-   * The only info members that can change once a matrix has been constructed
-   * is data relating to the synthetic columns (since they can be manually
-   * added and removed).
-   */
-  def info: ManagedMatrixInfo = currentInfo
-
-  /**
-   * Obtain a view of a matrix with the log-2 transform
-   * potentially applied.
-   */
-  private[server] def finalTransform(m: ExprMatrix): ExprMatrix = {
-    if (log2Transform) {
-      m.map(e => ManagedMatrix.log2(e))
-    } else {
-      m
-    }
   }
 }
 
+class ManagedMatrix(initProbes: Seq[String],
+    currentInfo: ManagedMatrixInfo,
+    rawUngrouped: ExprMatrix,
+    rawGrouped: ExprMatrix,
+    baseColumnMap: Map[Int, Seq[Int]],
+    log2Transform: Boolean = false)
+    extends CoreMatrix(initProbes, currentInfo, rawUngrouped,
+                       rawGrouped, baseColumnMap, log2Transform) with Synthetics
