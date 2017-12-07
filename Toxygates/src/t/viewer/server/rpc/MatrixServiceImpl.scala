@@ -40,6 +40,9 @@ import t.viewer.client.rpc.MatrixService
 import t.viewer.server._
 import t.viewer.shared._
 import t.viewer.shared.table.SortKey
+import t.viewer.server.matrix.MatrixController
+import t.viewer.server.matrix.ExprMatrix
+import t.viewer.server.matrix.ManagedMatrix
 
 object MatrixServiceImpl {
 

@@ -18,15 +18,15 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.viewer.server.matrix
 
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
-
 import friedrich.data.immutable._
 import t.common.shared.sample.ExpressionRow
 import t.db.BasicExprValue
 import t.db.ExprValue
+import t.viewer.server.Conversions
 
 object ExprMatrix {
   val ttest = new TTest()

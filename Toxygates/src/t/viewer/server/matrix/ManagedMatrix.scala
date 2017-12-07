@@ -18,18 +18,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.viewer.server.matrix
 
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Group
 import t.common.shared.sample.{ Sample => SSample }
 import t.common.shared.sample.{ Unit => TUnit }
-import t.db.BasicExprValue
-import t.db.ExprValue
-import t.db.MatrixContext
-import t.db.MatrixDBReader
-import t.db.PExprValue
-import t.db.Sample
+import t.db._
 import t.viewer.server.Conversions._
 import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo

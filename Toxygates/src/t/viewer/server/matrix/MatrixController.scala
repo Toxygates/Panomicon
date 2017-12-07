@@ -18,10 +18,9 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.viewer.server.matrix
 
 import java.util.logging.Logger
-
 import t.Context
 import t.common.shared.AType
 import t.common.shared.DataSchema
@@ -37,6 +36,7 @@ import t.platform.OrthologMapping
 import t.viewer.shared.DBUnavailableException
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.table.SortKey
+import t.viewer.server.Platforms
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
