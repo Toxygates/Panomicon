@@ -36,9 +36,8 @@ import t.platform.OrthologMapping
 import t.viewer.shared.DBUnavailableException
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.server.matrix._
-import t.viewer.server.RowLabels
-import t.viewer.server.MergedRowLabels
 import t.viewer.server.Platforms
+
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
@@ -187,36 +186,9 @@ class MatrixController(context: Context,
           managedMatrix.sort(mc.matrixIndex, ascending)
           println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
         }
-      case as: SortKey.Association =>
-        val old = sortAssoc
-        val nw = as.atype
-        if (old == null || nw != old
-          || ascending != managedMatrix.sortAscending) {
-          sortAssoc = nw
-          val st = assocSortTable(as.atype,
-            managedMatrix.probesForAuxTable)
-          managedMatrix.sortWithAuxTable(st, ascending)
-          println("Sort with aux table for " + as)
-        }
+      case _ => throw new Exception("Unsupported sort method")
     }
     managedMatrix
-  }
-
-  protected def assocSortTable(ass: AType, rowKeys: Seq[String]): ExprMatrix = {
-    val key = ass.auxSortTableKey
-    if (key != null) {
-      val sm = context.auxSortMap(key)
-      println("Rows: " + rowKeys.take(10))
-      println("aux: " + sm.take(10))
-      val evs = rowKeys.map(r =>
-        sm.get(r) match {
-          case Some(v) => ExprValue(v)
-          case None    => ExprValue(Double.NaN, 'A')
-        })
-      ExprMatrix.withRows(evs.map(ev => Seq(ev)), rowKeys, List("POPSEQ"))
-    } else {
-      throw new Exception(s"No sort key for $ass")
-    }
   }
 
   def rowLabels(schema: DataSchema): RowLabels = new RowLabels(context, schema)

@@ -39,6 +39,7 @@ import t.sparql.makeRich
 import t.viewer.client.rpc.MatrixService
 import t.viewer.server._
 import t.viewer.shared._
+
 import t.viewer.server.matrix._
 
 object MatrixServiceImpl {

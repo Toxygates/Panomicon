@@ -148,7 +148,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   @Override
   public void onModuleLoad() {
     String[] colors = new String[] {css.group0_color(), css.group1_color(), css.group2_color(),
-        css.group3_color(), css.group4_color(), css.group5_color(), css.group6_color()};
+        css.group3_color(), css.group4_color(), css.group5_color(), css.group6_color(),
+        css.group7_color()};
     SampleGroup.setColors(colors);
 
     css.ensureInjected();

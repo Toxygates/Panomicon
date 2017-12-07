@@ -30,6 +30,7 @@ public interface Resources extends t.common.client.Resources {
     String group4_color();
     String group5_color();
     String group6_color();
+    String group7_color();
     int menubarpanel_height();
     int navpanel_height();
   }
