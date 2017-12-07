@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.viewer.server.matrix
 
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Group
@@ -35,6 +35,8 @@ import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
 import otg.model.sample.OTGAttribute
+import t.common.shared.sample.{Sample => SSample}
+import t.common.shared.sample.{Unit => TUnit}
 
 /**
  * Routines for loading a ManagedMatrix and constructing groups.
@@ -557,5 +559,6 @@ class ManagedMatrix(val initProbes: Seq[String],
       m
     }
   }
-
 }
+
+

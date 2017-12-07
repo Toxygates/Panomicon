@@ -29,8 +29,8 @@ import t.TTestSuite
 import t.common.shared.sample._
 import t.db.testing._
 import t.db.testing.TestData._
-import t.viewer.server.ExtFoldBuilder
-import t.viewer.server.NormalizedBuilder
+import t.viewer.server.matrix.ExtFoldBuilder
+import t.viewer.server.matrix.NormalizedBuilder
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {

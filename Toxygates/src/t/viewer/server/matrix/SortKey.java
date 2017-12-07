@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared.table;
+package t.viewer.server.matrix;
 
 import java.io.Serializable;
 

@@ -20,7 +20,7 @@ package t.viewer.client.table;
 
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.Utils;
-import t.viewer.shared.table.SortKey;
+import t.viewer.server.matrix.SortKey;
 
 import com.google.gwt.cell.client.TextCell;
 

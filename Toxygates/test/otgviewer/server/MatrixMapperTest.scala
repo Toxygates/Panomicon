@@ -30,6 +30,10 @@ import t.db.ExprValue
 import t.db.testing.TestData
 import t.viewer.server.Conversions._
 import t.viewer.server._
+import t.viewer.server.matrix.MatrixMapper
+import t.viewer.server.matrix.OrthologProbeMapper
+import t.viewer.server.matrix.MedianValueMapper
+import t.viewer.server.matrix.ExtFoldBuilder
 
 @RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {

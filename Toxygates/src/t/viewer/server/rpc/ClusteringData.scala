@@ -7,7 +7,7 @@ import org.apache.commons.lang.StringUtils
 import t.common.shared.ValueType
 import t.platform.Probe
 import t.sparql.Probes
-import t.viewer.server.MatrixController
+import t.viewer.server.matrix.MatrixController
 
 class ClusteringData(controller: MatrixController,
                      probeStore: Probes,

@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.viewer.server.matrix
 
 import t.db.ExprValue
 
