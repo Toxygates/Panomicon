@@ -33,7 +33,7 @@ public interface DataViewListener {
 
   public void probesChanged(String[] probes);
 
-  public void compoundChanged(String compound);
+//  public void compoundChanged(String compound);
 
   public void compoundsChanged(List<String> compounds);
 

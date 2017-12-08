@@ -15,7 +15,7 @@ public class ClientState {
   
   public ClientState(Dataset[] datasets, SampleClass sampleClass,
       String[] probes, List<String> compounds,
-      String chosenCompound, List<Group> columns,
+      List<Group> columns,
       SampleColumn customColumn, List<ItemList> itemLists,
       ItemList geneSet,
       List<ItemList> chosenClusteringList) {
@@ -24,7 +24,6 @@ public class ClientState {
     this.datasets = datasets;
     this.probes = probes;
     this.compounds = compounds;
-    this.chosenCompound = chosenCompound;
     this.columns = columns;
     this.customColumn = customColumn;
     this.itemLists = itemLists;
@@ -36,7 +35,6 @@ public class ClientState {
   public final SampleClass sampleClass; 
   public final String[] probes;
   public final List<String> compounds;
-  public final String chosenCompound;
   public final List<Group> columns;
   public final SampleColumn customColumn;
   public final List<ItemList> itemLists, chosenClusteringList;

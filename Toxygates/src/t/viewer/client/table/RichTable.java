@@ -441,7 +441,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     }
 
     @Override
-    protected void apply(Set<String> state) {
+    protected void onValueChange(Set<String> state) {
 //      setupColumns();
     }   
   };
