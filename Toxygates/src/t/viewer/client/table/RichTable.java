@@ -69,10 +69,11 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   protected TableStyle style;
   protected Screen screen;
  
-  public RichTable(Screen screen, TableStyle style) {
+  public RichTable(Screen screen, TableStyle style, @Nullable String title) {
     this.screen = screen;
     this.schema = screen.schema();
     this.style = style;
+    
     hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
     grid = new DataGrid<T>(50, resources) {

@@ -81,8 +81,10 @@ public class DataScreen extends Screen {
   protected static final String defaultMatrix = "DEFAULT";
 
   protected ExpressionTable makeExpressionTable() {
-    return new ExpressionTable(this, true, TableStyle.getStyle("default"),
-        defaultMatrix, ExpressionTable.SUGGESTED_INIT_PAGE_SIZE, true) {
+    TableFlags flags = new TableFlags(defaultMatrix,
+        true, true, ExpressionTable.SUGGESTED_INIT_PAGE_SIZE, null);
+    
+    return new ExpressionTable(this, flags, TableStyle.getStyle("default")) {
       @Override
       protected void onGettingExpressionFailed() {
         super.onGettingExpressionFailed();
