@@ -48,7 +48,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   protected SampleClass chosenSampleClass; 
   protected String[] chosenProbes = new String[0];
   protected List<String> chosenCompounds = new ArrayList<String>();
-  protected String chosenCompound;
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected SampleColumn chosenCustomColumn;
   //TODO this should not be public
@@ -72,7 +71,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   
   public ClientState state() {
     return new ClientState(chosenDatasets, chosenSampleClass,
-        chosenProbes, chosenCompounds, chosenCompound, chosenColumns,
+        chosenProbes, chosenCompounds, chosenColumns,
         chosenCustomColumn, chosenItemLists, chosenGeneSet,
         chosenClusteringList);
   }
@@ -110,13 +109,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     chosenCompounds = compounds;
     changeCompounds(compounds);
   }
-
-  @Override
-  public void compoundChanged(String compound) {
-    chosenCompound = compound;
-    changeCompound(compound);
-  }
-
+  
   @Override
   public void columnsChanged(List<Group> columns) {
     chosenColumns = columns;
@@ -194,14 +187,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
-  protected void changeCompound(String compound) {
-    chosenCompound = compound;
-
-    for (DataViewListener l : listeners) {
-      l.compoundChanged(compound);
-    }
-  }
-
   protected void changeColumns(List<Group> columns) {
     chosenColumns = columns;
     assert (columns != null);
@@ -243,7 +228,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.sampleClassChanged(chosenSampleClass);
     other.probesChanged(chosenProbes);
     other.compoundsChanged(chosenCompounds);
-    other.compoundChanged(chosenCompound);
     other.columnsChanged(chosenColumns);
     other.customColumnChanged(chosenCustomColumn);
     other.itemListsChanged(chosenItemLists);
