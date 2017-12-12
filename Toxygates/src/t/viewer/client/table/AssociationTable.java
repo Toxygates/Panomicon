@@ -45,8 +45,9 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   
   private boolean waitingForAssociations = true;
 
-  public AssociationTable(Screen screen, TableStyle style) {
-    super(screen, style);
+  public AssociationTable(Screen screen, TableStyle style, 
+      @Nullable String title) {
+    super(screen, style, title);
     probeService = screen.manager().probeService();
   }
 

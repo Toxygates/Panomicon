@@ -193,14 +193,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
   }
 
-  public ExpressionTable(Screen _screen, boolean withPValueOption,
-      TableStyle style, String matrixId, int initPageSize, boolean withPager) {
-    super(_screen, style);
-    this.withPValueOption = withPValueOption;
+  public ExpressionTable(Screen _screen, TableFlags flags,
+      TableStyle style) {
+    super(_screen, style, flags.title);
+    this.withPValueOption = flags.withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
-    this.matrixId = matrixId;
-    this.initPageSize = initPageSize;
+    this.matrixId = flags.matrixId;
+    this.initPageSize = flags.initPageSize;
     screen = _screen;
 
     grid.setHeaderBuilder(new HeaderBuilder(grid));
@@ -211,7 +211,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     asyncProvider.addDataDisplay(grid);
 
     //Note: might factor out the "tools" into a separate polymorphic class that might or might not be used
-    makeTools(withPager);
+    makeTools(flags.withPager);
     //Same here
     makeAnalysisTools();
     setEnabled(false);

@@ -33,8 +33,10 @@ public class DualDataScreen extends DataScreen {
     
     final int MAX_SECONDARY_ROWS = 1000;
     
-    sideExpressionTable = new ExpressionTable(this, true,
-        TableStyle.getStyle("mirna"), sideMatrix, MAX_SECONDARY_ROWS, false);     
+    TableFlags flags = new TableFlags(sideMatrix, true, false, 
+        MAX_SECONDARY_ROWS, "miRNA");
+    sideExpressionTable = new ExpressionTable(this, flags,
+        TableStyle.getStyle("mirna"));     
     sideExpressionTable.addStyleName("sideExpressionTable");
   }
   
