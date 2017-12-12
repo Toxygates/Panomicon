@@ -55,10 +55,32 @@ object MatrixServiceImpl {
   }
 }
 
+class MatrixState {
+  var controllers: Map[String, MatrixController] = Map()
+
+  def controller(id: String) =
+    controllers.getOrElse(id, throw new NoDataLoadedException)
+
+  def matrix(id: String): ManagedMatrix =
+    controller(id).managedMatrix
+
+  def matrixOption(id: String) = controllers.get(id).map(_.managedMatrix)
+
+  def needsReload(id: String, groups: Iterable[Group], typ: ValueType): Boolean = {
+    if (id == null) {
+      return true
+    }
+    val cont = controllers.get(id)
+    cont == None ||
+      cont.get.groups.toSet != groups.toSet ||
+      cont.get.typ != typ
+  }
+}
+  
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
  */
-abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
+abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService {
   import scala.collection.JavaConversions._
   import t.viewer.server.Conversions._
   import ScalaUtils._
@@ -78,50 +100,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     mcontext = context.matrix
   }
 
-  protected class MatrixState {
-    var controllers: Map[String, MatrixController] = Map()
-
-    def controller(id: String) =
-      controllers.getOrElse(id, throw new NoDataLoadedException)
-
-    def matrix(id: String): ManagedMatrix =
-      controller(id).managedMatrix
-
-    def matrixOption(id: String) = controllers.get(id).map(_.managedMatrix)
-
-    def needsReload(id: String, groups: Iterable[Group], typ: ValueType): Boolean = {
-      if (id == null) {
-        return true
-      }
-      val cont = controllers.get(id)
-      cont == None ||
-        cont.get.groups.toSet != groups.toSet ||
-        cont.get.typ != typ
-    }
-  }
-
-  def getSessionData(): MatrixState = {
-    val session = getThreadLocalRequest.getSession
-    val r = Option(session.getAttribute("matrix").
-      asInstanceOf[MatrixState])
-    r match {
-      case Some(ms) => ms
-      case None =>
-        val r = new MatrixState()
-        session.setAttribute("matrix", r)
-        r
-    }
-  }
-
-  def setSessionData(m: MatrixState) =
-    getThreadLocalRequest().getSession().setAttribute("matrix", m)
+  protected def stateKey = "matrix"
+  protected def newState = new MatrixState
 
   def loadMatrix(id: String, groups: JList[Group], probes: Array[String],
     typ: ValueType, initSynthetics: JList[Synthetic]): ManagedMatrixInfo = {
-    getSessionData.controllers += (id ->
+    getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
           groups, probes, typ, false))
-    val mat = getSessionData.matrix(id)
+    val mat = getState.matrix(id)
     for (s <- initSynthetics) {
       mat.addSynthetic(s)
     }
@@ -131,12 +118,12 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def selectProbes(id: String, @Nullable probes: Array[String]): ManagedMatrixInfo = {
     val prs = Option(probes).getOrElse(Array()).toSeq
-    getSessionData.controller(id).selectProbes(prs).info
+    getState.controller(id).selectProbes(prs).info
   }
 
   @throws(classOf[NoDataLoadedException])
   def setColumnFilter(id: String, column: Int, f: ColumnFilter): ManagedMatrixInfo = safely {
-    val mm = getSessionData.matrix(id)
+    val mm = getState.matrix(id)
 
     println(s"Filter for column $column: $f")
     mm.setFilter(column, f)
@@ -146,7 +133,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def matrixRows(id: String, offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = safely {
-    val cont = getSessionData.controller(id)
+    val cont = getState.controller(id)
     val mm =
       cont.applySorting(sortKey, ascending)
 
@@ -213,21 +200,21 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   @throws(classOf[NoDataLoadedException])
   def addSyntheticColumn(id: String, synth: Synthetic): ManagedMatrixInfo = {
-    val current = getSessionData.matrix(id)
+    val current = getState.matrix(id)
     current.addSynthetic(synth)
     current.info
   }
 
   @throws(classOf[NoDataLoadedException])
   def removeSyntheticColumns(id: String): ManagedMatrixInfo = {
-    val current = getSessionData.matrix(id)
+    val current = getState.matrix(id)
     current.removeSynthetics()
     current.info
   }
 
   @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(id: String, individualSamples: Boolean): String = {
-    val mm = getSessionData.matrix(id)
+    val mm = getState.matrix(id)
     var mat = if (individualSamples &&
       mm.rawUngrouped != null && mm.current != null) {
       //Individual samples
@@ -281,7 +268,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   @throws(classOf[NoDataLoadedException])
   def getGenes(id: String, limit: Int): Array[String] = {
-    val mm = getSessionData().matrix(id)
+    val mm = getState().matrix(id)
 
     var rowNames = mm.current.sortedRowMap.map(_._1)
     println(rowNames.take(10))
@@ -295,7 +282,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
-    val mm = getSessionData.controllers.headOption.map(_._2.managedMatrix)
+    val mm = getState.controllers.headOption.map(_._2.managedMatrix)
     var state = "(No user state available)"
     if (mm != None && mm.get.current != null) {
       val cmat = mm.get.current
@@ -319,11 +306,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     //Reload data in a temporary controller if groups do not correspond to
     //the ones in the current session
-    val cont = if (getSessionData.needsReload(id, groups, valueType)) {
+    val cont = if (getState.needsReload(id, groups, valueType)) {
       MatrixController(context, () => getOrthologs(context),
           groups, chosenProbes, valueType, false)
     } else {
-      getSessionData.controller(id)
+      getState.controller(id)
     }
 
     val data = new ClusteringData(cont, probes, chosenProbes, valueType)

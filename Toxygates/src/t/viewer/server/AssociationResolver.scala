@@ -31,7 +31,7 @@ class AssociationResolver(probeStore: Probes,
     b2rKegg: B2RKegg,
     mirnaSources: Seq[MirnaSource],
     sc: SampleClass, types: Array[AType],
-    _probes: Iterable[String]) {
+    _probes: Iterable[String])(implicit sf: SampleFilter) {
 
   //Look up all core associations first.
   val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
@@ -41,8 +41,7 @@ class AssociationResolver(probeStore: Probes,
   /**
    * Look up a single association type for the given set of probes.
    */
-  def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
-    (implicit sf: SampleFilter): BBMap =
+  def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap =
     at match {
       // The type annotation :BBMap is needed on at least one (!) match pattern
       // to make the match statement compile. TODO: research this
@@ -65,14 +64,14 @@ class AssociationResolver(probeStore: Probes,
     gracefully(f, errorVals)
   }
 
-  private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
+  private def lookupFunction(t: AType): BBMap =
     queryOrEmpty(() => associationLookup(t, sc, aprobes))
 
   def standardMapping(m: BBMap): MMap[String, (String, String, Option[String])] =
     m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier, p.additionalInfo))
 
-  def resolve(implicit sf: SampleFilter): Array[Association] = {
-    val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(sf)))).seq
+  def resolve: Array[Association] = {
+    val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
     m1.map(p => new Association(p._1, convertAssociations(p._2))).toArray
   }
 }

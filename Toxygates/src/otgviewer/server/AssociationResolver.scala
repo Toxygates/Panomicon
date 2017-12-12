@@ -27,7 +27,7 @@ class AssociationResolver(probeStore: Probes,
     targetmine: Option[IntermineConnector],
     mirnaSources: Seq[MirnaSource],
     sc: SampleClass, types: Array[AType],
-     _probes: Iterable[String]) extends
+     _probes: Iterable[String])(implicit sf: SampleFilter) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, mirnaSources, sc, types, _probes) {
 
       //    val sp = asSpecies(sc)
@@ -50,8 +50,7 @@ class AssociationResolver(probeStore: Probes,
       r
     }
 
-    def getTargeting(sc: SampleClass, from: CompoundTargets)
-      (implicit sf: SampleFilter): MMap[Probe, Compound] = {
+    def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
       val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll).map(Compound.make(_))
 
       //strictly orthologous
@@ -100,7 +99,7 @@ class AssociationResolver(probeStore: Probes,
 
     lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
 
-    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])(implicit sf: SampleFilter): BBMap = {
+    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
       at match {
         case _: AType.GOMF.type       => probeStore.mfGoTerms(probes)
         case _: AType.GOBP.type       => probeStore.bpGoTerms(probes)

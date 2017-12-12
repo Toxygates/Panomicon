@@ -26,9 +26,7 @@ import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.server.matrix.SortKey;
-import t.viewer.shared.Association;
-import t.viewer.shared.AssociationValue;
+import t.viewer.shared.*;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;

@@ -18,7 +18,7 @@
 
 package t.viewer.client.table;
 
-import t.viewer.server.matrix.SortKey;
+import t.viewer.shared.SortKey;
 
 public interface MatrixSortable {
 

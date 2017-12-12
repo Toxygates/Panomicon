@@ -28,7 +28,6 @@ import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.viewer.server.matrix.SortKey;
 import t.viewer.shared.*;
 
 import com.google.gwt.user.client.rpc.RemoteService;

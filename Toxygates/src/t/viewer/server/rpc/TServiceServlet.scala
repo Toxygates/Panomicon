@@ -57,5 +57,34 @@ abstract class TServiceServlet extends RemoteServiceServlet {
     case t: Throwable =>
       t.printStackTrace()
       throw t
+  }     
+}
+
+abstract class StatefulServlet[State] extends TServiceServlet {
+
+  /**
+   * Identified this servlet's state in the user session.
+   */
+  protected def stateKey: String
+
+  /**
+   * Creates a new, blank state object.
+   */
+  protected def newState: State
+
+  protected def getState(): State = {
+    val r = getThreadLocalRequest().getSession().getAttribute(stateKey).
+      asInstanceOf[State]
+    if (r == null) {
+      val ss = newState
+      setState(ss)
+      ss
+    } else {
+      r
+    }
   }
+
+  protected def setState(m: State) =
+    getThreadLocalRequest().getSession().setAttribute(stateKey, m)
+
 }

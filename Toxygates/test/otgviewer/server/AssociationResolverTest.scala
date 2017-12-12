@@ -70,10 +70,10 @@ class AssociationResolverTest extends TTestSuite {
       b2rKegg, uniprot, chembl, drugBank,
       None, Seq(),
       sc, types, probes
-      )
+      )(SampleFilter())
 
   private def testAssociation(typ: AType) = {
-    val as = ar(Array(typ)).resolve(SampleFilter())
+    val as = ar(Array(typ)).resolve
     assert (as.size == 1)
     assert(as(0).`type`() == typ)
     assert(as(0).data.size > 0)

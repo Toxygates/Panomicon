@@ -1,26 +1,4 @@
-/*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
- * (NIBIOHN), Japan.
- *
- * This file is part of Toxygates.
- *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package otgviewer.server.rpc
-
-import scala.Array.canBuildFrom
 
 import otg.OTGContext
 import t.platform.Species.Human
@@ -42,16 +20,11 @@ import t.viewer.shared.TimeoutException
 import t.viewer.shared.mirna.MirnaSource
 import otgviewer.server.AppInfoLoader
 
-/**
- * This servlet is reponsible for making queries to RDF stores.
- * Future: May be split into a sample service and a probe service.
- */
-class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet
-  with otgviewer.client.rpc.ProbeService with otgviewer.client.rpc.SampleService {
-
-  private def probeStore: otg.sparql.Probes = context.probes
-  private def sampleStore: otg.sparql.OTGSamples = context.samples
-
+class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl 
+  with OTGServiceServlet with otgviewer.client.rpc.ProbeService {
+ 
+  protected def sampleStore: otg.sparql.OTGSamples = context.samples
+    
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
   var homologene: B2RHomologene = _
@@ -70,13 +43,15 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       case None =>
     }
   }
-
+  
+  private def probeStore: otg.sparql.Probes = context.probes
+  
   override protected def reloadAppInfo = {
     val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load
     r.setPredefinedGroups(predefinedGroups)
     r
   }
-
+  
   @throws[TimeoutException]
   override def goTerms(pattern: String): Array[String] =
     probeStore.goTerms(pattern).map(_.name).toArray
@@ -87,7 +62,6 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 
-  //TODO move to OTG
   @throws[TimeoutException]
   private def predefinedGroups: Array[Group] = {
     //we call this from localInit and sessionInfo.sampleFilter
@@ -120,18 +94,14 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     val pmap = context.matrix.probeMap //TODO context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
-
-  @throws[TimeoutException]
-  override def pathologies(column: SampleColumn): Array[Pathology] =
-    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(
-        otgviewer.server.rpc.Conversions.asJava(_))
-
+  
   override def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] = safely {
+    implicit val sf = getState.sampleFilter
+    
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
-        targetmine, getSessionData().mirnaSources,
+        targetmine, getState().mirnaSources,
         sc, types, _probes).resolve
   }
-
 }

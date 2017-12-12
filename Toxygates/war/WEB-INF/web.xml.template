@@ -71,10 +71,15 @@
 	</servlet-mapping>	
 	
 	<servlet>
-		<servlet-name>sparqlServlet</servlet-name>
-		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
+		<servlet-name>sampleServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.SampleServiceImpl</servlet-class>
 	</servlet>
 
+	<servlet>
+		<servlet-name>probeServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.ProbeServiceImpl</servlet-class>
+	</servlet>
+	
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
 		<servlet-class>otgviewer.server.rpc.SeriesServiceImpl</servlet-class>
@@ -86,12 +91,12 @@
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>sparqlServlet</servlet-name>
+		<servlet-name>probeServlet</servlet-name>
 		<url-pattern>/toxygates/probe</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>sparqlServlet</servlet-name>
+		<servlet-name>sampleServlet</servlet-name>
 		<url-pattern>/toxygates/sample</url-pattern>
 	</servlet-mapping>
 	

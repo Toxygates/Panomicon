@@ -37,7 +37,6 @@ import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.server.matrix.SortKey;
 import t.viewer.shared.*;
 
 import com.google.gwt.cell.client.*;
