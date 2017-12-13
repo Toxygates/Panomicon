@@ -370,7 +370,7 @@ public class DataScreen extends Screen {
     }
 
     @Override
-    public void apply(MirnaSource[] state) {
+    public void onValueChange(MirnaSource[] state) {
       if (state != null) {}
         manager().probeService().setMirnaSources(state, new AsyncCallback<Void>() {
         @Override

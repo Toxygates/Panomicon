@@ -50,7 +50,7 @@ abstract public class PersistedState<T> {
   public void loadAndApply(StorageParser parser) {
     T state = unpack(parser.getItem(storageKey));
     value = state;
-    apply(state);
+    onValueChange(state);
   }
   
   public void store(StorageParser parser, @Nullable T state) {
@@ -63,9 +63,9 @@ abstract public class PersistedState<T> {
   }
   
   /**
-   * Apply the state to the client
+   * Optionally override this method to get callbacks when the value changes
    */
-  protected abstract void apply(@Nullable T state);
+  protected void onValueChange(@Nullable T state) { }
   
   /**
    * Change the value of this state as a result of e.g. 
@@ -76,7 +76,7 @@ abstract public class PersistedState<T> {
     logger.info("Changed");
     value = newState;
     store(parser, newState);
-    apply(newState);
-  }
+    onValueChange(newState);
+  }  
 }
 
