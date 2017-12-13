@@ -22,12 +22,15 @@ public class AssociationSummary<T> {
   private List<AssociationValue> data = new ArrayList<AssociationValue>();
   private Set<AssociationValue> unique = new HashSet<AssociationValue>();
   private List<HistogramEntry> sortedByCount = new ArrayList<HistogramEntry>();
+  private Map<T, Collection<AssociationValue>> full = new HashMap<T, Collection<AssociationValue>>();
   
   AssociationSummary(AssociationTable<T>.AssociationColumn col, 
     Collection<T> rows) {
     for (T row: rows) {
-      data.addAll(col.getLinkableValues(row));
-      unique.addAll(col.getLinkableValues(row));
+      Collection<AssociationValue> values = col.getLinkableValues(row);
+      data.addAll(values);
+      unique.addAll(values);
+      full.put(row, values);
     }    
     for (AssociationValue key: unique) {
       HistogramEntry he = countItem(key);
@@ -54,6 +57,10 @@ public class AssociationSummary<T> {
     return new HistogramEntry(item, count);    
   }
   
+  /**
+   * Histogram summary table.
+   * @return
+   */
   public String[][] getTable() {
     String[][] r = new String[sortedByCount.size() + 1][3];
     r[0] = new String[] { "Title", "ID", "Count" };
@@ -65,5 +72,10 @@ public class AssociationSummary<T> {
     }
     return r;
   }
+  
+  /**
+   * Maps each row to all association values for that row.
+   */
+  public Map<T, Collection<AssociationValue>> getFullMap() { return full; }
   
 }

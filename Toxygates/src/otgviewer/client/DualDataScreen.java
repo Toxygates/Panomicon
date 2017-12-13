@@ -198,7 +198,17 @@ public class DualDataScreen extends DataScreen {
     nodes.addAll(buildNodes("mRNA", expressionTable));
     nodes.addAll(buildNodes("miRNA", sideExpressionTable));
     
+    AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
     List<Interaction> interactions = new ArrayList<Interaction>();
+    Map<ExpressionRow, Collection<AssociationValue>> fullMap = mirnaSummary.getFullMap();
+    for (ExpressionRow row: fullMap.keySet()) {
+      for (AssociationValue av: fullMap.get(row)) {
+        Node from = new Node(av.formalIdentifier(), "miRNA", 1.0);
+        Node to = new Node(row.getProbe(), "mRNA", 1.0);        
+        Interaction i = new Interaction(from, to, Optional.empty(), Optional.empty());
+        interactions.add(i);
+      }
+    }
     return new Network(title, nodes, interactions);
   }
 }
