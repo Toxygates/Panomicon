@@ -41,6 +41,8 @@ import t.viewer.server._
 import t.viewer.shared._
 
 import t.viewer.server.matrix._
+import t.viewer.shared.network.Network
+import t.viewer.shared.network.Format
 
 object MatrixServiceImpl {
 
@@ -322,5 +324,9 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
     names
+    
+  def prepareNetworkDownload(network: Network, format: Format): String = {
+    ???
+  }
 
 }

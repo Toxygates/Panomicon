@@ -12,9 +12,10 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.*;
 import t.viewer.shared.*;
+import t.viewer.shared.network.*;
 
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A DataScreen that can display two tables side by side.
@@ -182,4 +183,23 @@ public class DualDataScreen extends DataScreen {
       sideExpressionTable.getExpressions(synths);
     }
   }
+  
+  public List<Node> buildNodes(String type, ExpressionTable table) {
+    return Arrays.stream(table.state().probes).map(p -> new Node(p, type, 1.0)).
+      collect(Collectors.toList());    
+  }
+  
+  /**
+   * Build the interaction network represented by the current view in the two tables.
+   * @return
+   */
+  public Network buildNetwork(String title) {
+    List<Node> nodes = new ArrayList<Node>();
+    nodes.addAll(buildNodes("mRNA", expressionTable));
+    nodes.addAll(buildNodes("miRNA", sideExpressionTable));
+    
+    List<Interaction> interactions = new ArrayList<Interaction>();
+    return new Network(title, nodes, interactions);
+  }
 }
+

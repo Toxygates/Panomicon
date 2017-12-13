@@ -29,6 +29,8 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.shared.*;
+import t.viewer.shared.network.Format;
+import t.viewer.shared.network.Network;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -136,6 +138,14 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    */
   String prepareCSVDownload(String id, boolean individualSamples) throws ServerError;
 
+  /**
+   * Serialize an interaction network to a downloadable file. 
+   * @param network the network to serialize.
+   * @param format the format to use for serialization.
+   * @return a downloadable URL.
+   */
+  String prepareNetworkDownload(Network network, Format format);
+  
   /**
    * Send a feedback email from a user. This should not necessarily be in MatrixService.
    */
