@@ -39,7 +39,7 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -93,7 +93,21 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
       }
     };
 
-    initWidget(grid);
+    LayoutPanel lp = new LayoutPanel();
+    
+    lp.add(grid);
+    if (title != null) {
+      Label l = new Label(title);
+      l.addStyleName("exprGrid-title");
+      lp.add(l);      
+      lp.setWidgetTopHeight(l, 0, Unit.PX, 30, Unit.PX);
+      lp.setWidgetLeftRight(grid, 0, Unit.PX, 0, Unit.PX);
+      lp.setWidgetTopBottom(grid, 30, Unit.PX, 0, Unit.PX);
+    } 
+    
+    initWidget(lp);
+    
+//    initWidget(grid);
     grid.setWidth("100%");
     grid.setRowStyles(new RowHighlighter<T>());
     AsyncHandler colSortHandler = new AsyncHandler(grid);

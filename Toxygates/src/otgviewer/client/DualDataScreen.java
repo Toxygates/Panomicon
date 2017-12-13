@@ -40,18 +40,25 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.addStyleName("sideExpressionTable");
   }
   
-  protected DockLayoutPanel dockLayout;
+  protected SplitLayoutPanel splitLayout;
+  
+  /*
+   * Note: It's probably best/easiest to rebuild the layout completely
+   * each time the chosen columns change
+   */
+  @Override
+  protected Widget mainTablePanel() {    
+    splitLayout = new SplitLayoutPanel();    
+    splitLayout.setWidth("100%");
+    splitLayout.addEast(sideExpressionTable, 550);
+    splitLayout.addEast(sideExpressionTable, 550);
+    splitLayout.add(expressionTable);    
+    return splitLayout;
+  }
   
   @Override
-  protected Widget mainTablePanel() {
-    
-    ResizeLayoutPanel rlp = new ResizeLayoutPanel();
-    rlp.setWidth("100%");
-    dockLayout = new DockLayoutPanel(Unit.PX);    
-    dockLayout.addEast(sideExpressionTable, 550);
-    dockLayout.add(expressionTable);
-    rlp.add(dockLayout);
-    return rlp;
+  protected String mainTableTitle() {     
+    return "mRNA";     
   }
   
   protected List<Group> columnsOfType(List<Group> from, String type) {
@@ -89,9 +96,9 @@ public class DualDataScreen extends DataScreen {
       sideExpressionTable.columnsChanged(sideColumns);
     }  
     if (!sideColumns.isEmpty()) {
-      dockLayout.setWidgetSize(sideExpressionTable, 550);
+      splitLayout.setWidgetSize(sideExpressionTable, 550);
     } else {
-      dockLayout.setWidgetSize(sideExpressionTable, 0);
+      splitLayout.setWidgetSize(sideExpressionTable, 0);
     }
   }  
   

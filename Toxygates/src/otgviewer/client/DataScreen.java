@@ -82,7 +82,7 @@ public class DataScreen extends Screen {
 
   protected ExpressionTable makeExpressionTable() {
     TableFlags flags = new TableFlags(defaultMatrix,
-        true, true, ExpressionTable.SUGGESTED_INIT_PAGE_SIZE, null);
+        true, true, ExpressionTable.SUGGESTED_INIT_PAGE_SIZE, mainTableTitle());
     
     return new ExpressionTable(this, flags, TableStyle.getStyle("default")) {
       @Override
@@ -105,6 +105,8 @@ public class DataScreen extends Screen {
       }
     };
   }
+  
+  protected @Nullable String mainTableTitle() { return null; }
   
   protected void beforeGetAssociations() {}
   

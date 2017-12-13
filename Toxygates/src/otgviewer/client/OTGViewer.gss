@@ -391,6 +391,12 @@ Expression table
 	margin-top: 50px;
 }
 
+.exprGrid-title {
+	font-weight: bold;
+	line-height: 30px;
+	padding: 4px;
+}
+
 /**************************************	
 Groups
 **************************************/
