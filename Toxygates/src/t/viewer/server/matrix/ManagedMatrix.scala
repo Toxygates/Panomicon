@@ -246,15 +246,15 @@ trait Synthetics extends CoreMatrix {
 
         current = test match {
           case ut: Synthetic.UTest =>
-            current.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
+            current.appendUTest(rawData, g1s, g2s, ut.getShortTitle)
           case tt: Synthetic.TTest =>
-            current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO don't pass null
+            current.appendTTest(rawData, g1s, g2s, tt.getShortTitle)
           case md: Synthetic.MeanDifference =>
             current.appendDiffTest(current, Seq(test.getGroup1.getName),
-                Seq(test.getGroup2.getName), md.getShortTitle(null)) //TODO don't pass null
+                Seq(test.getGroup2.getName), md.getShortTitle)
           case _ => throw new Exception("Unexpected test type!")
         }
-        val name = test.getShortTitle(null);
+        val name = test.getShortTitle
         if (!currentInfo.hasColumn(name)) {
           currentInfo.addColumn(true, name, test.getTooltip(),
             ColumnFilter.emptyLT, null, false,

@@ -92,7 +92,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   }
 
   @Override
-  public String getShortTitle(DataSchema schema) {
+  public String getShortTitle() {
     return name;
   }
 

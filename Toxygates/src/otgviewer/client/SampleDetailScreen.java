@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.*;
-import t.common.shared.DataSchema;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.*;
@@ -137,14 +136,13 @@ public class SampleDetailScreen extends Screen {
 
   private void updateColumnList() {
     columnList.clear();
-    DataSchema schema = schema();
     if (chosenColumns.size() > 0) {
       for (DataColumn<?> c : chosenColumns) {
-        columnList.addItem(c.getShortTitle(schema));
+        columnList.addItem(c.getShortTitle());
       }
     }
     if (chosenCustomColumn != null) {
-      columnList.addItem(chosenCustomColumn.getShortTitle(schema));
+      columnList.addItem(chosenCustomColumn.getShortTitle());
       columnList.setSelectedIndex(columnList.getItemCount() - 1);
     } else {
       columnList.setSelectedIndex(0);
@@ -245,13 +243,12 @@ public class SampleDetailScreen extends Screen {
   }
 
   private void displayWith(String column) {
-    DataSchema schema = schema();
-    if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle(schema))) {
+    if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
       setDisplayColumn(chosenCustomColumn);
       return;
     } else {
       for (SampleColumn c : chosenColumns) {
-        if (c.getShortTitle(schema).equals(column)) {
+        if (c.getShortTitle().equals(column)) {
           setDisplayColumn(c);
           return;
         }

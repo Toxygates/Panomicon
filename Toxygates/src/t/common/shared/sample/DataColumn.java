@@ -18,13 +18,12 @@
 
 package t.common.shared.sample;
 
-import t.common.shared.DataSchema;
 import t.common.shared.Packable;
 
 
 public interface DataColumn<S extends Sample> extends HasSamples<S>, Packable {
 
-  public String getShortTitle(DataSchema schema);
+  public String getShortTitle();
 
   public String pack();
 }

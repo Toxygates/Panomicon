@@ -821,8 +821,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     groupsel2.clear();
     for (DataColumn<?> dc : columns) {
       if (dc instanceof Group) {
-        groupsel1.addItem(dc.getShortTitle(schema));
-        groupsel2.addItem(dc.getShortTitle(schema));
+        groupsel1.addItem(dc.getShortTitle());
+        groupsel2.addItem(dc.getShortTitle());
       }
     }
 
