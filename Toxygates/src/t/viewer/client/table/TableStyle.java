@@ -8,7 +8,7 @@ public abstract class TableStyle {
   abstract String initWidth(StandardColumns col);
   
   public static TableStyle getStyle(String name) {
-    if (name.equals("mirna")) {
+    if (name.equals("miRNA")) {
       return new MirnaTableStyle();
     } else {
       return new DefaultTableStyle();

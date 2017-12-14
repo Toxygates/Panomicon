@@ -29,15 +29,18 @@ public class DualDataScreen extends DataScreen {
   
   protected final static String sideMatrix = "SECONDARY";
   
+  protected final static String mainTableType = "mRNA";
+  protected final static String sideTableType = "miRNA";
+  
   public DualDataScreen(ScreenManager man) {
     super(man);
     
     final int MAX_SECONDARY_ROWS = 1000;
     
     TableFlags flags = new TableFlags(sideMatrix, true, false, 
-        MAX_SECONDARY_ROWS, "miRNA");
+        MAX_SECONDARY_ROWS, sideTableType);
     sideExpressionTable = new ExpressionTable(this, flags,
-        TableStyle.getStyle("mirna"));     
+        TableStyle.getStyle(sideTableType));     
     sideExpressionTable.addStyleName("sideExpressionTable");
   }
   
@@ -59,7 +62,7 @@ public class DualDataScreen extends DataScreen {
   
   @Override
   protected String mainTableTitle() {     
-    return "mRNA";     
+    return mainTableType;     
   }
   
   protected List<Group> columnsOfType(List<Group> from, String type) {
@@ -68,7 +71,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected List<Group> columnsForMainTable(List<Group> from) {    
-    List<Group> r = columnsOfType(from, "mRNA");
+    List<Group> r = columnsOfType(from, mainTableType);
     
     //If mRNA and miRNA columns are not mixed, we simply display them as they are
     if (r.isEmpty()) {
@@ -78,7 +81,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected List<Group> columnsForSideTable(List<Group> from) {
-    return columnsOfType(from, "miRNA");        
+    return columnsOfType(from, sideTableType);        
   }
   
   protected TableStyle mainTableStyle() {
@@ -149,7 +152,7 @@ public class DualDataScreen extends DataScreen {
       counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
     }
     
-    logger.info("Extracted " + ids.length + " mirnas");    
+    logger.info("Extracted " + ids.length + " miRNAs");    
     
     Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
       "Number of times each miRNA appeared", counts,
@@ -195,16 +198,16 @@ public class DualDataScreen extends DataScreen {
    */
   public Network buildNetwork(String title) {
     List<Node> nodes = new ArrayList<Node>();
-    nodes.addAll(buildNodes("mRNA", expressionTable));
-    nodes.addAll(buildNodes("miRNA", sideExpressionTable));
+    nodes.addAll(buildNodes(mainTableType, expressionTable));
+    nodes.addAll(buildNodes(sideTableType, sideExpressionTable));
     
     AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
     List<Interaction> interactions = new ArrayList<Interaction>();
     Map<ExpressionRow, Collection<AssociationValue>> fullMap = mirnaSummary.getFullMap();
     for (ExpressionRow row: fullMap.keySet()) {
       for (AssociationValue av: fullMap.get(row)) {
-        Node from = new Node(av.formalIdentifier(), "miRNA", 1.0);
-        Node to = new Node(row.getProbe(), "mRNA", 1.0);        
+        Node from = new Node(av.formalIdentifier(), sideTableType, 1.0);
+        Node to = new Node(row.getProbe(), mainTableType, 1.0);        
         Interaction i = new Interaction(from, to, Optional.empty(), Optional.empty());
         interactions.add(i);
       }
