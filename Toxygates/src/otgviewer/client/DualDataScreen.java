@@ -5,17 +5,20 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import t.common.shared.AType;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.*;
 import t.viewer.shared.*;
 import t.viewer.shared.network.*;
 
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A DataScreen that can display two tables side by side.
@@ -58,6 +61,28 @@ public class DualDataScreen extends DataScreen {
     splitLayout.addEast(sideExpressionTable, 550);
     splitLayout.add(expressionTable);    
     return splitLayout;
+  }
+  
+  @Override
+  protected void setupMenuItems() {
+    super.setupMenuItems();
+    MenuItem mi = new MenuItem("Download interaction network...", new Command() {
+      @Override
+      public void execute() {
+        downloadNetwork();       
+      }      
+    });
+    addAnalysisMenuItem(mi);
+  }
+  
+  protected void downloadNetwork() {
+    MatrixServiceAsync matrixService = manager().matrixService();
+    Network network = buildNetwork("miRNA-mRNA interactions");
+    matrixService.prepareNetworkDownload(network, Format.DOT, new PendingAsyncCallback<String>(this) {
+      public void handleSuccess(String url) {
+        Utils.displayURL("Your download is ready.", "Download", url);
+      }
+    });
   }
   
   @Override
@@ -187,9 +212,13 @@ public class DualDataScreen extends DataScreen {
     }
   }
   
+  public List<Node> buildNodes(String type, String[] probes) {
+    return Arrays.stream(probes).map(p -> new Node(p, type, 1.0)).
+        collect(Collectors.toList());
+  }
+  
   public List<Node> buildNodes(String type, ExpressionTable table) {
-    return Arrays.stream(table.state().probes).map(p -> new Node(p, type, 1.0)).
-      collect(Collectors.toList());    
+    return buildNodes(type, table.state().probes);
   }
   
   /**
@@ -198,7 +227,7 @@ public class DualDataScreen extends DataScreen {
    */
   public Network buildNetwork(String title) {
     List<Node> nodes = new ArrayList<Node>();
-    nodes.addAll(buildNodes(mainTableType, expressionTable));
+    nodes.addAll(buildNodes(mainTableType, expressionTable.displayedAtomicProbes()));
     nodes.addAll(buildNodes(sideTableType, sideExpressionTable));
     
     AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
@@ -208,7 +237,7 @@ public class DualDataScreen extends DataScreen {
       for (AssociationValue av: fullMap.get(row)) {
         Node from = new Node(av.formalIdentifier(), sideTableType, 1.0);
         Node to = new Node(row.getProbe(), mainTableType, 1.0);        
-        Interaction i = new Interaction(from, to, Optional.empty(), Optional.empty());
+        Interaction i = new Interaction(from, to, null, null);
         interactions.add(i);
       }
     }

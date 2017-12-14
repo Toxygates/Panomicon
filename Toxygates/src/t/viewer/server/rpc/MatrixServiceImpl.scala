@@ -43,6 +43,7 @@ import t.viewer.shared._
 import t.viewer.server.matrix._
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.Format
+import t.viewer.server.network.Serializer
 
 object MatrixServiceImpl {
 
@@ -326,7 +327,10 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     names
     
   def prepareNetworkDownload(network: Network, format: Format): String = {
-    ???
+    val s = new Serializer(network)
+    val file = CSVHelper.filename("toxygates", format.suffix)
+    s.writeTo(s"${config.csvDirectory}/$file", format)
+    s"${config.csvUrlBase}/$file"    
   }
 
 }

@@ -15,26 +15,33 @@ class Serializer(network: Network) {
     }
   }
   
+  /*
+   * Reference: http://www.graphviz.org/pdf/dotguide.pdf
+   */
   def writeDOT(file: String) {
     val w = new PrintWriter(file)
-    w.println(s"graph ${network.title} {")
+    w.println(s"""|digraph "${network.title}" {
+        |  layout=twopi;
+        |  nodesep=2;
+        |  ranksep=1;""".stripMargin)
     
     for (n <- network.nodes) {
-      w.println(s"${n.id} [label=${n.id}, shape=${nodeShape(n)}]")
+      w.println(s"""  "${n.id}" [label="${n.id}", ${attributes(n)}]; """)
     }
     
     for (i <- network.interactions) {
-      w.println(s"${i.from.id} -> ${i.to.id}")
+      w.println(s"""  "${i.from.id}" -> "${i.to.id}"; """)
     }
     
     w.println("}")
     w.close()
   }
   
-  def nodeShape(n: Node) = {
+  def attributes(n: Node) = {    
     n.`type` match {
-      case "mRNA" => "box"
-      case _ => "circle"
+      case "miRNA" => "color=blue"
+      case "mRNA" => "color=green"
+      case _ => ""
     }
   }
 }

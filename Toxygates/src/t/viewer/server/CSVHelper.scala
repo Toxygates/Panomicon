@@ -93,7 +93,7 @@ object CSVHelper {
       throw new Exception("No data supplied")
     }
 
-    val name = filename(namePrefix, dir, urlbase)
+    val name = filename(namePrefix, "csv")
     val fullName = dir + "/" + name
 
     new CSVFile {
@@ -123,11 +123,9 @@ object CSVHelper {
 
   def writeCSV(namePrefix: String, dir: String, urlbase: String,
     csvFile: CSVFile): String = {
-    val name = filename(namePrefix, dir, urlbase)
+    val name = filename(namePrefix, "csv")
     val fullName = dir + "/" + name
-
     csvFile.write(fullName)
-
     urlbase + "/" + name
   }
 
@@ -137,12 +135,14 @@ object CSVHelper {
     writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
       data)
 
-  private def filename(namePrefix: String, dir: String, urlbase: String):
-    String = {
+  /**
+   * Generate a new quasi-random but meaningful filename
+   */
+  def filename(namePrefix: String, suffix: String): String = {
     val cal = Calendar.getInstance
     val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
 
     //TODO pass the file prefix in from outside
-    s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
+    s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.$suffix"
   }
 }

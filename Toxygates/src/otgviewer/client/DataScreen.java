@@ -163,7 +163,7 @@ public class DataScreen extends Screen {
     return rlp;
   }
 
-  private void setupMenuItems() {
+  protected void setupMenuItems() {
     MenuBar menuBar = new MenuBar(true);
     MenuItem mActions = new MenuItem("File", false, menuBar);
     MenuItem mntmDownloadCsv =
