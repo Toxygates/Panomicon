@@ -234,7 +234,7 @@ trait Synthetics extends CoreMatrix {
   protected def addSyntheticInner(s: Synthetic): Unit = {
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
-        //TODO
+        //TODO avoid using magic strings
         val g1s = test.getGroup1.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
           .map(_.id)
         val g2s = test.getGroup2.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
@@ -248,17 +248,17 @@ trait Synthetics extends CoreMatrix {
           case ut: Synthetic.UTest =>
             current.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
-            current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
+            current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO don't pass null
           case md: Synthetic.MeanDifference =>
             current.appendDiffTest(current, Seq(test.getGroup1.getName),
-                Seq(test.getGroup2.getName), md.getShortTitle(null)) //TODO
+                Seq(test.getGroup2.getName), md.getShortTitle(null)) //TODO don't pass null
           case _ => throw new Exception("Unexpected test type!")
         }
         val name = test.getShortTitle(null);
         if (!currentInfo.hasColumn(name)) {
           currentInfo.addColumn(true, name, test.getTooltip(),
             ColumnFilter.emptyLT, null, false,
-            Array[SSample]()) //TODO
+            Array[SSample]()) 
         }
       case _ => throw new Exception("Unexpected test type")
     }

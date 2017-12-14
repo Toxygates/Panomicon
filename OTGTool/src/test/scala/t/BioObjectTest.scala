@@ -25,5 +25,5 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class BioObjectTest extends TTestSuite {
-  //TODO
+  //TODO implement tests
 }

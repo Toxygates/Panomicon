@@ -560,8 +560,8 @@ public class Screen extends DataListenerWidget implements
   }
     
   /**
-   * Display the sample detail screen and show information about the given barcode. TODO: this
-   * method should probably be somewhere else.
+   * Display the sample detail screen and show information about the given barcode. 
+   * TODO: this method should probably be somewhere else.
    * 
    * @param b
    */

@@ -48,6 +48,6 @@ class TriplestoreMetadata(sampleStore: Samples, val attributes: AttributeSet,
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
-  //TODO
+  //TODO Implement isControl (or change the isControl mechanism)
   override def isControl(s: Sample) = ???
 }
