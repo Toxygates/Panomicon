@@ -53,7 +53,6 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   protected Dataset<D> dataset;
   protected Factory<?, ?> factory;
   protected Screen screen;
-  // Map<String, DataTable> tables = new HashMap<String, DataTable>(); //TODO
   protected D[][] tables;
   final int totalWidth;
 
@@ -84,7 +83,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     probeService = screen.manager().probeService();
 
     if (organisms.size() == 0) {
-      organisms.add(""); // TODO
+      organisms.add(""); // TODO this feels like a hack
     }
 
     final int osize = organisms.size();

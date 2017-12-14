@@ -37,7 +37,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
 
   private boolean withPassword, withReplace;
   
-  //TODO
+  //TODO it would be better to keep this on a per-instance basis
   private static String account, password;
   private @Nullable IntermineInstance instance;
   protected @Nullable InstanceSelector selector;

@@ -58,7 +58,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     showUploadedFiles()
     grabRunner()
 
-    val bm = new BatchManager(context) //TODO configuration parsing
+    val bm = new BatchManager(context) 
 
     cleanMaintenance {
       TaskRunner.start()
@@ -140,7 +140,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   def deleteBatchAsync(b: Batch): Unit = {
 
-    val bm = new BatchManager(context) //TODO configuration parsing
+    val bm = new BatchManager(context)
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")

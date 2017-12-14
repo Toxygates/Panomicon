@@ -151,7 +151,7 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
 
   protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo) = {
-    //TODO
+
     val (tus, cus) = treatedAndControl(g)
     println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
 

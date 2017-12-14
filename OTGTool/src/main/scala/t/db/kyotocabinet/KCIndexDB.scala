@@ -100,7 +100,6 @@ class KCIndexDB(db: DB, writeMode: Boolean)
   protected def formKey(enum: String, x: String): Array[Byte] = formKey("##" + enum + "##" + x)
 
   protected def extractKey(data: Array[Byte]): String = new String(data, utf8)
-  //TODO
 
   protected def formValue(value: Int): Array[Byte] = {
     val r = ByteBuffer.allocate(4)

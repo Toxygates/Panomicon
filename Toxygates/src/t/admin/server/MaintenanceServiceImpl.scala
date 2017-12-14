@@ -66,7 +66,7 @@ with BatchOpsImpl with MaintenanceService {
     ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
-    val pm = new PlatformManager(context) //TODO configuration parsing
+    val pm = new PlatformManager(context)
 
     cleanMaintenance {
       val tempFiles = new TempFiles()

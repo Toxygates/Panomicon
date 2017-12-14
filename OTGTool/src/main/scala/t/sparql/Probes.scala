@@ -26,7 +26,6 @@ import t.TriplestoreConfig
 import t.db.DefaultBio
 import t.db.ProbeMap
 import t.platform._
-//TODO try to remove this dependency
 import t.sparql.secondary._
 import t.util.TempFiles
 
@@ -329,7 +328,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     r.groupBy(_("pr")).map(_._2).map(g => {
       val p = Probe(g(0)("l"))
 
-      //TODO!
+      //TODO: When there's an end-of-life plan for tritigate, this might be removed
       val tritiTitle = (g.map(_.get("gene")) ++
         g.map(_.get("protid"))).flatten.toSet.mkString(", ")
 

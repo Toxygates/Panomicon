@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.DataSchema;
 import t.common.shared.sample.*;
 
 @SuppressWarnings("serial")
@@ -173,7 +172,7 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
     return new String[0];
   }
 
-  public String getShortTitle(DataSchema schema) {
+  public String getShortTitle() {
     return name;
   }
 
