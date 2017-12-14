@@ -162,8 +162,8 @@ public class Utils {
    * @param caption Dialog title
    * @param widget Widget to show in dialog
    * @param trackLocation Whether to remember the location of this dialog box. Only one dialog box
-   *        location can be remembered as we use static variables for this purpose. (TODO: fix by
-   *        having a DialogContext or similar)
+   *        location can be remembered as we use static variables for this purpose. 
+   *        (TODO: fix by having a DialogContext or similar)
    * @param pos The position to display the dialog at.
    */
   public static DialogBox displayInPopup(String caption, final Widget widget,

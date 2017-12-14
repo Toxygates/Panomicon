@@ -70,7 +70,6 @@ abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config
   def addMember(name: String, instance: String): Unit =
     triplestore.update(s"$tPrefixes\n INSERT DATA { ${memberRelation(name, instance)} . } ")
 
-  //TODO verify that this works
   def removeMember(name: String, instance: String): Unit =
     triplestore.update(s"$tPrefixes\n DELETE DATA { ${memberRelation(name, instance)} . } ")
 
@@ -102,7 +101,6 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   def enableAccess(name: String, instance: String): Unit =
     addMember(name, instance)
 
-  //TODO verify that this works
   def disableAccess(name: String, instance: String): Unit =
     removeMember(name, instance)
 
