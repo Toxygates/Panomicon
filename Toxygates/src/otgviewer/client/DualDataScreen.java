@@ -66,19 +66,27 @@ public class DualDataScreen extends DataScreen {
   @Override
   protected void setupMenuItems() {
     super.setupMenuItems();
-    MenuItem mi = new MenuItem("Download interaction network...", new Command() {
+    MenuItem mi = new MenuItem("Download interaction network (DOT)...", new Command() {
       @Override
       public void execute() {
-        downloadNetwork();       
+        downloadNetwork(Format.DOT);       
+      }      
+    });
+    addAnalysisMenuItem(mi);
+    
+    mi = new MenuItem("Download interaction network (Custom)...", new Command() {
+      @Override
+      public void execute() {
+        downloadNetwork(Format.Custom);       
       }      
     });
     addAnalysisMenuItem(mi);
   }
   
-  protected void downloadNetwork() {
+  protected void downloadNetwork(Format format) {
     MatrixServiceAsync matrixService = manager().matrixService();
     Network network = buildNetwork("miRNA-mRNA interactions");
-    matrixService.prepareNetworkDownload(network, Format.DOT, new PendingAsyncCallback<String>(this) {
+    matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(this) {
       public void handleSuccess(String url) {
         Utils.displayURL("Your download is ready.", "Download", url);
       }
@@ -212,24 +220,15 @@ public class DualDataScreen extends DataScreen {
     }
   }
   
-  public List<Node> buildNodes(String type, String[] probes) {
-    return Arrays.stream(probes).map(p -> new Node(p, type, 1.0)).
-        collect(Collectors.toList());
-  }
-  
-  public List<Node> buildNodes(String type, ExpressionTable table) {
-    return buildNodes(type, table.state().probes);
-  }
-  
   /**
    * Build Nodes by using expression values from the first column in the rows.
    * @param type
    * @param rows
    * @return
    */
-  public List<Node> buildNodes(String type, List<ExpressionRow> rows) {
+  public List<Node> buildNodes(String kind, List<ExpressionRow> rows) {
     return rows.stream().map(r -> 
-      new Node(r.getProbe(), type, r.getValue(0).getValue())).
+      new Node(r.getProbe(), kind, r.getValue(0).getValue())).
       collect(Collectors.toList());    
   }
   

@@ -6,13 +6,31 @@ import scala.collection.JavaConversions._
 import t.util.SafeMath
 
 /**
- * Serializes interactrion networks and writes them to files.
+ * Serializes interaction networks and writes them to files.
  */
 class Serializer(network: Network) {
   def writeTo(file: String, format: Format) {
     format match {
       case _: Format.DOT.type => writeDOT(file)
+      case _: Format.Custom.type => writeCustom(file)
       case _ => throw new Exception("Unsupported format")
+    }
+  }
+
+  def writeCustom(file: String) {
+    val w = new PrintWriter(file)
+    try {
+      w.println("[nodes]")
+      for (n <- network.nodes) {
+        w.println(s""" ${n.id} ${n.`type`} ${n.weight} """)
+      }
+
+      w.println("[edges]")
+      for (i <- network.interactions) {
+        w.println(s""" ${i.from.id} ${i.to.id} ${i.label()} ${i.weight()} """)
+      }
+    } finally {
+      w.close()
     }
   }
 
@@ -21,21 +39,24 @@ class Serializer(network: Network) {
    */
   def writeDOT(file: String) {
     val w = new PrintWriter(file)
-    w.println(s"""|digraph "${network.title}" {
+    try {
+      w.println(s"""|digraph "${network.title}" {
         |  layout=twopi;
         |  nodesep=2;
         |  ranksep=1;""".stripMargin)
 
-    for (n <- network.nodes) {
-      w.println(s"""  "${n.id}" [label="${n.id}", ${attributes(n)}]; """)
-    }
+      for (n <- network.nodes) {
+        w.println(s"""  "${n.id}" [label="${n.id}", ${attributes(n)}]; """)
+      }
 
-    for (i <- network.interactions) {
-      w.println(s"""  "${i.from.id}" -> "${i.to.id}"; """)
-    }
+      for (i <- network.interactions) {
+        w.println(s"""  "${i.from.id}" -> "${i.to.id}"; """)
+      }
 
-    w.println("}")
-    w.close()
+      w.println("}")
+    } finally {
+      w.close()
+    }
   }
 
   val maxWeight = SafeMath.safeMax(network.nodes.map(_.weight))
