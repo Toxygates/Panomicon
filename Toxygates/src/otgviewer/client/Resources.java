@@ -38,6 +38,9 @@ public interface Resources extends t.common.client.Resources {
   @Source("otgviewer/client/OTGViewer.gss")
   OtgCssResource otgViewerStyle();
 
+  @Source("otgviewer/client/txgicons-Regular.woff")
+  DataResource iconsWoff();
+
   @Source("help/default.html")
   TextResource defaultHelpHTML();
 
