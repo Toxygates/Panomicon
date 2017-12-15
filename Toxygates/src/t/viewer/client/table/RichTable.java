@@ -109,7 +109,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     
 //    initWidget(grid);
     grid.setWidth("100%");
-    grid.setRowStyles(new RowHighlighter<T>());
+    grid.setRowStyles(new RowHighlighter());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
     grid.addColumnSortHandler(colSortHandler);
   }
@@ -421,17 +421,23 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     }
   }
 
-  protected class RowHighlighter<U> implements RowStyles<U> {
+  protected class RowHighlighter implements RowStyles<T> {
     public RowHighlighter() {}
 
     @Override
-    public String getStyleNames(U row, int rowIndex) {
+    public String getStyleNames(T row, int rowIndex) {
       if (highlightedRow != -1 && rowIndex == highlightedRow + grid.getVisibleRange().getStart()) {
         return "highlightedRow";
+      } else if (isIndicated(row)) {
+        return "indicatedRow";
       } else {
         return "";
       }
     }
+  }
+  
+  protected boolean isIndicated(T row) {
+    return false;
   }
 
   @Override

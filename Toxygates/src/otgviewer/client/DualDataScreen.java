@@ -41,7 +41,7 @@ public class DualDataScreen extends DataScreen {
     final int MAX_SECONDARY_ROWS = 1000;
     
     TableFlags flags = new TableFlags(sideMatrix, true, false, 
-        MAX_SECONDARY_ROWS, sideTableType);
+        MAX_SECONDARY_ROWS, sideTableType, true);
     sideExpressionTable = new ExpressionTable(this, flags,
         TableStyle.getStyle(sideTableType));     
     sideExpressionTable.addStyleName("sideExpressionTable");
@@ -94,9 +94,10 @@ public class DualDataScreen extends DataScreen {
   }
   
   @Override
-  protected String mainTableTitle() {     
-    return mainTableType;     
-  }
+  protected String mainTableTitle() { return mainTableType; }     
+  
+  protected boolean mainTableSelectable() { return true; }  
+  
   
   protected List<Group> columnsOfType(List<Group> from, String type) {
     return from.stream().filter(g -> type.equals(GroupUtils.groupType(g))).

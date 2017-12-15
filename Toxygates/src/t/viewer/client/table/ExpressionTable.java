@@ -52,6 +52,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.*;
+import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -193,6 +194,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
   }
 
+  protected AbstractSelectionModel<ExpressionRow> selectionModel;
+  
   public ExpressionTable(Screen _screen, TableFlags flags,
       TableStyle style) {
     super(_screen, style, flags.title);
@@ -206,8 +209,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     grid.setHeaderBuilder(new HeaderBuilder(grid));
     grid.addStyleName("exprGrid");    
 
-    grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
-    grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+    if (!flags.allowHighlight) {
+      selectionModel = new NoSelectionModel<ExpressionRow>();
+      grid.setSelectionModel(selectionModel);
+      grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+    } else {
+      selectionModel = new SingleSelectionModel<ExpressionRow>();
+      grid.setSelectionModel(selectionModel);
+      grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.ENABLED);
+    }
     asyncProvider.addDataDisplay(grid);
 
     //Note: might factor out the "tools" into a separate polymorphic class that might or might not be used
@@ -215,6 +225,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     //Same here
     makeAnalysisTools();
     setEnabled(false);
+  }
+  
+  public AbstractSelectionModel<ExpressionRow> selectionModel() {
+    return selectionModel;
   }
 
   private void logMatrixInfo(String msg) {
@@ -932,6 +946,21 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     if (matrixInfo.isOrthologous()) {
       Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA);
     }
+  }
+  
+  protected Set<String> indicatedRows = new HashSet<String>();
+  
+  public void onSelectionChanged(String selectedProbe) {
+    
+  }
+  
+  public void setIndicatedProbes(String[] highlighted) {
+    indicatedRows.clear();
+    indicatedRows.addAll(Arrays.asList(highlighted));
+  }
+  
+  protected boolean isIndicated(ExpressionRow row) {
+    return indicatedRows.contains(row.getProbe());
   }
 
   public void getExpressions() {
