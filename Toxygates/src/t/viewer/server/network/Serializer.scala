@@ -3,6 +3,7 @@ package t.viewer.server.network
 import t.viewer.shared.network._
 import java.io.PrintWriter
 import scala.collection.JavaConversions._
+import t.util.SafeMath
 
 /**
  * Serializes interactrion networks and writes them to files.
@@ -14,7 +15,7 @@ class Serializer(network: Network) {
       case _ => throw new Exception("Unsupported format")
     }
   }
-  
+
   /*
    * Reference: http://www.graphviz.org/pdf/dotguide.pdf
    */
@@ -24,23 +25,36 @@ class Serializer(network: Network) {
         |  layout=twopi;
         |  nodesep=2;
         |  ranksep=1;""".stripMargin)
-    
+
     for (n <- network.nodes) {
       w.println(s"""  "${n.id}" [label="${n.id}", ${attributes(n)}]; """)
     }
-    
+
     for (i <- network.interactions) {
       w.println(s"""  "${i.from.id}" -> "${i.to.id}"; """)
     }
-    
+
     w.println("}")
     w.close()
   }
-  
-  def attributes(n: Node) = {    
+
+  val maxWeight = SafeMath.safeMax(network.nodes.map(_.weight))
+  val minWeight = SafeMath.safeMin(network.nodes.map(_.weight))
+
+  def color(n: Node) = {
+    if (java.lang.Double.isNaN(n.weight()) ||
+        java.lang.Double.isInfinite(n.weight)) {
+      "white"
+    } else {
+      val blue = (127 * (n.weight() - minWeight) / (maxWeight - minWeight)).toInt
+      "#%02x%02x%02x".format(0, 128 + blue, 128 + blue)
+    }
+  }
+
+  def attributes(n: Node) = {
     n.`type` match {
-      case "miRNA" => "color=blue"
-      case "mRNA" => "color=green"
+      case "miRNA" => s"""color=blue, fillcolor="${color(n)}" """
+      case "mRNA" => s"""color=green, fillcolor="${color(n)}" """
       case _ => ""
     }
   }

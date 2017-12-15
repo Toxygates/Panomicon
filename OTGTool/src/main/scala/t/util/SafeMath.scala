@@ -28,7 +28,8 @@ import friedrich.data.Statistics
 object SafeMath {
 
   private def filtered(vs: Iterable[Double]) =
-    vs.filter(!java.lang.Double.isNaN(_))
+    vs.filter(x => !java.lang.Double.isNaN(x) &&
+            java.lang.Double.isFinite(x))
 
   private def safely[T](vs: Iterable[Double],
     f: Iterable[Double] => Double): Double = {

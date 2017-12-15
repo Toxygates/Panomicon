@@ -222,19 +222,32 @@ public class DualDataScreen extends DataScreen {
   }
   
   /**
+   * Build Nodes by using expression values from the first column in the rows.
+   * @param type
+   * @param rows
+   * @return
+   */
+  public List<Node> buildNodes(String type, List<ExpressionRow> rows) {
+    return rows.stream().map(r -> 
+      new Node(r.getProbe(), type, r.getValue(0).getValue())).
+      collect(Collectors.toList());    
+  }
+  
+  /**
    * Build the interaction network represented by the current view in the two tables.
    * @return
    */
   public Network buildNetwork(String title) {
     List<Node> nodes = new ArrayList<Node>();
-    nodes.addAll(buildNodes(mainTableType, expressionTable.displayedAtomicProbes()));
-    nodes.addAll(buildNodes(sideTableType, sideExpressionTable));
+    nodes.addAll(buildNodes(mainTableType, expressionTable.getDisplayedRows()));    
+    nodes.addAll(buildNodes(sideTableType, sideExpressionTable.getDisplayedRows()));
     
     AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
     List<Interaction> interactions = new ArrayList<Interaction>();
     Map<ExpressionRow, Collection<AssociationValue>> fullMap = mirnaSummary.getFullMap();
     for (ExpressionRow row: fullMap.keySet()) {
       for (AssociationValue av: fullMap.get(row)) {
+        //Bogus node weight here
         Node from = new Node(av.formalIdentifier(), sideTableType, 1.0);
         Node to = new Node(row.getProbe(), mainTableType, 1.0);        
         Interaction i = new Interaction(from, to, null, null);

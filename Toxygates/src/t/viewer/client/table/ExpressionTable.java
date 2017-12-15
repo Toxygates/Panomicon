@@ -828,6 +828,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     }
   }
+  
+  public List<ExpressionRow> getDisplayedRows() {
+    return grid.getVisibleItems();
+  }
+  
 
   @Override
   public void sampleClassChanged(SampleClass sc) {

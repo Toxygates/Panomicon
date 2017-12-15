@@ -79,7 +79,7 @@ class MatrixState {
       cont.get.typ != typ
   }
 }
-  
+
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
  */
@@ -325,12 +325,12 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
     names
-    
-  def prepareNetworkDownload(network: Network, format: Format): String = {
+
+  def prepareNetworkDownload(network: Network, format: Format): String = safely {
     val s = new Serializer(network)
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)
-    s"${config.csvUrlBase}/$file"    
+    s"${config.csvUrlBase}/$file"
   }
 
 }
