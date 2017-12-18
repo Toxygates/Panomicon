@@ -43,7 +43,6 @@ import t.sparql.Platforms
 import t.sparql.secondary._
 import t.util.PeriodicRefresh
 import t.util.Refreshable
-import t.viewer.server.rpc.GeneSetServlet._
 import t.viewer.client.rpc._
 import t.viewer.server._
 import t.viewer.server.CSVHelper.CSVFile
@@ -168,12 +167,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with
     /*
      * From GeneSetServlet
      */
-    val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
+    val importGenes = sess.getAttribute(GeneSetServlet.IMPORT_SESSION_KEY)
     if (importGenes != null) {
       val igs = importGenes.asInstanceOf[Array[String]]
       appInfo.setImportedGenes(igs)
       //Import only once
-      sess.removeAttribute(IMPORT_SESSION_KEY)
+      sess.removeAttribute(GeneSetServlet.IMPORT_SESSION_KEY)
     } else {
       appInfo.setImportedGenes(null)
     }
