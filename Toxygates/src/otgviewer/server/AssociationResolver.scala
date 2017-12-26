@@ -70,7 +70,8 @@ class AssociationResolver(probeStore: Probes,
       source.id match {
         case "http://level-five.jp/t/mapping/mirdb" =>
           probeStore.mirnaAssociations(probes,
-              if(source.limit == null) None else Some(source.limit))
+              if(source.limit == null) None else Some(source.limit),
+              false)
 
         case AppInfoLoader.TARGETMINE_SOURCE =>
             toBioMap(probes, (_: Probe).genes) combine

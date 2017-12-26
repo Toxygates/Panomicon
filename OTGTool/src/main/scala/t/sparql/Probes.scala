@@ -471,31 +471,47 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   //TODO do not hardcode platform graph names here
-  def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double]): MMap[Probe, DefaultBio] = {
+  
+  private def mirnaAssociationGraphs =
+    """|FROM <http://level-five.jp/t/mapping/mirdb>
+       |FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
+       |FROM <http://level-five.jp/t/platform/Mouse430_2>
+       |FROM <http://level-five.jp/t/platform/Rat230_2>
+       |FROM <http://level-five.jp/t/platform/mirbase-v21>""".stripMargin
+
+  /**
+   * Obtain mRNA-miRNA associations.
+   * @param queryFromMirna if true, query probes are mirna, otherwise mrna.
+   */
+  def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],
+                        queryFromMirna: Boolean): MMap[Probe, DefaultBio] = {
+    
+    val queryVar = if(queryFromMirna) "mirna" else "mrna"
+    val targetVar = if(queryFromMirna) "mrna" else "mirna"
+      
     val q = s"""$tPrefixes
-    |SELECT DISTINCT ?probe ?score ?mirna ?probe ?trn
-    |FROM <http://level-five.jp/t/mapping/mirdb>
-    |FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
-    |FROM <http://level-five.jp/t/platform/Mouse430_2>
-    |FROM <http://level-five.jp/t/platform/Rat230_2>
-    |FROM <http://level-five.jp/t/platform/mirbase-v21>
+    |SELECT DISTINCT ?mrna ?score ?mirna ?trn
+    |$mirnaAssociationGraphs
     |WHERE {
-    |  ?probe t:refseqTrn ?trn.
+    |  ?mrna t:refseqTrn ?trn.
     |  [ t:refseqTrn ?trn; t:mirna [rdfs:label ?mirna]; t:score ?score ].
-    |  ${valuesMultiFilter("?probe", probes.map(p => bracket(p.pack)))}
+    |  ${valuesMultiFilter("?" + queryVar, probes.map(p => bracket(p.pack)))}
     |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
     |}
     |""".stripMargin
-
+    
+    
     val r = triplestore.mapQuery(q, 30000).map(x => {
       val score = x("score")
-      val mirna = x("mirna")
       val refseq = x("trn")
       val experimental = false
-      val mapping = "miRDB 5.0"
-      val extraInfo = s"$mirna ($mapping) experimental: $experimental score: $score via: $refseq"
-      Probe.unpack(x("probe")) -> DefaultBio(mirna, mirna, Some(extraInfo))
+      val mapping = "miRDB 5.0"      
+      val query = x(queryVar)
+      val target = x(targetVar)
+      
+      val extraInfo = s"$target ($mapping) experimental: $experimental score: ${"%.3f".format(score)} via: $refseq"
+      Probe.unpack(query) -> DefaultBio(target, target, Some(extraInfo))
     })
     makeMultiMap(r)
-  }
+  }  
 }
