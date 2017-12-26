@@ -212,12 +212,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     if (!flags.allowHighlight) {
       selectionModel = new NoSelectionModel<ExpressionRow>();
       grid.setSelectionModel(selectionModel);
-      grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     } else {
       selectionModel = new SingleSelectionModel<ExpressionRow>();
       grid.setSelectionModel(selectionModel);
-      grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.ENABLED);
+      
+      //To avoid confusion, we can avoid simultaneous selection and indication in the same table.
+//      selectionModel.addSelectionChangeHandler(e ->
+//        setIndicatedProbes(new String[] {}));     
     }
+    grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     asyncProvider.addDataDisplay(grid);
 
     //Note: might factor out the "tools" into a separate polymorphic class that might or might not be used
@@ -956,7 +959,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   public void setIndicatedProbes(String[] highlighted) {
     indicatedRows.clear();
+    logger.info(highlighted.length + " rows are indicated");
     indicatedRows.addAll(Arrays.asList(highlighted));
+    grid.redraw();
   }
   
   protected boolean isIndicated(ExpressionRow row) {

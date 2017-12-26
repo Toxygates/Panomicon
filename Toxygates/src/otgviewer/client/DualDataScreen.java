@@ -18,6 +18,7 @@ import t.viewer.shared.*;
 import t.viewer.shared.network.*;
 
 import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
  * A DataScreen that can display two tables side by side.
@@ -47,6 +48,11 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable = new ExpressionTable(this, flags,
         TableStyle.getStyle(sideTableType));     
     sideExpressionTable.addStyleName("sideExpressionTable");
+    
+    expressionTable.selectionModel().addSelectionChangeHandler(e ->
+      mainTableSelectionChange());
+    sideExpressionTable.selectionModel().addSelectionChangeHandler(e ->
+      sideTableSelectionChange());
   }
   
   protected SplitLayoutPanel splitLayout;
@@ -90,6 +96,27 @@ public class DualDataScreen extends DataScreen {
         Utils.displayURL("Your download is ready.", "Download", url);
       }
     });
+  }
+  
+  protected void mainTableSelectionChange() {
+    ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) expressionTable.selectionModel()).
+        getSelectedObject();
+    Map<ExpressionRow, Collection<AssociationValue>> lookup = mrnaToMirnaMap();
+    String[] mirnas = lookup.get(r).stream().map(av -> av.formalIdentifier()).toArray(String[]::new);
+    sideExpressionTable.setIndicatedProbes(mirnas);    
+  }
+  
+  protected void sideTableSelectionChange() {
+    ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) sideExpressionTable.selectionModel()).
+        getSelectedObject();
+    String mirna = r.getProbe();
+    Map<ExpressionRow, Collection<AssociationValue>> lookup = mrnaToMirnaMap();
+    String[] mrnas = lookup.keySet().stream().filter(er -> 
+      lookup.get(er).stream().map(av -> av.formalIdentifier()).anyMatch(id -> id.equals(mirna))).
+      map(er -> er.getProbe()).
+      toArray(String[]::new);
+    expressionTable.setIndicatedProbes(mrnas);
+      
   }
   
   @Override
@@ -161,8 +188,9 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.clearMatrix();
   }
   
+  protected AssociationSummary<ExpressionRow> mirnaSummary; 
   protected void extractMirnaProbes() {
-    AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
+    mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
     if (sideExpressionTable.chosenColumns().isEmpty()) {
       return;
     }
@@ -232,6 +260,10 @@ public class DualDataScreen extends DataScreen {
       collect(Collectors.toList());    
   }
   
+  protected Map<ExpressionRow, Collection<AssociationValue>> mrnaToMirnaMap() {    
+    return mirnaSummary.getFullMap();
+  }
+  
   /**
    * Build the interaction network represented by the current view in the two tables.
    * @return
@@ -240,10 +272,9 @@ public class DualDataScreen extends DataScreen {
     List<Node> nodes = new ArrayList<Node>();
     nodes.addAll(buildNodes(mainTableType, expressionTable.getDisplayedRows()));    
     nodes.addAll(buildNodes(sideTableType, sideExpressionTable.getDisplayedRows()));
-    
-    AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
+        
     List<Interaction> interactions = new ArrayList<Interaction>();
-    Map<ExpressionRow, Collection<AssociationValue>> fullMap = mirnaSummary.getFullMap();
+    Map<ExpressionRow, Collection<AssociationValue>> fullMap = mrnaToMirnaMap();
     for (ExpressionRow row: fullMap.keySet()) {
       for (AssociationValue av: fullMap.get(row)) {
         //Bogus node weight here
