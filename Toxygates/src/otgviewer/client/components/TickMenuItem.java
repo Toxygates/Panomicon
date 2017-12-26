@@ -18,7 +18,6 @@
 
 package otgviewer.client.components;
 
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 
@@ -34,13 +33,9 @@ public class TickMenuItem {
     this.withImage = withImage;
     this.title = title;
 
-    menuItem = new MenuItem(title, true, new Command() {
-      @Override
-      public void execute() {
-        setState(!ticked);
-        stateChange(ticked);
-      }
-
+    menuItem = new MenuItem(title, true, () -> {
+      setState(!ticked);
+      stateChange(ticked);
     });
     setState(ticked);
   }

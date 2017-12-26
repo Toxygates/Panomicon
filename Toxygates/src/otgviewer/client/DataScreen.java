@@ -32,7 +32,6 @@ import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
 
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
@@ -114,22 +113,16 @@ public class DataScreen extends Screen {
     MenuBar menuBar = new MenuBar(true);
     MenuItem mActions = new MenuItem("File", false, menuBar);
     MenuItem mntmDownloadCsv =
-        new MenuItem("Download CSV (grouped samples)...", false, new Command() {
-          @Override
-          public void execute() {
+        new MenuItem("Download CSV (grouped samples)...", false, () -> {          
             expressionTable.downloadCSV(false);
             Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
                 Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_GROUPED_SAMPLES);
-          }
         });
     menuBar.addItem(mntmDownloadCsv);
-    mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
-      @Override
-      public void execute() {
+    mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, () -> {      
         expressionTable.downloadCSV(true);
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
-            Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);
-      }
+            Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);      
     });
     menuBar.addItem(mntmDownloadCsv);
 
@@ -182,20 +175,10 @@ public class DataScreen extends Screen {
       }
     }.menuItem());
 
-    addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
-      @Override
-      public void execute() {
-        runEnrichment(null);
-      }
-    }));
+    addAnalysisMenuItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));
     
     if (factory().hasHeatMapMenu()) {
-      heatMapMenu = new MenuItem("Show heat map", new Command() {
-        @Override
-        public void execute() {
-          makeHeatMap();          
-        }
-      });
+      heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
       addAnalysisMenuItem(heatMapMenu);
     }
   }

@@ -18,17 +18,16 @@
 
 package otgviewer.client;
 
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 
 public class OTGViewer extends TApplication {
 
@@ -93,27 +92,19 @@ public class OTGViewer extends TApplication {
     final String title = inst.title();
     MenuItem mi = new MenuItem(title + " data", mb);
 
-    mb.addItem(new MenuItem("Import gene sets from " + title + "...", new Command() {
-      @Override
-      public void execute() {
+    mb.addItem(new MenuItem("Import gene sets from " + title + "...", () -> {      
         new InterMineData(currentScreen, inst).importLists(true);
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_IMPORT_GENE_SETS,
-            title);
-      }
+            title);      
     }));
 
-    mb.addItem(new MenuItem("Export gene sets to " + title + "...", new Command() {
-      @Override
-      public void execute() {
+    mb.addItem(new MenuItem("Export gene sets to " + title + "...", () -> {      
         new InterMineData(currentScreen, inst).exportLists();
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_EXPORT_GENE_SETS,
-            title);
-      }
+            title);      
     }));
 
-    mb.addItem(new MenuItem("Enrichment...", new Command() {
-      @Override
-      public void execute() {
+    mb.addItem(new MenuItem("Enrichment...", () -> {      
         //TODO this should be disabled if we are not on the data screen.
         //The menu item is only here in order to be logically grouped with other 
         //TargetMine items, but it is a duplicate and may be removed.
@@ -121,16 +112,13 @@ public class OTGViewer extends TApplication {
           ((DataScreen) currentScreen).runEnrichment(inst);
         } else {
           Window.alert("Please go to the data screen to use this function.");
-        }
-      }
+        }      
     }));
 
-    mb.addItem(new MenuItem("Go to " + title, new Command() {
-      @Override
-      public void execute() {
-        Utils.displayURL("Go to " + title + " in a new window?", "Go", inst.webURL());
-      }
-    }));
+    mb.addItem(new MenuItem("Go to " + title, () -> 
+        Utils.displayURL("Go to " + title + " in a new window?", "Go", inst.webURL())
+        ));
+      
     return mi;
   }
 }
