@@ -503,8 +503,6 @@ class BatchManager(context: Context) {
   def deleteSeriesData[S <: Series[S]](batch: String, builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Delete series data") {
     def run() {
 
-      val bs = new Batches(config.triplestore)
-      val ss = bs.samples(batch).map(Sample(_))
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
