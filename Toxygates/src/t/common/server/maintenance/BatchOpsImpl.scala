@@ -53,21 +53,21 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   protected def mayAppendBatch: Boolean = true
 
-  def addBatchAsync(b: Batch): Unit = {
+  def addBatchAsync(batch: Batch): Unit = {
     ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
 
-    val bm = new BatchManager(context) 
+    val batchManager = new BatchManager(context)
 
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Add batch")
 
-      val exbs = new Batches(context.config.triplestore).list
-      if (exbs.contains(b.getTitle) && !mayAppendBatch) {
+      val existingBatches = new Batches(context.config.triplestore).list
+      if (existingBatches.contains(batch.getTitle) && !mayAppendBatch) {
         throw BatchUploadException.badID(
-            s"The batch ${b.getTitle} already exists and appending is not allowed. " +
+            s"The batch ${batch.getTitle} already exists and appending is not allowed. " +
             "Please choose a different name.")
       }
 
@@ -98,12 +98,12 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       checkMetadata(md)
       md = alterMetadataPriorToInsert(md)
 
-      TaskRunner += bm.addRecord(b.getTitle, b.getComment, context.config.triplestore)
+      TaskRunner += batchManager.addRecord(batch.getTitle, batch.getComment, context.config.triplestore)
       //Set the parameters immediately, so that the batch is in the right dataset
       // -> can be seen and deleted, in the case of e.g. user data
-      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
+      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(batch))
 
-      TaskRunner ++= bm.add(b.getTitle, b.getComment, md,
+      TaskRunner ++= batchManager.add(batch.getTitle, batch.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         true, baseConfig.seriesBuilder,

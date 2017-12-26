@@ -89,7 +89,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     this.instanceURI = conf.instanceURI
   }
 
-  
   protected def appInfo = {
     Option(getThreadLocalRequest.getSession.
       getAttribute(ProbeServiceImpl.APPINFO_KEY).asInstanceOf[AppInfo]).

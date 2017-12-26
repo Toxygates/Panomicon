@@ -70,11 +70,11 @@ public class Batch extends ManagedItem {
   }
 
   public void setEnabledInstances(Set<Instance> enabled) {
-    Set<String> en = new HashSet<String>();
+    Set<String> titles = new HashSet<String>();
     for (Instance i : enabled) {
-      en.add(i.getTitle());
+      titles.add(i.getTitle());
     }
-    setEnabledInstanceTitles(en);
+    setEnabledInstanceTitles(titles);
   }
 
   public void setDataset(String dataset) {

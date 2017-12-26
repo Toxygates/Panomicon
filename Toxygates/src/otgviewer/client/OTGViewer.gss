@@ -33,6 +33,13 @@ Variables
 @def GROUP6_COLOR #784E00;
 @def GROUP7_COLOR #2EA7DB;
 
+@def ICONS_WOFF resourceUrl("iconsWoff");
+
+@font-face {
+  font-family: 'icons';
+  src: ICONS_WOFF format('woff');
+}
+
 /******************************************************************************
 Global
 ******************************************************************************/
@@ -51,6 +58,71 @@ a, a:visited  {
 
 button {
 	font-size: 1em;
+}
+
+/******************************************************************************
+Icons
+******************************************************************************/
+.icon {
+  display: inline-block;
+  font-family: 'icons';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon_charts:before {
+  content: "\E000";
+}
+.icon_delete:before {
+  content: "\E001";
+}
+.icon_edit:before {
+  content: "\E002";
+}
+.icon_view:before {
+  content: "\E003";
+}
+.icon_download:before {
+  content: "\E004";
+}
+.icon_filter:before {
+  content: "\E005";
+}
+.icon_filter_active:before {
+  content: "\E006";
+}
+.icon_sort:before {
+  content: "\E007";
+}
+.icon_more:before {
+  content: "\E008";
+}
+.icon_page_first:before {
+  content: "\E00A";
+}
+.icon_page_frew:before {
+  content: "\E00B";
+}
+.icon_page_rew:before {
+  content: "\E00C";
+}
+.icon_page_fwd:before {
+  content: "\E00D";
+}
+.icon_page_ffwd:before {
+  content: "\E00E";
+}
+.icon_page_last:before {
+  content: "\E00F";
+}
+.icon_closewindow:before {
+  content: "\E010";
+}
+.icon_nextarrow:before {
+  content: "\E011";
 }
 
 /******************************************************************************

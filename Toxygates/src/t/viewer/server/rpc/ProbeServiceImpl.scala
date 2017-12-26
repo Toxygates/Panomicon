@@ -23,7 +23,6 @@ import t.util.Refreshable
 import t.viewer.client.rpc.ProbeService
 import t.viewer.server._
 import t.viewer.server.Configuration
-import t.viewer.server.rpc.GeneSetServlet._
 import t.viewer.shared.AppInfo
 import t.viewer.shared.TimeoutException
 import t.viewer.shared.mirna.MirnaSource
@@ -129,12 +128,12 @@ with ProbeService {
     /*
      * From GeneSetServlet
      */
-    val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
+    val importGenes = sess.getAttribute(GeneSetServlet.IMPORT_SESSION_KEY)
     if (importGenes != null) {
       val igs = importGenes.asInstanceOf[Array[String]]
       appInfo.setImportedGenes(igs)
       //Import only once
-      sess.removeAttribute(IMPORT_SESSION_KEY)
+      sess.removeAttribute(GeneSetServlet.IMPORT_SESSION_KEY)
     } else {
       appInfo.setImportedGenes(null)
     }

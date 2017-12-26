@@ -312,5 +312,4 @@ public class Utils {
   public static SafeHtml tooltipSpan(String tooltip, String text) {
       return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + text + "</span>");
   }
-
 }
