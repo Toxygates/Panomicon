@@ -17,7 +17,6 @@ import t.viewer.client.table.*;
 import t.viewer.shared.*;
 import t.viewer.shared.network.*;
 
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.*;
 
 /**
@@ -25,6 +24,9 @@ import com.google.gwt.user.client.ui.*;
  * The dual mode will only activate if appropriate columns have been
  * defined and saved for both tables. Otherwise, the screen will revert to
  * single-table mode.
+ * 
+ * The "main" table drives the side table, in the sense that what is being displayed in the
+ * latter depends on the content of the former.
  */
 public class DualDataScreen extends DataScreen {
 
@@ -58,7 +60,6 @@ public class DualDataScreen extends DataScreen {
     splitLayout = new SplitLayoutPanel();    
     splitLayout.setWidth("100%");
     splitLayout.addEast(sideExpressionTable, 550);
-    splitLayout.addEast(sideExpressionTable, 550);
     splitLayout.add(expressionTable);    
     return splitLayout;
   }
@@ -66,21 +67,19 @@ public class DualDataScreen extends DataScreen {
   @Override
   protected void setupMenuItems() {
     super.setupMenuItems();
-    MenuItem mi = new MenuItem("Download interaction network (DOT)...", new Command() {
-      @Override
-      public void execute() {
-        downloadNetwork(Format.DOT);       
-      }      
-    });
+    MenuItem mi = new MenuItem("Download interaction network (DOT)...", 
+      () -> downloadNetwork(Format.DOT));             
     addAnalysisMenuItem(mi);
     
-    mi = new MenuItem("Download interaction network (Custom)...", new Command() {
-      @Override
-      public void execute() {
-        downloadNetwork(Format.Custom);       
-      }      
-    });
+    mi = new MenuItem("Download interaction network (Custom)...", 
+      () -> downloadNetwork(Format.Custom));       
     addAnalysisMenuItem(mi);
+    
+    mi = new MenuItem("Swap mRNA-miRNA tables", () -> swapTables());
+  }
+  
+  protected void swapTables() {
+    //TODO
   }
   
   protected void downloadNetwork(Format format) {
