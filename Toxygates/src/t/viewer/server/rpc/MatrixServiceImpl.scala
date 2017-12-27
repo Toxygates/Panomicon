@@ -142,6 +142,10 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   def matrixRows(id: String, offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = safely {
     val cont = getState.controller(id)
+    if (cont.managedMatrix.current.rows == 0) {
+      return new ArrayList()
+    }
+
     val mm =
       cont.applySorting(sortKey, ascending)
 

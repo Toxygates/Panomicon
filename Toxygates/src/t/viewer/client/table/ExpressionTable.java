@@ -828,9 +828,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
           displayedProbes = dispPs.toArray(new String[0]);
           highlightedRow = -1;
           getAssociations();
-        } else {
-          Window.alert(errMsg());
-        }
+        } 
       }
     };
 
