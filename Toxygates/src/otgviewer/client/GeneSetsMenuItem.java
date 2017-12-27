@@ -249,12 +249,10 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private ScheduledCommand showAll() {
-    return new Command() {
-      public void execute() {
-        screen.geneSetChanged(null);
-        screen.probesChanged(new String[0]);
-        screen.updateProbes();
-      }
+    return () -> {
+      screen.geneSetChanged(null);
+      screen.probesChanged(new String[0]);
+      screen.updateProbes();
     };
   }
   
@@ -262,49 +260,36 @@ public class GeneSetsMenuItem extends DataListenerWidget {
    * Commands for User Set
    */
   private ScheduledCommand showUserSet(final StringList sl) {
-    return new Command() {
-      public void execute() {
-        screen.geneSetChanged(sl);
-        screen.probesChanged(sl.items());
-        screen.updateProbes();
-      }
-    };
+    return () -> {
+      screen.geneSetChanged(sl);
+      screen.probesChanged(sl.items());
+      screen.updateProbes();
+    };  
   }
 
   private ScheduledCommand addNewUserSet() {
-    return new Command() {
-      public void execute() {
-        geneSetEditor(null);
-      }
-    };
+    return () -> geneSetEditor(null);      
   }
 
   private ScheduledCommand editUserSet(final StringList sl) {
-    return new Command() {
-      public void execute() {
-        geneSetEditor(sl);
-      }
-    };
+    return () -> geneSetEditor(sl);
   }
 
   private ScheduledCommand deleteUserSet(final StringList sl) {
-    return new Command() {
-      public void execute() {
-        if (!Window
-            .confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
-          return;
-        }
-        
-        ClientState state = screen.state();
-        StringListsStoreHelper helper = 
-            new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
-        helper.delete(sl.name());
-        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_DELETE_GENE_SET);
-        // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (state.geneSet != null && sl.type().equals(state.geneSet.type())
-            && sl.name().equals(state.geneSet.name())) {
-          switchToAllProbes();
-        }
+    return () -> {
+      if (!Window.confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
+        return;
+      }
+
+      ClientState state = screen.state();
+      StringListsStoreHelper helper =
+          new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
+      helper.delete(sl.name());
+      Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_DELETE_GENE_SET);
+      // If the user deletes chosen gene set, switch to "All probes" automatically.
+      if (state.geneSet != null && sl.type().equals(state.geneSet.type())
+          && sl.name().equals(state.geneSet.name())) {
+        switchToAllProbes();
       }
     };
   }
@@ -313,59 +298,46 @@ public class GeneSetsMenuItem extends DataListenerWidget {
    * Commands for User Defined Clustering
    */
   private ScheduledCommand showClustering(final ClusteringList cl, final StringList sl) {
-    return new Command() {
-      public void execute() {
-        screen.geneSetChanged(
-            new ClusteringList(ClusteringList.USER_CLUSTERING_TYPE, 
-                cl.name(), cl.algorithm(), new StringList[] {sl}));
-        screen.probesChanged(sl.items());
-        screen.updateProbes();
-      }
+    return () -> {
+      screen.geneSetChanged(new ClusteringList(ClusteringList.USER_CLUSTERING_TYPE, cl.name(), cl
+          .algorithm(), new StringList[] {sl}));
+      screen.probesChanged(sl.items());
+      screen.updateProbes();
     };
   }
 
   private ScheduledCommand deleteClustering(final ClusteringList cl) {
-    return new Command() {
-      @Override
-      public void execute() {
-        if (!Window
-            .confirm("About to delete the clustering \"" + cl.name() + "\". \nAre you sure?")) {
-          return;
-        }
+    return () -> {
+      if (!Window.confirm("About to delete the clustering \"" + cl.name() + "\". \nAre you sure?")) {
+        return;
+      }
 
-        ClusteringListsStoreHelper helper =
-            new ClusteringListsStoreHelper(
-                ClusteringList.USER_CLUSTERING_TYPE, screen);
-        helper.delete(cl.name());
-        ClientState state = screen.state();
-        
-        // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (state.geneSet != null && cl.type().equals(state.geneSet.type())
-            && cl.name().equals(state.geneSet.name())) {
-          switchToAllProbes();
-        }
+      ClusteringListsStoreHelper helper =
+          new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen);
+      helper.delete(cl.name());
+      ClientState state = screen.state();
+
+      // If the user deletes chosen gene set, switch to "All probes" automatically.
+      if (state.geneSet != null && cl.type().equals(state.geneSet.type())
+          && cl.name().equals(state.geneSet.name())) {
+        switchToAllProbes();
       }
     };
   }
 
   private ScheduledCommand addNewClustering() {
-    return new Command() {
-      public void execute() {
-        HeatmapViewer.show(screen, screen.expressionTable.getValueType());
-      }
-    };
+    return () ->
+        HeatmapViewer.show(screen, screen.expressionTable.getValueType());      
   }
 
   /*
    * Commands for Pre-Defined Clustering
    */
   private ScheduledCommand showClustering(final ProbeClustering pc) {
-    return new Command() {
-      public void execute() {
+    return () -> {
         screen.geneSetChanged(pc.getList());
         screen.probesChanged(pc.getList().items());
         screen.updateProbes();
-      }
     };
   }
 

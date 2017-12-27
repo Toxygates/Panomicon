@@ -48,7 +48,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   def list(): Seq[String] = {
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
   }
-  
+
   def verifyExists(item: String): Unit = {
     if (!list.contains(item)) {
       val msg = s"$item of class $itemClass does not exist"
@@ -59,6 +59,9 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
   def addWithTimestamp(name: String, comment: String): Unit = {
+    if (name.contains(' ')) {
+      throw new Exception("Name must not contain spaces.")
+    }
     if (comment.contains('"')) {
       throw new Exception("A comment may not contain the \" character.")
     }

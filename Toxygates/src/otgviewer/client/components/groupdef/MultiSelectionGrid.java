@@ -135,6 +135,12 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
+  @SuppressWarnings("deprecation")
+  private boolean isMajorParamSharedControl(DataSchema schema, String value) {
+    // TODO: stop using deprecated isMajorParamSharedControl
+    return schema.isMajorParamSharedControl(value);
+  }
+
   void setSelection(Unit[] selection) {
     logger.info("Set selection: " + selection.length + " units ");
     if (selection.length > 0) {
@@ -155,7 +161,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
         lcompounds.put(sc, new HashSet<String>());
       }
       String majorVal = u.get(majorParam);
-      if (majorVal != null && !schema.isMajorParamSharedControl(majorVal)) {
+      if (majorVal != null && !isMajorParamSharedControl(schema, majorVal)) {
         lcompounds.get(sc).add(majorVal);
       }
     }

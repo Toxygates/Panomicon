@@ -2,14 +2,6 @@ package otgviewer.client;
 
 import java.util.*;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
 import otgviewer.client.components.*;
 import t.common.shared.sample.*;
 import t.model.sample.*;
@@ -17,6 +9,13 @@ import t.viewer.client.Utils;
 import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 public class SampleSearchScreen extends DataFilterScreen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
@@ -204,32 +203,22 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   private void setupMenuItems() {
     MenuBar fileBar = new MenuBar(true);
     MenuItem fileItem = new MenuItem("File", false, fileBar);
-    saveCVSMenuItem = new MenuItem("Save results to CSV", false, new Command() {
-      @Override
-      public void execute() {
-        prepareCSVDownload();
-      }
-    });
+    saveCVSMenuItem = new MenuItem("Save results to CSV", false, 
+      () -> prepareCSVDownload());
+      
     saveCVSMenuItem.setEnabled(false);
     fileBar.addItem(saveCVSMenuItem);
     addMenu(fileItem);
 
     MenuBar editBar = new MenuBar(true);
     MenuItem editItem = new MenuItem("Edit", false, editBar);
-    MenuItem clearSearchConditionItem =
-        new MenuItem("Clear search condition", false, new Command() {
-          @Override
-          public void execute() {
-            conditionEditor.clear();
-          }
-        });
+    MenuItem clearSearchConditionItem = new MenuItem("Clear search condition", false, 
+          () -> conditionEditor.clear());
+    
     editBar.addItem(clearSearchConditionItem);
-    MenuItem clearSelectionItem = new MenuItem("Clear selection", false, new Command() {
-      @Override
-      public void execute() {
-        currentSearch.helper().selectionTable().clearSelection();
-      }
-    });
+    MenuItem clearSelectionItem = new MenuItem("Clear selection", false, 
+      () -> currentSearch.helper().selectionTable().clearSelection());
+      
     editBar.addItem(clearSelectionItem);
     addMenu(editItem);
 

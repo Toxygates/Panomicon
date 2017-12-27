@@ -388,60 +388,34 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     postMenuItems.add(mi);
     mi.getElement().setId("helpMenu");
 
-    mi = new MenuItem("Leave feedback...", new Command() {
-      @Override
-      public void execute() {
+    mi = new MenuItem("Leave feedback...", () -> {      
         FeedbackForm feedbackDialog =
             new FeedbackForm(currentScreen, currentScreen,
                 "kenji@nibiohn.go.jp, y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com");
         feedbackDialog.display("Leave feedback", DialogPosition.Center);
-      }
-    });
+      });
+    
     hm.addItem(mi);
     mi.addStyleName("feedbackMenuItem");
 
-    hm.addItem(new MenuItem("Help for this screen...", new Command() {
-      @Override
-      public void execute() {
-        currentScreen.showHelp();
-      }
-    }));
+    hm.addItem(new MenuItem("Help for this screen...", () ->      
+        currentScreen.showHelp()));
 
-    hm.addItem(new MenuItem("Data sources...", new Command() {
-      @Override
-      public void execute() {
-        showDataSources();
-      }
-    }));
+    hm.addItem(new MenuItem("Data sources...", () -> showDataSources()));
 
-    hm.addItem(new MenuItem("Download user guide...", new Command() {
-      @Override
-      public void execute() {
-        Window.open(appInfo.userGuideURL(), "_blank", "");
-      }
-    }));
+    hm.addItem(new MenuItem("Download user guide...", () ->      
+        Window.open(appInfo.userGuideURL(), "_blank", "")
+      ));
 
-    hm.addItem(new MenuItem("Display guide messages", new Command() {
-      @Override
-      public void execute() {
-        currentScreen.showGuide();
-      }
-    }));
+    hm.addItem(new MenuItem("Display guide messages", () -> currentScreen.showGuide()));
 
-    hm.addItem(new MenuItem("About Toxygates...", new Command() {
-      @Override
-      public void execute() {
-        Utils.showHelp(getAboutHTML(), getAboutImage());
-      }
-    }));
+    hm.addItem(new MenuItem("About Toxygates...", () ->      
+        Utils.showHelp(getAboutHTML(), getAboutImage())
+        ));
 
-    hm.addItem(new MenuItem("Version history...", new Command() {
-      @Override
-      public void execute() {
-        Utils.showHelp(getVersionHTML(), null);
-      }
-    }));
-
+    hm.addItem(new MenuItem("Version history...", () ->      
+        Utils.showHelp(getVersionHTML(), null)
+        ));
     return menuBar;
   }
 
