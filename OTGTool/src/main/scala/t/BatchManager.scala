@@ -362,10 +362,6 @@ class BatchManager(context: Context) {
             val context = Batches.context(title)
             ts.addTTL(ttl, context)
             percentComplete += 1000.0 * 100.0 / total
-            /*
-             * This task is atomic and cannot be interrupted mid-run, since it
-             * usually quick
-             */
           }
 
           for (s <- summaries) {
