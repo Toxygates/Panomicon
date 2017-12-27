@@ -143,30 +143,34 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     ascending: Boolean): JList[ExpressionRow] = safely {
     val cont = getState.controller(id)
     if (cont.managedMatrix.current.rows == 0) {
-      return new ArrayList()
-    }
+      new ArrayList[ExpressionRow](Seq(
+        new ExpressionRow("(No data)", "(No data)", Array(), Array(), Array())
+       ))
+    } else {
+      val mm =
+        cont.applySorting(sortKey, ascending)
 
-    val mm =
-      cont.applySorting(sortKey, ascending)
+      val grouped = mm.current.asRows.drop(offset).take(size)
 
-    val grouped = mm.current.asRows.drop(offset).take(size)
+      val rowNames = grouped.map(_.getProbe)
+      val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data
 
-    val rowNames = grouped.map(_.getProbe)
-    val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data
-
-    for ((gr, rr) <- grouped zip rawData;
-      (gv, i) <- gr.getValues.zipWithIndex) {
-      val tooltip = if (mm.info.isPValueColumn(i)) {
-        "p-value (t-test treated against control)"
-      } else {
-        val basis = mm.baseColumns(i)
-        val rawRow = basis.map(i => rr(i))
-        ManagedMatrix.makeTooltip(rawRow)
+      for (
+        (gr, rr) <- grouped zip rawData;
+        (gv, i) <- gr.getValues.zipWithIndex
+      ) {
+        val tooltip = if (mm.info.isPValueColumn(i)) {
+          "p-value (t-test treated against control)"
+        } else {
+          val basis = mm.baseColumns(i)
+          val rawRow = basis.map(i => rr(i))
+          ManagedMatrix.makeTooltip(rawRow)
+        }
+        gv.setTooltip(tooltip)
       }
-      gv.setTooltip(tooltip)
-    }
 
-    new ArrayList[ExpressionRow](insertAnnotations(cont, grouped))
+      new ArrayList[ExpressionRow](insertAnnotations(cont, grouped))
+    }
   }
 
   private def insertAnnotations(controller: MatrixController,
