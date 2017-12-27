@@ -25,8 +25,6 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
