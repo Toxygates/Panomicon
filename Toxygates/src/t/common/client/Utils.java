@@ -37,24 +37,19 @@ import com.google.gwt.view.client.NoSelectionModel;
 
 public class Utils {
 
-  public static Widget makeButtons(List<Command> commands) {
+  public static Widget makeButtons(List<RunCommand> commands) {
     HorizontalPanel buttons = new HorizontalPanel();
     buttons.setSpacing(4);
-    for (final Command c : commands) {
+    for (final RunCommand c : commands) {
       Button b = makeButton(c);
       buttons.add(b);
     }
     return buttons;
   }
 
-  public static Button makeButton(final Command c) {
+  public static Button makeButton(final RunCommand c) {
     Button b = new Button(c.getTitle());
-    b.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        c.run();
-      }
-    });
+    b.addClickHandler(e -> c.run());      
     return b;
   }
 

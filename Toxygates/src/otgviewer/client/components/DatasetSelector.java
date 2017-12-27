@@ -22,8 +22,7 @@ import static t.common.client.Utils.makeButtons;
 
 import java.util.*;
 
-import t.common.client.Command;
-import t.common.client.DataRecordSelector;
+import t.common.client.*;
 import t.common.shared.Dataset;
 
 import com.google.gwt.user.client.ui.*;
@@ -63,20 +62,9 @@ public class DatasetSelector extends Composite {
     vp.add(selector);
     initWidget(vp);
 
-    List<Command> commands = new ArrayList<Command>();
-    commands.add(new Command("OK") {
-      @Override
-      public void run() {
-        onOK();
-      }
-    });
-    commands.add(new Command("Cancel") {
-      @Override
-      public void run() {
-        onCancel();
-      }
-    });
-
+    List<RunCommand> commands = new ArrayList<RunCommand>();
+    commands.add(new RunCommand("OK", () -> onOK()));
+    commands.add(new RunCommand("Cancel", () -> onCancel()));      
     vp.add(makeButtons(commands));
   }
 
