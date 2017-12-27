@@ -198,12 +198,19 @@ public class ManagedMatrixInfo implements Serializable {
 
   /**
    * The individual filter for a column.
-   * 
    * @param column
    * @return The filter
    */
   public ColumnFilter columnFilter(int column) {
     return columnFilters.get(column);
+  }
+  
+  /**
+   * All column filters, ordered by column.
+   * @return the filters
+   */
+  public List<ColumnFilter> columnFilters() {
+    return columnFilters;
   }
 
   public void setColumnFilter(int column, ColumnFilter filter) {

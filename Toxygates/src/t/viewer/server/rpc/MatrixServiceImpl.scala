@@ -107,13 +107,18 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   protected def newState = new MatrixState
 
   def loadMatrix(id: String, groups: JList[Group], probes: Array[String],
-    typ: ValueType, initSynthetics: JList[Synthetic]): ManagedMatrixInfo = {
+    typ: ValueType,
+    initFilters: JList[ColumnFilter], initSynthetics: JList[Synthetic]): ManagedMatrixInfo = {
+
     getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
           groups, probes, typ, false))
     val mat = getState.matrix(id)
     for (s <- initSynthetics) {
       mat.addSynthetic(s)
+    }
+    if (!initFilters.isEmpty) {
+      mat.setFilters(initFilters)
     }
     mat.info
   }

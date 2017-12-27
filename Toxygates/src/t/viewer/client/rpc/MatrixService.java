@@ -44,22 +44,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("matrix")
 public interface MatrixService extends ClusteringService<Group, String>, RemoteService {
 
-  /**
-   * Load data into the user's session. Also perform an initial filtering.
-   * 
-   * TODO: this call should return a FullMatrix with the first page of rows. In effect, merge
-   * loadMatrix() with the first call to matrixRows().
-   * 
-   * @param id ID of the matrix
-   * @param barcodes
-   * @param probes
-   * @param type
-   * @return The number of rows that remain after filtering.
-   */
-  ManagedMatrixInfo loadMatrix(String id,
-      List<Group> columns, String[] probes, ValueType type,
-      List<Synthetic> initSynthetics)
-      throws ServerError;
+  ManagedMatrixInfo loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
+      List<ColumnFilter> initFilters, List<Synthetic> initSynthetics);
 
   /**
    * Filter data that has already been loaded into the session.

@@ -119,7 +119,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private boolean loadedData = false;
   private ManagedMatrixInfo matrixInfo = null;
-
+  private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
+  
   private Sample[] chartBarcodes = null;
 
   private DialogBox filterDialog = null;
@@ -625,8 +626,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
             (target.indexOf("width:12") != -1 || // most browsers
             target.indexOf("WIDTH: 12") != -1 || // IE9
         target.indexOf("width: 12") != -1)); // IE8
-    if (shouldFilterClick) {
-      // Identify the column that was filtered.
+    if (shouldFilterClick && matrixInfo != null && matrixInfo.numRows() > 0) {
+      // Identify the column that was filtered. Requires numRows > 0
       int col = columnAt(x);
       Column<ExpressionRow, ?> clickedCol = grid.getColumn(col);
       if (clickedCol instanceof ExpressionColumn) {
@@ -936,6 +937,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   protected void setMatrix(ManagedMatrixInfo matrix) {
     matrixInfo = matrix;
+    lastColumnFilters = matrixInfo.columnFilters();
     asyncProvider.updateRowCount(matrix.numRows(), true);
     int displayRows = (matrix.numRows() > initPageSize) ? initPageSize: matrix.numRows();
     grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
@@ -970,21 +972,23 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   public void getExpressions() {
     List<Synthetic> ss = Arrays.asList();
-    getExpressions(ss);
+    getExpressions(ss, false);
   }
   
   /**
    * Load data (when there is nothing stored in our server side session)
    */
-  public void getExpressions(List<Synthetic> initSynthColumns) {
+  public void getExpressions(List<Synthetic> initSynthColumns, boolean preserveFilters) {
     setEnabled(false);
+    List<ColumnFilter> initFilters = preserveFilters ? lastColumnFilters : 
+      new ArrayList<ColumnFilter>();    
     asyncProvider.updateRowCount(0, false);
 
     logMatrixInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
     matrixService.loadMatrix(matrixId, chosenColumns, chosenProbes, chosenValueType,
-        initSynthColumns,
+        initFilters, initSynthColumns, 
         new AsyncCallback<ManagedMatrixInfo>() {
           @Override
           public void onFailure(Throwable caught) {

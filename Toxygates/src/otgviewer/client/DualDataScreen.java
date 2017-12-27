@@ -124,7 +124,6 @@ public class DualDataScreen extends DataScreen {
   
   protected boolean mainTableSelectable() { return true; }  
   
-  
   protected List<Group> columnsOfType(List<Group> from, String type) {
     return from.stream().filter(g -> type.equals(GroupUtils.groupType(g))).
         collect(Collectors.toList());    
@@ -241,10 +240,10 @@ public class DualDataScreen extends DataScreen {
   }
   
   
-  protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {      
+  protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {
     sideExpressionTable.probesChanged(probes);
     if (probes.length > 0) {
-      sideExpressionTable.getExpressions(synths);
+      sideExpressionTable.getExpressions(synths, true);
     }
   }
   

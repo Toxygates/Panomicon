@@ -33,10 +33,9 @@ import otg.model.sample.OTGAttribute
 import t.common.shared.sample.{Sample => SSample}
 import t.common.shared.sample.{Unit => TUnit}
 
-
 object ManagedMatrix {
  type RowData = Seq[ExprValue]
- 
+
   final private val l2 = Math.log(2)
   final private def log2(v: Double): Double = Math.log(v) / l2
 
@@ -77,7 +76,7 @@ class CoreMatrix(val initProbes: Seq[String],
     var rawGrouped: ExprMatrix,
     val baseColumnMap: Map[Int, Seq[Int]],
     val log2Transform: Boolean = false) {
-  
+
   import ManagedMatrix._
 
   var current: ExprMatrix = rawGrouped
@@ -115,6 +114,17 @@ class CoreMatrix(val initProbes: Seq[String],
   }
 
   /**
+   * Set multiple column filters at once.
+   */
+  def setFilters(fs: Seq[ColumnFilter]): Unit = {
+    for ((f, i) <- fs.zipWithIndex) {
+      currentInfo.setColumnFilter(i, f)
+    }
+    resetSortAndFilter()
+    filterAndSort()
+  }
+
+  /**
    * Select only the rows corresponding to the given probes.
    */
   def selectProbes(probes: Seq[String]): Unit = {
@@ -140,7 +150,7 @@ class CoreMatrix(val initProbes: Seq[String],
     }
 
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
-    
+
     //TODO avoid selecting here
     current = current.selectNamedRows(requestProbes).filterRows(f)
     _sortColumn match {
@@ -207,13 +217,13 @@ class CoreMatrix(val initProbes: Seq[String],
 
 /**
  * Synthetic column management.
- * 
+ *
  * The only info members that can change once a matrix has been constructed
  * is data relating to the synthetic columns (since they can be manually
  * added and removed).
  */
 trait Synthetics extends CoreMatrix {
-    
+
   protected var _synthetics: Vector[Synthetic] = Vector()
 
    def removeSynthetics(): Unit = {
@@ -266,7 +276,7 @@ trait Synthetics extends CoreMatrix {
         if (!currentInfo.hasColumn(name)) {
           currentInfo.addColumn(true, name, test.getTooltip(),
             ColumnFilter.emptyLT, null, false,
-            Array[SSample]()) 
+            Array[SSample]())
         }
       case precomp: Synthetic.Precomputed =>
         val name = precomp.getName
@@ -275,20 +285,20 @@ trait Synthetics extends CoreMatrix {
             ColumnFilter.emptyGT, null, false,
             Array[SSample]())
         }
-        val data = precomp.getData        
-        val inOrder = (0 until current.rows).map(i => data.get(current.rowAt(i)).toDouble) 
-        
+        val data = precomp.getData
+        val inOrder = (0 until current.rows).map(i => data.get(current.rowAt(i)).toDouble)
+
         current = current.appendStatic(inOrder, precomp.getName)
       case _ => throw new Exception("Unexpected test type")
-    }   
+    }
   }
-  
+
   protected def reapplySynthetics(): Unit = {
     for (s <- _synthetics) {
       addSyntheticInner(s)
     }
   }
-  
+
   override def resetSortAndFilter(): Unit = {
     super.resetSortAndFilter()
     reapplySynthetics()
@@ -303,4 +313,3 @@ class ManagedMatrix(initProbes: Seq[String],
     log2Transform: Boolean = false)
     extends CoreMatrix(initProbes, currentInfo, rawUngrouped,
                        rawGrouped, baseColumnMap, log2Transform) with Synthetics
-

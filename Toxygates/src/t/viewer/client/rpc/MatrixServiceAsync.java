@@ -34,6 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
   void loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
+      List<ColumnFilter> initFilters,
       List<Synthetic> initSynthetics, AsyncCallback<ManagedMatrixInfo> callback);
 
   void matrixRows(String id, int offset, int size, SortKey sortKey, boolean ascending,
