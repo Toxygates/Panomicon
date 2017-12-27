@@ -22,13 +22,6 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
 import otgviewer.client.SampleDetailTable;
 import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
@@ -39,6 +32,11 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for
@@ -67,12 +65,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       p.setWidth("3.5em");
       initWidget(p);
       cb.setText("");
-      cb.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          fireUnitsChanged();
-        }
-      });
+      cb.addClickHandler(e -> fireUnitsChanged());        
       p.add(cb);
       a = new Anchor("");
       p.add(a);
@@ -92,12 +85,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
         Unit controlUnit = controlUnits.get(unit);
         int controlCount = (controlUnit != null ? controlUnit.getSamples().length : -1);
         a.setText(unitLabel(treatedCount, controlCount));
-        a.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            displaySampleTable(unit);
-          }
-        });
+        a.addClickHandler(e -> displaySampleTable(unit));          
       } else {
         cb.setEnabled(false);
         l.setText(unitLabel(0, 0));

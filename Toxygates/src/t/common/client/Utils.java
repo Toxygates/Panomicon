@@ -50,6 +50,12 @@ public class Utils {
     b.addClickHandler(e -> c.run());      
     return b;
   }
+  
+  public static Button makeButton(String label, Runnable r) {
+    Button b = new Button(label);
+    b.addClickHandler(e -> r.run());      
+    return b;
+  }
 
   public static TextColumn<String[]> makeColumn(CellTable<String[]> table, final int idx,
       String title, String width) {

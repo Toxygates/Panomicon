@@ -18,6 +18,8 @@
 
 package otgviewer.client.components;
 
+import static t.common.client.Utils.makeButton;
+
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -32,8 +34,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
@@ -156,9 +156,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     probesList.setWidth("100%");
 
     HorizontalPanel buttons = Utils.mkHorizontalPanel(true);
-    Button removeSelected = new Button("Remove selected probes", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    Button removeSelected = makeButton("Remove selected probes", () -> {      
         for (int i = 0; i < probesList.getItemCount(); ++i) {
           if (probesList.isItemSelected(i)) {
             String sel = probesList.getItemText(i);
@@ -172,14 +170,9 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
         }
 
         probesChanged(listedProbes.toArray(new String[0]));
-      }
-    });
-    Button removeAll = new Button("Remove all probes", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        probesChanged(new String[0]);
-      }
-    });
+      });
+    
+    Button removeAll = makeButton("Remove all probes", () -> probesChanged(new String[0]));
 
     buttons.add(removeSelected);
     buttons.add(removeAll);
@@ -203,35 +196,28 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     HorizontalPanel bottomContent = new HorizontalPanel();
     bottomContent.setSpacing(4);
 
-    Button btnCancel = new Button("Cancel");
-    btnCancel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (!listedProbes.equals(originalProbes)) {
-          // TODO Need to confirm if lists are not saved?
-        }
+    Button btnCancel = makeButton("Cancel", () -> {
+      if (!listedProbes.equals(originalProbes)) {
+        // TODO Need to confirm if lists are not saved?
+      }
 
+      GeneSetEditor.this.dialog.hide();
+      for (SaveActionHandler h : saveActions) {
+        h.onCanceled();
+      }
+    });
+    
+    Button btnSave = makeButton("Save", () -> {
+      String title = titleText.getText().trim();
+
+      if (save(title)) {
         GeneSetEditor.this.dialog.hide();
         for (SaveActionHandler h : saveActions) {
-          h.onCanceled();
+          h.onSaved(title, new ArrayList<String>(listedProbes));
         }
       }
     });
-    Button btnSave = new Button("Save");
-    btnSave.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        String title = titleText.getText().trim();
 
-        if (save(title)) {
-          GeneSetEditor.this.dialog.hide();
-          for (SaveActionHandler h : saveActions) {
-            h.onSaved(title, new ArrayList<String>(listedProbes));
-          }
-        }
-      }
-
-    });
     bottomContent.add(btnCancel);
     bottomContent.add(btnSave);
 
@@ -379,19 +365,17 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     customProbeText.setVisibleLines(10);
     customProbeText.setWidth("95%");
 
-    vpii.add(new Button("Add manual list", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent ev) {
-        String text = customProbeText.getText();
-        String[] split = text.split("[\n ,\t]");
+    vpii.add(makeButton("Add manual list", () -> {
+      String text = customProbeText.getText();
+      String[] split = text.split("[\n ,\t]");
 
-        if (split.length == 0) {
-          Window.alert("Please enter identifiers in the text box and try again.");
-        } else {
-          addManualProbes(split, false);
-        }
+      if (split.length == 0) {
+        Window.alert("Please enter identifiers in the text box and try again.");
+      } else {
+        addManualProbes(split, false);
       }
     }));
+    
 
     if (hasSymbolFinder()) {
       vpii = innerVP("Begin typing a gene symbol to get suggestions.");
@@ -400,17 +384,14 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       final SuggestBox sb = new SuggestBox(oracle);
       vpii.add(sb);
       sb.setWidth("95%");
-      vpii.add(new Button("Add gene", new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent ev) {
-          String[] gs = new String[1];
-          if (sb.getText().length() == 0) {
-            Window.alert("Please enter a gene symbol and try again.");
-          }
-          gs[0] = sb.getText();
-          addManualProbes(gs, false);
+      vpii.add(makeButton("Add gene", () -> {
+        String[] gs = new String[1];
+        if (sb.getText().length() == 0) {
+          Window.alert("Please enter a gene symbol and try again.");
         }
-      }));
+        gs[0] = sb.getText();
+        addManualProbes(gs, false);
+      }));      
     }
 
     if (hasPartialMatcher()) {
@@ -422,17 +403,14 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       final TextBox tb = new TextBox();
       vpii.add(tb);
       tb.setWidth("95%");
-      vpii.add(new Button("Add", new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent ev) {
-          String[] gs = new String[1];
-          if (tb.getText().length() == 0) {
-            Window.alert("Please enter a pattern and try again.");
-          }
-          gs[0] = tb.getText();
-          addManualProbes(gs, true);
+      vpii.add(makeButton("Add", () -> {
+        String[] gs = new String[1];
+        if (tb.getText().length() == 0) {
+          Window.alert("Please enter a pattern and try again.");
         }
-      }));
+        gs[0] = tb.getText();
+        addManualProbes(gs, true);
+      }));     
     }
 
     return vp;
@@ -555,24 +533,16 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
     vpi.add(compoundList);
 
-    Button button = new Button("Add direct targets >>");
-    button.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    Button button = makeButton("Add direct targets >>", () -> {    
         System.out.println(selectedTarget() + " selected");
         doTargetLookup(selectedTarget(), false);
-      }
-    });
+      });    
     vpi.add(button);
 
-    button = new Button("Add inferred targets >>");
-    button.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        System.out.println(selectedTarget() + " selected");
-        doTargetLookup(selectedTarget(), true);
-      }
-    });
+    button = makeButton("Add inferred targets >>", () -> {
+      System.out.println(selectedTarget() + " selected");
+      doTargetLookup(selectedTarget(), true);
+    });   
 
     vpi.add(button);
 

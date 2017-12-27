@@ -20,11 +20,6 @@ package otgviewer.client.components.ranking;
 
 import java.util.*;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
 import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
@@ -36,6 +31,10 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
@@ -117,23 +116,14 @@ abstract public class CompoundRanker extends DataListenerWidget {
     csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     initWidget(csVerticalPanel);
 
-    Button clearBtn = new Button("Clear rules", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        clearRules();
-      }
-    });
+    Button clearBtn = new Button("Clear rules", (ClickHandler) e -> clearRules());      
     
-    Button setAllBtn = new Button("Set all... ", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (Window.confirm("Overwrite all rule parameters by copying the first rule?")) {
-          setAllRules();
-        }        
+    Button setAllBtn = new Button("Set all... ", (ClickHandler) e -> {
+      if (Window.confirm("Overwrite all rule parameters by copying the first rule?")) {
+        setAllRules();
       }
-      
     });
-
+      
     HorizontalPanel hp =
         Utils.mkHorizontalPanel(true, new Label("Gene set: "), listChooser, setAllBtn, clearBtn);
     csVerticalPanel.add(hp);
@@ -147,12 +137,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     hp = Utils.mkHorizontalPanel(true);
     csVerticalPanel.add(hp);
 
-    hp.add(new Button("Rank", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        performRanking();
-      }
-    }));
+    hp.add(new Button("Rank", (ClickHandler) e -> performRanking()));      
   }
 
   protected abstract int gridColumns();

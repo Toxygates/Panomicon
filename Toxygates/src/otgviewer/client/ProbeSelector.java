@@ -20,22 +20,18 @@ package otgviewer.client;
 
 import java.util.Arrays;
 
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-
 import otgviewer.client.components.*;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
+
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * An interface component that helps users to select probes using some kind of higher level concept
@@ -91,10 +87,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     wrap.add(searchBox);
     fp.add(wrap);
 
-    Button btnLoad = new Button("Load");
-    btnLoad.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    Button btnLoad = new Button("Load", (ClickHandler) ev -> {      
         itemList.clear();
         loadedProbes = new String[0];
         if (withButton) {
@@ -106,17 +99,14 @@ abstract public class ProbeSelector extends DataListenerWidget implements
         } else {
           searchBox.showSuggestionList();
         }
-      }
-    });
-    searchBox.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {      
-      @Override
-      public void onSelection(SelectionEvent<Suggestion> event) {
+      });
+
+    searchBox.addSelectionHandler(ev -> {           
         Term selected = searchBox.getSelected();
         if (selected != null) {
           getProbes(selected);
         }        
-      }
-    });
+      });
     
     wrap = new FlowPanel();
     wrap.addStyleName("table-cell");
@@ -132,12 +122,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
     if (withButton) {
       addButton = new Button("Add probes >>");
-      addButton.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent e) {
-          probesChanged(loadedProbes);
-        }
-      });
+      addButton.addClickHandler(ev -> probesChanged(loadedProbes));        
       addButton.setEnabled(false);
       HorizontalPanel hp = Utils.wideCentered(addButton);
       hp.addStyleName("slightlySpaced");
