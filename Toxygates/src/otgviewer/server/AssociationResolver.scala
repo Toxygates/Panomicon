@@ -65,14 +65,19 @@ class AssociationResolver(probeStore: Probes,
       })
     }
 
-    def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe]): MMap[Probe, DefaultBio] = {
+    /**
+     * Look up miRNA-mRNA associations (by default from mRNA)
+     */
+    def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe],
+                     fromMirna: Boolean): MMap[Probe, DefaultBio] = {
       try {
       source.id match {
         case "http://level-five.jp/t/mapping/mirdb" =>
           probeStore.mirnaAssociations(probes,
               if(source.limit == null) None else Some(source.limit),
-              false)
+              fromMirna)
 
+        //TODO handle reverse lookup case here
         case AppInfoLoader.TARGETMINE_SOURCE =>
             toBioMap(probes, (_: Probe).genes) combine
               mirnaResolver.forGenes(probes.flatMap(_.genes))
@@ -87,16 +92,23 @@ class AssociationResolver(probeStore: Probes,
       }
     }
 
-    def resolveMiRNA(probes: Iterable[Probe]): BBMap = {
-      val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
+  def resolveMiRNA(probes: Iterable[Probe], fromMirna: Boolean): BBMap = {
+    val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
+
+    if (!fromMirna) {
       val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)
 
       val empty = emptyMMap[Probe, DefaultBio]()
       val resolved = mirnaSources.par.map(s =>
-        resolveMiRNA(s, isNotMirna)).seq.foldLeft(empty)(_ union _)
+        resolveMiRNA(s, isNotMirna, fromMirna)).seq.foldLeft(empty)(_ union _)
 
       immediateLookup ++ resolved
+    } else {
+      val empty = emptyMMap[Probe, DefaultBio]()
+      mirnaSources.par.map(s =>
+        resolveMiRNA(s, isMirna, fromMirna)).seq.foldLeft(empty)(_ union _)
     }
+  }
 
     lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
 
@@ -113,7 +125,8 @@ class AssociationResolver(probeStore: Probes,
         case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
         case _: AType.EC.type         => probeStore.ecLookup(probes)
         case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
-        case _: AType.MiRNA.type      => resolveMiRNA(probes)
+        case _: AType.MiRNA.type      => resolveMiRNA(probes, false)
+        case _: AType.MRNA.type       => resolveMiRNA(probes, true)
         case _                        => super.associationLookup(at, sc, probes)
       }
     }

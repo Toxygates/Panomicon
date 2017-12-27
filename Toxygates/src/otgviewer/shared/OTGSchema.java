@@ -178,7 +178,7 @@ public class OTGSchema extends DataSchema {
       // needs repair
       // AType.OrthProts,
       AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene,
-      AType.MiRNA};
+      AType.MiRNA, AType.MRNA};
 
   @Override
   public AType[] associations() {
