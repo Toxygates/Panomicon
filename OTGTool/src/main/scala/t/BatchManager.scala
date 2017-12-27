@@ -43,112 +43,112 @@ object BatchManager extends ManagerTool {
     val batches = new Batches(config.triplestore)
     if (args.size < 1) {
       showHelp()
-    }
+    } else {
+      args(0) match {
+        case "add" =>
+          val title = require(stringOption(args, "-title"),
+            "Please specify a title with -title")
+          val append = booleanOption(args, "-append")
+          val comment = stringOption(args, "-comment").getOrElse("")
 
-    args(0) match {
-      case "add" =>
-        val title = require(stringOption(args, "-title"),
-          "Please specify a title with -title")
-        val append = booleanOption(args, "-append")
-        val comment = stringOption(args, "-comment").getOrElse("")
+          if (batches.list.contains(title) && !append) {
+            val msg = s"Batch $title already exists. Did you mean to use -append?"
+            throw new Exception(msg)
+          }
 
-        if (batches.list.contains(title) && !append) {
-          val msg = s"Batch $title already exists. Did you mean to use -append?"
-          throw new Exception(msg)
-        }
+          val bm = new BatchManager(context)
 
-        val bm = new BatchManager(context)
+          val metaList = stringListOption(args, "-multiMetadata")
+          metaList match {
+            case Some(ml) =>
+              KCDBRegistry.setMaintenance(true)
+              for (mf <- ml) {
+                val md = factory.tsvMetadata(mf, config.attributes)
+                val dataFile = mf.replace(".meta.tsv", ".data.csv")
 
-        val metaList = stringListOption(args, "-multiMetadata")
-        metaList match {
-          case Some(ml) =>
-            KCDBRegistry.setMaintenance(true)
-            for (mf <- ml) {
-              val md = factory.tsvMetadata(mf, config.attributes)
-              val dataFile = mf.replace(".meta.tsv", ".data.csv")
+                val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
+                val callFile = if (f.exists()) Some(f.getPath) else None
+                println(s"Insert $dataFile")
+                addTasklets(bm.add(title, comment,
+                  md, dataFile, callFile,
+                  append, config.seriesBuilder))
+              }
+            case None =>
+              val metaFile = require(stringOption(args, "-metadata"),
+                "Please specify a metadata file with -metadata")
+              val dataFile = require(stringOption(args, "-data"),
+                  "Please specify a data file with -data")
+              val callFile = stringOption(args, "-calls")
 
-              val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
-              val callFile = if (f.exists()) Some(f.getPath) else None
-              println(s"Insert $dataFile")
+              val md = factory.tsvMetadata(metaFile, config.attributes)
               addTasklets(bm.add(title, comment,
                 md, dataFile, callFile,
                 append, config.seriesBuilder))
-            }
-          case None =>
-            val metaFile = require(stringOption(args, "-metadata"),
-              "Please specify a metadata file with -metadata")
-            val dataFile = require(stringOption(args, "-data"),
-                "Please specify a data file with -data")
-            val callFile = stringOption(args, "-calls")
+          }
 
-            val md = factory.tsvMetadata(metaFile, config.attributes)
-            addTasklets(bm.add(title, comment,
-              md, dataFile, callFile,
-              append, config.seriesBuilder))
-        }
-
-      case "delete" =>
-        val title = require(stringOption(args, "-title"),
-          "Please specify a title with -title")
-        val rdfOnly = booleanOption(args, "-rdfonly")
-        verifyExists(batches, title)
-        val bm = new BatchManager(context)
-        addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
-      case "list" =>
-        println("Batch list")
-        for (b <- batches.list) {
-          println(b)
-        }
-      case "list-access" =>
-        expectArgs(args, 2)
-        verifyExists(batches, args(1))
-        println(s"List of instances that have access to batch ${args(1)}")
-        for (i <- batches.listAccess(args(1))) {
-          println(i)
-        }
-      case "enable" =>
-        expectArgs(args, 3)
-        verifyExists(batches, args(1))
-        batches.enableAccess(args(1), args(2))
-      case "disable" =>
-        expectArgs(args, 3)
-        verifyExists(batches, args(1))
-        batches.disableAccess(args(1), args(2))
-      case "checkOrder" =>
-        expectArgs(args, 4)
-        val len = Integer.parseInt(args(3))
-        val bm = new BatchManager(context)
-        val db = config.data.absoluteDBReader(context.matrix)
-        val kdb = db.asInstanceOf[KCMatrixDB]
-        try {
-          kdb.dumpKeys(args(1), args(2), len)
-        } finally {
-          db.release
-        }
-      case "loadTest" =>
-        expectArgs(args, 3)
-        val len = Integer.parseInt(args(1))
-        val n = Integer.parseInt(args(2))
-        for (i <- 0 until n) {
-          println(s"$i of $n")
-
+        case "delete" =>
+          val title = require(stringOption(args, "-title"),
+            "Please specify a title with -title")
+          val rdfOnly = booleanOption(args, "-rdfonly")
+          verifyExists(batches, title)
+          val bm = new BatchManager(context)
+          addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
+        case "list" =>
+          println("Batch list")
+          for (b <- batches.list) {
+            println(b)
+          }
+        case "list-access" =>
+          expectArgs(args, 2)
+          verifyExists(batches, args(1))
+          println(s"List of instances that have access to batch ${args(1)}")
+          for (i <- batches.listAccess(args(1))) {
+            println(i)
+          }
+        case "enable" =>
+          expectArgs(args, 3)
+          verifyExists(batches, args(1))
+          batches.enableAccess(args(1), args(2))
+        case "disable" =>
+          expectArgs(args, 3)
+          verifyExists(batches, args(1))
+          batches.disableAccess(args(1), args(2))
+        case "checkOrder" =>
+          expectArgs(args, 4)
+          val len = Integer.parseInt(args(3))
           val bm = new BatchManager(context)
           val db = config.data.absoluteDBReader(context.matrix)
+          val kdb = db.asInstanceOf[KCMatrixDB]
           try {
-            val keys = bm.matrixContext.probeMap.keys
-            val xs = bm.matrixContext.sampleMap.tokens.take(len).map(Sample(_))
-            db.valuesInSamples(xs, keys)
+            kdb.dumpKeys(args(1), args(2), len)
           } finally {
             db.release
           }
-        }
-      case "sampleCheck" =>
-        //TODO: do not access the db files directly (obtain readers instead)
-        sampleCheck(config.data.exprDb,
-          args.size > 1 && args(1) == "delete")
-        sampleCheck(config.data.foldDb,
-          args.size > 1 && args(1) == "delete")
-      case _ => showHelp()
+        case "loadTest" =>
+          expectArgs(args, 3)
+          val len = Integer.parseInt(args(1))
+          val n = Integer.parseInt(args(2))
+          for (i <- 0 until n) {
+            println(s"$i of $n")
+
+            val bm = new BatchManager(context)
+            val db = config.data.absoluteDBReader(context.matrix)
+            try {
+              val keys = bm.matrixContext.probeMap.keys
+              val xs = bm.matrixContext.sampleMap.tokens.take(len).map(Sample(_))
+              db.valuesInSamples(xs, keys)
+            } finally {
+              db.release
+            }
+          }
+        case "sampleCheck" =>
+          //TODO: do not access the db files directly (obtain readers instead)
+          sampleCheck(config.data.exprDb,
+            args.size > 1 && args(1) == "delete")
+          sampleCheck(config.data.foldDb,
+            args.size > 1 && args(1) == "delete")
+        case _ => showHelp()
+      }
     }
   }
 
@@ -175,7 +175,7 @@ object BatchManager extends ManagerTool {
     bs.verifyExists(batch)
 
   def showHelp() {
-    throw new Exception("Please specify a command (add/delete/list/list-access/enable/disable)")
+    println("Please specify a command (add/delete/list/list-access/enable/disable)")
   }
 }
 

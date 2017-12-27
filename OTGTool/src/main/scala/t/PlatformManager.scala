@@ -35,42 +35,42 @@ import t.util.TempFiles
 object PlatformManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
 
-    val manager = new PlatformManager(context)
     if (args.size < 1) {
       showHelp()
-    }
-    val platforms = new Platforms(context.config)
-    
-    try {
-      args(0) match {
-        case "add" =>
-          val title = require(stringOption(args, "-title"),
-            "Please specify a title with -title")
-          val inputFile = require(stringOption(args, "-input"),
-            "Please specify a definition file with -input")
-          val defns = new PlatformDefFile(inputFile).records
-          val comment = stringOption(args, "-comment").getOrElse("")
-          addTasklets(manager.add(title, comment, inputFile, false, false))
-          
-          //Redefine only syntax
-//          platforms.redefine(title, comment, false, defns) 
-        case "delete" =>
-          val title = require(stringOption(args, "-title"),
-            "Please specify a title with -title")
-          manager.delete(title)
-        case "list" =>
-          for (p <- platforms.list) {
-            println(p)
-          }
-        case _ => showHelp()
+    } else {
+      val manager = new PlatformManager(context)
+      val platforms = new Platforms(context.config)
+      try {
+        args(0) match {
+          case "add" =>
+            val title = require(stringOption(args, "-title"),
+              "Please specify a title with -title")
+            val inputFile = require(stringOption(args, "-input"),
+              "Please specify a definition file with -input")
+            val defns = new PlatformDefFile(inputFile).records
+            val comment = stringOption(args, "-comment").getOrElse("")
+            addTasklets(manager.add(title, comment, inputFile, false, false))
+
+            //Redefine only syntax
+  //          platforms.redefine(title, comment, false, defns)
+          case "delete" =>
+            val title = require(stringOption(args, "-title"),
+              "Please specify a title with -title")
+            manager.delete(title)
+          case "list" =>
+            for (p <- platforms.list) {
+              println(p)
+            }
+          case _ => showHelp()
+        }
+      } finally {
+        KCDBRegistry.closeWriters()
       }
-    } finally {
-      KCDBRegistry.closeWriters()
     }
   }
 
   def showHelp() {
-    throw new Exception("Please specify a command (add/delete/list)")
+    println("Please specify a command (add/delete/list)")
   }
 }
 

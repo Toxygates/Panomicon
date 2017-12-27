@@ -41,17 +41,17 @@ object MatrixManager extends ManagerTool {
       val sf = t.sparql.SampleFilter(None, Some(Batches.packURI(batch)))
       context.samples.samples(SampleClassFilter())(sf)
     }
-    
+
     def matcopy[E >: Null <: ExprValue](from: MatrixDBReader[E],
       batch: Option[String],
-      getDB: () => MatrixDBWriter[PExprValue],      
+      getDB: () => MatrixDBWriter[PExprValue],
       formVal: E => FoldPExpr,
       label: String)(implicit mat: MatrixContext) {
       val allProbes = mat.probeMap.keys.toSeq.sorted
       def allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)).toSeq)
-      
+
       val useSamples = batch.map(samplesInBatch).getOrElse(allSamples)
-      
+
       for (ss <- useSamples.grouped(50)) {
         val vs = from.valuesInSamples(ss, allProbes)
         val svs = Map() ++ (ss zip vs)
@@ -67,38 +67,42 @@ object MatrixManager extends ManagerTool {
       }
     }
 
-    args(0) match {
-      case "copy" =>
-        val todir = require(stringOption(args, "-toDir"),
-          "Please specify a destination directory with -toDir")
-        val tsconfig = config.triplestore
-        val dataParams = (Map() ++ mapAsScalaMap(System.getenv())) + ("T_DATA_DIR" -> todir)
-        val toDConfig = m.getDataConfig(dataParams)
-        val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
-        //If the batch is specified, only that batch will be copied.
-        //Otherwise, all batches are copied.
-        val batch = stringOption(args, "-batch")
+    if (args.size < 1) {
+      showHelp()
+    } else {
+      args(0) match {
+        case "copy" =>
+          val todir = require(stringOption(args, "-toDir"),
+            "Please specify a destination directory with -toDir")
+          val tsconfig = config.triplestore
+          val dataParams = (Map() ++ mapAsScalaMap(System.getenv())) + ("T_DATA_DIR" -> todir)
+          val toDConfig = m.getDataConfig(dataParams)
+          val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
+          //If the batch is specified, only that batch will be copied.
+          //Otherwise, all batches are copied.
+          val batch = stringOption(args, "-batch")
 
-        implicit val mat = context.matrix
+          implicit val mat = context.matrix
 
-        //No log-2 wrap
-        matcopy[PExprValue](config.data.foldsDBReaderNowrap(mat),
-            batch,
-          () => toDConfig.extWriter(toDConfig.foldDb),
-          v => (v.value, v.call, v.p),
-          "Insert folds")
+          //No log-2 wrap
+          matcopy[PExprValue](config.data.foldsDBReaderNowrap(mat),
+              batch,
+            () => toDConfig.extWriter(toDConfig.foldDb),
+            v => (v.value, v.call, v.p),
+            "Insert folds")
 
-        matcopy[ExprValue](mat.absoluteDBReader,
-            batch,
-          () => toDConfig.extWriter(toDConfig.exprDb),
-          v => (v.value, v.call, 0.0),
-          "Insert absolute values")
+          matcopy[ExprValue](mat.absoluteDBReader,
+              batch,
+            () => toDConfig.extWriter(toDConfig.exprDb),
+            v => (v.value, v.call, 0.0),
+            "Insert absolute values")
 
-      case _ => showHelp()
+        case _ => showHelp()
+      }
     }
   }
 
   def showHelp(): Unit = {
-    throw new Exception("Please specify a command (copy/...)")
+    println("Please specify a command (copy)")
   }
 }
