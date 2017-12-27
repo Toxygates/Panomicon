@@ -94,23 +94,17 @@ public class ColumnScreen extends DataFilterScreen {
   public Widget bottomContent() {
     HorizontalPanel hp = Utils.mkWidePanel();
 
-    Button b = new Button("Delete all groups", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        gi.confirmDeleteAllGroups();
-      }
-    });
+    Button b = new Button("Delete all groups",
+        (ClickHandler) e -> gi.confirmDeleteAllGroups());     
 
-    Button b2 = new Button("Next: View data", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    Button b2 = new Button("Next: View data", 
+        (ClickHandler) e -> {
         if (gi.chosenColumns().size() == 0) {
           Window.alert("Please define and activate at least one group.");
         } else {
           configuredProceed(DataScreen.key);
         }
-      }
-    });
+      });
 
     hp.add(Utils.mkHorizontalPanel(true, b, b2));
     return hp;
