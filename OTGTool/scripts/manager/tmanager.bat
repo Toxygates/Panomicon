@@ -1,5 +1,4 @@
 @echo off
-setlocal
 
 set MAIN_ROOT=C:\Users\yuji\Documents\Toxygates\repository 4.7
 set OTGTOOL_ROOT=%MAIN_ROOT%\OTGTool
