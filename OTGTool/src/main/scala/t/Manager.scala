@@ -93,6 +93,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
       case "matrix"   => MatrixManager(args.drop(1), this)
+      case _ => showHelp()
     }
   }
 
