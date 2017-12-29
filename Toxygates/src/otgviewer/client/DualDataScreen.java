@@ -76,6 +76,10 @@ public class DualDataScreen extends DataScreen {
       () -> downloadNetwork(Format.DOT));             
     addAnalysisMenuItem(mi);
     
+    mi = new MenuItem("Download interaction network (SIF)...", 
+      () -> downloadNetwork(Format.SIF));       
+    addAnalysisMenuItem(mi);
+    
     mi = new MenuItem("Download interaction network (Custom)...", 
       () -> downloadNetwork(Format.Custom));       
     addAnalysisMenuItem(mi);

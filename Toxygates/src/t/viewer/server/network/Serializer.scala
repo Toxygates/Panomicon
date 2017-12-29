@@ -44,7 +44,14 @@ class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
    * Reference: http://manual.cytoscape.org/en/stable/Supported_Network_File_Formats.html#sif-format
    */
   def writeSIF(file: String) {
-    
+    val w = new PrintWriter(file)
+    try {
+      for (i <- network.interactions) {
+        w.println(s"""${nodeLabel(i.from)}\tpp\t${nodeLabel(i.to)}""")
+      }
+    } finally{
+      w.close
+    }
   }
   
   /*
