@@ -18,14 +18,14 @@
 
 package t.common.client.components;
 
-import static t.common.client.Utils.makeScrolled;
-
 import java.util.Arrays;
 
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
+
+import t.common.client.Utils;
 
 /**
  * A table to display simple string data.
@@ -54,7 +54,7 @@ public class StringArrayTable extends Composite {
   public static void displayDialog(String[][] data, String title, int width, int height) {
     final DialogBox db = new DialogBox(true, true);
     db.setText(title);
-    Widget w = makeScrolled(new StringArrayTable(data));
+    Widget w = Utils.makeScrolled(new StringArrayTable(data));
     w.setWidth(width + "px");
     w.setHeight(height + "px");
     db.setWidget(w);

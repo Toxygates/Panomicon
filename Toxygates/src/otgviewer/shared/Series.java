@@ -18,8 +18,6 @@
 
 package otgviewer.shared;
 
-import static otg.model.sample.OTGAttribute.*;
-
 import java.io.Serializable;
 
 import otg.model.sample.OTGAttribute;
@@ -79,7 +77,8 @@ public class Series implements HasClass, Serializable {
   // TODO users should access the sample class instead
   @Deprecated
   public String timeDose() {
-    Attribute fixedParam = _independentParam == ExposureTime ? DoseLevel : ExposureTime;
+    Attribute fixedParam = _independentParam == OTGAttribute.ExposureTime ? 
+        OTGAttribute.DoseLevel : OTGAttribute.ExposureTime;
     return _sc.get(fixedParam);
   }
 

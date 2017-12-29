@@ -18,19 +18,17 @@
 
 package t.common.client.maintenance;
 
-import static t.common.client.Utils.makeButtons;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.client.*;
-import t.common.shared.ManagedItem;
-
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.*;
+
+import t.common.client.*;
+import t.common.shared.ManagedItem;
 
 abstract public class ManagerPanel<T extends ManagedItem> {
 
@@ -56,10 +54,12 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     }));
 
     StandardColumns<T> sc = new StandardColumns<T>(table) {
+      @Override
       void onDelete(T object) {
         ManagerPanel.this.onDelete(object);
       }
 
+      @Override
       void onEdit(T object) {
         showEditor(object, false);
       }
@@ -70,9 +70,9 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     sc.addEndColumns();
 
     if (!buttonsNorth) {
-      dlp.addSouth(makeButtons(cmds), 35);
+      dlp.addSouth(Utils.makeButtons(cmds), 35);
     }
-    dlp.add(scrolled ? t.common.client.Utils.makeScrolled(table) : table);
+    dlp.add(scrolled ? Utils.makeScrolled(table) : table);
   }
 
   protected boolean confirmAddNew() { return true; }

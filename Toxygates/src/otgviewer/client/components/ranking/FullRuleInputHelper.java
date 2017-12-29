@@ -18,15 +18,13 @@
 
 package otgviewer.client.components.ranking;
 
-import static otg.model.sample.OTGAttribute.Compound;
-import static otg.model.sample.OTGAttribute.DoseLevel;
-
 import java.util.List;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.*;
 
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
@@ -84,10 +82,10 @@ public class FullRuleInputHelper extends RuleInputHelper {
     }
     final String selCompound = refCompound.getItemText(selIndex);
     SampleClass sc = ranker.state().sampleClass.copy();
-    sc.put(Compound, selCompound);
+    sc.put(OTGAttribute.Compound, selCompound);
 
-    ranker.sampleService.parameterValues(sc, DoseLevel.id(), new PendingAsyncCallback<String[]>(
-        ranker.selector, "Unable to retrieve dose levels.") {
+    ranker.sampleService.parameterValues(sc, OTGAttribute.DoseLevel.id(),
+        new PendingAsyncCallback<String[]>(ranker.selector, "Unable to retrieve dose levels.") {
 
       @Override
       public void handleSuccess(String[] result) {

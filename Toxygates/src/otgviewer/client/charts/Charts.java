@@ -18,8 +18,6 @@
 
 package otgviewer.client.charts;
 
-import static t.model.sample.CoreParameter.ControlGroup;
-
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +36,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.CoreParameter;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 
@@ -81,7 +80,7 @@ public class Charts {
         SampleClass unitClass = unit.getSamples()[0].sampleClass();
         SampleClass sc = SampleClassUtils.asMacroClass(unitClass,
             schema);
-        sc.put(ControlGroup, unitClass.get(ControlGroup));
+        sc.put(CoreParameter.ControlGroup, unitClass.get(CoreParameter.ControlGroup));
         scs.add(sc);
       }
     }

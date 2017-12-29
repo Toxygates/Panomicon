@@ -1,19 +1,16 @@
 package t.viewer.client.components.search;
 
-import static t.model.sample.CoreParameter.SampleId;
-
 import java.util.*;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.model.sample.Attribute;
-import t.model.sample.AttributeSet;
+import t.model.sample.*;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   private Sample[] samplesInResult;
@@ -31,7 +28,7 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
     controlUnitsMap = new HashMap<String, Unit>();
     for (Pair<Unit, Unit> pair : result.items()) {
       units.add(pair.first());
-      controlUnitsMap.put(pair.first().get(SampleId), pair.second());
+      controlUnitsMap.put(pair.first().get(CoreParameter.SampleId), pair.second());
     }
     searchResult = units.toArray(new Unit[0]);
   }
@@ -104,7 +101,7 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
     List<Unit> allUnits = new ArrayList<Unit>();
     for (Unit unit : units) {
       allUnits.add(unit);
-      allUnits.add(controlUnitsMap.get(unit.get(SampleId)));
+      allUnits.add(controlUnitsMap.get(unit.get(CoreParameter.SampleId)));
     }
     return allUnits.toArray(new Unit[0]);
   }

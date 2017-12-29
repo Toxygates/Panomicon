@@ -18,8 +18,6 @@
 
 package otgviewer.client;
 
-import static otg.model.sample.OTGAttribute.*;
-
 import java.util.List;
 import java.util.logging.Level;
 
@@ -28,6 +26,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.*;
@@ -73,7 +72,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
-      sc.put(Compound, compounds.get(0));
+      sc.put(OTGAttribute.Compound, compounds.get(0));
       sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
           this, "Unable to get samples") {
         @Override
@@ -108,9 +107,9 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       final String compound, final String dose, final String time) {
 
     SampleClass sc = chosenSampleClass.copy();
-    sc.put(DoseLevel, dose);
-    sc.put(ExposureTime, time);
-    sc.put(Compound, compound);
+    sc.put(OTGAttribute.DoseLevel, dose);
+    sc.put(OTGAttribute.ExposureTime, time);
+    sc.put(OTGAttribute.Compound, compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
         "Unable to retrieve barcodes for the group definition.") {
