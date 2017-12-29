@@ -112,22 +112,23 @@ class AssociationResolver(probeStore: Probes,
 
     lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
 
-    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
-      at match {
-        case _: AType.GOMF.type       => probeStore.mfGoTerms(probes)
-        case _: AType.GOBP.type       => probeStore.bpGoTerms(probes)
-        case _: AType.GOCC.type       => probeStore.ccGoTerms(probes)
-        case _: AType.OrthProts.type  => oproteins
-        case _: AType.Chembl.type     => getTargeting(sc, chembl)
-        case _: AType.Drugbank.type   => getTargeting(sc, drugBank)
-        case _: AType.RefseqTrn.type  => probeStore.refseqTrnLookup(probes)
-        case _: AType.RefseqProt.type => probeStore.refseqProtLookup(probes)
-        case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
-        case _: AType.EC.type         => probeStore.ecLookup(probes)
-        case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
-        case _: AType.MiRNA.type      => resolveMiRNA(probes, false)
-        case _: AType.MRNA.type       => resolveMiRNA(probes, true)
-        case _                        => super.associationLookup(at, sc, probes)
-      }
+  override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
+    import AType._
+    at match {
+      case GOMF       => probeStore.mfGoTerms(probes)
+      case GOBP       => probeStore.bpGoTerms(probes)
+      case GOCC       => probeStore.ccGoTerms(probes)
+      case OrthProts  => oproteins
+      case Chembl     => getTargeting(sc, chembl)
+      case Drugbank   => getTargeting(sc, drugBank)
+      case RefseqTrn  => probeStore.refseqTrnLookup(probes)
+      case RefseqProt => probeStore.refseqProtLookup(probes)
+      case Ensembl    => probeStore.ensemblLookup(probes)
+      case EC         => probeStore.ecLookup(probes)
+      case Unigene    => probeStore.unigeneLookup(probes)
+      case MiRNA      => resolveMiRNA(probes, false)
+      case MRNA       => resolveMiRNA(probes, true)
+      case _          => super.associationLookup(at, sc, probes)
+    }
     }
   }

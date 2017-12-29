@@ -63,7 +63,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
   def main(args: Array[String]) {
     implicit val c = initContext(getBaseConfig)
 
-    if (args.length < 1) {
+    if (args.length < 1 || args(0) == "help") {
       showHelp()
       sys.exit(1)
     }
@@ -83,8 +83,8 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
   }
 
   protected def showHelp() {
-    println("Please supply one of the following commands")
-    println(" batch, instance, platform, matrix, help")
+    println("Please supply one of the following commands:")
+    println(" batch, instance, platform, matrix")
   }
 
   protected def handleArgs(args: Array[String])(implicit context: C) {
@@ -93,7 +93,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
       case "matrix"   => MatrixManager(args.drop(1), this)
-      case "help"     => showHelp()
+      case _ => showHelp()
     }
   }
 

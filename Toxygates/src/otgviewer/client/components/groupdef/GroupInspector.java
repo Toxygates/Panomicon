@@ -24,17 +24,6 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.google.gwt.cell.client.*;
-import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
@@ -45,6 +34,16 @@ import t.model.SampleClass;
 import t.model.sample.CoreParameter;
 import t.viewer.client.*;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
@@ -115,19 +114,14 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     });
     toolPanel.add(txtbxGroup);
 
-    saveButton = new Button("Save", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent ce) {
+    saveButton = new Button("Save", (ClickHandler) e -> {     
         makeGroup(txtbxGroup.getValue());
-      }
-    });
+      });
+
     toolPanel.add(saveButton);
 
-    autoGroupsButton = new Button("Automatic groups", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent ce) {
-        makeAutoGroups();
-      }
+    autoGroupsButton = new Button("Automatic groups", (ClickHandler) e -> {
+      makeAutoGroups();      
     });
     toolPanel.add(autoGroupsButton);
 

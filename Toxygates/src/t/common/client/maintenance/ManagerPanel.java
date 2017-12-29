@@ -25,8 +25,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.client.Command;
-import t.common.client.Resources;
+import t.common.client.*;
 import t.common.shared.ManagedItem;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -39,7 +38,7 @@ abstract public class ManagerPanel<T extends ManagedItem> {
   //For example, SimplePager.
   //A page size of <= 20 is best to reduce the number of queries made to the server.
   private CellTable<T> table = t.common.client.Utils.makeTable(100);
-  List<Command> cmds = new ArrayList<Command>();
+  List<RunCommand> cmds = new ArrayList<RunCommand>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
   private final String editCaption;
   protected final Resources resources;
@@ -50,13 +49,11 @@ abstract public class ManagerPanel<T extends ManagedItem> {
       boolean buttonsNorth) {
     this.editCaption = editCaption;
     this.resources = resources;
-    cmds.add(new Command("Add new...") {
-      public void run() {
-        if (confirmAddNew()) {
-          showEditor(null, true);
-        }
+    cmds.add(new RunCommand("Add new...", () -> {
+      if (confirmAddNew()) {
+        showEditor(null, true);
       }
-    });
+    }));
 
     StandardColumns<T> sc = new StandardColumns<T>(table) {
       void onDelete(T object) {
@@ -95,7 +92,7 @@ abstract public class ManagerPanel<T extends ManagedItem> {
 
   protected void addMidColumns(CellTable<T> table) {}
 
-  public List<Command> commands() {
+  public List<RunCommand> commands() {
     return cmds;
   }
 

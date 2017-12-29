@@ -25,8 +25,6 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -37,24 +35,25 @@ import com.google.gwt.view.client.NoSelectionModel;
 
 public class Utils {
 
-  public static Widget makeButtons(List<Command> commands) {
+  public static Widget makeButtons(List<RunCommand> commands) {
     HorizontalPanel buttons = new HorizontalPanel();
     buttons.setSpacing(4);
-    for (final Command c : commands) {
+    for (final RunCommand c : commands) {
       Button b = makeButton(c);
       buttons.add(b);
     }
     return buttons;
   }
 
-  public static Button makeButton(final Command c) {
+  public static Button makeButton(final RunCommand c) {
     Button b = new Button(c.getTitle());
-    b.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        c.run();
-      }
-    });
+    b.addClickHandler(e -> c.run());      
+    return b;
+  }
+  
+  public static Button makeButton(String label, Runnable r) {
+    Button b = new Button(label);
+    b.addClickHandler(e -> r.run());      
     return b;
   }
 

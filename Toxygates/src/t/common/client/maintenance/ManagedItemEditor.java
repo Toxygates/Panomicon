@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import t.common.client.Command;
+import t.common.client.RunCommand;
 import t.common.shared.ManagedItem;
 
 import com.google.gwt.user.client.Window;
@@ -77,23 +77,14 @@ public abstract class ManagedItemEditor extends Composite {
   }
 
   protected void addCommands() {
-    List<Command> cmds = new ArrayList<Command>();
-    Command c = new Command("OK") {
-      @Override
-      public void run() {
-        triggerEdit();
-      }
-    };
+    List<RunCommand> cmds = new ArrayList<RunCommand>();
+    RunCommand c = new RunCommand("OK", () -> triggerEdit());      
     cmds.add(c);
 
-    c = new Command("Cancel") {
-      @Override
-      public void run() {
-        onFinishOrAbort();
-        onAbort();
-      }
-
-    };
+    c = new RunCommand("Cancel", () -> {      
+      onFinishOrAbort();
+      onAbort();      
+    });
     cmds.add(c);
 
     Widget btns = makeButtons(cmds);

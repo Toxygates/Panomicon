@@ -29,40 +29,43 @@ import t.sparql.Instances
 object InstanceManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
 
-    val instances = new Instances(context.config.triplestore)
+    if (args.size < 1) {
+      showHelp()
+    } else {
+      val instances = new Instances(context.config.triplestore)
+      args(0) match {
+        case "add" =>
+          expectArgs(args, 2)
+          //TODO move verification into the instances API
+          if (!instances.list.contains(args(1))) {
+            instances.add(args(1))
+          } else {
+            val msg = s"Instance ${args(1)} already exists"
+            throw new Exception(msg)
+          }
 
-    args(0) match {
-      case "add" =>
-        expectArgs(args, 2)
-        //TODO move verification into the instances API
-        if (!instances.list.contains(args(1))) {
-          instances.add(args(1))
-        } else {
-          val msg = s"Instance ${args(1)} already exists"
-          throw new Exception(msg)
-        }
+        case "list" =>
+          println("Instance list")
+          for (i <- instances.list) println(i)
+          println("(end of list)")
 
-      case "list" =>
-        println("Instance list")
-        for (i <- instances.list) println(i)
-        println("(end of list)")
+        case "delete" =>
+          expectArgs(args, 2)
+          if (instances.list.contains(args(1))) {
+            instances.delete(args(1))
+          } else {
+            val msg = s"Instance ${args(1)} does not exist"
+            throw new Exception(msg)
+          }
 
-      case "delete" =>
-        expectArgs(args, 2)
-        if (instances.list.contains(args(1))) {
-          instances.delete(args(1))
-        } else {
-          val msg = s"Instance ${args(1)} does not exist"
-          throw new Exception(msg)
-        }
-
-      //TODO: Management of other functions, such as access/visibility
-      case "help" => showHelp()
+        //TODO: Management of other functions, such as access/visibility
+        case "help" => showHelp()
+      }
     }
   }
 
   def showHelp() {
-
+    println("Please specify a command (add/list/delete)")
   }
 
 }

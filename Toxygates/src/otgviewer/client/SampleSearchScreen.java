@@ -10,7 +10,6 @@ import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
@@ -76,17 +75,13 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   private void makeTools() {
     conditionEditor = new ConditionEditor(searchParameters);
 
-    Button searchButton = new Button("Search");
-    searchButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    Button searchButton = new Button("Search", (ClickHandler) e -> {
         if (individualSearchRadioButton.getValue()) {
           sampleSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
         } else if (unitSearchRadioButton.getValue()) {
           unitSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
         }
-      }
-    });
+      });
 
     individualSearchRadioButton = new RadioButton("searchTypeGroup", "Individual samples");
     unitSearchRadioButton = new RadioButton("searchTypeGroup", "Sample units");
@@ -98,9 +93,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     
     resultCountLabel = new Label();
 
-    saveGroupButton = new Button("Save sample group", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
+    saveGroupButton = new Button("Save sample group", (ClickHandler) ev -> {
         try {
           if (currentSearch.helper().selectionTable().getSelection().size() > 0) {
             Unit[] allUnits = currentSearch.sampleGroupFromSelected();
@@ -121,9 +114,8 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
           }
         } catch (Exception e) {
           Window.alert("Saving group failed: " + e);
-        }
-      }
-    });
+        }    
+      });
     saveGroupButton.setEnabled(false);
 
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,

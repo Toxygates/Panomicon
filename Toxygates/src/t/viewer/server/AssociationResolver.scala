@@ -41,21 +41,22 @@ class AssociationResolver(probeStore: Probes,
   /**
    * Look up a single association type for the given set of probes.
    */
-  def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap =
+  def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
+    import AType._
     at match {
       // The type annotation :BBMap is needed on at least one (!) match pattern
       // to make the match statement compile. TODO: research this
-      case _: AType.Uniprot.type   => proteins: BBMap
-      case _: AType.GO.type        => probeStore.goTerms(probes)
-
-      case _: AType.KEGG.type =>
+      case Uniprot => proteins: BBMap
+      case GO      => probeStore.goTerms(probes)
+      case KEGG =>
         toBioMap(probes, (_: Probe).genes) combine
           b2rKegg.forGenes(probes.flatMap(_.genes))
-//      case _: AType.Enzymes.type =>
+//      case Enzymes =>
 //        val sp = asSpecies(sc)
 //        b2rKegg.enzymes(probes.flatMap(_.genes), sp)
       case _ => throw new Exception("Unexpected annotation type")
     }
+  }
 
   val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
   val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))

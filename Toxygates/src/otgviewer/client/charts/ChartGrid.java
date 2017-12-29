@@ -22,10 +22,6 @@ import static otg.model.sample.OTGAttribute.Organism;
 
 import java.util.List;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
-
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -37,6 +33,8 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.ProbeServiceAsync;
+
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A grid to display time (or dose) series charts for a number of probes and doses (or times).
@@ -198,17 +196,14 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     
     vp.add(chartFor(dt, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount));
     Anchor a = new Anchor("Download");
-    a.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        // Larger chart
-        VerticalPanel vp = new VerticalPanel();
-        Widget w = chartFor(dt, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount);
-        vp.add(w);
-        vp.add(downloadLink);
-        Utils.displayInPopup("Large chart", vp, DialogPosition.Center);
-        Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_MAGNIFY_CHART);
-      }
+    a.addClickHandler(e -> {
+      // Larger chart
+      VerticalPanel vpl = new VerticalPanel();
+      Widget w = chartFor(dt, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount);
+      vpl.add(w);
+      vpl.add(downloadLink);
+      Utils.displayInPopup("Large chart", vpl, DialogPosition.Center);
+      Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_MAGNIFY_CHART);
     });
     vp.add(a);
 
