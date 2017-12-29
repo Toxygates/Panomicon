@@ -43,7 +43,7 @@ public class StringArrayTable extends Composite {
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 
     for (int i = 0; i < data[0].length; ++i) {
-      t.common.client.Utils.makeColumn(table, i, data[0][i], "12em");
+      Utils.makeColumn(table, i, data[0][i], "12em");
     }
 
     String[][] disp = Arrays.copyOfRange(data, 1, data.length);
