@@ -73,21 +73,22 @@ object Conversions {
   }
 
   implicit def asScala(rr: RankRule): SeriesRanking.RankType = {
+    import RuleType._
     rr.`type`() match {
-      case s: RuleType.Synthetic.type  => {
+      case Synthetic => {
         println("Correlation curve: " + rr.data.toVector)
         SeriesRanking.MultiSynthetic(rr.data.toVector)
       }
-      case _: RuleType.HighVariance.type => SeriesRanking.HighVariance
-      case _: RuleType.LowVariance.type => SeriesRanking.LowVariance
-      case _: RuleType.Sum.type => SeriesRanking.Sum
-      case _: RuleType.NegativeSum.type => SeriesRanking.NegativeSum
-      case _: RuleType.Unchanged.type => SeriesRanking.Unchanged
-      case _: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing
-      case _: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing
-      case _: RuleType.MaximalFold.type => SeriesRanking.MaxFold
-      case _: RuleType.MinimalFold.type => SeriesRanking.MinFold
-      case _: RuleType.ReferenceCompound.type => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
+      case HighVariance      => SeriesRanking.HighVariance
+      case LowVariance       => SeriesRanking.LowVariance
+      case Sum               => SeriesRanking.Sum
+      case NegativeSum       => SeriesRanking.NegativeSum
+      case Unchanged         => SeriesRanking.Unchanged
+      case MonotonicUp       => SeriesRanking.MonotonicIncreasing
+      case MonotonicDown     => SeriesRanking.MonotonicDecreasing
+      case MaximalFold       => SeriesRanking.MaxFold
+      case MinimalFold       => SeriesRanking.MinFold
+      case ReferenceCompound => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
     }
   }
 }
