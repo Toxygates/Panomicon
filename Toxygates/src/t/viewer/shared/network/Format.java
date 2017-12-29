@@ -5,7 +5,8 @@ package t.viewer.shared.network;
  */
 public enum Format {
   DOT("dot"),
-  Custom("txt");
+  Custom("txt"),
+  SIF("sif");
   
   Format(String suffix) {
     this.suffix = suffix;

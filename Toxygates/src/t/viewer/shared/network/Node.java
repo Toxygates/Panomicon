@@ -2,17 +2,32 @@ package t.viewer.shared.network;
 
 import java.io.Serializable;
 
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.AssociationValue;
+
 @SuppressWarnings("serial")
 public class Node implements Serializable {
-  String id;
-  String type;
+  String id, type, symbol;
   double weight;
   
   //GWT constructor
   Node() {}
   
-  public Node(String id, String type, double weight) {
+
+  public static Node fromRow(ExpressionRow row, String type) {
+    return new Node(row.getProbe(), 
+      SharedUtils.mkString(row.getGeneSyms(), "/"), type, row.getValue(0).getValue());        
+  }
+  
+  public static Node fromAssociation(AssociationValue av, String type) {
+    //Bogus node weight
+    return new Node(av.formalIdentifier(), av.title(), type, 1.0);
+  }
+  
+  public Node(String id, String symbol, String type, double weight) {
     this.id = id;
+    this.symbol = symbol;
     this.type = type;
     this.weight = weight;
   }
@@ -33,4 +48,6 @@ public class Node implements Serializable {
   public String id() { return id; }
   public String type() { return type; }
   public double weight() { return weight; }
+  public String symbol() { return symbol; }
+  
 }

@@ -7,8 +7,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
-import t.common.shared.AType;
-import t.common.shared.GroupUtils;
+import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
@@ -247,16 +246,17 @@ public class DualDataScreen extends DataScreen {
     }
   }
   
+  
+  
   /**
    * Build Nodes by using expression values from the first column in the rows.
    * @param type
    * @param rows
    * @return
    */
-  public List<Node> buildNodes(String kind, List<ExpressionRow> rows) {
+  static List<Node> buildNodes(String kind, List<ExpressionRow> rows) {
     return rows.stream().map(r -> 
-      new Node(r.getProbe(), kind, r.getValue(0).getValue())).
-      collect(Collectors.toList());    
+      Node.fromRow(r, kind)).collect(Collectors.toList());    
   }
   
   protected Map<ExpressionRow, Collection<AssociationValue>> mrnaToMirnaMap() {    
@@ -276,9 +276,8 @@ public class DualDataScreen extends DataScreen {
     Map<ExpressionRow, Collection<AssociationValue>> fullMap = mrnaToMirnaMap();
     for (ExpressionRow row: fullMap.keySet()) {
       for (AssociationValue av: fullMap.get(row)) {
-        //Bogus node weight here
-        Node from = new Node(av.formalIdentifier(), sideTableType, 1.0);
-        Node to = new Node(row.getProbe(), mainTableType, 1.0);        
+        Node from = Node.fromAssociation(av, sideTableType);
+        Node to = Node.fromRow(row, mainTableType);         
         Interaction i = new Interaction(from, to, null, null);
         interactions.add(i);
       }

@@ -5,14 +5,20 @@ import java.io.PrintWriter
 import scala.collection.JavaConversions._
 import t.util.SafeMath
 
+sealed trait NetworkStyle
+case object IDOnly extends NetworkStyle
+case object SymbolOnly extends NetworkStyle
+case object IDAndSymbol extends NetworkStyle
+
 /**
  * Serializes interaction networks and writes them to files.
  */
-class Serializer(network: Network) {
+class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
   def writeTo(file: String, format: Format) {
     format match {
-      case _: Format.DOT.type => writeDOT(file)
-      case _: Format.Custom.type => writeCustom(file)
+      case Format.DOT => writeDOT(file)
+      case Format.Custom => writeCustom(file)
+      case Format.SIF => writeSIF(file)
       case _ => throw new Exception("Unsupported format")
     }
   }
@@ -35,6 +41,13 @@ class Serializer(network: Network) {
   }
 
   /*
+   * Reference: http://manual.cytoscape.org/en/stable/Supported_Network_File_Formats.html#sif-format
+   */
+  def writeSIF(file: String) {
+    
+  }
+  
+  /*
    * Reference: http://www.graphviz.org/pdf/dotguide.pdf
    */
   def writeDOT(file: String) {
@@ -46,7 +59,7 @@ class Serializer(network: Network) {
         |  ranksep=1;""".stripMargin)
 
       for (n <- network.nodes) {
-        w.println(s"""  "${n.id}" [label="${n.id}", ${attributes(n)}]; """)
+        w.println(s"""  "${n.id}" [label="${nodeLabel(n)}", ${attributes(n)}]; """)
       }
 
       for (i <- network.interactions) {
@@ -57,6 +70,16 @@ class Serializer(network: Network) {
     } finally {
       w.close()
     }
+  }
+  
+  def nodeLabel(n: Node) = style match {
+    case IDOnly => n.id()
+    case SymbolOnly => n.symbol()
+    case IDAndSymbol =>
+      if (n.symbol != null && n.symbol != "")
+        s"${n.symbol} [${n.id}]"
+      else
+        n.id
   }
 
   val maxWeight = SafeMath.safeMax(network.nodes.map(_.weight))
