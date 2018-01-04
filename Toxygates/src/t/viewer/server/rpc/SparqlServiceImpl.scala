@@ -91,6 +91,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
+
+    //throw new Exception
+
     //TODO if staticInit does not read platformsAndProbes, some sparql queries
     //fail on startup in Toxygates (probably due to a race condition).
     //Figure out why.
@@ -151,7 +154,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
 
-  def appInfo(@Nullable userKey: String): AppInfo = safely {
+  def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
     val appInfo = appInfoLoader.latest
@@ -285,27 +288,24 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
   @throws[TimeoutException]
-  def annotations(barcode: Sample): Annotation = safely {
+  def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
     annotations.fromAttributes(barcode, params)
   }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = safely {
+  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = 
     annotations.forSamples(sampleStore, samples, attributes)
-  }
-
+  
   @throws[TimeoutException]
-  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = safely {
+  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = 
     annotations.forSamples(sampleStore, column.getSamples, importantOnly)
-  }
-
+  
   //TODO bio-param timepoint handling
   @throws[TimeoutException]
-  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
+  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = 
     annotations.prepareCSVDownload(sampleStore, column.getSamples,
         configuration.csvDirectory, configuration.csvUrlBase)
-  }
 
   @throws[TimeoutException]
   def pathways(pattern: String): Array[String] =
@@ -407,9 +407,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] = safely {
+    _probes: Array[String]): Array[Association] = 
     new AssociationResolver(probeStore, b2rKegg, sc, types, _probes).resolve
-  }
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {

@@ -58,4 +58,9 @@ abstract class TServiceServlet extends RemoteServiceServlet {
       t.printStackTrace()
       throw t
   }
+
+  override def doUnexpectedFailure(t: Throwable) {
+    t.printStackTrace()
+    super.doUnexpectedFailure(t)
+  }
 }

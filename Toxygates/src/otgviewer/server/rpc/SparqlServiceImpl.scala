@@ -126,11 +126,10 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
         otgviewer.server.rpc.Conversions.asJava(_))
 
   override def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] = safely {
+    _probes: Array[String]): Array[Association] =
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
         targetmine,
         sc, types, _probes).resolve
-  }
 
 }
