@@ -19,16 +19,16 @@ trait SampleSet {
   /**
    * Obtain all available attributes for a given sample.
    */
-  def attributes(sample: Sample): Seq[(Attribute, String)]
+  def sampleAttributes(sample: Sample): Seq[(Attribute, String)]
 
   /**
    * Query several sample attributes at once for a given sample.
    * @param querySet the attributes to query, or all if the set is empty.
    */
-  def attributes(sample: Sample,
+  def sampleAttributes(sample: Sample,
     querySet: Iterable[Attribute]): Seq[(Attribute, String)] = {
     val qs = querySet.toSet
-    val ps = attributes(sample)
+    val ps = sampleAttributes(sample)
     if (querySet.isEmpty)
       ps
     else
@@ -38,11 +38,11 @@ trait SampleSet {
   /**
    * Query a specific attribute for a given sample.
    */
-  def attribute(sample: Sample, attrib: Attribute): Option[String] =
-    attributes(sample, Seq()).find(_._1 == attrib).map(_._2)
+  def sampleAttribute(sample: Sample, attrib: Attribute): Option[String] =
+    sampleAttributes(sample, Seq()).find(_._1 == attrib).map(_._2)
 
   @deprecated("Query by Attribute instead.", "June 2017")
   def parameter(sample: Sample, parameter: String): Option[String] =
-    attributes(sample, Seq()).find(_._1.id == parameter).map(_._2)
+    sampleAttributes(sample, Seq()).find(_._1.id == parameter).map(_._2)
 
 }

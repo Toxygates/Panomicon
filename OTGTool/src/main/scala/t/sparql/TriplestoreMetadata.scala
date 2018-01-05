@@ -31,13 +31,13 @@ import t.model.sample.AttributeSet
  * @param sampleStore The triplestore to be queried.
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(sampleStore: Samples, val attributes: AttributeSet,
+class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
     querySet: Iterable[Attribute] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
   override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
 
-  override def attributes(s: Sample): Seq[(Attribute, String)] = {
+  override def sampleAttributes(s: Sample): Seq[(Attribute, String)] = {
     sampleStore.parameterQuery(s.identifier, querySet).collect( {
       case (sp, Some(s)) => (sp, s)
     })

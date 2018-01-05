@@ -70,7 +70,7 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
  * A VarianceSet that retrieves attribute values from a SampleSet
  */
 class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends t.db.VarianceSet {
-  val paramVals = samples.map(Map() ++ sampleSet.attributes(_))
+  val paramVals = samples.map(Map() ++ sampleSet.sampleAttributes(_))
 
   def varAndMean(param: Attribute): Option[(Double, Double)] = {
     val vs = paramVals.flatMap(_.get(param))
@@ -104,7 +104,7 @@ object BioParameter {
          val m = data.parameterMap(s)
          m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
        })
-       val rawValues = samples.map(s => data.attributes(s))
+       val rawValues = samples.map(s => data.sampleAttributes(s))
        for (attr <- attrs.getAll; if attr.isNumerical()) {
          if (!out.contains(attr)) {
            out += attr -> Seq()

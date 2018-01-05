@@ -96,9 +96,9 @@ object TestData {
     def parameterValues(identifier: String): Set[String] =
       enumMaps(identifier).keySet
 
-    def attributes = otg.model.sample.AttributeSet.getDefault
+    def attributeSet = otg.model.sample.AttributeSet.getDefault
 
-    def attributes(s: Sample): Seq[(Attribute, String)] = {
+    def sampleAttributes(s: Sample): Seq[(Attribute, String)] = {
       samples.find(_ == s).get.sampleClass.getMap.toSeq ++ Seq(
           (LiverWeight, "" + liverWeight(s)),
           (KidneyWeight, "" + kidneyWeight(s))

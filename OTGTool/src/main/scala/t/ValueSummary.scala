@@ -56,7 +56,7 @@ case class AttribValueSummary(samples: Samples, attribName: String)
 
   def check(md: Metadata, samples: Iterable[Sample]) {
     for (
-      s <- samples; a <- md.attributes(s);
+      s <- samples; a <- md.sampleAttributes(s);
       if (a._1.id == attribName)
     ) {
       check(a._2)
