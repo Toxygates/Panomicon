@@ -24,7 +24,6 @@ case class Feature(data: Seq[String]) {
       sp <- Species.values.find(s => prod.startsWith(s.shortCode));
       mr = MirnaRecord(prod, acc, sp, prod)
     ) yield mr
-
 }
 
 case class RawRecord(data: Seq[String]) {
@@ -39,6 +38,27 @@ case class RawRecord(data: Seq[String]) {
 
   def features: Iterable[Feature] =
     featuresFrom(data.filter(_.startsWith("FT")))
+
+  val SeqRegex = "([actugACTUG]+)".r
+
+  /*
+   * Example:
+   *
+     SQ   Sequence 99 BP; 26 A; 19 C; 24 G; 0 T; 30 other;
+        uacacugugg auccggugag guaguagguu guauaguuug gaauauuacc accggugaac        60
+        uaugcaauuu ucuaccuuac cggagacaga acucuucga                               99
+     //
+   */
+  def sequence: Option[String] = {
+    val i = data.indexWhere(_.startsWith("SQ"))
+    if (i == -1) {
+      None
+    } else {
+      val parts = data.drop(i + 1).takeWhile(_.startsWith("  "))
+      val subParts = parts.flatMap(p => p.split("\\s+").collect({ case SeqRegex(s) => s }))
+      Some(subParts.mkString(""))
+    }
+  }
 
   def mirnaFeatures = features.filter(_.featureType == "miRNA")
 
@@ -55,6 +75,8 @@ object MiRBaseConverter {
 
   def main(args: Array[String]) {
       val lines = Source.fromFile(args(0)).getLines()
+      val command = args(1)
+
       var (record, next) = lines.span(! _.startsWith("//"))
 
       def remainingRecords: Stream[RawRecord] = {
@@ -67,9 +89,21 @@ object MiRBaseConverter {
         }
       }
 
-      val mrecs = remainingRecords.flatMap(_.mirnaRecords)
-      for (mr <- mrecs) {
-        println(mr.asTPlatformRecord)
-      }
+    command match {
+      case "tplatform" =>
+        val mrecs = remainingRecords.flatMap(_.mirnaRecords)
+        for (mr <- mrecs) {
+          println(mr.asTPlatformRecord)
+        }
+      case "sequences" =>
+        for (
+          rr <- remainingRecords;
+          seq <- rr.sequence;
+          mr <- rr.mirnaRecords
+        ) {
+          println(s"${mr.id}\t$seq")
+        }
+      case _ => throw new Exception("Unknown command. Please specify either tplatform or sequences.")
+    }
   }
 }
