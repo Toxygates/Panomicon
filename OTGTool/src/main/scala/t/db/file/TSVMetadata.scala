@@ -35,18 +35,18 @@ object TSVMetadata {
   def apply(fact: Factory, file: String, attributes: AttributeSet): Metadata = {
     val metadata: Map[String, Seq[String]] = {
       val columns = TSVFile.readMap("", file)
-      columns.flatMap(x => {
-        val lc = x._1.toLowerCase().trim
-        //Normalise the upper/lowercase-ness and remove unknown columns
-        val trimmed = x._2.map(_.trim)
-        attributes.byIdLowercase.get(lc).map(_.id -> trimmed)
-      })
+      Map() ++ (for {
+        column <- columns
+        lowerCase = column._1.toLowerCase().trim
+        trimmed = column._2.map(_.trim)
+        attribute <- attributes.byIdLowercase.get(lowerCase)
+      } yield attribute.id -> trimmed)
     }
 
-    val req = attributes.getRequired().map(_.id).map(_.toLowerCase)
-    val neColumns = req.filter(!metadata.keySet.contains(_))
-    if (!neColumns.isEmpty) {
-      println(s"The following columns are missing in $file: $neColumns")
+    val required = attributes.getRequired().map(_.id).map(_.toLowerCase)
+    val missingColumns = required.filter(!metadata.keySet.contains(_))
+    if (!missingColumns.isEmpty) {
+      println(s"The following columns are missing in $file: $missingColumns")
       throw new Exception("Missing columns in metadata")
     }
 
@@ -99,7 +99,7 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
   }
 
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {
-    val nm = metadata + (key -> metadata(key).map(f))
-    fact.metadata(nm, attributeSet)
+    val newMap = metadata + (key -> metadata(key).map(f))
+    fact.metadata(newMap, attributeSet)
   }
 }
