@@ -59,10 +59,14 @@ object BatchManager extends ManagerTool {
           val bm = new BatchManager(context)
           new Platforms(config).populateAttributes(config.attributes)
 
-          val metaList = stringListOption(args, "-multiMetadata")
+          val metaList = stringListOption(args, "-multiMetadata") orElse
+            stringListOption(args, "-multimetadata")
           metaList match {
             case Some(ml) =>
               KCDBRegistry.setMaintenance(true)
+              // For the first metadata file, we use the value of the -append argument; for all other
+              // the batch will certainly exist so we always append
+              var first = true
               for (mf <- ml) {
                 val md = factory.tsvMetadata(mf, config.attributes)
                 val dataFile = mf.replace(".meta.tsv", ".data.csv")
@@ -72,7 +76,8 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 addTasklets(bm.add(title, comment,
                   md, dataFile, callFile,
-                  append, config.seriesBuilder))
+                  if (first) append else true, config.seriesBuilder))
+                first = false
               }
             case None =>
               val metaFile = require(stringOption(args, "-metadata"),
