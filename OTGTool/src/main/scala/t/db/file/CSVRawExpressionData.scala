@@ -124,7 +124,7 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
 
   private[this] def readCalls(file: String, ss: Set[Sample]): CMap[Sample, CMap[String, Char]] = {
     //take the second char in a string like "A" or "P"
-    readValuesFromTable(file, ss, x => x(1))
+    readValuesFromTable(file, ss, x => unquote(x)(0))
   }
 
   /**
