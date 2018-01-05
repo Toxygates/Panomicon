@@ -51,12 +51,9 @@ abstract class TServiceServlet extends RemoteServiceServlet {
 
   protected def appName: String
 
-  protected def safely[T](fn: => T): T = try {
-    fn
-  } catch {
-    case t: Throwable =>
-      t.printStackTrace()
-      throw t
+  override def doUnexpectedFailure(t: Throwable) {
+    t.printStackTrace()
+    super.doUnexpectedFailure(t)
   }
 }
 
@@ -86,9 +83,4 @@ abstract class StatefulServlet[State] extends TServiceServlet {
 
   protected def setState(m: State) =
     getThreadLocalRequest().getSession().setAttribute(stateKey, m)
-
-  override def doUnexpectedFailure(t: Throwable) {
-    t.printStackTrace()
-    super.doUnexpectedFailure(t)
-  }
 }

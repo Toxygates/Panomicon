@@ -29,7 +29,7 @@ import t.viewer.shared.mirna.MirnaSource
 
 class ProbeState {
   var mirnaSources: Array[MirnaSource] = Array()
-  
+
   /*
    * Currently, the only use of this is in the association resolver,
    * which needs it for chembl/drugbank target lookup.
@@ -41,7 +41,7 @@ object ProbeServiceImpl {
   val APPINFO_KEY = "appInfo"
 }
 
-abstract class ProbeServiceImpl extends StatefulServlet[ProbeState] 
+abstract class ProbeServiceImpl extends StatefulServlet[ProbeState]
 with ProbeService {
   import ProbeServiceImpl._
   import ScalaUtils._
@@ -49,7 +49,7 @@ with ProbeService {
 
   private def probeStore: Probes = context.probes
   protected var instanceURI: Option[String] = None
-  
+
   protected var uniprot: Uniprot = _
   protected lazy val b2rKegg: B2RKegg =
     new B2RKegg(baseConfig.triplestore.triplestore)
@@ -60,7 +60,7 @@ with ProbeService {
   //This is to allow updates such as clusterings, annotation info etc to feed through.
   protected val appInfoLoader: Refreshable[AppInfo] =
     new PeriodicRefresh[AppInfo]("AppInfo", 3600 * 24) {
-      def reload(): AppInfo = safely {
+      def reload(): AppInfo = {
         reloadAppInfo
       }
     }
@@ -69,14 +69,14 @@ with ProbeService {
     super.localInit(conf)
     this.configuration = conf
     this.instanceURI = conf.instanceURI
-    
+
     val triplestore = baseConfig.triplestore.triplestore
-    uniprot = new LocalUniprot(triplestore)    
+    uniprot = new LocalUniprot(triplestore)
     populateAttributes(baseConfig)
     //Preload
     appInfoLoader.latest
   }
-  
+
   /**
    * From the triplestore, read attributes that do not yet exist
    * in the attribute set and populate them once.
@@ -85,10 +85,10 @@ with ProbeService {
     val platforms = new t.sparql.Platforms(bc)
     platforms.populateAttributes(bc.attributes)
   }
-  
+
   protected def stateKey = "probes"
   protected def newState = new ProbeState
-  
+
   protected def reloadAppInfo =
     new AppInfoLoader(probeStore, configuration, baseConfig,
       appName).load
@@ -106,15 +106,15 @@ with ProbeService {
     r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
     r.toArray
   }
-  
+
   /**
    * Get the latest AppInfo and adjust it w.r.t. the given user key.
    * Care must be taken not to expose sensitive data.
    * This call must be made before any other call to ProbeServiceImpl or SampleServiceImpl.
    */
-  def appInfo(@Nullable userKey: String): AppInfo = safely {
+  def appInfo(@Nullable userKey: String): AppInfo = {
     getState.sampleFilter = SampleFilter(instanceURI = instanceURI)
-    
+
     val appInfo = appInfoLoader.latest
 
     /*
@@ -140,7 +140,7 @@ with ProbeService {
 
     //Keep this up-to-date also in the session
     getThreadLocalRequest.getSession.setAttribute(APPINFO_KEY, appInfo)
-        
+
     appInfo
   }
 
@@ -183,7 +183,7 @@ with ProbeService {
         probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
     }.toArray
   }
-  
+
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
     probesForGoTerm(goTerm, null)
@@ -247,7 +247,7 @@ with ProbeService {
   def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
     filterProbesByGroupInner(probes, samples).toArray
   }
-  
+
    @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
       val plat = for (scl <- Option(sc);
@@ -255,11 +255,11 @@ with ProbeService {
         pl <- Option(schema.organismPlatform(org))) yield pl
 
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
-  }   
-   
+  }
+
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     getState().mirnaSources = sources
   }
-  
+
 }

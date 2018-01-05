@@ -130,7 +130,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   }
 
   @throws(classOf[NoDataLoadedException])
-  def setColumnFilter(id: String, column: Int, f: ColumnFilter): ManagedMatrixInfo = safely {
+  def setColumnFilter(id: String, column: Int, f: ColumnFilter): ManagedMatrixInfo = {
     val mm = getState.matrix(id)
 
     println(s"Filter for column $column: $f")
@@ -140,7 +140,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   @throws(classOf[NoDataLoadedException])
   def matrixRows(id: String, offset: Int, size: Int, sortKey: SortKey,
-    ascending: Boolean): JList[ExpressionRow] = safely {
+    ascending: Boolean): JList[ExpressionRow] = {
     val cont = getState.controller(id)
     if (cont.managedMatrix.current.rows == 0) {
       new ArrayList[ExpressionRow](Seq(
@@ -339,7 +339,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
     names
 
-  def prepareNetworkDownload(network: Network, format: Format): String = safely {
+  def prepareNetworkDownload(network: Network, format: Format): String = {
     val s = new Serializer(network)
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)
