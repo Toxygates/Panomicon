@@ -78,14 +78,14 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   protected var configuration: Configuration = _
 
   private def probeStore: Probes = context.probes
-  
+
   lazy val annotations = new Annotations(schema, baseConfig,
         new Units(schema, sampleStore))
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
     staticInit(context)
-    this.configuration = conf   
+    this.configuration = conf
     this.instanceURI = conf.instanceURI
   }
 
@@ -100,7 +100,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     //Initialise the selected datasets by selecting all, except shared user data.
     val defaultVisible = appInfo.datasets.filter(ds =>
       !Dataset.isSharedDataset(ds.getTitle))
-    
+
     val s = new SampleState(instanceURI)
     s.sampleFilter = sampleFilterFor(defaultVisible, None)
     s
@@ -126,7 +126,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
      }
   }
 
-  def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = safely {
+  def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = {
     println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
     getState.sampleFilter = sampleFilterFor(ds, Some(getState.sampleFilter))
 
@@ -206,30 +206,27 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
   @throws[TimeoutException]
-  def annotations(barcode: Sample): Annotation = safely {
+  def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
     annotations.fromAttributes(barcode, params)
   }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = safely {
+  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] =
     annotations.forSamples(sampleStore, samples, attributes)
-  }
 
   @throws[TimeoutException]
-  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = safely {
+  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] =
     annotations.forSamples(sampleStore, column.getSamples, importantOnly)
-  }
 
   //TODO bio-param timepoint handling
   @throws[TimeoutException]
-  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
+  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String =
     annotations.prepareCSVDownload(sampleStore, column.getSamples,
       configuration.csvDirectory, configuration.csvUrlBase)
-  }
 
   import scala.collection.{ Map => CMap, Set => CSet }
- 
+
   def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int):
       RequestResult[Pair[Sample, Pair[Unit, Unit]]] = {
 

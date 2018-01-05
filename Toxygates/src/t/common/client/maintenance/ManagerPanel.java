@@ -18,26 +18,24 @@
 
 package t.common.client.maintenance;
 
-import static t.common.client.Utils.makeButtons;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.client.*;
-import t.common.shared.ManagedItem;
-
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.*;
+
+import t.common.client.*;
+import t.common.shared.ManagedItem;
 
 abstract public class ManagerPanel<T extends ManagedItem> {
 
   //TODO 100 is an arbitrary number - we should eventually have paging controls in the GUI.
   //For example, SimplePager.
   //A page size of <= 20 is best to reduce the number of queries made to the server.
-  private CellTable<T> table = t.common.client.Utils.makeTable(100);
+  private CellTable<T> table = Utils.makeTable(100);
   List<RunCommand> cmds = new ArrayList<RunCommand>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
   private final String editCaption;
@@ -56,10 +54,12 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     }));
 
     StandardColumns<T> sc = new StandardColumns<T>(table) {
+      @Override
       void onDelete(T object) {
         ManagerPanel.this.onDelete(object);
       }
 
+      @Override
       void onEdit(T object) {
         showEditor(object, false);
       }
@@ -70,9 +70,9 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     sc.addEndColumns();
 
     if (!buttonsNorth) {
-      dlp.addSouth(makeButtons(cmds), 35);
+      dlp.addSouth(Utils.makeButtons(cmds), 35);
     }
-    dlp.add(scrolled ? t.common.client.Utils.makeScrolled(table) : table);
+    dlp.add(scrolled ? Utils.makeScrolled(table) : table);
   }
 
   protected boolean confirmAddNew() { return true; }

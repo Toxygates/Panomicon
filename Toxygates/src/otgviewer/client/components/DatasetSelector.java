@@ -18,14 +18,12 @@
 
 package otgviewer.client.components;
 
-import static t.common.client.Utils.makeButtons;
-
 import java.util.*;
+
+import com.google.gwt.user.client.ui.*;
 
 import t.common.client.*;
 import t.common.shared.Dataset;
-
-import com.google.gwt.user.client.ui.*;
 
 public class DatasetSelector extends Composite {
   final static private String message = "Please select the datasets you want to work with.";
@@ -65,7 +63,7 @@ public class DatasetSelector extends Composite {
     List<RunCommand> commands = new ArrayList<RunCommand>();
     commands.add(new RunCommand("OK", () -> onOK()));
     commands.add(new RunCommand("Cancel", () -> onCancel()));      
-    vp.add(makeButtons(commands));
+    vp.add(Utils.makeButtons(commands));
   }
 
   protected Collection<Dataset> getSelected() {

@@ -57,7 +57,7 @@ abstract class TServiceServlet extends RemoteServiceServlet {
     case t: Throwable =>
       t.printStackTrace()
       throw t
-  }     
+  }
 }
 
 abstract class StatefulServlet[State] extends TServiceServlet {
@@ -87,4 +87,8 @@ abstract class StatefulServlet[State] extends TServiceServlet {
   protected def setState(m: State) =
     getThreadLocalRequest().getSession().setAttribute(stateKey, m)
 
+  override def doUnexpectedFailure(t: Throwable) {
+    t.printStackTrace()
+    super.doUnexpectedFailure(t)
+  }
 }

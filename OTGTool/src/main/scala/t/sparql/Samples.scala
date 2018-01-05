@@ -158,10 +158,10 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]]
 
-  def attributes(sample: Sample): Seq[(Attribute, String)] =
-    attributes(sample, Seq())
+  def sampleAttributes(sample: Sample): Seq[(Attribute, String)] =
+    sampleAttributes(sample, Seq())
 
-  override def attributes(sample: Sample,
+  override def sampleAttributes(sample: Sample,
     querySet: Iterable[Attribute]): Seq[(Attribute, String)] =
     parameterQuery(sample.sampleId, querySet).collect {
       case (sp, Some(v)) => (sp, v)

@@ -57,6 +57,7 @@ object BatchManager extends ManagerTool {
           }
 
           val bm = new BatchManager(context)
+          new Platforms(config).populateAttributes(config.attributes)
 
           val metaList = stringListOption(args, "-multiMetadata")
           metaList match {

@@ -35,15 +35,15 @@ class ControlGroupTest extends TTestSuite {
 
       if (isControl || s.sampleClass(Individual) == "2") {
          //healthy
-        metadata.attribute(s, LiverWeight).get.toDouble should
+        metadata.sampleAttribute(s, LiverWeight).get.toDouble should
           be (3.0 +- 0.1)
       } else {
         //unhealthy
-        metadata.attribute(s, LiverWeight).get.toDouble should
+        metadata.sampleAttribute(s, LiverWeight).get.toDouble should
           be (5.0 +- 0.1)
       }
 
-      val time = metadata.attribute(s, ExposureTime).get
+      val time = metadata.sampleAttribute(s, ExposureTime).get
       println(cg.paramVals)
 
       /*

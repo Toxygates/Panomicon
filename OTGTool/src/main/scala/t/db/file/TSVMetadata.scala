@@ -66,9 +66,9 @@ object TSVMetadata {
  * Metadata based on a map indexed by column.
  */
 class MapMetadata(val metadata: Map[String, Seq[String]],
-    val attributes: AttributeSet) extends Metadata {
+    val attributeSet: AttributeSet) extends Metadata {
 
-  val requiredColumns = attributes.getRequired.map(_.id.toLowerCase)
+  val requiredColumns = attributeSet.getRequired.map(_.id.toLowerCase)
 
   def samples: Iterable[Sample] = {
     val ids = metadata("sample_id")
@@ -85,21 +85,21 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
     }
   }
 
-  override def attributes(s: Sample): Seq[(Attribute, String)] = {
+  override def sampleAttributes(s: Sample): Seq[(Attribute, String)] = {
     val idx = getIdx(s)
-    metadata.map(column => (attributes.byId(column._1), column._2(idx))).toSeq
+    metadata.map(column => (attributeSet.byId(column._1), column._2(idx))).toSeq
   }
 
   def parameterValues(identifier: String): Set[String] =
     metadata(identifier).toSet
 
-  override def attribute(s: Sample, attribute: Attribute): Option[String] = {
+  override def sampleAttribute(s: Sample, attribute: Attribute): Option[String] = {
     val idx = getIdx(s)
     metadata.get(attribute.id).map(_(idx))
   }
 
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {
     val nm = metadata + (key -> metadata(key).map(f))
-    fact.metadata(nm, attributes)
+    fact.metadata(nm, attributeSet)
   }
 }

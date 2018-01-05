@@ -1,19 +1,16 @@
 package t.viewer.client.components.search;
 
-import static t.model.sample.CoreParameter.SampleId;
-
 import java.util.*;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.model.sample.Attribute;
-import t.model.sample.AttributeSet;
+import t.model.sample.*;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 
 public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>> {
@@ -32,7 +29,7 @@ public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>>
     unitPairsMap = new HashMap<String, Pair<Unit, Unit>>();
     for (Pair<Sample, Pair<Unit, Unit>> pair: result.items()) {
       samples.add(pair.first());
-      unitPairsMap.put(pair.first().get(SampleId), pair.second());
+      unitPairsMap.put(pair.first().get(CoreParameter.SampleId), pair.second());
     }
     searchResult = samples.toArray(new Sample[0]);
   }
@@ -88,7 +85,7 @@ public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>>
   public Unit[] sampleGroupFromEntities(Collection<Sample> samples) {
     Set<Unit> allUnits = new HashSet<Unit>();
     for (Sample sample : samples) {
-      Pair<Unit, Unit> units = unitPairsMap.get(sample.get(SampleId));
+      Pair<Unit, Unit> units = unitPairsMap.get(sample.get(CoreParameter.SampleId));
       allUnits.add(units.first());
       allUnits.add(units.second());
     }

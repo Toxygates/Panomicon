@@ -33,4 +33,5 @@ class SampleServiceImpl extends t.viewer.server.rpc.SampleServiceImpl with OTGSe
   override def pathologies(column: SampleColumn): Array[Pathology] =
     column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(
         otgviewer.server.rpc.Conversions.asJava(_))
+
 }

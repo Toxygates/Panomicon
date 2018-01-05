@@ -18,20 +18,17 @@
 
 package t.common.client.maintenance;
 
-import static t.common.client.Utils.makeButtons;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import t.common.client.RunCommand;
-import t.common.shared.ManagedItem;
-
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
+
+import t.common.client.RunCommand;
+import t.common.client.Utils;
+import t.common.shared.ManagedItem;
 
 
 public abstract class ManagedItemEditor extends Composite {
@@ -77,18 +74,23 @@ public abstract class ManagedItemEditor extends Composite {
   }
 
   protected void addCommands() {
-    List<RunCommand> cmds = new ArrayList<RunCommand>();
-    RunCommand c = new RunCommand("OK", () -> triggerEdit());      
-    cmds.add(c);
+    HorizontalPanel buttons = new HorizontalPanel();
+    buttons.setSpacing(4);
 
-    c = new RunCommand("Cancel", () -> {      
+    final Button okButton = new Button("OK");
+    okButton.addClickHandler(e -> {
+      okButton.setEnabled(false);
+      triggerEdit();
+    });
+    buttons.add(okButton);
+
+    Button cancelButton = Utils.makeButton(new RunCommand("Cancel", () -> {
       onFinishOrAbort();
       onAbort();      
-    });
-    cmds.add(c);
+    }));
+    buttons.add(cancelButton);
 
-    Widget btns = makeButtons(cmds);
-    vp.add(btns);
+    vp.add(buttons);
   }
 
   protected abstract void triggerEdit();

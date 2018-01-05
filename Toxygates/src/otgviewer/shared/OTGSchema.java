@@ -18,8 +18,6 @@
 
 package otgviewer.shared;
 
-import static otg.model.sample.OTGAttribute.TestType;
-
 import java.util.*;
 
 import otg.model.sample.OTGAttribute;
@@ -220,7 +218,8 @@ public class OTGSchema extends DataSchema {
    */
   @Override
   public int numDataPointsInSeries(SampleClass sc) {
-    if (sc.get(TestType) != null && sc.get(TestType).equals("in vitro")) {
+    if (sc.get(OTGAttribute.TestType) != null &&
+        sc.get(OTGAttribute.TestType).equals("in vitro")) {
       return 3;
     }
     return 4;

@@ -20,11 +20,11 @@ import t.viewer.shared.TimeoutException
 import t.viewer.shared.mirna.MirnaSource
 import otgviewer.server.AppInfoLoader
 
-class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl 
+class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otgviewer.client.rpc.ProbeService {
- 
+
   protected def sampleStore: otg.sparql.OTGSamples = context.samples
-    
+
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
   var homologene: B2RHomologene = _
@@ -43,15 +43,15 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
       case None =>
     }
   }
-  
+
   private def probeStore: otg.sparql.Probes = context.probes
-  
+
   override protected def reloadAppInfo = {
     val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load
     r.setPredefinedGroups(predefinedGroups)
     r
   }
-  
+
   @throws[TimeoutException]
   override def goTerms(pattern: String): Array[String] =
     probeStore.goTerms(pattern).map(_.name).toArray
@@ -94,11 +94,11 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val pmap = context.matrix.probeMap //TODO context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
-  
+
   override def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] = safely {
+    _probes: Array[String]): Array[Association] = {
     implicit val sf = getState.sampleFilter
-    
+
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
         targetmine, getState().mirnaSources,

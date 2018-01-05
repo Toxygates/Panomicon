@@ -18,24 +18,25 @@
 
 package t.admin.client;
 
-import static t.common.shared.maintenance.MaintenanceConstants.platformPrefix;
-
 import javax.annotation.Nullable;
+
+import com.google.gwt.user.client.ui.*;
 
 import t.admin.shared.PlatformType;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
-
-import com.google.gwt.user.client.ui.*;
+import t.common.shared.maintenance.MaintenanceConstants;
 
 public class PlatformUploader extends ItemUploader {
 
   UploadWrapper platform;
   RadioButton affyRadio, tRadio, bioRadio;
 
+  @Override
   protected void makeGUI(VerticalPanel vp) {
     platform =
-        new UploadWrapper(this, "Platform definition (CSV/TSV)", platformPrefix, "tsv", "csv");
+        new UploadWrapper(this, "Platform definition (CSV/TSV)",
+            MaintenanceConstants.platformPrefix, "tsv", "csv");
 
     vp.add(platform);
 
@@ -66,6 +67,7 @@ public class PlatformUploader extends ItemUploader {
     return r;
   }
 
+  @Override
   protected boolean canProceed() {
     return (platform.hasFile() && platformType() != null);
   }

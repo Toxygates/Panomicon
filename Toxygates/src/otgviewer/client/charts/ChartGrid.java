@@ -18,10 +18,11 @@
 
 package otgviewer.client.charts;
 
-import static otg.model.sample.OTGAttribute.Organism;
-
 import java.util.List;
 
+import com.google.gwt.user.client.ui.*;
+
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -33,8 +34,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.ProbeServiceAsync;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A grid to display time (or dose) series charts for a number of probes and doses (or times).
@@ -106,7 +105,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
             probe = rowFilters.get(r);
           }
           if (org != null) {
-            sc.put(Organism, org);
+            sc.put(OTGAttribute.Organism, org);
           }
           Attribute colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
           sc.put(colKey, minsOrMeds[c]);

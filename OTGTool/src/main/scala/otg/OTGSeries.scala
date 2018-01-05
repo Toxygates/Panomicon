@@ -103,7 +103,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   }
 
   def buildEmpty(x: Sample, md: Metadata) = {
-    val paramMap = Map() ++ md.attributes(x).map(x => x._1.id -> x._2)
+    val paramMap = Map() ++ md.sampleAttributes(x).map(x => x._1.id -> x._2)
         val r = paramMap("sin_rep_type")
         val d = paramMap(DoseLevel.id)
         val o = paramMap("organ_id")
@@ -128,7 +128,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         x <- xs;
         exprs = from.valuesInSample(x, Seq());
         presentExprs = exprs.filter(_.present);
-        time = md.attribute(x, ExposureTime).get
+        time = md.sampleAttribute(x, ExposureTime).get
       ) yield (time, x, presentExprs)
 
       val byTime = for (
