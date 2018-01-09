@@ -64,7 +64,7 @@ public class ProgressDisplay extends Composite {
     vp.add(sp);
     sp.setHeight("500px");
     sp.setWidth("500px");
-    addLog("Begin task: " + taskName);
+    addLog("Begin operation: " + taskName);
 
     HorizontalPanel hp = new HorizontalPanel();
     hp.setSpacing(4);
