@@ -51,11 +51,6 @@ object BatchManager extends ManagerTool {
           val append = booleanOption(args, "-append")
           val comment = stringOption(args, "-comment").getOrElse("")
 
-          if (batches.list.contains(title) && !append) {
-            val msg = s"Batch $title already exists. Did you mean to use -append?"
-            throw new Exception(msg)
-          }
-
           val bm = new BatchManager(context)
           new Platforms(config).populateAttributes(config.attributes)
 
@@ -224,7 +219,7 @@ class BatchManager(context: Context) {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
-    r :+= consistencyCheck(title, metadata, config)
+    r :+= consistencyCheck(title, metadata, config, append)
 
     if (!append) {
       r :+= addRecord(title, comment, config.triplestore)
@@ -269,21 +264,25 @@ class BatchManager(context: Context) {
     r
   }
 
-  def consistencyCheck(title: String, md: Metadata, c: BaseConfig) = new Tasklet("Consistency check") {
+  def consistencyCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
+      new Tasklet("Consistency check") {
+
     def run() {
       checkValidIdentifier(title, "batch ID")
 
-      val batches = new Batches(c.triplestore)
-      if (batches.list.contains(title)) {
-        log(s"The batch $title is already defined, assuming update/append")
+      val batches = new Batches(baseConfig.triplestore)
+      val batchExists = batches.list.contains(title)
+      if (append && !batchExists) {
+        throw new Exception(s"Cannot append to nonexsistent batch $title")
+      } else if (!append && batchExists) {
+        throw new Exception(s"Cannot create new batch $title: batch already exists")
       }
 
       val bsamples = batches.samples(title).toSet
-
       val ps = new Platforms(config)
       val platforms = ps.list.toSet
       val existingSamples = samples.list.toSet
-      for (s <- md.samples; p = md.platform(s)) {
+      for (s <- metadata.samples; p = metadata.platform(s)) {
         if (!platforms.contains(p)) {
           throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
         }
