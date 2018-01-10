@@ -212,24 +212,32 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
 
-  def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
-    dataFile: String, callFile: Option[String],
-    append: Boolean, sbuilder: SeriesBuilder[S],
-    simpleLog2: Boolean = false): Iterable[Tasklet] = {
+  def addMetadata[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
+
     val ts = config.triplestore.get
-
-    r :+= consistencyCheck(title, metadata, config, append)
-
     if (!append) {
       r :+= addRecord(title, comment, config.triplestore)
     }
     r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, ts)
 
+    r
+  }
+
+  def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+    dataFile: String, callFile: Option[String],
+    append: Boolean, sbuilder: SeriesBuilder[S],
+    simpleLog2: Boolean = false): Iterable[Tasklet] = {
+    var r: Vector[Tasklet] = Vector()
+
+    r :+= consistencyCheck(title, metadata, config, append)
+    r ++= addMetadata(title, comment, metadata, append, sbuilder)
+
     // Note that we rely on probe maps, sample maps etc in matrixContext
     // not being read until they are needed
-    // (after addSampleIDs has run!)
+    // (after addSampleIDs has run, which happens in addMetadata)
     // TODO: more robust updating of maps
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
