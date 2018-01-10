@@ -484,7 +484,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * @param queryFromMirna if true, query probes are mirna, otherwise mrna.
    */
   def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],
-                        queryFromMirna: Boolean): MMap[Probe, DefaultBio] = {
+                        queryFromMirna: Boolean,
+                        maxCount: Option[Int]): MMap[Probe, DefaultBio] = {
     
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
     val targetVar = if(queryFromMirna) "mrna" else "mirna"
@@ -495,11 +496,12 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     |SELECT DISTINCT ?mrna ?score ?mirna ?trn
     |$mirnaAssociationGraphs
     |WHERE {
-    |  ?mrna t:refseqTrn ?trn.
+    |  [ t:refseqTrn ?trn; a t:probe; rdfs:label ?mrna ].
     |  [ t:refseqTrn ?trn; t:mirna [rdfs:label ?mirna]; t:score ?score ].
     |  ${valuesMultiFilter("?" + queryVar, queryForFilter)}
     |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
     |}
+    |${maxCount.map(c => s"LIMIT $c").getOrElse("")}
     |""".stripMargin
     
     

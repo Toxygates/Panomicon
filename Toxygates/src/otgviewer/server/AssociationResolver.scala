@@ -75,7 +75,8 @@ class AssociationResolver(probeStore: Probes,
         case "http://level-five.jp/t/mapping/mirdb" =>
           probeStore.mirnaAssociations(probes,
               if(source.limit == null) None else Some(source.limit),
-              fromMirna)
+              fromMirna,
+              Some(1000))
 
         //TODO handle reverse lookup case here
         case AppInfoLoader.TARGETMINE_SOURCE =>
