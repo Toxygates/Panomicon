@@ -33,6 +33,8 @@ class AssociationResolver(probeStore: Probes,
     sc: SampleClass, types: Array[AType],
     _probes: Iterable[String])(implicit sf: SampleFilter) {
 
+  @volatile protected var sizeLimitExceeded = false
+  
   //Look up all core associations first.
   val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
 
@@ -73,6 +75,6 @@ class AssociationResolver(probeStore: Probes,
 
   def resolve: Array[Association] = {
     val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
-    m1.map(p => new Association(p._1, convertAssociations(p._2))).toArray
+    m1.map(p => new Association(p._1, convertAssociations(p._2), sizeLimitExceeded)).toArray
   }
 }

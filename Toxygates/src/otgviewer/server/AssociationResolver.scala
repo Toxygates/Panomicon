@@ -73,10 +73,16 @@ class AssociationResolver(probeStore: Probes,
       try {
       source.id match {
         case "http://level-five.jp/t/mapping/mirdb" =>
-          probeStore.mirnaAssociations(probes,
-              if(source.limit == null) None else Some(source.limit),
-              fromMirna,
-              Some(1000))
+          val mirnaLimit = 1000
+          val r = probeStore.mirnaAssociations(probes,
+            if (source.limit == null) None else Some(source.limit),
+            fromMirna,
+            Some(mirnaLimit))
+
+          if (r.valuesIterator.flatten.size >= mirnaLimit) {
+            sizeLimitExceeded = true
+          }
+          r
 
         //TODO handle reverse lookup case here
         case AppInfoLoader.TARGETMINE_SOURCE =>
