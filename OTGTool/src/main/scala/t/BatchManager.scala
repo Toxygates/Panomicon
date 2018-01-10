@@ -51,18 +51,17 @@ object BatchManager extends ManagerTool {
           val append = booleanOption(args, "-append")
           val comment = stringOption(args, "-comment").getOrElse("")
 
-          if (batches.list.contains(title) && !append) {
-            val msg = s"Batch $title already exists. Did you mean to use -append?"
-            throw new Exception(msg)
-          }
-
           val bm = new BatchManager(context)
           new Platforms(config).populateAttributes(config.attributes)
 
-          val metaList = stringListOption(args, "-multiMetadata")
+          val metaList = stringListOption(args, "-multiMetadata") orElse
+            stringListOption(args, "-multimetadata")
           metaList match {
             case Some(ml) =>
               KCDBRegistry.setMaintenance(true)
+              // For the first metadata file, we use the value of the -append argument; for all other
+              // the batch will certainly exist so we always append
+              var first = true
               for (mf <- ml) {
                 val md = factory.tsvMetadata(mf, config.attributes)
                 val dataFile = mf.replace(".meta.tsv", ".data.csv")
@@ -72,7 +71,8 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 addTasklets(bm.add(title, comment,
                   md, dataFile, callFile,
-                  append, config.seriesBuilder))
+                  if (first) append else true, config.seriesBuilder))
+                first = false
               }
             case None =>
               val metaFile = require(stringOption(args, "-metadata"),
@@ -219,7 +219,7 @@ class BatchManager(context: Context) {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
-    r :+= consistencyCheck(title, metadata, config)
+    r :+= consistencyCheck(title, metadata, config, append)
 
     if (!append) {
       r :+= addRecord(title, comment, config.triplestore)
@@ -264,21 +264,25 @@ class BatchManager(context: Context) {
     r
   }
 
-  def consistencyCheck(title: String, md: Metadata, c: BaseConfig) = new Tasklet("Consistency check") {
+  def consistencyCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
+      new Tasklet("Consistency check") {
+
     def run() {
       checkValidIdentifier(title, "batch ID")
 
-      val batches = new Batches(c.triplestore)
-      if (batches.list.contains(title)) {
-        log(s"The batch $title is already defined, assuming update/append")
+      val batches = new Batches(baseConfig.triplestore)
+      val batchExists = batches.list.contains(title)
+      if (append && !batchExists) {
+        throw new Exception(s"Cannot append to nonexsistent batch $title")
+      } else if (!append && batchExists) {
+        throw new Exception(s"Cannot create new batch $title: batch already exists")
       }
 
       val bsamples = batches.samples(title).toSet
-
       val ps = new Platforms(config)
       val platforms = ps.list.toSet
       val existingSamples = samples.list.toSet
-      for (s <- md.samples; p = md.platform(s)) {
+      for (s <- metadata.samples; p = metadata.platform(s)) {
         if (!platforms.contains(p)) {
           throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
         }
