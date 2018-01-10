@@ -351,23 +351,25 @@ public class DataScreen extends Screen {
     @Override
     protected MirnaSource[] doUnpack(String state) {
       String[] spl = state.split(":::");
-      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).toArray(MirnaSource[]::new);
+      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).
+          filter(ms -> ms != null).toArray(MirnaSource[]::new);
     }
 
     @Override
     public void onValueChange(MirnaSource[] state) {
-      if (state != null) {}
+      if (state != null) {        
         manager().probeService().setMirnaSources(state, new AsyncCallback<Void>() {
-        @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("Unable to set miRNA sources.");
-        }
+          @Override
+          public void onFailure(Throwable caught) {
+            Window.alert("Unable to set miRNA sources.");
+          }
 
-        @Override
-        public void onSuccess(Void result) {
-          expressionTable.getAssociations();
-        }
-      });
+          @Override
+          public void onSuccess(Void result) {
+            expressionTable.getAssociations();
+          }
+        });
+      }
     }
   };
 
