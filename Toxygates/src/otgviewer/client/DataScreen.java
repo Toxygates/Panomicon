@@ -82,7 +82,8 @@ public class DataScreen extends Screen {
   protected ExpressionTable makeExpressionTable() {
     TableFlags flags = new TableFlags(defaultMatrix,
         true, true, ExpressionTable.SUGGESTED_INIT_PAGE_SIZE, 
-        mainTableTitle(), mainTableSelectable());
+        mainTableTitle(), mainTableSelectable(),
+        false);
     
     return new ExpressionTable(this, flags, TableStyle.getStyle("default")) {
       @Override

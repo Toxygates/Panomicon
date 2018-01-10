@@ -46,6 +46,7 @@ import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Window;
@@ -199,7 +200,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   public ExpressionTable(Screen _screen, TableFlags flags,
       TableStyle style) {
-    super(_screen, style, flags.title);
+    super(_screen, style, flags);
     this.withPValueOption = flags.withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
@@ -519,11 +520,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     TextCell tc = new TextCell();
 
+    int oldSortIndex = (oldSortInfo != null ? 
+        ((ExpressionColumn) oldSortInfo.getColumn()).matrixColumn() : -1);
+
+    ColumnSortInfo newSort = null;
     Group previousGroup = null;
     for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
-
+        if (i == oldSortIndex) {
+          newSort = new ColumnSortInfo(valueCol, oldSortInfo.isAscending());
+        }
         Group group = matrixInfo.columnGroup(i);
         String groupStyle = group == null ? "dataColumn" : group.getStyleName();
         String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
@@ -546,8 +553,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
       String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
       first = false;
-      addSynthColumn(matrixInfo, i, borderStyle);
+      ExpressionColumn synCol = addSynthColumn(matrixInfo, i, borderStyle);
+      if (i == oldSortIndex) {
+        newSort = new ColumnSortInfo(synCol, oldSortInfo.isAscending());
+      }
     }
+
+    if (newSort != null && keepSortOnReload) {
+      grid.getColumnSortList().push(newSort);
+    }
+    
   }
 
   @Override
@@ -569,9 +584,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new ToolCell(this);
   }
 
-  private void addSynthColumn(ManagedMatrixInfo matrixInfo, int column, String borderStyle) {
+  private ExpressionColumn addSynthColumn(ManagedMatrixInfo matrixInfo, int column, String borderStyle) {
     TextCell tc = new TextCell();    
-    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, column);
+    ExpressionColumn synCol = new ExpressionColumn(tc, column);
     
     ColumnInfo info = new ColumnInfo(matrixInfo.shortColumnName(column), 
       matrixInfo.columnHint(column), 
@@ -581,6 +596,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     info.setHeaderStyleNames(borderStyle);
     info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
+    return synCol;
   }
 
   @Override

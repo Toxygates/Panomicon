@@ -51,6 +51,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
   protected int highlightedRow = -1;
   protected boolean shouldComputeTableWidth = true;
+  protected final boolean keepSortOnReload;
 
   protected final DataSchema schema;
   protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
@@ -69,10 +70,13 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   protected TableStyle style;
   protected Screen screen;
  
-  public RichTable(Screen screen, TableStyle style, @Nullable String title) {
+  public RichTable(Screen screen, TableStyle style, TableFlags flags) {
     this.screen = screen;
     this.schema = screen.schema();
     this.style = style;
+    this.keepSortOnReload = flags.keepSortOnReload;
+    
+    String title = flags.title;
     
     hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
@@ -124,12 +128,22 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     return false;
   }
 
+  protected ColumnSortInfo oldSortInfo;
+  
   protected void setupColumns() {
     int count = grid.getColumnCount();
     for (int i = 0; i < count; ++i) {
       grid.removeColumn(0);
     }
+    
+    ColumnSortList csl = grid.getColumnSortList();
+    if (csl.size() > 0) {
+      oldSortInfo = csl.get(0);
+    } else {
+      oldSortInfo = null;
+    }    
     grid.getColumnSortList().clear();
+    
     columnInfos = new ArrayList<ColumnInfo>();
     columnSections = new ArrayList<String>();
     sectionColumnCount = new HashMap<String, Integer>();
