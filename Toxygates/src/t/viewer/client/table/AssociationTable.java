@@ -93,7 +93,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
           for (Association a : result) {
             associations.put(a.type(), a);
           };
-          associationsUpdated();
+          associationsUpdated(result);
           grid.redraw();
         }
       };
@@ -108,7 +108,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   /**
    * Called when associations have been updated.
    */
-  protected void associationsUpdated() {}
+  protected void associationsUpdated(Association[] result) {}
 
   /**
    * Get the atomic probes currently being displayed (keys for associations)

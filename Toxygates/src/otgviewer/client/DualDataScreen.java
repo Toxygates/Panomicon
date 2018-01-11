@@ -176,8 +176,8 @@ public class DualDataScreen extends DataScreen {
   }
   
   @Override
-  protected void associationsUpdated() {
-    super.associationsUpdated();
+  protected void associationsUpdated(Association[] result) {
+    super.associationsUpdated(result);
     extractMirnaProbes();
   }
   

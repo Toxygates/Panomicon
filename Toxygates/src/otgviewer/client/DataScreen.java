@@ -32,6 +32,8 @@ import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
+import t.viewer.shared.Association;
+import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.intermine.IntermineInstance;
 import t.viewer.shared.mirna.MirnaSource;
 
@@ -92,17 +94,24 @@ public class DataScreen extends Screen {
         DataScreen.this.probesChanged(new String[0]);
         DataScreen.this.geneSetChanged(null);
         updateProbes();
+        displayInfo("Data loading failed.");
       }
       
       @Override
-      protected void associationsUpdated() {
-        DataScreen.this.associationsUpdated();
+      protected void associationsUpdated(Association[] result) {
+        DataScreen.this.associationsUpdated(result);
       }
       
       @Override
       public void getAssociations() {
         DataScreen.this.beforeGetAssociations();
         super.getAssociations();        
+      }
+      
+      @Override
+      protected void setMatrix(ManagedMatrixInfo matrix) {
+        super.setMatrix(matrix);
+        displayInfo("Successfully loaded " + matrix.numRows() + " probes");
       }
     };
   }
@@ -113,7 +122,17 @@ public class DataScreen extends Screen {
   
   protected void beforeGetAssociations() {}
   
-  protected void associationsUpdated() {}
+  protected void associationsUpdated(Association[] result) {
+    Optional<Association> overLimit = 
+        Arrays.stream(result).filter(a -> a.overSizeLimit()).findAny();
+    if (overLimit.isPresent()) {
+      Association a = overLimit.get();       
+      displayInfo("Too many associations, limited view.");
+    } else {
+      displayInfo("");
+    }
+    
+  }
   
   protected boolean isMirnaGroup(Group g) {
     return "miRNA".equals(GroupUtils.groupType(g));
@@ -142,17 +161,33 @@ public class DataScreen extends Screen {
 
   static final public int STANDARD_TOOL_HEIGHT = 43;
 
+  protected Label infoLabel;
+  
+  protected Widget makeInfoPanel() {
+    infoLabel = Utils.mkEmphLabel("");
+    infoLabel.addStyleName("infoLabel");
+    HorizontalPanel p = Utils.mkHorizontalPanel(true, infoLabel);
+    p.setHeight(STANDARD_TOOL_HEIGHT + "px");
+    return p;       
+  }
+  
   @Override
   protected void addToolbars() {
     super.addToolbars();
     HorizontalPanel mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     mainTools.add(expressionTable.tools());
-    mainTools.add(geneSetToolbar.selector());
+    mainTools.add(geneSetToolbar.selector());    
+    mainTools.add(makeInfoPanel());
     addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
     addToolbar(expressionTable.analysisTools(), STANDARD_TOOL_HEIGHT);
   }
 
+  protected void displayInfo(String message) {
+    logger.info("User info: " + message);
+    infoLabel.setText(message);
+  }
+  
   @Override
   public Widget content() {
     setupMenuItems();

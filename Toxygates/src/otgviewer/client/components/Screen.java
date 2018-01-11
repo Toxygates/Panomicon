@@ -77,7 +77,7 @@ public class Screen extends DataListenerWidget implements
    * Widgets to be shown below the main content area, if any.
    */
   private Widget bottom;
-  private HorizontalPanel spOuter, guideBar;
+  private HorizontalPanel spOuter, guideBar, infoBar;
 
   /**
    * Widgets to be shown above the main content area, if any.

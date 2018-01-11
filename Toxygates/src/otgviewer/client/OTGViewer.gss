@@ -395,6 +395,12 @@ Status panel
 	font-size: large;
 }
 
+.infoLabel {
+	background: LemonChiffon;
+	padding: 4px;
+	color: black;
+}
+
 /**************************************	
 Tables
 **************************************/
