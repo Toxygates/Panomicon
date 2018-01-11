@@ -35,6 +35,13 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
+  override def list(): Seq[String] = {
+    triplestore.simpleQuery(
+        s"""$commonPrefixes
+           |SELECT ?l WHERE {
+           |  GRAPH ?g { ?x a $itemClass ; rdfs:label ?l } }""".stripMargin)
+  }
+
   def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
     val standardPred = standardAttributes.filter(isPredicateAttribute)
 
