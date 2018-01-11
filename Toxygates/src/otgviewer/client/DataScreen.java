@@ -125,8 +125,7 @@ public class DataScreen extends Screen {
   protected void associationsUpdated(Association[] result) {
     Optional<Association> overLimit = 
         Arrays.stream(result).filter(a -> a.overSizeLimit()).findAny();
-    if (overLimit.isPresent()) {
-      Association a = overLimit.get();       
+    if (overLimit.isPresent()) {       
       displayInfo("Too many associations, limited view.");
     } else {
       displayInfo("");
@@ -171,10 +170,12 @@ public class DataScreen extends Screen {
     return p;       
   }
   
+  protected HorizontalPanel mainTools;
+  
   @Override
   protected void addToolbars() {
     super.addToolbars();
-    HorizontalPanel mainTools = new HorizontalPanel();
+    mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     mainTools.add(expressionTable.tools());
     mainTools.add(geneSetToolbar.selector());    

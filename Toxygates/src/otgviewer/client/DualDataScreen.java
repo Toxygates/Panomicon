@@ -4,10 +4,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.persistence.Column;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
-import t.common.shared.*;
+import t.common.shared.AType;
+import t.common.shared.GroupUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
@@ -16,6 +18,7 @@ import t.viewer.client.table.*;
 import t.viewer.shared.*;
 import t.viewer.shared.network.*;
 
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.SingleSelectionModel;
 
@@ -34,8 +37,8 @@ public class DualDataScreen extends DataScreen {
   
   protected final static String sideMatrix = "SECONDARY";
   
-  protected final static String mainTableType = "mRNA";
-  protected final static String sideTableType = "miRNA";
+  protected String mainTableType = "mRNA";
+  protected String sideTableType = "miRNA";
   
   public DualDataScreen(ScreenManager man) {
     super(man);
@@ -49,9 +52,22 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.addStyleName("sideExpressionTable");
     
     expressionTable.selectionModel().addSelectionChangeHandler(e ->
-      mainTableSelectionChange());
+      setIndications(expressionTable, sideExpressionTable, mainTableType));      
     sideExpressionTable.selectionModel().addSelectionChangeHandler(e ->
-      sideTableSelectionChange());
+      setIndications(sideExpressionTable, expressionTable, sideTableType));
+  }
+  
+  protected void setDualView(String mainType, String sideType) {
+    mainTableType = mainType;
+    sideTableType = sideType;
+  }
+  
+  protected void flipDualView() {
+    setDualView(sideTableType, mainTableType);
+    List<Group> allColumns = new ArrayList<Group>(chosenColumns);
+    allColumns.addAll(sideExpressionTable.chosenColumns());
+    columnsChanged(allColumns);
+    updateProbes();
   }
   
   protected SplitLayoutPanel splitLayout;
@@ -70,6 +86,15 @@ public class DualDataScreen extends DataScreen {
   }
   
   @Override
+  protected void addToolbars() {
+    super.addToolbars();
+    Button flipButton = new Button("Flip mRNA-microRNA", 
+      (ClickHandler) event -> flipDualView());
+    Widget tools = Utils.mkHorizontalPanel(true, flipButton);
+    mainTools.add(tools);
+  }
+  
+  @Override
   protected void setupMenuItems() {
     super.setupMenuItems();
     MenuItem mi = new MenuItem("Download interaction network (DOT)...", 
@@ -82,13 +107,7 @@ public class DualDataScreen extends DataScreen {
     
     mi = new MenuItem("Download interaction network (Custom)...", 
       () -> downloadNetwork(Format.Custom));       
-    addAnalysisMenuItem(mi);
-    
-    mi = new MenuItem("Swap mRNA-miRNA tables", () -> swapTables());
-  }
-  
-  protected void swapTables() {
-    //TODO
+    addAnalysisMenuItem(mi);    
   }
   
   protected void downloadNetwork(Format format) {
@@ -101,25 +120,34 @@ public class DualDataScreen extends DataScreen {
     });
   }
   
-  protected void mainTableSelectionChange() {
-    ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) expressionTable.selectionModel()).
-        getSelectedObject();
-    Map<ExpressionRow, Collection<AssociationValue>> lookup = mrnaToMirnaMap();
-    String[] mirnas = lookup.get(r).stream().map(av -> av.formalIdentifier()).toArray(String[]::new);
-    sideExpressionTable.setIndicatedProbes(mirnas);    
+  /**
+   * When the selection in one of the tables has changed, highlight the associated rows
+   * in the other table.
+   * @param fromTable
+   * @param toTable
+   * @param fromType
+   */
+  protected void setIndications(ExpressionTable fromTable, ExpressionTable toTable,
+                                String fromType) {
+    ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).
+        getSelectedObject();    
+    toTable.setIndicatedProbes(getIndicatedRows(r, fromType));
   }
   
-  protected void sideTableSelectionChange() {
-    ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) sideExpressionTable.selectionModel()).
-        getSelectedObject();
-    String mirna = r.getProbe();
+  protected String[] getIndicatedRows(ExpressionRow selected, String fromType) {
     Map<ExpressionRow, Collection<AssociationValue>> lookup = mrnaToMirnaMap();
-    String[] mrnas = lookup.keySet().stream().filter(er -> 
+    if (fromType.equals("mRNA")) {    
+      String[] mirnas = lookup.get(selected).stream().
+          map(av -> av.formalIdentifier()).toArray(String[]::new);
+      return mirnas;        
+    } else {           
+      String mirna = selected.getProbe();
+      String[] mrnas = lookup.keySet().stream().filter(er -> 
       lookup.get(er).stream().map(av -> av.formalIdentifier()).anyMatch(id -> id.equals(mirna))).
       map(er -> er.getProbe()).
       toArray(String[]::new);
-    expressionTable.setIndicatedProbes(mrnas);
-      
+      return mrnas;      
+    }
   }
   
   @Override
@@ -172,13 +200,13 @@ public class DualDataScreen extends DataScreen {
   public void updateProbes() {
     super.updateProbes();
     sideExpressionTable.clearMatrix();
-    extractMirnaProbes();
+    extractSideTableProbes();
   }
   
   @Override
   protected void associationsUpdated(Association[] result) {
-    super.associationsUpdated(result);
-    extractMirnaProbes();
+    super.associationsUpdated(result);    
+    extractSideTableProbes();
   }
   
   private ColumnFilter lastCountFilter = null;
@@ -190,20 +218,27 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.clearMatrix();
   }
   
-  protected AssociationSummary<ExpressionRow> mirnaSummary; 
-  protected void extractMirnaProbes() {
-    mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
+  protected AType typeForSideTable() {
+    if (sideTableType == "mRNA") {
+      return AType.MRNA;
+    } 
+    return AType.MiRNA;
+  }
+  
+  protected AssociationSummary<ExpressionRow> mappingSummary; 
+  protected void extractSideTableProbes() {
+    mappingSummary = expressionTable.associationSummary(typeForSideTable());
     if (sideExpressionTable.chosenColumns().isEmpty()) {
       return;
     }
     
-    if (mirnaSummary == null) {
-      logger.info("Unable to get miRNA summary - not updating side table probes");
+    if (mappingSummary == null) {
+      logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");
       return;
     }
-    String[][] rawData = mirnaSummary.getTable();
+    String[][] rawData = mappingSummary.getTable();
     if (rawData.length < 2) {
-      logger.info("No miRNAs found in summary - not updating side table probes");
+      logger.info("No secondary probes found in summary - not updating side table probes");
       return;
     }
     String[] ids = new String[rawData.length - 1];
@@ -215,10 +250,10 @@ public class DualDataScreen extends DataScreen {
       counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
     }
     
-    logger.info("Extracted " + ids.length + " miRNAs");    
+    logger.info("Extracted " + ids.length + " " + sideTableType);    
     
     Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
-      "Number of times each miRNA appeared", counts,
+      "Number of times each " + sideTableType + " appeared", counts,
       lastCountFilter);
 
     List<Synthetic> synths = new ArrayList<Synthetic>();
@@ -250,8 +285,6 @@ public class DualDataScreen extends DataScreen {
     }
   }
   
-  
-  
   /**
    * Build Nodes by using expression values from the first column in the rows.
    * @param type
@@ -264,7 +297,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected Map<ExpressionRow, Collection<AssociationValue>> mrnaToMirnaMap() {    
-    return mirnaSummary.getFullMap();
+    return mappingSummary.getFullMap();
   }
   
   /**
