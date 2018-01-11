@@ -489,8 +489,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
     val targetVar = if(queryFromMirna) "mrna" else "mirna"
-    val queryForFilter = if(queryFromMirna) probes.map("\"" + _.identifier + "\"") 
-      else probes.map(p => bracket(p.pack))
+    val queryForFilter = probes.map("\"" + _.identifier + "\"")      
       
     val q = s"""$tPrefixes
     |SELECT DISTINCT ?mrna ?score ?mirna ?trn
@@ -515,11 +514,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       
       val extraInfo = s"$target ($mapping) experimental: $experimental score: ${"%.3f".format(score.toDouble)} via: $refseq"
       
-      if (queryFromMirna) {
-        Probe(query) -> DefaultBio(target, target, Some(extraInfo))
-      } else {
-        Probe.unpack(query) -> DefaultBio(target, target, Some(extraInfo))
-      }        
+      Probe(query) -> DefaultBio(target, target, Some(extraInfo))
     })
     makeMultiMap(r)
   }  
