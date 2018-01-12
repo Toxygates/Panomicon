@@ -34,7 +34,7 @@ class AssociationResolver(probeStore: Probes,
     _probes: Iterable[String])(implicit sf: SampleFilter) {
 
   @volatile protected var sizeLimitExceeded = false
-  
+
   //Look up all core associations first.
   val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
 

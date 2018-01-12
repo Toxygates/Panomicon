@@ -69,6 +69,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   protected TableStyle style;
   protected Screen screen;
+  protected Label titleLabel = new Label();
  
   public RichTable(Screen screen, TableStyle style, TableFlags flags) {
     this.screen = screen;
@@ -101,13 +102,14 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     
     lp.add(grid);
     if (title != null) {
-      Label l = new Label(title);
-      l.addStyleName("exprGrid-title");
-      lp.add(l);      
-      lp.setWidgetTopHeight(l, 0, Unit.PX, 30, Unit.PX);
+      titleLabel.setText(title);
+
+      titleLabel.addStyleName("exprGrid-title");
+      lp.add(titleLabel);
+      lp.setWidgetTopHeight(titleLabel, 0, Unit.PX, 30, Unit.PX);
       lp.setWidgetLeftRight(grid, 0, Unit.PX, 0, Unit.PX);
       lp.setWidgetTopBottom(grid, 30, Unit.PX, 0, Unit.PX);
-    } 
+    }
     
     initWidget(lp);
     
@@ -116,6 +118,10 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     grid.setRowStyles(new RowHighlighter());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
     grid.addColumnSortHandler(colSortHandler);
+  }
+  
+  public void setTitleHeader(String title) {
+    titleLabel.setText(title);
   }
 
   /**

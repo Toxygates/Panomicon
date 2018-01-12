@@ -60,6 +60,8 @@ public class DualDataScreen extends DataScreen {
   protected void setDualView(String mainType, String sideType) {
     mainTableType = mainType;
     sideTableType = sideType;
+    expressionTable.setTitleHeader(mainTableType);
+    sideExpressionTable.setTitleHeader(sideTableType);
   }
   
   protected void flipDualView() {
@@ -143,15 +145,16 @@ public class DualDataScreen extends DataScreen {
     } else {           
       String mirna = selected.getProbe();
       String[] mrnas = lookup.keySet().stream().filter(er -> 
-      lookup.get(er).stream().map(av -> av.formalIdentifier()).anyMatch(id -> id.equals(mirna))).
-      map(er -> er.getProbe()).
-      toArray(String[]::new);
+        lookup.get(er).stream().map(av -> av.formalIdentifier()).
+        anyMatch(id -> id.equals(mirna))).
+        map(er -> er.getProbe()).toArray(String[]::new);
       return mrnas;      
     }
   }
   
+  //Initial title only - need the constant here since the field won't be initialised
   @Override
-  protected String mainTableTitle() { return mainTableType; }     
+  protected String mainTableTitle() { return "mRNA"; }     
   
   protected boolean mainTableSelectable() { return true; }  
   

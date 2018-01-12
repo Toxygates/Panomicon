@@ -80,8 +80,9 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 
   public void getAssociations() {
     waitingForAssociations = true;
-    AType[] vas = visibleAssociations();
-    if (vas.length > 0 && displayedAtomicProbes().length > 0) {
+    AType[] assocs = visibleAssociations();
+    String[] dispAtomic = displayedAtomicProbes();
+    if (assocs.length > 0 && dispAtomic.length > 0) {
       AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
         public void onFailure(Throwable caught) {
           Window.alert("Unable to get associations: " + caught.getMessage());
@@ -98,8 +99,8 @@ abstract public class AssociationTable<T> extends RichTable<T> {
         }
       };
 
-      logger.info("Get associations for " + chosenSampleClass.toString());
-      probeService.associations(chosenSampleClass, vas, displayedAtomicProbes(), assocCallback);
+      logger.info("Get associations for " + dispAtomic.length + " probes in " + chosenSampleClass.toString());
+      probeService.associations(chosenSampleClass, assocs, dispAtomic, assocCallback);
     } else {
       logger.info("No associations to fetch");
     }
