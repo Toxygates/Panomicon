@@ -39,7 +39,7 @@ object Platforms extends RDFClass {
   def context(name: String) = defaultPrefix + "/" + name
 }
 
-class Platforms(baseConfig: BaseConfig) extends 
+class Platforms(baseConfig: BaseConfig) extends
   ListManager(baseConfig.triplestore) {
   import Triplestore._
   import Platforms._
@@ -93,13 +93,14 @@ class Platforms(baseConfig: BaseConfig) extends
         |SELECT DISTINCT * WHERE {
         |  ?p $platformType $biologicalPlatform.
         |  GRAPH ?p {
-        |    ?probe a t:probe; rdfs:label ?id; t:type ?type; t:section ?section;
-        |    t:label ?title.
+        |    ?probe a t:probe; rdfs:label ?id; t:type ?type; t:label ?title.
+        |    OPTIONAL { ?probe t:section ?section. }
         |  }
         |}""".stripMargin, timeout)
 
      for (a <- attribs) {
-       val at = into.findOrCreate(a("id"), a("title"), a("type"), a("section"))
+       val at = into.findOrCreate(a("id"), a("title"), a("type"),
+           a.get("section").orNull)
        println(s"Create attribute $at")
      }
   }
