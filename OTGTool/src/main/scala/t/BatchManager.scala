@@ -212,27 +212,13 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
 
-  def addMetadata[S <: Series[S]](title: String, comment: String, metadata: Metadata,
-      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
-    var r: Vector[Tasklet] = Vector()
-
-    val ts = config.triplestore.get
-    if (!append) {
-      r :+= addRecord(title, comment, config.triplestore)
-    }
-    r :+= addSampleIDs(metadata)
-    r :+= addRDF(title, metadata, sbuilder, ts)
-
-    r
-  }
-
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
     simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
-    r :+= consistencyCheck(title, metadata, config, append)
+    r :+= newMetadataCheck(title, metadata, config, append)
     r ++= addMetadata(title, comment, metadata, append, sbuilder)
 
     // Note that we rely on probe maps, sample maps etc in matrixContext
@@ -249,6 +235,20 @@ class BatchManager(context: Context) {
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addSeriesData(metadata, sbuilder)
+
+    r
+  }
+
+  def addMetadata[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+    var r: Vector[Tasklet] = Vector()
+
+    val ts = config.triplestore.get
+    if (!append) {
+      r :+= addRecord(title, comment, config.triplestore)
+    }
+    r :+= addSampleIDs(metadata)
+    r :+= addRDF(title, metadata, sbuilder, ts)
 
     r
   }
@@ -272,9 +272,8 @@ class BatchManager(context: Context) {
     r
   }
 
-  def consistencyCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
-      new Tasklet("Consistency check") {
-
+  def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
+      new Tasklet("Check validity of new metadata") {
     def run() {
       checkValidIdentifier(title, "batch ID")
 
@@ -286,22 +285,32 @@ class BatchManager(context: Context) {
         throw new Exception(s"Cannot create new batch $title: batch already exists")
       }
 
-      val bsamples = batches.samples(title).toSet
-      val ps = new Platforms(config)
-      val platforms = ps.list.toSet
+      val batchSampleIds = batches.samples(title).toSet
+      platformsCheck(metadata)
+      val metadataIds = metadata.samples.map(_.identifier)
+      metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
+
+      val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
+      if (foundInBatch.size > 0) {
+        log(s"Will replace samples ${foundInBatch mkString ", "}")
+      }
+
       val existingSamples = samples.list.toSet
-      for (s <- metadata.samples; p = metadata.platform(s)) {
-        if (!platforms.contains(p)) {
-          throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
-        }
-        if (bsamples.contains(s.identifier)) {
-          log(s"Replacing sample ${s.identifier}")
-        } else if (existingSamples.contains(s.identifier)) {
-          val suggestion = suggestSampleId(existingSamples, s.identifier)
-          throw new Exception(s"The sample ${s.identifier} has " +
-              s" already been defined in a different batch. Consider using: $suggestion")
-        }
-        checkValidIdentifier(s.identifier, "sample ID")
+      val (idCollisions, newSamples) = notInBatch.partition(existingSamples contains _)
+      if (idCollisions.size > 0) {
+        throw new Exception(s"The samples ${idCollisions mkString ", "} have already been " +
+            "defined in other batches.")
+      } else {
+        log(s"Will create samples ${newSamples mkString ", "}")
+      }
+    }
+  }
+
+  private def platformsCheck(metadata: Metadata) {
+    val platforms = new Platforms(config).list.toSet
+    for (s <- metadata.samples; p = metadata.platform(s)) {
+      if (!platforms.contains(p)) {
+        throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
       }
     }
   }
