@@ -209,12 +209,9 @@ public class DualDataScreen extends DataScreen {
     extractSideTableProbes();
   }
   
-  private ColumnFilter lastCountFilter = null;
-  
   @Override
   protected void beforeGetAssociations() {
     super.beforeGetAssociations();
-    lastCountFilter = countColumnFilter();
     sideExpressionTable.clearMatrix();
   }
   
@@ -254,29 +251,13 @@ public class DualDataScreen extends DataScreen {
     
     Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
       "Number of times each " + sideTableType + " appeared", counts,
-      lastCountFilter);
+      null);
 
     List<Synthetic> synths = new ArrayList<Synthetic>();
     synths.add(countColumn);
     
     changeSideTableProbes(ids, synths);
   }
-  
-  private @Nullable ColumnFilter countColumnFilter() {
-    ManagedMatrixInfo matInfo = sideExpressionTable.currentMatrixInfo();
-    if (matInfo == null) {
-      return null;
-    }
-    int numData = matInfo.numDataColumns();
-    int numSynth = matInfo.numSynthetics();
-    if (numData > 0 && numSynth > 0) {
-      //We rely on the count column being the first synthetic
-      return matInfo.columnFilter(numData);
-    } else {
-      return null;
-    }
-  }
-  
   
   protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {
     sideExpressionTable.probesChanged(probes);
