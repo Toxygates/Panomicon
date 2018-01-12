@@ -71,7 +71,6 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     try {
       startTaskRunner()
       handleArgs(args)
-      Thread.sleep(2000)
       waitForTasklets()
     } catch {
       case e: Exception => e.printStackTrace
@@ -113,14 +112,14 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
           case Some(t) => println(s"${t.name} - ${t.percentComplete}%")
           case _       =>
         }
-        Thread.sleep(2000)
+        Thread.sleep(200)
       }
     }
   }
 
   def waitForTasklets() {
     while (TaskRunner.waitingForTask || TaskRunner.queueSize() > 0) {
-      Thread.sleep(1000)
+      Thread.sleep(100)
     }
   }
 
