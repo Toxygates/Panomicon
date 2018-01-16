@@ -26,31 +26,39 @@ import com.google.gwt.user.client.ui.*;
 public class BatchUploader extends ItemUploader {
   UploadWrapper metadata, data, calls;
 
-  protected void makeGUI(VerticalPanel vp) {
+  public BatchUploader(boolean full) {
+    VerticalPanel vp = new VerticalPanel();
+    initWidget(vp);
+
     metadata = new UploadWrapper(this, "Metadata file (TSV)", metaPrefix, "tsv");
     uploaders.add(metadata);
-    data = new UploadWrapper(this, "Normalized data file (CSV)", dataPrefix, "csv");
-    uploaders.add(data);
-    calls = new UploadWrapper(this, "Affymetrix calls file (CSV) (optional)", callPrefix, "csv");
-    uploaders.add(calls);
-
     HorizontalPanel hp = new HorizontalPanel();
     hp.add(metadata);
-    hp.add(data);
-    vp.add(hp);
 
-    hp = new HorizontalPanel();
-    hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-    hp.setWidth("100%");
-    hp.add(calls);
+    if (full) {
+      data = new UploadWrapper(this, "Normalized data file (CSV)", dataPrefix, "csv");
+      uploaders.add(data);
+      hp.add(data);
+      vp.add(hp);
+
+      hp = new HorizontalPanel();
+      hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+      hp.setWidth("100%");
+      calls =
+          new UploadWrapper(this, "Affymetrix calls file (CSV) (optional)", callPrefix, "csv");
+      uploaders.add(calls);
+      hp.add(calls);
+    }
+
     vp.add(hp);
   }
 
+  @Override
   public boolean canProceed() {
     return metadata.hasFile()
-        && data.hasFile()
-        && (calls.hasFile() || Window.confirm("The Affymetrix calls file is missing. "
+        && (data == null || data.hasFile())
+        && (calls == null || calls.hasFile()
+            || Window.confirm("The Affymetrix calls file is missing. "
             + "Upload batch without calls data (all values present)?"));
-
   }
 }

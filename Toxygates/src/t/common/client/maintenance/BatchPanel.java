@@ -24,30 +24,31 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.client.ImageClickCell;
-import t.common.client.Resources;
-import t.common.client.components.StringArrayTable;
-import t.common.client.rpc.BatchOperationsAsync;
-import t.common.shared.maintenance.Batch;
-
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import t.common.client.ImageClickCell;
+import t.common.client.Resources;
+import t.common.client.components.StringArrayTable;
+import t.common.client.rpc.BatchOperationsAsync;
+import t.common.shared.maintenance.Batch;
+
 abstract public class BatchPanel extends ManagerPanel<Batch> {
 
   protected final BatchOperationsAsync batchOps;
   
-  public BatchPanel(String editCaption, BatchOperationsAsync batchOps, 
+  public BatchPanel(BatchOperationsAsync batchOps,
       Resources resources, boolean scrolled, boolean buttonsNorth) {
-    super(editCaption, resources, scrolled, buttonsNorth);
+    super("batch", resources, scrolled, buttonsNorth);
     this.batchOps = batchOps;
   }
   
   abstract protected void doRefresh();
 
+  @Override
   abstract protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew);
 
   protected boolean hasVisibility() {
@@ -108,6 +109,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
           super(overviewCell);          
       }
       
+      @Override
       public String getValue(Batch b) {
           return b.getTitle();         
       }

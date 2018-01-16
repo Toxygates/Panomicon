@@ -38,14 +38,14 @@ abstract public class ManagerPanel<T extends ManagedItem> {
   private CellTable<T> table = Utils.makeTable(100);
   List<RunCommand> cmds = new ArrayList<RunCommand>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
-  private final String editCaption;
+  private final String type;
   protected final Resources resources;
   
-  public ManagerPanel(String editCaption, 
+  public ManagerPanel(String type, 
       Resources resources,
       boolean scrolled,
       boolean buttonsNorth) {
-    this.editCaption = editCaption;
+    this.type = type;
     this.resources = resources;
     cmds.add(new RunCommand("Add new...", () -> {
       if (confirmAddNew()) {
@@ -81,7 +81,8 @@ abstract public class ManagerPanel<T extends ManagedItem> {
   
   protected void showEditor(@Nullable T obj, boolean addNew) {
     final DialogBox db = new DialogBox(false, true);
-    db.setText(editCaption);
+    String addOrEdit = addNew ? "Add " : "Edit ";
+    db.setText(addOrEdit + type);
     db.setWidget(makeEditor(obj, db, addNew));    
     db.show();
   }

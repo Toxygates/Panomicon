@@ -52,7 +52,6 @@ object BatchManager extends ManagerTool {
           val comment = stringOption(args, "-comment").getOrElse("")
 
           val bm = new BatchManager(context)
-          new Platforms(config).populateAttributes(config.attributes)
 
           val metaList = stringListOption(args, "-multiMetadata") orElse
             stringListOption(args, "-multimetadata")
@@ -62,6 +61,7 @@ object BatchManager extends ManagerTool {
               // For the first metadata file, we use the value of the -append argument; for all other
               // the batch will certainly exist so we always append
               var first = true
+              new Platforms(config).populateAttributes(config.attributes)
               for (mf <- ml) {
                 val md = factory.tsvMetadata(mf, config.attributes)
                 val dataFile = mf.replace(".meta.tsv", ".data.csv")
@@ -81,11 +81,23 @@ object BatchManager extends ManagerTool {
                   "Please specify a data file with -data")
               val callFile = stringOption(args, "-calls")
 
+              new Platforms(config).populateAttributes(config.attributes)
               val md = factory.tsvMetadata(metaFile, config.attributes)
               addTasklets(bm.add(title, comment,
                 md, dataFile, callFile,
                 append, config.seriesBuilder))
           }
+
+        case "updateMetadata" | "updatemetadata" =>
+          val title = require(stringOption(args, "-title"),
+            "Please specify a title with -title")
+          val comment = stringOption(args, "-comment").getOrElse("")
+          val bm = new BatchManager(context)
+          val metaFile = require(stringOption(args, "-metadata"),
+            "Please specify a metadata file with -metadata")
+          new Platforms(config).populateAttributes(config.attributes)
+          val md = factory.tsvMetadata(metaFile, config.attributes)
+          addTasklets(bm.updateMetadata(title, comment, md, config.seriesBuilder))
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -176,7 +188,7 @@ object BatchManager extends ManagerTool {
     bs.verifyExists(batch)
 
   def showHelp() {
-    println("Please specify a command (add/delete/list/list-access/enable/disable)")
+    println("Please specify a command (add/updateMetadata/delete/list/list-access/enable/disable)")
   }
 }
 
@@ -217,19 +229,13 @@ class BatchManager(context: Context) {
     append: Boolean, sbuilder: SeriesBuilder[S],
     simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
-    val ts = config.triplestore.get
 
-    r :+= consistencyCheck(title, metadata, config, append)
-
-    if (!append) {
-      r :+= addRecord(title, comment, config.triplestore)
-    }
-    r :+= addSampleIDs(metadata)
-    r :+= addRDF(title, metadata, sbuilder, ts)
+    r :+= newMetadataCheck(title, metadata, config, append)
+    r ++= addMetadata(title, comment, metadata, append, sbuilder)
 
     // Note that we rely on probe maps, sample maps etc in matrixContext
     // not being read until they are needed
-    // (after addSampleIDs has run!)
+    // (after addSampleIDs has run, which happens in addMetadata)
     // TODO: more robust updating of maps
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
@@ -241,6 +247,31 @@ class BatchManager(context: Context) {
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addSeriesData(metadata, sbuilder)
+
+    r
+  }
+
+  def updateMetadata[S <: Series[S]](title: String, comment: String,
+      metadata: Metadata, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+    var r: Vector[Tasklet] = Vector()
+    r :+= updateMetadataCheck(title, metadata, config)
+    r :+= deleteRDF(title)
+    r ++= addMetadata(title, comment, metadata, false, sbuilder)
+    implicit val mc = matrixContext()
+    r :+= addEnums(metadata, sbuilder)
+    r
+  }
+
+  def addMetadata[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+    var r: Vector[Tasklet] = Vector()
+
+    val ts = config.triplestore.get
+    if (!append) {
+      r :+= addRecord(title, comment, config.triplestore)
+    }
+    r :+= addSampleIDs(metadata)
+    r :+= addRDF(title, metadata, sbuilder, ts)
 
     r
   }
@@ -264,9 +295,8 @@ class BatchManager(context: Context) {
     r
   }
 
-  def consistencyCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
-      new Tasklet("Consistency check") {
-
+  def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
+      new Tasklet("Check validity of new metadata") {
     def run() {
       checkValidIdentifier(title, "batch ID")
 
@@ -278,22 +308,62 @@ class BatchManager(context: Context) {
         throw new Exception(s"Cannot create new batch $title: batch already exists")
       }
 
-      val bsamples = batches.samples(title).toSet
-      val ps = new Platforms(config)
-      val platforms = ps.list.toSet
+      val batchSampleIds = batches.samples(title).toSet
+      platformsCheck(metadata)
+      val metadataIds = metadata.samples.map(_.identifier)
+      metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
+
+      val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
+      if (foundInBatch.size > 0) {
+        log(s"Will replace samples ${foundInBatch mkString ", "}")
+      }
+
       val existingSamples = samples.list.toSet
-      for (s <- metadata.samples; p = metadata.platform(s)) {
-        if (!platforms.contains(p)) {
-          throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
-        }
-        if (bsamples.contains(s.identifier)) {
-          log(s"Replacing sample ${s.identifier}")
-        } else if (existingSamples.contains(s.identifier)) {
-          val suggestion = suggestSampleId(existingSamples, s.identifier)
-          throw new Exception(s"The sample ${s.identifier} has " +
-              s" already been defined in a different batch. Consider using: $suggestion")
-        }
-        checkValidIdentifier(s.identifier, "sample ID")
+      val (idCollisions, newSamples) = notInBatch.partition(existingSamples contains _)
+      if (idCollisions.size > 0) {
+        throw new Exception(s"The samples ${idCollisions mkString ", "} have already been " +
+            "defined in other batches.")
+      } else {
+        log(s"Will create samples ${newSamples mkString ", "}")
+      }
+    }
+  }
+
+  def updateMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig) =
+      new Tasklet("Check validity of metadata update") {
+    def run() {
+      checkValidIdentifier(title, "batch ID")
+
+      val batches = new Batches(baseConfig.triplestore)
+      val batchExists = batches.list.contains(title)
+      if (!batchExists) {
+        throw new Exception(s"Cannot update metadata for nonexistent batch $title")
+      }
+
+      val batchSampleIds = batches.samples(title).toSet
+      platformsCheck(metadata)
+      val metadataIds = metadata.samples.map(_.identifier)
+      metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
+
+      val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
+      if (notInBatch.size > 0) {
+        val msg = s"The following samples were not found in the batch: ${notInBatch mkString " "}"
+        throw new Exception(msg)
+      }
+
+      val notInMetadata = batchSampleIds.filter(x => !(foundInBatch contains x))
+      if (notInMetadata.size > 0) {
+        val msg = s"The following samples were not found in the metadata: ${notInMetadata mkString " "}"
+        throw new Exception(msg)
+      }
+    }
+  }
+
+  private def platformsCheck(metadata: Metadata) {
+    val platforms = new Platforms(config).list.toSet
+    for (s <- metadata.samples; p = metadata.platform(s)) {
+      if (!platforms.contains(p)) {
+        throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
       }
     }
   }

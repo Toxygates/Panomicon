@@ -22,21 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Handles the uploading of a number of files.
  */
 abstract public class ItemUploader extends Composite {
-
-  protected boolean completed;
   protected List<UploadWrapper> uploaders = new ArrayList<UploadWrapper>();
-
-  public ItemUploader() {
-    VerticalPanel vp = new VerticalPanel();
-    initWidget(vp);
-    makeGUI(vp);
-  }
 
   protected void resetAll() {
     for (UploadWrapper u : uploaders) {
@@ -44,8 +35,5 @@ abstract public class ItemUploader extends Composite {
     }
   }
 
-  abstract protected void makeGUI(VerticalPanel vp);
-
   abstract protected boolean canProceed();
-
 }
