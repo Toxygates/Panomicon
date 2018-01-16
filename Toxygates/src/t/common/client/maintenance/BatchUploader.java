@@ -26,7 +26,10 @@ import com.google.gwt.user.client.ui.*;
 public class BatchUploader extends ItemUploader {
   UploadWrapper metadata, data, calls;
 
-  protected void makeGUI(VerticalPanel vp) {
+  public BatchUploader() {
+    VerticalPanel vp = new VerticalPanel();
+    initWidget(vp);
+
     metadata = new UploadWrapper(this, "Metadata file (TSV)", metaPrefix, "tsv");
     uploaders.add(metadata);
     data = new UploadWrapper(this, "Normalized data file (CSV)", dataPrefix, "csv");
@@ -46,11 +49,11 @@ public class BatchUploader extends ItemUploader {
     vp.add(hp);
   }
 
+  @Override
   public boolean canProceed() {
     return metadata.hasFile()
         && data.hasFile()
         && (calls.hasFile() || Window.confirm("The Affymetrix calls file is missing. "
             + "Upload batch without calls data (all values present)?"));
-
   }
 }

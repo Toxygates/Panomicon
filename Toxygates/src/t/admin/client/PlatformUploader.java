@@ -32,8 +32,9 @@ public class PlatformUploader extends ItemUploader {
   UploadWrapper platform;
   RadioButton affyRadio, tRadio, bioRadio;
 
-  @Override
-  protected void makeGUI(VerticalPanel vp) {
+  public PlatformUploader() {
+    VerticalPanel vp = new VerticalPanel();
+    initWidget(vp);
     platform =
         new UploadWrapper(this, "Platform definition (CSV/TSV)",
             MaintenanceConstants.platformPrefix, "tsv", "csv");
