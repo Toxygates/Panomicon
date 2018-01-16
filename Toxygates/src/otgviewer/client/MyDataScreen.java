@@ -122,12 +122,6 @@ public class MyDataScreen extends Screen {
           }
           
           @Override
-          protected void onFinish() {
-            db.hide();
-            doRefresh();
-          }
-          
-          @Override
           protected void guiBeforeUploader(VerticalPanel vp, Batch b, boolean addNew) {
             visList = new ListBox();
             vp.add(new Label("Visibility"));
