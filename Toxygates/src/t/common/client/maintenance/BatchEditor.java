@@ -24,12 +24,12 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.*;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 abstract public class BatchEditor extends ManagedItemEditor {
   @Nullable protected BatchUploader uploader;
@@ -44,12 +44,10 @@ abstract public class BatchEditor extends ManagedItemEditor {
     this.datasets = datasets;
     this.instances = instances;
     this.batchOps = batchOps;
-    guiBeforeUploader(vp, b, addNew);
 
-    if (addNew) { 
-      uploader = new BatchUploader();
-      vp.add(uploader);
-    }
+    guiBeforeUploader(vp, b, addNew);
+    uploader = new BatchUploader(addNew);
+    vp.add(uploader);
     guiAfterUploader(vp, b, addNew);
 
     addCommands();
