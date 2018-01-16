@@ -32,9 +32,7 @@ import scala.collection.JavaConversions._
  * Metadata that is read from a TSV file.
  */
 object TSVMetadata {
-  implicit def withIfNone[A](o: Option[A]) = new {
-    def ifNone(action: => Unit): Option[A] = { if (o == None) action; o }
-  }
+  def ifNone[A](o: Option[A], action: => Unit): Option[A] = { if (o == None) action; o }
 
   def apply(fact: Factory, file: String, attributes: AttributeSet): Metadata = {
     val metadata: Map[String, Seq[String]] = {
@@ -43,7 +41,7 @@ object TSVMetadata {
         column <- columns
         lowerCase = column._1.toLowerCase().trim
         trimmed = column._2.map(_.trim)
-        attribute <- attributes.byIdLowercase.get(lowerCase).ifNone(
+        attribute <- ifNone(attributes.byIdLowercase.get(lowerCase),
             println(s"attribute $lowerCase not found"))
       } yield attribute.id -> trimmed)
     }
