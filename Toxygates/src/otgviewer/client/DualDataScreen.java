@@ -3,8 +3,6 @@ package otgviewer.client;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.Column;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
@@ -39,6 +37,7 @@ public class DualDataScreen extends DataScreen {
   
   protected String mainTableType = "mRNA";
   protected String sideTableType = "miRNA";
+  protected boolean reverseMode = false;
   
   public DualDataScreen(ScreenManager man) {
     super(man);
@@ -52,9 +51,9 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.addStyleName("sideExpressionTable");
     
     expressionTable.selectionModel().addSelectionChangeHandler(e ->
-      setIndications(expressionTable, sideExpressionTable, mainTableType));      
+      setIndications(expressionTable, sideExpressionTable, true));      
     sideExpressionTable.selectionModel().addSelectionChangeHandler(e ->
-      setIndications(sideExpressionTable, expressionTable, sideTableType));
+      setIndications(sideExpressionTable, expressionTable, false));
   }
   
   protected void setDualView(String mainType, String sideType) {
@@ -65,7 +64,8 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected void flipDualView() {
-    setDualView(sideTableType, mainTableType);
+    reverseMode = !reverseMode;
+    setDualView(sideTableType, mainTableType);    
     List<Group> allColumns = new ArrayList<Group>(chosenColumns);
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
@@ -130,26 +130,30 @@ public class DualDataScreen extends DataScreen {
    * @param fromType
    */
   protected void setIndications(ExpressionTable fromTable, ExpressionTable toTable,
-                                String fromType) {
+                                boolean fromMain) {
     ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).
         getSelectedObject();    
-    toTable.setIndicatedProbes(getIndicatedRows(r, fromType));
+    toTable.setIndicatedProbes(getIndicatedRows(r.getProbe(), fromMain));
   }
   
-  protected String[] getIndicatedRows(ExpressionRow selected, String fromType) {
-    Map<ExpressionRow, Collection<AssociationValue>> lookup = mrnaToMirnaMap();
-    if (fromType.equals("mRNA")) {    
-      String[] mirnas = lookup.get(selected).stream().
-          map(av -> av.formalIdentifier()).toArray(String[]::new);
-      return mirnas;        
-    } else {           
-      String mirna = selected.getProbe();
-      String[] mrnas = lookup.keySet().stream().filter(er -> 
+  protected String[] getIndicatedRows(String selected, boolean fromMain) {
+    Map<String, Collection<AssociationValue>> lookup = linkingMap();
+    if (fromMain) {   
+      Collection<AssociationValue> assocs = lookup.get(selected);
+      if (assocs != null) {
+        String[] results =
+            lookup.get(selected).stream().map(av -> av.formalIdentifier()).toArray(String[]::new);
+        return results;
+      } else {
+        logger.warning("No association indications for " + selected);
+      }
+    } else {                 
+      String[] results = lookup.keySet().stream().filter(er -> 
         lookup.get(er).stream().map(av -> av.formalIdentifier()).
-        anyMatch(id -> id.equals(mirna))).
-        map(er -> er.getProbe()).toArray(String[]::new);
-      return mrnas;      
+        anyMatch(id -> id.equals(selected))).toArray(String[]::new);
+      return results;      
     }
+    return new String[0];
   }
   
   //Initial title only - need the constant here since the field won't be initialised
@@ -219,7 +223,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected AType typeForSideTable() {
-    if (sideTableType == "mRNA") {
+    if (reverseMode) {
       return AType.MRNA;
     } 
     return AType.MiRNA;
@@ -280,7 +284,11 @@ public class DualDataScreen extends DataScreen {
       Node.fromRow(r, kind)).collect(Collectors.toList());    
   }
   
-  protected Map<ExpressionRow, Collection<AssociationValue>> mrnaToMirnaMap() {    
+  /**
+   * Maps mRNA-miRNA in forward mode, miRNA-mRNA in reverse mode
+   * @return
+   */
+  protected Map<String, Collection<AssociationValue>> linkingMap() {    
     return mappingSummary.getFullMap();
   }
   
@@ -289,16 +297,24 @@ public class DualDataScreen extends DataScreen {
    * @return
    */
   public Network buildNetwork(String title) {
+    Map<String, ExpressionRow> lookup = new HashMap<String, ExpressionRow>();
     List<Node> nodes = new ArrayList<Node>();
     nodes.addAll(buildNodes(mainTableType, expressionTable.getDisplayedRows()));    
     nodes.addAll(buildNodes(sideTableType, sideExpressionTable.getDisplayedRows()));
         
+    expressionTable.getDisplayedRows().stream().forEach(r -> lookup.put(r.getProbe(), r));
+    sideExpressionTable.getDisplayedRows().stream().forEach(r -> lookup.put(r.getProbe(), r));
+    
     List<Interaction> interactions = new ArrayList<Interaction>();
-    Map<ExpressionRow, Collection<AssociationValue>> fullMap = mrnaToMirnaMap();
-    for (ExpressionRow row: fullMap.keySet()) {
-      for (AssociationValue av: fullMap.get(row)) {
-        Node from = Node.fromAssociation(av, sideTableType);
-        Node to = Node.fromRow(row, mainTableType);         
+    Map<String, Collection<AssociationValue>> fullMap = linkingMap();
+    for (String mainProbe: fullMap.keySet()) {
+      for (AssociationValue av: fullMap.get(mainProbe)) {
+        Node side = Node.fromAssociation(av, sideTableType);
+        Node main = Node.fromRow(lookup.get(mainProbe), mainTableType);
+        
+        //Directed interaction normally from miRNA to mRNA
+        Node from = reverseMode ? main : side;
+        Node to = reverseMode ? side: main;
         Interaction i = new Interaction(from, to, null, null);
         interactions.add(i);
       }

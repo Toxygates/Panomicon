@@ -2,12 +2,13 @@ package t.viewer.client.table;
 
 import java.util.*;
 
+import t.common.shared.sample.ExpressionRow;
 import t.viewer.shared.AssociationValue;
 
 /**
  * Summarises a single association column as a histogram for a set of rows.
  */
-public class AssociationSummary<T> {
+public class AssociationSummary<T extends ExpressionRow> {
 
   class HistogramEntry {
     AssociationValue entry;
@@ -22,7 +23,7 @@ public class AssociationSummary<T> {
   private List<AssociationValue> data = new ArrayList<AssociationValue>();
   private Set<AssociationValue> unique = new HashSet<AssociationValue>();
   private List<HistogramEntry> sortedByCount = new ArrayList<HistogramEntry>();
-  private Map<T, Collection<AssociationValue>> full = new HashMap<T, Collection<AssociationValue>>();
+  private Map<String, Collection<AssociationValue>> full = new HashMap<String, Collection<AssociationValue>>();
   
   AssociationSummary(AssociationTable<T>.AssociationColumn col, 
     Collection<T> rows) {
@@ -30,7 +31,7 @@ public class AssociationSummary<T> {
       Collection<AssociationValue> values = col.getLinkableValues(row);
       data.addAll(values);
       unique.addAll(values);
-      full.put(row, values);
+      full.put(row.getProbe(), values);
     }    
     for (AssociationValue key: unique) {
       HistogramEntry he = countItem(key);
@@ -76,6 +77,6 @@ public class AssociationSummary<T> {
   /**
    * Maps each row to all association values for that row.
    */
-  public Map<T, Collection<AssociationValue>> getFullMap() { return full; }
+  public Map<String, Collection<AssociationValue>> getFullMap() { return full; }
   
 }

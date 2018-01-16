@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
+import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.*;
 
@@ -38,7 +39,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author johan
  *
  */
-abstract public class AssociationTable<T> extends RichTable<T> {
+abstract public class AssociationTable<T extends ExpressionRow> extends RichTable<T> {
   protected final ProbeServiceAsync probeService;
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
   protected Map<AType, AssociationColumn> assocColumns;
@@ -245,6 +246,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   public AssociationSummary<T> associationSummary(AType atype) {
     AssociationColumn col = assocColumns.get(atype);
     if (col == null) {
+      logger.warning("No association summary available for atype " + atype);
       return null;
     }
     return associationSummary(col);
