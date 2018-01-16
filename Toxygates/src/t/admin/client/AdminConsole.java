@@ -20,12 +20,6 @@ package t.admin.client;
 
 import java.util.logging.Logger;
 
-import t.common.client.Resources;
-import t.common.client.maintenance.*;
-import t.common.shared.*;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.Instance;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -35,6 +29,13 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ListDataProvider;
+
+import t.common.client.Resources;
+import t.common.client.maintenance.*;
+import t.common.shared.Dataset;
+import t.common.shared.Platform;
+import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
 
 /**
  * Entry point for the data and instance management tool.
@@ -69,8 +70,9 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeInstancePanel() {
-    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("Edit instance", resources,
+    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("instance", resources,
         true, false) {
+      @Override
       protected ManagedItemEditor makeEditor(Instance i, final DialogBox db, boolean addNew) {
         return new InstanceEditor(i, addNew) {
           @Override
@@ -81,6 +83,7 @@ public class AdminConsole implements EntryPoint {
         };
       }
 
+      @Override
       protected void onDelete(Instance i) {
         deleteInstance(i);
       }
@@ -93,8 +96,9 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeDatasetPanel() {
-    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("Edit datasets", resources,
+    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("dataset", resources,
         true, false) {
+      @Override
       protected ManagedItemEditor makeEditor(Dataset d, final DialogBox db, boolean addNew) {
         return new DatasetEditor(d, addNew) {
           @Override
@@ -105,10 +109,12 @@ public class AdminConsole implements EntryPoint {
         };
       }
 
+      @Override
       protected void onDelete(Dataset d) {
         deleteDataset(d);
       }
 
+      @Override
       protected void addMidColumns(CellTable<Dataset> table) {
         TextColumn<Dataset> textColumn = new TextColumn<Dataset>() {
           @Override
@@ -121,6 +127,7 @@ public class AdminConsole implements EntryPoint {
         table.setColumnWidth(textColumn, "12.5em");
         
         textColumn = new TextColumn<Dataset>() {
+          @Override
           public String getValue(Dataset object) {
             return "" + object.getNumBatches();
           }
@@ -137,8 +144,9 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makePlatformPanel() {
-    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("Edit platform", resources,
+    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("platform", resources,
         true, false) {
+      @Override
       protected Widget makeEditor(Platform p, final DialogBox db, boolean addNew) {
         return new PlatformEditor(p, addNew) {
           @Override
@@ -149,10 +157,12 @@ public class AdminConsole implements EntryPoint {
         };
       }
 
+      @Override
       protected void onDelete(Platform p) {
         deletePlatform(p);
       }
 
+      @Override
       protected void addMidColumns(CellTable<Platform> table) {
         TextColumn<Platform> textColumn = new TextColumn<Platform>() {
           @Override
@@ -173,7 +183,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeBatchPanel() {    
-    BatchPanel bp = new BatchPanel("Edit batch", maintenanceService, resources,
+    BatchPanel bp = new BatchPanel(maintenanceService, resources,
         true, false) {
       @Override
       protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {

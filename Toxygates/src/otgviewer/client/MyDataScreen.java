@@ -72,7 +72,7 @@ public class MyDataScreen extends Screen {
     final Set<String> instancesForBatch = new HashSet<String>();       
     instancesForBatch.add(appInfo().instanceName());
     
-    BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
+    BatchPanel bp = new BatchPanel(userData, resources,
         true, true) {
       
       final static String HAS_SEEN_WARNING = "hasSeenMyDataWarning";
