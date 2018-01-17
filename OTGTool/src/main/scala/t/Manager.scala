@@ -119,7 +119,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
 
   def waitForTasklets() {
     while (TaskRunner.waitingForTask || TaskRunner.queueSize() > 0) {
-      Thread.sleep(100)
+      Thread.sleep(50)
     }
   }
 
