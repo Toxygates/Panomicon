@@ -118,8 +118,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   private def ensureDataset(ds: String): Unit = {
     val desc = if (Dataset.isSharedDataset(ds)) "User data (public)" else "My data"
-     val d = new Dataset(ds, desc,
-        "Auto-generated", null, "Auto-generated", 0)
+     val d = new Dataset(ds, desc, "Auto-generated", null, "Auto-generated", 0)
     addDataset(d, false)
   }
 }

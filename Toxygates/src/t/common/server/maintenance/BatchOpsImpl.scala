@@ -39,6 +39,8 @@ import t.sparql.Datasets
 import t.sparql.SampleFilter
 import t.sparql.TRDF
 import t.util.TempFiles
+import collection.JavaConverters.asScalaSetConverter
+import scala.language.implicitConversions
 
 import t.viewer.server.rpc.TServiceServlet
 
@@ -98,18 +100,16 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       checkMetadata(md)
       md = alterMetadataPriorToInsert(md)
 
-      TaskRunner += batchManager.addRecord(batch.getTitle, batch.getComment, context.config.triplestore)
-      //Set the parameters immediately, so that the batch is in the right dataset
-      // -> can be seen and deleted, in the case of e.g. user data
-      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(batch))
-
       TaskRunner ++= batchManager.add(batch.getTitle, batch.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        true, baseConfig.seriesBuilder,
-        simpleLog2)
+        false, baseConfig.seriesBuilder,
+        Some(batch), simpleLog2)
     }
   }
+
+  implicit def batch2bmBatch(b: Batch): BatchManager.Batch =
+    new BatchManager.Batch(b.getTitle, b.getEnabledInstances.toSeq, b.getDataset, b.getComment)
 
   protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 
@@ -149,26 +149,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   protected def updateBatch(b: Batch): Unit = {
-    val bs = new Batches(baseConfig.triplestore)
-    val existingAccess = bs.listAccess(b.getTitle())
-    val newAccess = b.getEnabledInstances()
-    for (i <- newAccess; if !existingAccess.contains(i)) {
-      bs.enableAccess(b.getTitle(), i)
-    }
-    for (i <- existingAccess; if !newAccess.contains(i)) {
-      bs.disableAccess(b.getTitle(), i)
-    }
-
-    val oldDs = bs.datasets.getOrElse(b.getTitle, null)
-    val newDs = b.getDataset
-    if (newDs != oldDs) {
-      val ds = new Datasets(baseConfig.triplestore)
-      if (oldDs != null) {
-        ds.removeMember(b.getTitle, oldDs)
-      }
-      ds.addMember(b.getTitle, newDs)
-    }
-    bs.setComment(b.getTitle, TRDF.escape(b.getComment))
+    new BatchManager(context).updateBatch(b).run()
   }
 
   protected def overviewParameters: Seq[Attribute] =
