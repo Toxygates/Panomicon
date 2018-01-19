@@ -184,8 +184,9 @@ object TaskRunner {
               _errorCause = Some(t)
               shutdown()
           }
+        } else {
+          Thread.sleep(50)
         }
-        Thread.sleep(1000)
       }
       //Received the stop signal
       println("TaskRunner stopping")

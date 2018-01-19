@@ -126,7 +126,6 @@ abstract public class BatchEditor extends ManagedItemEditor {
   
   @Override
   protected void onError() {
-    super.onError();
     if (uploader != null) {
       uploader.resetAll();
     }

@@ -190,10 +190,14 @@ object BatchManager extends ManagerTool {
   def showHelp() {
     println("Please specify a command (add/updateMetadata/delete/list/list-access/enable/disable)")
   }
+
+  //TODO: make instances and dataset Options, and get rid of redundancy in arguments to add and updateMetadata
+  case class Batch(title: String, instances: Seq[String], dataset: String, comment: String)
 }
 
 class BatchManager(context: Context) {
   import TRDF._
+  import BatchManager.Batch
 
   def config = context.config
   def samples = context.samples
@@ -226,12 +230,12 @@ class BatchManager(context: Context) {
 
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
-    append: Boolean, sbuilder: SeriesBuilder[S],
+    append: Boolean, sbuilder: SeriesBuilder[S], batch: Option[Batch] = None,
     simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
     r :+= newMetadataCheck(title, metadata, config, append)
-    r ++= addMetadata(title, comment, metadata, append, sbuilder)
+    r ++= addMetadata(title, comment, metadata, append, sbuilder, batch)
 
     // Note that we rely on probe maps, sample maps etc in matrixContext
     // not being read until they are needed
@@ -252,29 +256,55 @@ class BatchManager(context: Context) {
   }
 
   def updateMetadata[S <: Series[S]](title: String, comment: String,
-      metadata: Metadata, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+      metadata: Metadata, sbuilder: SeriesBuilder[S],
+      batch: Option[Batch] = None): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     r :+= updateMetadataCheck(title, metadata, config)
     r :+= deleteRDF(title)
-    r ++= addMetadata(title, comment, metadata, false, sbuilder)
+    r ++= addMetadata(title, comment, metadata, false, sbuilder, batch)
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
     r
   }
 
   def addMetadata[S <: Series[S]](title: String, comment: String, metadata: Metadata,
-      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+      append: Boolean, sbuilder: SeriesBuilder[S], batch: Option[Batch]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
     val ts = config.triplestore.get
     if (!append) {
       r :+= addRecord(title, comment, config.triplestore)
+      batch.map(r :+= updateBatch(_))
     }
     r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, ts)
 
     r
   }
+
+  def updateBatch(batch: Batch) =
+    new Tasklet("Update batch record") {
+      def run() {
+        val bs = new Batches(config.triplestore)
+        val existingInstances = bs.listAccess(batch.title)
+        for (i <- batch.instances; if !existingInstances.contains(i)) {
+          bs.enableAccess(batch.title, i)
+        }
+        for (i <- existingInstances; if !batch.instances.contains(i)) {
+          bs.disableAccess(batch.title, i)
+        }
+
+        val oldDataset = bs.datasets.getOrElse(batch.title, null)
+        if (batch.dataset != oldDataset) {
+          val ds = new Datasets(config.triplestore)
+          if (oldDataset != null) {
+            ds.removeMember(batch.title, oldDataset)
+          }
+          ds.addMember(batch.title, batch.dataset)
+        }
+        bs.setComment(batch.title, TRDF.escape(batch.comment))
+      }
+    }
 
   def delete[S <: Series[S]](title: String,
     sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
