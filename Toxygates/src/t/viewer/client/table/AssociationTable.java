@@ -67,7 +67,7 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
   }
 
   
-  private AType[] visibleAssociations() {
+  protected AType[] visibleAssociations() {
     List<AType> r = new ArrayList<AType>();
     for (HideableColumn<T, ?> ac : hideableColumns) {
       if (ac instanceof AssociationTable.AssociationColumn) {
@@ -77,6 +77,20 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
       }
     }
     return r.toArray(new AType[0]);
+  }
+  
+  public boolean isVisible(AType associationType) {
+    return assocColumns.get(associationType).visible();
+  }
+  
+  /**
+   * Display or hide an association column by its AType.
+   * @param associationType
+   * @param newState
+   */
+  public void setVisible(AType associationType, boolean newState) {
+    AssociationColumn aColumn = assocColumns.get(associationType);
+    setVisible(aColumn, newState);
   }
 
   public void getAssociations() {

@@ -207,6 +207,13 @@ public class DualDataScreen extends DataScreen {
   public void updateProbes() {
     super.updateProbes();
     sideExpressionTable.clearMatrix();
+    if (!reverseMode) {
+      expressionTable.setVisible(AType.MiRNA, true);
+      expressionTable.setVisible(AType.MRNA, false);
+    } else {
+      expressionTable.setVisible(AType.MiRNA, false);
+      expressionTable.setVisible(AType.MRNA, true);
+    }
     extractSideTableProbes();
   }
   
