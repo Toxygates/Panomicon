@@ -39,7 +39,9 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
+
 import com.google.gwt.user.client.ui.*;
+
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -363,6 +365,20 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
 
+  public void reapplyStyleToColumns() {
+    for (HideableColumn<T, ?> col: hideableColumns) {
+      reapplyStyle(style, col);
+    }
+  }
+  
+  protected void reapplyStyle(TableStyle style, HideableColumn<T, ?> col) {
+    StandardColumns c = col.col;
+    if (c != null) {
+      grid.setColumnWidth(col, style.initWidth(c));
+      col.setVisibility(style.initVisibility(c));
+    }    
+  }
+  
   public List<HideableColumn<T, ?>> getHideableColumns() {
     return hideableColumns;
   }
@@ -381,13 +397,15 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   }
 
   public abstract static class HideableColumn<T, C> extends Column<T, C> {
-    public HideableColumn(Cell<C> cell, boolean initState) {
+    public HideableColumn(Cell<C> cell, boolean initState, @Nullable StandardColumns col) {
       super(cell);      
       _visible = initState;
+      this.col = col;
     }
 
     protected boolean _visible;
     protected ColumnInfo _columnInfo;
+    final @Nullable StandardColumns col;
 
     public ColumnInfo columnInfo() {
       return _columnInfo;
@@ -410,10 +428,15 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     protected String _width;
     protected String _name;
     protected SafeHtmlCell _c;
-    @Nullable protected StandardColumns standardColumn;
     
-    public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width) {
-      super(c, initState);
+    /**
+     * The standard column represented here, if any
+     */
+    protected @Nullable StandardColumns col;
+
+    public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width,
+        @Nullable StandardColumns col) {
+      super(c, initState, col);
       this._c = c;
       _name = name;
       _width = width;
@@ -422,8 +445,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     
     public HTMLHideableColumn(SafeHtmlCell c, String name, 
         StandardColumns col, TableStyle style) {
-      this(c, name, style.initVisibility(col), style.initWidth(col));
-      this.standardColumn = col;
+      this(c, name, style.initVisibility(col), style.initWidth(col), col);
     }
 
     @Override
@@ -433,12 +455,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
       return build.toSafeHtml();
     }
 
-    protected abstract String getHtml(T er);
-    
-    @Nullable
-    public StandardColumns standardColumn() {
-      return standardColumn;
-    }
+    protected abstract String getHtml(T er);    
   }
 
   protected class RowHighlighter implements RowStyles<T> {
