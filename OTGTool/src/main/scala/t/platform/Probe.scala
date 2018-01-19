@@ -28,7 +28,8 @@ import t.db.StoredBioObject
 object Probe {
   import Probes._
   private val split = defaultPrefix + "/"
-  def unpack(uri: String) = Probe(uri.split(split)(1))
+  def unpack(uri: String) = Probe(unpackOnly(uri))
+  def unpackOnly(uri: String) = uri.split(split)(1)
 }
 
 //TODO reconsider which members should be standard for a T application in general
@@ -49,7 +50,7 @@ case class Probe(val identifier: String, override val name: String = "",
   }
 
   def pack = Probes.defaultPrefix + "/" + identifier
-  
+
   //TODO consider best location of this
   def isMiRna: Boolean = {
     identifier.contains("-miR-") ||

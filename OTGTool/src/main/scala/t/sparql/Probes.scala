@@ -471,7 +471,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   //TODO do not hardcode platform graph names here
-  
+
   private def mirnaAssociationGraphs =
     """|FROM <http://level-five.jp/t/mapping/mirdb>
        |FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
@@ -486,36 +486,38 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],
                         queryFromMirna: Boolean,
                         maxCount: Option[Int]): MMap[Probe, DefaultBio] = {
-    
+
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
     val targetVar = if(queryFromMirna) "mrna" else "mirna"
-    val queryForFilter = probes.map("\"" + _.identifier + "\"")      
-      
+    val queryForFilter = probes.map(p => bracket(p.pack))
+
     val q = s"""$tPrefixes
     |SELECT DISTINCT ?mrna ?score ?mirna ?trn
     |$mirnaAssociationGraphs
     |WHERE {
-    |  [ t:refseqTrn ?trn; a t:probe; rdfs:label ?mrna ].
-    |  [ t:refseqTrn ?trn; t:mirna [rdfs:label ?mirna]; t:score ?score ].
+    |  ?mrna t:refseqTrn ?trn; a t:probe.
+    |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
     |  ${valuesMultiFilter("?" + queryVar, queryForFilter)}
     |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
     |}
     |${maxCount.map(c => s"LIMIT $c").getOrElse("")}
     |""".stripMargin
-    
-    
+
     val r = triplestore.mapQuery(q, 30000).map(x => {
       val score = x("score")
       val refseq = x("trn")
       val experimental = false
-      val mapping = "miRDB 5.0"      
+      val mapping = "miRDB 5.0"
       val query = x(queryVar)
       val target = x(targetVar)
-      
+
       val extraInfo = s"$target ($mapping) experimental: $experimental score: ${"%.3f".format(score.toDouble)} via: $refseq"
-      
-      Probe(query) -> DefaultBio(target, target, Some(extraInfo))
+
+      Probe.unpack(query) ->
+        DefaultBio(Probe.unpackOnly(target),
+          Probe.unpackOnly(target),
+          Some(extraInfo))
     })
     makeMultiMap(r)
-  }  
+  }
 }

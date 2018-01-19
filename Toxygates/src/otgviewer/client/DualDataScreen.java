@@ -39,10 +39,10 @@ public class DualDataScreen extends DataScreen {
   protected String sideTableType = "miRNA";
   protected boolean reverseMode = false;
   
+  final static int MAX_SECONDARY_ROWS = 200;
+  
   public DualDataScreen(ScreenManager man) {
     super(man);
-    
-    final int MAX_SECONDARY_ROWS = 1000;
     
     TableFlags flags = new TableFlags(sideMatrix, true, false, 
         MAX_SECONDARY_ROWS, sideTableType, true, true);
@@ -249,7 +249,7 @@ public class DualDataScreen extends DataScreen {
     Map<String, Double> counts = new HashMap<String, Double>();
     
     //The first row is headers
-    for (int i = 1; i < rawData.length; i++) {    
+    for (int i = 1; i < rawData.length && i < MAX_SECONDARY_ROWS; i++) {    
       ids[i - 1] = rawData[i][1];
       counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
     }
