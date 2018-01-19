@@ -20,6 +20,8 @@ package t.viewer.client.table;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.StandardColumns;
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
@@ -108,15 +110,16 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 
   abstract protected String[] geneIdsForRow(T row);
 
-  public static abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
-    public LinkingColumn(SafeHtmlCell c, String name, boolean initState, String width) {
-      super(c, name, initState, width);
+  public static abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {    
+    public LinkingColumn(SafeHtmlCell c, String name, boolean initState, String width,
+        @Nullable StandardColumns col) {
+      super(c, name, initState, width, col);
     }
 
     public LinkingColumn(SafeHtmlCell c, String name, StandardColumns col, TableStyle style) {
-      this(c, name, style.initVisibility(col), style.initWidth(col));
+      this(c, name, style.initVisibility(col), style.initWidth(col), col);
     }
-
+    
     // TODO might move this method down or parameterise AssociationValue,
     // use an interface etc
     protected List<String> makeLinks(Collection<AssociationValue> values) {
@@ -157,7 +160,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
      *        meaningful if this association is sortable.
      */
     public AssociationColumn(SafeHtmlCell tc, AType association) {
-      super(tc, association.title(), false, "15em");
+      super(tc, association.title(), false, "15em", null);
       this.assoc = association;
       this._columnInfo = new ColumnInfo(_name, _width, association.canSort());
     }
