@@ -19,6 +19,7 @@
 package t.common.shared.sample;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
@@ -112,9 +113,6 @@ public class Unit extends SampleClass {
   }
 
   public static List<Unit> formUnits(DataSchema schema, Collection<Sample> samples) {
-    if (samples.size() == 0) {
-      return new ArrayList<Unit>();
-    }
     Map<SampleClass, List<Sample>> groups = new HashMap<SampleClass, List<Sample>>();
     for (Sample os : samples) {
       SampleClass unit = SampleClassUtils.asUnit(os.sampleClass(), schema);
@@ -124,20 +122,15 @@ public class Unit extends SampleClass {
       groups.get(unit).add(os);
     }
 
-    List<Unit> r = new ArrayList<Unit>(groups.keySet().size());
-    for (SampleClass u : groups.keySet()) {
-      Unit uu = new Unit(u, groups.get(u).toArray(new Sample[] {}));
-      r.add(uu);
-    }
-    return r;
+    return groups.keySet().stream().map(sampleClass ->
+      new Unit(sampleClass, groups.get(sampleClass).toArray(new Sample[0]))).
+      collect(Collectors.toList());    
   }
 
   public static Sample[] collectBarcodes(Unit[] units) {
-    List<Sample> r = new ArrayList<Sample>();
-    for (Unit b : units) {
-      Collections.addAll(r, b.getSamples());
-    }
-    return r.toArray(new Sample[0]);
+    return Arrays.stream(units).flatMap(u -> 
+      Arrays.stream(u.getSamples())).
+      toArray(Sample[]::new);
   }
 
   public static boolean contains(Unit[] units, Attribute param, String value) {
