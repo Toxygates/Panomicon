@@ -72,58 +72,63 @@ abstract public class BatchEditor extends ManagedItemEditor {
       return;
     }
     
-    Batch b =
-        new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(), 
+    Batch b = new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(),
             instancesForBatch(), datasetForBatch());
 
-    if (addNew) {
-      if (uploader.canProceed()) {
-        batchOps.addBatchAsync(b, new TaskCallback(logger, "Upload batch", batchOps) {
-
-          @Override
-          public void onSuccess(Void result) {
-            super.onSuccess(result);
-            onBatchUploadBegan();
-          }
-
-          @Override
-          protected void onCompletion() {
-            onFinish();
-            onFinishOrAbort();
-          }
-
-          @Override
-          protected void onCancelled() {
-            onError();
-          }
-
-          @Override
-          protected void handleFailure(Throwable caught) {
-            Window.alert("Error during upload: " + caught.getMessage());
-            if (caught instanceof BatchUploadException) {
-              BatchUploadException exception = (BatchUploadException) caught;
-              if (exception.idWasBad) {
-                idText.setText("");
-              }
-              if (exception.metadataWasBad) {
-                uploader.metadata.setFailure();
-              }
-              if (exception.normalizedDataWasBad) {
-                uploader.data.setFailure();
-              }
-            } else {
-              onError();
-            }
-          }
-        });
+    if (uploader.canProceed()) {
+      if (addNew) {
+        batchOps.addBatchAsync(b, callback("Upload batch"));
       } else {
-        Window.alert("Unable to proceed. Please make sure all required files have been uploaded.");
+        batchOps.updateBatchMetadataAsync(b, callback("Update batch metadata"));
       }
-    } else {
+    }
+    if (!addNew) {
       batchOps.update(b, editCallback());
+    } else {
+      Window.alert("Unable to proceed. Please make sure all required files have been uploaded.");
     }
   }
   
+  private TaskCallback callback(String title) {
+    return new TaskCallback(logger, title, batchOps) {
+      @Override
+      public void onSuccess(Void result) {
+        super.onSuccess(result);
+        onBatchUploadBegan();
+      }
+
+      @Override
+      protected void onCompletion() {
+        onFinish();
+        onFinishOrAbort();
+      }
+
+      @Override
+      protected void onCancelled() {
+        onError();
+      }
+
+      @Override
+      protected void handleFailure(Throwable caught) {
+        Window.alert("Error during upload: " + caught.getMessage());
+        if (caught instanceof BatchUploadException) {
+          BatchUploadException exception = (BatchUploadException) caught;
+          if (exception.idWasBad) {
+            idText.setText("");
+          }
+          if (exception.metadataWasBad) {
+            uploader.metadata.setFailure();
+          }
+          if (exception.normalizedDataWasBad) {
+            uploader.data.setFailure();
+          }
+        } else {
+          onError();
+        }
+      }
+    };
+  }
+
   @Override
   protected void onError() {
     if (uploader != null) {

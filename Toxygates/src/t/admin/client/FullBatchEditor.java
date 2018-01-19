@@ -22,15 +22,15 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import t.common.client.maintenance.BatchEditor;
 import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
-
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 public class FullBatchEditor extends BatchEditor {
 
@@ -93,21 +93,29 @@ public class FullBatchEditor extends BatchEditor {
 
     if (addNew) {
       if (uploader.canProceed()) {
-        batchOps.addBatchAsync(b, new TaskCallback(
-            logger, "Upload batch", batchOps) {
-
-          @Override
-          protected void onCompletion() {
-            onFinish();
-            onFinishOrAbort();
-          }
-        });
+        batchOps.addBatchAsync(b, callback("Upload batch"));
       } else {
         Window.alert("Unable to proceed. Please make sure all required files have been uploaded.");
       }
     } else {
-      batchOps.update(b, editCallback());
+      if (uploader.canProceed()) {
+        batchOps.updateBatchMetadataAsync(b, callback("Update batch metadata"));
+      } else {
+        batchOps.update(b, editCallback());
+      }
     }
+  }
+
+  private TaskCallback callback(String title) {
+    return new TaskCallback(
+        logger, title, batchOps) {
+
+      @Override
+      protected void onCompletion() {
+        onFinish();
+        onFinishOrAbort();
+      }
+    };
   }
 
 }

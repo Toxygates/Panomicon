@@ -22,15 +22,17 @@ package t.common.client.rpc;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.maintenance.Batch;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import t.common.shared.maintenance.Batch;
 
 public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
   
   void getBatches(@Nullable String[] datasets, AsyncCallback<Batch[]> callback);
   
   void addBatchAsync(Batch b, AsyncCallback<Void> callback);
+
+  void updateBatchMetadataAsync(Batch b, AsyncCallback<Void> callback);
 
   void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
 
