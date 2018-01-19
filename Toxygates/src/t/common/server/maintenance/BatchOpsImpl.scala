@@ -100,16 +100,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       checkMetadata(md)
       md = alterMetadataPriorToInsert(md)
 
-      TaskRunner ++= batchManager.add(batch.getTitle, batch.getComment, md,
+      TaskRunner ++= batchManager.add(batch, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder,
-        Some(batch), simpleLog2)
+        simpleLog2)
     }
   }
 
   implicit def batch2bmBatch(b: Batch): BatchManager.Batch =
-    new BatchManager.Batch(b.getTitle, b.getEnabledInstances.toSeq, b.getDataset, b.getComment)
+    BatchManager.Batch(b.getTitle, b.getComment, Some(b.getEnabledInstances.toSeq),
+        Some(b.getDataset))
 
   protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 

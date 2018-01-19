@@ -69,7 +69,7 @@ object BatchManager extends ManagerTool {
                 val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
                 val callFile = if (f.exists()) Some(f.getPath) else None
                 println(s"Insert $dataFile")
-                addTasklets(bm.add(title, comment,
+                addTasklets(bm.add(Batch(title, comment, None, None),
                   md, dataFile, callFile,
                   if (first) append else true, config.seriesBuilder))
                 first = false
@@ -83,7 +83,7 @@ object BatchManager extends ManagerTool {
 
               new Platforms(config).populateAttributes(config.attributes)
               val md = factory.tsvMetadata(metaFile, config.attributes)
-              addTasklets(bm.add(title, comment,
+              addTasklets(bm.add(Batch(title, comment, None, None),
                 md, dataFile, callFile,
                 append, config.seriesBuilder))
           }
@@ -97,7 +97,8 @@ object BatchManager extends ManagerTool {
             "Please specify a metadata file with -metadata")
           new Platforms(config).populateAttributes(config.attributes)
           val md = factory.tsvMetadata(metaFile, config.attributes)
-          addTasklets(bm.updateMetadata(title, comment, md, config.seriesBuilder))
+          addTasklets(bm.updateMetadata(Batch(title, comment, None, None),
+              md, config.seriesBuilder))
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -191,8 +192,7 @@ object BatchManager extends ManagerTool {
     println("Please specify a command (add/updateMetadata/delete/list/list-access/enable/disable)")
   }
 
-  //TODO: make instances and dataset Options, and get rid of redundancy in arguments to add and updateMetadata
-  case class Batch(title: String, instances: Seq[String], dataset: String, comment: String)
+  case class Batch(title: String, comment: String, instances: Option[Seq[String]], dataset: Option[String])
 }
 
 class BatchManager(context: Context) {
@@ -228,14 +228,14 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
 
-  def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+  def add[S <: Series[S]](batch: Batch, metadata: Metadata,
     dataFile: String, callFile: Option[String],
-    append: Boolean, sbuilder: SeriesBuilder[S], batch: Option[Batch] = None,
+    append: Boolean, sbuilder: SeriesBuilder[S],
     simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
-    r :+= newMetadataCheck(title, metadata, config, append)
-    r ++= addMetadata(title, comment, metadata, append, sbuilder, batch)
+    r :+= newMetadataCheck(batch.title, metadata, config, append)
+    r ++= addMetadata(batch, metadata, append, sbuilder)
 
     // Note that we rely on probe maps, sample maps etc in matrixContext
     // not being read until they are needed
@@ -255,29 +255,28 @@ class BatchManager(context: Context) {
     r
   }
 
-  def updateMetadata[S <: Series[S]](title: String, comment: String,
-      metadata: Metadata, sbuilder: SeriesBuilder[S],
-      batch: Option[Batch] = None): Iterable[Tasklet] = {
+  def updateMetadata[S <: Series[S]](batch: Batch,
+      metadata: Metadata, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
-    r :+= updateMetadataCheck(title, metadata, config)
-    r :+= deleteRDF(title)
-    r ++= addMetadata(title, comment, metadata, false, sbuilder, batch)
+    r :+= updateMetadataCheck(batch.title, metadata, config)
+    r :+= deleteRDF(batch.title)
+    r ++= addMetadata(batch, metadata, false, sbuilder)
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
     r
   }
 
-  def addMetadata[S <: Series[S]](title: String, comment: String, metadata: Metadata,
-      append: Boolean, sbuilder: SeriesBuilder[S], batch: Option[Batch]): Iterable[Tasklet] = {
+  def addMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
+      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
     val ts = config.triplestore.get
     if (!append) {
-      r :+= addRecord(title, comment, config.triplestore)
-      batch.map(r :+= updateBatch(_))
+      r :+= addRecord(batch.title, batch.comment, config.triplestore)
+      r :+= updateBatch(batch)
     }
     r :+= addSampleIDs(metadata)
-    r :+= addRDF(title, metadata, sbuilder, ts)
+    r :+= addRDF(batch.title, metadata, sbuilder, ts)
 
     r
   }
@@ -286,23 +285,31 @@ class BatchManager(context: Context) {
     new Tasklet("Update batch record") {
       def run() {
         val bs = new Batches(config.triplestore)
-        val existingInstances = bs.listAccess(batch.title)
-        for (i <- batch.instances; if !existingInstances.contains(i)) {
-          bs.enableAccess(batch.title, i)
-        }
-        for (i <- existingInstances; if !batch.instances.contains(i)) {
-          bs.disableAccess(batch.title, i)
-        }
-
-        val oldDataset = bs.datasets.getOrElse(batch.title, null)
-        if (batch.dataset != oldDataset) {
-          val ds = new Datasets(config.triplestore)
-          if (oldDataset != null) {
-            ds.removeMember(batch.title, oldDataset)
+        // Update instances and dataset if specified in batch
+        batch.instances.foreach(instances => {
+          val existingInstances = bs.listAccess(batch.title)
+          for (i <- instances; if !existingInstances.contains(i)) {
+            log(s"Enabling access to instance $i")
+            bs.enableAccess(batch.title, i)
           }
-          ds.addMember(batch.title, batch.dataset)
-        }
-        bs.setComment(batch.title, TRDF.escape(batch.comment))
+          for (i <- existingInstances; if !instances.contains(i)) {
+            log(s"Disabling access to instance $i")
+            bs.disableAccess(batch.title, i)
+          }
+        })
+        batch.dataset.foreach(dataset => {
+          val oldDataset = bs.datasets.getOrElse(batch.title, null)
+          if (dataset != oldDataset) {
+            val ds = new Datasets(config.triplestore)
+            if (oldDataset != null) {
+              log(s"Removing association with dataset $oldDataset")
+              ds.removeMember(batch.title, oldDataset)
+            }
+            ds.addMember(batch.title, dataset)
+            log(s"Associating batch with dataset $dataset")
+          }
+          bs.setComment(batch.title, TRDF.escape(batch.comment))
+        })
       }
     }
 
