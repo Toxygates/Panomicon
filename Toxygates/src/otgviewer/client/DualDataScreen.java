@@ -35,19 +35,33 @@ public class DualDataScreen extends DataScreen {
   
   protected final static String sideMatrix = "SECONDARY";
   
-  protected String mainTableType = "mRNA";
-  protected String sideTableType = "miRNA";
-  protected boolean reverseMode = false;
-  
   final static int MAX_SECONDARY_ROWS = 200;
+  
+  static enum DualMode {
+    Forward("mRNA", "miRNA", AType.MiRNA), Reverse("miRNA", "mRNA", AType.MRNA);
+    
+    final String mainType, sideType;
+    final AType linkingType;
+    DualMode(String mainType, String sideType, AType linkingType) {
+      this.mainType = mainType;
+      this.sideType = sideType;
+      this.linkingType = linkingType;
+    }
+    
+    TableStyle mainStyle() { return TableStyle.getStyle(mainType); }
+    TableStyle sideStyle() { return TableStyle.getStyle(sideType); }
+    DualMode flip() { return (this == Forward) ? Reverse : Forward; }
+  }
+  
+  DualMode mode = DualMode.Forward;
   
   public DualDataScreen(ScreenManager man) {
     super(man);
     
     TableFlags flags = new TableFlags(sideMatrix, true, false, 
-        MAX_SECONDARY_ROWS, sideTableType, true, true);
+        MAX_SECONDARY_ROWS, mode.sideType, true, true);
     sideExpressionTable = new ExpressionTable(this, flags,
-        TableStyle.getStyle(sideTableType));     
+        mode.sideStyle());     
     sideExpressionTable.addStyleName("sideExpressionTable");
     
     expressionTable.selectionModel().addSelectionChangeHandler(e ->
@@ -56,19 +70,20 @@ public class DualDataScreen extends DataScreen {
       setIndications(sideExpressionTable, expressionTable, false));
   }
   
-  protected void setDualView(String mainType, String sideType) {
-    mainTableType = mainType;
-    sideTableType = sideType;
-    expressionTable.setTitleHeader(mainTableType);
-    sideExpressionTable.setTitleHeader(sideTableType);
+  protected void setDualView(DualMode mode) {
+    this.mode = mode;    
+    expressionTable.setTitleHeader(mode.mainType);
+    sideExpressionTable.setTitleHeader(mode.sideType);
   }
   
-  protected void flipDualView() {
-    reverseMode = !reverseMode;
-    setDualView(sideTableType, mainTableType);    
+  protected void flipDualView() {    
+    setDualView(mode.flip());    
     List<Group> allColumns = new ArrayList<Group>(chosenColumns);
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
+    
+    expressionTable.applyStyleToColumns(mode.mainStyle());
+    sideExpressionTable.applyStyleToColumns(mode.sideStyle());
     updateProbes();
   }
   
@@ -168,7 +183,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected List<Group> columnsForMainTable(List<Group> from) {    
-    List<Group> r = columnsOfType(from, mainTableType);
+    List<Group> r = columnsOfType(from, mode.mainType);
     
     //If mRNA and miRNA columns are not mixed, we simply display them as they are
     if (r.isEmpty()) {
@@ -178,7 +193,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected List<Group> columnsForSideTable(List<Group> from) {
-    return columnsOfType(from, sideTableType);        
+    return columnsOfType(from, mode.sideType);        
   }
   
   protected TableStyle mainTableStyle() {
@@ -207,7 +222,7 @@ public class DualDataScreen extends DataScreen {
   public void updateProbes() {
     super.updateProbes();
     sideExpressionTable.clearMatrix();
-    if (!reverseMode) {
+    if (mode == DualMode.Forward) {
       expressionTable.setVisible(AType.MiRNA, true);
       expressionTable.setVisible(AType.MRNA, false);
     } else {
@@ -229,16 +244,9 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.clearMatrix();
   }
   
-  protected AType typeForSideTable() {
-    if (reverseMode) {
-      return AType.MRNA;
-    } 
-    return AType.MiRNA;
-  }
-  
   protected AssociationSummary<ExpressionRow> mappingSummary; 
   protected void extractSideTableProbes() {
-    mappingSummary = expressionTable.associationSummary(typeForSideTable());
+    mappingSummary = expressionTable.associationSummary(mode.linkingType);
     if (sideExpressionTable.chosenColumns().isEmpty()) {
       return;
     }
@@ -261,10 +269,10 @@ public class DualDataScreen extends DataScreen {
       counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
     }
     
-    logger.info("Extracted " + ids.length + " " + sideTableType);    
+    logger.info("Extracted " + ids.length + " " + mode.sideType);    
     
     Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
-      "Number of times each " + sideTableType + " appeared", counts,
+      "Number of times each " + mode.sideType + " appeared", counts,
       null);
 
     List<Synthetic> synths = new ArrayList<Synthetic>();
@@ -306,8 +314,8 @@ public class DualDataScreen extends DataScreen {
   public Network buildNetwork(String title) {
     Map<String, ExpressionRow> lookup = new HashMap<String, ExpressionRow>();
     List<Node> nodes = new ArrayList<Node>();
-    nodes.addAll(buildNodes(mainTableType, expressionTable.getDisplayedRows()));    
-    nodes.addAll(buildNodes(sideTableType, sideExpressionTable.getDisplayedRows()));
+    nodes.addAll(buildNodes(mode.mainType, expressionTable.getDisplayedRows()));    
+    nodes.addAll(buildNodes(mode.sideType, sideExpressionTable.getDisplayedRows()));
         
     expressionTable.getDisplayedRows().stream().forEach(r -> lookup.put(r.getProbe(), r));
     sideExpressionTable.getDisplayedRows().stream().forEach(r -> lookup.put(r.getProbe(), r));
@@ -316,12 +324,12 @@ public class DualDataScreen extends DataScreen {
     Map<String, Collection<AssociationValue>> fullMap = linkingMap();
     for (String mainProbe: fullMap.keySet()) {
       for (AssociationValue av: fullMap.get(mainProbe)) {
-        Node side = Node.fromAssociation(av, sideTableType);
-        Node main = Node.fromRow(lookup.get(mainProbe), mainTableType);
+        Node side = Node.fromAssociation(av, mode.sideType);
+        Node main = Node.fromRow(lookup.get(mainProbe), mode.mainType);
         
         //Directed interaction normally from miRNA to mRNA
-        Node from = reverseMode ? main : side;
-        Node to = reverseMode ? side: main;
+        Node from = (mode == DualMode.Forward) ? main : side;
+        Node to = (mode == DualMode.Forward)  ? side: main;
         Interaction i = new Interaction(from, to, null, null);
         interactions.add(i);
       }

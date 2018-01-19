@@ -365,7 +365,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
 
-  public void reapplyStyleToColumns() {
+  public void applyStyleToColumns(TableStyle style) {
     for (HideableColumn<T, ?> col: hideableColumns) {
       reapplyStyle(style, col);
     }
