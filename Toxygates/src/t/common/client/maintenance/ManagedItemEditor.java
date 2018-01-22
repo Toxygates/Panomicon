@@ -42,6 +42,8 @@ public abstract class ManagedItemEditor extends Composite {
   protected final TextBox idText;
   protected final TextArea commentArea;
 
+  protected Button okButton;
+
   public ManagedItemEditor(@Nullable ManagedItem i, boolean addNew) {
     vp = new VerticalPanel();
     this.addNew = addNew;
@@ -54,7 +56,7 @@ public abstract class ManagedItemEditor extends Composite {
     if (i != null) {
       idText.setValue(i.getTitle());
       commentArea.setValue(i.getComment());
-    }          
+    }
   }
 
   protected TextArea addTextArea(String label) {
@@ -77,11 +79,9 @@ public abstract class ManagedItemEditor extends Composite {
     HorizontalPanel buttons = new HorizontalPanel();
     buttons.setSpacing(4);
 
-    final Button okButton = new Button("OK");
-    okButton.addClickHandler(e -> {
-      okButton.setEnabled(false);
+    okButton = Utils.makeButton(new RunCommand("OK", () -> {
       triggerEdit();
-    });
+    }));
     buttons.add(okButton);
 
     Button cancelButton = Utils.makeButton(new RunCommand("Cancel", () -> {

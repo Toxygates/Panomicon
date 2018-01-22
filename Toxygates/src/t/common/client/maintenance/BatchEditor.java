@@ -73,6 +73,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
       Window.alert("ID cannot be empty");
       return;
     }
+    okButton.setEnabled(false);
     
     Batch b = new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(),
             instancesForBatch(), datasetForBatch());
@@ -81,8 +82,10 @@ abstract public class BatchEditor extends ManagedItemEditor {
       if (uploader.canProceed()) {
         batchOps.addBatchAsync(b, callback("Upload batch"));
       } else {
-        Window
-            .alert("Unable to proceed. Please make sure all required files have been uploaded.");
+        Window.alert(
+            "Unable to proceed. Please make sure all required files have been uploaded.");
+        okButton.setEnabled(true);
+
       }
     } else {
       if (uploader.canProceed()) {
@@ -133,6 +136,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
         if (exception.normalizedDataWasBad) {
           uploader.data.setFailure();
         }
+        okButton.setEnabled(true);
       } else {
         onError();
       }
@@ -144,5 +148,6 @@ abstract public class BatchEditor extends ManagedItemEditor {
     if (uploader != null) {
       uploader.resetAll();
     }
+    okButton.setEnabled(true);
   }
 }
