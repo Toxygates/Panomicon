@@ -23,7 +23,9 @@ public class AssociationSummary<T extends ExpressionRow> {
   private List<AssociationValue> data = new ArrayList<AssociationValue>();
   private Set<AssociationValue> unique = new HashSet<AssociationValue>();
   private List<HistogramEntry> sortedByCount = new ArrayList<HistogramEntry>();
-  private Map<String, Collection<AssociationValue>> full = new HashMap<String, Collection<AssociationValue>>();
+  private Map<String, Collection<AssociationValue>> full = 
+      new HashMap<String, Collection<AssociationValue>>();
+  private Map<String, Collection<String>> reverseMap;
   
   AssociationSummary(AssociationTable<T>.AssociationColumn col, 
     Collection<T> rows) {
@@ -78,5 +80,21 @@ public class AssociationSummary<T extends ExpressionRow> {
    * Maps each row to all association values for that row.
    */
   public Map<String, Collection<AssociationValue>> getFullMap() { return full; }
+  
+  public Map<String, Collection<String>> getReverseMap() {
+    if (reverseMap == null) {
+      reverseMap = new HashMap<String, Collection<String>>();
+      for (String k : full.keySet()) {
+        for (AssociationValue v: full.get(k)) {
+          String id = v.formalIdentifier();
+          if (!reverseMap.containsKey(id)) {
+            reverseMap.put(id, new LinkedList<String>());
+          }
+          reverseMap.get(id).add(k);
+        }
+      }
+    }
+    return reverseMap;    
+  }
   
 }

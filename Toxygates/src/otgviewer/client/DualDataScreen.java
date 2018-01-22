@@ -3,7 +3,6 @@ package otgviewer.client;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import t.common.shared.AType;
@@ -151,24 +150,26 @@ public class DualDataScreen extends DataScreen {
     toTable.setIndicatedProbes(getIndicatedRows(r.getProbe(), fromMain));
   }
   
-  protected String[] getIndicatedRows(String selected, boolean fromMain) {
-    Map<String, Collection<AssociationValue>> lookup = linkingMap();
+  protected Set<String> getIndicatedRows(String selected, boolean fromMain) {
     if (fromMain) {   
+      Map<String, Collection<AssociationValue>> lookup = linkingMap();
       Collection<AssociationValue> assocs = lookup.get(selected);
-      if (assocs != null) {
-        String[] results =
-            lookup.get(selected).stream().map(av -> av.formalIdentifier()).toArray(String[]::new);
-        return results;
+      if (assocs != null) {          
+        return lookup.get(selected).stream().map(av -> 
+            av.formalIdentifier()).collect(Collectors.toSet());        
       } else {
         logger.warning("No association indications for " + selected);
       }
-    } else {                 
-      String[] results = lookup.keySet().stream().filter(er -> 
-        lookup.get(er).stream().map(av -> av.formalIdentifier()).
-        anyMatch(id -> id.equals(selected))).toArray(String[]::new);
-      return results;      
-    }
-    return new String[0];
+    } else {
+      Map<String, Collection<String>> lookup = mappingSummary.getReverseMap();
+      Collection<String> assocs = lookup.get(selected);
+      if (assocs != null) {
+        return new HashSet<String>(assocs);
+      } else {
+        logger.warning("No reverse association indications for " + selected);
+      }           
+    }    
+    return new HashSet<String>();
   }
   
   //Initial title only - need the constant here since the field won't be initialised
@@ -244,9 +245,11 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.clearMatrix();
   }
   
-  protected AssociationSummary<ExpressionRow> mappingSummary; 
+  //Maps main table to side table via a column.
+  protected AssociationSummary<ExpressionRow> mappingSummary;
+  
   protected void extractSideTableProbes() {
-    mappingSummary = expressionTable.associationSummary(mode.linkingType);
+    mappingSummary = expressionTable.associationSummary(mode.linkingType);  
     if (sideExpressionTable.chosenColumns().isEmpty()) {
       return;
     }

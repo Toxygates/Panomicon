@@ -973,10 +973,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     
   }
   
-  public void setIndicatedProbes(String[] highlighted) {
-    indicatedRows.clear();
-    logger.info(highlighted.length + " rows are indicated");
-    indicatedRows.addAll(Arrays.asList(highlighted));
+  public void setIndicatedProbes(Set<String> highlighted) {
+    logger.info(highlighted.size() + " rows are indicated");
+    indicatedRows = highlighted;
     grid.redraw();
   }
   
