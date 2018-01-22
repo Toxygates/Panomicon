@@ -21,6 +21,7 @@
 package t.common.client.maintenance;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +29,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import t.common.client.rpc.BatchOperationsAsync;
+import t.common.client.rpc.MaintenanceOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.*;
 
@@ -75,58 +77,66 @@ abstract public class BatchEditor extends ManagedItemEditor {
     Batch b = new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(),
             instancesForBatch(), datasetForBatch());
 
-    if (uploader.canProceed()) {
-      if (addNew) {
+    if (addNew) {
+      if (uploader.canProceed()) {
         batchOps.addBatchAsync(b, callback("Upload batch"));
       } else {
-        batchOps.updateBatchMetadataAsync(b, callback("Update batch metadata"));
+        Window
+            .alert("Unable to proceed. Please make sure all required files have been uploaded.");
       }
-    }
-    if (!addNew) {
-      batchOps.update(b, editCallback());
     } else {
-      Window.alert("Unable to proceed. Please make sure all required files have been uploaded.");
+      if (uploader.canProceed()) {
+        batchOps.updateBatchMetadataAsync(b, callback("Update batch metadata"));
+      } else {
+        batchOps.update(b, editCallback());
+      }
     }
   }
   
-  private TaskCallback callback(String title) {
-    return new TaskCallback(logger, title, batchOps) {
-      @Override
-      public void onSuccess(Void result) {
-        super.onSuccess(result);
-        onBatchUploadBegan();
-      }
+  protected TaskCallback callback(String title) {
+    return new BETaskCallback(logger, title, batchOps);
+  }
 
-      @Override
-      protected void onCompletion() {
-        onFinish();
-        onFinishOrAbort();
-      }
+  protected class BETaskCallback extends TaskCallback {
+    public BETaskCallback(Logger l, String title, MaintenanceOperationsAsync maintenanceOps) {
+      super(l, title, maintenanceOps);
+    }
 
-      @Override
-      protected void onCancelled() {
+    @Override
+    public void onSuccess(Void result) {
+      super.onSuccess(result);
+      onBatchUploadBegan();
+    }
+
+    @Override
+    protected void onCompletion() {
+      onFinish();
+      onFinishOrAbort();
+    }
+
+    @Override
+    protected void onCancelled() {
+      onError();
+    }
+
+    @Override
+    protected void handleFailure(Throwable caught) {
+      Window.alert("Error during upload: " + caught.getMessage());
+      if (caught instanceof BatchUploadException) {
+        BatchUploadException exception = (BatchUploadException) caught;
+        if (exception.idWasBad) {
+          idText.setText("");
+        }
+        if (exception.metadataWasBad) {
+          uploader.metadata.setFailure();
+        }
+        if (exception.normalizedDataWasBad) {
+          uploader.data.setFailure();
+        }
+      } else {
         onError();
       }
-
-      @Override
-      protected void handleFailure(Throwable caught) {
-        Window.alert("Error during upload: " + caught.getMessage());
-        if (caught instanceof BatchUploadException) {
-          BatchUploadException exception = (BatchUploadException) caught;
-          if (exception.idWasBad) {
-            idText.setText("");
-          }
-          if (exception.metadataWasBad) {
-            uploader.metadata.setFailure();
-          }
-          if (exception.normalizedDataWasBad) {
-            uploader.data.setFailure();
-          }
-        } else {
-          onError();
-        }
-      }
-    };
+    }
   }
 
   @Override
