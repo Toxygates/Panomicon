@@ -149,18 +149,27 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
       this(c, name, style.initVisibility(col), style.initWidth(col), col);
     }
     
+    final int MAX_ITEMS = 10;
+    
     // TODO might move this method down or parameterise AssociationValue,
     // use an interface etc
     protected List<String> makeLinks(Collection<AssociationValue> values) {
       List<String> r = new ArrayList<String>();
+      int i = 0;
       for (AssociationValue v : values) {
-        String l = formLink(v.formalIdentifier());
-        if (l != null) {
-          r.add("<div class=\"associationValue\" title=\"" + v.tooltip()
-              + "\"><a target=\"_TGassoc\" href=\"" + l + "\">" + v.title() + "</a></div>");
-        } else {
-          r.add("<div class=\"associationValue\" title=\"" + v.tooltip() + "\">" + v.title()
-              + "</div>"); // no link
+        i += 1;
+        if (i <= MAX_ITEMS) {
+          String l = formLink(v.formalIdentifier());
+          if (l != null) {
+            r.add("<div class=\"associationValue\" title=\"" + v.tooltip()
+                + "\"><a target=\"_TGassoc\" href=\"" + l + "\">" + v.title() + "</a></div>");
+          } else {
+            r.add("<div class=\"associationValue\" title=\"" + v.tooltip() + "\">" + v.title()
+                + "</div>"); // no link
+          }
+        }
+        if (i == MAX_ITEMS + 1) {
+          r.add("<div> ... (" + values.size() + " items)");
         }
       }
       return r;
