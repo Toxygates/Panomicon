@@ -28,6 +28,9 @@ import t.db.ProbeMap
 import t.platform._
 import t.sparql.secondary._
 import t.util.TempFiles
+import t.platform.Species
+import t.platform.Species._
+
 
 object Probes extends RDFClass {
   val defaultPrefix: String = s"$tRoot/probe"
@@ -472,12 +475,23 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   //TODO do not hardcode platform graph names here
 
-  private def mirnaAssociationGraphs =
-    """|FROM <http://level-five.jp/t/mapping/mirdb>
-       |FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
-       |FROM <http://level-five.jp/t/platform/Mouse430_2>
-       |FROM <http://level-five.jp/t/platform/Rat230_2>
+  private def mirnaAssociationGraphsAllSpecies = 
+    """|FROM <http://level-five.jp/t/mapping/mirdb>       
        |FROM <http://level-five.jp/t/platform/mirbase-v21>""".stripMargin
+  
+  private def mirnaAssociationGraphs(species: Option[Species]) = {
+    val r = species match {
+      case Some(Rat)   => "FROM <http://level-five.jp/t/platform/Rat230_2>"
+      case Some(Mouse) => "FROM <http://level-five.jp/t/platform/Mouse430_2>"
+      case Some(Human) => "FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>"
+      case _ =>
+      """|FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
+         |FROM <http://level-five.jp/t/platform/Mouse430_2>
+         |FROM <http://level-five.jp/t/platform/Rat230_2>""".stripMargin              
+    }
+    s"""|$r
+       |$mirnaAssociationGraphsAllSpecies""".stripMargin
+  }
 
   /**
    * Obtain mRNA-miRNA associations.
@@ -485,7 +499,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    */
   def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],
                         queryFromMirna: Boolean,
-                        maxCount: Option[Int]): MMap[Probe, DefaultBio] = {
+                        maxCount: Option[Int],
+                        species: Option[Species] = None): MMap[Probe, DefaultBio] = {
 
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
     val targetVar = if(queryFromMirna) "mrna" else "mirna"
@@ -493,7 +508,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
     val q = s"""$tPrefixes
     |SELECT DISTINCT ?mrna ?score ?mirna ?trn
-    |$mirnaAssociationGraphs
+    |${mirnaAssociationGraphs(species)}
     |WHERE {
     |  ?mrna t:refseqTrn ?trn; a t:probe.
     |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
