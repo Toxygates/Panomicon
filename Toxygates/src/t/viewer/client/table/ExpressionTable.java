@@ -976,8 +976,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   public void setIndicatedProbes(Set<String> highlighted) {
     logger.info(highlighted.size() + " rows are indicated");
+    Set<String> oldIndicated = indicatedRows;
     indicatedRows = highlighted;
-    grid.redraw();
+    
+    for (int i = 0; i < displayedProbes.length; ++i) {
+      if (highlighted.contains(displayedProbes[i]) ||
+          oldIndicated.contains(displayedProbes[i])) {
+        grid.redrawRow(i);
+      }
+    }
   }
   
   protected boolean isIndicated(ExpressionRow row) {
