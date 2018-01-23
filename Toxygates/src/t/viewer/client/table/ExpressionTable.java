@@ -909,6 +909,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     chartBarcodes = null;
     loadedData = false;
+    lastColumnFilters.clear();
     logMatrixInfo("Columns changed (" + columns.size() + ")");
   }
 
@@ -944,7 +945,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
   
   public void clearMatrix() {
-    matrixInfo = null;
+    matrixInfo = null;    
     asyncProvider.updateRowCount(0, true);
     setEnabled(false);
   }
