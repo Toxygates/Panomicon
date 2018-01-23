@@ -21,6 +21,7 @@
 package t.common.client.maintenance;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +29,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import t.common.client.rpc.BatchOperationsAsync;
+import t.common.client.rpc.MaintenanceOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.*;
 
@@ -71,63 +73,80 @@ abstract public class BatchEditor extends ManagedItemEditor {
       Window.alert("ID cannot be empty");
       return;
     }
+    okButton.setEnabled(false);
     
-    Batch b =
-        new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(), 
+    Batch b = new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(),
             instancesForBatch(), datasetForBatch());
 
     if (addNew) {
       if (uploader.canProceed()) {
-        batchOps.addBatchAsync(b, new TaskCallback(logger, "Upload batch", batchOps) {
-
-          @Override
-          public void onSuccess(Void result) {
-            super.onSuccess(result);
-            onBatchUploadBegan();
-          }
-
-          @Override
-          protected void onCompletion() {
-            onFinish();
-            onFinishOrAbort();
-          }
-
-          @Override
-          protected void onCancelled() {
-            onError();
-          }
-
-          @Override
-          protected void handleFailure(Throwable caught) {
-            Window.alert("Error during upload: " + caught.getMessage());
-            if (caught instanceof BatchUploadException) {
-              BatchUploadException exception = (BatchUploadException) caught;
-              if (exception.idWasBad) {
-                idText.setText("");
-              }
-              if (exception.metadataWasBad) {
-                uploader.metadata.setFailure();
-              }
-              if (exception.normalizedDataWasBad) {
-                uploader.data.setFailure();
-              }
-            } else {
-              onError();
-            }
-          }
-        });
+        batchOps.addBatchAsync(b, callback("Upload batch"));
       } else {
-        Window.alert("Unable to proceed. Please make sure all required files have been uploaded.");
+        Window.alert(
+            "Unable to proceed. Please make sure all required files have been uploaded.");
+        okButton.setEnabled(true);
+
       }
     } else {
-      batchOps.update(b, editCallback());
+      if (uploader.canProceed()) {
+        batchOps.updateBatchMetadataAsync(b, callback("Update batch metadata"));
+      } else {
+        batchOps.update(b, editCallback());
+      }
     }
   }
   
+  protected TaskCallback callback(String title) {
+    return new BETaskCallback(logger, title, batchOps);
+  }
+
+  protected class BETaskCallback extends TaskCallback {
+    public BETaskCallback(Logger l, String title, MaintenanceOperationsAsync maintenanceOps) {
+      super(l, title, maintenanceOps);
+    }
+
+    @Override
+    public void onSuccess(Void result) {
+      super.onSuccess(result);
+      onBatchUploadBegan();
+    }
+
+    @Override
+    protected void onCompletion() {
+      onFinish();
+      onFinishOrAbort();
+    }
+
+    @Override
+    protected void onCancelled() {
+      onError();
+    }
+
+    @Override
+    protected void handleFailure(Throwable caught) {
+      if (caught instanceof BatchUploadException) {
+        BatchUploadException exception = (BatchUploadException) caught;
+        if (exception.idWasBad) {
+          idText.setText("");
+        }
+        if (exception.metadataWasBad) {
+          uploader.metadata.setFailure();
+        }
+        if (exception.normalizedDataWasBad) {
+          uploader.data.setFailure();
+        }
+        okButton.setEnabled(true);
+      } else {
+        onError();
+      }
+    }
+  }
+
   @Override
   protected void onError() {
     if (uploader != null) {
       uploader.resetAll();
     }
+    okButton.setEnabled(true);
   }
 }

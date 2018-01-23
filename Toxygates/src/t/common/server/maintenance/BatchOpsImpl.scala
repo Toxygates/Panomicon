@@ -87,29 +87,55 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
-      var md: Metadata = null
-      try {
-        md = factory.tsvMetadata(metaFile.getAbsolutePath(),
-          context.config.attributes)
-      } catch {
-        case e: Exception =>
-          e.printStackTrace()
-          throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file. " + e.getMessage)
-      }
+      val metadata = createMetadata(metaFile)
 
-      checkMetadata(md)
-      md = alterMetadataPriorToInsert(md)
-
-      TaskRunner ++= batchManager.add(batch.getTitle, batch.getComment, md,
+      TaskRunner ++= batchManager.add(batch, metadata,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder,
-        Some(batch), simpleLog2)
+        simpleLog2)
+    }
+  }
+
+  def updateBatchMetadataAsync(batch: Batch): Unit = {
+    ensureNotMaintenance()
+    showUploadedFiles()
+    grabRunner()
+
+    val batchManager = new BatchManager(context)
+
+    cleanMaintenance {
+      TaskRunner.start()
+      setLastTask("Update batch metadata")
+
+      val tempFiles = new TempFiles()
+      setAttribute("tempFiles", tempFiles)
+      val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").getOrElse {
+        throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
+      }
+      val metadata = createMetadata(metaFile)
+
+      TaskRunner ++= batchManager.updateMetadata(batch, metadata, baseConfig.seriesBuilder)
+    }
+  }
+
+  protected def createMetadata(metaFile: java.io.File): Metadata = {
+    try {
+      val md = factory.tsvMetadata(metaFile.getAbsolutePath(),
+        context.config.attributes)
+      checkMetadata(md)
+      alterMetadataPriorToInsert(md)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file. "
+            + e.getMessage)
     }
   }
 
   implicit def batch2bmBatch(b: Batch): BatchManager.Batch =
-    new BatchManager.Batch(b.getTitle, b.getEnabledInstances.toSeq, b.getDataset, b.getComment)
+    BatchManager.Batch(b.getTitle, b.getComment, Some(b.getEnabledInstances.toSeq),
+        Some(b.getDataset))
 
   protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 

@@ -1,6 +1,7 @@
 package t.common.shared.sample;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -73,12 +74,7 @@ public class SampleClassUtils {
   }
   
   public static <T extends HasClass> List<T> filter(SampleClass sc, List<T> from) {
-    List<T> r = new ArrayList<T>();
-    for (T t : from) {
-      if (sc.compatible(t.sampleClass())) {
-        r.add(t);
-      }
-    }
-    return r;
+    return from.stream().filter(test -> sc.compatible(test.sampleClass())).
+         collect(Collectors.toList());   
   }
 }

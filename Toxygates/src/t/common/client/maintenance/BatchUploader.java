@@ -30,7 +30,8 @@ public class BatchUploader extends ItemUploader {
     VerticalPanel vp = new VerticalPanel();
     initWidget(vp);
 
-    metadata = new UploadWrapper(this, "Metadata file (TSV)", metaPrefix, "tsv");
+    metadata = new UploadWrapper(this, "Metadata file (TSV)" +
+        (full ? "" : " (optional)"), metaPrefix, "tsv");
     uploaders.add(metadata);
     HorizontalPanel hp = new HorizontalPanel();
     hp.add(metadata);

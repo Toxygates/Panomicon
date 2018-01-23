@@ -67,7 +67,16 @@ abstract class UserDataServiceImpl extends TServiceServlet
     //For user data, the unique user id will here be supplied from the client side.
     //(e.g. user-a1f8032011c0f...)
     //can also be user-shared in the case of shared user data.
+    ensureDataset(b.getDataset)
 
+    super.addBatchAsync(b)
+  }
+
+  //Public entry point
+  override def updateBatchMetadataAsync(b: Batch): Unit = {
+    ensureNotMaintenance()
+    checkAccess(b)
+    //See note about ensureDataset in addBatchAsync
     ensureDataset(b.getDataset)
 
     super.addBatchAsync(b)

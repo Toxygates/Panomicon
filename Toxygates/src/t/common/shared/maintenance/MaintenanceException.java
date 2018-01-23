@@ -25,14 +25,17 @@ public class MaintenanceException extends Exception {
 
   public MaintenanceException(String message) {
     super(message);
+    printStackTrace();
   }
 
   public MaintenanceException(Throwable cause) {
     super(cause);
+    printStackTrace();
   }
 
   public MaintenanceException(String message, Throwable cause) {
     super(message, cause);
+    printStackTrace();
   }
 
 }
