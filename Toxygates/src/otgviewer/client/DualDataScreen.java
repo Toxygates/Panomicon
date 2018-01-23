@@ -3,6 +3,8 @@ package otgviewer.client;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import t.common.shared.AType;
@@ -147,11 +149,11 @@ public class DualDataScreen extends DataScreen {
                                 boolean fromMain) {
     ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).
         getSelectedObject();    
-    toTable.setIndicatedProbes(getIndicatedRows(r.getProbe(), fromMain));
+    toTable.setIndicatedProbes(getIndicatedRows(r != null ? r.getProbe() : null, fromMain));
   }
   
-  protected Set<String> getIndicatedRows(String selected, boolean fromMain) {
-    if (fromMain) {   
+  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {    
+    if (fromMain && selected != null) {   
       Map<String, Collection<AssociationValue>> lookup = linkingMap();
       Collection<AssociationValue> assocs = lookup.get(selected);
       if (assocs != null) {          
@@ -160,7 +162,7 @@ public class DualDataScreen extends DataScreen {
       } else {
         logger.warning("No association indications for " + selected);
       }
-    } else {
+    } else if (selected != null) {
       Map<String, Collection<String>> lookup = mappingSummary.getReverseMap();
       Collection<String> assocs = lookup.get(selected);
       if (assocs != null) {
