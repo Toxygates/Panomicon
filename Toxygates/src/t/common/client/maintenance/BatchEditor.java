@@ -124,7 +124,6 @@ abstract public class BatchEditor extends ManagedItemEditor {
 
     @Override
     protected void handleFailure(Throwable caught) {
-      Window.alert("Error during upload: " + caught.getMessage());
       if (caught instanceof BatchUploadException) {
         BatchUploadException exception = (BatchUploadException) caught;
         if (exception.idWasBad) {
