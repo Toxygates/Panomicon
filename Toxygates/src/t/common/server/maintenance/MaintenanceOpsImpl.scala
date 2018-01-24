@@ -74,10 +74,6 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     KCDBRegistry.closeWriters()
   }
 
-  protected def beforeTaskCleanup() {
-    UploadServlet.removeSessionFileItems(request)
-  }
-
   def getOperationResults(): OperationResults = {
     lastResults
   }
