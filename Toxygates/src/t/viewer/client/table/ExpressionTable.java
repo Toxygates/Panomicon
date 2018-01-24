@@ -974,15 +974,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     
   }
   
-  public void setIndicatedProbes(Set<String> highlighted) {
+  public void setIndicatedProbes(Set<String> highlighted, boolean redraw) {
     logger.info(highlighted.size() + " rows are indicated");
     Set<String> oldIndicated = indicatedRows;
     indicatedRows = highlighted;
     
-    for (int i = 0; i < displayedProbes.length; ++i) {
-      if (highlighted.contains(displayedProbes[i]) ||
-          oldIndicated.contains(displayedProbes[i])) {
-        grid.redrawRow(i);
+    if (redraw) {
+      for (int i = 0; i < displayedProbes.length; ++i) {
+        if (highlighted.contains(displayedProbes[i]) || oldIndicated.contains(displayedProbes[i])) {
+          grid.redrawRow(i);
+        }
       }
     }
   }

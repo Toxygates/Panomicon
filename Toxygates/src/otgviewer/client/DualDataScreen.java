@@ -149,7 +149,8 @@ public class DualDataScreen extends DataScreen {
                                 boolean fromMain) {
     ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).
         getSelectedObject();    
-    toTable.setIndicatedProbes(getIndicatedRows(r != null ? r.getProbe() : null, fromMain));
+    toTable.setIndicatedProbes(getIndicatedRows(r != null ? r.getProbe() : null, fromMain),
+      true);
   }
   
   protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {    
@@ -225,6 +226,10 @@ public class DualDataScreen extends DataScreen {
   public void updateProbes() {
     super.updateProbes();
     sideExpressionTable.clearMatrix();
+    sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
+    expressionTable.setIndicatedProbes(new HashSet<String>(), false);
+    
+    expressionTable.setAssociationAutoRefresh(false);
     if (mode == DualMode.Forward) {
       expressionTable.setVisible(AType.MiRNA, true);
       expressionTable.setVisible(AType.MRNA, false);
@@ -232,6 +237,8 @@ public class DualDataScreen extends DataScreen {
       expressionTable.setVisible(AType.MiRNA, false);
       expressionTable.setVisible(AType.MRNA, true);
     }
+    expressionTable.setAssociationAutoRefresh(true);
+    
     extractSideTableProbes();
   }
   

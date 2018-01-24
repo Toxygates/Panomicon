@@ -45,6 +45,8 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
   protected Map<AType, AssociationColumn> assocColumns;
   
   private boolean waitingForAssociations = true;
+  
+  private boolean refreshEnabled = true;
 
   public AssociationTable(Screen screen, TableStyle style, 
       TableFlags flags) {
@@ -119,6 +121,15 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
     } else {
       logger.info("No associations to fetch");
     }
+  }
+  
+  /**
+   * If this flag is true (which is the default), 
+   * associations are auto-refreshed when they are initially displayed.
+   * @param autoRefresh
+   */
+  public void setAssociationAutoRefresh(boolean autoRefresh) {
+    this.refreshEnabled = autoRefresh;
   }
   
   /**
@@ -217,7 +228,7 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
     public void setVisibility(boolean v) {
 
       super.setVisibility(v);
-      if (v) {
+      if (v && refreshEnabled) {
         getAssociations();
       }
     }
