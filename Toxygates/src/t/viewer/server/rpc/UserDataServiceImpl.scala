@@ -41,6 +41,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   override def localInit(config: Configuration) {
     super.localInit(config)
+    populateAttributes(baseConfig)
     homeDir = config.webappHomeDir
   }
 

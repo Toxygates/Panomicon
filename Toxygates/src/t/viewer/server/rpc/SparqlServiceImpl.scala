@@ -103,19 +103,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with
     val triplestore = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(triplestore)
 
-    populateAttributes(baseConfig)
     this.instanceURI = conf.instanceURI
     //Preload appInfo
     appInfoLoader.latest
-  }
-
-  /**
-   * From the triplestore, read attributes that do not yet exist
-   * in the attribute set and populate them once.
-   */
-  protected def populateAttributes(bc: BaseConfig) {
-    val platforms = new t.sparql.Platforms(bc)
-    platforms.populateAttributes(bc.attributes)
   }
 
   //AppInfo refreshes at most once per day.

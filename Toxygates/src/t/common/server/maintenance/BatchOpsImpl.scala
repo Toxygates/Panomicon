@@ -43,6 +43,7 @@ import collection.JavaConverters.asScalaSetConverter
 import scala.language.implicitConversions
 
 import t.viewer.server.rpc.TServiceServlet
+import t.BaseConfig
 
 /**
  * Routines for servlets that support the management of batches.
@@ -50,6 +51,15 @@ import t.viewer.server.rpc.TServiceServlet
 trait BatchOpsImpl extends MaintenanceOpsImpl
     with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
+
+  /**
+   * From the triplestore, read attributes that do not yet exist
+   * in the attribute set and populate them once.
+   */
+  protected def populateAttributes(bc: BaseConfig) {
+    val platforms = new t.sparql.Platforms(bc)
+    platforms.populateAttributes(bc.attributes)
+  }
 
   protected def simpleLog2: Boolean = false
 
