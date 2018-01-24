@@ -51,8 +51,8 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
 
   protected def setLastTask(task: String) = setAttribute("lastTask", task)
   protected def lastTask: String = getAttribute("lastTask")
-  protected def setLastResults(results: OperationResults) = setAttribute("lastResults", results)
-  protected def lastResults: OperationResults = getAttribute("lastResults")
+  protected def setLastResults(results: Option[OperationResults]) = setAttribute("lastResults", results)
+  protected def lastResults: Option[OperationResults] = getAttribute("lastResults")
 
   protected def isMaintenanceMode: Boolean =
     context.config.data.isMaintenanceMode
@@ -77,7 +77,10 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   def getOperationResults(): OperationResults = {
-    lastResults
+    if (lastResults.isEmpty) {
+      throw new MaintenanceException("Cannot get operation results: operation not yet complete")
+    }
+    lastResults.get
   }
 
   def cancelTask(): Unit = {
@@ -95,8 +98,10 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
       }
       val p = if (TaskRunner.queueSize == 0 && !TaskRunner.waitingForTask) {
         val success = TaskRunner.errorCause == None
-        setLastResults(new OperationResults(lastTask, success,
-        		   TaskRunner.resultMessages.toArray))
+        if (lastResults.isEmpty) {
+          setLastResults(Some(new OperationResults(lastTask, success,
+          		   TaskRunner.resultMessages.toArray)))
+        }
           afterTaskCleanup(success)
           new Progress("No task in progress", 0, true)
       } else {
@@ -124,6 +129,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   protected def cleanMaintenance[T](task: => T): T = try {
+    setLastResults(None)
     task
   } catch {
     case e: Exception =>
