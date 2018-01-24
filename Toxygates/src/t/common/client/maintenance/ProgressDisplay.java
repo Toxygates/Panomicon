@@ -40,7 +40,7 @@ import t.common.shared.maintenance.Progress;
  * @author johan
  */
 public class ProgressDisplay extends Composite {
-  final int POLL_INTERVAL = 2000; // ms
+  final int POLL_INTERVAL = 500; // ms
 
   Label statusLabel = new Label("0%");
 
@@ -108,25 +108,23 @@ public class ProgressDisplay extends Composite {
         });
       }
     };
-    timer.scheduleRepeating(POLL_INTERVAL);
+    timer.schedule(POLL_INTERVAL);
   }
 
   void setProgress(Progress p) {
-
     for (String m : p.getMessages()) {
       addLog(m);
     }
 
     if (p.isAllFinished()) {
       statusLabel.setText("All done (100%)");
-      timer.cancel();
       cancelButton.setEnabled(false);
       doneButton.setEnabled(true);
 
       maintenanceService.getOperationResults(new AsyncCallback<OperationResults>() {
         @Override
         public void onFailure(Throwable caught) {
-          Window.alert("Error while obtaining operation results");
+          Window.alert("Error while obtaining operation results: " + caught.getMessage());
         }
 
         @Override
@@ -150,12 +148,13 @@ public class ProgressDisplay extends Composite {
     } else {
       String task = p.getTask();
       statusLabel.setText(task + " (" + p.getPercentage() + "%)");
+      timer.schedule(POLL_INTERVAL);
     }
   }
 
   void addLog(String message) {
     Date now = new Date();
-    String time = DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT).format(now);
+    String time = DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(now);
 
     Label l = new Label(time + " " + message);
     l.addStyleName("taskLogEntry");
