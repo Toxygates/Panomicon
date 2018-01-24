@@ -51,8 +51,8 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
 
   protected def setLastTask(task: String) = setAttribute("lastTask", task)
   protected def lastTask: String = getAttribute("lastTask")
-  protected def setLastResults(results: OperationResults) = setAttribute("lastResults", results)
-  protected def lastResults: OperationResults = getAttribute("lastResults")
+  protected def setLastResults(results: Option[OperationResults]) = setAttribute("lastResults", results)
+  protected def lastResults: Option[OperationResults] = getAttribute("lastResults")
 
   protected def isMaintenanceMode: Boolean =
     context.config.data.isMaintenanceMode
@@ -64,22 +64,23 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
   }
 
-  protected def afterTaskCleanup() {
+  protected def afterTaskCleanup(success: Boolean) {
     val tc: TempFiles = getAttribute("tempFiles")
     if (tc != null) {
     	tc.dropAll()
     }
-    UploadServlet.removeSessionFileItems(request)
+    if (success) {
+      UploadServlet.removeSessionFileItems(request)
+    }
     TaskRunner.shutdown()
     KCDBRegistry.closeWriters()
   }
 
-  protected def beforeTaskCleanup() {
-    UploadServlet.removeSessionFileItems(request)
-  }
-
   def getOperationResults(): OperationResults = {
-    lastResults
+    if (lastResults.isEmpty) {
+      throw new MaintenanceException("Cannot get operation results: operation not yet complete")
+    }
+    lastResults.get
   }
 
   def cancelTask(): Unit = {
@@ -96,10 +97,12 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
         println(m)
       }
       val p = if (TaskRunner.queueSize == 0 && !TaskRunner.waitingForTask) {
-        setLastResults(new OperationResults(lastTask,
-        		   TaskRunner.errorCause == None,
-        		   TaskRunner.resultMessages.toArray))
-          afterTaskCleanup()
+        val success = TaskRunner.errorCause == None
+        if (lastResults.isEmpty) {
+          setLastResults(Some(new OperationResults(lastTask, success,
+          		   TaskRunner.resultMessages.toArray)))
+        }
+          afterTaskCleanup(success)
           new Progress("No task in progress", 0, true)
       } else {
         TaskRunner.currentTask match {
@@ -126,10 +129,11 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   protected def cleanMaintenance[T](task: => T): T = try {
+    setLastResults(None)
     task
   } catch {
     case e: Exception =>
-      afterTaskCleanup()
+      afterTaskCleanup(false)
       TaskRunner.reset()
       throw wrapException(e)
   }
@@ -145,7 +149,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    */
   protected def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String,
       suffix: String): Option[java.io.File] = {
-    getFile(tag) match {
+    getFileItem(tag) match {
       case None => None
       case Some(fi) =>
         val f = tempFiles.makeNew(prefix, suffix)
@@ -159,13 +163,15 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    * @param tag the tag to look for.
    * @return
    */
-  protected def getFile(tag: String): Option[FileItem] = {
+  // TODO: stop relying on undocumented UploadServlet.getSessionFileItems sort order
+  protected def getFileItem(tag: String): Option[FileItem] = {
     val items = UploadServlet.getSessionFileItems(request);
     if (items == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
     }
 
-    for (fi <- items) {
+    // items will be sorted in ascending order of upload time, but this is undocumented
+    for (fi <- items.reverseIterator) {
       if (fi.getFieldName().startsWith(tag)) {
         return Some(fi)
       }

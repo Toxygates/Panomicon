@@ -43,6 +43,7 @@ import collection.JavaConverters.asScalaSetConverter
 import scala.language.implicitConversions
 
 import t.viewer.server.rpc.TServiceServlet
+import t.BaseConfig
 
 /**
  * Routines for servlets that support the management of batches.
@@ -50,6 +51,15 @@ import t.viewer.server.rpc.TServiceServlet
 trait BatchOpsImpl extends MaintenanceOpsImpl
     with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
+
+  /**
+   * From the triplestore, read attributes that do not yet exist
+   * in the attribute set and populate them once.
+   */
+  protected def populateAttributes(bc: BaseConfig) {
+    val platforms = new t.sparql.Platforms(bc)
+    platforms.populateAttributes(bc.attributes)
+  }
 
   protected def simpleLog2: Boolean = false
 
@@ -76,10 +86,10 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
 
-      if (getFile(metaPrefix) == None) {
+      if (getFileItem(metaPrefix).isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
-      if (getFile(dataPrefix) == None) {
+      if (getFileItem(dataPrefix).isEmpty) {
         throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 

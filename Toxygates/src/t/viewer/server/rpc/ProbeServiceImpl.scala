@@ -72,18 +72,8 @@ with ProbeService {
 
     val triplestore = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(triplestore)
-    populateAttributes(baseConfig)
     //Preload
     appInfoLoader.latest
-  }
-
-  /**
-   * From the triplestore, read attributes that do not yet exist
-   * in the attribute set and populate them once.
-   */
-  protected def populateAttributes(bc: BaseConfig) {
-    val platforms = new t.sparql.Platforms(bc)
-    platforms.populateAttributes(bc.attributes)
   }
 
   protected def stateKey = "probes"

@@ -51,6 +51,7 @@ with BatchOpsImpl with MaintenanceService {
 
   override def localInit(config: Configuration) {
     super.localInit(config)
+    populateAttributes(baseConfig)
     homeDir = config.webappHomeDir
   }
 
@@ -74,7 +75,7 @@ with BatchOpsImpl with MaintenanceService {
 
       TaskRunner.start()
       setLastTask("Add platform")
-      if (getFile(platformPrefix) == None) {
+      if (getFileItem(platformPrefix) == None) {
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
 
