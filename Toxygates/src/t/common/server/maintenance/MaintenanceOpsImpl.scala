@@ -145,7 +145,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    */
   protected def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String,
       suffix: String): Option[java.io.File] = {
-    getFile(tag) match {
+    getFileItem(tag) match {
       case None => None
       case Some(fi) =>
         val f = tempFiles.makeNew(prefix, suffix)
@@ -159,7 +159,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    * @param tag the tag to look for.
    * @return
    */
-  protected def getFile(tag: String): Option[FileItem] = {
+  protected def getFileItem(tag: String): Option[FileItem] = {
     val items = UploadServlet.getSessionFileItems(request);
     if (items == null) {
       throw new MaintenanceException("No files have been uploaded yet.")

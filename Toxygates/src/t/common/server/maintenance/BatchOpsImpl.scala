@@ -76,10 +76,10 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
 
-      if (getFile(metaPrefix).isEmpty) {
+      if (getFileItem(metaPrefix).isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
-      if (getFile(dataPrefix).isEmpty) {
+      if (getFileItem(dataPrefix).isEmpty) {
         throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 
