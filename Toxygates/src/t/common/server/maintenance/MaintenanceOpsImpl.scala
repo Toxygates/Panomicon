@@ -64,12 +64,14 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
   }
 
-  protected def afterTaskCleanup() {
+  protected def afterTaskCleanup(success: Boolean) {
     val tc: TempFiles = getAttribute("tempFiles")
     if (tc != null) {
     	tc.dropAll()
     }
-    UploadServlet.removeSessionFileItems(request)
+    if (success) {
+      UploadServlet.removeSessionFileItems(request)
+    }
     TaskRunner.shutdown()
     KCDBRegistry.closeWriters()
   }
@@ -92,10 +94,10 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
         println(m)
       }
       val p = if (TaskRunner.queueSize == 0 && !TaskRunner.waitingForTask) {
-        setLastResults(new OperationResults(lastTask,
-        		   TaskRunner.errorCause == None,
+        val success = TaskRunner.errorCause == None
+        setLastResults(new OperationResults(lastTask, success,
         		   TaskRunner.resultMessages.toArray))
-          afterTaskCleanup()
+          afterTaskCleanup(success)
           new Progress("No task in progress", 0, true)
       } else {
         TaskRunner.currentTask match {
@@ -125,7 +127,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     task
   } catch {
     case e: Exception =>
-      afterTaskCleanup()
+      afterTaskCleanup(false)
       TaskRunner.reset()
       throw wrapException(e)
   }

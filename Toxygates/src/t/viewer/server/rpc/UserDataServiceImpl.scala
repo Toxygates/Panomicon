@@ -54,8 +54,8 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   protected override def mayAppendBatch: Boolean = false
 
-  override protected def afterTaskCleanup(): Unit = {
-    super.afterTaskCleanup()
+  override protected def afterTaskCleanup(success: Boolean): Unit = {
+    super.afterTaskCleanup(success)
     KCDBRegistry.closeWriters()
   }
 
