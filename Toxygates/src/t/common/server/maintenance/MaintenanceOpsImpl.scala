@@ -155,13 +155,15 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    * @param tag the tag to look for.
    * @return
    */
+  // TODO: stop relying on undocumented UploadServlet.getSessionFileItems sort order
   protected def getFileItem(tag: String): Option[FileItem] = {
     val items = UploadServlet.getSessionFileItems(request);
     if (items == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
     }
 
-    for (fi <- items) {
+    // items will be sorted in ascending order of upload time, but this is undocumented
+    for (fi <- items.reverseIterator) {
       if (fi.getFieldName().startsWith(tag)) {
         return Some(fi)
       }
