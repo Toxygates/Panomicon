@@ -18,6 +18,7 @@ import t.viewer.shared.*;
 import t.viewer.shared.network.*;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.SingleSelectionModel;
 
@@ -39,14 +40,17 @@ public class DualDataScreen extends DataScreen {
   final static int MAX_SECONDARY_ROWS = 200;
   
   static enum DualMode {
-    Forward("mRNA", "miRNA", AType.MiRNA), Reverse("miRNA", "mRNA", AType.MRNA);
+    Forward("mRNA", "miRNA", AType.MiRNA, true), Reverse("miRNA", "mRNA", AType.MRNA, true),
+    SingleMRNA("mRNA", "miRNA", null, false), SingleMiRNA("miRNA", "mRNA", null, false);
     
     final String mainType, sideType;
     final AType linkingType;
-    DualMode(String mainType, String sideType, AType linkingType) {
+    final boolean isSplit;
+    DualMode(String mainType, String sideType, AType linkingType, boolean isSplit) {
       this.mainType = mainType;
       this.sideType = sideType;
       this.linkingType = linkingType;
+      this.isSplit = isSplit;
     }
     
     TableStyle mainStyle() { return TableStyle.getStyle(mainType); }
@@ -54,6 +58,10 @@ public class DualDataScreen extends DataScreen {
     DualMode flip() { return (this == Forward) ? Reverse : Forward; }
   }
   
+  /**
+   * The preferred mode when two column types are available.
+   */
+  DualMode preferredDoubleMode = DualMode.Forward;
   DualMode mode = DualMode.Forward;
   
   public DualDataScreen(ScreenManager man) {
@@ -71,14 +79,8 @@ public class DualDataScreen extends DataScreen {
       setIndications(sideExpressionTable, expressionTable, false));
   }
   
-  protected void setDualView(DualMode mode) {
-    this.mode = mode;    
-    expressionTable.setTitleHeader(mode.mainType);
-    sideExpressionTable.setTitleHeader(mode.sideType);
-  }
-  
   protected void flipDualView() {    
-    setDualView(mode.flip());    
+    preferredDoubleMode = mode.flip();    
     List<Group> allColumns = new ArrayList<Group>(chosenColumns);
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
@@ -129,13 +131,17 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected void downloadNetwork(Format format) {
-    MatrixServiceAsync matrixService = manager().matrixService();
-    Network network = buildNetwork("miRNA-mRNA interactions");
-    matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(this) {
-      public void handleSuccess(String url) {
-        Utils.displayURL("Your download is ready.", "Download", url);
-      }
-    });
+    if (mode.isSplit) {
+      MatrixServiceAsync matrixService = manager().matrixService();
+      Network network = buildNetwork("miRNA-mRNA interactions");
+      matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(this) {
+        public void handleSuccess(String url) {
+          Utils.displayURL("Your download is ready.", "Download", url);
+        }
+      });
+    } else {
+      Window.alert("Please view mRNA and miRNA samples simultaneously to download networks.");
+    }
   }
   
   /**
@@ -147,10 +153,11 @@ public class DualDataScreen extends DataScreen {
    */
   protected void setIndications(ExpressionTable fromTable, ExpressionTable toTable,
                                 boolean fromMain) {
-    ExpressionRow r = ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).
-        getSelectedObject();    
-    toTable.setIndicatedProbes(getIndicatedRows(r != null ? r.getProbe() : null, fromMain),
-      true);
+    if (mode.isSplit) {
+      ExpressionRow r =
+          ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).getSelectedObject();
+      toTable.setIndicatedProbes(getIndicatedRows(r != null ? r.getProbe() : null, fromMain), true);
+    }
   }
   
   protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {    
@@ -208,14 +215,34 @@ public class DualDataScreen extends DataScreen {
     return super.styleForColumns(columnsForSideTable(chosenColumns));    
   }
   
+  protected DualMode pickMode(List<Group> columns) {
+    String[] types = columns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);
+    if (types.length >= 2) {
+      return preferredDoubleMode;
+    } else if (types.length == 1 && types[0].equals("mRNA")) {
+      return DualMode.SingleMRNA;
+    } else if (types.length == 1 && types[0].equals("miRNA")) {
+      return DualMode.SingleMiRNA;
+    } else {
+      logger.warning("No valid dual mode found.");
+      return DualMode.SingleMRNA;
+    }
+  }
+  
   @Override
   protected void changeColumns(List<Group> columns) {    
-    super.changeColumns(columnsForMainTable(columns));    
+    mode = pickMode(columns);
+    super.changeColumns(columnsForMainTable(columns));
+    expressionTable.setTitleHeader(mode.mainType);
+    sideExpressionTable.setTitleHeader(mode.sideType);
+    
     List<Group> sideColumns = columnsForSideTable(columns);
-    if (sideExpressionTable != null && !sideColumns.isEmpty()) {
-      sideExpressionTable.columnsChanged(sideColumns);
-    }  
-    if (!sideColumns.isEmpty()) {
+    if (sideExpressionTable != null && !sideColumns.isEmpty()) {    
+      sideExpressionTable.columnsChanged(sideColumns);    
+    }
+    logger.info("Dual table mode: " + mode);
+    
+    if (mode.isSplit) {
       splitLayout.setWidgetSize(sideExpressionTable, 550);
     } else {
       splitLayout.setWidgetSize(sideExpressionTable, 0);
@@ -229,15 +256,17 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);
     
-    expressionTable.setAssociationAutoRefresh(false);
-    if (mode == DualMode.Forward) {
-      expressionTable.setVisible(AType.MiRNA, true);
-      expressionTable.setVisible(AType.MRNA, false);
-    } else {
-      expressionTable.setVisible(AType.MiRNA, false);
-      expressionTable.setVisible(AType.MRNA, true);
+    if (mode.isSplit) {
+      expressionTable.setAssociationAutoRefresh(false);
+      if (mode == DualMode.Forward) {
+        expressionTable.setVisible(AType.MiRNA, true);
+        expressionTable.setVisible(AType.MRNA, false);
+      } else {
+        expressionTable.setVisible(AType.MiRNA, false);
+        expressionTable.setVisible(AType.MRNA, true);
+      }
+      expressionTable.setAssociationAutoRefresh(true);
     }
-    expressionTable.setAssociationAutoRefresh(true);
     
     extractSideTableProbes();
   }
@@ -245,13 +274,17 @@ public class DualDataScreen extends DataScreen {
   @Override
   protected void associationsUpdated(Association[] result) {
     super.associationsUpdated(result);    
-    extractSideTableProbes();
+    if (mode.isSplit) {
+      extractSideTableProbes();
+    }
   }
   
   @Override
   protected void beforeGetAssociations() {
     super.beforeGetAssociations();
-    sideExpressionTable.clearMatrix();
+    if (mode.isSplit) {
+      sideExpressionTable.clearMatrix();
+    }
   }
   
   //Maps main table to side table via a column.
