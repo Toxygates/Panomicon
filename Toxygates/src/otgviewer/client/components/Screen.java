@@ -249,6 +249,11 @@ public class Screen extends DataListenerWidget implements
     manager.attemptProceed(key);
   }
 
+  @Nullable
+  public String additionalNavlinkStyle() {
+    return null;
+  }
+
   protected HorizontalPanel mkStandardToolbar(Widget content, String styleName) {
     HorizontalPanel r = Utils.mkWidePanel();
     r.setHeight("30px");

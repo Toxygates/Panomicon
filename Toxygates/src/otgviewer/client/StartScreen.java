@@ -19,11 +19,14 @@
 package otgviewer.client;
 
 import static t.common.client.Utils.makeScrolled;
+
+import javax.annotation.Nullable;
+
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.viewer.client.Utils;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * This is the first screen, where a dataset can be selected.
@@ -38,6 +41,7 @@ public class StartScreen extends Screen {
 
   final private HTML welcomeHtml = new HTML();
 
+  @Override
   public Widget content() {
     HorizontalPanel hp = Utils.mkWidePanel();
     hp.setHeight("100%");
@@ -57,5 +61,11 @@ public class StartScreen extends Screen {
   @Override
   public String getGuideText() {
     return "Welcome.";
+  }
+
+  @Override
+  @Nullable
+  public String additionalNavlinkStyle() {
+    return "start";
   }
 }
