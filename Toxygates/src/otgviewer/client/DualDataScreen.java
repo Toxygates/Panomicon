@@ -7,10 +7,11 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
-import t.common.shared.AType;
-import t.common.shared.GroupUtils;
+import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.model.sample.AttributeSet;
+import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.*;
@@ -53,9 +54,18 @@ public class DualDataScreen extends DataScreen {
       this.isSplit = isSplit;
     }
     
+    int sideTableWidth() { 
+      if (!isSplit) {
+        return 0;
+      } else if (sideType.equals("miRNA")) {
+        return 550;
+      } else {
+        return 800;
+      }
+    }
     TableStyle mainStyle() { return TableStyle.getStyle(mainType); }
     TableStyle sideStyle() { return TableStyle.getStyle(sideType); }
-    DualMode flip() { return (this == Forward) ? Reverse : Forward; }
+    DualMode flip() { return (this == Forward) ? Reverse : Forward; }    
   }
   
   /**
@@ -232,15 +242,23 @@ public class DualDataScreen extends DataScreen {
   }
   
   @Override
+  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+    //TODO this is a state management hack to force the columns to be fully re-initialised
+    //every time we show the screen.
+    chosenColumns = new ArrayList<Group>();
+    super.loadState(p, schema, attributes);
+  }
+  
+  @Override
   protected void changeColumns(List<Group> columns) {
     logger.info("Dual mode pick for " + columns.size() + " columns");
-    mode = pickMode(columns);
+    mode = pickMode(columns);    
     
     expressionTable.setTitleHeader(mode.mainType);    
-    expressionTable.applyStyleToColumns(mode.mainStyle());
+    expressionTable.setStyleAndApply(mode.mainStyle());
     if (mode.isSplit) {
       sideExpressionTable.setTitleHeader(mode.sideType);      
-      sideExpressionTable.applyStyleToColumns(mode.sideStyle());
+      sideExpressionTable.setStyleAndApply(mode.sideStyle());
     }
 
     super.changeColumns(columnsForMainTable(columns));
@@ -250,21 +268,12 @@ public class DualDataScreen extends DataScreen {
       sideExpressionTable.columnsChanged(sideColumns);    
     }
     logger.info("Dual table mode: " + mode);
-    
-    if (mode.isSplit) {
-      splitLayout.setWidgetSize(sideExpressionTable, 550);
-    } else {
-      splitLayout.setWidgetSize(sideExpressionTable, 0);
-    }
+
+    splitLayout.setWidgetSize(sideExpressionTable, mode.sideTableWidth());
   }  
   
   @Override
-  public void updateProbes() {
-    super.updateProbes();
-    sideExpressionTable.clearMatrix();
-    sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
-    expressionTable.setIndicatedProbes(new HashSet<String>(), false);
-    
+  public void updateProbes() {   
     if (mode.isSplit) {
       expressionTable.setAssociationAutoRefresh(false);
       if (mode == DualMode.Forward) {
@@ -275,9 +284,13 @@ public class DualDataScreen extends DataScreen {
         expressionTable.setVisible(AType.MRNA, true);
       }
       expressionTable.setAssociationAutoRefresh(true);
-    }
+    }    
     
-    extractSideTableProbes();
+    super.updateProbes();
+    sideExpressionTable.clearMatrix();
+    sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
+    expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
+//    extractSideTableProbes();
   }
   
   @Override

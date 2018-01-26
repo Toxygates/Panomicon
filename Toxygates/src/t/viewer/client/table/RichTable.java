@@ -179,9 +179,13 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     Set<String> preferredColumns = columnState.getValue();
     if (preferredColumns != null) {
       for (HideableColumn<T, ?> c : hideableColumns) {
-        ColumnInfo info = c.columnInfo();
-        boolean visible = preferredColumns.contains(info.title());
-        c.setVisibility(visible);
+        //TODO: we ignore persisted state for standard columns - for now this is to
+        //play nicely with dual data screen
+        if (c.col == null) {  
+          ColumnInfo info = c.columnInfo();
+          boolean visible = preferredColumns.contains(info.title());
+          c.setVisibility(visible);
+        }
       }
     }
     
@@ -365,12 +369,14 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
 
-  public void applyStyleToColumns(TableStyle style) {
+  public void setStyleAndApply(TableStyle style) {
+    this.style = style;
     for (HideableColumn<T, ?> col: hideableColumns) {
       reapplyStyle(style, col);
     }
   }
   
+  //Only toggles visibility flag in the column.
   protected void reapplyStyle(TableStyle style, HideableColumn<T, ?> col) {
     StandardColumns c = col.col;
     if (c != null) {

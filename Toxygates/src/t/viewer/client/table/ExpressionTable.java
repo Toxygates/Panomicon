@@ -517,7 +517,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   @Override
   protected void setupColumns() {
     super.setupColumns();
-
     TextCell tc = new TextCell();
 
     int oldSortIndex = (oldSortInfo != null ? 
