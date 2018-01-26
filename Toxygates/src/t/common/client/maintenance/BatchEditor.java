@@ -135,6 +135,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
         if (exception.normalizedDataWasBad) {
           uploader.data.setFailure();
         }
+        uploader.resetAll();
         okButton.setEnabled(true);
       } else {
         onError();
