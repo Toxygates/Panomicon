@@ -384,13 +384,15 @@ class BatchManager(context: Context) {
 
       val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
       if (notInBatch.size > 0) {
-        val msg = s"The following samples were not found in the batch: ${notInBatch mkString " "}"
+        val msg = "New metadata file contained the following samples that " +
+          s"could not be found in the existing batch: ${notInBatch mkString " "}"
         throw new Exception(msg)
       }
 
       val notInMetadata = batchSampleIds.filter(x => !(foundInBatch contains x))
       if (notInMetadata.size > 0) {
-        val msg = s"The following samples were not found in the metadata: ${notInMetadata mkString " "}"
+        val msg = "New metadata file is missing the following batch samples: " +
+          (notInMetadata mkString " ")
         throw new Exception(msg)
       }
     }
