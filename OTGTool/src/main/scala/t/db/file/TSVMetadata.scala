@@ -50,7 +50,7 @@ object TSVMetadata {
     val missingColumns = required.filter(!metadata.keySet.contains(_))
     if (!missingColumns.isEmpty) {
       println(s"The following columns are missing in $file: $missingColumns")
-      throw new Exception("Missing columns in metadata")
+      throw new Exception(s"Missing columns in metadata: ${missingColumns mkString ", "}")
     }
 
     var uniqueIds = Set[String]()
