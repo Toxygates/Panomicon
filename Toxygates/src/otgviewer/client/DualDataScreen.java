@@ -84,9 +84,7 @@ public class DualDataScreen extends DataScreen {
     List<Group> allColumns = new ArrayList<Group>(chosenColumns);
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
-    
-    expressionTable.applyStyleToColumns(mode.mainStyle());
-    sideExpressionTable.applyStyleToColumns(mode.sideStyle());
+
     updateProbes();
   }
   
@@ -215,6 +213,10 @@ public class DualDataScreen extends DataScreen {
     return super.styleForColumns(columnsForSideTable(chosenColumns));    
   }
   
+  /**
+   * Based on the available columns, pick the correct display mode.
+   * The mode may be split or non-split.
+   */
   protected DualMode pickMode(List<Group> columns) {
     String[] types = columns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);
     if (types.length >= 2) {
@@ -230,11 +232,18 @@ public class DualDataScreen extends DataScreen {
   }
   
   @Override
-  protected void changeColumns(List<Group> columns) {    
+  protected void changeColumns(List<Group> columns) {
+    logger.info("Dual mode pick for " + columns.size() + " columns");
     mode = pickMode(columns);
+    
+    expressionTable.setTitleHeader(mode.mainType);    
+    expressionTable.applyStyleToColumns(mode.mainStyle());
+    if (mode.isSplit) {
+      sideExpressionTable.setTitleHeader(mode.sideType);      
+      sideExpressionTable.applyStyleToColumns(mode.sideStyle());
+    }
+
     super.changeColumns(columnsForMainTable(columns));
-    expressionTable.setTitleHeader(mode.mainType);
-    sideExpressionTable.setTitleHeader(mode.sideType);
     
     List<Group> sideColumns = columnsForSideTable(columns);
     if (sideExpressionTable != null && !sideColumns.isEmpty()) {    
