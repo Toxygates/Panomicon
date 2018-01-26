@@ -80,7 +80,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
     //See note about ensureDataset in addBatchAsync
     ensureDataset(b.getDataset)
 
-    super.addBatchAsync(b)
+    super.updateBatchMetadataAsync(b)
   }
 
   override protected def alterMetadataPriorToInsert(md: Metadata): Metadata = {
