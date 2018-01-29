@@ -306,6 +306,11 @@ Top-level navigation links
 	border-top: solid 1px NAVLINK_BORDER_COLOR;
 }
 
+.navlink-start {
+	background: #CCCCCC;
+	color: #333333;
+}
+
 .navlink-enabled:hover {
 	background: white;
 	color: black;

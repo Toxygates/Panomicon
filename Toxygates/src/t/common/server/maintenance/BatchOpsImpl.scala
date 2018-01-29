@@ -44,6 +44,7 @@ import scala.language.implicitConversions
 
 import t.viewer.server.rpc.TServiceServlet
 import t.BaseConfig
+import gwtupload.server.UploadServlet
 
 /**
  * Routines for servlets that support the management of batches.
@@ -83,21 +84,18 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
             "Please choose a different name.")
       }
 
-      val tempFiles = new TempFiles()
-      setAttribute("tempFiles", tempFiles)
+      val metaFile = getLatestFile(maintenanceUploads, metaPrefix, metaPrefix, "tsv")
+      val dataFile = getLatestFile(maintenanceUploads, dataPrefix, dataPrefix, "csv")
+      val callsFile = getLatestFile(maintenanceUploads, callPrefix, callPrefix, "csv")
 
-      if (getFileItem(metaPrefix).isEmpty) {
+      if (metaFile.isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
-      if (getFileItem(dataPrefix).isEmpty) {
+      if (dataFile.isEmpty) {
         throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 
-      val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
-      val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
-      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
-
-      val metadata = createMetadata(metaFile)
+      val metadata = createMetadata(metaFile.get)
 
       TaskRunner ++= batchManager.add(batch, metadata,
         dataFile.get.getAbsolutePath(),
@@ -118,9 +116,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       TaskRunner.start()
       setLastTask("Update batch metadata")
 
-      val tempFiles = new TempFiles()
-      setAttribute("tempFiles", tempFiles)
-      val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").getOrElse {
+      val metaFile = getLatestFile(maintenanceUploads, metaPrefix, metaPrefix, "tsv").getOrElse {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
       val metadata = createMetadata(metaFile)

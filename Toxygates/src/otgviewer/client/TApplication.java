@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -34,7 +33,8 @@ import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
@@ -445,6 +445,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       String link = s.getTitle();
       final Label label = new Label(link);
       label.setStylePrimaryName("navlink");
+      if (s.additionalNavlinkStyle() != null) {
+        label.addStyleDependentName(s.additionalNavlinkStyle());
+      }
       if (s.enabled() && s != current) {
         label.addClickHandler(new ClickHandler() {
           @Override

@@ -24,8 +24,6 @@ import scala.collection.JavaConversions._
 
 import org.apache.commons.fileupload.FileItem
 
-
-
 import gwtupload.server.UploadServlet
 import javax.servlet.http.HttpServletRequest
 import t.TaskRunner
@@ -54,6 +52,17 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   protected def setLastResults(results: Option[OperationResults]) = setAttribute("lastResults", results)
   protected def lastResults: Option[OperationResults] = getAttribute("lastResults")
 
+  protected def maintenanceUploads: TempFiles = {
+    val existingTempFiles: Option[TempFiles] = Option(getAttribute("maintenanceUploads"))
+    if (existingTempFiles.isEmpty) {
+      val newTempFiles = new TempFiles()
+      setAttribute("maintenanceUploads", newTempFiles)
+      newTempFiles
+    } else {
+      existingTempFiles.get
+    }
+  }
+
   protected def isMaintenanceMode: Boolean =
     context.config.data.isMaintenanceMode
 
@@ -65,12 +74,9 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   protected def afterTaskCleanup(success: Boolean) {
-    val tc: TempFiles = getAttribute("tempFiles")
-    if (tc != null) {
-    	tc.dropAll()
-    }
     if (success) {
       UploadServlet.removeSessionFileItems(request)
+      maintenanceUploads.dropAll()
     }
     TaskRunner.shutdown()
     KCDBRegistry.closeWriters()
@@ -144,49 +150,64 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   /**
-   * Get an uploaded file as a temporary file.
+   * Gets the latest file uploaded to the session with matching prefix/suffix or,
+   * failing that, the matching file in tempFiles if one exists.
+   */
+  protected def getLatestFile(tempFiles: TempFiles, tag: String, prefix: String,
+      suffix: String): Option[java.io.File] = {
+    getLatestSessionFileAsTemp(tempFiles, tag, prefix, suffix) orElse
+      tempFiles.getExisting(prefix, suffix)
+  }
+
+  /**
+   * Get latest file uploaded to session with matching prefix/suffix as a temporary file.
    * Should be deleted after use.
    */
-  protected def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String,
+  protected def getLatestSessionFileAsTemp(tempFiles: TempFiles, tag: String, prefix: String,
       suffix: String): Option[java.io.File] = {
     getFileItem(tag) match {
       case None => None
       case Some(fi) =>
         val f = tempFiles.makeNew(prefix, suffix)
         fi.write(f)
+        println(s"Deleting ${fi.getFieldName()}")
+        fi.delete()
         Some(f)
     }
   }
 
    /**
-   * Retrive the last uploaded file with a particular tag.
+   * Retrive the last uploaded file with a particular tag, and delete it,
+   * along with all other files with the same tag.
    * @param tag the tag to look for.
    * @return
    */
   // TODO: stop relying on undocumented UploadServlet.getSessionFileItems sort order
-  protected def getFileItem(tag: String): Option[FileItem] = {
-    val items = UploadServlet.getSessionFileItems(request);
-    if (items == null) {
+  private def getFileItem(tag: String): Option[FileItem] = {
+    val sessionItems = UploadServlet.getSessionFileItems(request);
+    if (sessionItems == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
     }
-
-    // items will be sorted in ascending order of upload time, but this is undocumented
-    for (fi <- items.reverseIterator) {
-      if (fi.getFieldName().startsWith(tag)) {
-        return Some(fi)
-      }
-    }
-    return None
+    // We are currently relying on getSessionFileItems being sorted in ascending
+    // order of upload time, which is undocumented behavior.
+    val tagItems = sessionItems.filter(_.getFieldName().startsWith(tag)).reverse
+    // Session files get deleted when their corresponding FileItems are garbage
+    // collected, so it's enough to remove them from the session file list
+    tagItems.foreach(sessionItems.remove(_))
+    return tagItems.lift(0)
   }
 
   protected def showUploadedFiles(): Unit = {
+    println("Session file items:")
     val items = UploadServlet.getSessionFileItems(request)
     if (items != null) {
       for (fi <- items) {
-        System.out.println("File " + fi.getName() + " size "
-          + fi.getSize() + " field: " + fi.getFieldName())
+        println(s"${fi.getName}  size ${fi.getSize}  field: ${fi.getFieldName}")
       }
     }
+    println("Maintenace uploads:")
+    maintenanceUploads.registry.foreach({ case ((prefix, suffix), file) =>
+      println(s"${file.getName} size ${file.length} prefix $prefix suffix $suffix")
+    })
   }
-
 }
