@@ -27,19 +27,28 @@ import java.io.File
  * released collectively
  */
 class TempFiles {
-  var registry: Vector[File] = Vector()
+  var registry: Map[(String, String), File] = Map()
 
   def makeNew(prefix: String, suffix: String): File = {
+    getExisting(prefix, suffix).foreach { file =>
+      file.delete()
+      registry -= prefix -> suffix
+    }
     val f = File.createTempFile(prefix, suffix)
     println("Created temporary file " + f)
-    registry :+= f
+    registry += (prefix, suffix) -> f
     f
   }
 
+  def getExisting(prefix: String, suffix: String): Option[File] = {
+    registry.get((prefix, suffix))
+  }
+
   def dropAll() {
-    for (f <- registry) {
-      println("Deleting temporary file " + f)
-      f.delete()
+    for ((key, file) <- registry) {
+      println("Deleting temporary file " + file)
+      file.delete()
+      registry -= key
     }
   }
 }

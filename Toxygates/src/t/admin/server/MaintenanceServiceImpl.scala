@@ -70,12 +70,11 @@ with BatchOpsImpl with MaintenanceService {
     val pm = new PlatformManager(context)
 
     cleanMaintenance {
-      val tempFiles = new TempFiles()
-      setAttribute("tempFiles", tempFiles)
-
       TaskRunner.start()
       setLastTask("Add platform")
-      if (getFileItem(platformPrefix) == None) {
+      val platformFile = getLatestSessionFileAsTemp(maintenanceUploads, platformPrefix,
+          platformPrefix, "dat")
+      if (platformFile == None) {
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
 
@@ -90,9 +89,8 @@ with BatchOpsImpl with MaintenanceService {
       val affymetrixFormat = (pt == PlatformType.Affymetrix)
       val bioFormat = (pt == PlatformType.Biological)
 
-      val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
       TaskRunner ++= pm.add(id, TRDF.escape(comment),
-          metaFile.getAbsolutePath(), affymetrixFormat, bioFormat)
+          platformFile.get.getAbsolutePath(), affymetrixFormat, bioFormat)
       TaskRunner += Tasklet.simple("Set platform parameters", () => updatePlatform(p))
     }
   }
