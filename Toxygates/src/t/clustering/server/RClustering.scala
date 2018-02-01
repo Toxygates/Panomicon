@@ -34,6 +34,9 @@ class RClustering(codeDir: String) {
 
   //Types are Array rather than Seq for easy interop with Java
 
+  private final def safeData(d: Array[Double]) = 
+    d.map(d => if (java.lang.Double.isInfinite(d) || java.lang.Double.isNaN(d)) { 0 } else d)
+  
   /**
    * Perform the clustering and return the clusters as JSON data.
    *
@@ -53,7 +56,7 @@ class RClustering(codeDir: String) {
 
     val r = new R
     r.addCommand(s"source('$codeDir/R/InCHlibUtils.R')")
-    r.addCommand(s"data <- c(${data.mkString(", ")})")
+    r.addCommand(s"data <- c(${safeData(data).mkString(", ")})")
     r.addCommand(s"r <- c(${rowNames.map { "\"" + _ + "\"" }.mkString(", ")})")
     r.addCommand(s"c <- c(${colNames.map { "\"" + _ + "\"" }.mkString(", ")})")
     r.addCommand("rowMethod <- \"" + algorithm.getRowMethod.asParam() + "\"")
