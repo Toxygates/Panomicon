@@ -24,6 +24,7 @@ import t.common.shared.ManagedItem;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
+import static t.model.sample.CoreParameter.Type;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -113,12 +114,22 @@ public class Utils {
     return sb.toString();
   }
   
+  //Transitional method for upgrading from old format, as of Jan 2018
+  private static void upgradeSampleClass(Map<Attribute, String> data) {
+    data.put(Type, "mRNA");
+  }
+  
   public static SampleClass unpackSampleClass(AttributeSet attributes, String value) {
     String[] spl = value.split(",,,");
     Map<Attribute, String> d = new HashMap<Attribute, String>();
     for (int i = 0; i < spl.length; i += 2) {
       d.put(attributes.byId(spl[i]), spl[i + 1]);
     }
+    
+    if (!d.containsKey(Type)) {
+      upgradeSampleClass(d);
+    }
+    
     return new SampleClass(d);
   }
 }
