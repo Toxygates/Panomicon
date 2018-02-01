@@ -25,7 +25,7 @@ All columns are case sensitive.
 
 The following columns are mandatory:
 
-sample_id - Any string. This string must be unique across all of Toxygates. If your sample IDs are not unique, consider giving them a special prefix or suffix.
+sample_id - Any string. This string must be unique across all of Toxygates. If your sample IDs are not unique, consider giving them a special prefix or suffix. (If you edit sample IDs in the example metadata file, don't forget to make the corresponding changes in the other two files.)
 
 compound_name - Any string. Need not be unique. New compounds may be introduced.
 
@@ -50,6 +50,8 @@ test_type - "in vitro" or "in vivo" (without quotation marks).
 sin_rep_type - Single or Repeat. 
 
 organ_id - The organ being studied, for example Liver, Kidney, etc. New organs may be introduced when necessary.
+
+type - The type of 'omics data. Currently, only mRNA is supported.
 
 EXPRESSION DATA FILE
 --------------------
