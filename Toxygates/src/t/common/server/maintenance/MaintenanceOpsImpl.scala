@@ -33,6 +33,8 @@ import t.common.shared.maintenance.Progress
 import t.global.KCDBRegistry
 import t.util.TempFiles
 import t.viewer.server.rpc.TServiceServlet
+import t.Tasklet
+import javax.servlet.http.HttpSession
 
 /**
  * Servlet routines for uploading files and running tasks.
@@ -43,17 +45,19 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   //Methods for accessing the http request's thread local state.
   //Must be abstract here or an access error will be thrown at runtime.
   //(Implement in the concrete subclass)
-  protected def getAttribute[T](name: String): T
-  protected def setAttribute(name: String, x: AnyRef): Unit
   protected def request: HttpServletRequest
+  protected def getAttribute[T](name: String,
+      session: HttpSession = request.getSession()): T
+  protected def setAttribute(name: String, x: AnyRef,
+      session: HttpSession = request.getSession()): Unit
 
   protected def setLastTask(task: String) = setAttribute("lastTask", task)
   protected def lastTask: String = getAttribute("lastTask")
   protected def setLastResults(results: Option[OperationResults]) = setAttribute("lastResults", results)
   protected def lastResults: Option[OperationResults] = getAttribute("lastResults")
 
-  protected def maintenanceUploads: TempFiles = {
-    val existingTempFiles: Option[TempFiles] = Option(getAttribute("maintenanceUploads"))
+  protected def maintenanceUploads(session: HttpSession = request.getSession()): TempFiles = {
+    val existingTempFiles: Option[TempFiles] = Option(getAttribute("maintenanceUploads", session))
     if (existingTempFiles.isEmpty) {
       val newTempFiles = new TempFiles()
       setAttribute("maintenanceUploads", newTempFiles)
@@ -73,15 +77,6 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
   }
 
-  protected def afterTaskCleanup(success: Boolean) {
-    if (success) {
-      UploadServlet.removeSessionFileItems(request)
-      maintenanceUploads.dropAll()
-    }
-    TaskRunner.shutdown()
-    KCDBRegistry.closeWriters()
-  }
-
   def getOperationResults(): OperationResults = {
     if (lastResults.isEmpty) {
       throw new MaintenanceException("Cannot get operation results: operation not yet complete")
@@ -92,8 +87,6 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   def cancelTask(): Unit = {
     TaskRunner.log("* * * Cancel requested * * *")
     TaskRunner.shutdown()
-    //It may still take time for the current task to respond to the cancel request.
-    //Progress should be checked repeatedly.
   }
 
   def getProgress(): Progress = {
@@ -102,19 +95,13 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
       for (m <- messages) {
         println(m)
       }
-      val p = if (TaskRunner.queueSize == 0 && !TaskRunner.waitingForTask) {
-        val success = TaskRunner.errorCause == None
-        if (lastResults.isEmpty) {
-          setLastResults(Some(new OperationResults(lastTask, success,
-          		   TaskRunner.resultMessages.toArray)))
-        }
-          afterTaskCleanup(success)
-          new Progress("No task in progress", 0, true)
-      } else {
+      val p = if (TaskRunner.busy) {
         TaskRunner.currentTask match {
           case Some(t) => new Progress(t.name, t.percentComplete, false)
           case None => new Progress("??", 0, false)
         }
+      } else {
+        new Progress("No task in progress", 0, true)
       }
       p.setMessages(messages)
       p
@@ -122,8 +109,35 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   protected def grabRunner() {
-    if (TaskRunner.queueSize > 0 || TaskRunner.waitingForTask) {
+    if (TaskRunner.busy) {
       throw new Exception("Another task is already in progress.")
+    }
+  }
+
+  protected def runTasks(tasklets: Iterable[Tasklet]) {
+    grabRunner()
+    setLastResults(None)
+    val currentRequest = request
+    val session = request.getSession
+    TaskRunner.runThenFinally(tasklets) {
+      KCDBRegistry.closeWriters()
+      TaskRunner.synchronized {
+        try {
+          val success = TaskRunner.errorCause == None
+          if (getAttribute[Option[OperationResults]]("lastResults", session).isEmpty) {
+            setAttribute("lastResults", Some(new OperationResults(
+                getAttribute[String]("lastTask", session), success, TaskRunner.resultMessages.toArray)), session)
+          }
+          if (success) {
+            maintenanceUploads(session).dropAll()
+          }
+        } catch {
+          case e: Exception =>
+            println(e)
+            e.printStackTrace()
+
+        }
+      }
     }
   }
 
@@ -131,16 +145,6 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     task
   } catch {
     case e: Exception =>
-      throw wrapException(e)
-  }
-
-  protected def cleanMaintenance[T](task: => T): T = try {
-    setLastResults(None)
-    task
-  } catch {
-    case e: Exception =>
-      afterTaskCleanup(false)
-      TaskRunner.reset()
       throw wrapException(e)
   }
 
@@ -206,7 +210,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
       }
     }
     println("Maintenace uploads:")
-    maintenanceUploads.registry.foreach({ case ((prefix, suffix), file) =>
+    maintenanceUploads().registry.foreach({ case ((prefix, suffix), file) =>
       println(s"${file.getName} size ${file.length} prefix $prefix suffix $suffix")
     })
   }

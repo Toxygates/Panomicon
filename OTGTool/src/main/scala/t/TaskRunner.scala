@@ -98,6 +98,8 @@ object TaskRunner {
   @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
 
+  def busy = (queueSize > 0 || !_currentTask.isEmpty)
+
   def queueSize(): Int = {
     tasks.size
   }
@@ -111,7 +113,7 @@ object TaskRunner {
    * Whether a task is currently busy. Even if this is false, the queue
    * is not necessarily empty.
    */
-  def waitingForTask: Boolean = { _currentTask != None }
+  def waitingForTask: Boolean = { !_currentTask.isEmpty }
 
   def shouldStop = _shouldStop
 
@@ -133,11 +135,11 @@ object TaskRunner {
     r
   }
 
-  def +=(task: Tasklet) = synchronized {
+  private def +=(task: Tasklet) = synchronized {
     tasks :+= task
   }
 
-  def ++=(tasks: Iterable[Tasklet]) = synchronized {
+  private def ++=(tasks: Iterable[Tasklet]) = synchronized {
     for (t <- tasks) {
       this += t
     }
@@ -154,7 +156,7 @@ object TaskRunner {
 
   def errorCause: Option[Throwable] = _errorCause
 
-  def start(): Unit = synchronized {
+  private def start(): Unit = synchronized {
     _resultMessages = Vector()
     _shouldStop = false
     _errorCause = None
@@ -207,27 +209,26 @@ object TaskRunner {
     tasks = Vector()
   }
 
-  /**
-   * Shutdown, as well as forcibly drop the current task
-   */
-  def reset(): Unit = synchronized {
-    shutdown()
-    _currentTask = None
+  def runThenFinally(tasklet: Tasklet)(cleanup: => Unit) {
+    runThenFinally(List(tasklet))(cleanup)
   }
 
-  def runAndStop(tasklet: Tasklet) {
-    runAndStop(List(tasklet))
-  }
-
-  def runAndStop(tasklets: Iterable[Tasklet]) {
-    TaskRunner ++= tasklets
-    try {
-      start()
-      while (currentTask != None || queueSize() > 0) {
-        Thread.sleep(1000)
+  def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit) {
+    if (busy) {
+      throw new Exception("TaskRunner is busy.")
+    } else {
+      TaskRunner ++= tasklets
+      Future {
+        try {
+          start()
+          while (busy) {
+            Thread.sleep(50)
+          }
+        } finally {
+          shutdown()
+          cleanup
+        }
       }
-    } finally {
-      shutdown()
     }
   }
 

@@ -69,14 +69,12 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     }
 
     try {
-      startTaskRunner()
       handleArgs(args)
       waitForTasklets()
     } catch {
       case e: Exception => e.printStackTrace
     } finally {
       KCDBRegistry.closeWriters
-      stopTaskRunner()
     }
     sys.exit(0) // Get rid of lingering threads
   }
@@ -99,38 +97,20 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   /**
-   * Run the task runner and monitor its progress on the console
+   * Wait for the task runner and monitor its progress on the console
    */
-  def startTaskRunner() {
-    TaskRunner.start()
-    Future {
-      while (TaskRunner.currentTask != None) {
-        for (m <- TaskRunner.logMessages) {
-          println(m)
-        }
-        TaskRunner.currentTask match {
-          case Some(t) => println(s"${t.name} - ${t.percentComplete}%")
-          case _       =>
-        }
-        Thread.sleep(200)
-      }
-    }
-  }
-
   def waitForTasklets() {
-    while (TaskRunner.waitingForTask || TaskRunner.queueSize() > 0) {
+    while (TaskRunner.busy) {
+      for (m <- TaskRunner.logMessages) {
+        println(m)
+      }
+      TaskRunner.currentTask match {
+        case Some(t) => println(s"${t.name} - ${t.percentComplete}%")
+        case _       =>
+      }
       Thread.sleep(50)
     }
   }
-
-  def stopTaskRunner() {
-    TaskRunner.shutdown()
-    TaskRunner.errorCause match {
-      case None    => //all good
-      case Some(e) => throw e
-    }
-  }
-
 }
 
 trait ManagerTool extends CmdLineOptions {
@@ -149,8 +129,8 @@ trait ManagerTool extends CmdLineOptions {
     }
   }
 
-  def addTasklets(tasklets: Iterable[Tasklet]) {
-    TaskRunner ++= tasklets
+  def startTaskRunner(tasklets: Iterable[Tasklet]) {
+    TaskRunner.runThenFinally(tasklets)(())
   }
 
   def showHelp(): Unit

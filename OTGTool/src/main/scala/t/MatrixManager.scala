@@ -62,7 +62,7 @@ object MatrixManager extends ManagerTool {
         }
         val t = new SimplePFoldValueInsert(getDB, raw).
           insert(s"$label")
-        TaskRunner.runAndStop(t)
+        TaskRunner.runThenFinally(t)(())
         println(s"$ss ($label)")
       }
     }
