@@ -23,6 +23,7 @@ package t.viewer.server
 import t.platform.Probe
 
 import t.sparql.Probes
+import t.platform.Species.Species
 
 object Platforms {
   def apply(probes: Probes): Platforms = {
@@ -62,10 +63,11 @@ class Platforms(val data: Map[String, Set[Probe]]) {
    * Filter probes for a number of platforms.
    */
   def filterProbes(probes: Iterable[String],
-      platforms: Iterable[String]): Iterable[String] = {
+      platforms: Iterable[String],
+      species: Option[Species] = None): Iterable[String] = {
     var rem = Set() ++ probes
     var r = Set[String]()
-    for (p <- platforms; valid = filterProbes(rem, p)) {
+    for (p <- platforms; valid = filterProbes(rem, p, species)) {
       rem --= valid
       r ++= valid
     }
@@ -82,17 +84,31 @@ class Platforms(val data: Map[String, Set[Probe]]) {
     platformSets.find(_._2.contains(p)).map(_._1)
 
   /**
-   * Filter probes for one platform.
+   * Filter probes for one platform. Returns all probes in the platform if the input
+   * set is empty.
    */
-  def filterProbes(probes: Iterable[String], platform: String): Iterable[String] = {
+  def filterProbes(probes: Iterable[String], platform: String,
+      species: Option[Species]): Iterable[String] = {
     if (probes.size == 0) {
-      data(platform).toSeq.map(_.identifier)
+      allProbes(platform, species)
     } else {
       val pset = probes.toSet
       println(s"Filter (${pset.size}) ${pset take 20} ...")
       val r = pset.intersect(platformSets(platform))
       println(s"Result (${r.size}) ${r take 20} ...")
       r.toSeq
+    }
+  }
+
+  private def allProbes(platform: String, species: Option[Species]) = {
+    val all = data(platform).toSeq.map(_.identifier)
+    if (platform.startsWith("mirbase")) {
+      species match {
+        case Some(sp) => all.filter(_.startsWith(sp.shortCode))
+        case _ => all
+      }
+    } else {
+      all
     }
   }
 }

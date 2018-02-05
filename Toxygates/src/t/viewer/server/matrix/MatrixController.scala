@@ -31,6 +31,7 @@ import t.db.TransformingWrapper
 import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 
+import t.viewer.server.Conversions._
 import t.viewer.shared.DBUnavailableException
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.server.matrix._
@@ -75,8 +76,10 @@ class MatrixController(context: Context,
   private implicit val mcontext = context.matrix
   private var sortAssoc: AType = _
 
+  def groupSpecies = groups.headOption.map(g => asSpecies(g.getSamples()(0).sampleClass()))
+
   lazy val filteredProbes =
-    platforms.filterProbes(initProbes, groupPlatforms)
+    platforms.filterProbes(initProbes, groupPlatforms, groupSpecies)
 
   protected def platformsForProbes(ps: Iterable[String]): Iterable[String] =
     ps.flatMap(platforms.platformForProbe(_)).toList.distinct
@@ -167,7 +170,7 @@ class MatrixController(context: Context,
       probes
     } else {
       //all probes
-      platforms.filterProbes(List(), groupPlatforms)
+      platforms.filterProbes(List(), groupPlatforms, groupSpecies)
     })
     managedMatrix.selectProbes(useProbes.toSeq)
     managedMatrix
