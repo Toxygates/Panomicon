@@ -26,6 +26,20 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
+  class TestTask(name: String) extends Tasklet(name) {
+    def run(): Unit = {
+      Thread.sleep(2000)
+      println("Running...")
+      Thread.sleep(2000)
+    }
+  }
+
+  class FailingTask(name: String) extends Tasklet(name) {
+    def run() {
+      throw new Exception("failure!")
+    }
+  }
+
 //  test("runAndStop") {
 //    var hasRun = false
 //    val t = Tasklet.simple("simple", () => { hasRun = true })

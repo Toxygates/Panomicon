@@ -100,7 +100,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
    * Wait for the task runner and monitor its progress on the console
    */
   def waitForTasklets() {
-    while (TaskRunner.busy) {
+    while (!TaskRunner.available) {
       for (m <- TaskRunner.logMessages) {
         println(m)
       }

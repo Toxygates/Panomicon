@@ -64,26 +64,6 @@ abstract class Tasklet(val name: String) {
 }
 
 /**
- * For testing
- */
-class TestTask(name: String) extends Tasklet(name) {
-  def run(): Unit = {
-    Thread.sleep(2000)
-    println("Running...")
-    Thread.sleep(2000)
-  }
-}
-
-/**
- * For testing
- */
-class FailingTask(name: String) extends Tasklet(name) {
-  def run() {
-    throw new Exception("failure!")
-  }
-}
-
-/**
  * A way of running tasks, on a single thread, in a way that lets
  * them be monitored or stopped.
  * Tasks are queued up and run sequentially.
@@ -94,11 +74,11 @@ object TaskRunner {
   @volatile private var _currentTask: Option[Tasklet] = None
   @volatile private var tasks: Vector[Tasklet] = Vector()
   @volatile private var _shouldStop = false
+  @volatile private var _available: Boolean = true
+
   @volatile private var _logMessages: Vector[String] = Vector()
   @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
-
-  def busy = (queueSize > 0 || !_currentTask.isEmpty)
 
   def queueSize(): Int = {
     tasks.size
@@ -109,13 +89,12 @@ object TaskRunner {
    */
   def currentTask: Option[Tasklet] =  _currentTask
 
-  /**
-   * Whether a task is currently busy. Even if this is false, the queue
-   * is not necessarily empty.
-   */
-  def waitingForTask: Boolean = { !_currentTask.isEmpty }
-
   def shouldStop = _shouldStop
+
+  /**
+   * When true, the TaskRunner is available to receive tasks
+   */
+  def available = _available
 
   /**
    * Obtain log messages in time order and remove them from the log
@@ -135,16 +114,6 @@ object TaskRunner {
     r
   }
 
-  private def +=(task: Tasklet) = synchronized {
-    tasks :+= task
-  }
-
-  private def ++=(tasks: Iterable[Tasklet]) = synchronized {
-    for (t <- tasks) {
-      this += t
-    }
-  }
-
   def log(msg: String) = synchronized {
     _logMessages :+= msg
     println(msg)
@@ -156,10 +125,17 @@ object TaskRunner {
 
   def errorCause: Option[Throwable] = _errorCause
 
-  private def start(): Unit = synchronized {
+  def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit): Unit = synchronized {
+    if (!available) {
+      throw new Exception("TaskRunner is busy.")
+    }
+
     _resultMessages = Vector()
     _shouldStop = false
     _errorCause = None
+    tasks = tasklets.toVector
+    _available = false
+
     Future {
       println("TaskRunner starting")
       while (!shouldStop) {
@@ -170,7 +146,9 @@ object TaskRunner {
             tasks = tasks.tail
           }
         }
-        if (_currentTask != None) {
+        if (_currentTask == None) {
+          _shouldStop = true
+        } else {
           val nextt = _currentTask.get
           log("Start task \"" + nextt.name + "\"")
           try {
@@ -186,16 +164,19 @@ object TaskRunner {
               _errorCause = Some(t)
               shutdown()
           }
-        } else {
-          Thread.sleep(50)
         }
       }
-      //Received the stop signal
       println("TaskRunner stopping")
       for (r <- _resultMessages) {
         println(r)
       }
+      cleanup
+      _available = true
     }
+  }
+
+  def runThenFinally(tasklet: Tasklet)(cleanup: => Unit) {
+    runThenFinally(List(tasklet))(cleanup)
   }
 
   /**
@@ -207,29 +188,6 @@ object TaskRunner {
     println("TaskRunner shutdown requested")
     _shouldStop = true
     tasks = Vector()
-  }
-
-  def runThenFinally(tasklet: Tasklet)(cleanup: => Unit) {
-    runThenFinally(List(tasklet))(cleanup)
-  }
-
-  def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit) {
-    if (busy) {
-      throw new Exception("TaskRunner is busy.")
-    } else {
-      TaskRunner ++= tasklets
-      Future {
-        try {
-          start()
-          while (busy) {
-            Thread.sleep(50)
-          }
-        } finally {
-          shutdown()
-          cleanup
-        }
-      }
-    }
   }
 
 }

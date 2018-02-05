@@ -95,13 +95,13 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
       for (m <- messages) {
         println(m)
       }
-      val p = if (TaskRunner.busy) {
+      val p = if (TaskRunner.available) {
+        new Progress("No task in progress", 0, true)
+      } else {
         TaskRunner.currentTask match {
           case Some(t) => new Progress(t.name, t.percentComplete, false)
           case None => new Progress("??", 0, false)
         }
-      } else {
-        new Progress("No task in progress", 0, true)
       }
       p.setMessages(messages)
       p
@@ -109,7 +109,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   protected def grabRunner() {
-    if (TaskRunner.busy) {
+    if (!TaskRunner.available) {
       throw new Exception("Another task is already in progress.")
     }
   }
@@ -135,7 +135,6 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
           case e: Exception =>
             println(e)
             e.printStackTrace()
-
         }
       }
     }

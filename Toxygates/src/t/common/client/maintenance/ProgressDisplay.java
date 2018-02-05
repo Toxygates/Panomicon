@@ -121,36 +121,30 @@ public class ProgressDisplay extends Composite {
       cancelButton.setEnabled(false);
       doneButton.setEnabled(true);
 
-      // Temporarily delay execution of this code until a race condition is fixed
-      new Timer() {
+      maintenanceService.getOperationResults(new AsyncCallback<OperationResults>() {
         @Override
-        public void run() {
-          maintenanceService.getOperationResults(new AsyncCallback<OperationResults>() {
-            @Override
-            public void onFailure(Throwable caught) {
-              Window.alert("Error while obtaining operation results: " + caught.getMessage());
-            }
-
-            @Override
-            public void onSuccess(OperationResults result) {
-              int i = 0;
-
-              if (cancelled) {
-                logPanel.insert(infoLabel("* * * Operation cancelled * * *"), i++);
-              } else if (result != null && result.successful()) {
-                logPanel.insert(infoLabel("* * * Operation successful * * *"), i++);
-              } else {
-                logPanel.insert(infoLabel("* * * Operation failed * * *"), i++);
-              }
-              if (result != null) {
-                for (String s : result.infoStrings()) {
-                  logPanel.insert(infoLabel(s), i++);
-                }
-              }
-            }
-          });
+        public void onFailure(Throwable caught) {
+          Window.alert("Error while obtaining operation results: " + caught.getMessage());
         }
-      }.schedule(5000);
+
+        @Override
+        public void onSuccess(OperationResults result) {
+          int i = 0;
+
+          if (cancelled) {
+            logPanel.insert(infoLabel("* * * Operation cancelled * * *"), i++);
+          } else if (result != null && result.successful()) {
+            logPanel.insert(infoLabel("* * * Operation successful * * *"), i++);
+          } else {
+            logPanel.insert(infoLabel("* * * Operation failed * * *"), i++);
+          }
+          if (result != null) {
+            for (String s : result.infoStrings()) {
+              logPanel.insert(infoLabel(s), i++);
+            }
+          }
+        }
+      });
     } else {
       String task = p.getTask();
       statusLabel.setText(task + " (" + p.getPercentage() + "%)");
