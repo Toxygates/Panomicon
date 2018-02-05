@@ -14,6 +14,7 @@ import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.TargetmineColumns
 import t.viewer.shared.mirna.MirnaSource
 import t.db.DefaultBio
+import t.viewer.server.Conversions._
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
@@ -70,6 +71,8 @@ class AssociationResolver(probeStore: Probes,
      */
     def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe],
                      fromMirna: Boolean): MMap[Probe, DefaultBio] = {
+      val species = asSpecies(sc)
+
       try {
       source.id match {
         case "http://level-five.jp/t/mapping/mirdb" =>
@@ -77,7 +80,8 @@ class AssociationResolver(probeStore: Probes,
           val r = probeStore.mirnaAssociations(probes,
             if (source.limit == null) None else Some(source.limit),
             fromMirna,
-            Some(mirnaLimit))
+            Some(mirnaLimit),
+            Some(species))
 
           if (r.valuesIterator.flatten.size >= mirnaLimit) {
             sizeLimitExceeded = true
