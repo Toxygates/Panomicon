@@ -73,8 +73,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
     val batchManager = new BatchManager(context)
 
-    cleanMaintenance {
-      TaskRunner.start()
+    maintenance {
       setLastTask("Add batch")
 
       val existingBatches = new Batches(context.config.triplestore).list
@@ -84,9 +83,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
             "Please choose a different name.")
       }
 
-      val metaFile = getLatestFile(maintenanceUploads, metaPrefix, metaPrefix, "tsv")
-      val dataFile = getLatestFile(maintenanceUploads, dataPrefix, dataPrefix, "csv")
-      val callsFile = getLatestFile(maintenanceUploads, callPrefix, callPrefix, "csv")
+      val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv")
+      val dataFile = getLatestFile(maintenanceUploads(), dataPrefix, dataPrefix, "csv")
+      val callsFile = getLatestFile(maintenanceUploads(), callPrefix, callPrefix, "csv")
 
       if (metaFile.isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
@@ -97,11 +96,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val metadata = createMetadata(metaFile.get)
 
-      TaskRunner ++= batchManager.add(batch, metadata,
+      runTasks(batchManager.add(batch, metadata,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder,
-        simpleLog2)
+        simpleLog2))
     }
   }
 
@@ -112,16 +111,15 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
     val batchManager = new BatchManager(context)
 
-    cleanMaintenance {
-      TaskRunner.start()
+    maintenance {
       setLastTask("Update batch metadata")
 
-      val metaFile = getLatestFile(maintenanceUploads, metaPrefix, metaPrefix, "tsv").getOrElse {
+      val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv").getOrElse {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
       val metadata = createMetadata(metaFile)
 
-      TaskRunner ++= batchManager.updateMetadata(batch, metadata, baseConfig.seriesBuilder)
+      runTasks(batchManager.updateMetadata(batch, metadata, baseConfig.seriesBuilder))
     }
   }
 
@@ -173,10 +171,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   def deleteBatchAsync(b: Batch): Unit = {
 
     val bm = new BatchManager(context)
-    cleanMaintenance {
-      TaskRunner.start()
+    maintenance {
       setLastTask("Delete batch")
-      TaskRunner ++= bm.delete(b.getTitle, baseConfig.seriesBuilder, false)
+      runTasks(bm.delete(b.getTitle, baseConfig.seriesBuilder, false))
     }
   }
 

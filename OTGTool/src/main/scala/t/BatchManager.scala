@@ -56,24 +56,25 @@ object BatchManager extends ManagerTool {
           val metaList = stringListOption(args, "-multiMetadata") orElse
             stringListOption(args, "-multimetadata")
           metaList match {
-            case Some(ml) =>
+            case Some(metaFiles) =>
               KCDBRegistry.setMaintenance(true)
               // For the first metadata file, we use the value of the -append argument; for all other
               // the batch will certainly exist so we always append
               var first = true
               new Platforms(config).populateAttributes(config.attributes)
-              for (mf <- ml) {
-                val md = factory.tsvMetadata(mf, config.attributes)
-                val dataFile = mf.replace(".meta.tsv", ".data.csv")
+              startTaskRunner(metaFiles.flatMap { metadata =>
+                val md = factory.tsvMetadata(metadata, config.attributes)
+                val dataFile = metadata.replace(".meta.tsv", ".data.csv")
 
-                val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
+                val f = new java.io.File(metadata.replace(".meta.tsv", ".call.csv"))
                 val callFile = if (f.exists()) Some(f.getPath) else None
                 println(s"Insert $dataFile")
-                addTasklets(bm.add(Batch(title, comment, None, None),
+                val tasklets = bm.add(Batch(title, comment, None, None),
                   md, dataFile, callFile,
-                  if (first) append else true, config.seriesBuilder))
+                  if (first) append else true, config.seriesBuilder)
                 first = false
-              }
+                tasklets
+              })
             case None =>
               val metaFile = require(stringOption(args, "-metadata"),
                 "Please specify a metadata file with -metadata")
@@ -83,7 +84,7 @@ object BatchManager extends ManagerTool {
 
               new Platforms(config).populateAttributes(config.attributes)
               val md = factory.tsvMetadata(metaFile, config.attributes)
-              addTasklets(bm.add(Batch(title, comment, None, None),
+              startTaskRunner(bm.add(Batch(title, comment, None, None),
                 md, dataFile, callFile,
                 append, config.seriesBuilder))
           }
@@ -97,7 +98,7 @@ object BatchManager extends ManagerTool {
             "Please specify a metadata file with -metadata")
           new Platforms(config).populateAttributes(config.attributes)
           val md = factory.tsvMetadata(metaFile, config.attributes)
-          addTasklets(bm.updateMetadata(Batch(title, comment, None, None),
+          startTaskRunner(bm.updateMetadata(Batch(title, comment, None, None),
               md, config.seriesBuilder))
 
         case "delete" =>
@@ -106,7 +107,7 @@ object BatchManager extends ManagerTool {
           val rdfOnly = booleanOption(args, "-rdfonly")
           verifyExists(batches, title)
           val bm = new BatchManager(context)
-          addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
+          startTaskRunner(bm.delete(title, config.seriesBuilder, rdfOnly))
         case "list" =>
           println("Batch list")
           for (b <- batches.list) {

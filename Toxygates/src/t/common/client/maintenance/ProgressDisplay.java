@@ -40,7 +40,7 @@ import t.common.shared.maintenance.Progress;
  * @author johan
  */
 public class ProgressDisplay extends Composite {
-  final int POLL_INTERVAL = 500; // ms
+  final int POLL_INTERVAL = 1000; // ms
 
   Label statusLabel = new Label("0%");
 
