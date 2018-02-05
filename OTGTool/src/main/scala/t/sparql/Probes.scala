@@ -31,7 +31,6 @@ import t.util.TempFiles
 import t.platform.Species
 import t.platform.Species._
 
-
 object Probes extends RDFClass {
   val defaultPrefix: String = s"$tRoot/probe"
   val itemClass: String = "t:probe"
@@ -475,10 +474,10 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   //TODO do not hardcode platform graph names here
 
-  private def mirnaAssociationGraphsAllSpecies = 
-    """|FROM <http://level-five.jp/t/mapping/mirdb>       
-       |FROM <http://level-five.jp/t/platform/mirbase-v21>""".stripMargin
-  
+  private def mirnaAssociationGraphsAllSpecies =
+    """|FROM <http://level-five.jp/t/mapping/mirdb>
+       |""".stripMargin
+
   private def mirnaAssociationGraphs(species: Option[Species]) = {
     val r = species match {
       case Some(Rat)   => "FROM <http://level-five.jp/t/platform/Rat230_2>"
@@ -487,11 +486,29 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       case _ =>
       """|FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
          |FROM <http://level-five.jp/t/platform/Mouse430_2>
-         |FROM <http://level-five.jp/t/platform/Rat230_2>""".stripMargin              
+         |FROM <http://level-five.jp/t/platform/Rat230_2>""".stripMargin
     }
     s"""|$r
        |$mirnaAssociationGraphsAllSpecies""".stripMargin
   }
+
+  private def mirnaToMrnaQuery(queryForFilter: Iterable[String],
+      scoreLimit: Option[Double]) =
+    s"""|WHERE {
+       |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
+       |  ${valuesMultiFilter("?mirna", queryForFilter)}
+       |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
+       |  ?mrna t:refseqTrn ?trn; a t:probe.
+       |}""".stripMargin
+
+  private def mrnaToMirnaQuery(queryForFilter: Iterable[String],
+    scoreLimit: Option[Double]) =
+    s"""|WHERE {
+       |  ?mrna t:refseqTrn ?trn; a t:probe.
+       |  ${valuesMultiFilter("?mrna", queryForFilter)}
+       |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
+       |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
+       |}""".stripMargin
 
   /**
    * Obtain mRNA-miRNA associations.
@@ -505,7 +522,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
     val targetVar = if(queryFromMirna) "mrna" else "mirna"
     val queryForFilter = probes.map(p => bracket(p.pack))
-    
+
     if (probes.isEmpty) {
       return emptyMMap()
     }
@@ -513,12 +530,9 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     val q = s"""$tPrefixes
     |SELECT DISTINCT ?mrna ?score ?mirna ?trn
     |${mirnaAssociationGraphs(species)}
-    |WHERE {
-    |  ?mrna t:refseqTrn ?trn; a t:probe.
-    |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
-    |  ${valuesMultiFilter("?" + queryVar, queryForFilter)}
-    |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
-    |}
+    |${ if (queryFromMirna)
+      mirnaToMrnaQuery(queryForFilter, scoreLimit) else
+      mrnaToMirnaQuery(queryForFilter, scoreLimit)}
     |${maxCount.map(c => s"LIMIT $c").getOrElse("")}
     |""".stripMargin
 
