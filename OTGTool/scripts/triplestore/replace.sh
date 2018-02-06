@@ -13,11 +13,7 @@ shift
 #e.g. http://level-five.jp/t/annotation/go
 GRAPH=$1
 shift
-#e.g. "GO terms"
-TITLE=$1
-shift
-#e.g. "Updated 2016-01-28 from geneontology.org"
-COMMENT=$1
+
 
 NAMED=no
 
@@ -65,6 +61,17 @@ else
   #graph names are already present in the raw data
   curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/" --data-binary @$INPUT
 fi
+
+if [[ $# -lt 5 ]]
+then
+  exit 0
+fi
+
+#e.g. "GO terms"
+TITLE=$1
+shift
+#e.g. "Updated 2016-01-28 from geneontology.org"
+COMMENT=$1
 
 #If the annotation comments are unwanted, uncomment the following and exit.
 #exit 0
