@@ -22,6 +22,11 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.SampleDetailTable;
 import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
@@ -32,11 +37,6 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for
@@ -83,7 +83,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
         a.setEnabled(true);
         int treatedCount = unit.getSamples().length;
         Unit controlUnit = controlUnits.get(unit);
-        int controlCount = (controlUnit != null ? controlUnit.getSamples().length : -1);
+        int controlCount = (controlUnit != null ? controlUnit.getSamples().length : 0);
         a.setText(unitLabel(treatedCount, controlCount));
         a.addClickHandler(e -> displaySampleTable(unit));          
       } else {

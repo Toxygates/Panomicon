@@ -44,11 +44,11 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
 
     def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
 
-    val ss = samples.groupBy(x =>(
+    val groupedSamples = samples.groupBy(x =>(
             x.sampleClass(Batch),
             x.sampleClass(ControlGroup)))
 
-    val cgs = ss.keys.toSeq.map(_._2).distinct
+    val cgs = groupedSamples.keys.toSeq.map(_._2).distinct
     val potentialControls = sampleStore.samples(SampleClassFilter(sc), ControlGroup.id, cgs).
       filter(isControl).map(asJavaSample)
 
@@ -59,7 +59,7 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
        */
 
     var r = Vector[(Unit, Option[Unit])]()
-    for (((batch, cg), samples) <- ss;
+    for (((batch, cg), samples) <- groupedSamples;
         treated = samples.filter(!isControl(_)).map(asJavaSample)) {
 
       /*
@@ -67,26 +67,26 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
        * to have different compound names.
        */
 
-      val byUnit = treated.groupBy(unit(_))
+      val treatedByUnit = treated.groupBy(unit(_))
 
-      val treatedControl = byUnit.toSeq.map(tt => {
-        val repSample = tt._2.head
+      val treatedControl = treatedByUnit.toSeq.map(unitSamples => {
+        val repSample = unitSamples._2.head
         val repUnit = unitWithoutMajorMedium(repSample)
 
-        val fcs = potentialControls.filter(s =>
+        val filteredControls = potentialControls.filter(s =>
           unitWithoutMajorMedium(s) == repUnit
           && s.get(ControlGroup) == repSample.get(ControlGroup)
           && s.get(Batch) == repSample.get(Batch)
           )
 
-        val cu = if (fcs.isEmpty)
-          new Unit(SampleClassUtils.asUnit(sc, schema), Array())
+        val controlUnit = if (filteredControls.isEmpty)
+          None
         else
-          asUnit(fcs)
+          Some(asUnit(filteredControls))
 
-        val tu = asUnit(tt._2)
+        val treatedUnit = asUnit(unitSamples._2)
 
-        (tu, Some(cu))
+        treatedUnit -> controlUnit
       })
 
       r ++= treatedControl
@@ -94,7 +94,7 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
       for (
         (treat, Some(control)) <- treatedControl;
         samples = control.getSamples;
-        if (!samples.isEmpty);
+        if (!samples.isEmpty); // this check shouldn't be necessary
         pseudoUnit = (control, None)
       ) {
         r :+= pseudoUnit

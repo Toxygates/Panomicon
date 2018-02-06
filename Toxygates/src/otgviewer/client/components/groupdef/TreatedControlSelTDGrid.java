@@ -40,14 +40,10 @@ public class TreatedControlSelTDGrid extends SelectionTDGrid {
     protected String unitHoverText() {
       return "Treated samples/Control samples";
     }
-
-    private String format(int x) {
-      return x == -1 ? "?" : (x + "");
-    }
     
     @Override
     protected String unitLabel(int treatedCount, int controlCount) {      
-      return " " + format(treatedCount) + "/" + format(controlCount);
+      return " " + treatedCount + "/" + controlCount;
     }
 
   }
