@@ -100,12 +100,18 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
    * Wait for the task runner and monitor its progress on the console
    */
   def waitForTasklets() {
+    var lastLog = ""
     while (!TaskRunner.available) {
       for (m <- TaskRunner.logMessages) {
         println(m)
-      }
-      TaskRunner.currentTask match {
-        case Some(t) => println(s"${t.name} - ${t.percentComplete}%")
+      }      
+      TaskRunner.currentTask match {        
+        case Some(t) => 
+          val logMsg = s"${t.name} - ${t.percentComplete}%"
+          if (logMsg != lastLog) {
+            println(logMsg)
+            lastLog = logMsg
+          }
         case _       =>
       }
       Thread.sleep(50)
