@@ -107,10 +107,13 @@ trait SeriesBuilder[S <: Series[S]] {
    */
   def expectedTimes(key: S): Seq[String]
 
-  protected def packWithLimit(enum: String, field: String, mask: Int)(implicit mc: MatrixContext) = {
-    val p = mc.enumMaps(enum)(field)
+  protected def packWithLimit(attrib: Attribute, value: String, mask: Int)(implicit mc: MatrixContext): Long = 
+    packWithLimit(attrib.id, value, mask)
+  
+  protected def packWithLimit(enum: String, value: String, mask: Int)(implicit mc: MatrixContext): Long = {
+    val p = mc.enumMaps(enum)(value)
     if (p > mask) {
-      throw new Exception(s"Unable to pack Series: $field in '$enum' is too big ($p)")
+      throw new Exception(s"Unable to pack Series: $value in '$enum' is too big ($p)")
     }
     (p & mask).toLong
   }
