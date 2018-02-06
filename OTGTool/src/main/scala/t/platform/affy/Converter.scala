@@ -44,7 +44,8 @@ object Converter {
       throw new Exception("Please specify the input file name (.csv)")
     }
     val input = args(0)
-    val output = args(0).replace(".csv", "_platform.tsv")
+    val output = if (args.size > 1) args(1) else 
+      args(0).replace(".csv", "_platform.tsv")
     convert(input, output)
   }
 

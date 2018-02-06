@@ -49,8 +49,8 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {
-  val enums = List("sin_rep_type", "organ_id", "organism",
-    DoseLevel.id, ExposureTime.id, "compound_name", "test_type")
+  val enums = List(Repeat, Organ, Organism, DoseLevel, ExposureTime, 
+    Compound, TestType).map(_.id)
 
   private def rem(mc: MatrixContext, key: String): Map[Int, String] =
     mc.reverseEnumMaps(key)
@@ -58,24 +58,24 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     rem(mc, key.id)
 
   def build(sampleClass: Long, probe: Int)(implicit mc: MatrixContext): OTGSeries = {
-    val compound = rem(mc, "compound_name")(((sampleClass) & 65535).toInt)
+    val compound = rem(mc, Compound)(((sampleClass) & 65535).toInt)
     val dose = rem(mc, DoseLevel)(((sampleClass >> 16) & 255).toInt)
-    val organism = rem(mc, "organism")(((sampleClass >> 24) & 255).toInt)
-    val organ = rem(mc, "organ_id")(((sampleClass >> 32) & 255).toInt)
-    val repeat = rem(mc, "sin_rep_type")(((sampleClass >> 40) & 3).toInt)
-    val test = rem(mc, "test_type")(((sampleClass >> 42) & 3).toInt)
+    val organism = rem(mc, Organism)(((sampleClass >> 24) & 255).toInt)
+    val organ = rem(mc, Organ)(((sampleClass >> 32) & 255).toInt)
+    val repeat = rem(mc, Repeat)(((sampleClass >> 40) & 3).toInt)
+    val test = rem(mc, TestType)(((sampleClass >> 42) & 3).toInt)
 
     OTGSeries(repeat, organ, organism, probe, compound, dose, test, Vector())
   }
 
   def pack(s: OTGSeries)(implicit mc: MatrixContext): Long = {
     var r = 0l
-    r |= packWithLimit("test_type", s.testType, 3) << 42
-    r |= packWithLimit("sin_rep_type", s.repeat, 3) << 40
-    r |= packWithLimit("organ_id", s.organ, 255) << 32
-    r |= packWithLimit("organism", s.organism, 255) << 24
-    r |= packWithLimit(DoseLevel.id, s.dose, 255) << 16
-    r |= packWithLimit("compound_name", s.compound, 65535)
+    r |= packWithLimit(TestType, s.testType, 3) << 42
+    r |= packWithLimit(Repeat, s.repeat, 3) << 40
+    r |= packWithLimit(Organ, s.organ, 255) << 32
+    r |= packWithLimit(Organism, s.organism, 255) << 24
+    r |= packWithLimit(DoseLevel, s.dose, 255) << 16
+    r |= packWithLimit(Compound, s.compound, 65535)
     r
   }
 
@@ -84,15 +84,15 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   }
 
   def keysFor(group: OTGSeries)(implicit mc: MatrixContext): Iterable[OTGSeries] = {
-    def singleOrKeys(v: String, enum: String) =
-      if (v != null) List(v) else mc.enumMaps(enum).keys
+    def singleOrKeys(v: String, attrib: Attribute) =
+      if (v != null) List(v) else mc.enumMaps(attrib.id).keys
 
-    val rs = singleOrKeys(group.repeat, "sin_rep_type")
-    val os = singleOrKeys(group.organ, "organ_id")
-    val ss = singleOrKeys(group.organism, "organism")
-    val cs = singleOrKeys(group.compound, "compound_name")
-    val ds = singleOrKeys(group.dose, DoseLevel.id)
-    val ts = singleOrKeys(group.testType, "test_type")
+    val rs = singleOrKeys(group.repeat, Repeat)
+    val os = singleOrKeys(group.organ, Organ)
+    val ss = singleOrKeys(group.organism, Organism)
+    val cs = singleOrKeys(group.compound, Compound)
+    val ds = singleOrKeys(group.dose, DoseLevel)
+    val ts = singleOrKeys(group.testType, TestType)
 
     val empty = Vector()
 
@@ -103,14 +103,10 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   }
 
   def buildEmpty(x: Sample, md: Metadata) = {
-    val paramMap = Map() ++ md.sampleAttributes(x).map(x => x._1.id -> x._2)
-        val r = paramMap("sin_rep_type")
-        val d = paramMap(DoseLevel.id)
-        val o = paramMap("organ_id")
-        val s = paramMap("organism")
-        val c = paramMap("compound_name")
-        val t = paramMap("test_type")
-        OTGSeries(r, o, s, 0, c, d, t, Vector())
+    val attribs = Map() ++ md.sampleAttributes(x).map(x => x._1 -> x._2)
+    
+    OTGSeries(attribs(Repeat), attribs(Organ), attribs(Organism), 0, 
+      attribs(Compound), attribs(DoseLevel), attribs(TestType), Vector())
   }
 
   def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,

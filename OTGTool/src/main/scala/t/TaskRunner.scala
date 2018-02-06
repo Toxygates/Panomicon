@@ -125,7 +125,8 @@ object TaskRunner {
 
   def errorCause: Option[Throwable] = _errorCause
 
-  def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit): Unit = synchronized {
+  def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit):
+    Future[Unit] = synchronized {
     if (!available) {
       throw new Exception("TaskRunner is busy.")
     }
@@ -175,9 +176,8 @@ object TaskRunner {
     }
   }
 
-  def runThenFinally(tasklet: Tasklet)(cleanup: => Unit) {
+  def runThenFinally(tasklet: Tasklet)(cleanup: => Unit): Future[Unit] =
     runThenFinally(List(tasklet))(cleanup)
-  }
 
   /**
    * Stop the runner and drop any remaining non-started tasks.
