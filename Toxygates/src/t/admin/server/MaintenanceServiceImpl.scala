@@ -43,6 +43,7 @@ import t.util.TempFiles
 import t.viewer.server.Configuration
 import t.viewer.server.SharedDatasets
 import t.viewer.server.rpc.TServiceServlet
+import javax.servlet.http.HttpSession
 
 abstract class MaintenanceServiceImpl extends TServiceServlet
 with BatchOpsImpl with MaintenanceService {
@@ -55,11 +56,11 @@ with BatchOpsImpl with MaintenanceService {
     homeDir = config.webappHomeDir
   }
 
-  override protected def getAttribute[T](name: String) =
-    getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
+  override protected def getAttribute[T](name: String, session: HttpSession) =
+    session.getAttribute(name).asInstanceOf[T]
 
-  override protected def setAttribute(name: String, x: AnyRef): Unit =
-     getThreadLocalRequest().getSession().setAttribute(name, x)
+  override protected def setAttribute(name: String, x: AnyRef, session: HttpSession): Unit =
+    session.setAttribute(name, x)
 
   override protected def request = getThreadLocalRequest
 
@@ -69,10 +70,9 @@ with BatchOpsImpl with MaintenanceService {
     grabRunner()
     val pm = new PlatformManager(context)
 
-    cleanMaintenance {
-      TaskRunner.start()
+    maintenance {
       setLastTask("Add platform")
-      val platformFile = getLatestSessionFileAsTemp(maintenanceUploads, platformPrefix,
+      val platformFile = getLatestSessionFileAsTemp(maintenanceUploads(), platformPrefix,
           platformPrefix, "dat")
       if (platformFile == None) {
         throw new MaintenanceException("The platform file has not been uploaded yet.")
@@ -89,9 +89,9 @@ with BatchOpsImpl with MaintenanceService {
       val affymetrixFormat = (pt == PlatformType.Affymetrix)
       val bioFormat = (pt == PlatformType.Biological)
 
-      TaskRunner ++= pm.add(id, TRDF.escape(comment),
-          platformFile.get.getAbsolutePath(), affymetrixFormat, bioFormat)
-      TaskRunner += Tasklet.simple("Set platform parameters", () => updatePlatform(p))
+      runTasks(pm.add(id, TRDF.escape(comment),
+          platformFile.get.getAbsolutePath(), affymetrixFormat, bioFormat) ++
+          Seq(Tasklet.simple("Set platform parameters", () => updatePlatform(p))))
     }
   }
 
@@ -139,10 +139,9 @@ with BatchOpsImpl with MaintenanceService {
     ensureNotMaintenance()
     grabRunner()
     val pm = new PlatformManager(context)
-    cleanMaintenance {
-      TaskRunner.start()
+    maintenance {
       setLastTask("Delete platform")
-      TaskRunner ++= pm.delete(id)
+      runTasks(pm.delete(id))
     }
   }
 

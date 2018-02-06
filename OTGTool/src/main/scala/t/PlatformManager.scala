@@ -49,14 +49,14 @@ object PlatformManager extends ManagerTool {
               "Please specify a definition file with -input")
             val defns = new PlatformDefFile(inputFile).records
             val comment = stringOption(args, "-comment").getOrElse("")
-            addTasklets(manager.add(title, comment, inputFile, false, false))
+            startTaskRunner(manager.add(title, comment, inputFile, false, false))
 
             //Redefine only syntax
   //          platforms.redefine(title, comment, false, defns)
           case "delete" =>
             val title = require(stringOption(args, "-title"),
               "Please specify a title with -title")
-            manager.delete(title)
+            startTaskRunner(manager.delete(title))
           case "list" =>
             for (p <- platforms.list) {
               println(p)

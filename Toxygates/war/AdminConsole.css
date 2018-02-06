@@ -28,10 +28,12 @@
 	padding: 2px;
 	border: solid grey 1px;
 	width: 490px;
+	word-wrap: break-word;
 }
 
 .taskLogEntry {
 	margin: 2px;
+	width: 480px;
 }
 
 .taskInfoEntry {

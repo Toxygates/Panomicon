@@ -22,122 +22,104 @@ package t
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
+import scala.concurrent.Promise
 
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
-  test("runAndStop") {
+  def runAndWait(tasklets: Iterable[Tasklet], maxDuration: Duration = 200 millis):
+    Unit  = {
+    val future = TaskRunner.runThenFinally(tasklets)(())
+    Await.result(future, maxDuration)
+  }
+
+  def runAndWaitSingle(tasklet: Tasklet, maxDuration: Duration = 200 millis): Unit =
+    runAndWait(List(tasklet), maxDuration)
+
+  test("basic") {
     var hasRun = false
     val t = Tasklet.simple("simple", () => { hasRun = true })
-    TaskRunner.runAndStop(t)
+    runAndWaitSingle(t)
     hasRun should equal(true)
     TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should equal(false)
-  }
-
-  test("basic with no shutdown") {
-    var hasRun = false
-    val t = Tasklet.simple("simple", () => { hasRun = true })
-    TaskRunner.start()
-    TaskRunner += t
-    while (!hasRun) {
-      Thread.sleep(1000)
-    }
-    TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should equal(false)
-  }
-
-  //TODO it would be better if the tests don't depend on timings like this
-  test("basic with shutdown") {
-    var hasRun = false
-    val t = Tasklet.simple("simple", () => { hasRun = true })
-    TaskRunner += t
-    TaskRunner.start()
-    while (!hasRun) {
-      Thread.sleep(100)
-    }
-    TaskRunner.shutdown
-    Thread.sleep(3000)
-    TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should equal(false)
+    TaskRunner.available should equal(true)
   }
 
   test("logging and progress") {
+    val promise = Promise[Unit]()
     val t = new Tasklet("simple") {
       def run() {
+        promise.success(())
         log("logged")
         while(shouldContinue(50)) {
-          Thread.sleep(100)
+          Thread.sleep(10)
         }
         println("tasklet stopping")
       }
     }
 
-    TaskRunner += t
-    TaskRunner.queueSize() should equal(1)
-    TaskRunner.start()
-    Thread.sleep(200)
+    val future = TaskRunner.runThenFinally(t)(())
+    Await.result(promise.future, 200 millis)
     TaskRunner.currentTask should equal(Some(t))
-    TaskRunner.waitingForTask should equal(true)
+    TaskRunner.available should equal(false)
     TaskRunner.shutdown()
-    Thread.sleep(2000)
+    Await.result(future, 200 millis)
     TaskRunner.logMessages should contain("logged")
     TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should equal(false)
+    TaskRunner.available should equal(true)
   }
 
   test("Exception") {
     var hasRun = false
     val e = new Exception("trouble")
-    val t2 = Tasklet.simple("none", () => { hasRun = true })
     val t = new Tasklet("simple") {
       def run() {
         throw e
       }
     }
-    TaskRunner += t
-    TaskRunner += t2
-    TaskRunner.queueSize() should equal(2)
-    TaskRunner.start()
-    Thread.sleep(2000)
+    val t2 = Tasklet.simple("none", () => { hasRun = true })
+
+    runAndWait(List(t, t2))
     TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should be(false)
+    TaskRunner.available should be(true)
     TaskRunner.errorCause should equal(Some(e))
     TaskRunner.queueSize() should equal(0)
     hasRun should equal(false)
 
     //verify that we can use it again after the error
 
-    TaskRunner += t2
-    TaskRunner.start()
-    Thread.sleep(100)
+    runAndWaitSingle(t2)
     hasRun should equal(true)
     TaskRunner.shutdown()
   }
 
   test("Interrupted task") {
+    val promise = Promise[Unit]()
     var finished = false
     val t = new Tasklet("interruptable") {
       def run() {
+        promise.success(())
         while(shouldContinue(0.5)) {
           println("working")
-          Thread.sleep(100)
+          Thread.sleep(10)
         }
         finished = true
       }
     }
 
-    TaskRunner += t
-    TaskRunner.start()
-    Thread.sleep(500)
+    val future = TaskRunner.runThenFinally(t)(())
+    Await.result(promise.future, 200 millis)
     TaskRunner.currentTask should equal(Some(t))
-    TaskRunner.waitingForTask should be(true)
+    TaskRunner.available should be(false)
     TaskRunner.queueSize() should equal(0)
 
     TaskRunner.shutdown()
-    Thread.sleep(500)
+    Await.result(future, 200 millis)
     TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should be(false)
+    TaskRunner.available should be(true)
     TaskRunner.queueSize() should equal(0)
     finished should be(true)
   }

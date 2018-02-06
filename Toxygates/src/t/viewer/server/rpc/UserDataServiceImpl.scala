@@ -29,6 +29,7 @@ import t.global.KCDBRegistry
 
 import t.viewer.client.rpc.UserDataService
 import t.viewer.server.Configuration
+import javax.servlet.http.HttpSession
 
 /**
  * A servlet for managing user data (as batches).
@@ -45,20 +46,15 @@ abstract class UserDataServiceImpl extends TServiceServlet
     homeDir = config.webappHomeDir
   }
 
-  override protected def getAttribute[T](name: String) =
-    getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
+  override protected def getAttribute[T](name: String, session: HttpSession) =
+    session.getAttribute(name).asInstanceOf[T]
 
-  override protected def setAttribute(name: String, x: AnyRef): Unit =
-     getThreadLocalRequest().getSession().setAttribute(name, x)
+  override protected def setAttribute(name: String, x: AnyRef, session: HttpSession): Unit =
+    session.setAttribute(name, x)
 
   override protected def request = getThreadLocalRequest
 
   protected override def mayAppendBatch: Boolean = false
-
-  override protected def afterTaskCleanup(success: Boolean): Unit = {
-    super.afterTaskCleanup(success)
-    KCDBRegistry.closeWriters()
-  }
 
   //Public entry point
   override def addBatchAsync(b: Batch): Unit = {
