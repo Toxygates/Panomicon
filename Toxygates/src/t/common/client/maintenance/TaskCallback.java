@@ -21,11 +21,11 @@ package t.common.client.maintenance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import t.common.client.rpc.MaintenanceOperationsAsync;
-
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
+
+import t.common.client.rpc.MaintenanceOperationsAsync;
 
 public class TaskCallback implements AsyncCallback<Void> {
   final String title;
@@ -43,14 +43,13 @@ public class TaskCallback implements AsyncCallback<Void> {
     final DialogBox db = new DialogBox(false, true);
     ProgressDisplay pd = new ProgressDisplay(title, maintenanceOps) {
       @Override
-      protected void onDone() {
+      protected void onDone(boolean success) {
         db.hide();
-        onCompletion();
-      }
-
-      @Override
-      protected void onCancelled() {
-        TaskCallback.this.onCancelled();
+        if (success) {
+          onCompletion();
+        } else {
+          TaskCallback.this.onCancelled();
+        }
       }
     };
     db.setWidget(pd);

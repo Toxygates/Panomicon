@@ -144,9 +144,6 @@ abstract public class BatchEditor extends ManagedItemEditor {
 
   @Override
   protected void onError() {
-    if (uploader != null) {
-      uploader.resetAll();
-    }
     okButton.setEnabled(true);
   }
 }
