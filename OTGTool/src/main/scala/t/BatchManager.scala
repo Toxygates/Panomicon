@@ -262,8 +262,6 @@ class BatchManager(context: Context) {
     r :+= updateMetadataCheck(batch.title, metadata, config)
     r :+= deleteRDF(batch.title)
     r ++= addMetadata(batch, metadata, false, sbuilder)
-    implicit val mc = matrixContext()
-    r :+= addEnums(metadata, sbuilder)
     r
   }
 
