@@ -14,7 +14,7 @@ import otg.model.sample.OTGAttribute
 /**
  * Routines for loading a ManagedMatrix and constructing groups.
  */
-abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
+abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
   import ManagedMatrix._
   
   def build(requestColumns: Seq[Group], sparseRead: Boolean,

@@ -43,7 +43,7 @@ trait MatrixContext {
  * The database will be opened when returned by its constructor.
  * The database must be closed after use.
  */
-trait MatrixDBReader[+E >: Null <: ExprValue] {
+trait MatrixDBReader[+E <: ExprValue] {
 
   implicit def probeMap: ProbeMap
 
