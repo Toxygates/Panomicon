@@ -97,7 +97,7 @@ trait MatrixDBReader[+E <: ExprValue] {
     val pname = pm.unpack(probe)
     emptyValue(pname)
   }
-  
+
   def isEmptyValue(e: ExprValue): Boolean = false
 
   /**
@@ -116,21 +116,19 @@ trait MatrixDBReader[+E <: ExprValue] {
 
     val ps = probes.filter(probeMap.keys.contains(_)).sorted
 
-    val rows = (if (sparseRead) {
+    val rows = if (sparseRead) {
       probes.par.map(p => {
         val dat = Map() ++ valuesForProbe(p, xs).filter(!presentOnly || _._2.present)
-        val row = Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
-        row
+        Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
       }).seq
-
     } else {
       //not sparse read, go sample-wise
       val rs = (xs zipWithIndex).par.map(bc => {
         valuesInSample(bc._1, ps).toSeq
       }).seq.toSeq
-       Vector.tabulate(ps.size, xs.size)((p, x) =>
-         rs(x)(p))
-      })
+      Vector.tabulate(ps.size, xs.size)((p, x) =>
+        rs(x)(p))
+    }
     rows.toVector
   }
 }

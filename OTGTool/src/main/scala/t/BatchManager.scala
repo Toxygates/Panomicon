@@ -203,7 +203,7 @@ class BatchManager(context: Context) {
   def config = context.config
   def samples = context.samples
 
-  def matrixContext(): MatrixContext = {
+  def matrixContext(): MatrixContext =
     new MatrixContext {
       def foldsDBReader = ???
       def absoluteDBReader = ???
@@ -224,7 +224,6 @@ class BatchManager(context: Context) {
         }
       }
     }
-  }
 
   val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
