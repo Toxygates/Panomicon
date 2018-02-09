@@ -38,6 +38,11 @@ trait QueryUtils {
   def multiFilter(v: String, values: Option[Iterable[String]]): String =
     multiFilter(v, values.getOrElse(Iterable.empty))
 
+  def valuesMultiFilter(v: String, values: Iterable[String]): String =
+    if (values.isEmpty) { "" } else {
+      s"VALUES $v { ${values.mkString(" ")} }"
+    }
+
   def multiUnion(subjObjs: Iterable[(String, String)], pred: String): String =
     subjObjs.grouped(3).map(xs => xs.map(x => "{ " + x._1 + " " + pred + " " + x._2 + " . } ").
       mkString(" UNION ")).mkString(" \n UNION \n ")
