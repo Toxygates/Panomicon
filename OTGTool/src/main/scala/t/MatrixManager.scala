@@ -53,7 +53,7 @@ object MatrixManager extends ManagerTool {
       val useSamples = batch.map(samplesInBatch).getOrElse(allSamples)
 
       for (ss <- useSamples.grouped(50)) {
-        val vs = from.valuesInSamples(ss, allProbes)
+        val vs = from.valuesInSamples(ss, allProbes, true)
         val svs = Map() ++ (ss zip vs)
         val raw = new RawExpressionData {
           val samples = ss

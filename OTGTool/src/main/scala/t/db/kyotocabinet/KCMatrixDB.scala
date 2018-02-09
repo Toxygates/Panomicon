@@ -152,7 +152,8 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB, writeMode: Boo
   //TODO consider removing/encapsulating
   def sortSamples(ss: Iterable[Sample]): Seq[Sample] = ss.toList.sortWith(_.dbCode < _.dbCode)
 
-  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {
+  def valuesInSample(x: Sample, keys: Iterable[Int],
+      padMissingValues: Boolean): Iterable[E] = {
     var r: Vector[E] = Vector()
     println(x.identifier + " (" + keys.size + ")")
 
@@ -162,7 +163,9 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB, writeMode: Boo
       unpacked = pmap.unpack(k)) {
       val data = db.get(lookup)
       if (data == null) {
-        r :+= emptyValue(unpacked)
+        if (padMissingValues) {
+          r :+= emptyValue(unpacked)
+        }
       } else {
         r :+= extractValue(data, unpacked)
       }

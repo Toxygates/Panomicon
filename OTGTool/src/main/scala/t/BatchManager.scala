@@ -151,7 +151,7 @@ object BatchManager extends ManagerTool {
             try {
               val keys = bm.matrixContext.probeMap.keys
               val xs = bm.matrixContext.sampleMap.tokens.take(len).map(Sample(_))
-              db.valuesInSamples(xs, keys)
+              db.valuesInSamples(xs, keys, true)
             } finally {
               db.release
             }

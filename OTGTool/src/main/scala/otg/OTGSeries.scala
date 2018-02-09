@@ -49,7 +49,7 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {
-  val enums = List(Repeat, Organ, Organism, DoseLevel, ExposureTime, 
+  val enums = List(Repeat, Organ, Organism, DoseLevel, ExposureTime,
     Compound, TestType).map(_.id)
 
   private def rem(mc: MatrixContext, key: String): Map[Int, String] =
@@ -104,8 +104,8 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
   def buildEmpty(x: Sample, md: Metadata) = {
     val attribs = Map() ++ md.sampleAttributes(x).map(x => x._1 -> x._2)
-    
-    OTGSeries(attribs(Repeat), attribs(Organ), attribs(Organism), 0, 
+
+    OTGSeries(attribs(Repeat), attribs(Organ), attribs(Organism), 0,
       attribs(Compound), attribs(DoseLevel), attribs(TestType), Vector())
   }
 
@@ -122,7 +122,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
       val data = for (
         x <- xs;
-        exprs = from.valuesInSample(x, Seq());
+        exprs = from.valuesInSample(x, Seq(), true);
         presentExprs = exprs.filter(_.present);
         time = md.sampleAttribute(x, ExposureTime).get
       ) yield (time, x, presentExprs)

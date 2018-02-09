@@ -71,7 +71,7 @@ object KCDBTest extends Matchers {
 
     //test valuesinsample
     for (s <- samples.par; cvs = evs(s)) {
-       val vs = mdb.valuesInSample(s, ppacked)
+       val vs = mdb.valuesInSample(s, ppacked, true)
        val confirm = for (p <- ppacked;
          v = cvs.getOrElse(probeMap.unpack(p),
           mdb.emptyValue(probeMap.unpack(p)))

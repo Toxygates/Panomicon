@@ -64,14 +64,17 @@ trait MatrixDBReader[+E <: ExprValue] {
    * each array.
    * Probes must be sorted.
    * The size of the returned iterable is the same as the passed in probes, and
-   * in the same order. Empty values will be inserted where none was found in the
+   * in the same order.
+   * @param padMissingValues If true, empty values will be inserted where none was found in the
    * database.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
+  def valuesInSample(x: Sample, probes: Iterable[Int],
+      padMissingValues: Boolean): Iterable[E]
 
-  def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int]) = {
+  def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int],
+      padMissingValues: Boolean) = {
     val sk = probes.toSeq.sorted
-    xs.map(valuesInSample(_, sk))
+    xs.map(valuesInSample(_, sk, padMissingValues))
   }
 
   /**
@@ -108,7 +111,7 @@ trait MatrixDBReader[+E <: ExprValue] {
    * The ordering of columns is guaranteed.
    * @param sparseRead if set, we use an algorithm that is optimised
    *  for the case of reading only a few values from each sample.
-   * @param presentOnly if set, samples whose call is 'A' are replaced with the
+   * @param presentOnly if set, in the sparse case, samples whose call is 'A' are replaced with the
    *  empty value.
    */
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
@@ -124,7 +127,7 @@ trait MatrixDBReader[+E <: ExprValue] {
     } else {
       //not sparse read, go sample-wise
       val rs = (xs zipWithIndex).par.map(bc => {
-        valuesInSample(bc._1, ps).toSeq
+        valuesInSample(bc._1, ps, true).toSeq
       }).seq.toSeq
       Vector.tabulate(ps.size, xs.size)((p, x) =>
         rs(x)(p))
