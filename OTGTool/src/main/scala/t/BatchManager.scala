@@ -532,13 +532,14 @@ class BatchManager(context: Context) {
   }
 
   def deleteFoldData(title: String)(implicit mc: MatrixContext) =
-    deleteExtFormatData(title, "Delete fold data")
+    deleteExtFormatData(title, config.data.foldDb, "Delete fold data")
 
   def deleteExprData(title: String)(implicit mc: MatrixContext) =
-    deleteExtFormatData(title, "Delete normalized intensity data")
+    deleteExtFormatData(title, config.data.exprDb, "Delete normalized intensity data")
 
-  private def deleteExtFormatData(title: String, taskName: String)(implicit mc: MatrixContext) =
-    new Tasklet("Delete fold data") {
+  private def deleteExtFormatData(title: String, database: String, taskName: String)
+    (implicit mc: MatrixContext) =
+    new Tasklet(taskName) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
@@ -546,7 +547,7 @@ class BatchManager(context: Context) {
           log("Nothing to do, batch has no samples")
           return
         }
-        val db = config.data.extWriter(config.data.foldDb)
+        val db = config.data.extWriter(database)
         try {
           deleteFromDB(db, ss)
         } finally {
