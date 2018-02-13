@@ -21,41 +21,18 @@
 package t.db
 
 import t.Tasklet
-import t.db.kyotocabinet.KCMatrixDB
-
-object MatrixInsert {
-  @deprecated("Use DataConfig methods", "13 April 2016")
-  def matrixDB(fold: Boolean, dbfile: String)(implicit mc: MatrixContext): MatrixDBWriter[_] =
-    if (fold) {
-      KCMatrixDB.getExt(dbfile, true)
-    } else {
-      KCMatrixDB.get(dbfile, true)
-    }
-}
 
 /*
- * Note: this is currently only used in tests, but kept around as an example
- * of how to use multiple database formats
+ * Note: this is currently only used in tests.
  */
 abstract class BasicValueInsert[E <: ExprValue](val db: MatrixDBWriter[E],
     raw: RawExpressionData)(implicit mc: MatrixContext) extends MatrixInsert[E](raw)
 
-/*
- * Note: this is currently only used in tests, but kept around as an example
- * of how to use multiple database formats
- */
-class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
-(implicit mc: MatrixContext) extends MatrixInsert[BasicExprValue](raw) {
-  lazy val db = KCMatrixDB.get(dbfile, true)
-
-  def mkValue(v: FoldPExpr) =
-    BasicExprValue(v._1, v._2)
-}
-
 /**
- * As above but with p-values. All expression database files currently use this format.
+ * Insert values consisting of an intensity, a p-value, and a call, i.e. PExprValue.
+ * All expression database files currently use this format.
  */
-class SimplePFoldValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpressionData)
+class SimpleValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[PExprValue](raw) {
   def mkValue(v: FoldPExpr) =
     PExprValue(v._1, v._3, v._2)

@@ -22,6 +22,14 @@ package t.db
 
 import scala.Vector
 import scala.language.postfixOps
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.global.KCDBRegistry
+
+object MatrixDB {
+  def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {    
+    KCChunkMatrixDB.apply(file, writeMode)    
+  }
+}
 
 trait MatrixContext {
   def probeMap: ProbeMap
@@ -165,4 +173,4 @@ trait MatrixDBWriter[E <: ExprValue] {
   def release(): Unit
 }
 
-trait MatrixDB[+ER >: Null <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]
+trait MatrixDB[+ER <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]

@@ -30,6 +30,7 @@ import t.db.kyotocabinet._
 import t.global.KCDBRegistry
 import t.sparql._
 import t.util.TempFiles
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 
 /**
  * Batch management CLI
@@ -128,17 +129,6 @@ object BatchManager extends ManagerTool {
           expectArgs(args, 3)
           verifyExists(batches, args(1))
           batches.disableAccess(args(1), args(2))
-        case "checkOrder" =>
-          expectArgs(args, 4)
-          val len = Integer.parseInt(args(3))
-          val bm = new BatchManager(context)
-          val db = config.data.absoluteDBReader(context.matrix)
-          val kdb = db.asInstanceOf[KCMatrixDB]
-          try {
-            kdb.dumpKeys(args(1), args(2), len)
-          } finally {
-            db.release
-          }
         case "loadTest" =>
           expectArgs(args, 3)
           val len = Integer.parseInt(args(1))
@@ -170,16 +160,17 @@ object BatchManager extends ManagerTool {
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
-    val kdb = KCMatrixDB.get(dbf, true)
+    val kdb = MatrixDB.get(dbf, true)
 
     try {
-      val ss = kdb.allSamples(true, Set())
+      val ss = kdb.allSamples
       val xs = bm.matrixContext.sampleMap
-      val unknowns = ss.map(_._1).toSet -- xs.keys
+      val unknowns = ss.toSet -- xs.tokens.map(Sample(_))
 
       println("Unknown set: " + unknowns)
       if (delete && !unknowns.isEmpty) {
-        kdb.allSamples(true, unknowns)
+        println("DELETING.")
+        kdb.deleteSamples(unknowns)        
       }
     } finally {
       kdb.release
@@ -497,13 +488,9 @@ class BatchManager(context: Context) {
   def addExprData(md: Metadata, niFile: String, callFile: Option[String],
     warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(niFile), callFile.toList,
-        Some(md.samples.size), warningHandler)
-//    if (treatAsFold) {
+        Some(md.samples.size), warningHandler)    
       val db = () => config.data.extWriter(config.data.exprDb)
-      new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
-//    } else {
-//      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
-//    }
+      new SimpleValueInsert(db, data).insert("Insert expr value data")
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
@@ -517,7 +504,7 @@ class BatchManager(context: Context) {
       new PFoldValueBuilder(md, data)
     }
     val db = () => config.data.extWriter(config.data.foldDb)
-    new SimplePFoldValueInsert(db, fvs).insert("Insert fold value data")
+    new SimpleValueInsert(db, fvs).insert("Insert fold value data")
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {

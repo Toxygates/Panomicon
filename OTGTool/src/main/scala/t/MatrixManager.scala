@@ -60,7 +60,7 @@ object MatrixManager extends ManagerTool {
           def data(s: Sample) = Map() ++
             svs(s).filter(!from.isEmptyValue(_)).map(v => v.probe -> formVal(v))
         }
-        val t = new SimplePFoldValueInsert(getDB, raw).
+        val t = new SimpleValueInsert(getDB, raw).
           insert(s"$label")
         TaskRunner.runThenFinally(t)(())
         println(s"$ss ($label)")

@@ -22,7 +22,6 @@ package t.db.testing
 
 import kyotocabinet.DB
 import t.db._
-import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 import t.platform.OrthologMapping
 import t.model.sample.Attribute
@@ -172,7 +171,7 @@ object TestData {
     r
   }
 
-  def populate(db: ExtMatrixDB, d: RawExpressionData) {
+  def populate(db: MatrixDBWriter[PExprValue], d: RawExpressionData) {
     val evs = d.asExtValues
     for ((s, vs) <- evs; (p, v) <- vs) {
       db.write(s, probeMap.pack(p), v)
