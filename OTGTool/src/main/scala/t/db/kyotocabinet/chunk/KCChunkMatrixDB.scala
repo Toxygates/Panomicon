@@ -235,7 +235,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
-  def valuesInSample(x: Sample, probes: Iterable[Int],
+  def valuesInSample(x: Sample, probes: Seq[Int],
       padMissingValues: Boolean): Iterable[PExprValue] = {
     //The chunk system guarantees that values will be read in order.
     //We exploit the ordering here when checking for missing values.

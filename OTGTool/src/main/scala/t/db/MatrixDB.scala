@@ -44,6 +44,15 @@ trait MatrixContext {
   def seriesDBReader: SeriesDB[_]
 
   def seriesBuilder: SeriesBuilder[_]
+  
+  /**
+   * Probes expected to be present in the database for a given sample.
+   * They are not guaranteed to actually be present.
+   */
+  def expectedProbes(x: Sample): Iterable[Int]
+  
+  def expectedProbes(xs: Iterable[Sample]): Iterable[Int] = 
+    xs.flatMap(expectedProbes).toSeq.distinct
 }
 
 /**
@@ -67,6 +76,12 @@ trait MatrixDBReader[+E <: ExprValue] {
   def sortSamples(xs: Iterable[Sample]): Seq[Sample]
 
   /**
+   * Sort probes in an order that is optimised for valuesInSample.
+   */
+  def sortProbes(probes: Iterable[Int]): Seq[Int] =
+    probes.toSeq.sorted
+  
+  /**
    * Read all values for a given sample.
    * This routine is optimised for the case of accessing many probes in
    * each array.
@@ -76,14 +91,13 @@ trait MatrixDBReader[+E <: ExprValue] {
    * @param padMissingValues If true, empty values will be inserted where none was found in the
    * database.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int],
+  def valuesInSample(x: Sample, probes: Seq[Int],
       padMissingValues: Boolean): Iterable[E]
 
-  def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int],
-      padMissingValues: Boolean) = {
-    val sk = probes.toSeq.sorted
-    xs.map(valuesInSample(_, sk, padMissingValues))
-  }
+  def valuesInSamples(xs: Iterable[Sample], probes: Seq[Int],
+      padMissingValues: Boolean) = 
+    xs.map(valuesInSample(_, probes, padMissingValues))
+  
 
   /**
    * Read all values for a given probe and for a given set of samples.

@@ -141,7 +141,7 @@ object BatchManager extends ManagerTool {
             try {
               val keys = bm.matrixContext.probeMap.keys
               val xs = bm.matrixContext.sampleMap.tokens.take(len).map(Sample(_))
-              db.valuesInSamples(xs, keys, true)
+              db.valuesInSamples(xs, db.sortProbes(keys), true)
             } finally {
               db.release
             }
@@ -200,7 +200,8 @@ class BatchManager(context: Context) {
       def absoluteDBReader = ???
       def seriesBuilder = ???
       def seriesDBReader = ???
-
+      def expectedProbes(x: Sample) = ???
+      
       lazy val probeMap: ProbeMap =
         new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
       lazy val sampleMap: SampleMap =
