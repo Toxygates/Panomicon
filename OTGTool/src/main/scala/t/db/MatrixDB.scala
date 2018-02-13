@@ -101,8 +101,6 @@ trait MatrixDBReader[+E <: ExprValue] {
     emptyValue(pname)
   }
 
-  def isEmptyValue(e: ExprValue): Boolean = false
-
   /**
    * Get values by probes and samples.
    * Samples should be sorted prior to calling this method (using sortSamples above).

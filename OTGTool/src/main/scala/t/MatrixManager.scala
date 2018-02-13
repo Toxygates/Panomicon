@@ -58,7 +58,7 @@ object MatrixManager extends ManagerTool {
         val raw = new RawExpressionData {
           val samples = ss
           def data(s: Sample) = Map() ++
-            svs(s).filter(!from.isEmptyValue(_)).map(v => v.probe -> formVal(v))
+            svs(s).filter(!_.isPadding).map(v => v.probe -> formVal(v))
         }
         val t = new SimplePFoldValueInsert(getDB, raw).
           insert(s"$label")
