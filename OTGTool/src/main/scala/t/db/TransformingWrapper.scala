@@ -46,7 +46,7 @@ abstract class TransformingWrapper[E >: Null <: ExprValue](val
     wrapped.valuesForProbe(probe, xs).map(x => (x._1, tfmValue(x._2)))
   }
 
-  def valuesInSample(x: Sample, probes: Iterable[Int],
+  def valuesInSample(x: Sample, probes: Seq[Int],
       padMissingValues: Boolean): Iterable[E] = {
     wrapped.valuesInSample(x, probes, padMissingValues).map(x => tfmValue(x))
   }

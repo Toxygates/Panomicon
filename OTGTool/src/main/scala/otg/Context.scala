@@ -74,6 +74,9 @@ class OTGContext(baseConfig: BaseConfig) extends MatrixContext {
   def foldsDBReader: MatrixDBReader[PExprValue] =
     data.foldsDBReader(this)
 
+  def expectedProbes(x: Sample) =
+    probeMap.keys
+    
   def seriesBuilder: OTGSeries.type = OTGSeries
 
   def seriesDBReader: SDB =

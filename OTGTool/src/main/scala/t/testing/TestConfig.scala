@@ -20,13 +20,13 @@
 
 package t.testing
 
-import t._
 import otg.OTGBConfig
-import t.ChunkDataConfig
+import t._
+
 
 object TestConfig {
   //Not in use
-  val dataConfig = new ChunkDataConfig("kcchunk:/Users/johan/otg/data_chunk",
+  val dataConfig = new DataConfig("/Users/johan/otg/data_chunk",
     "#bnum=6250000#pccap=1073741824#msiz=4294967296")
   //	val tsConfig = new TriplestoreConfig("http://localhost:3030/data/sparql",
   //	    "http://localhost:3030/data/update", null, null, null)

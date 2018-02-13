@@ -22,9 +22,8 @@ package t.testing
 
 import t.platform.Species._
 import t.db._
-import t.db.kyotocabinet.KCExtMatrixDB
-import t.db.kyotocabinet.KCMatrixDB
 import t.db.testing.TestData
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 
 class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   val enumMaps: Map[String, Map[String, Int]] = Map(),
@@ -43,9 +42,11 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   private val folds = memDBHash
   private val abs = memDBHash
 
-  lazy val absoluteDBReader: KCMatrixDB = ???
-  lazy val foldsDBReader: KCExtMatrixDB = new KCExtMatrixDB(folds, false)
+  lazy val absoluteDBReader: ExtMatrixDBReader = ???
+  lazy val foldsDBReader: ExtMatrixDB = new KCChunkMatrixDB(folds, false)
 
+  def expectedProbes(s: Sample) = sampleMap.keys
+  
   def seriesDBReader: SeriesDB[_] = ???
   def seriesBuilder: SeriesBuilder[_] = ???
 

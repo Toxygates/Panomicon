@@ -119,10 +119,11 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
     for ((s, xs) <- grouped) {
       //Construct the series s for all probes, using the samples xs
-
+      
       val data = for (
         x <- xs;
-        exprs = from.valuesInSample(x, Seq(), true);
+        probes = from.sortProbes(mc.expectedProbes(x));
+        exprs = from.valuesInSample(x, probes, true);
         presentExprs = exprs.filter(_.present);
         time = md.sampleAttribute(x, ExposureTime).get
       ) yield (time, x, presentExprs)

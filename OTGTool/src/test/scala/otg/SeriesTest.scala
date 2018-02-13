@@ -39,8 +39,6 @@ class SeriesTest extends TTestSuite {
   implicit val context = new otg.testing.FakeContext()
   val cmap = context.enumMaps("compound_name")
 
-  TestData.makeTestData(false)
-
   test("pack and build") {
     for (s <- OData.series) {
       val p = OTGSeries.pack(s)
