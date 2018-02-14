@@ -38,7 +38,7 @@ public class DualDataScreen extends DataScreen {
   
   protected final static String sideMatrix = "SECONDARY";
   
-  final static int MAX_SECONDARY_ROWS = 200;
+  final static int MAX_SECONDARY_ROWS = Network.MAX_SIZE;
   
   static enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA, true) {

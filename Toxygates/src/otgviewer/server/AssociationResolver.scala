@@ -76,7 +76,7 @@ class AssociationResolver(probeStore: Probes,
       try {
       source.id match {
         case "http://level-five.jp/t/mapping/mirdb" =>
-          val mirnaLimit = 200
+          val mirnaLimit = t.viewer.shared.network.Network.MAX_SIZE
           val r = probeStore.mirnaAssociations(probes,
             if (source.limit == null) None else Some(source.limit),
             fromMirna,

@@ -11,6 +11,11 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("serial")
 public class Network implements Serializable {
+  /**
+   * In a network with two node types, the maximum number of nodes of either of the two types.
+   */
+  public static final int MAX_SIZE = 200;
+  
   private List<Interaction> interactions = new ArrayList<Interaction>();
   private List<Node> nodes = new ArrayList<Node>();
   private String title;
