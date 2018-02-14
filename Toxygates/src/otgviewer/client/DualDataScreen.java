@@ -394,20 +394,20 @@ public class DualDataScreen extends DataScreen {
    * @return
    */
   public Network buildNetwork(String title) {
-    Map<String, ExpressionRow> lookup = new HashMap<String, ExpressionRow>();
     List<Node> nodes = new ArrayList<Node>();
     nodes.addAll(buildNodes(mode.mainType, expressionTable.getDisplayedRows()));    
     nodes.addAll(buildNodes(mode.sideType, sideExpressionTable.getDisplayedRows()));
-        
-    expressionTable.getDisplayedRows().stream().forEach(r -> lookup.put(r.getProbe(), r));
-    sideExpressionTable.getDisplayedRows().stream().forEach(r -> lookup.put(r.getProbe(), r));
-    
+    Map<String, Node> lookup = new HashMap<String, Node>();    
+    for (Node n: nodes) {
+      lookup.put(n.id(), n);
+    }
+
     List<Interaction> interactions = new ArrayList<Interaction>();
     Map<String, Collection<AssociationValue>> fullMap = linkingMap();
     for (String mainProbe: fullMap.keySet()) {
-      for (AssociationValue av: fullMap.get(mainProbe)) {
-        Node side = Node.fromAssociation(av, mode.sideType);
-        Node main = Node.fromRow(lookup.get(mainProbe), mode.mainType);
+      for (AssociationValue av: fullMap.get(mainProbe)) {        
+        Node main = lookup.get(mainProbe);
+        Node side = lookup.get(av.formalIdentifier());
         
         //Directed interaction normally from miRNA to mRNA
         Node from = (mode == DualMode.Forward) ? main : side;

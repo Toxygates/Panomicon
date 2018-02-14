@@ -498,7 +498,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
        |  ${valuesMultiFilter("?mirna", queryForFilter)}
        |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
-       |  ?mrna t:refseqTrn ?trn; a t:probe.
+       |  ?mrna t:refseqTrn ?trn; a t:probe; t:symbol ?symbol.
        |}""".stripMargin
 
   private def mrnaToMirnaQuery(queryForFilter: Iterable[String],
@@ -528,7 +528,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     }
 
     val q = s"""$tPrefixes
-    |SELECT DISTINCT ?mrna ?score ?mirna ?trn
+    |SELECT DISTINCT *
     |${mirnaAssociationGraphs(species)}
     |${ if (queryFromMirna)
       mirnaToMrnaQuery(queryForFilter, scoreLimit) else
@@ -548,7 +548,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
       Probe.unpack(query) ->
         DefaultBio(Probe.unpackOnly(target),
-          Probe.unpackOnly(target),
+          x.get("symbol").getOrElse(Probe.unpackOnly(target)),
           Some(extraInfo))
     })
     makeMultiMap(r)

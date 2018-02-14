@@ -20,11 +20,6 @@ public class Node implements Serializable {
       SharedUtils.mkString(row.getGeneSyms(), "/"), type, row.getValue(0).getValue());        
   }
   
-  public static Node fromAssociation(AssociationValue av, String type) {
-    //Bogus node weight
-    return new Node(av.formalIdentifier(), av.title(), type, 1.0);
-  }
-  
   public Node(String id, String symbol, String type, double weight) {
     this.id = id;
     this.symbol = symbol;
