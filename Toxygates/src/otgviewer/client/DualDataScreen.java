@@ -41,7 +41,21 @@ public class DualDataScreen extends DataScreen {
   final static int MAX_SECONDARY_ROWS = 200;
   
   static enum DualMode {
-    Forward("mRNA", "miRNA", AType.MiRNA, true), Reverse("miRNA", "mRNA", AType.MRNA, true),
+    Forward("mRNA", "miRNA", AType.MiRNA, true) {
+      @Override
+      void setVisibleColumns(ExpressionTable table) {
+        table.setVisible(AType.MiRNA, true);
+        table.setVisible(AType.MRNA, false);
+      }
+    },
+    
+    Reverse("miRNA", "mRNA", AType.MRNA, true) {
+      @Override
+      void setVisibleColumns(ExpressionTable table) {
+        table.setVisible(AType.MiRNA, false);
+        table.setVisible(AType.MRNA, true);
+      }
+    },
     SingleMRNA("mRNA", "miRNA", null, false), SingleMiRNA("miRNA", "mRNA", null, false);
     
     final String mainType, sideType;
@@ -65,13 +79,19 @@ public class DualDataScreen extends DataScreen {
     }
     TableStyle mainStyle() { return TableStyle.getStyle(mainType); }
     TableStyle sideStyle() { return TableStyle.getStyle(sideType); }
-    DualMode flip() { return (this == Forward) ? Reverse : Forward; }    
+    DualMode flip() { return (this == Forward) ? Reverse : Forward; }   
+    
+    void setVisibleColumns(ExpressionTable table) { }
   }
   
   /**
-   * The preferred mode when two column types are available.
+   * The preferred/default mode when two column types are available.
    */
   DualMode preferredDoubleMode = DualMode.Forward;
+  
+  /**
+   * The current mode.
+   */
   DualMode mode = DualMode.Forward;
   
   public DualDataScreen(ScreenManager man) {
@@ -228,7 +248,8 @@ public class DualDataScreen extends DataScreen {
    * The mode may be split or non-split.
    */
   protected DualMode pickMode(List<Group> columns) {
-    String[] types = columns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);
+    String[] types = columns.stream().map(g -> GroupUtils.groupType(g)).distinct().
+        toArray(String[]::new);
     if (types.length >= 2) {
       return preferredDoubleMode;
     } else if (types.length == 1 && types[0].equals("mRNA")) {
@@ -276,13 +297,7 @@ public class DualDataScreen extends DataScreen {
   public void updateProbes() {   
     if (mode.isSplit) {
       expressionTable.setAssociationAutoRefresh(false);
-      if (mode == DualMode.Forward) {
-        expressionTable.setVisible(AType.MiRNA, true);
-        expressionTable.setVisible(AType.MRNA, false);
-      } else {
-        expressionTable.setVisible(AType.MiRNA, false);
-        expressionTable.setVisible(AType.MRNA, true);
-      }
+      mode.setVisibleColumns(expressionTable);      
       expressionTable.setAssociationAutoRefresh(true);
     }    
     
@@ -290,7 +305,6 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.clearMatrix();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
-//    extractSideTableProbes();
   }
   
   @Override
@@ -312,6 +326,18 @@ public class DualDataScreen extends DataScreen {
   //Maps main table to side table via a column.
   protected AssociationSummary<ExpressionRow> mappingSummary;
   
+  private Synthetic.Precomputed buildCountColumn(String[][] rawData) {
+    Map<String, Double> counts = new HashMap<String, Double>();    
+    //The first row is headers    
+    for (int i = 1; i < rawData.length && i < MAX_SECONDARY_ROWS; i++) {    
+      counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
+    }
+    return new Synthetic.Precomputed("Count", 
+      "Number of times each " + mode.sideType + " appeared", counts,
+      null);
+
+  }
+  
   protected void extractSideTableProbes() {
     mappingSummary = expressionTable.associationSummary(mode.linkingType);  
     if (sideExpressionTable.chosenColumns().isEmpty()) {
@@ -327,23 +353,12 @@ public class DualDataScreen extends DataScreen {
       logger.info("No secondary probes found in summary - not updating side table probes");
       return;
     }
-    String[] ids = new String[rawData.length - 1];
-    Map<String, Double> counts = new HashMap<String, Double>();
-    
-    //The first row is headers
-    for (int i = 1; i < rawData.length && i < MAX_SECONDARY_ROWS; i++) {    
-      ids[i - 1] = rawData[i][1];
-      counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
-    }
-    
+    String[] ids = Arrays.stream(rawData).skip(1).limit(MAX_SECONDARY_ROWS).
+        map(a -> a[1]).toArray(String[]::new);
     logger.info("Extracted " + ids.length + " " + mode.sideType);    
     
-    Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
-      "Number of times each " + mode.sideType + " appeared", counts,
-      null);
-
-    List<Synthetic> synths = new ArrayList<Synthetic>();
-    synths.add(countColumn);
+    Synthetic.Precomputed countColumn = buildCountColumn(rawData);
+    List<Synthetic> synths = Arrays.asList(countColumn);
     
     changeSideTableProbes(ids, synths);
   }
