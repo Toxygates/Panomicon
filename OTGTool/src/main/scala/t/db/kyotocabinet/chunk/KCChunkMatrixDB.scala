@@ -271,7 +271,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
         r :+= vit.next._2.copy(probe = probeMap.unpack(pit.next))
       }
     }
-    while (pit.hasNext) {
+    while (pit.hasNext && padMissingValues) {
         r :+= emptyValue(probeMap.unpack(pit.next))
     }
     r
