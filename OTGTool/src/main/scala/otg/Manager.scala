@@ -22,7 +22,7 @@ package otg
 
 import friedrich.util.CmdLineOptions
 import otg.platform.SSOrthTTL
-
+import t.platform.Species._
 import t._
 
 object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
@@ -31,11 +31,16 @@ object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
     args(0) match {
       case "orthologs" =>
         val output = require(stringOption(args, "-output"),
-          "Please specify an output file with -output")
-        val inputs = require(stringListOption(args, "-inputs"),
-          "Please specify input files with -inputs")
-
-        new SSOrthTTL(context.probes, inputs, output).generate
+          "Please specify an output file with -output")        
+        val intermineURL = require(stringOption(args, "-intermineURL"),
+          "Please specify an intermine URL with -intermineURL, e.g. http://mizuguchilab.org/targetmine/service")
+        val intermineAppName = require(stringOption(args, "-intermineAppName"),
+          "Please specify an intermine app name with -intermineAppName, e.g. targetmine")
+          
+        val spPairs = Seq((Rat, Human), (Human, Mouse), (Mouse, Rat))
+          
+        val conn = new t.intermine.Connector(intermineAppName, intermineURL)
+        new SSOrthTTL(context.probes, output).generateFromIntermine(conn, spPairs)
       case _ => super.handleArgs(args)
     }
   }
