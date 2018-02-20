@@ -78,9 +78,13 @@ public class DataScreen extends Screen {
       @Override
       protected void onGettingExpressionFailed() {
         super.onGettingExpressionFailed();
-        DataScreen.this.probesChanged(new String[0]);
-        DataScreen.this.geneSetChanged(null);
-        updateProbes();
+        //If a non-loadable gene list was specified, we try with the blank list
+        //(all probes for the species)
+        if (chosenProbes.length > 0) {
+          DataScreen.this.probesChanged(new String[0]);
+          DataScreen.this.geneSetChanged(null);
+          updateProbes();
+        }   
       }
     };
   }
