@@ -15,18 +15,26 @@
 
   <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>
   <dependency org="org.eclipse.rdf4j" name="rdf4j-rio-turtle" rev="latest.integration"/>
- <!-- <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-manager" rev="latest.integration"/> -->
   
   <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
-  
-  <!-- Scalatest pulls in a lot of dependencies that we don't want in production,
-  	so it's simpler to manage the jar manually -->
-  <!--
-  <dependency org="org.scalatest" name="scalatest_2.11" rev="3.0.3"/>
-  -->
 
   <!-- for javax.annotation.Nullable -->
   <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
+  
+  <!-- for intermine.  -->
+  <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
+    (causes parse errors). 20090211 is known to work. -->
+  <dependency org="org.json" name="json" rev="20090211"/>
+  
+  <!-- intermine-client-2.0 needs the old commons-httpclient module
+     (org.apache.httpcomponents will not work) -->
+  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
+  <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
+  
+  <!-- for intermine. -->
+  <dependency org="log4j" name="log4j" rev="latest.integration" />
+  <dependency org="org.antlr" name="antlr" rev="latest.integration" />
+  <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
   
   </dependencies>
 </ivy-module>

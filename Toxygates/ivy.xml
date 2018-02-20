@@ -33,15 +33,7 @@
   <dependency org="stax" name="stax" rev="1.2.0"/>
     -->
   
-  <!-- for intermine.  -->
-  <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
-    (causes parse errors). 20090211 is known to work. -->
-  <dependency org="org.json" name="json" rev="20090211"/>
   <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
-  <!-- intermine-client-2.0 needs the old commons-httpclient module
-     (org.apache.httpcomponents will not work) -->
-  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
-  <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
 
   <!-- To harmonise with OTGTool and avoid pulling in 2 different versions of codec (Toxygates pulls in 1.2
      if this is not specified --> 

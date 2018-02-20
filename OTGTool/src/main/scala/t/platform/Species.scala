@@ -30,6 +30,11 @@ object Species extends Enumeration(0) {
       case Rat   => "Rattus norvegicus"
       case Mouse => "Mus musculus"
     }
+    def shortName: String = s match {
+      case Human => "H. sapiens"
+      case Rat   => "R. norvegicus"
+      case Mouse => "M. musculus"
+    }
     def taxon: Int = s match {
       case Human => 9606
       case Rat   => 10116
