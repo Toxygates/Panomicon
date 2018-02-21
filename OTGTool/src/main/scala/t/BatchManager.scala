@@ -200,13 +200,19 @@ class BatchManager(context: Context) {
       def absoluteDBReader = ???
       def seriesBuilder = ???
       def seriesDBReader = ???
-      def expectedProbes(x: Sample) = ???
+      
       
       lazy val probeMap: ProbeMap =
         new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
       lazy val sampleMap: SampleMap =
         new SampleIndex(KCIndexDB.readOnce(config.data.sampleIndex))
 
+      /*
+       * Naive implementation - can be made more efficient by associating
+       * samples with platforms
+       */
+      def expectedProbes(x: Sample) = probeMap.keys.toSeq
+      
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
         try {
