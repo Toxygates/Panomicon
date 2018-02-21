@@ -3,7 +3,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:noNamespaceSchemaLocation=
                    "http://ant.apache.org/ivy/schemas/ivy.xsd">
-  <info organisation="level-five" module="t" />
+  <info organisation="level-five" module="toxygates" />
         
   <dependencies>
   
@@ -11,15 +11,20 @@
   <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" />
   
   <!-- Force same version as OTGTool -->
-  <dependency org="commons-logging" name="commons-logging" rev="1.2"/>
-
+  <dependency org="commons-logging" name="commons-logging" rev="1.2">
+	<exclude module="servlet-api"/>
+  </dependency>
+  
   <!-- for GWT upload -->
   <!-- This fails to resolve some of its dependencies as of 15/1/27.
   In addition, pulls in all of GWT -->
   <!-- r 1.0.3 is compatible with GWT 2.7 -->
   <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->
     
-  <dependency org="commons-fileupload" name="commons-fileupload" rev="latest.integration"/>
+  <dependency org="commons-fileupload" name="commons-fileupload" rev="latest.integration">
+  	<exclude module="servlet-api"/>
+  </dependency>
+  
   <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
   <dependency org="javax.mail" name="mail" rev="latest.integration"/>
   

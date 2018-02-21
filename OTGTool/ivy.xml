@@ -4,7 +4,7 @@
             xsi:noNamespaceSchemaLocation=
                    "http://ant.apache.org/ivy/schemas/ivy.xsd">
   <info organisation="level-five"
-        module="t"
+        module="otgtool"
         />
         
   <dependencies>
@@ -31,8 +31,8 @@
   <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
   <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
   
-  <!-- for intermine. -->
-  <dependency org="log4j" name="log4j" rev="latest.integration" />
+  <!-- for intermine. -->  
+  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.10.0" />
   <dependency org="org.antlr" name="antlr" rev="latest.integration" />
   <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
   
