@@ -25,6 +25,7 @@ import t.Factory
 import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
 import t.model.sample.AttributeSet
+import otg.model.sample.OTGAttribute
 
 /**
  * Metadata from a triplestore.
@@ -48,6 +49,7 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
-  //TODO Implement isControl (or change the isControl mechanism)
-  override def isControl(s: Sample) = ???
+  //TODO Get rid of this OTG reference once we have a consistent and principled way of injecting these kinds of dependencies
+  override def isControl(s: Sample): Boolean =
+    sampleAttribute(s, OTGAttribute.DoseLevel).get == "Control"
 }
