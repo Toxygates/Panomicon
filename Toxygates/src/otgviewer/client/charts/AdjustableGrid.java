@@ -24,13 +24,12 @@ import java.util.stream.Collectors;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
+import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.*;
 
 /**
@@ -40,6 +39,7 @@ import com.google.gwt.user.client.ui.*;
 public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Composite {
   public static final int TOTAL_WIDTH = 780;
 
+  private ItemSelector<ValueType> valueTypeSel;
   private ListBox chartCombo, chartSubtypeCombo;
 
   private DataSource source;
@@ -51,11 +51,10 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private Screen screen;
   private Factory<D, DS> factory;
   private int computedWidth;
-  private ValueType valueType;
 
   private Logger logger = SharedUtils.getLogger("chart");
 
-  private static int lastType = -1;
+  private static int lastType = -1;  
   private static String lastSubtype = null;
   private List<String> chartSubtypes = new ArrayList<String>();
 
@@ -76,7 +75,6 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
     Attribute majorParam = screen.schema().majorParameter();
     this.majorVals = GroupUtils.collect(groups, majorParam).collect(Collectors.toList());
-    this.valueType = vt;
 
     vp = Utils.mkVerticalPanel();
     initWidget(vp);
@@ -92,6 +90,19 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     hp.add(ihp);
     ihp.setSpacing(5);
 
+    valueTypeSel = new ItemSelector<ValueType>() {
+      @Override
+      protected ValueType[] values() {
+        return ValueType.values();    
+      }      
+    };        
+    valueTypeSel.setSelected(vt);
+    valueTypeSel.listBox().addChangeHandler(e -> {
+      computedWidth = 0;
+      redraw(false);
+    });
+    ihp.add(valueTypeSel);
+    
     chartCombo = new ListBox();
     ihp.add(chartCombo);
 
@@ -105,24 +116,18 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     chartSubtypeCombo = new ListBox();
     ihp.add(chartSubtypeCombo);
 
-    chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
+    chartSubtypeCombo.addChangeHandler(e -> {      
         lastSubtype = chartSubtypes.get(chartSubtypeCombo.getSelectedIndex());
         computedWidth = 0;
         redraw(false);
-      }
-
-    });
-    chartCombo.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
+      });
+    
+    chartCombo.addChangeHandler(e -> {      
         lastType = chartCombo.getSelectedIndex();
         lastSubtype = null;
         computedWidth = 0;
         updateSeriesSubtypes();
-      }
-    });
+      });    
 
     ivp = Utils.mkVerticalPanel();
     vp.add(ivp);
@@ -175,7 +180,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     Attribute columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
     String[] preColumns =
         (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
-    final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);
+    final String[] useColumns = schema.filterValuesForDisplay(valueTypeSel.value(), 
+        columnParam, preColumns);
 
     SampleMultiFilter smf = new SampleMultiFilter();
     smf.addPermitted(schema.majorParameter(), useMajors);
@@ -191,7 +197,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       setWidth(computedWidth + "px");
     }
 
-    source.getSamples(smf, makeGroupPolicy(), new DataSource.SampleAcceptor() {
+    source.getSamples(valueTypeSel.value(), 
+        smf, makeGroupPolicy(), new DataSource.SampleAcceptor() {
       @Override
       public void accept(List<ChartSample> samples) {
         allSamples.addAll(samples);
@@ -309,7 +316,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       logger.info("Unit: " + u);
       if (isMed) {
         final String[] useMeds =
-            schema.filterValuesForDisplay(valueType, schema.mediumParameter(),
+            schema.filterValuesForDisplay(valueTypeSel.value(), 
+                schema.mediumParameter(),
                 source.mediumVals());
 
         String med = u.get(medParam);
