@@ -21,32 +21,29 @@
 package otg
 
 import otg.sparql.OTGSamples
-import otg.sparql.Probes
+import otg.sparql.OTGProbes
 import t.BaseConfig
 import t.TriplestoreConfig
 import t.db._
 import t.db.kyotocabinet.KCSeriesDB
 
-object Context {
-  val factory = new Factory()
+object OTGContext {
+  val factory = new OTGFactory()
 
   def apply(bc: OTGBConfig) =
-    new otg.Context(bc, factory,
+    new otg.OTGContext(bc, factory,
       factory.probes(bc.triplestore), factory.samples(bc),
-      new OTGContext(bc))
+      new OTGMatrixContext(bc))
 }
 
-class Context(override val config: OTGBConfig,
-  override val factory: Factory,
-  override val probes: Probes,
+class OTGContext(override val config: OTGBConfig,
+  override val factory: OTGFactory,
+  override val probes: OTGProbes,
   override val samples: OTGSamples,
-  override val matrix: OTGContext)
+  override val matrix: OTGMatrixContext)
   extends t.Context(config, factory, probes, samples, matrix)
 
-/**
- * TODO: split up properly/rename
- */
-class OTGContext(baseConfig: BaseConfig) extends MatrixContext {
+class OTGMatrixContext(baseConfig: BaseConfig) extends MatrixContext {
 
   private val data = baseConfig.data
   private val maps = new TRefresher(baseConfig)
@@ -76,7 +73,7 @@ class OTGContext(baseConfig: BaseConfig) extends MatrixContext {
 
   def expectedProbes(x: Sample) =
     probeMap.keys
-    
+
   def seriesBuilder: OTGSeries.type = OTGSeries
 
   def seriesDBReader: SDB =

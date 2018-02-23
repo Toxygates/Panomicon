@@ -92,7 +92,7 @@ object BioParameter {
     }
 
   def main(args: Array[String]) {
-     val f = new otg.Factory
+     val f = new otg.OTGFactory
      val attrs = otg.model.sample.AttributeSet.getDefault
      val data = TSVMetadata(f, args(0), attrs)
      var out = Map[Attribute, Seq[String]]()

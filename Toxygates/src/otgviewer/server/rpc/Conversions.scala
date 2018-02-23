@@ -23,7 +23,7 @@ package otgviewer.server.rpc
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
-import otg.Context
+import otg.OTGContext
 import otg.OTGSeries
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
@@ -58,7 +58,7 @@ object Conversions {
 	    p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
   }
 
-  implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
+  implicit def asJava(series: OTGSeries)(implicit context: OTGContext): Series = {
     implicit val mc = context.matrix
     val name = series.compound + " " + series.dose
     val sc = new t.model.SampleClass

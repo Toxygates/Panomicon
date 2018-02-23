@@ -25,7 +25,7 @@ import t.util.SafeMath
 import t.db._
 
 class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGSeries)
-(implicit context: OTGContext) extends t.SeriesRanking[OTGSeries](db, key) {
+(implicit context: OTGMatrixContext) extends t.SeriesRanking[OTGSeries](db, key) {
   import Statistics._
   import SafeMath._
   import t.SeriesRanking._

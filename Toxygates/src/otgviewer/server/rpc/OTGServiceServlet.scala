@@ -27,11 +27,11 @@ import t.viewer.server.Configuration
 import t.viewer.server.rpc.TServiceServlet
 
 trait OTGServiceServlet extends TServiceServlet {
-  override protected def context: Context = _context
-  override protected def factory: Factory = _factory
+  override protected def context: OTGContext = _context
+  override protected def factory: OTGFactory = _factory
 
-  protected var _context: Context = _
-  protected var _factory: Factory = _
+  protected var _context: OTGContext = _
+  protected var _factory: OTGFactory = _
 
   override abstract def localInit(config: Configuration) {
     _factory = makeFactory()
@@ -39,7 +39,7 @@ trait OTGServiceServlet extends TServiceServlet {
     super.localInit(config)
   }
 
-  protected def makeFactory(): Factory = new Factory
+  protected def makeFactory() = new OTGFactory
 
   override protected def baseConfig: OTGBConfig = context.config
 

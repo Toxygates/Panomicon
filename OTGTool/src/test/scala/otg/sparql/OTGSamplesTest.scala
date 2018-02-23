@@ -23,7 +23,7 @@ package otg.sparql
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import otg.OTGContext
+import otg.OTGMatrixContext
 import t.platform.Species.Rat
 import t.TTestSuite
 import t.model.shared.SampleClassHelper
@@ -36,7 +36,7 @@ import otg.model.sample.OTGAttribute._
 class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config
-  implicit val context = new OTGContext(config)
+  implicit val context = new OTGMatrixContext(config)
   val samples = new OTGSamples(config)
 
   after {

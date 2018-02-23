@@ -22,7 +22,7 @@ package otg
 
 import otg.db.Metadata
 import otg.sparql.OTGSamples
-import otg.sparql.Probes
+import otg.sparql.OTGProbes
 import t.BaseConfig
 import t.DataConfig
 
@@ -30,16 +30,16 @@ import t.TriplestoreConfig
 import t.db.file.MapMetadata
 import t.model.sample.AttributeSet
 
-class Factory extends t.Factory {
+class OTGFactory extends t.Factory {
   override def samples(config: BaseConfig): OTGSamples =
     new OTGSamples(config)
 
-  override def probes(config: TriplestoreConfig): Probes =
-    new Probes(config)
+  override def probes(config: TriplestoreConfig): OTGProbes =
+    new OTGProbes(config)
 
   override def context(ts: TriplestoreConfig, data: DataConfig) = {
     val bc = new OTGBConfig(ts, data)
-    otg.Context(bc)
+    otg.OTGContext(bc)
   }
 
   override def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =

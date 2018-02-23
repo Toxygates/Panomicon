@@ -1,15 +1,15 @@
 package otgviewer.server
 
 import t.BaseConfig
-import otg.sparql.Probes
+import otg.sparql.OTGProbes
 import t.viewer.server.Configuration
 
-class AppInfoLoader(probeStore: Probes,
+class AppInfoLoader(probeStore: OTGProbes,
                     configuration: Configuration, baseConfig: BaseConfig,
                     appName: String)
-                    extends t.viewer.server.AppInfoLoader(probeStore, 
+                    extends t.viewer.server.AppInfoLoader(probeStore,
                       configuration, baseConfig, appName) {
- 
+
    override def staticAnnotationInfo: Seq[(String, String)] = {
      /*
      * Note: the only data sources hardcoded here should be the ones
