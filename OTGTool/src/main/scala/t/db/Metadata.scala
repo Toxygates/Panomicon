@@ -51,13 +51,12 @@ trait Metadata extends SampleSet {
 
   def parameterMap(s: Sample): Map[String, String] =
     Map() ++ sampleAttributes(s).map(x => x._1.id -> x._2)
-  /**
-   * Obtain all available values for a given parameter.
-   */
-  def parameterValues(identifier: String): Set[String]
 
-  def attributeValues(attr: Attribute): Set[String] =
-    parameterValues(attr.id)
+  /**
+   * Obtain all values for a given parameter represented by the samples in
+   * this metadata.
+   */
+  def attributeValues(attr: Attribute): Set[String]
 
   override def parameter(s: Sample, identifier: String): Option[String] =
     parameterMap(s).get(identifier)

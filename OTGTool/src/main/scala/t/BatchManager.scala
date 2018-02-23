@@ -279,7 +279,7 @@ class BatchManager(context: Context) {
 
     r :+= addEnums(metadata, sbuilder)
 
-    val platforms = metadata.parameterValues(CoreParameter.Platform.id)
+    val platforms = metadata.attributeValues(CoreParameter.Platform)
     val probeMap = new Probes(config.triplestore).platformsAndProbes
     val probes = platforms.flatMap(probeMap(_))
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))

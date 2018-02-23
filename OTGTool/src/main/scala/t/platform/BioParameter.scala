@@ -97,7 +97,7 @@ object BioParameter {
      val data = TSVMetadata(f, args(0), attrs)
      var out = Map[Attribute, Seq[String]]()
 
-     for (time <- data.parameterValues(ExposureTime.id)) {
+     for (time <- data.attributeValues(ExposureTime)) {
        val ftime = time.replaceAll("\\s+", "")
        var samples = data.samples
        samples = samples.filter(s => {
