@@ -44,8 +44,8 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
     })
   }
 
-  override def parameterValues(identifier: String): Set[String] =
-    sampleStore.allValuesForSampleAttribute(identifier).toSet
+  override def attributeValues(attribute: Attribute): Set[String] =
+    sampleStore.sampleAttributeQuery(attribute)(sf)().toSet
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
