@@ -24,10 +24,11 @@ import scala.Vector
 import scala.language.postfixOps
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.global.KCDBRegistry
+import t.model.sample.Attribute
 
 object MatrixDB {
-  def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {    
-    KCChunkMatrixDB.apply(file, writeMode)    
+  def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {
+    KCChunkMatrixDB.apply(file, writeMode)
   }
 }
 
@@ -35,6 +36,7 @@ trait MatrixContext {
   def probeMap: ProbeMap
   def sampleMap: SampleMap
 
+  def enumMaps(attrib: Attribute): Map[String, Int] = enumMaps(attrib.id)
   def enumMaps: Map[String, Map[String, Int]]
 
   lazy val reverseEnumMaps = enumMaps.map(x => x._1 -> (Map() ++ x._2.map(_.swap)))
@@ -44,14 +46,14 @@ trait MatrixContext {
   def seriesDBReader: SeriesDB[_]
 
   def seriesBuilder: SeriesBuilder[_]
-  
+
   /**
    * Probes expected to be present in the database for a given sample.
    * They are not guaranteed to actually be present.
    */
   def expectedProbes(x: Sample): Iterable[Int]
-  
-  def expectedProbes(xs: Iterable[Sample]): Iterable[Int] = 
+
+  def expectedProbes(xs: Iterable[Sample]): Iterable[Int] =
     xs.flatMap(expectedProbes).toSeq.distinct
 }
 
@@ -80,7 +82,7 @@ trait MatrixDBReader[+E <: ExprValue] {
    */
   def sortProbes(probes: Iterable[Int]): Seq[Int] =
     probes.toSeq.sorted
-  
+
   /**
    * Read all values for a given sample.
    * This routine is optimised for the case of accessing many probes in
@@ -95,9 +97,8 @@ trait MatrixDBReader[+E <: ExprValue] {
       padMissingValues: Boolean): Iterable[E]
 
   def valuesInSamples(xs: Iterable[Sample], probes: Seq[Int],
-      padMissingValues: Boolean) = 
+      padMissingValues: Boolean) =
     xs.map(valuesInSample(_, probes, padMissingValues))
-  
 
   /**
    * Read all values for a given probe and for a given set of samples.

@@ -46,16 +46,16 @@ object Conversions {
 
   implicit def asJava(path: otg.Pathology): Pathology =
     new Pathology(path.barcode, path.topography.getOrElse(null),
-        path.finding.getOrElse(null),
-        path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
+      path.finding.getOrElse(null),
+      path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 
   implicit def asScala(series: Series)(implicit context: MatrixContext): OTGSeries = {
-	val p = context.probeMap.pack(series.probe) //TODO filtering
-	val sc = series.sampleClass
+    val p = context.probeMap.pack(series.probe) //TODO filtering
+    val sc = series.sampleClass
 
-	new OTGSeries(sc.get(Repeat),
-	    sc.get(Organ), sc.get(Organism),
-	    p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
+    new OTGSeries(sc.get(Repeat),
+      sc.get(Organ), sc.get(Organism),
+      p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: OTGContext): Series = {
@@ -69,7 +69,7 @@ object Conversions {
     sc.put(Organ, series.organ)
     sc.put(Repeat, series.repeat)
     new Series(name, series.probeStr, ExposureTime, sc,
-         series.values.map(t.viewer.server.Conversions.asJava).toArray)
+      series.values.map(t.viewer.server.Conversions.asJava).toArray)
   }
 
   implicit def asScala(rr: RankRule): SeriesRanking.RankType = {
