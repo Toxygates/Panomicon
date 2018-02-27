@@ -20,12 +20,13 @@
 
 package t.sparql
 
+import scala.collection.JavaConversions.asScalaSet
+
 import t.db._
 import t.Factory
 import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
 import t.model.sample.AttributeSet
-import otg.model.sample.OTGAttribute
 
 /**
  * Metadata from a triplestore.
@@ -48,8 +49,36 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
     sampleStore.sampleAttributeQuery(attribute)(sf)().toSet
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
+}
 
-  //TODO Get rid of this OTG reference once we have a consistent and principled way of injecting these kinds of dependencies
-  override def isControl(s: Sample): Boolean =
-    sampleAttribute(s, OTGAttribute.DoseLevel).get == "Control"
+/**
+ * Caching triplestore metadata that reads all the data once and stores it.
+ */
+class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
+    querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
+    extends TriplestoreMetadata(os, attributes, querySet) {
+
+  val useQuerySet = (querySet.toSeq :+ SampleId).distinct
+
+  override lazy val sampleIds = rawData.keySet
+
+  lazy val rawData = {
+    val raw = os.sampleAttributeQuery(useQuerySet)(sf)()
+    Map() ++ raw.map(r => r(SampleId) -> r)
+  }
+
+  lazy val data =
+    rawData.mapValues(sample => {
+      Map() ++ sample.sampleClass.getKeys().toSeq.
+          map(key => key ->  sample.get(key).get)
+    })
+
+  // all attributes for a sample
+  override def sampleAttributes(s: Sample) =
+    data.getOrElse(s.sampleId, Map()).toSeq
+
+  // all values for a given parameter
+  override def attributeValues(attribute: Attribute): Set[String] =
+    data.flatMap(_._2.get(attribute)).toSet
+
 }

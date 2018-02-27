@@ -91,6 +91,18 @@ object BatchManager extends ManagerTool {
                 append, config.seriesBuilder))
           }
 
+        case "recalculate" =>
+          val title = require(stringOption(args, "-title"),
+            "Please specify a title with -title")
+          new Platforms(config).populateAttributes(config.attributes)
+          val sampleFilter = new SampleFilter(None, Some(Batches.packURI(title)))
+          val metadata =
+            factory.cachingTriplestoreMetadata(context.samples, config.attributes,
+                config.attributes.getHighLevel ++ config.attributes.getUnitLevel ++
+                List(CoreParameter.Platform, CoreParameter.ControlGroup))(sampleFilter)
+          startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
+            Batch(title, "", None, None), metadata, config.seriesBuilder))
+
         case "updateMetadata" | "updatemetadata" =>
           val title = require(stringOption(args, "-title"),
             "Please specify a title with -title")
@@ -183,7 +195,7 @@ object BatchManager extends ManagerTool {
     bs.verifyExists(batch)
 
   def showHelp() {
-    println("Please specify a command (add/updateMetadata/delete/list/list-access/enable/disable)")
+    println("Please specify a command (add/updateMetadata/recalculate/delete/list/list-access/enable/disable)")
   }
 
   case class Batch(title: String, comment: String, instances: Option[Seq[String]], dataset: Option[String])

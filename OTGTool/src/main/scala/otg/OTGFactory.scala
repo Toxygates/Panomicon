@@ -29,6 +29,8 @@ import t.DataConfig
 import t.TriplestoreConfig
 import t.db.file.MapMetadata
 import t.model.sample.AttributeSet
+import t.sparql._
+import t.model.sample.Attribute
 
 class OTGFactory extends t.Factory {
   override def samples(config: BaseConfig): OTGSamples =
@@ -45,4 +47,13 @@ class OTGFactory extends t.Factory {
   override def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
     new MapMetadata(data, attr) with otg.db.Metadata
 
+  override def triplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
+      querySet: Iterable[Attribute] = Seq())
+      (implicit sf: SampleFilter): TriplestoreMetadata =
+    new TriplestoreMetadata(samples, attributeSet, querySet)(sf) with otg.db.Metadata
+
+  override def cachingTriplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
+      querySet: Iterable[Attribute] = Seq())
+      (implicit sf: SampleFilter): CachingTriplestoreMetadata =
+    new CachingTriplestoreMetadata(samples, attributeSet, querySet)(sf) with otg.db.Metadata
 }
