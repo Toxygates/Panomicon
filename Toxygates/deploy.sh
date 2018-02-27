@@ -36,11 +36,12 @@ function makeAdminWar {
 WARLIB=war/WEB-INF/lib
 #ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 rm $WARLIB/*jar
-cp lib/jar/* $WARLIB
+cp lib/jar/*.jar $WARLIB
 cp lib/bundle/*.jar $WARLIB
-cp mlib/*jar $WARLIB
-cp ../OTGTool/lib/jar/* $WARLIB
-cp ../OTGTool/mlib/*jar $WARLIB
+cp mlib/*.jar $WARLIB
+cp ../OTGTool/lib/jar/*.jar $WARLIB
+cp ../OTGTool/lib/bundle/*.jar $WARLIB
+cp ../OTGTool/mlib/*.jar $WARLIB
 
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
