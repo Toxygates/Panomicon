@@ -28,13 +28,26 @@
   
   <!-- intermine-client-2.0 needs the old commons-httpclient module
      (org.apache.httpcomponents will not work) -->
-  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
+ <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
   <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
   
+  <dependency org="org.slf4j" name="slf4j-simple" rev="latest.integration" />
+  
   <!-- for intermine. -->  
-  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.10.0" />
+  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.10.0" />
+  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.10.0">
+    <!-- This causes problems for Intermine (via XMLOutputFactory) if it is on the classpath. -->
+	<exclude module="woodstox-core" />  
+  </dependency>
+  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.10.0" /> 
+  
   <dependency org="org.antlr" name="antlr" rev="latest.integration" />
+  
   <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
+  
+    <!-- intermine is not published on maven central, but the POM is at the URL below. -->
+  <!-- https://github.com/alexkalderimis/intermine-ws-client.java/blob/master/pom.xml -->  
+  <!-- <dependency org="org.intermine.webservice.client" name="intermine-webservice-client" rev="latest.integration"/> -->
   
   </dependencies>
 </ivy-module>

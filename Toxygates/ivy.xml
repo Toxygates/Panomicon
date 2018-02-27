@@ -13,6 +13,7 @@
   <!-- Force same version as OTGTool -->
   <dependency org="commons-logging" name="commons-logging" rev="1.2">
 	<exclude module="servlet-api"/>
+	<exclude module="log4j"/>
   </dependency>
   
   <!-- for GWT upload -->
@@ -27,20 +28,10 @@
   
   <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
   <dependency org="javax.mail" name="mail" rev="latest.integration"/>
-  
-  <!-- intermine is not published on maven central, but the POM is at the URL below. -->
-  <!-- https://github.com/alexkalderimis/intermine-ws-client.java/blob/master/pom.xml -->  
-  <!-- <dependency org="org.intermine.webservice.client" name="intermine-webservice-client" rev="latest.integration"/> -->
-  
-  <!-- for intermine -->
-  <!--
-  <dependency org="stax" name="stax-api" rev="1.0.1"/>
-  <dependency org="stax" name="stax" rev="1.2.0"/>
-    -->
 
   <!-- To harmonise with OTGTool and avoid pulling in 2 different versions of codec (Toxygates pulls in 1.2
      if this is not specified --> 
-  <dependency org="commons-codec" name="commons-codec" rev="1.10"/>
+  <!-- <dependency org="commons-codec" name="commons-codec" rev="1.10"/> -->
 
   <!-- for R -->
   <!-- r 1.8.1 is known to work -->  
