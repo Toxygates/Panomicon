@@ -93,8 +93,8 @@ object TestData {
 
     def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
-    def parameterValues(identifier: String): Set[String] =
-      enumMaps(identifier).keySet
+    def attributeValues(attribute: Attribute): Set[String] =
+      enumMaps(attribute.id).keySet
 
     def attributeSet = otg.model.sample.AttributeSet.getDefault
 

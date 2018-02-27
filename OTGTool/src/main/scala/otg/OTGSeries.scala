@@ -112,14 +112,14 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
-    val timeMap = mc.enumMaps(ExposureTime.id)
+    val timeMap = mc.enumMaps(ExposureTime)
 
     val grouped = samples.groupBy(buildEmpty(_, md))
     var r = Vector[OTGSeries]()
 
     for ((s, xs) <- grouped) {
       //Construct the series s for all probes, using the samples xs
-      
+
       val data = for (
         x <- xs;
         probes = from.sortProbes(mc.expectedProbes(x));
@@ -130,10 +130,10 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
       val byTime = for (
         (time, data) <- data.groupBy(_._1);
-        tc = timeMap(time);
+        timeCode = timeMap(time);
         meanValues = presentMeanByProbe(data.flatMap(_._3));
-        m <- meanValues;
-        point = SeriesPoint(tc, m)
+        mean <- meanValues;
+        point = SeriesPoint(timeCode, mean)
       ) yield point
 
       val byProbe = byTime.groupBy(_.value.probe)

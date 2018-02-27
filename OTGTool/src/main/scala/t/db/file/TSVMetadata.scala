@@ -93,8 +93,8 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
     metadata.map(column => (attributeSet.byId(column._1), column._2(idx))).toSeq
   }
 
-  def parameterValues(identifier: String): Set[String] =
-    metadata(identifier).toSet
+  def attributeValues(attribute: Attribute): Set[String] =
+    metadata(attribute.id).toSet
 
   override def sampleAttribute(s: Sample, attribute: Attribute): Option[String] = {
     val idx = getIdx(s)

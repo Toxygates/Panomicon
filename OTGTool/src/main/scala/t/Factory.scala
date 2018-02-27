@@ -26,10 +26,11 @@ import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.db.file.MapMetadata
 import t.db.Metadata
 import t.model.sample.AttributeSet
+import t.model.sample.Attribute
 
 /*
  * Note: It may be a good idea to make ts and data constructor parameters,
- * and then store them and the resulting context, baseconfig 
+ * and then store them and the resulting context, baseconfig
  */
 abstract class Factory {
   def samples(config: BaseConfig): Samples
@@ -41,6 +42,16 @@ abstract class Factory {
 
   def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
     new MapMetadata(data, attr)
+
+  def triplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
+      querySet: Iterable[Attribute] = Seq())
+      (implicit sf: SampleFilter): TriplestoreMetadata =
+    new TriplestoreMetadata(samples, attributeSet, querySet)(sf)
+
+  def cachingTriplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
+      querySet: Iterable[Attribute] = Seq())
+      (implicit sf: SampleFilter): TriplestoreMetadata =
+    new CachingTriplestoreMetadata(samples, attributeSet, querySet)(sf)
 
   def context(ts: TriplestoreConfig, data: DataConfig): Context
 

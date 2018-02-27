@@ -74,6 +74,15 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       majAttr).toSet
   }
 
+  final private def withDB[T](f: SeriesDB[S] => T): T = {
+    val db = getDB()
+    try {
+      f(db)
+    } finally {
+      db.release()
+    }
+  }
+
   def rankedCompounds(ds: Array[Dataset], sc: SampleClass,
       rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
@@ -90,8 +99,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       resolved.map(r => (r.identifier, pr._2))
     })
 
-    val db = getDB()
-    try {
+    withDB(db => {
       val key: S = new SSeries("", probesRules.head._1,
           OTGAttribute.DoseLevel, sc, Array.empty)
 
@@ -120,28 +128,22 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
         println(s)
       }
       r.toArray
-    } finally {
-      db.release()
-    }
+    })
   }
 
   def getSingleSeries(sc: SampleClass, probe: String, timeDose: String,
       compound: String): SSeries = {
-    val db = getDB()
-    try {
+    withDB(db => {
       val key: S = new SSeries("", probe, OTGAttribute.DoseLevel, sc, Array.empty)
-      asShared(db.read(key).head)
-    } finally {
-      db.release()
-    }
+      db.read(key).head
+    })
   }
 
   def getSeries(sc: SampleClass, probes: Array[String], timeDose: String,
       compounds: Array[String]): JList[SSeries] = {
     val validated = context.probes.identifiersToProbes(mcontext.probeMap,
         probes, true, true).map(_.identifier)
-    val db = getDB()
-    try {
+    withDB(db => {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
           db.read(fromShared(new SSeries("", p, OTGAttribute.DoseLevel,
@@ -150,9 +152,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       println(ss.take(5).mkString("\n"))
       val jss = ss.map(asShared)
       new ArrayList[SSeries](asJavaCollection(jss))
-    } finally {
-      db.release()
-    }
+    })
   }
 
 }

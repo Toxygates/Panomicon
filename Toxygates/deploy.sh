@@ -40,6 +40,7 @@ cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
 cp mlib/*jar $WARLIB
 cp ../OTGTool/lib/jar/* $WARLIB
+cp ../OTGTool/mlib/*jar $WARLIB
 
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
@@ -51,6 +52,7 @@ rm $WARLIB/javax.servlet-api*.jar
 rm $WARLIB/javaee-api*jar
 rm $WARLIB/scalatest*jar
 rm $WARLIB/gwt-user.jar
+rm $WARLIB/scala-xml*.jar
 
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 

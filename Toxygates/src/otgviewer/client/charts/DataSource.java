@@ -96,7 +96,8 @@ abstract public class DataSource {
    * Obtain samples, making an asynchronous call if necessary, and pass them on to the sample
    * acceptor when they are available.
    */
-  void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+  void getSamples(ValueType vt, SampleMultiFilter smf, 
+      ColorPolicy policy, SampleAcceptor acceptor) {
     if (!smf.contains(schema.majorParameter())) {
       // TODO why is this needed?
       applyPolicy(policy, chartSamples);
@@ -164,21 +165,19 @@ abstract public class DataSource {
     protected final MatrixServiceAsync matrixService;
 
     protected String[] probes;
-    protected ValueType type;
     protected Screen screen;
 
-    DynamicExpressionRowSource(DataSchema schema, String[] probes, ValueType vt, Sample[] barcodes,
+    DynamicExpressionRowSource(DataSchema schema, String[] probes, Sample[] barcodes,
         Screen screen) {
       super(schema, barcodes, new ArrayList<ExpressionRow>());
       this.probes = probes;
-      this.type = vt;
       this.screen = screen;
       this.matrixService = screen.manager().matrixService();
     }
 
-    void loadData(final SampleMultiFilter smf, final ColorPolicy policy,
+    void loadData(final ValueType vt, final SampleMultiFilter smf, final ColorPolicy policy,
         final SampleAcceptor acceptor) {
-      logger.info("Dynamic source: load for " + smf);
+      logger.info("Dynamic source: load for " + smf + " " + vt);
 
       
       Sample[] useSamples = Arrays.stream(samples).filter(s -> smf.accepts(s)).
@@ -188,13 +187,13 @@ abstract public class DataSource {
       Group g = new Group(schema, "temporary", useSamples);
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
-      matrixService.getFullData(gs, probes, false, type,
+      matrixService.getFullData(gs, probes, false, vt,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data.") {
 
             @Override
             public void handleSuccess(final FullMatrix mat) {
               addSamplesFromBarcodes(useSamples, mat.rows());
-              getLoadedSamples(smf, policy, acceptor);
+              getLoadedSamples(vt, smf, policy, acceptor);
             }
           });
 
@@ -203,13 +202,13 @@ abstract public class DataSource {
     // TODO think about the way these methods interact with superclass
     // - bad design
     @Override
-    void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
-      loadData(smf, policy, acceptor);
+    void getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+      loadData(vt, smf, policy, acceptor);
     }
 
-    protected void getLoadedSamples(SampleMultiFilter smf, ColorPolicy policy,
+    protected void getLoadedSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
         SampleAcceptor acceptor) {
-      super.getSamples(smf, policy, acceptor);
+      super.getSamples(vt, smf, policy, acceptor);
     }
   }
 
@@ -219,15 +218,15 @@ abstract public class DataSource {
   static class DynamicUnitSource extends DynamicExpressionRowSource {
     private Unit[] units;
 
-    DynamicUnitSource(DataSchema schema, String[] probes, ValueType vt, Unit[] units, Screen screen) {
-      super(schema, probes, vt, Unit.collectBarcodes(units), screen);
+    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, Screen screen) {
+      super(schema, probes, Unit.collectBarcodes(units), screen);
       this.units = units;
     }
 
     @Override
-    void loadData(final SampleMultiFilter smf, final ColorPolicy policy,
+    void loadData(final ValueType vt, final SampleMultiFilter smf, final ColorPolicy policy,
         final SampleAcceptor acceptor) {
-      logger.info("Dynamic unit source: load for " + smf);
+      logger.info("Dynamic unit source: load for " + smf + " " + vt);
 
       final List<Group> groups = new ArrayList<Group>();
       final List<Unit> useUnits = new ArrayList<Unit>();
@@ -243,13 +242,13 @@ abstract public class DataSource {
       }
 
       chartSamples.clear();
-      matrixService.getFullData(groups, probes, false, type,
+      matrixService.getFullData(groups, probes, false, vt,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data") {
 
             @Override
             public void handleSuccess(final FullMatrix mat) {
               addSamplesFromUnits(useUnits, mat.rows());
-              getLoadedSamples(smf, policy, acceptor);
+              getLoadedSamples(vt, smf, policy, acceptor);
             }
           });
     }

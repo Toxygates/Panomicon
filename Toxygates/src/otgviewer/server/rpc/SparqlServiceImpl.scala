@@ -22,9 +22,8 @@ package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
 
-import otg.OTGContext
-import t.platform.Species.Human
 import otg.sparql._
+import otgviewer.server.AppInfoLoader
 import otgviewer.shared.Pathology
 import t.common.shared.AType
 import t.common.shared.sample._
@@ -36,10 +35,8 @@ import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.Intermines
-import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
-import otgviewer.server.AppInfoLoader
 
 /**
  * This servlet is reponsible for making queries to RDF stores.
@@ -48,8 +45,8 @@ import otgviewer.server.AppInfoLoader
 class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet
   with otgviewer.client.rpc.ProbeService with otgviewer.client.rpc.SampleService {
 
-  private def probeStore: otg.sparql.Probes = context.probes
-  private def sampleStore: otg.sparql.OTGSamples = context.samples
+  private def probeStore: OTGProbes = context.probes
+  private def sampleStore: OTGSamples = context.samples
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _

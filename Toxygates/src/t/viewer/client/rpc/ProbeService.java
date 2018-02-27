@@ -4,14 +4,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.common.shared.AType;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.*;
-
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A service that provides information about probes and related objects
@@ -28,8 +28,8 @@ public interface ProbeService extends RemoteService {
    * @return
    * @throws TimeoutException
    */
-  
   AppInfo appInfo(@Nullable String userDataKey) throws TimeoutException;
+  
   /**
    * Obtain gene symbols for the given probes. The resulting array will contain gene symbol arrays
    * in the same order as and corresponding to the probes in the input array.
@@ -81,8 +81,6 @@ public interface ProbeService extends RemoteService {
    *         the full gene name.
    */
   Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
-  
-
   
   /**
    * Obtain pathway names matching the pattern (partial name)

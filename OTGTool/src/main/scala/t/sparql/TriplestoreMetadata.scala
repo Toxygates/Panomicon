@@ -20,6 +20,8 @@
 
 package t.sparql
 
+import scala.collection.JavaConversions.asScalaSet
+
 import t.db._
 import t.Factory
 import t.model.sample.CoreParameter._
@@ -43,11 +45,40 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
     })
   }
 
-  override def parameterValues(identifier: String): Set[String] =
-    sampleStore.allValuesForSampleAttribute(identifier).toSet
+  override def attributeValues(attribute: Attribute): Set[String] =
+    sampleStore.sampleAttributeQuery(attribute)(sf)().toSet
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
+}
 
-  //TODO Implement isControl (or change the isControl mechanism)
-  override def isControl(s: Sample) = ???
+/**
+ * Caching triplestore metadata that reads all the data once and stores it.
+ */
+class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
+    querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
+    extends TriplestoreMetadata(os, attributes, querySet) {
+
+  val useQuerySet = (querySet.toSeq :+ SampleId).distinct
+
+  override lazy val sampleIds = rawData.keySet
+
+  lazy val rawData = {
+    val raw = os.sampleAttributeQuery(useQuerySet)(sf)()
+    Map() ++ raw.map(r => r(SampleId) -> r)
+  }
+
+  lazy val data =
+    rawData.mapValues(sample => {
+      Map() ++ sample.sampleClass.getKeys().toSeq.
+          map(key => key ->  sample.get(key).get)
+    })
+
+  // all attributes for a sample
+  override def sampleAttributes(s: Sample) =
+    data.getOrElse(s.sampleId, Map()).toSeq
+
+  // all values for a given parameter
+  override def attributeValues(attribute: Attribute): Set[String] =
+    data.flatMap(_._2.get(attribute)).toSet
+
 }

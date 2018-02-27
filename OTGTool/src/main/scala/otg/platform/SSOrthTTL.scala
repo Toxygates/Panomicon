@@ -28,7 +28,7 @@ import scala.collection.mutable.{ Set => MSet }
 import scala.collection.mutable.{ Set => MSet }
 import scala.io._
 
-import otg.sparql.Probes
+import otg.sparql.OTGProbes
 import t.platform.Probe
 import t.sparql.secondary.Gene
 import t.intermine.OrthologProteins
@@ -39,7 +39,7 @@ import t.platform.Species._
  * Convert SSearch similarity files to TTL format, by using
  * already inserted platform information.
  */
-class SSOrthTTL(probes: Probes, output: String) {
+class SSOrthTTL(probes: OTGProbes, output: String) {
 
   val probeToGene = probes.allGeneIds()
   val geneToProbe = probeToGene.reverse

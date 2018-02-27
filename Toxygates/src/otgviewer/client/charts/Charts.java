@@ -117,7 +117,7 @@ public class Charts {
       schema.sort(schema.timeParameter(), times);
       DataSource cds = new DataSource.SeriesSource(schema, series, times);
 
-      cds.getSamples(new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed],
+      cds.getSamples(null, new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed],
           "SkyBlue"), new DataSource.SampleAcceptor() {
 
         @Override
@@ -202,7 +202,7 @@ public class Charts {
   private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
       Sample[] barcodes, AChartAcceptor acceptor) {
     DataSource dataSource =
-        new DataSource.DynamicExpressionRowSource(schema, probes, vt, barcodes, screen);
+        new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);
@@ -216,7 +216,7 @@ public class Charts {
     }
 
     DataSource dataSource =
-        new DataSource.DynamicUnitSource(schema, probes, vt, treated.toArray(new Unit[0]), screen);
+        new DataSource.DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]), screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);

@@ -186,7 +186,7 @@ object FoldBuilder extends CmdLineOptions {
       "Please specify metadata file with -metadata")
 
       //TODO - avoid/clarify dependency from t.db -> otg
-    val factory = new otg.Factory 
+    val factory = new otg.OTGFactory 
 
     val md = factory.tsvMetadata(mdfile, otg.model.sample.AttributeSet.getDefault)
     val data = new CSVRawExpressionData(List(input), List(calls),
