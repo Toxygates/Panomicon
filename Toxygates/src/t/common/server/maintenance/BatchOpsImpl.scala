@@ -104,7 +104,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     }
   }
 
-  def updateBatchMetadataAsync(batch: Batch): Unit = {
+  def updateBatchMetadataAsync(batch: Batch, recalculate: Boolean): Unit = {
     ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
@@ -119,7 +119,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
       val metadata = createMetadata(metaFile)
 
-      runTasks(batchManager.updateMetadata(batch, metadata, baseConfig.seriesBuilder))
+      runTasks(batchManager.updateMetadata(batch, metadata, baseConfig.seriesBuilder, recalculate))
     }
   }
 

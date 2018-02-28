@@ -70,13 +70,13 @@ abstract class UserDataServiceImpl extends TServiceServlet
   }
 
   //Public entry point
-  override def updateBatchMetadataAsync(b: Batch): Unit = {
+  override def updateBatchMetadataAsync(b: Batch, recalculate: Boolean): Unit = {
     ensureNotMaintenance()
     checkAccess(b)
     //See note about ensureDataset in addBatchAsync
     ensureDataset(b.getDataset)
 
-    super.updateBatchMetadataAsync(b)
+    super.updateBatchMetadataAsync(b, recalculate)
   }
 
   override protected def alterMetadataPriorToInsert(md: Metadata): Metadata = {

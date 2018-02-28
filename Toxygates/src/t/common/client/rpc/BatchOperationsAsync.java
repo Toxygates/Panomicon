@@ -32,7 +32,7 @@ public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
   
   void addBatchAsync(Batch b, AsyncCallback<Void> callback);
 
-  void updateBatchMetadataAsync(Batch b, AsyncCallback<Void> callback);
+  void updateBatchMetadataAsync(Batch b, boolean recalculate, AsyncCallback<Void> callback);
 
   void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
 

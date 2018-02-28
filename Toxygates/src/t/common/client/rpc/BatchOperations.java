@@ -40,7 +40,7 @@ public interface BatchOperations extends MaintenanceOperations {
   
   void addBatchAsync(Batch b) throws MaintenanceException;
 
-  void updateBatchMetadataAsync(Batch b) throws MaintenanceException;
+  void updateBatchMetadataAsync(Batch b, boolean recalculate) throws MaintenanceException;
 
   /**
    * Get parameter summaries for samples in a batch.
