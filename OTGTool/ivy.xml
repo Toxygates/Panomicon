@@ -34,7 +34,10 @@
   <dependency org="org.slf4j" name="slf4j-simple" rev="latest.integration" />
   
   <!-- for intermine. -->  
-  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.10.0" />
+  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.10.0">
+    <!-- This dependency can't be found on maven and doesn't appear to be necessary -->
+  	<exclude module="log4j-api-java9" />
+  </dependency>
   <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.10.0">
     <!-- This causes problems for Intermine (via XMLOutputFactory) if it is on the classpath. -->
 	<exclude module="woodstox-core" />  
