@@ -26,13 +26,12 @@ import t.db._
 import t.db.{ Series => TSeries }
 import t.model.sample.Attribute
 
-//TODO all parameters are nullable - use options
+// all parameters are nullable - consider using options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
   compound: String, dose: String, testType: String,
   override val points: Seq[SeriesPoint] = Seq()) extends TSeries[OTGSeries](probe, points) {
 
-  def classCode(implicit mc: MatrixContext): Long =
-    OTGSeries.pack(this)
+  def classCode(implicit mc: MatrixContext): Long = OTGSeries.pack(this)
 
   def asSingleProbeKey = copy(probe = probe, compound = null, dose = null)
 
@@ -103,7 +102,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   }
 
   def buildEmpty(x: Sample, md: Metadata) = {
-    val attribs = Map() ++ md.sampleAttributes(x).map(x => x._1 -> x._2)
+    val attribs = Map() ++ md.sampleAttributes(x)
 
     OTGSeries(attribs(Repeat), attribs(Organ), attribs(Organism), 0,
       attribs(Compound), attribs(DoseLevel), attribs(TestType), Vector())
@@ -117,7 +116,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     val grouped = samples.groupBy(buildEmpty(_, md))
     var r = Vector[OTGSeries]()
 
-    for ((s, xs) <- grouped) {
+    for ((series, xs) <- grouped) {
       //Construct the series s for all probes, using the samples xs
 
       val data = for (
@@ -138,45 +137,42 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
       val byProbe = byTime.groupBy(_.value.probe)
       r ++= byProbe.map(x => {
-        s.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
+        series.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
       })
     }
     r
   }
 
-  private def isBefore(time1: String, time2: String): Boolean = {
-    val units = List("min", "hr", "day", "week", "month")
+//  private def isBefore(time1: String, time2: String): Boolean = {
+//    val units = List("min", "hr", "day", "week", "month")
+//
+//    def split(t: String) = {
+//      val s = t.split(" ")
+//      if (s.length != 2) {
+//        throw new Exception("Invalid time format: " + t + " (example: 9 hr)")
+//      }
+//      if (!units.contains(s(1))) {
+//        throw new Exception("Invalid time unit: " + s(1) +
+//          " (valid: " + units.mkString(" ") + ")")
+//      }
+//      (s(0).toInt, s(1))
+//    }
+//
+//    val (q1, u1) = split(time1)
+//    val (q2, u2) = split(time2)
+//    if (units.indexOf(u2) > units.indexOf(u1)) {
+//      true
+//    } else if (units.indexOf(u1) > units.indexOf(u2)) {
+//      false
+//    } else {
+//      q1 < q2
+//    }
+//  }
 
-    def split(t: String) = {
-      val s = t.split(" ")
-      if (s.length != 2) {
-        throw new Exception("Invalid time format: " + t + " (example: 9 hr)")
-      }
-      if (!units.contains(s(1))) {
-        throw new Exception("Invalid time unit: " + s(1) +
-          " (valid: " + units.mkString(" ") + ")")
-      }
-      (s(0).toInt, s(1))
-    }
+//  def sortTimes(items: Iterable[String]): Seq[String] =
+//    items.toList.sortWith(isBefore)
 
-    val (q1, u1) = split(time1)
-    val (q2, u2) = split(time2)
-    if (units.indexOf(u2) > units.indexOf(u1)) {
-      true
-    } else if (units.indexOf(u1) > units.indexOf(u2)) {
-      false
-    } else {
-      q1 < q2
-    }
-  }
-
-  def sortTimes(items: Iterable[String]): Seq[String] =
-    items.toList.sortWith(isBefore)
-
-    /*
-     * Note: we don't currently use dose series; this might be untested/
-     * inadequate
-     */
+  // Note: we don't currently use dose series; this might be untested/inadequate
   val expectedDoses = List("Low", "Middle", "High")
 
   def expectedTimes(key: OTGSeries): Seq[String] = {

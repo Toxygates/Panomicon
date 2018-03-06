@@ -47,9 +47,6 @@ class SeriesTest extends TTestSuite {
     }
   }
 
-//  test("normalization") {
-//  }
-
   test("makeNew") {
     context.populate()
     val meta = OData.metadata
