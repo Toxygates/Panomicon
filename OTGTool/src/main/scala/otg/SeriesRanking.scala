@@ -39,7 +39,7 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
       //TODO modify ReferenceCompound API to be able to check for type argument at runtime
       //or stop trying to match the type argument
       case r: ReferenceCompound[OTGSeries @unchecked] => {
-        r.init(db, key.copy(compound = r.compound, dose = r.dose)) //init this once and reuse it across all the compounds
+        r.init(db, key.copy(compound = r.compound, doseOrTime = r.doseOrTime)) //init this once and reuse it across all the compounds
       }
       case _ => {}
     }
@@ -54,13 +54,13 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
 
     // Get scores for each rule
     val allScores = probesRules.map(pr => withProbe(pr._1).getScores(pr._2))
-    val doses = allScores.flatMap(_.map(_._1.dose)).distinct
+    val dosesOrTimes = allScores.flatMap(_.map(_._1.doseOrTime)).distinct
     val compounds = allScores.flatMap(_.map(_._1.compound)).distinct
-    val dcs = for (d <- doses; c <- compounds) yield (d, c)
-    val products = dcs.map(dc => {
+    val dosesOrTimesAndCompounds = for (d <- dosesOrTimes; c <- compounds) yield (d, c)
+    val products = dosesOrTimesAndCompounds.map(dc => {
       //TODO efficiency of this
       val allCorresponding = allScores.map(_.find(x =>
-        x._1.dose == dc._1 && x._1.compound == dc._2))
+        x._1.doseOrTime == dc._1 && x._1.compound == dc._2))
       val product = safeProduct(allCorresponding.map(_.map(_._2).getOrElse(Double.NaN)))
       (dc._2, dc._1, product)
     })

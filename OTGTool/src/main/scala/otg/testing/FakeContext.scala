@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -22,7 +22,7 @@ package otg.testing
 
 import t.db.SampleMap
 import t.db.ProbeMap
-import otg.OTGSeries
+import otg.OTGTimeSeries
 import t.db.kyotocabinet.KCSeriesDB
 import t.db.testing.{TestData => TData}
 import t.db.Sample
@@ -33,6 +33,6 @@ class FakeContext(sampleMap: SampleMap = TData.dbIdMap,
   extends t.testing.FakeContext(sampleMap, probeMap, enumMaps) {
 
   val seriesDB = t.db.testing.TestData.memDBHash
-  override def seriesBuilder = OTGSeries
-  override def seriesDBReader = new KCSeriesDB(seriesDB, false, seriesBuilder, true)(this)  
+  override def seriesBuilder = OTGTimeSeries
+  override def seriesDBReader = new KCSeriesDB(seriesDB, false, seriesBuilder, true)(this)
 }

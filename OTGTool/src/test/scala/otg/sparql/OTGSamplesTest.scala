@@ -29,8 +29,9 @@ import t.TTestSuite
 import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
-import otg.OTGSeries
+import otg.OTGTimeSeries
 import otg.model.sample.OTGAttribute._
+import otg.TimeSeries
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
@@ -83,6 +84,6 @@ class OTGSamplesTest extends TTestSuite {
       constrain(sf)()
 
     //TODO use the unified DataSchema instead
-    assert(OTGSeries.singleVivoExpected.toSet subsetOf ts.toSet)
+    assert(TimeSeries.singleVivoExpected.toSet subsetOf ts.toSet)
   }
 }

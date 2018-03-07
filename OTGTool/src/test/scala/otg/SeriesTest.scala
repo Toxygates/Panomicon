@@ -41,8 +41,8 @@ class SeriesTest extends TTestSuite {
 
   test("pack and build") {
     for (s <- OData.series) {
-      val p = OTGSeries.pack(s)
-      val b = OTGSeries.build(p, s.probe)
+      val p = OTGTimeSeries.pack(s)
+      val b = OTGTimeSeries.build(p, s.probe)
       b should equal(s.copy(points = Seq()))
     }
   }
@@ -52,7 +52,7 @@ class SeriesTest extends TTestSuite {
     val meta = OData.metadata
     val timeMap = context.enumMaps(ExposureTime.id)
 
-    val ss = OTGSeries.makeNew(context.foldsDBReader, meta)
+    val ss = OTGTimeSeries.makeNew(context.foldsDBReader, meta)
     val data = context.testData
     for (s <- ss;
         const = s.constraints.filter(_._2 != null).toSet;
@@ -70,11 +70,11 @@ class SeriesTest extends TTestSuite {
     }
 
     for (s <- TestData.samples) {
-      val x = OTGSeries.buildEmpty(s, meta)
+      val x = OTGTimeSeries.buildEmpty(s, meta)
       ss.exists(_.classCode == x.classCode) should be(true)
     }
 
-    val xs = TestData.samples.map(x => OTGSeries.buildEmpty(x, meta))
+    val xs = TestData.samples.map(x => OTGTimeSeries.buildEmpty(x, meta))
     for (s <- ss) {
       xs.exists(_.classCode == s.classCode) should be(true)
     }

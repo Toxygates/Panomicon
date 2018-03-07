@@ -20,7 +20,6 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-import otg.model.sample.OTGAttribute;
 import t.common.shared.HasClass;
 import t.common.shared.sample.ExpressionValue;
 import t.model.SampleClass;
@@ -46,7 +45,7 @@ public class Series implements HasClass, Serializable {
    * @param sc Sample class parameters
    * @param values Data points
    */
-  public Series(String title, String probe, OTGAttribute independentParam, SampleClass sc,
+  public Series(String title, String probe, Attribute independentParam, SampleClass sc,
       ExpressionValue[] values) {
     _values = values;
     _title = title;
@@ -68,18 +67,10 @@ public class Series implements HasClass, Serializable {
     return _probe;
   }
 
-  private OTGAttribute _independentParam;
+  private Attribute _independentParam;
 
-  public OTGAttribute independentParam() {
+  public Attribute independentParam() {
     return _independentParam;
-  }
-
-  // TODO users should access the sample class instead
-  @Deprecated
-  public String timeDose() {
-    Attribute fixedParam = _independentParam == OTGAttribute.ExposureTime ? 
-        OTGAttribute.DoseLevel : OTGAttribute.ExposureTime;
-    return _sc.get(fixedParam);
   }
 
   private ExpressionValue[] _values;

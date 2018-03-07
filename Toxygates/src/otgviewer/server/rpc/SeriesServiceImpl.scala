@@ -46,6 +46,6 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
   def expectedTimes(s: SSeries): Array[String] = {
     val key = fromShared(s)
     println("Key: " + key)
-    context.matrix.seriesBuilder.expectedTimes(key).toArray
+    context.matrix.seriesBuilder.expectedIndependentVariablePoints(key).toArray
   }
 }

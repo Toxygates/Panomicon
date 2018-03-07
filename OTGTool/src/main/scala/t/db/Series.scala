@@ -103,13 +103,13 @@ trait SeriesBuilder[S <: Series[S]] {
   def standardEnumValues: Iterable[(String, String)]
 
   /**
-   * Expected time points for the given series
+   * Expected independent variable points for the given series
    */
-  def expectedTimes(key: S): Seq[String]
+  def expectedIndependentVariablePoints(key: S): Seq[String]
 
-  protected def packWithLimit(attrib: Attribute, value: String, mask: Int)(implicit mc: MatrixContext): Long = 
+  protected def packWithLimit(attrib: Attribute, value: String, mask: Int)(implicit mc: MatrixContext): Long =
     packWithLimit(attrib.id, value, mask)
-  
+
   protected def packWithLimit(enum: String, value: String, mask: Int)(implicit mc: MatrixContext): Long = {
     val p = mc.enumMaps(enum)(value)
     if (p > mask) {

@@ -34,6 +34,10 @@ import t.db.MatrixContext
 import otgviewer.shared.RuleType
 import t.model.sample.CoreParameter._
 import otg.model.sample.OTGAttribute._
+import otg.OTGSeriesType
+import otg.TimeSeries
+import otg.model.sample.OTGAttribute
+import otg.DoseSeries
 
 /**
  * Conversions between Scala and Java types.
@@ -52,23 +56,25 @@ object Conversions {
   implicit def asScala(series: Series)(implicit context: MatrixContext): OTGSeries = {
     val p = context.probeMap.pack(series.probe) //TODO filtering
     val sc = series.sampleClass
+    val seriesType = if (series.independentParam() == OTGAttribute.ExposureTime)
+      TimeSeries else DoseSeries
 
-    new OTGSeries(sc.get(Repeat),
+    new OTGSeries(seriesType, sc.get(Repeat),
       sc.get(Organ), sc.get(Organism),
       p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: OTGContext): Series = {
     implicit val mc = context.matrix
-    val name = series.compound + " " + series.dose
+    val name = series.compound + " " + series.doseOrTime
     val sc = new t.model.SampleClass
-    sc.put(DoseLevel, series.dose)
+    sc.put(series.seriesType.lastConstraint, series.doseOrTime)
     sc.put(Compound, series.compound)
     sc.put(Organism, series.organism)
     sc.put(TestType, series.testType)
     sc.put(Organ, series.organ)
     sc.put(Repeat, series.repeat)
-    new Series(name, series.probeStr, ExposureTime, sc,
+    new Series(name, series.probeStr, series.seriesType.independentVariable, sc,
       series.values.map(t.viewer.server.Conversions.asJava).toArray)
   }
 
