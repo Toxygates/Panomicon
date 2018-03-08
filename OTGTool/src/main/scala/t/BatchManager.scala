@@ -264,7 +264,7 @@ class BatchManager(context: Context) {
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
-    r :+= addSeriesData(metadata, sbuilder)
+    r :+= addTimeSeriesData(metadata, sbuilder)
 
     r
   }
@@ -308,7 +308,7 @@ class BatchManager(context: Context) {
 
     r :+= addFoldsData(metadata, expressionData, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
-    r :+= addSeriesData(metadata, sbuilder)
+    r :+= addTimeSeriesData(metadata, sbuilder)
 
     r
   }
@@ -367,7 +367,7 @@ class BatchManager(context: Context) {
 
     //Enums can not yet be deleted.
     if (!rdfOnly) {
-      r :+= deleteSeriesData(title, sbuilder)
+      r :+= deleteTimeSeriesData(title, sbuilder)
       r :+= deleteFoldData(title)
       r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)
@@ -628,7 +628,15 @@ class BatchManager(context: Context) {
       }
     }
 
-  def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
+  def addTimeSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
+      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
+    addSeriesData(md, config.data.timeSeriesDb, builder)(mc)
+
+  def addDoseSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
+      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
+    addSeriesData(md, config.data.doseSeriesDb, builder)(mc)
+
+  def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata, dbName: String,
     builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Insert series data") {
     def run() {
       //idea: use RawExpressionData directly as source +
@@ -638,7 +646,7 @@ class BatchManager(context: Context) {
       var target: KCSeriesDB[S] = null
       var inserted = 0
       try {
-        target = KCSeriesDB[S](config.data.timeSeriesDb, true, builder, false)
+        target = KCSeriesDB[S](dbName, true, builder, false)
         val xs = builder.makeNew(source, md)
         val total = xs.size
         var pcomp = 0d
@@ -659,7 +667,16 @@ class BatchManager(context: Context) {
     }
   }
 
-  def deleteSeriesData[S <: Series[S]](batch: String, builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Delete series data") {
+  def deleteTimeSeriesData[S <: Series[S]](batch: String,
+      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
+    deleteSeriesData(batch, config.data.timeSeriesDb, builder)(mc)
+
+  def deleteDoseSeriesData[S <: Series[S]](batch: String,
+      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
+    deleteSeriesData(batch, config.data.doseSeriesDb, builder)(mc)
+
+  def deleteSeriesData[S <: Series[S]](batch: String, dbName: String,
+      builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Delete series data") {
     def run() {
 
       val batchURI = Batches.defaultPrefix + "/" + batch
@@ -673,7 +690,7 @@ class BatchManager(context: Context) {
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       try {
-        target = KCSeriesDB[S](config.data.timeSeriesDb, true, builder, false)
+        target = KCSeriesDB[S](dbName, true, builder, false)
         val filtSamples = tsmd.samples
         val total = filtSamples.size
         var pcomp = 0d
