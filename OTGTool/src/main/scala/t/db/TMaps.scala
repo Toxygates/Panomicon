@@ -38,7 +38,7 @@ class TMaps(config: BaseConfig) {
   lazy val enumMaps = {
     val db = KCIndexDB(data.enumIndex, false)
     try {
-      db.enumMaps(config.seriesBuilder.enums)
+      db.enumMaps(config.timeSeriesBuilder.enums)
     } finally {
       db.release
     }

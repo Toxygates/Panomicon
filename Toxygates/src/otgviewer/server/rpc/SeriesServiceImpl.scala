@@ -40,12 +40,12 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
     Conversions.asScala(s)
 
   override protected def getDB(): SeriesDB[OTGSeries] =
-    mat.seriesDBReader
+    mat.timeSeriesDBReader
 
   //TODO lift up this method
   def expectedTimes(s: SSeries): Array[String] = {
     val key = fromShared(s)
     println("Key: " + key)
-    context.matrix.seriesBuilder.expectedIndependentVariablePoints(key).toArray
+    context.matrix.timeSeriesBuilder.expectedIndependentVariablePoints(key).toArray
   }
 }

@@ -32,8 +32,8 @@ import t.sparql.Triplestore
 
 /*
  * Note: it is not clear whether
- * BaseConfig should be invariant between applications. 
- * Currently OTGBConfig is the concrete OTG version of this. 
+ * BaseConfig should be invariant between applications.
+ * Currently OTGBConfig is the concrete OTG version of this.
  */
 trait BaseConfig {
   def triplestore: TriplestoreConfig
@@ -42,7 +42,8 @@ trait BaseConfig {
   /*
    * Note: this might be better in the context instead.
    */
-  def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
+  def timeSeriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
+  def doseSeriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
   def attributes: AttributeSet
 
@@ -90,7 +91,8 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   def exprDb: String = s"$dir/$exprFile"
   def foldDb: String = s"$dir/$foldFile"
 
-  def seriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
+  def timeSeriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
+  def doseSeriesDb: String = s"$dir/doseSeries.kct" + KCSeriesDB.options
 
   def sampleDb: String = s"$dir/sample_index.kct"
   def probeDb: String = s"$dir/probe_index.kct"

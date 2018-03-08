@@ -32,7 +32,10 @@ class FakeContext(sampleMap: SampleMap = TData.dbIdMap,
     enumMaps: Map[String, Map[String, Int]] = TData.enumMaps)
   extends t.testing.FakeContext(sampleMap, probeMap, enumMaps) {
 
-  val seriesDB = t.db.testing.TestData.memDBHash
-  override def seriesBuilder = OTGTimeSeries
-  override def seriesDBReader = new KCSeriesDB(seriesDB, false, seriesBuilder, true)(this)
+  val timeSeriesDB = t.db.testing.TestData.memDBHash
+  override def timeSeriesBuilder = OTGTimeSeries
+  override def timeSeriesDBReader = new KCSeriesDB(timeSeriesDB, false, timeSeriesBuilder, true)(this)
+  // val doseSeriesDB = ???
+  override def doseSeriesBuilder = ??? //OTGDoseSeries
+  override def doseSeriesDBReader = ??? //new KCSeriesDB(seriesDB, false, doseSeriesBuilder, true)(this)
 }

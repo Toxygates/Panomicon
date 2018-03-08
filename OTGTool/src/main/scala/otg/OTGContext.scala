@@ -74,10 +74,13 @@ class OTGMatrixContext(baseConfig: BaseConfig) extends MatrixContext {
   def expectedProbes(x: Sample) =
     probeMap.keys
 
-  def seriesBuilder: OTGTimeSeries.type = OTGTimeSeries
+  def timeSeriesBuilder: OTGTimeSeries.type = OTGTimeSeries
+  def doseSeriesBuilder: OTGDoseSeries.type = OTGDoseSeries
 
-  def seriesDBReader: SDB =
-    KCSeriesDB(data.seriesDb, false, seriesBuilder, true)(this)
+  def timeSeriesDBReader: SDB =
+    KCSeriesDB(data.timeSeriesDb, false, timeSeriesBuilder, true)(this)
+  def doseSeriesDBReader: SDB =
+    KCSeriesDB(data.doseSeriesDb, false, doseSeriesBuilder, true)(this)
 
   var testRun: Boolean = false
 

@@ -73,7 +73,7 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 val tasklets = bm.add(Batch(title, comment, None, None),
                   md, dataFile, callFile,
-                  if (first) append else true, config.seriesBuilder)
+                  if (first) append else true, config.timeSeriesBuilder)
                 first = false
                 tasklets
               })
@@ -88,7 +88,7 @@ object BatchManager extends ManagerTool {
               val md = factory.tsvMetadata(metaFile, config.attributes)
               startTaskRunner(bm.add(Batch(title, comment, None, None),
                 md, dataFile, callFile,
-                append, config.seriesBuilder))
+                append, config.timeSeriesBuilder))
           }
 
         case "recalculate" =>
@@ -101,7 +101,7 @@ object BatchManager extends ManagerTool {
                 config.attributes.getHighLevel ++ config.attributes.getUnitLevel ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup))(sampleFilter)
           startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
-            Batch(title, "", None, None), metadata, config.seriesBuilder))
+            Batch(title, "", None, None), metadata, config.timeSeriesBuilder))
 
         case "updateMetadata" | "updatemetadata" =>
           val title = require(stringOption(args, "-title"),
@@ -114,7 +114,7 @@ object BatchManager extends ManagerTool {
           new Platforms(config).populateAttributes(config.attributes)
           val md = factory.tsvMetadata(metaFile, config.attributes)
           startTaskRunner(bm.updateMetadata(Batch(title, comment, None, None),
-              md, config.seriesBuilder, recalculate))
+              md, config.timeSeriesBuilder, recalculate))
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -122,7 +122,7 @@ object BatchManager extends ManagerTool {
           val rdfOnly = booleanOption(args, "-rdfonly")
           verifyExists(batches, title)
           val bm = new BatchManager(context)
-          startTaskRunner(bm.delete(title, config.seriesBuilder, rdfOnly))
+          startTaskRunner(bm.delete(title, config.timeSeriesBuilder, rdfOnly))
         case "list" =>
           println("Batch list")
           for (b <- batches.list) {
@@ -212,8 +212,10 @@ class BatchManager(context: Context) {
     new MatrixContext {
       def foldsDBReader = ???
       def absoluteDBReader = ???
-      def seriesBuilder = ???
-      def seriesDBReader = ???
+      def timeSeriesBuilder = ???
+      def doseSeriesBuilder = ???
+      def timeSeriesDBReader = ???
+      def doseSeriesDBReader = ???
 
 
       lazy val probeMap: ProbeMap =
@@ -230,7 +232,7 @@ class BatchManager(context: Context) {
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
         try {
-          db.enumMaps(config.seriesBuilder.enums)
+          db.enumMaps(config.timeSeriesBuilder.enums)
         } finally {
           db.release()
         }
@@ -636,7 +638,7 @@ class BatchManager(context: Context) {
       var target: KCSeriesDB[S] = null
       var inserted = 0
       try {
-        target = KCSeriesDB[S](config.data.seriesDb, true, builder, false)
+        target = KCSeriesDB[S](config.data.timeSeriesDb, true, builder, false)
         val xs = builder.makeNew(source, md)
         val total = xs.size
         var pcomp = 0d
@@ -671,7 +673,7 @@ class BatchManager(context: Context) {
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       try {
-        target = KCSeriesDB[S](config.data.seriesDb, true, builder, false)
+        target = KCSeriesDB[S](config.data.timeSeriesDb, true, builder, false)
         val filtSamples = tsmd.samples
         val total = filtSamples.size
         var pcomp = 0d

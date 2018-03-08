@@ -38,7 +38,7 @@ class KCSeriesDBTest extends TTestSuite {
   before {
     context = new otg.testing.FakeContext()
     //this is normalizing by default
-    db = context.seriesDBReader
+    db = context.timeSeriesDBReader
     var w: SDB = null
     try {
       w = writer()
@@ -56,8 +56,8 @@ class KCSeriesDBTest extends TTestSuite {
     db.release()
   }
 
-  def nonNormalisingReader() = new KCSeriesDB(context.seriesDB, false, OTGTimeSeries, false)(context)
-  def writer() = new KCSeriesDB(context.seriesDB, true, OTGTimeSeries, false)(context)
+  def nonNormalisingReader() = new KCSeriesDB(context.timeSeriesDB, false, OTGTimeSeries, false)(context)
+  def writer() = new KCSeriesDB(context.timeSeriesDB, true, OTGTimeSeries, false)(context)
 
   test("Series retrieval") {
     val db = nonNormalisingReader()

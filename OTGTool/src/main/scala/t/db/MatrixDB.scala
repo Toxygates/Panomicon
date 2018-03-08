@@ -43,9 +43,11 @@ trait MatrixContext {
 
   def absoluteDBReader: MatrixDBReader[ExprValue]
   def foldsDBReader: MatrixDBReader[PExprValue]
-  def seriesDBReader: SeriesDB[_]
+  def timeSeriesDBReader: SeriesDB[_]
+  def doseSeriesDBReader: SeriesDB[_]
 
-  def seriesBuilder: SeriesBuilder[_]
+  def timeSeriesBuilder: SeriesBuilder[_]
+  def doseSeriesBuilder: SeriesBuilder[_]
 
   /**
    * Probes expected to be present in the database for a given sample.

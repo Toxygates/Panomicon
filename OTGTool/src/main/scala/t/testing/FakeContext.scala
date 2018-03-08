@@ -46,9 +46,11 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   lazy val foldsDBReader: ExtMatrixDB = new KCChunkMatrixDB(folds, false)
 
   def expectedProbes(s: Sample) = probeMap.keys
-  
-  def seriesDBReader: SeriesDB[_] = ???
-  def seriesBuilder: SeriesBuilder[_] = ???
+
+  def timeSeriesDBReader: SeriesDB[_] = ???
+  def timeSeriesBuilder: SeriesBuilder[_] = ???
+  def doseSeriesDBReader: SeriesDB[_] = ???
+  def doseSeriesBuilder: SeriesBuilder[_] = ???
 
   def populate() {
     TestData.populate(foldsDBReader, testData)

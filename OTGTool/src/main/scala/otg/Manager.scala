@@ -54,7 +54,8 @@ object Manager extends t.Manager[OTGContext, OTGBConfig] with CmdLineOptions {
 }
 
 case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends BaseConfig {
-  def seriesBuilder = OTGTimeSeries
+  def timeSeriesBuilder = OTGTimeSeries
+  def doseSeriesBuilder = OTGDoseSeries
 
 //  def sampleParameters = otg.db.OTGParameterSet
 
