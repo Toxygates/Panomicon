@@ -101,7 +101,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
     withDB(db => {
       val key: S = new SSeries("", probesRules.head._1,
-          OTGAttribute.DoseLevel, sc, Array.empty)
+          OTGAttribute.ExposureTime, sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
@@ -134,7 +134,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   def getSingleSeries(sc: SampleClass, probe: String, timeDose: String,
       compound: String): SSeries = {
     withDB(db => {
-      val key: S = new SSeries("", probe, OTGAttribute.DoseLevel, sc, Array.empty)
+      val key: S = new SSeries("", probe, OTGAttribute.ExposureTime, sc, Array.empty)
       db.read(key).head
     })
   }
@@ -146,7 +146,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     withDB(db => {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p, OTGAttribute.DoseLevel,
+          db.read(fromShared(new SSeries("", p, OTGAttribute.ExposureTime,
               sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))
