@@ -263,6 +263,7 @@ class BatchManager(context: Context) {
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addTimeSeriesData(metadata)
+    r :+= addDoseSeriesData(metadata)
 
     r
   }
@@ -306,6 +307,7 @@ class BatchManager(context: Context) {
     r :+= addFoldsData(metadata, expressionData, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addTimeSeriesData(metadata)
+    r :+= addDoseSeriesData(metadata)
 
     r
   }
@@ -364,6 +366,7 @@ class BatchManager(context: Context) {
     //Enums can not yet be deleted.
     if (!rdfOnly) {
       r :+= deleteTimeSeriesData(title)
+      r :+= deleteDoseSeriesData(title)
       r :+= deleteFoldData(title)
       r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)
