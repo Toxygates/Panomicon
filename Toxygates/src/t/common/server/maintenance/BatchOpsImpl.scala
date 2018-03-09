@@ -99,8 +99,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       runTasks(batchManager.add(batch, metadata,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        false, baseConfig.timeSeriesBuilder,
-        simpleLog2))
+        false, simpleLog2))
     }
   }
 
@@ -119,7 +118,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
       val metadata = createMetadata(metaFile)
 
-      runTasks(batchManager.updateMetadata(batch, metadata, baseConfig.timeSeriesBuilder, recalculate))
+      runTasks(batchManager.updateMetadata(batch, metadata, recalculate))
     }
   }
 
@@ -173,7 +172,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val bm = new BatchManager(context)
     maintenance {
       setLastTask("Delete batch")
-      runTasks(bm.delete(b.getTitle, baseConfig.timeSeriesBuilder, false))
+      runTasks(bm.delete(b.getTitle, false))
     }
   }
 

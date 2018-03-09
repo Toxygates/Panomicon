@@ -73,7 +73,7 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 val tasklets = bm.add(Batch(title, comment, None, None),
                   md, dataFile, callFile,
-                  if (first) append else true, config.timeSeriesBuilder)
+                  if (first) append else true)
                 first = false
                 tasklets
               })
@@ -87,8 +87,7 @@ object BatchManager extends ManagerTool {
               new Platforms(config).populateAttributes(config.attributes)
               val md = factory.tsvMetadata(metaFile, config.attributes)
               startTaskRunner(bm.add(Batch(title, comment, None, None),
-                md, dataFile, callFile,
-                append, config.timeSeriesBuilder))
+                md, dataFile, callFile, append))
           }
 
         case "recalculate" =>
@@ -101,7 +100,7 @@ object BatchManager extends ManagerTool {
                 config.attributes.getHighLevel ++ config.attributes.getUnitLevel ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup))(sampleFilter)
           startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
-            Batch(title, "", None, None), metadata, config.timeSeriesBuilder))
+            Batch(title, "", None, None), metadata))
 
         case "updateMetadata" | "updatemetadata" =>
           val title = require(stringOption(args, "-title"),
@@ -114,7 +113,7 @@ object BatchManager extends ManagerTool {
           new Platforms(config).populateAttributes(config.attributes)
           val md = factory.tsvMetadata(metaFile, config.attributes)
           startTaskRunner(bm.updateMetadata(Batch(title, comment, None, None),
-              md, config.timeSeriesBuilder, recalculate))
+              md, recalculate))
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -122,7 +121,7 @@ object BatchManager extends ManagerTool {
           val rdfOnly = booleanOption(args, "-rdfonly")
           verifyExists(batches, title)
           val bm = new BatchManager(context)
-          startTaskRunner(bm.delete(title, config.timeSeriesBuilder, rdfOnly))
+          startTaskRunner(bm.delete(title, rdfOnly))
         case "list" =>
           println("Batch list")
           for (b <- batches.list) {
@@ -244,19 +243,18 @@ class BatchManager(context: Context) {
 
   def add[S <: Series[S]](batch: Batch, metadata: Metadata,
     dataFile: String, callFile: Option[String],
-    append: Boolean, sbuilder: SeriesBuilder[S],
-    simpleLog2: Boolean = false): Iterable[Tasklet] = {
+    append: Boolean, simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
     r :+= newMetadataCheck(batch.title, metadata, config, append)
-    r ++= addMetadata(batch, metadata, append, sbuilder)
+    r ++= addMetadata(batch, metadata, append)
 
     // Note that we rely on probe maps, sample maps etc in matrixContext
     // not being read until they are needed
     // (after addSampleIDs has run, which happens in addMetadata)
     // TODO: more robust updating of maps
     implicit val mc = matrixContext()
-    r :+= addEnums(metadata, sbuilder)
+    r :+= addEnums(metadata)
 
     //TODO logging directly to TaskRunner is controversial.
     //Would be better to log from inside the tasklets.
@@ -264,34 +262,33 @@ class BatchManager(context: Context) {
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
-    r :+= addTimeSeriesData(metadata, sbuilder)
+    r :+= addTimeSeriesData(metadata)
 
     r
   }
 
   def updateMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
-      sbuilder: SeriesBuilder[S], recalculate: Boolean = false,
-      simpleLog2: Boolean = false): Iterable[Tasklet] = {
+      recalculate: Boolean = false, simpleLog2: Boolean = false): Iterable[Tasklet] = {
     implicit val mc = matrixContext()
 
     var r: Vector[Tasklet] = Vector()
     r :+= updateMetadataCheck(batch.title, metadata, config)
     r :+= deleteRDF(batch.title)
-    r ++= addMetadata(batch, metadata, false, sbuilder)
+    r ++= addMetadata(batch, metadata, false)
 
     if (recalculate) {
-      r ++= recalculateFoldsAndSeries(batch, metadata, sbuilder, simpleLog2)
+      r ++= recalculateFoldsAndSeries(batch, metadata, simpleLog2)
     }
 
     r
   }
 
   def recalculateFoldsAndSeries[S <: Series[S]](batch: Batch, metadata: Metadata,
-      sbuilder: SeriesBuilder[S], simpleLog2: Boolean = false): Iterable[Tasklet] = {
+      simpleLog2: Boolean = false): Iterable[Tasklet] = {
     implicit val mc = matrixContext()
     var r: Vector[Tasklet] = Vector()
 
-    r :+= addEnums(metadata, sbuilder)
+    r :+= addEnums(metadata)
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
     val probeMap = new Probes(config.triplestore).platformsAndProbes
@@ -308,13 +305,13 @@ class BatchManager(context: Context) {
 
     r :+= addFoldsData(metadata, expressionData, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
-    r :+= addTimeSeriesData(metadata, sbuilder)
+    r :+= addTimeSeriesData(metadata)
 
     r
   }
 
   def addMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
-      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+      append: Boolean): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
 
     val ts = config.triplestore.get
@@ -323,7 +320,7 @@ class BatchManager(context: Context) {
       r :+= updateBatch(batch)
     }
     r :+= addSampleIDs(metadata)
-    r :+= addRDF(batch.title, metadata, sbuilder, ts)
+    r :+= addRDF(batch.title, metadata, ts)
 
     r
   }
@@ -360,14 +357,13 @@ class BatchManager(context: Context) {
       }
     }
 
-  def delete[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
+  def delete[S <: Series[S]](title: String, rdfOnly: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
     //Enums can not yet be deleted.
     if (!rdfOnly) {
-      r :+= deleteTimeSeriesData(title, sbuilder)
+      r :+= deleteTimeSeriesData(title)
       r :+= deleteFoldData(title)
       r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)
@@ -501,12 +497,13 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addRDF(title: String, metadata: Metadata, sb: SeriesBuilder[_], ts: Triplestore): Tasklet = {
+  def addRDF(title: String, metadata: Metadata, ts: Triplestore): Tasklet = {
 
     new Tasklet("Insert sample RDF data") {
       def run() {
         val tempFiles = new TempFiles()
-        val summaries = sb.enums.map(e => AttribValueSummary(context.samples, e))
+        //time series and dose series use same enums
+        val summaries = config.timeSeriesBuilder.enums.map(e => AttribValueSummary(context.samples, e))
 
         try {
           //TODO check existence of samples
@@ -606,7 +603,7 @@ class BatchManager(context: Context) {
       }
     }
 
-  def addEnums(md: Metadata, sb: SeriesBuilder[_])(implicit mc: MatrixContext) =
+  def addEnums(md: Metadata)(implicit mc: MatrixContext) =
     new Tasklet("Add enum values") {
       /*
        * Note: enums currently cannot be deleted. We may eventually need a system
@@ -616,25 +613,24 @@ class BatchManager(context: Context) {
         val db = KCIndexDB(config.data.enumIndex, true)
         for (
           s <- md.samples; paramMap = md.parameterMap(s);
-          e <- sb.enums
+          e <- config.timeSeriesBuilder.enums // time series and dose series have the same enums
         ) {
           db.findOrCreate(e, paramMap(e))
         }
 
         //Insert standard values to ensure they are always present
-        for ((k, v) <- sb.standardEnumValues) {
+        for ((k, v) <- config.timeSeriesBuilder.standardEnumValues ++
+            config.doseSeriesBuilder.standardEnumValues) {
           db.findOrCreate(k, v)
         }
       }
     }
 
-  def addTimeSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
-      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
-    addSeriesData(md, config.data.timeSeriesDb, builder)(mc)
+  def addTimeSeriesData[S <: Series[S], E <: ExprValue](md: Metadata)(implicit mc: MatrixContext) =
+    addSeriesData(md, config.data.timeSeriesDb, config.timeSeriesBuilder)(mc)
 
-  def addDoseSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
-      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
-    addSeriesData(md, config.data.doseSeriesDb, builder)(mc)
+  def addDoseSeriesData[S <: Series[S], E <: ExprValue](md: Metadata)(implicit mc: MatrixContext) =
+    addSeriesData(md, config.data.doseSeriesDb, config.doseSeriesBuilder)(mc)
 
   def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata, dbName: String,
     builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Insert series data") {
@@ -667,13 +663,11 @@ class BatchManager(context: Context) {
     }
   }
 
-  def deleteTimeSeriesData[S <: Series[S]](batch: String,
-      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
-    deleteSeriesData(batch, config.data.timeSeriesDb, builder)(mc)
+  def deleteTimeSeriesData[S <: Series[S]](batch: String)(implicit mc: MatrixContext) =
+    deleteSeriesData(batch, config.data.timeSeriesDb, config.timeSeriesBuilder)(mc)
 
-  def deleteDoseSeriesData[S <: Series[S]](batch: String,
-      builder: SeriesBuilder[S])(implicit mc: MatrixContext) =
-    deleteSeriesData(batch, config.data.doseSeriesDb, builder)(mc)
+  def deleteDoseSeriesData[S <: Series[S]](batch: String)(implicit mc: MatrixContext) =
+    deleteSeriesData(batch, config.data.doseSeriesDb, config.doseSeriesBuilder)(mc)
 
   def deleteSeriesData[S <: Series[S]](batch: String, dbName: String,
       builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Delete series data") {
