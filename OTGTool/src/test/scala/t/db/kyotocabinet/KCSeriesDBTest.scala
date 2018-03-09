@@ -29,7 +29,6 @@ import otg.model.sample.OTGAttribute.ExposureTime
 
 @RunWith(classOf[JUnitRunner])
 class KCSeriesDBTest extends TTestSuite {
-  var db: SDB = _
 
   import otg.testing.{TestData => OData}
   implicit var context: otg.testing.FakeContext = _
@@ -37,30 +36,17 @@ class KCSeriesDBTest extends TTestSuite {
 
   before {
     context = new otg.testing.FakeContext()
-    //this is normalizing by default
-    db = context.timeSeriesDBReader
-    var w: SDB = null
-    try {
-      w = writer()
-      println(s"Insert ${OData.series.size} series")
-      for (s <- OData.series) {
-        w.addPoints(s)
-      }
-
-    } finally {
-      w.release
+    val w = writer()
+    println(s"Insert ${OData.series.size} series")
+    for (s <- OData.series) {
+      w.addPoints(s)
     }
   }
 
-  after {
-    db.release()
-  }
-
-  def nonNormalisingReader() = new KCSeriesDB(context.timeSeriesDB, false, OTGTimeSeries, false)(context)
   def writer() = new KCSeriesDB(context.timeSeriesDB, true, OTGTimeSeries, false)(context)
 
   test("Series retrieval") {
-    val db = nonNormalisingReader()
+    val db = new KCSeriesDB(context.timeSeriesDB, false, OTGTimeSeries, false)(context)
     val compound = cmap.keys.head
 
     var key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
@@ -80,8 +66,6 @@ class KCSeriesDBTest extends TTestSuite {
     ss = db.read(key)
     ss.size should equal(nExpected)
     ss should contain theSameElementsAs(expect)
-
-    db.release()
   }
 
   test("insert points") {
@@ -97,34 +81,28 @@ class KCSeriesDBTest extends TTestSuite {
     }).unzip
 
     val w = writer()
-    try {
-      for (s <- ins) {
-        w.addPoints(s)
-      }
-      val key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
-      var ss = db.read(key) //normalising reader
-      ss should contain theSameElementsAs (all)
-    } finally {
-      w.release()
+    for (s <- ins) {
+      w.addPoints(s)
     }
+    val key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
+    val db = context.timeSeriesDBReader
+    var ss = db.read(key) //normalising reader
+    ss should contain theSameElementsAs (all)
   }
 
   test("delete") {
     val compound = cmap.keys.head
     val del = OData.series.filter(s => s.compound == compound && s.probe == 100)
     val w = writer()
-    try {
-      for (s <- del) {
-        w.removePoints(s)
-      }
 
-      var key = OTGSeries(TimeSeries, null, null, null, 100, null, null, null)
-      var expect = OData.series.filter(s => s.compound != compound && s.probe == 100)
-      var ss = w.read(key)
-      ss should contain theSameElementsAs (expect)
-    } finally {
-      w.release
+    for (s <- del) {
+      w.removePoints(s)
     }
+
+    var key = OTGSeries(TimeSeries, null, null, null, 100, null, null, null)
+    var expect = OData.series.filter(s => s.compound != compound && s.probe == 100)
+    var ss = w.read(key)
+    ss should contain theSameElementsAs (expect)
   }
 
   test("delete points") {
@@ -133,26 +111,21 @@ class KCSeriesDBTest extends TTestSuite {
 
     var del = OData.series.filter(s => s.compound == compound && s.probe == 100)
     val w = writer()
-    try {
-      for (s <- del) {
-        w.removePoints(s.copy(points = s.points.filter(_.code == time)))
-      }
-
-      var key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
-      var expect = OData.series.filter(s => s.compound == compound && s.probe == 100).map(s =>
-        s.copy(points = s.points.filter(_.code != time)))
-      var ss = w.read(key)
-      ss should contain theSameElementsAs (expect)
-
-      for (s <- del) {
-        //by now, this contains more points than we have in the DB, but this should be fine
-        w.removePoints(s)
-      }
-      ss = w.read(key)
-      ss should be(empty)
-
-    } finally {
-      w.release
+    for (s <- del) {
+      w.removePoints(s.copy(points = s.points.filter(_.code == time)))
     }
+
+    var key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
+    var expect = OData.series.filter(s => s.compound == compound && s.probe == 100).map(s =>
+      s.copy(points = s.points.filter(_.code != time)))
+    var ss = w.read(key)
+    ss should contain theSameElementsAs (expect)
+
+    for (s <- del) {
+      //by now, this contains more points than we have in the DB, but this should be fine
+      w.removePoints(s)
+    }
+    ss = w.read(key)
+    ss should be(empty)
   }
 }

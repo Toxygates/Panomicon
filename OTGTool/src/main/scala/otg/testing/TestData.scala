@@ -30,6 +30,8 @@ import t.db._
 import t.db.testing.TestData.enumMaps
 import t.model.sample.Attribute
 import t.platform._
+import otg.TimeSeries
+import otg.DoseSeries
 
 object TestData {
   import t.db.testing.TestData._
@@ -52,7 +54,7 @@ object TestData {
     testType <- enumValues(TestType.id);
     probe <- probes;
     points = mkPoints(probeMap.unpack(probe))
-    ) yield OTGSeries(repeat, organ, organism, probe,
+    ) yield OTGSeries(TimeSeries, repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
 
   private def controlGroup(s: Sample) = ???

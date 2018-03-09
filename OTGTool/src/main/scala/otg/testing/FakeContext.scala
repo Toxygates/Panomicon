@@ -26,6 +26,7 @@ import otg.OTGTimeSeries
 import t.db.kyotocabinet.KCSeriesDB
 import t.db.testing.{TestData => TData}
 import t.db.Sample
+import otg.OTGDoseSeries
 
 class FakeContext(sampleMap: SampleMap = TData.dbIdMap,
     probeMap: ProbeMap = TData.probeMap,
@@ -35,7 +36,7 @@ class FakeContext(sampleMap: SampleMap = TData.dbIdMap,
   val timeSeriesDB = t.db.testing.TestData.memDBHash
   override def timeSeriesBuilder = OTGTimeSeries
   override def timeSeriesDBReader = new KCSeriesDB(timeSeriesDB, false, timeSeriesBuilder, true)(this)
-  // val doseSeriesDB = ???
-  override def doseSeriesBuilder = ??? //OTGDoseSeries
-  override def doseSeriesDBReader = ??? //new KCSeriesDB(seriesDB, false, doseSeriesBuilder, true)(this)
+  val doseSeriesDB = t.db.testing.TestData.memDBHash
+  override def doseSeriesBuilder = OTGDoseSeries
+  override def doseSeriesDBReader = new KCSeriesDB(doseSeriesDB, false, doseSeriesBuilder, true)(this)
 }
