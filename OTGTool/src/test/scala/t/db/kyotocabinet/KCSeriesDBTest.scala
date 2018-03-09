@@ -26,6 +26,7 @@ import t.db.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import otg.model.sample.OTGAttribute.ExposureTime
+import kyotocabinet.DB
 
 @RunWith(classOf[JUnitRunner])
 class KCSeriesDBTest extends TTestSuite {
@@ -34,98 +35,140 @@ class KCSeriesDBTest extends TTestSuite {
   implicit var context: otg.testing.FakeContext = _
   def cmap = context.enumMaps("compound_name")
 
+  trait seriesTestType {
+    def name: String
+    def seriesType: OTGSeriesType
+    def builderType: OTGSeriesBuilder
+    def storageDB: DB
+
+    def inputSeries: Set[OTGSeries]
+
+    def normalizingReader() = new KCSeriesDB(storageDB, false, builderType, true)(context)
+    def nonNormalizingReader() = new KCSeriesDB(storageDB, false, builderType, false)(context)
+    def writer() = new KCSeriesDB(storageDB, true, builderType, false)(context)
+  }
+
+  object timeSeriesTest extends seriesTestType {
+    val name = "time series"
+    val seriesType = TimeSeries
+    val builderType = OTGTimeSeries
+    def storageDB = context.timeSeriesDB
+
+    val inputSeries = OData.series
+  }
+
+  object doseSeriesTest extends seriesTestType {
+    val name = "dose series"
+    val seriesType = DoseSeries
+    val builderType = OTGDoseSeries
+    def storageDB = context.doseSeriesDB
+
+    val inputSeries = OData.doseSeries
+  }
+
+  val testTypes = List(timeSeriesTest, doseSeriesTest)
+
   before {
     context = new otg.testing.FakeContext()
-    val w = writer()
-    println(s"Insert ${OData.series.size} series")
-    for (s <- OData.series) {
-      w.addPoints(s)
+    for (testType <- testTypes) {
+      val w = testType.writer()
+      println(s"Insert ${testType.inputSeries.size} series")
+      for (s <- testType.inputSeries) {
+        w.addPoints(s)
+      }
     }
   }
 
-  def writer() = new KCSeriesDB(context.timeSeriesDB, true, OTGTimeSeries, false)(context)
+  for (testType <- testTypes) {
+    test("Series retrieval - " + testType.name) {
+      val db = testType.nonNormalizingReader()
+      val compound = cmap.keys.head
 
-  test("Series retrieval") {
-    val db = new KCSeriesDB(context.timeSeriesDB, false, OTGTimeSeries, false)(context)
-    val compound = cmap.keys.head
+      var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      var nExpected = testType.inputSeries.size / cmap.size / TestData.probes.size
+      testType.builderType.keysFor(key).size should equal(nExpected)
 
-    var key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
-    var nExpected = OData.series.size / cmap.size / TestData.probes.size
-    OTGTimeSeries.keysFor(key).size should equal(nExpected)
+      var ss = db.read(key)
+      ss.size should equal(nExpected)
+      var expect = testType.inputSeries.filter(s => s.compound == compound && s.probe == 100)
+      expect.size should equal(ss.size)
+      ss should contain theSameElementsAs(expect)
 
-    var ss = db.read(key)
-    ss.size should equal(nExpected)
-    var expect = OData.series.filter(s => s.compound == compound && s.probe == 100)
-    expect.size should equal(ss.size)
-    ss should contain theSameElementsAs(expect)
-
-    val organ = TestData.enumValues("organ_id").head
-    key = OTGSeries(TimeSeries, null, organ, null, 13, compound, null, null)
-    nExpected = nExpected / TestData.enumValues("organ_id").size
-    expect = OData.series.filter(s => s.compound == compound && s.probe == 13 && s.organ == organ)
-    ss = db.read(key)
-    ss.size should equal(nExpected)
-    ss should contain theSameElementsAs(expect)
+      val organ = TestData.enumValues("organ_id").head
+      key = OTGSeries(testType.seriesType, null, organ, null, 13, compound, null, null)
+      nExpected = nExpected / TestData.enumValues("organ_id").size
+      expect = testType.inputSeries.filter(s => s.compound == compound && s.probe == 13 && s.organ == organ)
+      ss = db.read(key)
+      ss.size should equal(nExpected)
+      ss should contain theSameElementsAs(expect)
+    }
   }
 
-  test("insert points") {
-    val compound = cmap.keys.head
-    val probe = context.probeMap.unpack(100)
-    val time = TestData.enumMaps(ExposureTime.id)("9 hr") //nonexistent in default test data
+  for (testType <- testTypes) {
+    test("Point insertion - " + testType.name) {
+      val compound = cmap.keys.head
+      val probe = context.probeMap.unpack(100)
+      // needs to be adapted for dose
+      val time = TestData.enumMaps(ExposureTime.id)("9 hr") //nonexistent in default test data
 
-    val baseSeries = OData.series.filter(s => s.compound == compound && s.probe == 100)
+      val baseSeries = testType.inputSeries.filter(s => s.compound == compound && s.probe == 100)
 
-    val (all, ins) = baseSeries.toSeq.map(s => {
-      val np = OData.mkPoint(probe, time)
-      (s.copy(points = ((s.points :+ np).sortBy(_.code))), s.copy(points = Seq(np)))
-    }).unzip
+      val (all, ins) = baseSeries.toSeq.map(s => {
+        val np = OData.mkPoint(probe, time) // needs to be adapted for dose
+        (s.copy(points = ((s.points :+ np).sortBy(_.code))), s.copy(points = Seq(np)))
+      }).unzip
 
-    val w = writer()
-    for (s <- ins) {
-      w.addPoints(s)
+      val w = testType.writer()
+      for (s <- ins) {
+        w.addPoints(s)
+      }
+      val key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      val db = testType.normalizingReader()
+      var ss = db.read(key)
+      ss should contain theSameElementsAs (all)
     }
-    val key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
-    val db = context.timeSeriesDBReader
-    var ss = db.read(key) //normalising reader
-    ss should contain theSameElementsAs (all)
   }
 
-  test("delete") {
-    val compound = cmap.keys.head
-    val del = OData.series.filter(s => s.compound == compound && s.probe == 100)
-    val w = writer()
+  for (testType <- testTypes) {
+    test("Deletion - " + testType.name) {
+      val compound = cmap.keys.head
+      val del = testType.inputSeries.filter(s => s.compound == compound && s.probe == 100)
+      val w = testType.writer()
 
-    for (s <- del) {
-      w.removePoints(s)
+      for (s <- del) {
+        w.removePoints(s)
+      }
+
+      var key = OTGSeries(testType.seriesType, null, null, null, 100, null, null, null)
+      var expect = testType.inputSeries.filter(s => s.compound != compound && s.probe == 100)
+      var ss = w.read(key)
+      ss should contain theSameElementsAs (expect)
     }
-
-    var key = OTGSeries(TimeSeries, null, null, null, 100, null, null, null)
-    var expect = OData.series.filter(s => s.compound != compound && s.probe == 100)
-    var ss = w.read(key)
-    ss should contain theSameElementsAs (expect)
   }
 
-  test("delete points") {
-    val compound = cmap.keys.head
-    val time = TestData.enumValues(ExposureTime.id).head
+  for (testType <- testTypes) {
+    test("Point deletion - " + testType.name) { // something in here needs to be adapted for dose
+      val compound = cmap.keys.head
+      val time = TestData.enumValues(ExposureTime.id).head
 
-    var del = OData.series.filter(s => s.compound == compound && s.probe == 100)
-    val w = writer()
-    for (s <- del) {
-      w.removePoints(s.copy(points = s.points.filter(_.code == time)))
+      var del = testType.inputSeries.filter(s => s.compound == compound && s.probe == 100)
+      val w = testType.writer()
+      for (s <- del) {
+        w.removePoints(s.copy(points = s.points.filter(_.code == time)))
+      }
+
+      var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      var expect = OData.series.filter(s => s.compound == compound && s.probe == 100).map(s =>
+        s.copy(points = s.points.filter(_.code != time)))
+      var ss = w.read(key)
+      ss should contain theSameElementsAs (expect)
+
+      for (s <- del) {
+        //by now, this contains more points than we have in the DB, but this should be fine
+        w.removePoints(s)
+      }
+      ss = w.read(key)
+      ss should be(empty)
     }
-
-    var key = OTGSeries(TimeSeries, null, null, null, 100, compound, null, null)
-    var expect = OData.series.filter(s => s.compound == compound && s.probe == 100).map(s =>
-      s.copy(points = s.points.filter(_.code != time)))
-    var ss = w.read(key)
-    ss should contain theSameElementsAs (expect)
-
-    for (s <- del) {
-      //by now, this contains more points than we have in the DB, but this should be fine
-      w.removePoints(s)
-    }
-    ss = w.read(key)
-    ss should be(empty)
   }
 }

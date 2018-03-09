@@ -57,6 +57,17 @@ object TestData {
     ) yield OTGSeries(TimeSeries, repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
 
+  lazy val doseSeries = for (compound <- enumValues(Compound.id);
+    exposureTime <- enumValues(ExposureTime.id);
+    repeat <- enumValues(Repeat.id);
+    organ <- enumValues(Organ.id);
+    organism <- enumValues(Organism.id);
+    testType <- enumValues(TestType.id);
+    probe <- probes;
+    points = mkPoints(probeMap.unpack(probe))
+    ) yield OTGSeries(DoseSeries, repeat, organ, organism, probe,
+        compound, exposureTime, testType, points)
+
   private def controlGroup(s: Sample) = ???
 
   import t.model.sample.CoreParameter.{ControlGroup => CGParam}
