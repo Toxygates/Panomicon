@@ -43,9 +43,9 @@ class SeriesMatchingTest extends TTestSuite {
   }
 
   test("Pearson correlation with missing values") {
-    val d1 = OTGSeries(null, null, null, 0, null, null, null,
+    val d1 = OTGSeries(TimeSeries, null, null, null, 0, null, null, null,
       mkSeries(Seq(ExprValue(1.0), ExprValue(2.0, 'A'), ExprValue(3.0))))
-    val d2 = OTGSeries(null, null, null, 0, null, null, null,
+    val d2 = OTGSeries(TimeSeries, null, null, null, 0, null, null, null,
       mkSeries(Seq(ExprValue(3.0), ExprValue(4.0), ExprValue(5.0))))
 
     safePCorrelation(d1, d2) should equal(pearsonCorrelation(Seq(0.0, 1.0, 3.0), Seq(0.0, 3.0, 5.0)))
@@ -53,9 +53,9 @@ class SeriesMatchingTest extends TTestSuite {
 
   test("Pearson correlation with insufficient values") {
     //Only one mutual present value
-    val d1 = OTGSeries(null, null, null, 0, null, null, null,
+    val d1 = OTGSeries(TimeSeries, null, null, null, 0, null, null, null,
       mkSeries(Seq(ExprValue(1.0), ExprValue(2.0, 'A'), ExprValue(3.0))))
-    val d2 = OTGSeries(null, null, null, 0, null, null, null,
+    val d2 = OTGSeries(TimeSeries, null, null, null, 0, null, null, null,
       mkSeries(Seq(ExprValue(3.0, 'A'), ExprValue(4.0), ExprValue(5.0))))
 
     val x = safePCorrelation(d1, d2)
