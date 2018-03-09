@@ -545,7 +545,7 @@ class BatchManager(context: Context) {
     val data = new CSVRawExpressionData(List(niFile), callFile.toList,
         Some(md.samples.size), warningHandler)
       val db = () => config.data.extWriter(config.data.exprDb)
-      new SimpleValueInsert(db, data).insert("Insert expr value data")
+      new SimpleValueInsert(db, data).insert("Insert expression value data")
   }
 
   def addFoldsData(md: Metadata, data: RawExpressionData, simpleLog2: Boolean,
@@ -627,13 +627,13 @@ class BatchManager(context: Context) {
     }
 
   def addTimeSeriesData[S <: Series[S], E <: ExprValue](md: Metadata)(implicit mc: MatrixContext) =
-    addSeriesData(md, config.data.timeSeriesDb, config.timeSeriesBuilder)(mc)
+    addSeriesData(md, config.data.timeSeriesDb, config.timeSeriesBuilder, "time")(mc)
 
   def addDoseSeriesData[S <: Series[S], E <: ExprValue](md: Metadata)(implicit mc: MatrixContext) =
-    addSeriesData(md, config.data.doseSeriesDb, config.doseSeriesBuilder)(mc)
+    addSeriesData(md, config.data.doseSeriesDb, config.doseSeriesBuilder, "dose")(mc)
 
   def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata, dbName: String,
-    builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Insert series data") {
+    builder: SeriesBuilder[S], kind: String)(implicit mc: MatrixContext) = new Tasklet(s"Insert $kind series data") {
     def run() {
       //idea: use RawExpressionData directly as source +
       //give KCMatrixDB and e.g. CSVRawExpressionData a common trait/adapter
@@ -664,13 +664,13 @@ class BatchManager(context: Context) {
   }
 
   def deleteTimeSeriesData[S <: Series[S]](batch: String)(implicit mc: MatrixContext) =
-    deleteSeriesData(batch, config.data.timeSeriesDb, config.timeSeriesBuilder)(mc)
+    deleteSeriesData(batch, config.data.timeSeriesDb, config.timeSeriesBuilder, "time")(mc)
 
   def deleteDoseSeriesData[S <: Series[S]](batch: String)(implicit mc: MatrixContext) =
-    deleteSeriesData(batch, config.data.doseSeriesDb, config.doseSeriesBuilder)(mc)
+    deleteSeriesData(batch, config.data.doseSeriesDb, config.doseSeriesBuilder, "dose")(mc)
 
   def deleteSeriesData[S <: Series[S]](batch: String, dbName: String,
-      builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Delete series data") {
+      builder: SeriesBuilder[S], kind: String)(implicit mc: MatrixContext) = new Tasklet(s"Delete $kind series data") {
     def run() {
 
       val batchURI = Batches.defaultPrefix + "/" + batch
