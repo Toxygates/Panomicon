@@ -27,6 +27,8 @@ import t.db.file.MapMetadata
 import t.db.Metadata
 import t.model.sample.AttributeSet
 import t.model.sample.Attribute
+import t.db.FilteredMetadata
+import t.db.Sample
 
 /*
  * Note: It may be a good idea to make ts and data constructor parameters,
@@ -53,6 +55,9 @@ abstract class Factory {
       (implicit sf: SampleFilter): TriplestoreMetadata =
     new CachingTriplestoreMetadata(samples, attributeSet, querySet)(sf)
 
+  def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
+    new FilteredMetadata(from, sampleView)
+    
   def context(ts: TriplestoreConfig, data: DataConfig): Context
 
   def dataConfig(dir: String, matrixDbOptions: String): DataConfig =

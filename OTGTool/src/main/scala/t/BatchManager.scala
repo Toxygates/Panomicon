@@ -98,7 +98,8 @@ object BatchManager extends ManagerTool {
           val metadata =
             factory.cachingTriplestoreMetadata(context.samples, config.attributes,
                 config.attributes.getHighLevel ++ config.attributes.getUnitLevel ++
-                List(CoreParameter.Platform, CoreParameter.ControlGroup))(sampleFilter)
+                List(CoreParameter.Platform, CoreParameter.ControlGroup,
+                  CoreParameter.Batch))(sampleFilter)
           startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
             Batch(title, "", None, None), metadata))
 
@@ -298,17 +299,27 @@ class BatchManager(context: Context) {
 
     //TODO: move this DBExpressionData creation into a tasklet after TaskRunner revamp
     TaskRunner.log("Extracting expression data from database")
-    TaskRunner.log(s"Requesting ${probes.size} probes for ${metadata.samples.size} samples")
-    val expressionData = new DBExpressionData(config.data.absoluteDBReader,
-        metadata.samples, codedProbes)
-    TaskRunner.log(s"Found ${expressionData.foundValues} values out of a possible " +
-        probes.size * metadata.samples.size)
+    
+    val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
+    val dbReader = config.data.absoluteDBReader
+    val units = metadata.treatedControlGroups(metadata.samples)
+    for (unitChunk <- units.grouped(30);
+      sampleChunk = unitChunk.toSeq.flatMap(u => u._1 ++ u._2).distinct;
+      filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
+    ) {
 
-    r :+= addFoldsData(metadata, expressionData, simpleLog2,
+      //    TaskRunner.log(s"Requesting ${probes.size} probes for ${metadata.samples.size} samples")
+      val expressionData = new DBExpressionData(
+        dbReader, sampleChunk, codedProbes)
+      //    TaskRunner.log(s"Found ${expressionData.foundValues} values out of a possible " +
+      //        probes.size * metadata.samples.size)
+
+      r :+= addFoldsData(filteredMetadata, expressionData, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
-    r :+= addTimeSeriesData(metadata)
-    r :+= addDoseSeriesData(metadata)
-
+      r :+= addTimeSeriesData(filteredMetadata)
+      r :+= addDoseSeriesData(filteredMetadata)
+    }
+    
     r
   }
 

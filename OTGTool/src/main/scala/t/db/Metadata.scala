@@ -84,3 +84,25 @@ trait Metadata extends SampleSet {
     })
   }
 }
+
+/**
+ * A limited view of a larger metadata set, where only some samples are visible.
+ * Note: the filtering is intended to keep control units intact, so filters should not
+ * split such units in two. 
+ */
+class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends Metadata {
+  val samples = visibleSamples.toSet
+  
+  def attributeSet = from.attributeSet
+  
+  def attributeValues(attr: Attribute): Set[String] =
+    samples.flatMap(x => sampleAttributes(x, Seq(attr)).map(_._2))
+  
+  def mapParameter(fact: Factory, key: String, f: String => String): Metadata =
+    new FilteredMetadata(from.mapParameter(fact, key, f), visibleSamples)
+
+  def sampleAttributes(sample: Sample): Seq[(Attribute, String)] =
+    if (samples.contains(sample)) from.sampleAttributes(sample) else Seq()
+    
+  override def controlSamples(s: Sample): Iterable[Sample] = from.controlSamples(s)
+}

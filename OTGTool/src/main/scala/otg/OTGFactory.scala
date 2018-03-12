@@ -31,6 +31,8 @@ import t.db.file.MapMetadata
 import t.model.sample.AttributeSet
 import t.sparql._
 import t.model.sample.Attribute
+import t.db.FilteredMetadata
+import t.db.Sample
 
 class OTGFactory extends t.Factory {
   override def samples(config: BaseConfig): OTGSamples =
@@ -56,4 +58,7 @@ class OTGFactory extends t.Factory {
       querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): CachingTriplestoreMetadata =
     new CachingTriplestoreMetadata(samples, attributeSet, querySet)(sf) with otg.db.Metadata
+    
+  override def filteredMetadata(from: t.db.Metadata, sampleView: Iterable[Sample]) =
+    new FilteredMetadata(from, sampleView) with otg.db.Metadata
 }
