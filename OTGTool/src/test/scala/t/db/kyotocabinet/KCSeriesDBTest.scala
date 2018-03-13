@@ -54,7 +54,7 @@ class KCSeriesDBTest extends TTestSuite {
   object timeSeriesTest extends seriesTestType {
     val name = "time series"
     val seriesType = TimeSeries
-    val builderType = OTGTimeSeries
+    val builderType = OTGTimeSeriesBuilder
     def storageDB = context.timeSeriesDB
     val attributeValue = "9 hr"
     
@@ -64,7 +64,7 @@ class KCSeriesDBTest extends TTestSuite {
   object doseSeriesTest extends seriesTestType {
     val name = "dose series"
     val seriesType = DoseSeries
-    val builderType = OTGDoseSeries
+    val builderType = OTGDoseSeriesBuilder
     def storageDB = context.doseSeriesDB
     val attributeValue = "Middle"
     

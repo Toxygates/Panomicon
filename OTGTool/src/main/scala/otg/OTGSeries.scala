@@ -62,17 +62,17 @@ object DoseSeries extends OTGSeriesType {
 
   val allDoses = List("Low", "Middle", "High")
   val standardEnumValues = allDoses.map(x => (DoseLevel.id, x))
-  def builder = OTGDoseSeries
+  def builder = OTGDoseSeriesBuilder
 
   def expectedIndependentVariablePoints(key: OTGSeries): Seq[String] = allDoses
 }
 
-object OTGDoseSeries extends OTGSeriesBuilder(DoseSeries)
+object OTGDoseSeriesBuilder extends OTGSeriesBuilder(DoseSeries)
 
 object TimeSeries extends OTGSeriesType {
   val lastConstraint = DoseLevel
   val independentVariable = ExposureTime
-  def builder = OTGTimeSeries
+  def builder = OTGTimeSeriesBuilder
 
   val vitroExpected = Vector("2 hr", "8 hr", "24 hr")
   val singleVivoExpected = Vector("3 hr", "6 hr", "9 hr", "24 hr")
@@ -98,7 +98,7 @@ object TimeSeries extends OTGSeriesType {
   }
 }
 
-object OTGTimeSeries extends OTGSeriesBuilder(TimeSeries)
+object OTGTimeSeriesBuilder extends OTGSeriesBuilder(TimeSeries)
 
 class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGSeries] {
 
