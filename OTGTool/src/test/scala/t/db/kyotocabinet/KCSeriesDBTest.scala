@@ -42,7 +42,7 @@ class KCSeriesDBTest extends TTestSuite {
     def builderType: OTGSeriesBuilder
     def storageDB: DB
 
-    def inputSeries: Set[OTGSeries]
+    def inputSeries: Iterable[OTGSeries]
     def attributeValue: String
     def attribute = seriesType.independentVariable
     
@@ -190,6 +190,19 @@ class KCSeriesDBTest extends TTestSuite {
   }
   
   test("Equivalence of time and dose series") {    
+    
+    //Re-shuffle the time series as dose series to get consistent data
+    val dwriter = doseSeriesTest.writer()
+    for ((g, ss) <- OData.series.groupBy(s => 
+      (s.compound, s.organ, s.organism, s.probe, s.repeat, s.testType));
+      t <- OData.usedTimePoints) {
+      val dpoints = ss.map(s => s.points.filter(_.code == t._2).
+        head.copy(code = TestData.enumMaps(DoseLevel.id)(s.doseOrTime)))
+      val dseries = ss.head.copy(seriesType = DoseSeries, points = dpoints,
+        doseOrTime = t._1)
+      dwriter.addPoints(dseries)      
+    }
+    
     val treader = timeSeriesTest.nonNormalizingReader
     val dreader = doseSeriesTest.nonNormalizingReader
     
@@ -198,13 +211,13 @@ class KCSeriesDBTest extends TTestSuite {
       tdata = treader.read(key);
       ddata = dreader.read(key)) {
 
-      assert(tdata.size >= 0)
-      assert(ddata.size >= 0)
+      assert(tdata.size > 0)
+      assert(ddata.size > 0)
       
       val tpoints = tdata.flatMap(_.points.map(_.value))
-      val dpoints = tdata.flatMap(_.points.map(_.value))
+      val dpoints = ddata.flatMap(_.points.map(_.value))
       
-      assert (tpoints.size >= 0)
+      assert (tpoints.size > 0)
       tpoints should contain theSameElementsAs (dpoints)
     }   
   }

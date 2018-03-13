@@ -56,7 +56,7 @@ object TestData {
     usedDosePoints.map(t => mkPoint(pr, t._2)).toSeq
   }
   
-  lazy val series = for (compound <- enumValues(Compound.id);
+  lazy val series = for (compound <- enumValues(Compound.id).toSeq;
     doseLevel <- usedDosePoints.map(_._1);
     repeat <- enumValues(Repeat.id);
     organ <- enumValues(Organ.id);
@@ -67,7 +67,7 @@ object TestData {
     ) yield OTGSeries(TimeSeries, repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
 
-  lazy val doseSeries = for (compound <- enumValues(Compound.id);
+  lazy val doseSeries = for (compound <- enumValues(Compound.id).toSeq;
     exposureTime <- usedTimePoints.map(_._1);
     repeat <- enumValues(Repeat.id);
     organ <- enumValues(Organ.id);
