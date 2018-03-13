@@ -58,7 +58,9 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
  * Code is the encoded enum value of the independent variable, e.g.
  * 24hr for a time series.
  */
-case class SeriesPoint(code: Int, value: ExprValue)
+case class SeriesPoint(code: Int, value: ExprValue) {
+  override def toString = s"[$code:$value]"
+}
 
 /**
  * An object that can decode/encode the database format of series

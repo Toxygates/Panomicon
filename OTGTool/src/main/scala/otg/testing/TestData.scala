@@ -41,11 +41,19 @@ object TestData {
      SeriesPoint(t, new BasicExprValue(e._1, e._2, pr))
   }
 
-  def mkPoints(pr: String): Seq[SeriesPoint] = {
+  def mkPointsTime(pr: String): Seq[SeriesPoint] = {
     val indepPoints = enumMaps(ExposureTime.id).filter(_._1 != "9 hr").map(_._2)
     indepPoints.map(t => mkPoint(pr, t)).toSeq
   }
 
+  def mkPointsDose(pr: String): Seq[SeriesPoint] = {
+    val emap = enumMaps(DoseLevel.id)
+    //This goes via DoseSeries since its normalising reader does not recognise
+    //some of the made-up doses in TestData
+    val indepPoints = DoseSeries.allDoses.filter(_ != "Middle").map(emap)
+    indepPoints.map(t => mkPoint(pr, t)).toSeq
+  }
+  
   lazy val series = for (compound <- enumValues(Compound.id);
     doseLevel <- enumValues(DoseLevel.id);
     repeat <- enumValues(Repeat.id);
@@ -53,7 +61,7 @@ object TestData {
     organism <- enumValues(Organism.id);
     testType <- enumValues(TestType.id);
     probe <- probes;
-    points = mkPoints(probeMap.unpack(probe))
+    points = mkPointsTime(probeMap.unpack(probe))
     ) yield OTGSeries(TimeSeries, repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
 
@@ -64,7 +72,7 @@ object TestData {
     organism <- enumValues(Organism.id);
     testType <- enumValues(TestType.id);
     probe <- probes;
-    points = mkPoints(probeMap.unpack(probe))
+    points = mkPointsDose(probeMap.unpack(probe))
     ) yield OTGSeries(DoseSeries, repeat, organ, organism, probe,
         compound, exposureTime, testType, points)
 
