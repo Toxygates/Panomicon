@@ -303,17 +303,15 @@ class BatchManager(context: Context) {
     val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
     val dbReader = config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
-    for (unitChunk <- units.grouped(30);
+    for (unitChunk <- units.grouped(50);
       sampleChunk = unitChunk.toSeq.flatMap(u => u._1 ++ u._2).distinct;
       filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
     ) {
 
-      //    TaskRunner.log(s"Requesting ${probes.size} probes for ${metadata.samples.size} samples")
-      val expressionData = new DBExpressionData(
-        dbReader, sampleChunk, codedProbes)
-      //    TaskRunner.log(s"Found ${expressionData.foundValues} values out of a possible " +
-      //        probes.size * metadata.samples.size)
-
+      val expressionData = new DBExpressionData(dbReader, sampleChunk, codedProbes) {
+        override def logEvent(msg: String) { TaskRunner.log(msg) }
+      }
+              
       r :+= addFoldsData(filteredMetadata, expressionData, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
       r :+= addTimeSeriesData(filteredMetadata)

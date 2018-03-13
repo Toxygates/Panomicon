@@ -28,8 +28,19 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
 
   val samples: Iterable[Sample] = reader.sortSamples(requestedSamples)
 
-  private lazy val exprValues: Iterable[Iterable[ExprValue]] =
-      reader.valuesInSamples(samples, reader.sortProbes(requestedProbes), false)
+  private lazy val exprValues: Iterable[Iterable[ExprValue]] = {
+    val np = requestedProbes.size
+    val ns = requestedSamples.size
+    logEvent(s"Requesting $np probes for $ns samples")
+    
+    val r = reader.valuesInSamples(samples, reader.sortProbes(requestedProbes), false)    
+    val present = r.map(_.filter(!_.isPadding).size).sum
+    
+    logEvent(s"Found $present values out of a possible " +
+              (np * ns))
+    r
+  }
+  
   private lazy val filteredValues = exprValues.map(_.filter(!_.isPadding))
 
   /**
@@ -47,4 +58,6 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
   override lazy val probes: Iterable[String] = _data.values.flatMap(_.keys).toSeq.distinct
 
   def data(s: Sample): Map[String, FoldPExpr] = _data(s)
+  
+  def logEvent(message: String) {}
 }
