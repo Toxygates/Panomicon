@@ -35,15 +35,8 @@ import otg.model.sample.OTGAttribute
 object ManagedMatrix {
  type RowData = Seq[ExprValue]
  
-  final private val l2 = Math.log(2)
-  final private def log2(v: Double): Double = Math.log(v) / l2
-
   def log2(value: ExpressionValue): ExpressionValue = {
-    new ExpressionValue(log2(value.getValue), value.getCall, value.getTooltip)
-  }
-
-  def log2[E <: ExprValue](value: E): ExprValue = {
-    ExprValue.apply(log2(value.value), value.call, value.probe)
+    new ExpressionValue(ExprValue.log2(value.getValue), value.getCall, value.getTooltip)
   }
 
   import java.lang.{Double => JDouble}

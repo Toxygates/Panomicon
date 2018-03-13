@@ -77,10 +77,7 @@ trait RawExpressionData {
 }
 
 class Log2Data(raw: RawExpressionData) extends RawExpressionData {
-  private val log2 = Math.log(2)
-  private def l2(x: Double) = Math.log(x) / log2
-
-  override def data(s: Sample) = raw.data(s).mapValues(x => (l2(x._1), x._2, x._3))
+  override def data(s: Sample) = raw.data(s).mapValues(x => (ExprValue.log2(x._1), x._2, x._3))
 
   def samples = raw.samples
 }

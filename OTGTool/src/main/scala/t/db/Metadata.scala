@@ -104,5 +104,7 @@ class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends
   def sampleAttributes(sample: Sample): Seq[(Attribute, String)] =
     if (samples.contains(sample)) from.sampleAttributes(sample) else Seq()
     
+  override def contains(s: Sample) = samples.contains(s)
+    
   override def controlSamples(s: Sample): Iterable[Sample] = from.controlSamples(s)
 }

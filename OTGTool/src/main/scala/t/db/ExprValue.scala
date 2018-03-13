@@ -25,7 +25,14 @@ import t.platform._
 object ExprValue {
   import t.util.SafeMath._
   
-  def presentMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
+  def mean(data: Iterable[ExprValue], presentOnly: Boolean) = 
+    if (presentOnly) {
+      presentMean(data)
+    } else {
+      allMean(data)
+    }
+  
+  def presentMean(vs: Iterable[ExprValue], probe: String = ""): ExprValue = {
     val nps = vs.filter(_.call != 'A')
     if (nps.size > 0) {
       apply(safeMean(nps.map(_.value)), 'P', probe)
@@ -34,7 +41,7 @@ object ExprValue {
     }
   }
 
-  def allMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
+  def allMean(vs: Iterable[ExprValue], probe: String = ""): ExprValue = {
     val value = if (vs.size > 0) {
       safeMean(vs.map(_.value))      
     } else {
@@ -51,6 +58,12 @@ object ExprValue {
     apply(value, call, probe)
   }
 
+  private val l2 = Math.log(2)
+  def log2(v: Double): Double = Math.log(v) / l2
+  def log2[E <: ExprValue](value: E): ExprValue = {
+    ExprValue.apply(log2(value.value), value.call, value.probe)
+  }
+  
   def apply(v: Double, call: Char = 'P', probe: String = null) = BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()

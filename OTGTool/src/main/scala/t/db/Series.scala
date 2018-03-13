@@ -120,7 +120,7 @@ trait SeriesBuilder[S <: Series[S]] {
 
   def presentMeanByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
     val byProbe = ds.groupBy(_.probe)
-    byProbe.map(x => ExprValue.presentMean(x._2, x._1))
+    byProbe.map(x => ExprValue.log2(ExprValue.allMean(x._2, x._1)))
   }
 
   /**
