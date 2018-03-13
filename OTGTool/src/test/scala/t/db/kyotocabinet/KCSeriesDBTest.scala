@@ -45,7 +45,9 @@ class KCSeriesDBTest extends TTestSuite {
     def inputSeries: Set[OTGSeries]
     def attributeValue: String
     def attribute = seriesType.independentVariable
-
+    
+    def keyFraction: Double
+    
     def normalizingReader() = new KCSeriesDB(storageDB, false, builderType, true)(context)
     def nonNormalizingReader() = new KCSeriesDB(storageDB, false, builderType, false)(context)
     def writer() = new KCSeriesDB(storageDB, true, builderType, false)(context)
@@ -56,8 +58,10 @@ class KCSeriesDBTest extends TTestSuite {
     val seriesType = TimeSeries
     val builderType = OTGTimeSeriesBuilder
     def storageDB = context.timeSeriesDB
-    val attributeValue = "9 hr"
+    val attributeValue = OData.absentTime
     
+    val keyFraction = OData.usedDosePoints.size.toDouble / 
+      TestData.enumValues(DoseLevel.id).size    
     val inputSeries = OData.series
   }
 
@@ -66,8 +70,10 @@ class KCSeriesDBTest extends TTestSuite {
     val seriesType = DoseSeries
     val builderType = OTGDoseSeriesBuilder
     def storageDB = context.doseSeriesDB
-    val attributeValue = "Middle"
+    val attributeValue = OData.absentDose
     
+    val keyFraction = OData.usedTimePoints.size.toDouble / 
+      TestData.enumValues(ExposureTime.id).size
     val inputSeries = OData.doseSeries
   }
 
@@ -91,7 +97,8 @@ class KCSeriesDBTest extends TTestSuite {
 
       var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
       var nExpected = testType.inputSeries.size / cmap.size / TestData.probes.size
-      testType.builderType.keysFor(key).size should equal(nExpected)
+      val builtKeys = testType.builderType.keysFor(key)      
+      (builtKeys.size * testType.keyFraction) should equal(nExpected)
 
       var ss = db.read(key)
       ss.size should equal(nExpected)
@@ -180,5 +187,25 @@ class KCSeriesDBTest extends TTestSuite {
       ss = w.read(key)
       ss should be(empty)
     }
+  }
+  
+  test("Equivalence of time and dose series") {    
+    val treader = timeSeriesTest.nonNormalizingReader
+    val dreader = doseSeriesTest.nonNormalizingReader
+    
+    for (s <- OData.series;
+      key = s.copy(points = Seq(), doseOrTime = null);
+      tdata = treader.read(key);
+      ddata = dreader.read(key)) {
+
+      assert(tdata.size >= 0)
+      assert(ddata.size >= 0)
+      
+      val tpoints = tdata.flatMap(_.points.map(_.value))
+      val dpoints = tdata.flatMap(_.points.map(_.value))
+      
+      assert (tpoints.size >= 0)
+      tpoints should contain theSameElementsAs (dpoints)
+    }   
   }
 }

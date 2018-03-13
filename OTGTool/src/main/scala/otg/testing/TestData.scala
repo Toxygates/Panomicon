@@ -41,21 +41,23 @@ object TestData {
      SeriesPoint(t, new BasicExprValue(e._1, e._2, pr))
   }
 
-  def mkPointsTime(pr: String): Seq[SeriesPoint] = {
-    val indepPoints = enumMaps(ExposureTime.id).filter(_._1 != "9 hr").map(_._2)
-    indepPoints.map(t => mkPoint(pr, t)).toSeq
+  val absentTime = "9 hr"
+  val absentDose = "Middle"
+  
+  val usedTimePoints = enumMaps(ExposureTime.id).filter(_._1 != absentTime)
+  val usedDosePoints = DoseSeries.allDoses.filter(_ != absentDose).map(p => 
+    (p, enumMaps(DoseLevel.id)(p)))
+  
+  def mkPointsTime(pr: String): Seq[SeriesPoint] = {    
+    usedTimePoints.map(t => mkPoint(pr, t._2)).toSeq
   }
 
-  def mkPointsDose(pr: String): Seq[SeriesPoint] = {
-    val emap = enumMaps(DoseLevel.id)
-    //This goes via DoseSeries since its normalising reader does not recognise
-    //some of the made-up doses in TestData
-    val indepPoints = DoseSeries.allDoses.filter(_ != "Middle").map(emap)
-    indepPoints.map(t => mkPoint(pr, t)).toSeq
+  def mkPointsDose(pr: String): Seq[SeriesPoint] = {    
+    usedDosePoints.map(t => mkPoint(pr, t._2)).toSeq
   }
   
   lazy val series = for (compound <- enumValues(Compound.id);
-    doseLevel <- enumValues(DoseLevel.id);
+    doseLevel <- usedDosePoints.map(_._1);
     repeat <- enumValues(Repeat.id);
     organ <- enumValues(Organ.id);
     organism <- enumValues(Organism.id);
@@ -66,7 +68,7 @@ object TestData {
         compound, doseLevel, testType, points)
 
   lazy val doseSeries = for (compound <- enumValues(Compound.id);
-    exposureTime <- enumValues(ExposureTime.id);
+    exposureTime <- usedTimePoints.map(_._1);
     repeat <- enumValues(Repeat.id);
     organ <- enumValues(Organ.id);
     organism <- enumValues(Organism.id);
