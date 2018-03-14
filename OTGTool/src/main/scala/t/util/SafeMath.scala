@@ -27,12 +27,12 @@ import friedrich.data.Statistics
  */
 object SafeMath {
 
-  private def filtered(vs: Iterable[Double]) =
+  def removeNaNValues(vs: Iterable[Double]) =
     vs.filter(!java.lang.Double.isNaN(_))
 
   private def safely[T](vs: Iterable[Double],
     f: Iterable[Double] => Double): Double = {
-    val fvs = filtered(vs)
+    val fvs = removeNaNValues(vs)
     if (fvs.isEmpty) Double.NaN else f(fvs)
   }
 
@@ -53,4 +53,10 @@ object SafeMath {
 
   def safeSigma(vs: Iterable[Double]) =
     safely(vs, Statistics.sigma(_))
+    
+  def safeIsGreater(x: Double, y: Double) = {
+    if (java.lang.Double.isNaN(x)) false
+    else if (java.lang.Double.isNaN(y)) true
+    else (x > y)
+  }
 }

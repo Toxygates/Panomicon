@@ -120,8 +120,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       val mediumVals = schema.sortedValues(schema.mediumParameter())
 
       val r = rr.map(p => {
-        val (compound, score, dose) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)
-        new MatchResult(compound, score, dose)
+        val (compound, score, doseOrTime) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)
+        new MatchResult(compound, score, doseOrTime)
       }).filter(x => allowedMajorVals.contains(x.compound))
 
       for (s <- r.take(10)) {
