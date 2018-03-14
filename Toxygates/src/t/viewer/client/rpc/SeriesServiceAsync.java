@@ -39,5 +39,5 @@ public interface SeriesServiceAsync {
       String timeDose, String[] compounds,
       AsyncCallback<List<Series>> callback);
 
-  void expectedTimes(SeriesType seriesType, Series s, AsyncCallback<String[]> callback);
+  void expectedIndependentPoints(SeriesType seriesType, Series s, AsyncCallback<String[]> callback);
 }

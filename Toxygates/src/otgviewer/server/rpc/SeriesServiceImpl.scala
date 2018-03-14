@@ -59,10 +59,7 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
     }
   }
 
-  //TODO lift up this method
-  def expectedTimes(stype: SeriesType, s: SSeries): Array[String] = {
-    val key = fromShared(s)
-    println("Key: " + key)
-    builder(stype).expectedIndependentVariablePoints(key).toArray
-  }
+  def expectedIndependentPoints(stype: SeriesType, s: SSeries): Array[String] =
+    builder(stype).expectedIndependentVariablePoints(fromShared(s)).toArray
+
 }

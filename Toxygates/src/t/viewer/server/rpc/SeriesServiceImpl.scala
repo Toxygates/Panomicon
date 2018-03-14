@@ -88,16 +88,16 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     }
   }
 
-  import SeriesType._
-  protected def fixedAttribute(st: SeriesType) = st match {
-    case Time => DoseLevel
-    case Dose => ExposureTime
-  }
-
-  protected def independentAttribute(st: SeriesType) = st match {
-    case Time => ExposureTime
-    case Dose => DoseLevel
-  }
+//  import SeriesType._
+//  protected def fixedAttribute(st: SeriesType) = st match {
+//    case Time => DoseLevel
+//    case Dose => ExposureTime
+//  }
+//
+//  protected def independentAttribute(st: SeriesType) = st match {
+//    case Time => ExposureTime
+//    case Dose => DoseLevel
+//  }
 
   def rankedCompounds(seriesType: SeriesType,
       ds: Array[Dataset], sc: SampleClass,
@@ -127,12 +127,10 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       )
 
       val allowedMajorVals = allowedMajors(ds, sc)
-      val fixedAttrVals = schema.sortedValues(fixedAttribute(seriesType))
+      val fixedAttrVals = schema.sortedValues(seriesType.fixedAttribute)
 
-      val r = rr.map(p => {
-        val (compound, score, doseOrTime) = (p._1, p._3, fixedAttrVals.indexOf(p._2) - 1)
-        new MatchResult(compound, score, doseOrTime)
-      }).filter(x => allowedMajorVals.contains(x.compound))
+      val r = rr.map(p => new MatchResult(p._1, p._3, p._2)).
+        filter(x => allowedMajorVals.contains(x.compound))
 
       for (s <- r.take(10)) {
         println(s)
@@ -145,7 +143,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       sc: SampleClass, probe: String, timeDose: String,
       compound: String): SSeries = {
     withDB(seriesType, db => {
-      val key: S = new SSeries("", probe, independentAttribute(seriesType), sc, Array.empty)
+      val key: S = new SSeries("", probe, seriesType.independentAttribute, sc, Array.empty)
       db.read(key).head
     })
   }
@@ -158,7 +156,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     withDB(seriesType, db => {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p, independentAttribute(seriesType),
+          db.read(fromShared(new SSeries("", p, seriesType.independentAttribute,
               sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))

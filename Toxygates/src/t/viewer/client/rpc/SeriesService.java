@@ -46,6 +46,6 @@ public interface SeriesService extends RemoteService {
   List<Series> getSeries(SeriesType seriesType, SampleClass sc, String[] probes, String timeDose,
       String[] compounds);
 
-  String[] expectedTimes(SeriesType seriesType, Series s);
+  String[] expectedIndependentPoints(SeriesType seriesType, Series s);
 
 }

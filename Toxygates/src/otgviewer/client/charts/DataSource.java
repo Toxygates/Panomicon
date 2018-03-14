@@ -115,13 +115,14 @@ abstract public class DataSource {
   }
 
   static class SeriesSource extends DataSource {
-    SeriesSource(DataSchema schema, List<Series> series, String[] times) {
+    SeriesSource(DataSchema schema, List<Series> series, 
+        Attribute indepAttribute, String[] indepPoints) {
       super(schema);
       for (Series s : series) {
         for (int i = 0; i < s.values().length; ++i) {
           ExpressionValue ev = s.values()[i];
-          String time = times[i];
-          SampleClass sc = s.sampleClass().copyWith(schema.timeParameter(), time);
+          String point = indepPoints[i];
+          SampleClass sc = s.sampleClass().copyWith(indepAttribute, point);
           ChartSample cs =
               new ChartSample(sc, schema, ev.getValue(), null, s.probe(), ev.getCall(), null);
           chartSamples.add(cs);
