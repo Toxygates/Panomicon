@@ -23,8 +23,7 @@ import java.util.List;
 import otgviewer.shared.*;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
-import t.viewer.shared.NoSuchProbeException;
-import t.viewer.shared.ServerError;
+import t.viewer.shared.*;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -38,47 +37,15 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("series")
 public interface SeriesService extends RemoteService {
 
-  /**
-   * Rank all available compounds for the given data filter according to the supplied rules.
-   * 
-   * @param filter
-   * @param rules
-   * @return
-   * @throws NoSuchProbeException
-   */
-  MatchResult[] rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules)
-      throws ServerError;
+  MatchResult[] rankedCompounds(SeriesType seriesType, Dataset[] ds, SampleClass sc,
+      RankRule[] rules);
 
-  /**
-   * Obtain a single time series or dose series.
-   * 
-   * @param filter
-   * @param probe Must be a probe id.
-   * @param timeDose A fixed time, or a fixed dose.
-   * @param compound
-   * @return
-   */
-  Series getSingleSeries(SampleClass sc, String probe, String timeDose, String compound)
-      throws ServerError;
+  Series getSingleSeries(SeriesType seriesType, SampleClass sc, String probe, String timeDose,
+      String compound);
 
-  /**
-   * Obtain a number of time series or dose series.
-   * 
-   * @param filter Must be specified.
-   * @param probes Must be specified. Can be genes/proteins/probe ids.
-   * @param timeDose A fixed time, or a fixed dose. Can optionally be null (no constraint).
-   * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
-   * @return
-   */
-  List<Series> getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds)
-      throws ServerError;
+  List<Series> getSeries(SeriesType seriesType, SampleClass sc, String[] probes, String timeDose,
+      String[] compounds);
 
-  /**
-   * Obtain the standard time points for a given group of series (identified by a representative
-   * member)
-   * 
-   * @return
-   */
-  String[] expectedTimes(Series s) throws ServerError;
+  String[] expectedTimes(SeriesType seriesType, Series s);
 
 }

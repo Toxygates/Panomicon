@@ -34,6 +34,7 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.shared.SeriesType;
 
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
@@ -47,6 +48,7 @@ public class RankingCompoundSelector extends CompoundSelector {
   private Map<String, MatchResult> scores = new HashMap<String, MatchResult>(); // for compound
                                                                                 // ranking
   private List<String> rankProbes = new ArrayList<String>();
+  private SeriesType rankedType = SeriesType.Time;
   private boolean hasRankColumns = false;
   private final Resources resources;
   
@@ -109,14 +111,16 @@ public class RankingCompoundSelector extends CompoundSelector {
       lastClass = sc;          
   }
 
-  public void performRanking(List<String> rankProbes, List<RankRule> rules) {
+  public void performRanking(SeriesType seriesType, 
+      List<String> rankProbes, List<RankRule> rules) {
     this.rankProbes = rankProbes;
+    this.rankedType = seriesType;
     addRankColumns();
     logger.info("Ranking compounds for datasets: " + 
         SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
 
     if (rules.size() > 0) { // do we have at least 1 rule?
-      seriesService.rankedCompounds(chosenDatasets, chosenSampleClass,
+      seriesService.rankedCompounds(seriesType, chosenDatasets, chosenSampleClass,
           rules.toArray(new RankRule[0]), new PendingAsyncCallback<MatchResult[]>(this) {
             public void handleSuccess(MatchResult[] res) {
               ranks.clear();
@@ -153,7 +157,8 @@ public class RankingCompoundSelector extends CompoundSelector {
       if (rankProbes.size() == 0) {
         Window.alert("These charts can only be displayed if compounds have been ranked.");
       } else {
-        seriesService.getSeries(chosenSampleClass, rankProbes.toArray(new String[0]), null,
+        seriesService.getSeries(rankedType,
+            chosenSampleClass, rankProbes.toArray(new String[0]), null,
             new String[] {value}, getSeriesCallback(value));
       }
       Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING_CHARTS);
@@ -164,7 +169,7 @@ public class RankingCompoundSelector extends CompoundSelector {
         public void handleSuccess(final List<Series> ss) {
           Utils.ensureVisualisationAndThen(new Runnable() {
             public void run() {
-              makeSeriesCharts(value, ss);
+              makeSeriesCharts(rankedType, value, ss);
             }
           });
 
@@ -172,9 +177,9 @@ public class RankingCompoundSelector extends CompoundSelector {
       };
     }
 
-    private void makeSeriesCharts(final String value, final List<Series> ss) {
+    private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
       Charts cgf = new Charts(screen, new SampleClass[] {w.state().sampleClass});
-      cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
+      cgf.makeSeriesCharts(seriesType, ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
         @Override
         public void acceptCharts(ChartGrid<?> cg) {
           Utils.displayInPopup("Charts", cg, DialogPosition.Side);

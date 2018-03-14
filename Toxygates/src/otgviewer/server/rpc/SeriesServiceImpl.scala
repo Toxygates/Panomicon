@@ -20,9 +20,13 @@
 
 package otgviewer.server.rpc
 
+import otg.OTGDoseSeriesBuilder
 import otg.OTGSeries
+import otg.OTGSeriesBuilder
+import otg.OTGTimeSeriesBuilder
 import otgviewer.shared.{ Series => SSeries }
 import t.db.SeriesDB
+import t.viewer.shared.SeriesType
 
 class SeriesServiceImpl extends
 t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
@@ -39,13 +43,26 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
   override protected def fromShared(s: SSeries): OTGSeries =
     Conversions.asScala(s)
 
-  override protected def getDB(): SeriesDB[OTGSeries] =
-    mat.timeSeriesDBReader
+  override protected def getDB(seriesType: SeriesType): SeriesDB[OTGSeries] = {
+    import SeriesType._
+    seriesType match {
+      case Time => mat.timeSeriesDBReader
+      case Dose => mat.doseSeriesDBReader
+    }
+  }
+
+  protected def builder(s: SeriesType): OTGSeriesBuilder = {
+    import SeriesType._
+    s match {
+      case Dose => OTGDoseSeriesBuilder
+      case Time => OTGTimeSeriesBuilder
+    }
+  }
 
   //TODO lift up this method
-  def expectedTimes(s: SSeries): Array[String] = {
+  def expectedTimes(stype: SeriesType, s: SSeries): Array[String] = {
     val key = fromShared(s)
     println("Key: " + key)
-    context.matrix.timeSeriesBuilder.expectedIndependentVariablePoints(key).toArray
+    builder(stype).expectedIndependentVariablePoints(key).toArray
   }
 }

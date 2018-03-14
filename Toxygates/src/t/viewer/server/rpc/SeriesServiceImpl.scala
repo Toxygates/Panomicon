@@ -41,7 +41,10 @@ import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.shared.NoSuchProbeException
 import otg.model.sample.OTGAttribute
-import otg.model.sample.OTGAttribute
+import otg.model.sample.OTGAttribute._
+import t.viewer.shared.SeriesType
+import otg.TimeSeries
+import t.util.SafeMath
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
@@ -50,12 +53,14 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   private implicit def mcontext: MatrixContext = context.matrix
   implicit protected def context: t.Context
 
-  protected def getDB(): SeriesDB[S]
+  protected def getDB(seriesType: SeriesType): SeriesDB[S]
 
   protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S]
 
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
+
+  protected def builder(s: SeriesType): SeriesBuilder[S]
 
   protected def attributes = baseConfig.attributes
 
@@ -74,8 +79,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       majAttr).toSet
   }
 
-  final private def withDB[T](f: SeriesDB[S] => T): T = {
-    val db = getDB()
+  final private def withDB[T](seriesType: SeriesType, f: SeriesDB[S] => T): T = {
+    val db = getDB(seriesType)
     try {
       f(db)
     } finally {
@@ -83,7 +88,19 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     }
   }
 
-  def rankedCompounds(ds: Array[Dataset], sc: SampleClass,
+  import SeriesType._
+  protected def fixedAttribute(st: SeriesType) = st match {
+    case Time => DoseLevel
+    case Dose => ExposureTime
+  }
+
+  protected def independentAttribute(st: SeriesType) = st match {
+    case Time => ExposureTime
+    case Dose => DoseLevel
+  }
+
+  def rankedCompounds(seriesType: SeriesType,
+      ds: Array[Dataset], sc: SampleClass,
       rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
     var srs = nnr.map(asScala(_))
@@ -99,28 +116,21 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       resolved.map(r => (r.identifier, pr._2))
     })
 
-    withDB(db => {
+    withDB(seriesType, db => {
       val key: S = new SSeries("", probesRules.head._1,
           OTGAttribute.ExposureTime, sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
-      val rr = ranked.toList.sortWith((x1, x2) => {
-        val (v1, v2) = (x1._3, x2._3)
-        if (JDouble.isNaN(v1)) {
-          false
-        } else if (JDouble.isNaN(v2)) {
-          true
-        } else {
-          v1 > v2
-        }
-      })
+      val rr = ranked.toList.sortWith((x1, x2) =>
+        SafeMath.safeIsGreater(x1._3, x2._3)
+      )
 
       val allowedMajorVals = allowedMajors(ds, sc)
-      val mediumVals = schema.sortedValues(schema.mediumParameter())
+      val fixedAttrVals = schema.sortedValues(fixedAttribute(seriesType))
 
       val r = rr.map(p => {
-        val (compound, score, doseOrTime) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)
+        val (compound, score, doseOrTime) = (p._1, p._3, fixedAttrVals.indexOf(p._2) - 1)
         new MatchResult(compound, score, doseOrTime)
       }).filter(x => allowedMajorVals.contains(x.compound))
 
@@ -131,22 +141,24 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     })
   }
 
-  def getSingleSeries(sc: SampleClass, probe: String, timeDose: String,
+  def getSingleSeries(seriesType: SeriesType,
+      sc: SampleClass, probe: String, timeDose: String,
       compound: String): SSeries = {
-    withDB(db => {
-      val key: S = new SSeries("", probe, OTGAttribute.ExposureTime, sc, Array.empty)
+    withDB(seriesType, db => {
+      val key: S = new SSeries("", probe, independentAttribute(seriesType), sc, Array.empty)
       db.read(key).head
     })
   }
 
-  def getSeries(sc: SampleClass, probes: Array[String], timeDose: String,
+  def getSeries(seriesType: SeriesType,
+      sc: SampleClass, probes: Array[String], timeDose: String,
       compounds: Array[String]): JList[SSeries] = {
     val validated = context.probes.identifiersToProbes(mcontext.probeMap,
         probes, true, true).map(_.identifier)
-    withDB(db => {
+    withDB(seriesType, db => {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p, OTGAttribute.ExposureTime,
+          db.read(fromShared(new SSeries("", p, independentAttribute(seriesType),
               sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))

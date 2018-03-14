@@ -22,9 +22,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
@@ -39,6 +36,10 @@ import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.shared.SeriesType;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class Charts {
 
@@ -95,14 +96,15 @@ public class Charts {
     groups = new ArrayList<Group>();
   }
 
-  public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
-      final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
-    seriesService.expectedTimes(series.get(0), new PendingAsyncCallback<String[]>(screen,
+  public void makeSeriesCharts(SeriesType seriesType, final List<Series> series, 
+      final boolean rowsAreCompounds,
+      final int highlightDoseOrTime, final ChartAcceptor acceptor, final Screen screen) {
+    seriesService.expectedTimes(seriesType, series.get(0), new PendingAsyncCallback<String[]>(screen,
         "Unable to obtain sample times.") {
 
       @Override
       public void handleSuccess(String[] result) {
-        finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor, screen);
+        finishSeriesCharts(series, result, rowsAreCompounds, highlightDoseOrTime, acceptor, screen);
       }
     });
   }
