@@ -223,11 +223,9 @@ class BatchManager(context: Context) {
       lazy val sampleMap: SampleMap =
         new SampleIndex(KCIndexDB.readOnce(config.data.sampleIndex))
 
-      /*
-       * Naive implementation - can be made more efficient by associating
-       * samples with platforms
-       */
-      def expectedProbes(x: Sample) = probeMap.keys.toSeq
+      override lazy val probeSets =
+        new Probes(config.triplestore).platformsAndProbes.
+          mapValues(_.toSeq.map(p => probeMap.pack(p.identifier)))
 
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
