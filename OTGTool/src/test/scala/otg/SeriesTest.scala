@@ -39,47 +39,87 @@ class SeriesTest extends TTestSuite {
   implicit val context = new otg.testing.FakeContext()
   val cmap = context.enumMaps("compound_name")
 
-  test("pack and build") {
-    for (s <- OData.series) {
-      val p = OTGTimeSeriesBuilder.pack(s)
-      val b = OTGTimeSeriesBuilder.build(p, s.probe)
-      b should equal(s.copy(points = Seq()))
+  //TODO much code shared with KCSeriesDBTest - factor out
+  trait seriesTestType {
+    def name: String
+    def seriesType: OTGSeriesType
+    def builderType: OTGSeriesBuilder
+
+    def inputSeries: Iterable[OTGSeries]
+    def attributeValue: String
+    def attribute = seriesType.independentVariable
+  }
+
+  object timeSeriesTest extends seriesTestType {
+    val name = "time series"
+    val seriesType = TimeSeries
+    val builderType = OTGTimeSeriesBuilder
+    val attributeValue = OData.absentTime
+
+    val inputSeries = OData.series    
+  }
+
+  object doseSeriesTest extends seriesTestType {
+    val name = "dose series"
+    val seriesType = DoseSeries
+    val builderType = OTGDoseSeriesBuilder
+    val attributeValue = OData.absentDose
+    
+    val inputSeries = OData.doseSeries
+  }
+  
+  val testTypes = List(timeSeriesTest, doseSeriesTest)
+
+  for (tt <- testTypes) {
+    test(s"pack and build ${tt.name}") {
+      for (s <- tt.inputSeries) {
+        val p = tt.builderType.pack(s)
+        val b = tt.builderType.build(p, s.probe)
+        b should equal(s.copy(points = Seq()))
+      }
     }
   }
 
-  test("makeNew") {
-    context.populate()
-    val meta = OData.metadata
-    val timeMap = context.enumMaps(ExposureTime.id)
+  for (tt <- testTypes) {
+    test(s"makeNew ${tt.name}") {
+      context.populate()
+      val meta = OData.metadata
+      val indepVarMap = tt.seriesType.independentVariableMap
+      
 
-    val ss = OTGTimeSeriesBuilder.makeNew(context.foldsDBReader, meta)
-    val data = context.testData
-    for (s <- ss;
+      val ss = tt.builderType.makeNew(context.foldsDBReader, meta)
+      val data = context.testData
+      for (
+        s <- ss;
         const = s.constraints.filter(_._2 != null).toSet;
         pr = context.probeMap.unpack(s.probe);
-        relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.getMap.toSet))) {
+        relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.getMap.toSet))
+      ) {
 
-      val present = for (
-        s <- relSamples;
-        ev <- data.asExtValues(s).get(pr);
-        if (ev.present)
-      ) yield s
+        val points = for (
+          s <- relSamples;
+          ev <- data.asExtValues(s).get(pr)
+        ) yield s
 
-       val expectedTimes = present.flatMap(x => meta.parameter(x, ExposureTime.id))
-      s.points.map(_.code) should contain theSameElementsAs(expectedTimes.map(timeMap(_)))
+        val expectedPointCodes = points.flatMap(x => 
+          meta.sampleAttribute(x, tt.seriesType.independentVariable))
+        
+        s.points.map(_.code) should contain theSameElementsAs (
+          expectedPointCodes.map(indepVarMap(_)))
+      }
+
+      for (s <- TestData.samples) {
+        val x = tt.builderType.buildEmpty(s, meta)
+        ss.exists(_.classCode == x.classCode) should be(true)
+      }
+
+      val xs = TestData.samples.map(x => tt.builderType.buildEmpty(x, meta))
+      for (s <- ss) {
+        xs.exists(_.classCode == s.classCode) should be(true)
+      }
+
+      ss.map(s => (s.probe, s.classCode)).toSeq.distinct should
+        equal(ss.map(s => (s.probe, s.classCode)))
     }
-
-    for (s <- TestData.samples) {
-      val x = OTGTimeSeriesBuilder.buildEmpty(s, meta)
-      ss.exists(_.classCode == x.classCode) should be(true)
-    }
-
-    val xs = TestData.samples.map(x => OTGTimeSeriesBuilder.buildEmpty(x, meta))
-    for (s <- ss) {
-      xs.exists(_.classCode == s.classCode) should be(true)
-    }
-
-    ss.map(s => (s.probe, s.classCode)).toSeq.distinct should
-      equal(ss.map(s => (s.probe, s.classCode)))
   }
 }
