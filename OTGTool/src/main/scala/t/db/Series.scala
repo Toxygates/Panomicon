@@ -120,7 +120,11 @@ trait SeriesBuilder[S <: Series[S]] {
     (p & mask).toLong
   }
 
-  def presentMeanByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
+  def meanPoint(ds: Iterable[ExprValue]): ExprValue = {
+    ExprValue.log2(ExprValue.allMean(ds, ds.head.probe))
+  }
+  
+  def meanPointByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
     val byProbe = ds.groupBy(_.probe)
     byProbe.map(x => ExprValue.log2(ExprValue.allMean(x._2, x._1)))
   }
