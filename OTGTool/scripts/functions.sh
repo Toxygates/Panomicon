@@ -22,5 +22,5 @@ export T_TS_USER=x
 export T_TS_PASS=y
 
 function runfull { 
-	scala -J-Xmx4g -classpath $OTGTOOL_CLASSPATH $*
+	scala -Djava.library.path=$KC_LIBDIR -J-Xmx4g -classpath $OTGTOOL_CLASSPATH $*
 }
