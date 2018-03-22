@@ -29,13 +29,13 @@ import t.global.KCDBRegistry
 object KCSeriesDB {
   val c20g = 20l * 1204 * 1204 * 1024
   val c1g = 1l * 1204 * 1204 * 1024
-  val c4g = 1l * 1204 * 1204 * 1024
+  val c8g = 8l * 1204 * 1204 * 1024
   
   /*
    * The seriesDB options may need to be re-tuned at some point,
    * although they work fine currently
    */
-  val options = s"#bnum=10000000#apow=1#pccap=$c1g"
+  val options = s"#bnum=2000000#pccap=$c1g#msiz=$c8g#opts=l#rcap=dec"
 
   /**
    * Options: linear, no alignment, 10 million buckets (approx 10% of size), 5g memory mapped

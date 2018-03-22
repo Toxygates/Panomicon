@@ -91,8 +91,8 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   def exprDb: String = s"$dir/$exprFile"
   def foldDb: String = s"$dir/$foldFile"
 
-  def timeSeriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
-  def doseSeriesDb: String = s"$dir/doseSeries.kct" + KCSeriesDB.options
+  def timeSeriesDb: String = s"$dir/time_series.kct" + KCSeriesDB.options
+  def doseSeriesDb: String = s"$dir/dose_series.kct" + KCSeriesDB.options
 
   def sampleDb: String = s"$dir/sample_index.kct"
   def probeDb: String = s"$dir/probe_index.kct"

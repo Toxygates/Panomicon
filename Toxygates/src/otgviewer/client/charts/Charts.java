@@ -21,6 +21,7 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
@@ -99,7 +100,6 @@ public class Charts {
   }
 
   public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
-      final boolean rowsAreCompounds,
       final String highlightDoseOrTime, final ChartAcceptor acceptor, final Screen screen) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0), 
         new PendingAsyncCallback<String[]>(screen,
@@ -107,7 +107,7 @@ public class Charts {
 
       @Override
       public void handleSuccess(String[] result) {
-        finishSeriesCharts(seriesType, series, result, rowsAreCompounds, 
+        finishSeriesCharts(seriesType, series, result,  
             highlightDoseOrTime, acceptor, screen);
       }
     });
@@ -115,12 +115,12 @@ public class Charts {
 
   private void finishSeriesCharts(SeriesType seriesType, 
       final List<Series> series, final String[] indepPoints,
-      final boolean rowsAreCompounds, final String highlightFixed, final ChartAcceptor acceptor,
+      final String highlightFixed, final ChartAcceptor acceptor,
       final Screen screen) {
     // TODO get from schema or data
     try {
-      final Attribute majorParam = schema.majorParameter();
-      final String[] fixedVals = series.stream().map(s -> s.get(seriesType.fixedAttribute())).
+      final String[] fixedVals = series.stream().
+          map(s -> s.get(seriesType.fixedAttribute())).distinct().
           toArray(String[]::new);
       schema.sort(seriesType.fixedAttribute(), fixedVals);
       
@@ -128,21 +128,16 @@ public class Charts {
       DataSource cds = new DataSource.SeriesSource(schema, series, 
           seriesType.independentAttribute(), indepPoints);
 
-      cds.getSamples(null, new SampleMultiFilter(), new TimeDoseColorPolicy(highlightFixed,
-          "SkyBlue"), new DataSource.SampleAcceptor() {
+      cds.getSamples(null, new SampleMultiFilter(), 
+        new TimeDoseColorPolicy(highlightFixed, "SkyBlue"), 
+        new DataSource.SampleAcceptor() {
 
         @Override
         public void accept(final List<ChartSample> samples) {
           boolean categoriesAreMinors = seriesType == SeriesType.Time;
           GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors);
-          List<String> filters = new ArrayList<String>();
-          for (Series s : series) {
-            if (rowsAreCompounds && !filters.contains(s.get(majorParam))) {
-              filters.add(s.get(majorParam));
-            } else if (!filters.contains(s.probe())) {
-              filters.add(s.probe());
-            }
-          }
+          List<String> filters = 
+              series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
 
           List<String> organisms =
                   new ArrayList<String>(
@@ -150,7 +145,7 @@ public class Charts {
 
           boolean columnsAreTimes = seriesType == SeriesType.Dose;
           ChartGrid<?> cg =
-              factory.grid(screen, ds, filters, organisms, rowsAreCompounds,
+              factory.grid(screen, ds, filters, organisms, false,
                   fixedVals, columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
           cg.adjustAndDisplay(
             new ChartStyle(0, true, null, false),

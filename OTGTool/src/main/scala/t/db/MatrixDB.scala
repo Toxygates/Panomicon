@@ -22,9 +22,10 @@ package t.db
 
 import scala.Vector
 import scala.language.postfixOps
+
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
-import t.global.KCDBRegistry
 import t.model.sample.Attribute
+import t.model.sample.CoreParameter
 
 object MatrixDB {
   def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {
@@ -49,11 +50,16 @@ trait MatrixContext {
   def timeSeriesBuilder: SeriesBuilder[_]
   def doseSeriesBuilder: SeriesBuilder[_]
 
+  def probeSets: Map[String, Seq[Int]] = Map()
+
+  def defaultExpectedProbes = probeMap.keys.toSeq
+      
   /**
    * Probes expected to be present in the database for a given sample.
    * They are not guaranteed to actually be present.
    */
-  def expectedProbes(x: Sample): Iterable[Int]
+  def expectedProbes(x: Sample) = probeSets.getOrElse(x(CoreParameter.Platform),
+    defaultExpectedProbes)
 
   def expectedProbes(xs: Iterable[Sample]): Iterable[Int] =
     xs.flatMap(expectedProbes).toSeq.distinct

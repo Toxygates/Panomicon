@@ -166,34 +166,34 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     val timeOrDoseMap = seriesType.independentVariableMap
-
+    
     val grouped = samples.groupBy(buildEmpty(_, md))
     var r = Vector[OTGSeries]()
 
     for ((series, xs) <- grouped) {
       //Construct the series s for all probes, using the samples xs
-
-      val data = for (
-        x <- xs;
-        probes = from.sortProbes(mc.expectedProbes(x));
-        exprs = from.valuesInSample(x, probes, true);
-        presentExprs = exprs.filter(_.present);
-        timeOrDose = md.sampleAttribute(x, seriesType.independentVariable).get
-      ) yield (timeOrDose, x, presentExprs)
-
-      val byTimeOrDose = for (
-        (timeOrDose, triple) <- data.groupBy(_._1);
-        timeOrDoseCode = timeOrDoseMap(timeOrDose);
-        meanValues = presentMeanByProbe(triple.flatMap(_._3));
-        mean <- meanValues;
-        point = SeriesPoint(timeOrDoseCode, mean)
-      ) yield point
-
-      val byProbe = byTimeOrDose.groupBy(_.value.probe)
-      r ++= byProbe.map(x => {
-        series.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
-      })
+     
+      val repSample = xs.head
+      val probes = from.sortProbes(mc.expectedProbes(repSample))
+      val indepPoints = xs.groupBy(x => md.sampleAttribute(x, seriesType.independentVariable).get)
+      
+      val spoints = (for (                
+        (point, pointSamples) <- indepPoints.toSeq.par;
+        samples = from.sortSamples(pointSamples);
+        exprs = from.valuesForSamplesAndProbes(samples, probes, false, false);
+        (pr, data) <- (probes zip exprs);
+        nonPadded = data.filter(!_.isPadding);
+        if (!nonPadded.isEmpty);        
+        mean = meanPoint(nonPadded);
+        spoint = SeriesPoint(timeOrDoseMap(point), mean)) 
+        yield (pr, spoint))
+        
+      
+      for ((pr, points) <- spoints.seq.groupBy(_._1)) {
+        r :+= series.copy(probe = pr, points = points.map(_._2))        
+      }     
     }
+    println(s"Constructed ${r.size} series including: ${r.head}")
     r
   }
 

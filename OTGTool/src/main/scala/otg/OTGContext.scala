@@ -26,6 +26,8 @@ import t.BaseConfig
 import t.TriplestoreConfig
 import t.db._
 import t.db.kyotocabinet.KCSeriesDB
+import t.model.sample.CoreParameter
+import t.sparql.Probes
 
 object OTGContext {
   val factory = new OTGFactory()
@@ -70,9 +72,6 @@ class OTGMatrixContext(baseConfig: BaseConfig) extends MatrixContext {
    */
   def foldsDBReader: MatrixDBReader[PExprValue] =
     data.foldsDBReader(this)
-
-  def expectedProbes(x: Sample) =
-    probeMap.keys
 
   def timeSeriesBuilder: OTGTimeSeriesBuilder.type = OTGTimeSeriesBuilder
   def doseSeriesBuilder: OTGDoseSeriesBuilder.type = OTGDoseSeriesBuilder
