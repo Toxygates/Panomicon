@@ -148,21 +148,31 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     })
   }
 
-  def getSeries(seriesType: SeriesType,
-      sc: SampleClass, probes: Array[String], timeDose: String,
-      compounds: Array[String]): JList[SSeries] = {
-    val validated = context.probes.identifiersToProbes(mcontext.probeMap,
-        probes, true, true).map(_.identifier)
-    withDB(seriesType, db => {
-      val ss = validated.flatMap(p =>
+  def getSeries(
+    seriesType: SeriesType,
+    sc:         SampleClass, probes: Array[String], timeDose: String,
+    compounds: Array[String]): JList[SSeries] = {
+    val validated = context.probes.identifiersToProbes(
+      mcontext.probeMap,
+      probes, true, true).map(_.identifier)
+
+    val preFilter = withDB(seriesType, db => {
+      validated.flatMap(p =>
         compounds.flatMap(c =>
           db.read(fromShared(new SSeries("", p, seriesType.independentAttribute,
-              sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
-      println(s"Read ${ss.size} series")
-      println(ss.take(5).mkString("\n"))
-      val jss = ss.map(asShared)
-      new ArrayList[SSeries](asJavaCollection(jss))
+            sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
     })
+    
+    /*
+     * We should remove series where the fixed attribute is Control from the database,
+     * and then remove this check.
+     */
+    val filtered = preFilter.filter(s =>
+      !schema.isControlValue(s.constraints(seriesType.fixedAttribute())))
+
+    println(s"Read ${preFilter.size} series, filtered to ${filtered.size}")
+    val jss = filtered.map(asShared)
+    new ArrayList[SSeries](asJavaCollection(jss))
   }
 
 }
