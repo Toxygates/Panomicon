@@ -110,7 +110,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
 
   protected def grabRunner() {
     if (!TaskRunner.available) {
-      throw new Exception("Another task is already in progress.")
+      throw new MaintenanceException("Another task is already in progress.")
     }
   }
 

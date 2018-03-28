@@ -32,8 +32,8 @@ import t.sparql.Triplestore
 
 /*
  * Note: it is not clear whether
- * BaseConfig should be invariant between applications. 
- * Currently OTGBConfig is the concrete OTG version of this. 
+ * BaseConfig should be invariant between applications.
+ * Currently OTGBConfig is the concrete OTG version of this.
  */
 trait BaseConfig {
   def triplestore: TriplestoreConfig
@@ -42,7 +42,8 @@ trait BaseConfig {
   /*
    * Note: this might be better in the context instead.
    */
-  def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
+  def timeSeriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
+  def doseSeriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
   def attributes: AttributeSet
 
@@ -60,18 +61,19 @@ case class TriplestoreConfig(url: String, updateUrl: String,
 }
 
 object DataConfig {
+  import KCChunkMatrixDB._
   def apply(dir: String, matrixDbOptions: String): DataConfig = {
-    if (dir.startsWith(KCChunkMatrixDB.CHUNK_PREFIX)) {
-      new ChunkDataConfig(dir, matrixDbOptions)
+    if (dir.startsWith(CHUNK_PREFIX)) {
+      new DataConfig(removePrefix(dir), matrixDbOptions)
     } else {
-      new DataConfig(dir, matrixDbOptions)
+      throw new Exception("Unexpected data dir type")
     }
   }
 }
 
 class DataConfig(val dir: String, val matrixDbOptions: String) {
-  protected def exprFile: String = "expr.kct" + matrixDbOptions
-  protected def foldFile: String = "fold.kct" + matrixDbOptions
+  protected def exprFile: String = "expr.kch" + matrixDbOptions
+  protected def foldFile: String = "fold.kch" + matrixDbOptions
 
   /**
    * Is the data store in maintenance mode? If it is, updates are not allowed.
@@ -89,7 +91,8 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   def exprDb: String = s"$dir/$exprFile"
   def foldDb: String = s"$dir/$foldFile"
 
-  def seriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
+  def timeSeriesDb: String = s"$dir/time_series.kct" + KCSeriesDB.options
+  def doseSeriesDb: String = s"$dir/dose_series.kct" + KCSeriesDB.options
 
   def sampleDb: String = s"$dir/sample_index.kct"
   def probeDb: String = s"$dir/probe_index.kct"
@@ -106,33 +109,14 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
     }
 
   def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[ExprValue] =
-    KCMatrixDB.get(exprDb, false)
+    MatrixDB.get(exprDb, false)
   def foldsDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
     foldWrap(foldsDBReaderNowrap)
   def foldsDBReaderNowrap(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
-    KCMatrixDB.getExt(foldDb, false)
+    MatrixDB.get(foldDb, false)
 
   def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
-    KCMatrixDB.getExt(file, true)
+    MatrixDB.get(file, true)
 }
 
-class HashDataConfig(dir: String, matrixDbOptions: String)
-extends DataConfig(dir, matrixDbOptions) {
-  override def exprFile = "expr.kch" + matrixDbOptions
-  override def foldFile = "fold.kch" + matrixDbOptions
-}
 
-class ChunkDataConfig(dir: String, matrixDbOptions: String) extends
-  DataConfig(KCChunkMatrixDB.removePrefix(dir), matrixDbOptions) {
-  override def exprFile: String = "expr.kch" + matrixDbOptions
-  override def foldFile: String = "fold.kch" + matrixDbOptions
-
-  override def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
-    KCChunkMatrixDB(exprDb, false)
-
-  override def foldsDBReaderNowrap(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
-    KCChunkMatrixDB(foldDb, false)
-
-  override def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
-    KCChunkMatrixDB.apply(file, true)
-}

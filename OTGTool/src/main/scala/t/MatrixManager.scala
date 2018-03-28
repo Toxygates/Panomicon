@@ -47,20 +47,20 @@ object MatrixManager extends ManagerTool {
       getDB: () => MatrixDBWriter[PExprValue],
       formVal: E => FoldPExpr,
       label: String)(implicit mat: MatrixContext) {
-      val allProbes = mat.probeMap.keys.toSeq.sorted
-      def allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)).toSeq)
+      val allProbes = from.sortProbes(mat.probeMap.keys)
+      def allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)))
 
       val useSamples = batch.map(samplesInBatch).getOrElse(allSamples)
 
       for (ss <- useSamples.grouped(50)) {
-        val vs = from.valuesInSamples(ss, allProbes)
+        val vs = from.valuesInSamples(ss, allProbes, true)
         val svs = Map() ++ (ss zip vs)
         val raw = new RawExpressionData {
           val samples = ss
           def data(s: Sample) = Map() ++
-            svs(s).filter(!from.isEmptyValue(_)).map(v => v.probe -> formVal(v))
+            svs(s).filter(!_.isPadding).map(v => v.probe -> formVal(v))
         }
-        val t = new SimplePFoldValueInsert(getDB, raw).
+        val t = new SimpleValueInsert(getDB, raw).
           insert(s"$label")
         TaskRunner.runThenFinally(t)(())
         println(s"$ss ($label)")

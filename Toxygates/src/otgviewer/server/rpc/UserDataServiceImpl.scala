@@ -42,19 +42,19 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
     //See OTGSeries.enums.
     //May create new: organ ID, compound name, exposure time
     val mayNotCreateNew = Seq(Repeat, TestType, Organism,
-      DoseLevel).map(_.id)
+      DoseLevel)
 
      val enums = context.matrix.enumMaps
      for (p <- mayNotCreateNew) {
-       val existing = enums(p).keySet
-       md.parameterValues(p).find(!existing.contains(_)) match {
+       val existing = enums(p.id).keySet
+       md.attributeValues(p).find(!existing.contains(_)) match {
          case Some(v) =>
            throw new MaintenanceException(s"Metadata error: the value $v is unknown for parameter $p.")
          case None =>
        }
      }
 
-    val pfs = md.parameterValues(Platform.id)
+    val pfs = md.attributeValues(Platform)
     pfs.find(!context.probes.platformsAndProbes.keySet.contains(_)) match {
       case Some(pf) =>
         throw new MaintenanceException(s"Metadata error: the platform_id $pf is unknown.")
@@ -63,7 +63,8 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
 
     try {
       //TODO consider how we handle new time points, test
-      val timeUnits = md.parameterValues(ExposureTime.id).map(_.split(" ")(1))
+      val timeUnits = md.attributeValues(ExposureTime).map(_.split(" ")(1))
+      println(s"timeUnits: $timeUnits")
       val accepted = Seq("hr", "day")
       timeUnits.find(!accepted.contains(_)) match {
         case Some(v) =>

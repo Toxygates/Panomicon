@@ -1,9 +1,7 @@
 package otgviewer.server.rpc
 
-import otg.OTGContext
-import t.platform.Species.Human
 import otg.sparql._
-import otgviewer.shared.Pathology
+import otgviewer.server.AppInfoLoader
 import t.common.shared.AType
 import t.common.shared.sample._
 import t.model.SampleClass
@@ -14,11 +12,8 @@ import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.Intermines
-import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
-import t.viewer.shared.mirna.MirnaSource
-import otgviewer.server.AppInfoLoader
 
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otgviewer.client.rpc.ProbeService {
@@ -44,7 +39,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     }
   }
 
-  private def probeStore: otg.sparql.Probes = context.probes
+  private def probeStore: OTGProbes = context.probes
 
   override protected def reloadAppInfo = {
     val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load

@@ -81,27 +81,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def defaultPrefix: String = Probes.defaultPrefix
   def itemClass = Probes.itemClass
 
-  val orthologClass = "t:orthologGroup"
-
-  /**
-   * Obtain all ortholog groups in the given platforms.
-   */
-  def orthologs(platforms: Iterable[String]): Iterable[OrthologGroup] = {
-    val q = tPrefixes +
-      s"""|SELECT ?probe ?platform ?title WHERE {
-          |  ?probe a $itemClass. ?platform $hasProbeRelation ?probe.
-          |  ?g a $orthologClass ; $hasProbeRelation ?probe. ; rdfs:label ?title .
-          |} """.stripMargin +
-      multiFilter("?platform", platforms)
-
-    val r = triplestore.mapQuery(q)
-    val byTitle = r.groupBy(_("title"))
-    for (
-      (title, entries) <- byTitle;
-      probes = entries.map(x => OrthologousProbe(x("probe"), x("platform")))
-    ) yield OrthologGroup(title, probes)
-  }
-
   def orthologMappings: Iterable[OrthologMapping] = {
     val msq = triplestore.simpleQuery(tPrefixes + '\n' +
       "SELECT DISTINCT ?om WHERE { ?om a t:ortholog_mapping. }")

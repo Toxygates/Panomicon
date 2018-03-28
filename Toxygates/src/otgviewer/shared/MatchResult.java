@@ -31,10 +31,10 @@ public class MatchResult implements Serializable {
 
   public MatchResult() {}
 
-  private int _dose;
+  private String _fixedValue;
 
-  public int dose() {
-    return _dose;
+  public String fixedValue() {
+    return _fixedValue;
   }
 
   private double _score;
@@ -49,14 +49,14 @@ public class MatchResult implements Serializable {
     return _compound;
   }
 
-  public MatchResult(String compound, double score, int dose) {
-    _dose = dose;
+  public MatchResult(String compound, double score, String fixedValue) {
+    _fixedValue = fixedValue;
     _compound = compound;
     _score = score;
   }
 
   @Override
   public String toString() {
-    return "MatchResult(" + _compound + "/" + _dose + " = " + _score + ")";
+    return "MatchResult(" + _compound + "/" + _fixedValue + " = " + _score + ")";
   }
 }

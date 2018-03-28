@@ -2,8 +2,7 @@ package otgviewer.server
 
 import t._
 import t.platform.Species._
-import otg.sparql.OTGSamples
-import otg.sparql.Probes
+import otg.sparql._
 import t.common.shared.AType
 import t.model.SampleClass
 import t.platform.Probe
@@ -19,7 +18,7 @@ import t.viewer.server.Conversions._
 /**
  * Association resolver for Open TG-GATEs-specific associations.
  */
-class AssociationResolver(probeStore: Probes,
+class AssociationResolver(probeStore: OTGProbes,
     sampleStore: OTGSamples,
     b2rKegg: B2RKegg,
     uniprot: Uniprot,

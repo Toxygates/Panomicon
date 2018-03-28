@@ -72,6 +72,9 @@ object Triplestore {
 
 abstract class Triplestore extends Closeable {
 
+  val PRINT_QUERIES = true
+  val PRINT_RESULTS = true
+
   def isReadonly: Boolean = true
 
   protected def con: RepositoryConnection
@@ -93,9 +96,9 @@ abstract class Triplestore extends Closeable {
    */
   @throws(classOf[TimeoutException])
   private def evaluate(query: String, timeoutMillis: Int = 10000) = {
-    println
+    if (PRINT_QUERIES) println
     printHash("printing query:", query)
-    println(query)
+    if (PRINT_QUERIES) println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
     pq.setMaxExecutionTime(timeoutMillis / 1000)
     pq.evaluate()
@@ -106,7 +109,7 @@ abstract class Triplestore extends Closeable {
    */
   def update(query: String, quiet: Boolean = false): Unit = {
     if (!quiet) {
-      println('\n' + query)
+      if (PRINT_QUERIES) println('\n' + query)
     }
     if (isReadonly) {
       println("Triplestore is read-only, ignoring update query")
@@ -196,8 +199,10 @@ abstract class Triplestore extends Closeable {
 
   def logQueryStats(recs: Vector[Object], start: Long, query: String) {
     printHash("printing query result:", query)
-    println("Found " + recs.size + " results in " + (System.currentTimeMillis() - start) / 1000.0 + "s:")
-    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    if (PRINT_RESULTS) {
+      println("Found " + recs.size + " results in " + (System.currentTimeMillis() - start) / 1000.0 + "s:")
+      println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    }
   }
 
   val DEBUG_LOG_HASHES = false

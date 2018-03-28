@@ -28,7 +28,6 @@ import t.common.shared.sample.Group
 import t.db.ExtMatrixDB
 import t.db.PExprValue
 import t.db.TransformingWrapper
-import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 
 import t.viewer.server.Conversions._
@@ -108,10 +107,7 @@ class MatrixController(context: Context,
         //TODO modify TransformingWrapper API to be able to check for type argument at runtime
         //or stop trying to match the type argument
         case wrapped: TransformingWrapper[PExprValue @unchecked] =>
-          new ExtFoldBuilder(enhancedCols, wrapped, probes)
-        case db: KCMatrixDB =>
-          assert(typ == ValueType.Absolute)
-          new NormalizedBuilder(enhancedCols, db, probes)
+          new ExtFoldBuilder(enhancedCols, wrapped, probes)        
         case db: ExtMatrixDB =>
           if (typ == ValueType.Absolute) {
             new NormalizedBuilder(enhancedCols, db, probes)

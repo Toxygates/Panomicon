@@ -35,7 +35,7 @@ import org.junit.runner.RunWith
 class AffyProbesTest extends TTestSuite {
 
   val config = TestConfig.config
-  val affyProbes = new Probes(config.triplestore)
+  val affyProbes = new OTGProbes(config.triplestore)
 
   after {
     affyProbes.close
@@ -86,7 +86,7 @@ class AffyProbesTest extends TTestSuite {
   }
 
   test("mixed identifiers") {
-    implicit val context = new OTGContext(config)
+    implicit val context = new OTGMatrixContext(config)
     val idents = Array("g6pd", "1388833_at", "mgst2")
     val res = affyProbes.identifiersToProbes(context.probeMap, idents, true, false)
     assert(res.size >= 5)

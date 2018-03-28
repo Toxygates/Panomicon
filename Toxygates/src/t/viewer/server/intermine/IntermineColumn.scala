@@ -11,6 +11,7 @@ import t.sparql._
 //TODO remove sparql dependency by refactoring that package
 import t.sparql.secondary.Gene
 import t.viewer.server.Platforms
+import t.intermine.Query
 
 object TargetmineColumns {
   def connector(mines: Intermines,
@@ -33,19 +34,13 @@ object TargetmineColumns {
  * resulting objects.
  */
 class IntermineColumn(connector: IntermineConnector,
-    idView: String, titleViews: Iterable[String]) {
+    idView: String, titleViews: Iterable[String]) extends Query(connector) {
 
   val geneIdView = "Gene.primaryIdentifier"
 
-  private val sf = connector.serviceFactory
-  private val model = sf.getModel
-
 //  private val ls = connector.getListService(None, None)
-  private val token = connector.getSessionToken()
 //  ls.setAuthentication(token)
 
-  private val qs = sf.getQueryService
-  qs.setAuthentication(token)
 
   private def makeQuery(): PathQuery = {
     val pq = new PathQuery(model)
@@ -71,9 +66,9 @@ class IntermineColumn(connector: IntermineConnector,
     val pq = makeQuery
     pq.addConstraint(Constraints.lookup("Gene", useGenes.mkString(","), ""))
 
-    println(s"${qs.getCount(pq)} results")
+    println(s"${queryService.getCount(pq)} results")
     makeMultiMap(
-      qs.getRowListIterator(pq).toSeq.map(row => {
+      queryService.getRowListIterator(pq).toSeq.map(row => {
         val id = row.get(2).toString
         //TODO might retrieve and insert the score of the association as well
         val tooltip = Some(s"$id (miRTarBase via TargetMine) experimental: true")

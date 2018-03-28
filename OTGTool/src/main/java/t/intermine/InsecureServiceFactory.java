@@ -1,4 +1,4 @@
-package t.viewer.server.intermine;
+package t.intermine;
 
 import org.intermine.webservice.client.core.ServiceFactory;
 
@@ -7,7 +7,7 @@ import org.intermine.webservice.client.core.ServiceFactory;
  * username/password-based ServiceFactory constructor below, since we can't do so in Scala. To be
  * removed once we switch to auth tokens.
  */
-final class InsecureServiceFactory {
+public final class InsecureServiceFactory {
   @SuppressWarnings("deprecation")
   public static ServiceFactory fromUserAndPass(String rootUrl, String userName,
       String userPass) {

@@ -31,7 +31,7 @@ import t.sparql.secondary._
 import t.sparql.secondary.B2RKegg
 
 // TODO: quite a bit of code from here should be lifted up
-class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
+class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
   import Probes._
 
   val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
@@ -51,37 +51,46 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
 
   //TODO share query-forming code with superclass instead of totally overriding it
   override def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
-      def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
+    def obtainMany(m: Iterable[Map[String, String]], key: String) = {
+      val r = m.filter(_.get("relation") == Some(key)).map(_("value"))
+      if (!r.isEmpty) r else Seq("")
+    }
+
+    def obtain(m: Map[String, String], key: String) =
+      m.getOrElse(key, "")
+
+    val entrezRel = "http://level-five.jp/t/entrez"
+    val symbolRel = "http://level-five.jp/t/symbol"
+    val protRel = "http://level-five.jp/t/swissprot"
+    val titleRel = "http://level-five.jp/t/title"
 
 	  val q = s"""$prefixes
 	    |SELECT * WHERE {
 	    |  GRAPH ?g {
-	  	|    ?pr rdfs:label ?l; a t:probe.
-	    |    OPTIONAL { ?pr t:symbol ?symbol. }
-	    |    OPTIONAL { ?pr t:swissprot ?prot. }
-	    |    OPTIONAL { ?pr t:entrez ?gene. }
-	    |    OPTIONAL { ?pr t:title ?title. }
-	    |    ${multiFilter("?pr", probes.map(p => bracket(p.pack)))}
+	    |    ${valuesMultiFilter("?pr", probes.map(p => bracket(p.pack)))}
+      |    OPTIONAL {
+      |      ?pr ?relation ?value.
+      |      VALUES ?relation { <$entrezRel> <$symbolRel> <$protRel> <$titleRel> }
+      |    }
+      |    ?pr rdfs:label ?l; a t:probe.
       |  }
       |  ?g rdfs:label ?plat.
       |} """.stripMargin
 	  val r = triplestore.mapQuery(q, 20000)
 
-	  r.groupBy(_("pr")).map(_._2).map(g => {
-	    val p = Probe(g(0)("l"))
-
-	    	p.copy(
-	    	   proteins = g.map(p => Protein(obtain(p, "prot"))).toSet,
-	    	   genes = g.map(p =>
-             Gene(obtain(p, "gene"),
-                 keggShortCode=B2RKegg.platformTaxon(obtain(g.head, "plat")))
-           ).toSet,
-	    	   symbols = g.map(p => Gene(obtain(p, "symbol"),
-	    		   symbol = obtain(p, "symbol"))).toSet,
-	    	   titles = g.map(obtain(_, "title")).toSet, //NB not used
-	    	   name = obtain(g.head, "title"),
-	    	   platform = obtain(g.head, "plat"))
-	      })
+    r.groupBy(_("pr")).map(_._2).map(g => {
+      val ident = g.head("l")
+      val platform = obtain(g.head, "plat")
+      Probe(identifier = ident,
+        proteins = obtainMany(g, protRel).map(x => Protein(x)).toSet,
+        genes = obtainMany(g, entrezRel).map(x =>
+          Gene(x,
+            keggShortCode = B2RKegg.platformTaxon(platform))).toSet,
+        symbols = obtainMany(g, symbolRel).map(x => Gene(x, symbol = x)).toSet,
+        titles = obtainMany(g, titleRel).toSet, //NB not used
+        name = obtainMany(g, titleRel).head,
+        platform = platform)
+    })
   }
 
   override def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {

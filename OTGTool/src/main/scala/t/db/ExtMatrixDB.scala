@@ -27,10 +27,11 @@ import t.platform.Probe
  * custom PA-calls for each sample group.
  */
 trait ExtMatrixDBReader extends MatrixDBReader[PExprValue] {
-  def emptyValue(probe: String) = PExprValue(0.0, 1.0, 'A', probe)
-  
-  override def isEmptyValue(e: ExprValue): Boolean =
-    e.value == 0.0 && e.call == 'A'
+  def emptyValue(probe: String) = {
+    val r = PExprValue(0.0, 1.0, 'A', probe)
+    r.isPadding = true
+    r
+  }
 }
 
 trait ExtMatrixDBWriter extends MatrixDBWriter[PExprValue]

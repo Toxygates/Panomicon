@@ -23,18 +23,21 @@ import java.util.List;
 import otgviewer.shared.*;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
+import t.viewer.shared.SeriesType;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SeriesServiceAsync {
-  void rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules,
+  void rankedCompounds(SeriesType seriesType, Dataset[] ds, SampleClass sc, RankRule[] rules,
       AsyncCallback<MatchResult[]> callback);
 
-  void getSingleSeries(SampleClass sc, String probe, String timeDose, String compound,
+  void getSingleSeries(SeriesType seriesType, SampleClass sc, String probe, 
+      String timeDose, String compound,
       AsyncCallback<Series> callback);
 
-  void getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds,
+  void getSeries(SeriesType seriesType, SampleClass sc, String[] probes, 
+      String timeDose, String[] compounds,
       AsyncCallback<List<Series>> callback);
 
-  void expectedTimes(Series s, AsyncCallback<String[]> callback);
+  void expectedIndependentPoints(SeriesType seriesType, Series s, AsyncCallback<String[]> callback);
 }

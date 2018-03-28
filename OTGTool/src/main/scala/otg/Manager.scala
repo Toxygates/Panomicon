@@ -22,34 +22,40 @@ package otg
 
 import friedrich.util.CmdLineOptions
 import otg.platform.SSOrthTTL
-
+import t.platform.Species._
 import t._
 
-object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
-  override protected def handleArgs(args: Array[String])(implicit context: Context) {
+object Manager extends t.Manager[OTGContext, OTGBConfig] with CmdLineOptions {
+  override protected def handleArgs(args: Array[String])(implicit context: OTGContext) {
 
     args(0) match {
       case "orthologs" =>
         val output = require(stringOption(args, "-output"),
           "Please specify an output file with -output")
-        val inputs = require(stringListOption(args, "-inputs"),
-          "Please specify input files with -inputs")
+        val intermineURL = require(stringOption(args, "-intermineURL"),
+          "Please specify an intermine URL with -intermineURL, e.g. http://mizuguchilab.org/targetmine/service")
+        val intermineAppName = require(stringOption(args, "-intermineAppName"),
+          "Please specify an intermine app name with -intermineAppName, e.g. targetmine")
 
-        new SSOrthTTL(context.probes, inputs, output).generate
+        val spPairs = Seq((Rat, Human), (Human, Mouse), (Mouse, Rat))
+
+        val conn = new t.intermine.Connector(intermineAppName, intermineURL)
+        new SSOrthTTL(context.probes, output).generateFromIntermine(conn, spPairs)
       case _ => super.handleArgs(args)
     }
   }
 
-  lazy val factory: Factory = new otg.Factory()
+  lazy val factory: OTGFactory = new otg.OTGFactory()
 
-  def initContext(bc: OTGBConfig): Context = otg.Context(bc)
+  def initContext(bc: OTGBConfig): OTGContext = otg.OTGContext(bc)
 
   def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): OTGBConfig =
     OTGBConfig(ts, d)
 }
 
 case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends BaseConfig {
-  def seriesBuilder = OTGSeries
+  def timeSeriesBuilder = OTGTimeSeriesBuilder
+  def doseSeriesBuilder = OTGDoseSeriesBuilder
 
 //  def sampleParameters = otg.db.OTGParameterSet
 

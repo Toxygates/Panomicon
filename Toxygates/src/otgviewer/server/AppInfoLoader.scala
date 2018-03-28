@@ -1,7 +1,7 @@
 package otgviewer.server
 
 import t.BaseConfig
-import otg.sparql.Probes
+import otg.sparql.OTGProbes
 import t.viewer.server.Configuration
 import t.viewer.shared.mirna.MirnaSource
 
@@ -9,7 +9,7 @@ object AppInfoLoader {
   val TARGETMINE_SOURCE = "TargetMine"
 }
 
-class AppInfoLoader(probeStore: Probes,
+class AppInfoLoader(probeStore: OTGProbes,
   configuration: Configuration, baseConfig: BaseConfig,
   appName: String)
     extends t.viewer.server.AppInfoLoader(probeStore,

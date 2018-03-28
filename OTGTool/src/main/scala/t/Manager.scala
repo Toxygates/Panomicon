@@ -68,6 +68,13 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       sys.exit(1)
     }
 
+    val mainThread = Thread.currentThread();
+    // Runs on normal shutdown or when user interrupt received
+    Runtime.getRuntime.addShutdownHook(new Thread() { override def run = {
+      if (TaskRunner.busy) TaskRunner.shutdown()
+      mainThread.join() // because program will shut down when this thread does
+    }})
+
     try {
       handleArgs(args)
       waitForTasklets()
@@ -76,7 +83,6 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     } finally {
       KCDBRegistry.closeWriters
     }
-    sys.exit(0) // Get rid of lingering threads
   }
 
   protected def showHelp() {
@@ -104,9 +110,9 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     while (!TaskRunner.available) {
       for (m <- TaskRunner.logMessages) {
         println(m)
-      }      
-      TaskRunner.currentTask match {        
-        case Some(t) => 
+      }
+      TaskRunner.currentTask match {
+        case Some(t) =>
           val logMsg = s"${t.name} - ${t.percentComplete}%"
           if (logMsg != lastLog) {
             println(logMsg)

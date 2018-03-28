@@ -31,6 +31,7 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.SeriesType;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -59,6 +60,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
   protected Grid grid;
 
+  protected RadioButton timeRadio, doseRadio;
+  
   final DataSchema schema;
 
   /**
@@ -137,6 +140,13 @@ abstract public class CompoundRanker extends DataListenerWidget {
     hp = Utils.mkHorizontalPanel(true);
     csVerticalPanel.add(hp);
 
+    
+    timeRadio = new RadioButton("seriesType", "Time series");
+    doseRadio = new RadioButton("seriesType", "Dose series");
+    VerticalPanel rankTypePanel = Utils.mkVerticalPanel(true, timeRadio, doseRadio);
+    timeRadio.setValue(true);
+    hp.add(rankTypePanel);
+    
     hp.add(new Button("Rank", (ClickHandler) e -> performRanking()));      
   }
 
@@ -213,6 +223,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
   }
 
   private void performRanking() {
+    SeriesType seriesType = timeRadio.getValue() ? SeriesType.Time : SeriesType.Dose;
+    
     List<RankRule> rules = new ArrayList<RankRule>();
     rankProbes = new ArrayList<String>();
     for (RuleInputHelper rih : inputHelpers) {
@@ -232,7 +244,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
       }
     }
 
-    selector.performRanking(rankProbes, rules);
+    selector.performRanking(seriesType, rankProbes, rules);
     Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING);
   }
 

@@ -23,19 +23,46 @@ package t.db
 import scala.Vector
 import scala.language.postfixOps
 
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.model.sample.Attribute
+import t.model.sample.CoreParameter
+
+object MatrixDB {
+  def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {
+    KCChunkMatrixDB.apply(file, writeMode)
+  }
+}
+
 trait MatrixContext {
   def probeMap: ProbeMap
   def sampleMap: SampleMap
 
+  def enumMaps(attrib: Attribute): Map[String, Int] = enumMaps(attrib.id)
   def enumMaps: Map[String, Map[String, Int]]
 
   lazy val reverseEnumMaps = enumMaps.map(x => x._1 -> (Map() ++ x._2.map(_.swap)))
 
   def absoluteDBReader: MatrixDBReader[ExprValue]
   def foldsDBReader: MatrixDBReader[PExprValue]
-  def seriesDBReader: SeriesDB[_]
+  def timeSeriesDBReader: SeriesDB[_]
+  def doseSeriesDBReader: SeriesDB[_]
 
-  def seriesBuilder: SeriesBuilder[_]
+  def timeSeriesBuilder: SeriesBuilder[_]
+  def doseSeriesBuilder: SeriesBuilder[_]
+
+  def probeSets: Map[String, Seq[Int]] = Map()
+
+  def defaultExpectedProbes = probeMap.keys.toSeq
+      
+  /**
+   * Probes expected to be present in the database for a given sample.
+   * They are not guaranteed to actually be present.
+   */
+  def expectedProbes(x: Sample) = probeSets.getOrElse(x(CoreParameter.Platform),
+    defaultExpectedProbes)
+
+  def expectedProbes(xs: Iterable[Sample]): Iterable[Int] =
+    xs.flatMap(expectedProbes).toSeq.distinct
 }
 
 /**
@@ -43,7 +70,7 @@ trait MatrixContext {
  * The database will be opened when returned by its constructor.
  * The database must be closed after use.
  */
-trait MatrixDBReader[+E >: Null <: ExprValue] {
+trait MatrixDBReader[+E <: ExprValue] {
 
   implicit def probeMap: ProbeMap
 
@@ -59,20 +86,27 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
   def sortSamples(xs: Iterable[Sample]): Seq[Sample]
 
   /**
+   * Sort probes in an order that is optimised for valuesInSample.
+   */
+  def sortProbes(probes: Iterable[Int]): Seq[Int] =
+    probes.toSeq.sorted
+
+  /**
    * Read all values for a given sample.
    * This routine is optimised for the case of accessing many probes in
    * each array.
    * Probes must be sorted.
    * The size of the returned iterable is the same as the passed in probes, and
-   * in the same order. Empty values will be inserted where none was found in the
+   * in the same order.
+   * @param padMissingValues If true, empty values will be inserted where none was found in the
    * database.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
+  def valuesInSample(x: Sample, probes: Seq[Int],
+      padMissingValues: Boolean): Iterable[E]
 
-  def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int]) = {
-    val sk = probes.toSeq.sorted
-    xs.map(valuesInSample(_, sk))
-  }
+  def valuesInSamples(xs: Iterable[Sample], probes: Seq[Int],
+      padMissingValues: Boolean) =
+    xs.map(valuesInSample(_, probes, padMissingValues))
 
   /**
    * Read all values for a given probe and for a given set of samples.
@@ -97,8 +131,6 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
     val pname = pm.unpack(probe)
     emptyValue(pname)
   }
-  
-  def isEmptyValue(e: ExprValue): Boolean = false
 
   /**
    * Get values by probes and samples.
@@ -108,7 +140,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * The ordering of columns is guaranteed.
    * @param sparseRead if set, we use an algorithm that is optimised
    *  for the case of reading only a few values from each sample.
-   * @param presentOnly if set, samples whose call is 'A' are replaced with the
+   * @param presentOnly if set, in the sparse case, samples whose call is 'A' are replaced with the
    *  empty value.
    */
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
@@ -116,21 +148,19 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
 
     val ps = probes.filter(probeMap.keys.contains(_)).sorted
 
-    val rows = (if (sparseRead) {
+    val rows = if (sparseRead) {
       probes.par.map(p => {
         val dat = Map() ++ valuesForProbe(p, xs).filter(!presentOnly || _._2.present)
-        val row = Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
-        row
+        Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
       }).seq
-
     } else {
       //not sparse read, go sample-wise
       val rs = (xs zipWithIndex).par.map(bc => {
-        valuesInSample(bc._1, ps).toSeq
+        valuesInSample(bc._1, ps, true).toSeq
       }).seq.toSeq
-       Vector.tabulate(ps.size, xs.size)((p, x) =>
-         rs(x)(p))
-      })
+      Vector.tabulate(ps.size, xs.size)((p, x) =>
+        rs(x)(p))
+    }
     rows.toVector
   }
 }
@@ -164,4 +194,4 @@ trait MatrixDBWriter[E <: ExprValue] {
   def release(): Unit
 }
 
-trait MatrixDB[+ER >: Null <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]
+trait MatrixDB[+ER <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]

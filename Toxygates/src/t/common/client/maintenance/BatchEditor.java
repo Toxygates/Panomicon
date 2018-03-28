@@ -25,7 +25,10 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import t.common.client.rpc.BatchOperationsAsync;
@@ -40,6 +43,8 @@ abstract public class BatchEditor extends ManagedItemEditor {
   final protected Collection<Instance> instances;
   final protected BatchOperationsAsync batchOps;
   
+  protected CheckBox recalculate;
+
   public BatchEditor(Batch b, boolean addNew, Collection<Dataset> datasets,
       Collection<Instance> instances, BatchOperationsAsync batchOps) {
     super(b, addNew);
@@ -50,8 +55,22 @@ abstract public class BatchEditor extends ManagedItemEditor {
     guiBeforeUploader(vp, b, addNew);
     uploader = new BatchUploader(addNew);
     vp.add(uploader);
+    if (!addNew) {
+      recalculate = new CheckBox("Recalculate folds and series");
+      recalculate.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          boolean checked = ((CheckBox) event.getSource()).getValue();
+          if (checked && !uploader.canProceed()) {
+            Window.alert("Cannot recalculate folds and series without new metadata");
+            recalculate.setValue(false);
+          }
+        }
+      });
+      vp.add(recalculate);
+    }
     guiAfterUploader(vp, b, addNew);
-
+    
     addCommands();
   }
 
@@ -89,7 +108,8 @@ abstract public class BatchEditor extends ManagedItemEditor {
       }
     } else {
       if (uploader.canProceed()) {
-        batchOps.updateBatchMetadataAsync(b, callback("Update batch metadata"));
+        batchOps.updateBatchMetadataAsync(b, recalculate.getValue(),
+            callback("Update batch metadata"));
       } else {
         batchOps.update(b, editCallback());
       }
@@ -144,9 +164,6 @@ abstract public class BatchEditor extends ManagedItemEditor {
 
   @Override
   protected void onError() {
-    if (uploader != null) {
-      uploader.resetAll();
-    }
     okButton.setEnabled(true);
   }
 }

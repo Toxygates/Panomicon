@@ -21,9 +21,7 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import java.util.stream.Collectors;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
@@ -39,9 +37,15 @@ import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.shared.SeriesType;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class Charts {
 
+  final static int DEFAULT_CHART_GRID_WIDTH = 600;
+  
   public static interface ChartAcceptor {
     void acceptCharts(ChartGrid<?> cg);
   }
@@ -95,49 +99,54 @@ public class Charts {
     groups = new ArrayList<Group>();
   }
 
-  public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
-      final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
-    seriesService.expectedTimes(series.get(0), new PendingAsyncCallback<String[]>(screen,
-        "Unable to obtain sample times.") {
+  public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
+      final String highlightDoseOrTime, final ChartAcceptor acceptor, final Screen screen) {
+    seriesService.expectedIndependentPoints(seriesType, series.get(0), 
+        new PendingAsyncCallback<String[]>(screen,
+        "Unable to obtain independent points for series.") {
 
       @Override
       public void handleSuccess(String[] result) {
-        finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor, screen);
+        finishSeriesCharts(seriesType, series, result,  
+            highlightDoseOrTime, acceptor, screen);
       }
     });
   }
 
-  private void finishSeriesCharts(final List<Series> series, final String[] times,
-      final boolean rowsAreCompounds, final int highlightMed, final ChartAcceptor acceptor,
+  private void finishSeriesCharts(SeriesType seriesType, 
+      final List<Series> series, final String[] indepPoints,
+      final String highlightFixed, final ChartAcceptor acceptor,
       final Screen screen) {
     // TODO get from schema or data
     try {
-      final Attribute majorParam = schema.majorParameter();
-      final String[] medVals = schema.sortedValuesForDisplay(null, schema.mediumParameter());
-      schema.sort(schema.timeParameter(), times);
-      DataSource cds = new DataSource.SeriesSource(schema, series, times);
+      final String[] fixedVals = series.stream().
+          map(s -> s.get(seriesType.fixedAttribute())).distinct().
+          toArray(String[]::new);
+      schema.sort(seriesType.fixedAttribute(), fixedVals);
+      
+      schema.sort(seriesType.independentAttribute(), indepPoints);
+      DataSource cds = new DataSource.SeriesSource(schema, series, 
+          seriesType.independentAttribute(), indepPoints);
 
-      cds.getSamples(new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed],
-          "SkyBlue"), new DataSource.SampleAcceptor() {
+      cds.getSamples(null, new SampleMultiFilter(), 
+        new TimeDoseColorPolicy(highlightFixed, "SkyBlue"), 
+        new DataSource.SampleAcceptor() {
 
         @Override
         public void accept(final List<ChartSample> samples) {
-          GDTDataset ds = factory.dataset(samples, times, true);
-          List<String> filters = new ArrayList<String>();
-          for (Series s : series) {
-            if (rowsAreCompounds && !filters.contains(s.get(majorParam))) {
-              filters.add(s.get(majorParam));
-            } else if (!filters.contains(s.probe())) {
-              filters.add(s.probe());
-            }
-          }
+          boolean categoriesAreMinors = seriesType == SeriesType.Time;
+          GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors);
+          List<String> filters = 
+              series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
 
           List<String> organisms =
                   new ArrayList<String>(
                       SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
+          boolean columnsAreTimes = seriesType == SeriesType.Dose;
           ChartGrid<?> cg =
-              factory.grid(screen, ds, filters, organisms, rowsAreCompounds, medVals, false, 400);
+              factory.grid(screen, ds, filters, organisms, false,
+                  fixedVals, columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
           cg.adjustAndDisplay(
             new ChartStyle(0, true, null, false),
             cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
@@ -202,7 +211,7 @@ public class Charts {
   private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
       Sample[] barcodes, AChartAcceptor acceptor) {
     DataSource dataSource =
-        new DataSource.DynamicExpressionRowSource(schema, probes, vt, barcodes, screen);
+        new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);
@@ -216,7 +225,7 @@ public class Charts {
     }
 
     DataSource dataSource =
-        new DataSource.DynamicUnitSource(schema, probes, vt, treated.toArray(new Unit[0]), screen);
+        new DataSource.DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]), screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);

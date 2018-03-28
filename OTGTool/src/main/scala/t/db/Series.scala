@@ -58,7 +58,9 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
  * Code is the encoded enum value of the independent variable, e.g.
  * 24hr for a time series.
  */
-case class SeriesPoint(code: Int, value: ExprValue)
+case class SeriesPoint(code: Int, value: ExprValue) {
+  override def toString = s"[$code:$value]"
+}
 
 /**
  * An object that can decode/encode the database format of series
@@ -103,13 +105,13 @@ trait SeriesBuilder[S <: Series[S]] {
   def standardEnumValues: Iterable[(String, String)]
 
   /**
-   * Expected time points for the given series
+   * Expected independent variable points for the given series
    */
-  def expectedTimes(key: S): Seq[String]
+  def expectedIndependentVariablePoints(key: S): Seq[String]
 
-  protected def packWithLimit(attrib: Attribute, value: String, mask: Int)(implicit mc: MatrixContext): Long = 
+  protected def packWithLimit(attrib: Attribute, value: String, mask: Int)(implicit mc: MatrixContext): Long =
     packWithLimit(attrib.id, value, mask)
-  
+
   protected def packWithLimit(enum: String, value: String, mask: Int)(implicit mc: MatrixContext): Long = {
     val p = mc.enumMaps(enum)(value)
     if (p > mask) {
@@ -118,9 +120,13 @@ trait SeriesBuilder[S <: Series[S]] {
     (p & mask).toLong
   }
 
-  def presentMeanByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
+  def meanPoint(ds: Iterable[ExprValue]): ExprValue = {
+    ExprValue.log2(ExprValue.allMean(ds, ds.head.probe))
+  }
+  
+  def meanPointByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
     val byProbe = ds.groupBy(_.probe)
-    byProbe.map(x => ExprValue.presentMean(x._2, x._1))
+    byProbe.map(x => ExprValue.log2(ExprValue.allMean(x._2, x._1)))
   }
 
   /**

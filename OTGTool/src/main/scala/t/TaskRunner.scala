@@ -96,6 +96,8 @@ object TaskRunner {
    */
   def available = _available
 
+  def busy = !available
+
   /**
    * Obtain log messages in time order and remove them from the log
    */

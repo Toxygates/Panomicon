@@ -207,7 +207,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
   /**
    * Obtain all samples.
-   * This operation is slow for the chunk database (all current expression 
+   * This operation is slow for the chunk database (all current expression
    * databases).
    * Forces a full traversal.
    */
@@ -235,7 +235,8 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[PExprValue] = {
+  def valuesInSample(x: Sample, probes: Seq[Int],
+      padMissingValues: Boolean): Iterable[PExprValue] = {
     //The chunk system guarantees that values will be read in order.
     //We exploit the ordering here when checking for missing values.
 
@@ -258,7 +259,11 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     while (vit.hasNext && pit.hasNext) {
       if (vit.head._1 > pit.head) {
         //missing value - do not advance vit
-        r :+= emptyValue(probeMap.unpack(pit.next))
+        if (padMissingValues) {
+          r :+= emptyValue(probeMap.unpack(pit.next))
+        } else {
+          pit.next
+        }
       } else if (vit.head._1 < pit.head) {
         //non-requested value
         vit.next
@@ -266,7 +271,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
         r :+= vit.next._2.copy(probe = probeMap.unpack(pit.next))
       }
     }
-    while (pit.hasNext) {
+    while (pit.hasNext && padMissingValues) {
         r :+= emptyValue(probeMap.unpack(pit.next))
     }
     r

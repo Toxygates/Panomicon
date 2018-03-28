@@ -27,6 +27,7 @@ import otgviewer.server.AssociationResolverTest
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
 import t.TTestSuite
+import t.viewer.shared.SeriesType
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {
@@ -47,7 +48,7 @@ class SeriesServiceTest extends TTestSuite {
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
 
     //TODO needs a valid dataset for the first argument
-    val res = s.rankedCompounds(Array(), sc, Array(r)).toSeq
+    val res = s.rankedCompounds(SeriesType.Time, Array(), sc, Array(r)).toSeq
     println(res take 10)
   }
 }

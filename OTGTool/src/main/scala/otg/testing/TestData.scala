@@ -30,6 +30,8 @@ import t.db._
 import t.db.testing.TestData.enumMaps
 import t.model.sample.Attribute
 import t.platform._
+import otg.TimeSeries
+import otg.DoseSeries
 
 object TestData {
   import t.db.testing.TestData._
@@ -39,21 +41,42 @@ object TestData {
      SeriesPoint(t, new BasicExprValue(e._1, e._2, pr))
   }
 
-  def mkPoints(pr: String): Seq[SeriesPoint] = {
-    val indepPoints = enumMaps(ExposureTime.id).filter(_._1 != "9 hr").map(_._2)
-    indepPoints.map(t => mkPoint(pr, t)).toSeq
+  val absentTime = "9 hr"
+  val absentDose = "Middle"
+  
+  val usedTimePoints = enumMaps(ExposureTime.id).filter(_._1 != absentTime)
+  val usedDosePoints = DoseSeries.allDoses.filter(_ != absentDose).map(p => 
+    (p, enumMaps(DoseLevel.id)(p)))
+  
+  def mkPointsTime(pr: String): Seq[SeriesPoint] = {    
+    usedTimePoints.map(t => mkPoint(pr, t._2)).toSeq
   }
 
-  lazy val series = for (compound <- enumValues(Compound.id);
-    doseLevel <- enumValues(DoseLevel.id);
+  def mkPointsDose(pr: String): Seq[SeriesPoint] = {    
+    usedDosePoints.map(t => mkPoint(pr, t._2)).toSeq
+  }
+  
+  lazy val series = for (compound <- enumValues(Compound.id).toSeq;
+    doseLevel <- usedDosePoints.map(_._1);
     repeat <- enumValues(Repeat.id);
     organ <- enumValues(Organ.id);
     organism <- enumValues(Organism.id);
     testType <- enumValues(TestType.id);
     probe <- probes;
-    points = mkPoints(probeMap.unpack(probe))
-    ) yield OTGSeries(repeat, organ, organism, probe,
+    points = mkPointsTime(probeMap.unpack(probe))
+    ) yield OTGSeries(TimeSeries, repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
+
+  lazy val doseSeries = for (compound <- enumValues(Compound.id).toSeq;
+    exposureTime <- usedTimePoints.map(_._1);
+    repeat <- enumValues(Repeat.id);
+    organ <- enumValues(Organ.id);
+    organism <- enumValues(Organism.id);
+    testType <- enumValues(TestType.id);
+    probe <- probes;
+    points = mkPointsDose(probeMap.unpack(probe))
+    ) yield OTGSeries(DoseSeries, repeat, organ, organism, probe,
+        compound, exposureTime, testType, points)
 
   private def controlGroup(s: Sample) = ???
 
@@ -93,8 +116,8 @@ object TestData {
 
     def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
-    def parameterValues(identifier: String): Set[String] =
-      enumMaps(identifier).keySet
+    def attributeValues(attribute: Attribute): Set[String] =
+      enumMaps(attribute.id).keySet
 
     def attributeSet = otg.model.sample.AttributeSet.getDefault
 

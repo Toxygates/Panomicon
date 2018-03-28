@@ -28,27 +28,40 @@ import scala.collection.mutable.{ Set => MSet }
 import scala.collection.mutable.{ Set => MSet }
 import scala.io._
 
-import otg.sparql.Probes
+import otg.sparql.OTGProbes
 import t.platform.Probe
 import t.sparql.secondary.Gene
+import t.intermine.OrthologProteins
+import t.intermine.Connector
+import t.platform.Species._
 
 /**
  * Convert SSearch similarity files to TTL format, by using
  * already inserted platform information.
  */
-class SSOrthTTL(probes: Probes,
-  inputs: Iterable[String], output: String) {
+class SSOrthTTL(probes: OTGProbes, output: String) {
 
   val probeToGene = probes.allGeneIds()
   val geneToProbe = probeToGene.reverse
 
-  def generate(): Unit = {
-    val all = new MHMap[Probe, MSet[Probe]]
-    var allList = List[MSet[Probe]]()
+  def generateFromIntermine(
+    conn:    Connector,
+    species: Iterable[(Species, Species)]) {
+    val allPairs = species.flatMap(s => new OrthologProteins(conn, s._1, s._2).results)
+    generate(allPairs)
+  }
 
-    for (i <- inputs; p <- readPairs(i)) {
-      val ps1 = geneToProbe.get(p._1)
-      val ps2 = geneToProbe.get(p._2)
+  def generateFromFiles(inputFiles: Iterable[String]) {
+    val allPairs = inputFiles.flatMap(readPairs)
+    generate(allPairs)
+  }
+
+  def generate(orthologs: Iterable[(Gene, Gene)]): Unit = {
+    val all = new MHMap[Probe, MSet[Probe]]
+
+    for (pair <- orthologs) {
+      val ps1 = geneToProbe.get(pair._1)
+      val ps2 = geneToProbe.get(pair._2)
 
       /**
        * This builds the transitive closure of all the
@@ -56,14 +69,17 @@ class SSOrthTTL(probes: Probes,
        */
       if (ps1 != None && ps2 != None) {
         val nw = ps1.get ++ ps2.get
-        val existing = nw.find(all.contains(_))
-        existing match {
-          case Some(e) => all(e) ++= nw
-          case None => {
-            val nset = MSet() ++ nw
-            all ++= nset.toSeq.map(x => (x -> nset))
-            allList ::= nset
+        val existing = nw.filter(all.contains)
+        if (existing.size > 0) {
+          //Join the existing sets together
+          val newSet = MSet() ++ nw ++ existing.toSeq.flatMap(all(_))
+
+          for (n <- newSet) {
+            all += n -> newSet
           }
+        } else {
+          val nset = MSet() ++ nw
+          all ++= nset.toSeq.map(x => (x -> nset))
         }
       }
     }
@@ -75,11 +91,13 @@ class SSOrthTTL(probes: Probes,
       fw.newLine()
       val pre = t.sparql.Probes.defaultPrefix
       val rel = "t:hasOrtholog"
-      for (vs <- allList) {
+      var seen = Set[Probe]()
+      for ((k, vs) <- all; if (!seen.contains(k))) {
         fw.write(s"[] $rel ")
-        fw.write(vs.toList.map(v => s"<$pre/${v.identifier}>").mkString(", "))
+        fw.write(vs.toSeq.map(v => s"<$pre/${v.identifier}>").mkString(", "))
         fw.write(".")
         fw.newLine()
+        seen ++= vs
       }
 
     } finally {

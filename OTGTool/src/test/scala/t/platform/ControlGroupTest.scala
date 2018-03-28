@@ -19,8 +19,10 @@ class ControlGroupTest extends TTestSuite {
       val cg = TestData.controlGroups(s)
       cg.samples.size should equal(3)
 
-      val remove = Set(DoseLevel.id, Individual.id)
+      val remove = Set(DoseLevel, Individual, LiverWeight, KidneyWeight)
 
+      //Except for the removed keys, the sample classes of each sample in the control
+      //group should be equal to the sample class of s.
       for (cs <- cg.samples) {
         cs.sampleClass.getMap.filter(c => ! remove.contains(c._1)) should
           equal(s.sampleClass.getMap.filter(c => ! remove.contains(c._1)))

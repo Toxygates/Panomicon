@@ -35,15 +35,13 @@ import t.sparql.Probes
 import t.sparql.secondary._
 import t.viewer.server.Platforms
 import t.viewer.shared.intermine._
+import t.intermine._
 
 class IntermineConnector(instance: IntermineInstance,
-    platforms: Platforms) {
+    platforms: Platforms) extends t.intermine.Connector(instance.appName,
+      instance.serviceURL) {
 
   def title = instance.title()
-  def appName = instance.appName()
-  def serviceUrl = instance.serviceURL
-
-  def serviceFactory = new ServiceFactory(serviceUrl)
 
   def getListService(user: Option[String] = None,
     pass: Option[String] = None): ListService = {
@@ -56,23 +54,6 @@ class IntermineConnector(instance: IntermineInstance,
 
     sf.setApplicationName(appName)
     sf.getListService()
-  }
-
-  def getSessionToken(): String = {
-    println(s"Connect to $title")
-    val sf = serviceFactory
-    val s = sf.getService("session", instance.appName)
-    val r = s.createGetRequest(s.getUrl, ContentType.APPLICATION_JSON)
-    val con = s.executeRequest(r)
-    val rs = con.getResponseBodyAsString
-    val obj = new JSONObject(rs)
-    if (!obj.getBoolean("wasSuccessful")) {
-      throw new IntermineException(s"Unable to get a session token from the Intermine server $serviceUrl")
-    }
-    val token = obj.getString("token")
-    println(s"Opened intermine session: $token")
-    con.close()
-    token
   }
 
   def enrichmentRequest(ls: ListService) =

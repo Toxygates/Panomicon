@@ -36,7 +36,13 @@ abstract class TServiceServlet extends RemoteServiceServlet {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    localInit(Configuration.fromServletConfig(config))
+    try {
+      localInit(Configuration.fromServletConfig(config))
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw e
+    }
   }
 
   //This method should initialise Factory and Context.

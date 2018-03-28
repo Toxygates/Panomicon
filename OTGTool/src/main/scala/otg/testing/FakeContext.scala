@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -22,16 +22,21 @@ package otg.testing
 
 import t.db.SampleMap
 import t.db.ProbeMap
-import otg.OTGSeries
+import otg.OTGTimeSeriesBuilder
 import t.db.kyotocabinet.KCSeriesDB
 import t.db.testing.{TestData => TData}
+import t.db.Sample
+import otg.OTGDoseSeriesBuilder
 
 class FakeContext(sampleMap: SampleMap = TData.dbIdMap,
     probeMap: ProbeMap = TData.probeMap,
     enumMaps: Map[String, Map[String, Int]] = TData.enumMaps)
   extends t.testing.FakeContext(sampleMap, probeMap, enumMaps) {
 
-  val seriesDB = t.db.testing.TestData.memDBHash
-  override def seriesBuilder = OTGSeries
-  override def seriesDBReader = new KCSeriesDB(seriesDB, false, seriesBuilder, true)(this)
+  val timeSeriesDB = t.db.testing.TestData.memDBHash
+  override def timeSeriesBuilder = OTGTimeSeriesBuilder
+  override def timeSeriesDBReader = new KCSeriesDB(timeSeriesDB, false, timeSeriesBuilder, true)(this)
+  val doseSeriesDB = t.db.testing.TestData.memDBHash
+  override def doseSeriesBuilder = OTGDoseSeriesBuilder
+  override def doseSeriesDBReader = new KCSeriesDB(doseSeriesDB, false, doseSeriesBuilder, true)(this)
 }

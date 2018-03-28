@@ -49,6 +49,7 @@ public class ProgressDisplay extends Composite {
 
   Timer timer;
   private boolean cancelled = false;
+  private boolean success = false;
 
   final MaintenanceOperationsAsync maintenanceService; 
       
@@ -84,7 +85,7 @@ public class ProgressDisplay extends Composite {
     doneButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        onDone();
+        onDone(success);
       }
     });
     hp.add(doneButton);
@@ -134,6 +135,7 @@ public class ProgressDisplay extends Composite {
           if (cancelled) {
             logPanel.insert(infoLabel("* * * Operation cancelled * * *"), i++);
           } else if (result != null && result.successful()) {
+            success = true;
             logPanel.insert(infoLabel("* * * Operation successful * * *"), i++);
           } else {
             logPanel.insert(infoLabel("* * * Operation failed * * *"), i++);
@@ -183,7 +185,7 @@ public class ProgressDisplay extends Composite {
     });
   }
 
-  protected void onDone() {}
+  protected void onDone(boolean Success) {}
 
   protected void onCancelled() {}
 

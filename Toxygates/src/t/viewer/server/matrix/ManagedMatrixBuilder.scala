@@ -14,7 +14,7 @@ import otg.model.sample.OTGAttribute
 /**
  * Routines for loading a ManagedMatrix and constructing groups.
  */
-abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
+abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
   import ManagedMatrix._
   
   def build(requestColumns: Seq[Group], sparseRead: Boolean,
@@ -106,17 +106,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
   protected def log2transform: Boolean = false
 
-  protected def mean(data: Iterable[ExprValue], presentOnly: Boolean = true) = {
-    if (presentOnly) {
-      ExprValue.presentMean(data, "")
-    } else {
-      ExprValue.allMean(data, "")
-    }
-  }
-
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
-    val m = mean(data, presentOnly)
+    val m = ExprValue.mean(data, presentOnly)
     new ExpressionValue(m.value, m.call, null)
   }
 
@@ -182,7 +174,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
   probes: Seq[String]) extends ManagedMatrixBuilder[ExprValue](reader, probes)
     with TreatedControlBuilder[ExprValue] {
 
-  protected def buildValue(raw: RowData): ExprValue = mean(raw)
+  protected def buildValue(raw: RowData): ExprValue = ExprValue.presentMean(raw)
   
   override protected def shortName(g: Group): String = "Treated"
   

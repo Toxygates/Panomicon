@@ -154,7 +154,7 @@ object SeriesRanking {
     def scoreSeries[S <: Series[S]](s: S): Double = 20 + safeMax(s.presentValues)
   }
 
-  case class ReferenceCompound[S <: Series[S]](compound: String, dose: String) extends RankType {
+  case class ReferenceCompound[S <: Series[S]](compound: String, doseOrTime: String) extends RankType {
     var refCurves: Iterable[S] = Iterable.empty
     def init(db: SeriesDB[S], key: S) {
       refCurves = db.read(key)

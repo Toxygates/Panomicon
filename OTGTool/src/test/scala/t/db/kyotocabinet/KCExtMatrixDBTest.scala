@@ -24,6 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
 import t.db.testing.TestData
 import org.junit.runner.RunWith
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 
 @RunWith(classOf[JUnitRunner])
 class KCExtMatrixDBTest extends TTestSuite {
@@ -31,8 +32,8 @@ class KCExtMatrixDBTest extends TTestSuite {
   import TestData._
 
   test("basic") {
-    val db = memDBTree
-    val edb = new KCExtMatrixDB(db, true)
+    val db = memDBHash
+    val edb = new KCChunkMatrixDB(db, true)
 
     testExtDb(edb, makeTestData(false))
 
@@ -40,8 +41,8 @@ class KCExtMatrixDBTest extends TTestSuite {
   }
 
   test("sparse data") {
-    val db = memDBTree
-    val edb = new KCExtMatrixDB(db, true)
+    val db = memDBHash
+    val edb = new KCChunkMatrixDB(db, true)
 
     testExtDb(edb, makeTestData(true))
 

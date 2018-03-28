@@ -58,10 +58,3 @@ case class Probe(val identifier: String, override val name: String = "",
   }
 }
 
-case class OrthologousProbe(id: String, platformId: String = "")
-
-case class OrthologGroup(title: String, probes: Iterable[OrthologousProbe]) {
-  def id = title // TODO reconsider
-  def subIds: Iterable[String] = probes.map(_.id)
-  def platforms: Iterable[String] = probes.map(_.platformId).toSet
-}

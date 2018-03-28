@@ -46,7 +46,7 @@ trait Metadata extends t.db.Metadata {
     val gs = super.treatedControlGroups(ss)
     gs.flatMap({
       case (treated, control) => {
-        treated.groupBy(_.get(DoseLevel)).values.toSeq.map(ts => (ts, control))
+        treated.groupBy(sampleAttribute(_, DoseLevel)).values.toSeq.map(ts => (ts, control))
       }
     })
   }
