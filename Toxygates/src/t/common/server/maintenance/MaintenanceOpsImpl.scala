@@ -35,6 +35,7 @@ import t.util.TempFiles
 import t.viewer.server.rpc.TServiceServlet
 import t.Tasklet
 import javax.servlet.http.HttpSession
+import t.Task
 
 /**
  * Servlet routines for uploading files and running tasks.
@@ -120,6 +121,32 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     val currentRequest = request
     val session = request.getSession
     TaskRunner.runThenFinally(tasklets) {
+      KCDBRegistry.closeWriters()
+      TaskRunner.synchronized {
+        try {
+          val success = TaskRunner.errorCause == None
+          if (getAttribute[Option[OperationResults]]("lastResults", session).isEmpty) {
+            setAttribute("lastResults", Some(new OperationResults(
+                getAttribute[String]("lastTask", session), success, TaskRunner.resultMessages.toArray)), session)
+          }
+          if (success) {
+            maintenanceUploads(session).dropAll()
+          }
+        } catch {
+          case e: Exception =>
+            println(e)
+            e.printStackTrace()
+        }
+      }
+    }
+  }
+
+  protected def runTasks2(task: Task[_]) {
+    grabRunner()
+    setLastResults(None)
+    val currentRequest = request
+    val session = request.getSession
+    TaskRunner.runThenFinally2(task) {
       KCDBRegistry.closeWriters()
       TaskRunner.synchronized {
         try {

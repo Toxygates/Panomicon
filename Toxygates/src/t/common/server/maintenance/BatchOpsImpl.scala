@@ -96,7 +96,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val metadata = createMetadata(metaFile.get)
 
-      runTasks(batchManager.add(batch, metadata,
+      runTasks2(batchManager.add(batch, metadata,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, simpleLog2))
@@ -118,7 +118,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
       val metadata = createMetadata(metaFile)
 
-      runTasks(batchManager.updateMetadata(batch, metadata, recalculate))
+      runTasks2(batchManager.updateMetadata(batch, metadata, recalculate))
     }
   }
 

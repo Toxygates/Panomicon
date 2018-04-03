@@ -68,19 +68,20 @@ object BatchManager extends ManagerTool {
               // the batch will certainly exist so we always append
               var first = true
               new Platforms(config).populateAttributes(config.attributes)
-              startTaskRunner(metaFiles.flatMap { metadata =>
+              val tasks = metaFiles.map({ metadata =>
                 val md = factory.tsvMetadata(metadata, config.attributes)
                 val dataFile = metadata.replace(".meta.tsv", ".data.csv")
 
                 val f = new java.io.File(metadata.replace(".meta.tsv", ".call.csv"))
                 val callFile = if (f.exists()) Some(f.getPath) else None
                 println(s"Insert $dataFile")
-                val tasklets = bm.add(Batch(title, comment, None, None),
+                val tasks = bm.add(Batch(title, comment, None, None),
                   md, dataFile, callFile,
                   if (first) append else true)
                 first = false
-                tasklets
+                tasks
               })
+              startTaskRunner2(tasks.reduce((t1, t2) => t1 andThen t2))
             case None =>
               val metaFile = require(stringOption(args, "-metadata"),
                 "Please specify a metadata file with -metadata")
@@ -90,7 +91,7 @@ object BatchManager extends ManagerTool {
 
               new Platforms(config).populateAttributes(config.attributes)
               val md = factory.tsvMetadata(metaFile, config.attributes)
-              startTaskRunner2(bm.add2(Batch(title, comment, None, None),
+              startTaskRunner2(bm.add(Batch(title, comment, None, None),
                 md, dataFile, callFile, append))
           }
 
@@ -117,7 +118,7 @@ object BatchManager extends ManagerTool {
           val recalculate = booleanOption(args, "-recalculate")
           new Platforms(config).populateAttributes(config.attributes)
           val md = factory.tsvMetadata(metaFile, config.attributes)
-          startTaskRunner2(bm.updateMetadata2(Batch(title, comment, None, None),
+          startTaskRunner2(bm.updateMetadata(Batch(title, comment, None, None),
               md, recalculate))
 
         case "delete" =>
@@ -244,7 +245,7 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
 
-  def add2[S <: Series[S]](batch: Batch, metadata: Metadata,
+  def add[S <: Series[S]](batch: Batch, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false): Task[Unit] = {
 
@@ -267,59 +268,14 @@ class BatchManager(context: Context) {
       addDoseSeriesData(metadata)(mc)
   }
 
-  def add[S <: Series[S]](batch: Batch, metadata: Metadata,
-    dataFile: String, callFile: Option[String],
-    append: Boolean, simpleLog2: Boolean = false): Iterable[Tasklet] = {
-    var r: Vector[Tasklet] = Vector()
-
-    r :+= newMetadataCheck(batch.title, metadata, config, append)
-    r ++= addMetadata(batch, metadata, append)
-
-    // Note that we rely on probe maps, sample maps etc in matrixContext
-    // not being read until they are needed
-    // (after addSampleIDs has run, which happens in addMetadata)
-    // TODO: more robust updating of maps
-    implicit val mc = matrixContext()
-    r :+= addEnums(metadata)
-
-    //TODO logging directly to TaskRunner is controversial.
-    //Would be better to log from inside the tasklets.
-    r :+= addExprData(metadata, dataFile, callFile,
-        m => TaskRunner.log(s"Warning: $m"))
-    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
-        m => TaskRunner.log(s"Warning: $m"))
-    r :+= addTimeSeriesData(metadata)
-    r :+= addDoseSeriesData(metadata)
-
-    r
-  }
-
-  def updateMetadata2[S <: Series[S]](batch: Batch, metadata: Metadata,
+  def updateMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
       recalculate: Boolean = false, simpleLog2: Boolean = false): Task[Unit] = {
     implicit val mc = matrixContext()
 
-    for {
-      _ <- updateMetadataCheck(batch.title, metadata, config)
-      _ <- deleteRDF(batch.title)
-      _ <- addMetadata(batch, metadata, false).toTask
-      _ <- (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2).toTask else Task.success)
-    } yield Unit
-  }
-
-  def updateMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
-      recalculate: Boolean = false, simpleLog2: Boolean = false): Iterable[Tasklet] = {
-    implicit val mc = matrixContext()
-
-    var r: Vector[Tasklet] = Vector()
-    r :+= updateMetadataCheck(batch.title, metadata, config)
-    r :+= deleteRDF(batch.title)
-    r ++= addMetadata(batch, metadata, false)
-
-    if (recalculate) {
-      r ++= recalculateFoldsAndSeries(batch, metadata, simpleLog2)
-    }
-
-    r
+    updateMetadataCheck(batch.title, metadata, config) andThen
+      deleteRDF(batch.title) andThen
+      addMetadata(batch, metadata, false).toTask andThen
+      (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2).toTask else Task.success)
   }
 
   def recalculateFoldsAndSeries[S <: Series[S]](batch: Batch, metadata: Metadata,
