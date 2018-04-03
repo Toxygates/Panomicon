@@ -21,6 +21,10 @@
 package t
 
 import scala.concurrent._
+import scala.language.implicitConversions
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 object Tasklet {
   def simple(name: String, f:() => Unit) = new Tasklet(name) {
@@ -33,11 +37,9 @@ object Tasklet {
 /**
  * Tasklets are named, small, interruptible tasks
  * designed to run in sequence on a single thread dedicated to Tasklet running.
- * Note: it may be possible to achieve a simpler design by using Futures instead
- *  (with the andThen mechanism)
  */
 abstract class Tasklet(val name: String) {
-  import scala.concurrent.ExecutionContext.Implicits.global
+  self =>
 
   def run(): Unit
 
@@ -61,6 +63,85 @@ abstract class Tasklet(val name: String) {
   def log(message: String) = TaskRunner.log(message)
 
   def logResult(message: String) = TaskRunner.logResult(name + ": " + message)
+
+  def toTask = new AtomicTask[Unit](name) {
+    def run() = {
+      try {
+        self.run()
+        Success(())
+      } catch {
+        case e: Exception => Failure(e)
+      }
+    }
+  }
+}
+
+/**
+ * New monadic Task API that allows for comprehensions
+ * Tasks are synchronously executing tasks with deferred execution, typically meant
+ * to be run somewhere other than the main thread.
+ */
+trait Task[+T] {
+  self =>
+
+  def execute(): Try[T]
+
+  def map[S](f: T => S): Task[S] = new Task[S] {
+    def execute(): Try[S] = {
+      self.execute() match {
+        case Success(r) => Success(f(r))
+        case Failure(t) => Failure(t)
+      }
+    }
+  }
+
+  def flatMap[S](f: T => Task[S]): Task[S] = new Task[S] {
+    def execute(): Try[S] = {
+      self.execute() match {
+        case Success(r) => {
+          val newTask = f(r)
+          if (!TaskRunner.shouldStop) {
+            newTask.execute()
+          } else {
+            Failure(new Exception("TaskRunner aborted"))
+          }
+        }
+        case Failure(t) => Failure(t)
+      }
+    }
+  }
+
+  def andThen[S](t: Task[S]): Task[S] = {
+    flatMap(_ => t)
+  }
+}
+
+object Task {
+  def success = new Task[Unit] {
+    def execute = Success(())
+  }
+}
+
+/**
+ * All the actual work in any non-trivial Task will happen in an AtomicTask,
+ * which are tracked by the TaskRunner.
+ */
+abstract class AtomicTask[+T](val name: String) extends Task[T] {
+  def run(): Try[T]
+
+  def execute(): Try[T] = {
+    TaskRunner.currentAtomicTask = Some(this)
+    log("Start task \"" + name + "\"")
+    val result = run()
+    result match {
+      case Success(_) => log("Finish task \"" + name + "\"")
+      case Failure(_) => log("Failed task \"" + name + "\"")
+    }
+    result
+  }
+
+  def log(message: String) = TaskRunner.log(message)
+  def logResult(message: String) = TaskRunner.logResult(s"$name: $message")
 }
 
 /**
@@ -70,6 +151,29 @@ abstract class Tasklet(val name: String) {
  */
 object TaskRunner {
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  // Converts a list of tasklets into a task
+  implicit class ConvertTasklets(tasklets: Iterable[Tasklet]) {
+    def toTask = {
+      assert(tasklets.size > 0)
+      tasklets.tail.foldLeft[Task[Unit]](tasklets.head.toTask) { (task: Task[_], tasklet: Tasklet) =>
+        task.flatMap(_ => tasklet.toTask)
+      }
+    }
+  }
+
+  // Implicitly converts a list of tasklets into a task
+  implicit def IterableToTask(tasklets: Iterable[Tasklet]): Task[Unit] = {
+    assert(tasklets.size > 0)
+    tasklets.tail.foldLeft[Task[Unit]](tasklets.head.toTask) { (task: Task[_], tasklet: Tasklet) =>
+      task.flatMap(_ => tasklet.toTask)
+    }
+  }
+
+  // Converts a tasklet into an atomic tasklet
+  implicit def TaskletToAtomicTask(tasklet: Tasklet) = tasklet.toTask
+
+  @volatile var currentAtomicTask: Option[AtomicTask[_]] = None
 
   @volatile private var _currentTask: Option[Tasklet] = None
   @volatile private var tasks: Vector[Tasklet] = Vector()
@@ -127,6 +231,44 @@ object TaskRunner {
 
   def errorCause: Option[Throwable] = _errorCause
 
+  /**
+   * The new version of the runThenFinally method, which runs Tasks. The old
+   * version will eventually be deleted; for now we make sure that only one
+   * Task *or* Tasklet can be running at any given time, by sharing the
+   * _available flag.
+   */
+  def runThenFinally2(task: Task[_])(cleanup: => Unit):Future[Unit] = synchronized {
+    if (!available) {
+      throw new Exception("TaskRunner is busy.")
+    }
+
+    _resultMessages = Vector()
+    _shouldStop = false
+    _errorCause = None
+    _available = false
+
+    Future{
+      println("TaskRunner starting")
+      // Do we need a way to print number of tasks in queue?
+      task.execute() match {
+        case Success(r) =>
+        case Failure(t) => {
+          log(s"Error while running task ${currentAtomicTask.get.name}: ${t.getMessage()}")
+          t.printStackTrace()
+          log("Remaining tasks will not be executed")
+          _errorCause = Some(t)
+        }
+      }
+      println("TaskRunner stopping")
+      for (r <- _resultMessages) {
+        println(r)
+      }
+      cleanup
+      currentAtomicTask = None
+      _available = true
+    }
+  }
+
   def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit):
     Future[Unit] = synchronized {
     if (!available) {
@@ -136,8 +278,8 @@ object TaskRunner {
     _resultMessages = Vector()
     _shouldStop = false
     _errorCause = None
-    tasks = tasklets.toVector
     _available = false
+    tasks = tasklets.toVector
 
     Future {
       println("TaskRunner starting")

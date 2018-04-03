@@ -145,5 +145,9 @@ trait ManagerTool extends CmdLineOptions {
     TaskRunner.runThenFinally(tasklets)(())
   }
 
+  def startTaskRunner2(task: Task[_]) {
+    TaskRunner.runThenFinally2(task)(())
+  }
+
   def showHelp(): Unit
 }

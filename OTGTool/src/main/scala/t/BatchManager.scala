@@ -22,6 +22,7 @@ package t
 
 import scala.Vector
 import scala.collection.JavaConversions._
+import scala.language.implicitConversions
 
 import t.db._
 import t.db.file.CSVRawExpressionData
@@ -32,6 +33,9 @@ import t.sparql._
 import t.util.TempFiles
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.CoreParameter
+import t.TaskRunner.ConvertTasklets
+import t.TaskRunner.IterableToTask
+import t.TaskRunner.TaskletToAtomicTask
 
 /**
  * Batch management CLI
@@ -86,7 +90,7 @@ object BatchManager extends ManagerTool {
 
               new Platforms(config).populateAttributes(config.attributes)
               val md = factory.tsvMetadata(metaFile, config.attributes)
-              startTaskRunner(bm.add(Batch(title, comment, None, None),
+              startTaskRunner2(bm.add2(Batch(title, comment, None, None),
                 md, dataFile, callFile, append))
           }
 
@@ -113,7 +117,7 @@ object BatchManager extends ManagerTool {
           val recalculate = booleanOption(args, "-recalculate")
           new Platforms(config).populateAttributes(config.attributes)
           val md = factory.tsvMetadata(metaFile, config.attributes)
-          startTaskRunner(bm.updateMetadata(Batch(title, comment, None, None),
+          startTaskRunner2(bm.updateMetadata2(Batch(title, comment, None, None),
               md, recalculate))
 
         case "delete" =>
@@ -240,6 +244,29 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
 
+  def add2[S <: Series[S]](batch: Batch, metadata: Metadata,
+    dataFile: String, callFile: Option[String],
+    append: Boolean, simpleLog2: Boolean = false): Task[Unit] = {
+
+    // Note that we rely on probe maps, sample maps etc in matrixContext
+    // not being read until they are needed
+    // (after addSampleIDs has run, which happens in addMetadata)
+    // TODO: more robust updating of maps
+    implicit val mc = matrixContext()
+
+    newMetadataCheck(batch.title, metadata, config, append) andThen
+      addMetadata(batch, metadata, append) andThen
+      addEnums(metadata) andThen
+      //TODO logging directly to TaskRunner is controversial.
+      //Would be better to log from inside the tasklets.
+      addExprData(metadata, dataFile, callFile,
+        m => TaskRunner.log(s"Warning: $m")) andThen
+      addFoldsData(metadata, dataFile, callFile, simpleLog2,
+        m => TaskRunner.log(s"Warning: $m")) andThen
+      addTimeSeriesData(metadata)(mc) andThen
+      addDoseSeriesData(metadata)(mc)
+  }
+
   def add[S <: Series[S]](batch: Batch, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false): Iterable[Tasklet] = {
@@ -265,6 +292,18 @@ class BatchManager(context: Context) {
     r :+= addDoseSeriesData(metadata)
 
     r
+  }
+
+  def updateMetadata2[S <: Series[S]](batch: Batch, metadata: Metadata,
+      recalculate: Boolean = false, simpleLog2: Boolean = false): Task[Unit] = {
+    implicit val mc = matrixContext()
+
+    for {
+      _ <- updateMetadataCheck(batch.title, metadata, config)
+      _ <- deleteRDF(batch.title)
+      _ <- addMetadata(batch, metadata, false).toTask
+      _ <- (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2).toTask else Task.success)
+    } yield Unit
   }
 
   def updateMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
@@ -297,7 +336,7 @@ class BatchManager(context: Context) {
 
     //TODO: move this DBExpressionData creation into a tasklet after TaskRunner revamp
     TaskRunner.log("Extracting expression data from database")
-    
+
     val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
     val dbReader = config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
@@ -309,13 +348,13 @@ class BatchManager(context: Context) {
       val expressionData = new DBExpressionData(dbReader, sampleChunk, codedProbes) {
         override def logEvent(msg: String) { TaskRunner.log(msg) }
       }
-              
+
       r :+= addFoldsData(filteredMetadata, expressionData, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
       r :+= addTimeSeriesData(filteredMetadata)
       r :+= addDoseSeriesData(filteredMetadata)
     }
-    
+
     r
   }
 
