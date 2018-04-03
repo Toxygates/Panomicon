@@ -7,8 +7,6 @@
 BASE=$(dirname $0)/..
 source $BASE/functions.sh
 
-REPO=TestRepo
-
 INPUTS=$TOXY_SCRATCH/inputs
 GENERATED=$TOXY_SCRATCH/generated
 
