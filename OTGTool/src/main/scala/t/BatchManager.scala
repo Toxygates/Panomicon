@@ -75,13 +75,13 @@ object BatchManager extends ManagerTool {
                 val f = new java.io.File(metadata.replace(".meta.tsv", ".call.csv"))
                 val callFile = if (f.exists()) Some(f.getPath) else None
                 println(s"Insert $dataFile")
-                val tasks = bm.add(Batch(title, comment, None, None),
+                val task = bm.add(Batch(title, comment, None, None),
                   md, dataFile, callFile,
                   if (first) append else true)
                 first = false
-                tasks
+                task
               })
-              startTaskRunner2(tasks.reduce((t1, t2) => t1 andThen t2))
+              startTaskRunner2(tasks.reduce(_ andThen _))
             case None =>
               val metaFile = require(stringOption(args, "-metadata"),
                 "Please specify a metadata file with -metadata")
@@ -105,7 +105,7 @@ object BatchManager extends ManagerTool {
                 config.attributes.getHighLevel ++ config.attributes.getUnitLevel ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup,
                   CoreParameter.Batch))(sampleFilter)
-          startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
+          startTaskRunner2(new BatchManager(context).recalculateFoldsAndSeries(
             Batch(title, "", None, None), metadata))
 
         case "updateMetadata" | "updatemetadata" =>
@@ -264,8 +264,8 @@ class BatchManager(context: Context) {
         m => TaskRunner.log(s"Warning: $m")) andThen
       addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m")) andThen
-      addTimeSeriesData(metadata)(mc) andThen
-      addDoseSeriesData(metadata)(mc)
+      addTimeSeriesData(metadata) andThen
+      addDoseSeriesData(metadata)
   }
 
   def updateMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
@@ -274,16 +274,13 @@ class BatchManager(context: Context) {
 
     updateMetadataCheck(batch.title, metadata, config) andThen
       deleteRDF(batch.title) andThen
-      addMetadata(batch, metadata, false).toTask andThen
-      (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2).toTask else Task.success)
+      addMetadata(batch, metadata, false) andThen
+      (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2) else Task.success)
   }
 
   def recalculateFoldsAndSeries[S <: Series[S]](batch: Batch, metadata: Metadata,
-      simpleLog2: Boolean = false): Iterable[Tasklet] = {
+      simpleLog2: Boolean = false): Task[Unit] = {
     implicit val mc = matrixContext()
-    var r: Vector[Tasklet] = Vector()
-
-    r :+= addEnums(metadata)
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
     val probeMap = new Probes(config.triplestore).platformsAndProbes
@@ -296,37 +293,49 @@ class BatchManager(context: Context) {
     val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
     val dbReader = config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
-    for (unitChunk <- units.grouped(50);
+
+
+    val recalculateChunks = (for (unitChunk <- units.grouped(50);
       sampleChunk = unitChunk.toSeq.flatMap(u => u._1 ++ u._2).distinct;
       filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
-    ) {
+    ) yield {
 
-      val expressionData = new DBExpressionData(dbReader, sampleChunk, codedProbes) {
-        override def logEvent(msg: String) { TaskRunner.log(msg) }
+      for {
+        expressionData <- retrieveExpressionData(dbReader, sampleChunk, codedProbes)
+        _ <- addFoldsData(filteredMetadata, expressionData, simpleLog2,
+          m => TaskRunner.log(s"Warning: $m")) andThen
+          addTimeSeriesData(filteredMetadata) andThen
+          addDoseSeriesData(filteredMetadata)
+      } yield ()
+    }).reduce(_ andThen _)
+
+    addEnums(metadata) andThen recalculateChunks
+  }
+
+  def retrieveExpressionData(reader: MatrixDBReader[ExprValue], requestedSamples: Iterable[Sample],
+      requestedProbes: Iterable[Int]) = new AtomicTask[DBExpressionData]("Retrieve expression data") {
+    override def run(): DBExpressionData = {
+      new DBExpressionData(reader, requestedSamples, requestedProbes) {
+        override def logEvent(msg: String) { log(msg) }
       }
-
-      r :+= addFoldsData(filteredMetadata, expressionData, simpleLog2,
-        m => TaskRunner.log(s"Warning: $m"))
-      r :+= addTimeSeriesData(filteredMetadata)
-      r :+= addDoseSeriesData(filteredMetadata)
     }
-
-    r
   }
 
   def addMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
-      append: Boolean): Iterable[Tasklet] = {
-    var r: Vector[Tasklet] = Vector()
-
+      append: Boolean): Task[Unit] = {
     val ts = config.triplestore.get
-    if (!append) {
-      r :+= addRecord(batch.title, batch.comment, config.triplestore)
-      r :+= updateBatch(batch)
-    }
-    r :+= addSampleIDs(metadata)
-    r :+= addRDF(batch.title, metadata, ts)
 
-    r
+    val addRecordIfNecessary =
+      if (!append) {
+        addRecord(batch.title, batch.comment, config.triplestore) andThen
+          updateBatch(batch)
+      } else {
+        Task.success
+      }
+
+    addRecordIfNecessary andThen
+      addSampleIDs(metadata) andThen
+      addRDF(batch.title, metadata, ts)
   }
 
   def updateBatch(batch: Batch) =

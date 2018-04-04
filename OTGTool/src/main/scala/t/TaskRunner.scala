@@ -127,17 +127,20 @@ object Task {
  * which are tracked by the TaskRunner.
  */
 abstract class AtomicTask[+T](val name: String) extends Task[T] {
-  def run(): Try[T]
+  def run(): T
 
   def execute(): Try[T] = {
     TaskRunner.currentAtomicTask = Some(this)
     log("Start task \"" + name + "\"")
-    val result = run()
-    result match {
-      case Success(_) => log("Finish task \"" + name + "\"")
-      case Failure(_) => log("Failed task \"" + name + "\"")
+    try {
+      val result = run()
+      log("Finish task \"" + name + "\"")
+      Success(result)
+    } catch {
+      case e: Exception =>
+        log("Failed task \"" + name + "\"")
+        Failure(e)
     }
-    result
   }
 
   def log(message: String) = TaskRunner.log(message)
