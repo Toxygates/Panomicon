@@ -2,6 +2,7 @@
 export MAIN_ROOT=/home/johan/ws/l5/Toxygates
 export OTGTOOL_ROOT=$MAIN_ROOT/OTGTool
 export TOXY_ROOT=$MAIN_ROOT/Toxygates
+export TOXY_SCRATCH=/shiba/scratch/toxygates
 
 #This directory needs to contain libkyotocabinet and libjkyotocabinet
 #for any work with KC databases
