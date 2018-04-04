@@ -33,7 +33,6 @@ import t.common.shared.maintenance.Progress
 import t.global.KCDBRegistry
 import t.util.TempFiles
 import t.viewer.server.rpc.TServiceServlet
-import t.Tasklet
 import javax.servlet.http.HttpSession
 import t.Task
 
@@ -99,7 +98,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
       val p = if (TaskRunner.available) {
         new Progress("No task in progress", 0, true)
       } else {
-        TaskRunner.currentTask match {
+        TaskRunner.currentAtomicTask match {
           case Some(t) => new Progress(t.name, t.percentComplete, false)
           case None => new Progress("??", 0, false)
         }
@@ -115,38 +114,12 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
   }
 
-  protected def runTasks(tasklets: Iterable[Tasklet]) {
+  protected def runTasks(task: Task[_]) {
     grabRunner()
     setLastResults(None)
     val currentRequest = request
     val session = request.getSession
-    TaskRunner.runThenFinally(tasklets) {
-      KCDBRegistry.closeWriters()
-      TaskRunner.synchronized {
-        try {
-          val success = TaskRunner.errorCause == None
-          if (getAttribute[Option[OperationResults]]("lastResults", session).isEmpty) {
-            setAttribute("lastResults", Some(new OperationResults(
-                getAttribute[String]("lastTask", session), success, TaskRunner.resultMessages.toArray)), session)
-          }
-          if (success) {
-            maintenanceUploads(session).dropAll()
-          }
-        } catch {
-          case e: Exception =>
-            println(e)
-            e.printStackTrace()
-        }
-      }
-    }
-  }
-
-  protected def runTasks2(task: Task[_]) {
-    grabRunner()
-    setLastResults(None)
-    val currentRequest = request
-    val session = request.getSession
-    TaskRunner.runThenFinally2(task) {
+    TaskRunner.runThenFinally(task) {
       KCDBRegistry.closeWriters()
       TaskRunner.synchronized {
         try {

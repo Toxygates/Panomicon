@@ -77,7 +77,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
 
     try {
       handleArgs(args)
-      waitForTasklets()
+      waitForTasks()
     } catch {
       case e: Exception => e.printStackTrace
     } finally {
@@ -105,13 +105,13 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
   /**
    * Wait for the task runner and monitor its progress on the console
    */
-  def waitForTasklets() {
+  def waitForTasks() {
     var lastLog = ""
     while (!TaskRunner.available) {
       for (m <- TaskRunner.logMessages) {
         println(m)
       }
-      TaskRunner.currentTask match {
+      TaskRunner.currentAtomicTask match {
         case Some(t) =>
           val logMsg = s"${t.name} - ${t.percentComplete}%"
           if (logMsg != lastLog) {
@@ -141,12 +141,8 @@ trait ManagerTool extends CmdLineOptions {
     }
   }
 
-  def startTaskRunner(tasklets: Iterable[Tasklet]) {
-    TaskRunner.runThenFinally(tasklets)(())
-  }
-
-  def startTaskRunner2(task: Task[_]) {
-    TaskRunner.runThenFinally2(task)(())
+  def startTaskRunner(task: Task[_]) {
+    TaskRunner.runThenFinally(task)(())
   }
 
   def showHelp(): Unit

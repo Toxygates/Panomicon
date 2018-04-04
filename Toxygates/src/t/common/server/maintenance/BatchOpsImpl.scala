@@ -25,7 +25,6 @@ import scala.collection.JavaConversions._
 import javax.annotation.Nullable
 import t.BatchManager
 import t.TaskRunner
-import t.Tasklet
 import t.common.shared.Dataset
 import t.common.shared.ManagedItem
 import t.common.shared.maintenance.Batch
@@ -96,7 +95,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val metadata = createMetadata(metaFile.get)
 
-      runTasks2(batchManager.add(batch, metadata,
+      runTasks(batchManager.add(batch, metadata,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, simpleLog2))
@@ -118,7 +117,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
       val metadata = createMetadata(metaFile)
 
-      runTasks2(batchManager.updateMetadata(batch, metadata, recalculate))
+      runTasks(batchManager.updateMetadata(batch, metadata, recalculate))
     }
   }
 

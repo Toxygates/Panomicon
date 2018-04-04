@@ -84,33 +84,30 @@ class PlatformManager(context: Context) {
    * They are mutually exclusive.
    */
   def add(title: String, comment: String,
-    inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Iterable[Tasklet] = {
+    inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Task[Unit] = {
     val pf = new Platforms(config)
-    var r = Vector[Tasklet]()
-    r :+= consistencyCheck(title)
 
-    if (affymetrixFormat) {
-      //assume Affymetrix format
-      r :+= addFromAffymetrix(title, comment, inputFile)
-      r :+= addProbeIDs(title)
-    } else {
-      //assume T format
-      r :+= addStandard(title, comment, inputFile, bioFormat)
-      r :+= addProbeIDs(title)
-    }
-
-    r
+    consistencyCheck(title) andThen
+      (if (affymetrixFormat) {
+        //assume Affymetrix format
+        addFromAffymetrix(title, comment, inputFile) andThen
+          addProbeIDs(title)
+      } else {
+        //assume T format
+        addStandard(title, comment, inputFile, bioFormat) andThen
+          addProbeIDs(title)
+      })
   }
 
-  def consistencyCheck(title: String) = new Tasklet("Consistency check") {
-    def run() {
+  def consistencyCheck(title: String) = new AtomicTask[Unit]("Consistency check") {
+    override def run(): Unit = {
       checkValidIdentifier(title, "platform title")
     }
   }
 
   def addFromAffymetrix(title: String, comment: String, file: String) =
-    new Tasklet("Insert platform from Affymetrix data") {
-      def run() {
+    new AtomicTask[Unit]("Insert platform from Affymetrix data") {
+      override def run(): Unit = {
         val tf = new TempFiles()
         try {
           val platforms = new Platforms(config)
@@ -147,8 +144,8 @@ class PlatformManager(context: Context) {
    */
   def addStandard(title: String, comment: String, file: String,
       biological: Boolean) =
-    new Tasklet("Add platform (RDF)") {
-      def run() {
+    new AtomicTask[Unit]("Add platform (RDF)") {
+      override def run(): Unit = {
         val defns = new PlatformDefFile(file).records
         val platforms = new Platforms(config)
         platforms.redefine(title, TRDF.escape(comment), biological, defns)
@@ -156,8 +153,8 @@ class PlatformManager(context: Context) {
     }
 
   def addProbeIDs(title: String) =
-    new Tasklet("Add probe IDs") {
-      def run() {
+    new AtomicTask[Unit]("Add probe IDs") {
+      override def run(): Unit = {
         var newProbes, existingProbes: Int = 0
         val probes = new Probes(config.triplestore).forPlatform(title)
         val dbfile = config.data.probeIndex
@@ -175,24 +172,23 @@ class PlatformManager(context: Context) {
       }
     }
 
-  def delete(title: String): Iterable[Tasklet] = {
-    Vector[Tasklet](
+  def delete(title: String): Task[Unit] = {
       //Do not delete the probe IDs - keep them so they can be reused if we
       //redefine the platform
-      //deleteProbeIDs(title),
-      deleteRDF(title))
+      //deleteProbeIDs(title) andThen
+      deleteRDF(title)
   }
 
-  def deleteRDF(title: String): Tasklet = new Tasklet("Delete platform") {
-    def run() {
+  def deleteRDF(title: String) = new AtomicTask[Unit]("Delete platform") {
+    override def run(): Unit = {
       val platforms = new Platforms(config)
       platforms.delete(title)
     }
   }
 
   def deleteProbeIDs(title: String) =
-    new Tasklet("Delete probe IDs") {
-      def run() {
+    new AtomicTask[Unit]("Delete probe IDs") {
+      override def run(): Unit = {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         val probes = new Probes(config.triplestore).forPlatform(title)

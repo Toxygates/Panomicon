@@ -41,7 +41,7 @@ class MatrixInsertTest extends TTestSuite {
        BasicExprValue(v._1, v._2)
     }
 
-    ins.insert("Absolute value data insert").run()
+    ins.insert("Absolute value data insert").execute()
 
     val s1 = db.records.map(ev => (ev._1, context.probeMap.unpack(ev._2),
         ev._3.value, ev._3.call))

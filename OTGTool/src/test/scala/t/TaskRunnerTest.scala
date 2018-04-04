@@ -30,98 +30,98 @@ import scala.concurrent.Promise
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
-  def runAndWait(tasklets: Iterable[Tasklet], maxDuration: Duration = 200 millis):
-    Unit  = {
-    val future = TaskRunner.runThenFinally(tasklets)(())
-    Await.result(future, maxDuration)
-  }
-
-  def runAndWaitSingle(tasklet: Tasklet, maxDuration: Duration = 200 millis): Unit =
-    runAndWait(List(tasklet), maxDuration)
-
-  test("basic") {
-    var hasRun = false
-    val t = Tasklet.simple("simple", () => { hasRun = true })
-    runAndWaitSingle(t)
-    hasRun should equal(true)
-    TaskRunner.currentTask should equal(None)
-    TaskRunner.available should equal(true)
-  }
-
-  test("logging and progress") {
-    val promise = Promise[Unit]()
-    val t = new Tasklet("simple") {
-      def run() {
-        promise.success(())
-        log("logged")
-        while(shouldContinue(50)) {
-          Thread.sleep(10)
-        }
-        println("tasklet stopping")
-      }
-    }
-
-    val future = TaskRunner.runThenFinally(t)(())
-    Await.result(promise.future, 200 millis)
-    TaskRunner.currentTask should equal(Some(t))
-    TaskRunner.available should equal(false)
-    TaskRunner.shutdown()
-    Await.result(future, 200 millis)
-    TaskRunner.logMessages should contain("logged")
-    TaskRunner.currentTask should equal(None)
-    TaskRunner.available should equal(true)
-  }
-
-  test("Exception") {
-    var hasRun = false
-    val e = new Exception("trouble")
-    val t = new Tasklet("simple") {
-      def run() {
-        throw e
-      }
-    }
-    val t2 = Tasklet.simple("none", () => { hasRun = true })
-
-    runAndWait(List(t, t2))
-    TaskRunner.currentTask should equal(None)
-    TaskRunner.available should be(true)
-    TaskRunner.errorCause should equal(Some(e))
-    TaskRunner.queueSize() should equal(0)
-    hasRun should equal(false)
-
-    //verify that we can use it again after the error
-
-    runAndWaitSingle(t2)
-    hasRun should equal(true)
-    TaskRunner.shutdown()
-  }
-
-  test("Interrupted task") {
-    val promise = Promise[Unit]()
-    var finished = false
-    val t = new Tasklet("interruptable") {
-      def run() {
-        promise.success(())
-        while(shouldContinue(0.5)) {
-          println("working")
-          Thread.sleep(10)
-        }
-        finished = true
-      }
-    }
-
-    val future = TaskRunner.runThenFinally(t)(())
-    Await.result(promise.future, 200 millis)
-    TaskRunner.currentTask should equal(Some(t))
-    TaskRunner.available should be(false)
-    TaskRunner.queueSize() should equal(0)
-
-    TaskRunner.shutdown()
-    Await.result(future, 200 millis)
-    TaskRunner.currentTask should equal(None)
-    TaskRunner.available should be(true)
-    TaskRunner.queueSize() should equal(0)
-    finished should be(true)
-  }
+//  def runAndWait(tasklets: Iterable[Tasklet], maxDuration: Duration = 200 millis):
+//    Unit  = {
+//    val future = TaskRunner.runThenFinally(tasklets)(())
+//    Await.result(future, maxDuration)
+//  }
+//
+//  def runAndWaitSingle(tasklet: Tasklet, maxDuration: Duration = 200 millis): Unit =
+//    runAndWait(List(tasklet), maxDuration)
+//
+//  test("basic") {
+//    var hasRun = false
+//    val t = Tasklet.simple("simple", () => { hasRun = true })
+//    runAndWaitSingle(t)
+//    hasRun should equal(true)
+//    TaskRunner.currentTask should equal(None)
+//    TaskRunner.available should equal(true)
+//  }
+//
+//  test("logging and progress") {
+//    val promise = Promise[Unit]()
+//    val t = new Tasklet("simple") {
+//      def run() {
+//        promise.success(())
+//        log("logged")
+//        while(shouldContinue(50)) {
+//          Thread.sleep(10)
+//        }
+//        println("tasklet stopping")
+//      }
+//    }
+//
+//    val future = TaskRunner.runThenFinally(t)(())
+//    Await.result(promise.future, 200 millis)
+//    TaskRunner.currentTask should equal(Some(t))
+//    TaskRunner.available should equal(false)
+//    TaskRunner.shutdown()
+//    Await.result(future, 200 millis)
+//    TaskRunner.logMessages should contain("logged")
+//    TaskRunner.currentTask should equal(None)
+//    TaskRunner.available should equal(true)
+//  }
+//
+//  test("Exception") {
+//    var hasRun = false
+//    val e = new Exception("trouble")
+//    val t = new Tasklet("simple") {
+//      def run() {
+//        throw e
+//      }
+//    }
+//    val t2 = Tasklet.simple("none", () => { hasRun = true })
+//
+//    runAndWait(List(t, t2))
+//    TaskRunner.currentTask should equal(None)
+//    TaskRunner.available should be(true)
+//    TaskRunner.errorCause should equal(Some(e))
+//    TaskRunner.queueSize() should equal(0)
+//    hasRun should equal(false)
+//
+//    //verify that we can use it again after the error
+//
+//    runAndWaitSingle(t2)
+//    hasRun should equal(true)
+//    TaskRunner.shutdown()
+//  }
+//
+//  test("Interrupted task") {
+//    val promise = Promise[Unit]()
+//    var finished = false
+//    val t = new Tasklet("interruptable") {
+//      def run() {
+//        promise.success(())
+//        while(shouldContinue(0.5)) {
+//          println("working")
+//          Thread.sleep(10)
+//        }
+//        finished = true
+//      }
+//    }
+//
+//    val future = TaskRunner.runThenFinally(t)(())
+//    Await.result(promise.future, 200 millis)
+//    TaskRunner.currentTask should equal(Some(t))
+//    TaskRunner.available should be(false)
+//    TaskRunner.queueSize() should equal(0)
+//
+//    TaskRunner.shutdown()
+//    Await.result(future, 200 millis)
+//    TaskRunner.currentTask should equal(None)
+//    TaskRunner.available should be(true)
+//    TaskRunner.queueSize() should equal(0)
+//    finished should be(true)
+//  }
 
 }
