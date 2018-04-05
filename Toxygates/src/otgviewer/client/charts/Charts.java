@@ -23,6 +23,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
@@ -33,14 +36,10 @@ import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.shared.SeriesType;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class Charts {
 

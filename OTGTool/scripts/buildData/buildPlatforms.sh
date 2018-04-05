@@ -7,8 +7,11 @@
 BASE=$(dirname $0)/..
 source $BASE/functions.sh
 
-INPUTS=/shiba/scratch/toxygates/inputs
-GENERATED=/shiba/scratch/toxygates/generated
+INPUTS=$TOXY_SCRATCH/inputs
+GENERATED=$TOXY_SCRATCH/generated
+
+mkdir -p $INPUTS
+mkdir -p $GENERATED
 
 echo Affymetrix
 runfull -J-Xmx4g t.platform.affy.Converter $INPUTS/HG-U133_Plus_2.na33.annot.csv \

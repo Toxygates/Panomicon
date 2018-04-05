@@ -31,18 +31,20 @@
  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
   <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
   
-  <dependency org="org.slf4j" name="slf4j-simple" rev="latest.integration" />
+  <dependency org="org.slf4j" name="slf4j-simple" rev="1.7.25" />
   
   <!-- for intermine. -->  
-  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.10.0">
+  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.11.0">
     <!-- This dependency can't be found on maven and doesn't appear to be necessary -->
-  	<exclude module="log4j-api-java9" />
+  	<exclude module="log4j-api-java9" />  	
   </dependency>
-  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.10.0">
+  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.11.0">
     <!-- This causes problems for Intermine (via XMLOutputFactory) if it is on the classpath. -->
-	<exclude module="woodstox-core" />  
+	<exclude module="woodstox-core" />
+	<!-- This dependency can't be found on maven and doesn't appear to be necessary -->  
+	<exclude module="log4j-core-java9" />
   </dependency>
-  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.10.0" /> 
+  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.11.0" /> 
   
   <dependency org="org.antlr" name="antlr" rev="latest.integration" />
   
