@@ -246,23 +246,25 @@ class BatchManager(context: Context) {
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false): Task[Unit] = {
 
-    // Note that we rely on probe maps, sample maps etc in matrixContext
-    // not being read until they are needed
-    // (after addSampleIDs has run, which happens in addMetadata)
     // TODO: more robust updating of maps
     implicit val mc = matrixContext()
 
     newMetadataCheck(batch.title, metadata, config, append) andThen
       addMetadata(batch, metadata, append) andThen
       addEnums(metadata) andThen
-      //TODO logging directly to TaskRunner is controversial.
-      //Would be better to log from inside the tasklets.
-      addExprData(metadata, dataFile, callFile,
-        m => TaskRunner.log(s"Warning: $m")) andThen
-      addFoldsData(metadata, dataFile, callFile, simpleLog2,
-        m => TaskRunner.log(s"Warning: $m")) andThen
-      addTimeSeriesData(metadata) andThen
-      addDoseSeriesData(metadata)
+      // Note that we rely on probe maps, sample maps etc in matrixContext
+      // not being read until they are needed
+      // (after addSampleIDs has run, which happens in addMetadata)
+      (for {
+        mc <- Task.simple("Create matrix context") {
+          matrixContext()
+        }
+        _ <- addExprData(metadata, dataFile, callFile)(mc) andThen
+          addFoldsData(metadata, dataFile, callFile, simpleLog2)(mc) andThen
+          addTimeSeriesData(metadata)(mc) andThen
+          addDoseSeriesData(metadata)(mc)
+      } yield ())
+
   }
 
   def updateMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
@@ -294,8 +296,7 @@ class BatchManager(context: Context) {
     ) yield {
       for {
         expressionData <- retrieveExpressionData(dbReader, sampleChunk, codedProbes)
-        _ <- addFoldsData(filteredMetadata, expressionData, simpleLog2,
-          m => TaskRunner.log(s"Warning: $m")) andThen
+        _ <- addFoldsData(filteredMetadata, expressionData, simpleLog2) andThen
           addTimeSeriesData(filteredMetadata) andThen
           addDoseSeriesData(filteredMetadata)
       } yield ()
@@ -541,31 +542,46 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addExprData(md: Metadata, niFile: String, callFile: Option[String],
-    warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(niFile), callFile.toList,
-        Some(md.samples.size), warningHandler)
-      val db = () => config.data.extWriter(config.data.exprDb)
-      new SimpleValueInsert(db, data).insert("Insert expression value data")
+  def readCSVExpressionData(md: Metadata, niFile: String,
+      callFile: Option[String]): Task[RawExpressionData] =
+    new AtomicTask[RawExpressionData]("Read raw expression data") {
+      override def run() = {
+        new CSVRawExpressionData(List(niFile), callFile.toList,
+            Some(md.samples.size), m => log(s"Warning: $m"))
+      }
+    }
+
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String])
+      (implicit mc: MatrixContext) = {
+    val db = () => config.data.extWriter(config.data.exprDb)
+    for {
+      data <- readCSVExpressionData(md, niFile, callFile)
+      _ <- new SimpleValueInsert(db, data).insert("Insert expression value data")
+    } yield ()
   }
 
-  def addFoldsData(md: Metadata, data: RawExpressionData, simpleLog2: Boolean,
-      warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
-    val fvs = if (simpleLog2) {
-      new Log2Data(data)
-    } else {
-      new PFoldValueBuilder(md, data)
-    }
+  def addFoldsData(md: Metadata, data: RawExpressionData, simpleLog2: Boolean)
+      (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.foldDb)
-    new SimpleValueInsert(db, fvs).insert("Insert fold value data")
+    for {
+      fvs <- Task.simple("Generate expression data") {
+        if (simpleLog2) {
+          new Log2Data(data)
+        } else {
+          new PFoldValueBuilder(md, data)
+        }
+      }
+      _ <- new SimpleValueInsert(db, fvs).insert("Insert fold value data")
+    } yield ()
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
-      simpleLog2: Boolean, warningHandler: (String) => Unit)
+      simpleLog2: Boolean)
       (implicit mc: MatrixContext): Task[Unit] = {
-    val data = new CSVRawExpressionData(List(foldFile), callFile.toList,
-        Some(md.samples.size), warningHandler)
-    addFoldsData(md, data, simpleLog2, warningHandler)
+    for {
+      data <- readCSVExpressionData(md, foldFile, callFile)
+      _ <- addFoldsData(md, data, simpleLog2)
+    } yield ()
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {

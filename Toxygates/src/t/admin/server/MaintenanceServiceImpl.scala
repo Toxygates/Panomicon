@@ -43,7 +43,7 @@ import t.viewer.server.Configuration
 import t.viewer.server.SharedDatasets
 import t.viewer.server.rpc.TServiceServlet
 import javax.servlet.http.HttpSession
-import t.AtomicTask
+import t.Task
 
 abstract class MaintenanceServiceImpl extends TServiceServlet
 with BatchOpsImpl with MaintenanceService {
@@ -91,7 +91,7 @@ with BatchOpsImpl with MaintenanceService {
 
       runTasks(pm.add(id, TRDF.escape(comment),
           platformFile.get.getAbsolutePath(), affymetrixFormat, bioFormat) andThen
-          AtomicTask.simple("Set platform parameters"){ updatePlatform(p) })
+          Task.simple("Set platform parameters"){ updatePlatform(p) })
     }
   }
 
