@@ -72,8 +72,14 @@ object Task {
   }
 }
 
+object AtomicTask {
+  def simple[T](name: String)(doWork: T) = new AtomicTask[T](name) {
+    override def run(): T = doWork
+  }
+}
+
 /**
- * All the actual work in any non-trivial Task will happen in an AtomicTask,
+ * All the actual work in any non-trivial Task will happen in AtomicTasks,
  * which are tracked by the TaskRunner.
  */
 abstract class AtomicTask[+T](val name: String) extends Task[T] {

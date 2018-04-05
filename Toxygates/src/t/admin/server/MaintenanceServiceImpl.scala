@@ -91,12 +91,7 @@ with BatchOpsImpl with MaintenanceService {
 
       runTasks(pm.add(id, TRDF.escape(comment),
           platformFile.get.getAbsolutePath(), affymetrixFormat, bioFormat) andThen
-          new AtomicTask[Unit]("Set platform parameters") {
-            override def run(): Unit = {
-              updatePlatform(p)
-            }
-
-      })
+          AtomicTask.simple("Set platform parameters"){ updatePlatform(p) })
     }
   }
 
