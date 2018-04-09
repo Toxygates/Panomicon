@@ -108,9 +108,6 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
   def waitForTasks() {
     var lastLog = ""
     while (!TaskRunner.available) {
-      for (m <- TaskRunner.logMessages) {
-        println(m)
-      }
       TaskRunner.currentAtomicTask match {
         case Some(t) =>
           val logMsg = s"${t.name} - ${t.percentComplete}%"
