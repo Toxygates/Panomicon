@@ -71,7 +71,7 @@ object Task {
     def execute = Success(())
   }
 
-  def simple[T](name: String)(doWork: T) = new AtomicTask[T](name) {
+  def simple[T](name: String)(doWork: => T) = new AtomicTask[T](name) {
     override def run(): T = doWork
   }
 }
