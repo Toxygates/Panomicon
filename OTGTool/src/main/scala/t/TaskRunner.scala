@@ -103,14 +103,14 @@ abstract class AtomicTask[+T](val name: String) extends Task[T] {
 
   def execute(): Try[T] = {
     if (!TaskRunner.shouldStop) {
-      TaskRunner.currentAtomicTask = Some(this)
+      TaskRunner._currentAtomicTask = Some(this)
       log("Start task \"" + name + "\"")
       try {
         val result = run()
         log("Finish task \"" + name + "\"")
         Success(result)
       } catch {
-        case e: Exception =>
+        case e @ (_: Exception | _: Error) =>
           log("Failed task \"" + name + "\"")
           Failure(e)
       }
@@ -131,7 +131,7 @@ abstract class AtomicTask[+T](val name: String) extends Task[T] {
 object TaskRunner {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  @volatile var currentAtomicTask: Option[AtomicTask[_]] = None
+  @volatile var _currentAtomicTask: Option[AtomicTask[_]] = None
 
   @volatile private var _shouldStop = false
   @volatile private var _available: Boolean = true
@@ -139,6 +139,8 @@ object TaskRunner {
   @volatile private var _logMessages: Vector[String] = Vector()
   @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
+
+  def currentAtomicTask = _currentAtomicTask
 
   def shouldStop = _shouldStop
 
@@ -196,7 +198,7 @@ object TaskRunner {
       println("TaskRunner starting")
       // Do we need a way to print number of tasks in queue?
       task.execute() match {
-        case Success(r) =>
+        case Success(r) => println("TaskRunner completed successfully")
         case Failure(t) => {
           log(s"Error while running task ${currentAtomicTask.get.name}: ${t.getMessage()}")
           t.printStackTrace()
@@ -208,9 +210,16 @@ object TaskRunner {
       for (r <- _resultMessages) {
         println(r)
       }
-      cleanup
-      currentAtomicTask = None
-      _available = true
+      try {
+        cleanup
+      } catch {
+        case e @ (_: Exception | _: Error) =>
+          log("Error during task cleanup: " + e.getMessage())
+          e.printStackTrace()
+      } finally {
+        _currentAtomicTask = None
+        _available = true
+      }
     }
   }
 
