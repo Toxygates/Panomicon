@@ -129,7 +129,7 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
     val controlData = controlSamples.map(cached.data)
     val treatedData = treatedSamples.map(cached.data)
-      
+
     for (probe <- cached.probes) {
       val cs = controlData.flatMap(_.get(probe)).map(_._1)
       val ts = treatedData.flatMap(_.get(probe)).map(_._1)
@@ -186,7 +186,7 @@ object FoldBuilder extends CmdLineOptions {
       "Please specify metadata file with -metadata")
 
       //TODO - avoid/clarify dependency from t.db -> otg
-    val factory = new otg.OTGFactory 
+    val factory = new otg.OTGFactory
 
     val md = factory.tsvMetadata(mdfile, otg.model.sample.AttributeSet.getDefault)
     val data = new CSVRawExpressionData(List(input), List(calls),

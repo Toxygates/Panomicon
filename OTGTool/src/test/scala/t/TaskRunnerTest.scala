@@ -75,23 +75,22 @@ class TaskRunnerTest extends TTestSuite {
   }
 
   test("Exception") {
-    var hasRun = false
+    var t2HasRun = false
     val e = new Exception("trouble")
     val t = Task.simple[Unit]("throw exception") {
-      println("throwing now")
       throw e
     }
-    val t2 = Task.simple("set hasRun flag") { hasRun = true }
+    val t2 = Task.simple("set hasRun flag") { t2HasRun = true }
 
     runAndWait(t andThen t2)
     TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should be(true)
     TaskRunner.errorCause should equal(Some(e))
-    hasRun should equal(false)
+    t2HasRun should equal(false)
 
-    //verify that we can use it again after the error
+    //verify that we can use the TaskRunner again after the error
     runAndWait(t2)
-    hasRun should equal(true)
+    t2HasRun should equal(true)
     TaskRunner.shutdown()
   }
 

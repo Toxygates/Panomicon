@@ -34,7 +34,8 @@ import scala.collection.JavaConversions._
 object TSVMetadata {
   def ifNone[A](o: Option[A], action: => Unit): Option[A] = { if (o == None) action; o }
 
-  def apply(fact: Factory, file: String, attributes: AttributeSet): Metadata = {
+  def apply(fact: Factory, file: String, attributes: AttributeSet,
+      warningHandler: (String) => Unit = println): Metadata = {
     val metadata: Map[String, Seq[String]] = {
       val columns = TSVFile.readMap("", file)
       Map() ++ (for {
@@ -42,14 +43,14 @@ object TSVMetadata {
         lowerCase = column._1.toLowerCase().trim
         trimmed = column._2.map(_.trim)
         attribute <- ifNone(attributes.byIdLowercase.get(lowerCase),
-            println(s"attribute $lowerCase not found"))
+            warningHandler(s"attribute $lowerCase not found"))
       } yield attribute.id -> trimmed)
     }
 
     val required = attributes.getRequired().map(_.id).map(_.toLowerCase)
     val missingColumns = required.filter(!metadata.keySet.contains(_))
     if (!missingColumns.isEmpty) {
-      println(s"The following columns are missing in $file: $missingColumns")
+      warningHandler(s"The following columns are missing in $file: $missingColumns")
       throw new Exception(s"Missing columns in metadata: ${missingColumns mkString ", "}")
     }
 

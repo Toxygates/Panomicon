@@ -93,11 +93,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 
-      val metadata = createMetadata(metaFile.get)
+      //val metadata = createMetadata(metaFile.get)
 
-      runTasks(batchManager.add(batch, metadata,
-        dataFile.get.getAbsolutePath(),
-        callsFile.map(_.getAbsolutePath()),
+      runTasks(batchManager.add(batch, metaFile.get.getAbsolutePath,
+        dataFile.get.getAbsolutePath,
+        callsFile.map(_.getAbsolutePath),
         false, simpleLog2))
     }
   }
@@ -112,12 +112,16 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     maintenance {
       setLastTask("Update batch metadata")
 
-      val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv").getOrElse {
+      val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv")
+      if (metaFile.isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
-      val metadata = createMetadata(metaFile)
+//      val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv").getOrElse {
+//        throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
+//      }
+//      val metadata = createMetadata(metaFile)
 
-      runTasks(batchManager.updateMetadata(batch, metadata, recalculate))
+      runTasks(batchManager.updateMetadata(batch, metaFile.get.getAbsolutePath, recalculate))
     }
   }
 
