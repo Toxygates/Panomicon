@@ -92,9 +92,6 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   def getProgress(): Progress = {
     TaskRunner.synchronized {
       val messages = TaskRunner.logMessages.toArray
-      for (m <- messages) {
-        println(m)
-      }
       val p = if (TaskRunner.available) {
         new Progress("No task in progress", 0, true)
       } else {
