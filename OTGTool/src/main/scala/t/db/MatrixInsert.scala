@@ -82,7 +82,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
             val sample = it.next
             val vs = values(sample)
 
-            val packed = vs.flatMap(vv => {
+            val packed = vs.toSeq.flatMap(vv => {
               val (probe, v) = vv
               if (knownProbes.contains(probe)) {
                 val pk = try {
