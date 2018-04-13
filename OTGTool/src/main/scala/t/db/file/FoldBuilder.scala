@@ -38,20 +38,20 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
 
   def samples = input.samples.filter(!md.isControl(_))
 
+  protected lazy val groups = md.treatedControlGroups(input.samples)
+
   /**
    * This method may return values for more samples than the one requested. Callers should
    * inspect the results for efficiency.
    */
   def values(s: Sample): Seq[(Sample, String, E)] = {
     println("Compute control values")
-    val groups = md.treatedControlGroups(input.samples)
     var r = List[(Sample, String, E)]()
-
     for ((ts, cs) <- groups;
       if ts.toSet.contains(s)) {
       println("Control barcodes: " + cs)
       println("Treated: " + ts)
-      r = makeFolds(cs.toSeq, ts.toSeq, r)
+      r = makeFolds(cs.toSeq, ts.toSeq, s, r)
     }
     r
   }
@@ -60,7 +60,8 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * Construct fold values for a sample group.
    */
   protected def makeFolds(controlSamples: Seq[Sample],
-      treatedSamples: Seq[Sample], accumulator: List[(Sample, String, E)]): List[(Sample, String, E)]
+      treatedSamples: Seq[Sample], sample: Sample,
+      accumulator: List[(Sample, String, E)]): List[(Sample, String, E)]
 
   /**
    * Compute a control sample (as a mean).
@@ -108,8 +109,12 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
   //TODO: factor out some code shared with the superclass
 
+  /**
+   * @param sample one of the treated samples to build fold values for.
+   */
   override protected def makeFolds(controlSamples: Seq[Sample],
     treatedSamples: Seq[Sample],
+    sample: Sample,
     accumulator: List[Triple]): List[Triple] = {
 
     val controlMean = controlMeanSample(controlSamples, input)
@@ -132,19 +137,16 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     }
 
     var r = accumulator
-    for (x <- treatedSamples) {
-      println(x)
-      for ((p, pv) <- probes zip pVals) {
-        (input.expr(x, p), controlMean.get(p)) match {
-          case (Some(v), Some(control)) =>
-            val foldVal = Math.log(v / control) / l2
-            val controlCalls = controlSamples.flatMap(input.call(_, p))
-            val treatedCalls = treatedSamples.flatMap(input.call(_, p))
-            val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
-              r ::= (x, p, PExprValue(foldVal, pv, pacall))
-          case _ =>
-            r ::= (x, p, PExprValue(Double.NaN, Double.NaN, 'A'))
-        }
+    for ((p, pv) <- probes zip pVals) {
+      (input.expr(sample, p), controlMean.get(p)) match {
+        case (Some(v), Some(control)) =>
+          val foldVal = Math.log(v / control) / l2
+          val controlCalls = controlSamples.flatMap(input.call(_, p))
+          val treatedCalls = treatedSamples.flatMap(input.call(_, p))
+          val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
+          r ::= (sample, p, PExprValue(foldVal, pv, pacall))
+        case _ =>
+          r ::= (sample, p, PExprValue(Double.NaN, Double.NaN, 'A'))
       }
     }
     r
