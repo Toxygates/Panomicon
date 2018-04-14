@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 
 public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
@@ -36,6 +37,8 @@ public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
 
   void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
 
+  void datasetSampleSummary(Dataset d, AsyncCallback<String[][]> callback);
+  
   void deleteBatchAsync(Batch b, AsyncCallback<Void> callback);
 
 }

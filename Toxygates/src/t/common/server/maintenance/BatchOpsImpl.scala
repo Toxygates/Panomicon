@@ -235,4 +235,21 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
     ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
+
+  def datasetSampleSummary(dataset: Dataset): Array[Array[String]] = {
+    val batches = getBatches(Array(dataset.getTitle))
+    
+    val samples = context.samples
+    val params = overviewParameters
+
+    val adata = batches.flatMap(b => {
+      val batchURI = Batches.packURI(b.getTitle)
+      val sf = SampleFilter(None, Some(batchURI))
+      val data = samples.sampleAttributeValueQuery(params)(sf)()
+      data.map(row => params.map(c => row(c.id)).toArray).toSeq
+    })    
+    val titles = params.map(_.title).toArray
+    Array(titles) ++ adata
+  }
+
 }

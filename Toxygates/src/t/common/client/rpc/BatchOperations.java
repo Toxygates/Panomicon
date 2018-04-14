@@ -22,6 +22,7 @@ package t.common.client.rpc;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.MaintenanceException;
 
@@ -50,6 +51,16 @@ public interface BatchOperations extends MaintenanceOperations {
    */
   String[][] batchParameterSummary(Batch b) throws MaintenanceException;
 
+
+  /**
+   * Get parameter summaries and sample counts for a dataset.
+   * The result is a row-major table. The first row will be column headers.
+   * @param d
+   * @return
+   */
+  String[][] datasetSampleSummary(Dataset d);
+
+  
   /**
    * Delete a batch.
    * @param b
