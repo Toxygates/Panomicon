@@ -21,6 +21,7 @@
 package t.db
 
 import t.model.sample.Attribute
+import java.util.NoSuchElementException
 
 /**
  * A series of expression values ranging over some independent variable
@@ -113,11 +114,16 @@ trait SeriesBuilder[S <: Series[S]] {
     packWithLimit(attrib.id, value, mask)
 
   protected def packWithLimit(enum: String, value: String, mask: Int)(implicit mc: MatrixContext): Long = {
-    val p = mc.enumMaps(enum)(value)
-    if (p > mask) {
-      throw new Exception(s"Unable to pack Series: $value in '$enum' is too big ($p)")
+    try {
+      val p = mc.enumMaps(enum)(value)
+      if (p > mask) {
+        throw new Exception(s"Unable to pack Series: $value in '$enum' is too big ($p)")
+      }
+      (p & mask).toLong
+    } catch {
+      case nse: NoSuchElementException =>
+        throw new LookupFailedException(s"Unable to pack value $value for enum $enum")
     }
-    (p & mask).toLong
   }
 
   def meanPoint(ds: Iterable[ExprValue]): ExprValue = {

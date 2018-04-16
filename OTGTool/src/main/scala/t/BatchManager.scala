@@ -703,7 +703,13 @@ class BatchManager(context: Context) {
           val sg = it.next
           val xs = builder.makeNew(source, tsmd, sg)
           for (x <- xs) {
-            target.removePoints(x)
+            try {
+              target.removePoints(x)
+            } catch {
+              case lfe: LookupFailedException => 
+                println(lfe)
+                println("Exception caught, continuing deletion of series")
+            }
           }
           pcomp += 100.0 / total
         }
