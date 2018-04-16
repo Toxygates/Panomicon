@@ -62,28 +62,10 @@ trait RawExpressionData {
     samples.toSeq.flatMap(data(_).keys).distinct
 
   def samples: Iterable[Sample]
-
-  /**
-   * An in-memory snapshot of this data.
-   */
-  def cached: CachedRawData = new CachedRawData(dataMap)
-
-  /**
-   * An in-memory snapshot of this data for a set of samples.
-   */
-  def cached(samples: Iterable[Sample]): CachedRawData = {
-    new CachedRawData(data(samples))
-  }
 }
 
 class Log2Data(raw: RawExpressionData) extends RawExpressionData {
   override def data(s: Sample) = raw.data(s).mapValues(x => (ExprValue.log2(x._1), x._2, x._3))
 
   def samples = raw.samples
-}
-
-class CachedRawData(raw: CMap[Sample, CMap[String, FoldPExpr]]) extends RawExpressionData {
-  override def dataMap = raw
-  override def data(s: Sample) = raw(s)
-  override def samples = raw.keys
 }
