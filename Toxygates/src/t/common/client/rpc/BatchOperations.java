@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.MaintenanceException;
+import t.model.sample.Attribute;
 
 /**
  * Management operations for batches.
@@ -44,21 +45,24 @@ public interface BatchOperations extends MaintenanceOperations {
   void updateBatchMetadataAsync(Batch b, boolean recalculate) throws MaintenanceException;
 
   /**
-   * Get parameter summaries for samples in a batch.
+   * Get attribute summaries for samples in a batch.
    * The result is a row-major table. The first row will be column headers.
    * @param b
    * @return
    */
-  String[][] batchParameterSummary(Batch b) throws MaintenanceException;
+  String[][] batchAttributeSummary(Batch b) throws MaintenanceException;
 
 
   /**
-   * Get parameter summaries and sample counts for a dataset.
+   * Get attribute summaries and sample counts for a dataset
+   * as a pivot table.
    * The result is a row-major table. The first row will be column headers.
    * @param d
    * @return
    */
-  String[][] datasetSampleSummary(Dataset d);
+  String[][] datasetSampleSummary(Dataset d, 
+                                  Attribute[] rowAttributes, 
+                                  Attribute[] columnAttributes);
 
   
   /**

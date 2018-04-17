@@ -26,6 +26,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
+import t.model.sample.Attribute;
 
 public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
   
@@ -35,9 +36,11 @@ public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
 
   void updateBatchMetadataAsync(Batch b, boolean recalculate, AsyncCallback<Void> callback);
 
-  void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
+  void batchAttributeSummary(Batch b, AsyncCallback<String[][]> callback);
 
-  void datasetSampleSummary(Dataset d, AsyncCallback<String[][]> callback);
+  void datasetSampleSummary(Dataset d, Attribute[] rowAttributes,
+                            Attribute[] columnAttributes,
+                            AsyncCallback<String[][]> callback);
   
   void deleteBatchAsync(Batch b, AsyncCallback<Void> callback);
 

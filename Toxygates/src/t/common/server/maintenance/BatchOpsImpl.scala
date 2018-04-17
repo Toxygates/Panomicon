@@ -183,7 +183,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def overviewParameters: Seq[Attribute] =
     context.config.attributes.getRequired.toSeq
 
-  def batchParameterSummary(batch: Batch): Array[Array[String]] = {
+  def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.samples
     val params = overviewParameters
     val batchURI = Batches.packURI(batch.getTitle)
@@ -236,20 +236,47 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
 
-  def datasetSampleSummary(dataset: Dataset): Array[Array[String]] = {
+  def datasetSampleSummary(dataset: Dataset,
+                           rowAttributes: Array[Attribute],
+                           columnAttributes: Array[Attribute]): Array[Array[String]] = {
     val batches = getBatches(Array(dataset.getTitle))
     
     val samples = context.samples
-    val params = overviewParameters
-
+    val allAttribs = rowAttributes ++ columnAttributes
+    
     val adata = batches.flatMap(b => {
       val batchURI = Batches.packURI(b.getTitle)
       val sf = SampleFilter(None, Some(batchURI))
-      val data = samples.sampleAttributeValueQuery(params)(sf)()
-      data.map(row => params.map(c => row(c.id)).toArray).toSeq
+      samples.sampleCountQuery(allAttribs)(sf)()      
     })    
-    val titles = params.map(_.title).toArray
-    Array(titles) ++ adata
+    
+    /**
+     * Construct a pivot table from the raw data.
+     * Example: row attributes are compound, exposure period
+     * Column attributes are Species, Organ
+     * Resulting table of sample counts can be e.g.
+     * 
+     * Compound | Exposure period | Rat/Liver | Rat/Kidney | Mouse/Liver | Mouse/Kidney
+     * A        | 3h              |       3   |      6     |      3      |       6
+     * B        | 3h              |       3   |      6     |      3      |       6
+     */
+    //
+    
+    def rowKey(data: Map[String, String]) = rowAttributes.map(a => data(a.id))
+    def colKey(data: Map[String, String]) = columnAttributes.map(a => data(a.id))
+    
+    val byRow = adata.groupBy(rowKey)
+    val columns = adata.map(colKey) 
+    
+    val headers = rowAttributes.map(_.title).toArray ++
+      columns.map(_.mkString("/"))
+      
+    val rows = byRow.map {case (key, data) => 
+      key ++ columns.map(key => data.filter(colKey(_) == key).
+        map(_("count").toInt).sum.toString)
+    }
+    
+    Array(headers) ++ rows
   }
 
 }
