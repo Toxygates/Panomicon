@@ -66,11 +66,11 @@ abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
   /**
    * Compute a control sample (as a mean).
    */
-  protected def controlMeanSample(controlSamples: Seq[Sample], from: RawExpressionData): CMap[String, Double] = {
+  protected def controlMeanSample(data: Seq[CMap[String, FoldPExpr]]): CMap[String, Double] = {
     var controlValues = HashMap[String, Double]()
 
-    for (probe <- from.probes) {
-      val usableVals = controlSamples.flatMap(from.expr(_, probe))
+    for (probe <- data.flatMap(_.keys).distinct) {
+      val usableVals = data.flatMap(_.get(probe).map(_._1))
       if (usableVals.size > 0) {
         val mean = usableVals.sum / usableVals.size
         controlValues += (probe -> mean)
@@ -114,20 +114,25 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     sample: Sample,
     accumulator: List[Entry]): List[Entry] = {
 
-    val controlMean = controlMeanSample(controlSamples, input)
     val l2 = Math.log(2)
  
-    val controlData = controlSamples.map(input.data)
-    val treatedData = treatedSamples.map(input.data)
+    val controlData = input.data(controlSamples)
+    val treatedData = input.data(treatedSamples)
+    val sampleExpr = treatedData(sample).mapValues(_._1)
+    
+    val controlValues = controlData.values.toSeq
+    val treatedValues = treatedData.values.toSeq
+    val controlMean = controlMeanSample(controlValues)
+    
     val probes = input.probes.toSeq
 
     var r = accumulator
     for (p <- probes) {
-      (input.expr(sample, p), controlMean.get(p)) match {
+      (sampleExpr.get(p), controlMean.get(p)) match {
         case (Some(v), Some(control)) =>
           
-          val cs = controlData.flatMap(_.get(p)).map(_._1)
-          val ts = treatedData.flatMap(_.get(p)).map(_._1)
+          val cs = controlValues.flatMap(_.get(p)).map(_._1)
+          val ts = treatedValues.flatMap(_.get(p)).map(_._1)
           val pval = if (cs.size >= 2 && ts.size >= 2) {
             tt.tTest(cs.toArray, ts.toArray)
           } else {
@@ -135,8 +140,8 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
           }
           
           val foldVal = Math.log(v / control) / l2
-          val controlCalls = controlSamples.flatMap(input.call(_, p))
-          val treatedCalls = treatedSamples.flatMap(input.call(_, p))
+          val controlCalls = controlValues.flatMap(_.get(p).map(_._2))
+          val treatedCalls = treatedValues.flatMap(_.get(p).map(_._2))
           val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
           r ::= (p, (foldVal, pacall, pval))
         case _ =>

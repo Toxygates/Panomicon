@@ -32,9 +32,9 @@ trait LookupMap[T] {
   /**
    * Keys that are actually used
    */
-  def keys: Set[T] = baseMap.keySet
+  lazy val keys: Set[T] = baseMap.keySet
 
-  def tokens: Set[String] = baseMap.values.toSet
+  lazy val tokens: Set[String] = baseMap.values.toSet
 
   def pack(item: String): T 
 

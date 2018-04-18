@@ -216,8 +216,8 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
   implicit val probeMap = mc.probeMap
 
-  def sortSamples(xs: Iterable[Sample]): Seq[Sample] =
-    xs.toSeq.sortBy(_.dbCode)
+  def sortSamples(xs: Iterable[Sample]): Seq[Sample] =   
+    xs.toSeq.sortBy(_.getDbCode.getOrElse(0))
 
   def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, PExprValue)] = {
     val probeName = probeMap.unpack(probe)
@@ -231,7 +231,8 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
   private def potentialChunks(x: Sample, probes: Iterable[Int]): Iterable[V] = {
     val keys = probes.map(p => chunkStartFor(p)).toSeq.distinct
-    keys.map(k => findOrCreateChunk(x.dbCode, k))
+    for (k <- keys; dbcode <- x.getDbCode) 
+      yield findOrCreateChunk(dbcode, k)    
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
