@@ -26,20 +26,20 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.concurrent.Promise
+import scala.util.Random
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
-  def runAndWait[T](task: Task[T], maxDuration: Duration = 200 millis):
-    Unit  = {
+  def runAndWait[T](task: Task[T], maxDuration: Duration = 200 millis): Unit = {
     val future = TaskRunner.runThenFinally(task)(())
-    Await.result(future, maxDuration)
+    Await.ready(future, maxDuration)
   }
 
   test("Basic") {
     var hasRun = false
     val t = Task.simple("simple") {
-      println("hello")
       hasRun = true
     }
     hasRun should equal(false)
@@ -72,6 +72,32 @@ class TaskRunnerTest extends TTestSuite {
     TaskRunner.logMessages should contain("logged")
     TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should equal(true)
+  }
+
+  test("flatMap and task result") {
+    val randomInt = Random.nextInt()
+    val task1 = Task.simple[Int]("Output integer") {
+      randomInt
+    }
+    def task2(int: Int) = Task.simple[Boolean]("Check integer value") {
+      int == randomInt
+    }
+
+    val future1 = TaskRunner.runThenFinally(
+      for {
+        int <- task1
+        result <- task2(int)
+      } yield result)(())
+
+    Await.result(future1, 200 millis) should equal(true)
+
+    val future2 = TaskRunner.runThenFinally(
+      for {
+        int <- task1
+        result <- task2(int + 1)
+      } yield result)(())
+
+    Await.result(future2, 200 millis) should equal(false)
   }
 
   test("Exception") {
@@ -119,5 +145,4 @@ class TaskRunnerTest extends TTestSuite {
     TaskRunner.available should be(true)
     finished should be(true)
   }
-
 }
