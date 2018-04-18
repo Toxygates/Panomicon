@@ -60,7 +60,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     val existingTempFiles: Option[TempFiles] = Option(getAttribute("maintenanceUploads", session))
     if (existingTempFiles.isEmpty) {
       val newTempFiles = new TempFiles()
-      setAttribute("maintenanceUploads", newTempFiles)
+      setAttribute("maintenanceUploads", newTempFiles, session)
       newTempFiles
     } else {
       existingTempFiles.get
