@@ -184,7 +184,7 @@ object TaskRunner {
    * Run a task, and then perform some cleanup regardless of whether the task
    * finished successfully. Does nothing if TaskRunner is unavailable.
    */
-  def runThenFinally(task: Task[_])(cleanup: => Unit):Future[Unit] = synchronized {
+  def runThenFinally[A](task: Task[A])(cleanup: => Unit): Future[A] = synchronized {
     if (!available) {
       throw new Exception("TaskRunner is busy.")
     }
@@ -197,13 +197,17 @@ object TaskRunner {
     Future{
       println("TaskRunner starting")
       // Do we need a way to print number of tasks in queue?
-      task.execute() match {
-        case Success(r) => println("TaskRunner completed successfully")
+      val result = task.execute() match {
+        case Success(r) => {
+          println("TaskRunner completed successfully")
+          Success(r)
+        }
         case Failure(t) => {
           log(s"Error while running task ${currentAtomicTask.get.name}: ${t.getMessage()}")
           t.printStackTrace()
           log("Remaining tasks will not be executed")
           _errorCause = Some(t)
+          Failure(t)
         }
       }
       println("TaskRunner stopping")
@@ -220,6 +224,7 @@ object TaskRunner {
         _currentAtomicTask = None
         _available = true
       }
+      result.get
     }
   }
 
