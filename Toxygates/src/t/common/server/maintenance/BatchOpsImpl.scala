@@ -244,11 +244,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val samples = context.samples
     val allAttribs = rowAttributes ++ columnAttributes
     
-    val adata = batches.flatMap(b => {
+    val adata = batches.toSeq.flatMap(b => {
       val batchURI = Batches.packURI(b.getTitle)
       val sf = SampleFilter(None, Some(batchURI))
       samples.sampleCountQuery(allAttribs)(sf)()      
-    })    
+    }).filter(_.keySet.size > 1) //For empty batches, the only key will be 'count'     
     
     /**
      * Construct a pivot table from the raw data.
@@ -262,21 +262,23 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
      */
     //
     
-    def rowKey(data: Map[String, String]) = rowAttributes.map(a => data(a.id))
-    def colKey(data: Map[String, String]) = columnAttributes.map(a => data(a.id))
+    //NB the toSeq conversion is essential.
+    //Equality for arrays is not deep by default
+    def rowKey(data: Map[String, String]) = rowAttributes.toSeq.map(a => data(a.id))
+    def colKey(data: Map[String, String]) = columnAttributes.toSeq.map(a => data(a.id))
     
-    val byRow = adata.groupBy(rowKey)
-    val columns = adata.map(colKey) 
+    val byRow = adata.groupBy(rowKey).toSeq.sortBy(_._1.mkString(""))
+    val columns = adata.map(colKey).distinct 
     
     val headers = rowAttributes.map(_.title).toArray ++
       columns.map(_.mkString("/"))
       
-    val rows = byRow.map {case (key, data) => 
-      key ++ columns.map(key => data.filter(colKey(_) == key).
+    val rows = byRow.map {case (rkey, data) => 
+      rkey ++ columns.map(ckey => data.filter(colKey(_) == ckey).
         map(_("count").toInt).sum.toString)
     }
     
-    Array(headers) ++ rows
+    Array(headers) ++ rows.map(_.toArray)
   }
 
 }

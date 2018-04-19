@@ -281,7 +281,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     Query(tPrefixes,
       s"""|SELECT $queryVars (STR(COUNT(DISTINCT *)) AS ?count)
           |  WHERE { GRAPH ?batchGraph { 
-          |    ?x ${pattr.map(x => s"t:${x.id} ?{x.id}").mkString("; ")}""".stripMargin,
+          |    ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
       s"""|  }
           |  ${sf.standardSampleFilters} 
           |} 

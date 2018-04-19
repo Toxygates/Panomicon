@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import t.common.client.components.StringArrayTable;
 import t.viewer.client.Utils;
 
 /**
@@ -43,9 +44,12 @@ public class StartScreen extends Screen {
 
   @Override
   public Widget content() {
+    VerticalPanel vp = Utils.mkTallPanel();
+    vp.setWidth("100%");
+   
     HorizontalPanel hp = Utils.mkWidePanel();
-    hp.setHeight("100%");
-
+    vp.add(hp);
+    
     hp.add(welcomeHtml);
     welcomeHtml.setWidth("40em");
     Utils.loadHTML(manager.appInfo().welcomeHtmlURL(), new Utils.HTMLCallback() {
@@ -54,8 +58,11 @@ public class StartScreen extends Screen {
         welcomeHtml.setHTML(html);
       }
     });
+    
+    factory().sampleSummaryTable(this,
+      (StringArrayTable table) -> vp.add(table));
 
-    return makeScrolled(hp);
+    return makeScrolled(vp);
   }
 
   @Override
