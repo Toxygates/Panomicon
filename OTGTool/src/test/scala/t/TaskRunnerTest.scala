@@ -26,32 +26,34 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.concurrent.Promise
+import scala.util.Random
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
-  def runAndWait(tasklets: Iterable[Tasklet], maxDuration: Duration = 200 millis):
-    Unit  = {
-    val future = TaskRunner.runThenFinally(tasklets)(())
-    Await.result(future, maxDuration)
+  def runAndWait[T](task: Task[T], maxDuration: Duration = 200 millis): Unit = {
+    val future = TaskRunner.runThenFinally(task)(())
+    Await.ready(future, maxDuration)
   }
 
-  def runAndWaitSingle(tasklet: Tasklet, maxDuration: Duration = 200 millis): Unit =
-    runAndWait(List(tasklet), maxDuration)
-
-  test("basic") {
+  test("Basic") {
     var hasRun = false
-    val t = Tasklet.simple("simple", () => { hasRun = true })
-    runAndWaitSingle(t)
+    val t = Task.simple("simple") {
+      hasRun = true
+    }
+    hasRun should equal(false)
+    runAndWait(t)
+    println("Done waiting")
     hasRun should equal(true)
-    TaskRunner.currentTask should equal(None)
+    TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should equal(true)
   }
 
-  test("logging and progress") {
+  test("Logging and progress") {
     val promise = Promise[Unit]()
-    val t = new Tasklet("simple") {
-      def run() {
+    val t = new AtomicTask[Unit]("simple") {
+      override def run() = {
         promise.success(())
         log("logged")
         while(shouldContinue(50)) {
@@ -63,44 +65,66 @@ class TaskRunnerTest extends TTestSuite {
 
     val future = TaskRunner.runThenFinally(t)(())
     Await.result(promise.future, 200 millis)
-    TaskRunner.currentTask should equal(Some(t))
+    TaskRunner.currentAtomicTask should equal(Some(t))
     TaskRunner.available should equal(false)
     TaskRunner.shutdown()
     Await.result(future, 200 millis)
     TaskRunner.logMessages should contain("logged")
-    TaskRunner.currentTask should equal(None)
+    TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should equal(true)
   }
 
-  test("Exception") {
-    var hasRun = false
-    val e = new Exception("trouble")
-    val t = new Tasklet("simple") {
-      def run() {
-        throw e
-      }
+  test("flatMap and task result") {
+    val randomInt = Random.nextInt()
+    val task1 = Task.simple[Int]("Output integer") {
+      randomInt
     }
-    val t2 = Tasklet.simple("none", () => { hasRun = true })
+    def task2(int: Int) = Task.simple[Boolean]("Check integer value") {
+      int == randomInt
+    }
 
-    runAndWait(List(t, t2))
-    TaskRunner.currentTask should equal(None)
+    val future1 = TaskRunner.runThenFinally(
+      for {
+        int <- task1
+        result <- task2(int)
+      } yield result)(())
+
+    Await.result(future1, 200 millis) should equal(true)
+
+    val future2 = TaskRunner.runThenFinally(
+      for {
+        int <- task1
+        result <- task2(int + 1)
+      } yield result)(())
+
+    Await.result(future2, 200 millis) should equal(false)
+  }
+
+  test("Exception") {
+    var t2HasRun = false
+    val e = new Exception("trouble")
+    val t = Task.simple[Unit]("throw exception") {
+      throw e
+    }
+    val t2 = Task.simple("set hasRun flag") { t2HasRun = true }
+
+    runAndWait(t andThen t2)
+    TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should be(true)
     TaskRunner.errorCause should equal(Some(e))
-    TaskRunner.queueSize() should equal(0)
-    hasRun should equal(false)
+    t2HasRun should equal(false)
 
-    //verify that we can use it again after the error
-
-    runAndWaitSingle(t2)
-    hasRun should equal(true)
+    //verify that we can use the TaskRunner again after the error
+    runAndWait(t2)
+    t2HasRun should equal(true)
     TaskRunner.shutdown()
   }
 
   test("Interrupted task") {
     val promise = Promise[Unit]()
     var finished = false
-    val t = new Tasklet("interruptable") {
-      def run() {
+    val t = new AtomicTask[Unit]("interruptable") {
+      override def run() {
         promise.success(())
         while(shouldContinue(0.5)) {
           println("working")
@@ -112,16 +136,13 @@ class TaskRunnerTest extends TTestSuite {
 
     val future = TaskRunner.runThenFinally(t)(())
     Await.result(promise.future, 200 millis)
-    TaskRunner.currentTask should equal(Some(t))
+    TaskRunner.currentAtomicTask should equal(Some(t))
     TaskRunner.available should be(false)
-    TaskRunner.queueSize() should equal(0)
 
     TaskRunner.shutdown()
     Await.result(future, 200 millis)
-    TaskRunner.currentTask should equal(None)
+    TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should be(true)
-    TaskRunner.queueSize() should equal(0)
     finished should be(true)
   }
-
 }
