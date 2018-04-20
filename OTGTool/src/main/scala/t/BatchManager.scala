@@ -220,7 +220,6 @@ class BatchManager(context: Context) {
       def timeSeriesDBReader = ???
       def doseSeriesDBReader = ???
 
-
       lazy val probeMap: ProbeMap =
         new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
       lazy val sampleMap: SampleMap =
@@ -247,9 +246,6 @@ class BatchManager(context: Context) {
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false): Task[Unit] = {
 
-    // TODO: more robust updating of maps
-    implicit val mc = matrixContext()
-
     for {
       metadata <- readTSVMetadata(metadataFile)
       _ <- newMetadataCheck(batch.title, metadata, config, append) andThen
@@ -272,8 +268,6 @@ class BatchManager(context: Context) {
 
   def updateMetadata[S <: Series[S]](batch: Batch, metaFile: String,
       recalculate: Boolean = false, simpleLog2: Boolean = false): Task[Unit] = {
-    implicit val mc = matrixContext()
-
     for {
       metadata <- readTSVMetadata(metaFile)
       _ <- updateMetadataCheck(batch.title, metadata, config) andThen
@@ -632,7 +626,7 @@ class BatchManager(context: Context) {
       }
     }
 
-  def addEnums(md: Metadata)(implicit mc: MatrixContext) =
+  def addEnums(md: Metadata) =
     new AtomicTask[Unit]("Add enum values") {
       /*
        * Note: enums currently cannot be deleted. We may eventually need a system
@@ -727,7 +721,7 @@ class BatchManager(context: Context) {
             try {
               target.removePoints(x)
             } catch {
-              case lfe: LookupFailedException => 
+              case lfe: LookupFailedException =>
                 println(lfe)
                 println("Exception caught, continuing deletion of series")
             }
