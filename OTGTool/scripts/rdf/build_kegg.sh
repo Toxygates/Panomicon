@@ -13,7 +13,7 @@ mkdir -p $OUTDIR
 
 #Copy fresh files from the latest regular download
 #These files are available on the cluster (e.g. 10.100.0.34)
-KEGGFTP=/data/bio/db/ftp/kegg
+KEGGFTP=/data/bio/db/ftp/kegg/lftp
 cp $KEGGFTP/genes/organisms/hsa/T01001.ent.gz $OUTDIR
 cp $KEGGFTP/genes/organisms/mmu/T01002.ent.gz $OUTDIR
 cp $KEGGFTP/genes/organisms/rno/T01003.ent.gz $OUTDIR
