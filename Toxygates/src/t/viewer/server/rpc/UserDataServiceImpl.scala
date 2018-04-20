@@ -111,9 +111,9 @@ abstract class UserDataServiceImpl extends TServiceServlet
   }
 
   //Public entry point
-  override def batchParameterSummary(b: Batch): Array[Array[String]] = {
+  override def batchAttributeSummary(b: Batch): Array[Array[String]] = {
     checkAccess(b)
-    super.batchParameterSummary(b)
+    super.batchAttributeSummary(b)
   }
 
   private def checkAccess(b: Batch) {

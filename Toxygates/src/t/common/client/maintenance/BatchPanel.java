@@ -90,7 +90,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
           return;
         }
         
-        batchOps.batchParameterSummary(useBatch, 
+        batchOps.batchAttributeSummary(useBatch, 
             new AsyncCallback<String[][]>() {
               @Override
               public void onFailure(Throwable caught) {
