@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import com.google.gwt.cell.client.*;
 import com.google.gwt.dom.builder.shared.SpanBuilder;
 import com.google.gwt.dom.builder.shared.TableRowBuilder;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
@@ -78,7 +77,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private HorizontalPanel analysisTools;
   private NavigationTools tools;
   // We enable/disable this button when the value type changes
-  private Button foldChangeBtn = new Button("Add fold-change difference");
+  private Button foldChangeBtn;
 
   private final MatrixServiceAsync matrixService;
   private final t.common.client.Resources resources;
@@ -292,7 +291,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   /**
-   * The tool panel for controlling t-tests and u-tests
+   * Tool panel for controlling two-column comparisons, such as t-tests and u-tests
    */
   private void makeAnalysisTools() {
     analysisTools = Utils.mkHorizontalPanel(true);
@@ -303,39 +302,28 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     analysisTools.add(groupsel2);
     groupsel2.setVisibleItemCount(1);
 
-    analysisTools.add(new Button("Add T-test", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
-        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-            Analytics.LABEL_T_TEST);
-      }
+    analysisTools.add(new Button("Add T-test", (ClickHandler) e -> {
+      addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
+      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
+          Analytics.LABEL_T_TEST);
     }));
 
-    analysisTools.add(new Button("Add U-test", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
-        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-            Analytics.LABEL_U_TEST);
-      }
+    analysisTools.add(new Button("Add U-test", (ClickHandler) e -> {
+      addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
+      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
+          Analytics.LABEL_U_TEST);
     }));
 
-    foldChangeBtn.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
-        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-            Analytics.LABEL_FOLD_CHANGE_DIFFERENCE);
-      }
+    foldChangeBtn = new Button("Add fold-change difference");
+    foldChangeBtn.addClickHandler(e -> {
+      addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
+      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
+          Analytics.LABEL_FOLD_CHANGE_DIFFERENCE);
     });
     analysisTools.add(foldChangeBtn);
 
-    analysisTools.add(new Button("Remove tests", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent ce) {
-        removeTests();
-      }
+    analysisTools.add(new Button("Remove tests", (ClickHandler) e -> {
+      removeTests();
     }));
     analysisTools.setVisible(false); // initially hidden
   }
