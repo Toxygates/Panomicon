@@ -25,14 +25,13 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import com.google.gwt.cell.client.*;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.builder.shared.SpanBuilder;
 import com.google.gwt.dom.builder.shared.TableRowBuilder;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
@@ -71,24 +70,15 @@ import t.viewer.shared.table.SortKey;
  */
 public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
-  /**
-   * Initial number of items to show per page at a time (but note that this number can be adjusted
-   * by the user in the 0-250 range)
-   */
-  private final int INIT_PAGE_SIZE = 50;
-  private final int MAX_PAGE_SIZE = 250;
-  private final int PAGE_SIZE_INCREMENT = 50;
-
   private final String COLUMN_WIDTH = "10em";
 
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   
-  private HorizontalPanel tools, analysisTools;
+  private HorizontalPanel analysisTools;
+  private NavigationTools tools;
   // We enable/disable this button when the value type changes
   private Button foldChangeBtn = new Button("Add fold-change difference");
-
-  protected ListBox tableList = new ListBox();
 
   private final MatrixServiceAsync matrixService;
   private final t.common.client.Resources resources;
@@ -126,8 +116,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final Logger logger = SharedUtils.getLogger("expressionTable");
 
   protected ValueType chosenValueType;
-  
-  private CheckBox pcb;
 
   protected class HeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
     AbstractCellTable.Style style;
@@ -201,13 +189,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     grid.setHeaderBuilder(new HeaderBuilder(grid));
     grid.addStyleName("exprGrid");
-    grid.setPageSize(INIT_PAGE_SIZE);
 
     grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     asyncProvider.addDataDisplay(grid);
 
-    makeTools();
+    tools = makeTools();
     makeAnalysisTools();
     setEnabled(false);
   }
@@ -224,8 +211,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
   
   public ValueType getValueType() {
-    String vt = tableList.getItemText(tableList.getSelectedIndex());
-    return ValueType.unpack(vt);
+    return tools.getValueType();    
   }
 
   public Widget tools() {
@@ -242,7 +228,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    * @param enabled
    */
   private void setEnabled(boolean enabled) {
-    Utils.setEnabled(tools, enabled);
+    tools.setEnabled(enabled);
     Utils.setEnabled(analysisTools, enabled);
     enableFoldChangeUI(enabled);
   }
@@ -261,107 +247,39 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   /**
    * The main (navigation) tool panel
    */
-  private void makeTools() {
-    tools = Utils.mkHorizontalPanel();
-
-    HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
-    horizontalPanel.addStyleName("colored");
-    horizontalPanel.addStyleName("slightlySpaced");
-    tools.add(horizontalPanel);
-
-    tableList.setVisibleItemCount(1);
-    horizontalPanel.add(tableList);
-    initTableList();
-    tableList.addChangeHandler(new ChangeHandler() {
+  private NavigationTools makeTools() {
+    NavigationTools r = new NavigationTools(this, grid, withPValueOption) {
       @Override
-      public void onChange(ChangeEvent event) {
-        removeTests();
-        chosenValueType = getValueType();
-        getExpressions();
-      }
-    });
-
-    SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
-
-    SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
-      @Override
-      public void nextPage() {
-        super.nextPage();
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-      }
-
-      @Override
-      public void previousPage() {
-        super.previousPage();
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-      }
-
-      @Override
-      public void setPage(int index) {
-        super.setPage(index);
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-      }
-    };
-    sp.addStyleName("slightlySpaced");
-    horizontalPanel.add(sp);
-    sp.setDisplay(grid);
-
-    PageSizePager pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
-      @Override
-      protected void onRangeOrRowCountChanged() {
-        super.onRangeOrRowCountChanged();
-        if (getPageSize() > MAX_PAGE_SIZE) {
-          setPageSize(MAX_PAGE_SIZE);
+      void onPValueChange(boolean newState) {
+        if (newState && ! hasPValueColumns()) {
+          Window.alert("Precomputed p-values are only available for sample groups "
+              + " in fold-change mode, consisting of a single time and dose.\n"
+              + "If you wish to compare two columns, use "
+              + "\"Compare two sample groups\" in the tools menu.");
+          
+          setDisplayPColumns(false);                        
+        } else {
+          setDisplayPColumns(newState);
+          setupColumns();
         }
-      }
+      }        
     };
-
-    pager.addStyleName("slightlySpaced");
-    horizontalPanel.add(pager);
-
-    if (withPValueOption) {
-      pcb = new CheckBox("p-value columns");
-      horizontalPanel.add(pcb);
-      pcb.setValue(false);      
-      pcb.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (pcb.getValue() && ! hasPValueColumns()) {
-            Window.alert("Precomputed p-values are only available for sample groups "
-                + " in fold-change mode, consisting of a single time and dose.\n"
-                + "If you wish to compare two columns, use "
-                + "\"Compare two sample groups\" in the tools menu.");
-            
-            setDisplayPColumns(false);                        
-          } else {
-            setDisplayPColumns(pcb.getValue());
-            setupColumns();
-          }
-        }
-      });
-    }
-
-    pager.setDisplay(grid);
+    chosenValueType = r.getValueType();
+    return r;
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
     if (withPValueOption) {
       this.displayPColumns = displayPColumns;
-      pcb.setValue(displayPColumns);
+      tools.setPValueState(displayPColumns);      
     }    
-  }
-
-  protected void initTableList() {
-    tableList.addItem(ValueType.Folds.toString());
-    tableList.addItem(ValueType.Absolute.toString());
-    chosenValueType = ValueType.Folds;
   }
 
   public Widget analysisTools() {
     return analysisTools;
   }
 
-  private void removeTests() {    
+  void removeTests() {    
     matrixService.removeTwoGroupTests(new PendingAsyncCallback<ManagedMatrixInfo>(this, 
         "There was an error removing the test columns.") {
 
@@ -862,7 +780,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected void setMatrix(ManagedMatrixInfo matrix) {
     matrixInfo = matrix;
     asyncProvider.updateRowCount(matrix.numRows(), true);
-    int displayRows = (matrix.numRows() > INIT_PAGE_SIZE) ? INIT_PAGE_SIZE : matrix.numRows();
+    int initSize = NavigationTools.INIT_PAGE_SIZE;
+    int displayRows = (matrix.numRows() > initSize) ? initSize : matrix.numRows();
     grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
     setEnabled(true);
   }
