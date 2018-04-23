@@ -32,6 +32,14 @@ case class Sample(sampleId: String, sampleClass: SampleClass) {
 
   def dbCode(implicit context: MatrixContext): Int =
     context.sampleMap.pack(sampleId)
+    
+  def getDbCode(implicit context: MatrixContext): Option[Int] = {
+    if (context.sampleMap.isToken(sampleId)) {
+      Some(context.sampleMap.pack(sampleId))
+    } else {
+      None
+    }
+  }
 
   def identifier = sampleId
 

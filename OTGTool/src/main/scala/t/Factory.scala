@@ -39,8 +39,9 @@ abstract class Factory {
 
   def probes(config: TriplestoreConfig): Probes
 
-  def tsvMetadata(file: String, attr: AttributeSet): Metadata =
-    TSVMetadata(this, file, attr)
+  def tsvMetadata(file: String, attr: AttributeSet,
+      warningHandler: (String) => Unit = println): Metadata =
+    TSVMetadata.apply(this, file, attr, warningHandler)
 
   def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
     new MapMetadata(data, attr)
@@ -57,7 +58,7 @@ abstract class Factory {
 
   def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
     new FilteredMetadata(from, sampleView)
-    
+
   def context(ts: TriplestoreConfig, data: DataConfig): Context
 
   def dataConfig(dir: String, matrixDbOptions: String): DataConfig =

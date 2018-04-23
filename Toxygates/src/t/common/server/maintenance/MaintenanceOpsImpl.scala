@@ -33,8 +33,8 @@ import t.common.shared.maintenance.Progress
 import t.global.KCDBRegistry
 import t.util.TempFiles
 import t.viewer.server.rpc.TServiceServlet
-import t.Tasklet
 import javax.servlet.http.HttpSession
+import t.Task
 
 /**
  * Servlet routines for uploading files and running tasks.
@@ -60,7 +60,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     val existingTempFiles: Option[TempFiles] = Option(getAttribute("maintenanceUploads", session))
     if (existingTempFiles.isEmpty) {
       val newTempFiles = new TempFiles()
-      setAttribute("maintenanceUploads", newTempFiles)
+      setAttribute("maintenanceUploads", newTempFiles, session)
       newTempFiles
     } else {
       existingTempFiles.get
@@ -92,13 +92,10 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   def getProgress(): Progress = {
     TaskRunner.synchronized {
       val messages = TaskRunner.logMessages.toArray
-      for (m <- messages) {
-        println(m)
-      }
       val p = if (TaskRunner.available) {
         new Progress("No task in progress", 0, true)
       } else {
-        TaskRunner.currentTask match {
+        TaskRunner.currentAtomicTask match {
           case Some(t) => new Progress(t.name, t.percentComplete, false)
           case None => new Progress("??", 0, false)
         }
@@ -114,12 +111,12 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
   }
 
-  protected def runTasks(tasklets: Iterable[Tasklet]) {
+  protected def runTasks(task: Task[_]) {
     grabRunner()
     setLastResults(None)
     val currentRequest = request
     val session = request.getSession
-    TaskRunner.runThenFinally(tasklets) {
+    TaskRunner.runThenFinally(task) {
       KCDBRegistry.closeWriters()
       TaskRunner.synchronized {
         try {

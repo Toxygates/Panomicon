@@ -87,13 +87,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * All screens in the order that the links are displayed at the top.
    */
-  private List<Screen> workflow = new ArrayList<Screen>();
+  private List<Screen> screens = new ArrayList<Screen>();
 
   /**
    * All available screens. The key in this map is the "key" field of each Screen instance, which
    * also corresponds to the history token used with GWT's history tracking mechanism.
    */
-  protected Map<String, Screen> screens = new HashMap<String, Screen>();
+  protected Map<String, Screen> screensBykey = new HashMap<String, Screen>();
 
   /**
    * All currently configured screens. See the Screen class for an explanation of the "configured"
@@ -439,8 +439,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   void addWorkflowLinks(Screen current) {
     navPanel.clear();
-    for (int i = 0; i < workflow.size(); ++i) {
-      final Screen s = workflow.get(i);
+    for (int i = 0; i < screens.size(); ++i) {
+      final Screen s = screens.get(i);
       // String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
       String link = s.getTitle();
       final Label label = new Label(link);
@@ -524,10 +524,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * @return
    */
   protected Screen pickScreen(String token) {
-    if (!screens.containsKey(token)) {
-      return screens.get(defaultScreenKey()); // default
+    if (!screensBykey.containsKey(token)) {
+      return screensBykey.get(defaultScreenKey()); // default
     } else {
-      return screens.get(token);
+      return screensBykey.get(token);
     }
   }
 
@@ -556,8 +556,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   protected void addScreenSeq(Screen s) {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
-    screens.put(s.key(), s);
-    workflow.add(s);
+    screensBykey.put(s.key(), s);
+    screens.add(s);
     s.initGUI();
     s.tryConfigure(); // give it a chance to register itself as configured
   }
@@ -578,12 +578,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   @Override
   public void reconfigureAll(Screen from) {
-    for (Screen s : workflow) {
+    for (Screen s : screens) {
       if (s != from) {
         s.setConfigured(false);
       }
     }
-    for (Screen s : workflow) {
+    for (Screen s : screens) {
       if (s != from) {
         s.loadState(s, appInfo.attributes());
         s.tryConfigure();
@@ -658,7 +658,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     for (PersistedState<?> ps: getPersistedItems()) {
       ps.loadAndApply(getParser());
     }
-    for (Screen s: screens.values()) {
+    for (Screen s: screensBykey.values()) {
       s.loadPersistedState();
     }
   }

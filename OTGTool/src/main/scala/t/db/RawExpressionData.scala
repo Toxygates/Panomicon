@@ -42,48 +42,30 @@ trait RawExpressionData {
     Map() ++ ss.map(s => s -> data(s))
 
   /**
-   * Obtain a call value. 
+   * Obtain a call value.
    */
   def call(x: Sample, probe: String): Option[Char] = data(x).get(probe).map(_._2)
-  
+
   /**
-   * Obtain an expression value. 
+   * Obtain an expression value.
    */
   def expr(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._1)
-  
+
   /**
-   * Obtain a p-value. 
+   * Obtain a p-value.
    */
   def p(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._3)
 
   def probes: Iterable[String] = probesInSamples
 
   lazy val probesInSamples =
-    samples.map(data(_)).toSeq.flatMap(_.keys).distinct
+    samples.toSeq.flatMap(data(_).keys).distinct
 
   def samples: Iterable[Sample]
-
-  /**
-   * An in-memory snapshot of this data.
-   */
-  def cached: CachedRawData = new CachedRawData(dataMap)
-
-  /**
-   * An in-memory snapshot of this data for a set of samples.
-   */
-  def cached(samples: Iterable[Sample]): CachedRawData = {
-    new CachedRawData(data(samples))
-  }
 }
 
 class Log2Data(raw: RawExpressionData) extends RawExpressionData {
   override def data(s: Sample) = raw.data(s).mapValues(x => (ExprValue.log2(x._1), x._2, x._3))
 
   def samples = raw.samples
-}
-
-class CachedRawData(raw: CMap[Sample, CMap[String, FoldPExpr]]) extends RawExpressionData {
-  override def dataMap = raw
-  override def data(s: Sample) = raw(s)
-  override def samples = raw.keys
 }

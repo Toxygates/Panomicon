@@ -26,9 +26,12 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
-import otgviewer.client.components.groupdef.*;
+import otgviewer.client.components.groupdef.GroupInspector;
+import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
+import t.common.client.ValueAcceptor;
+import t.common.client.components.StringArrayTable;
 import t.common.shared.DataSchema;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
@@ -64,5 +67,14 @@ public interface UIFactory {
   void multiEnrichment(Screen screen, StringList[] lists, @Nullable IntermineInstance preferredInstance);
   
   boolean hasMyData();
+  
+  /**
+   * Return a summary of samples for display on the start screen, if appropriate.
+   * The value will never be produced if no table should be displayed.
+   * @param screen
+   */
+  default void sampleSummaryTable(Screen screen, 
+                                  ValueAcceptor<StringArrayTable> acceptor) {    
+  }
   
 }

@@ -21,6 +21,7 @@
 package t.db
 
 import t.db._
+import scala.collection.mutable.{Set => MSet}
 
 class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: Iterable[Sample],
     val requestedProbes: Iterable[Int])
@@ -33,8 +34,9 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
     val ns = requestedSamples.size
     logEvent(s"Requesting $np probes for $ns samples")
     
-    val r = reader.valuesInSamples(samples, reader.sortProbes(requestedProbes), false)    
-    val present = r.map(_.filter(!_.isPadding).size).sum
+    val r = reader.valuesInSamples(samples, reader.sortProbes(requestedProbes), false)
+    
+    val present = r.map(_.count(!_.isPadding)).sum
     
     logEvent(s"Found $present values out of a possible " +
               (np * ns))
@@ -55,7 +57,13 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
     Map() ++ (samples zip values)
   }
 
-  override lazy val probes: Iterable[String] = _data.values.flatMap(_.keys).toSeq.distinct
+  override lazy val probes: Iterable[String] = {
+    var r = MSet[String]()
+    for ((sample, lookup) <- _data) {
+      r ++= lookup.keys
+    }
+    r.toSeq
+  }
 
   def data(s: Sample): Map[String, FoldPExpr] = _data(s)
   

@@ -67,12 +67,18 @@ public class OTGViewer extends TApplication {
     UIFactory f;
     //TODO hardcoding these instance names here may be controversial
     // - think of a better way of handling this
-    if (appInfo().instanceName().equals("toxygates")
-        || appInfo().instanceName().equals("tg-update")) {
-      f = new ClassicOTGFactory();
-    } else {
-      f = new OTGFactory();
-    }    
+    switch (appInfo().instanceName()) {
+      case "toxygates":
+      case "tg-update":
+        f = new ClassicOTGFactory();
+        break;
+      case "adjuvant":
+      case "dev":
+        f = new AdjuvantFactory();
+        break;
+      default:
+        f = new OTGFactory();        
+    }
     logger.info("Using factory: " + f.getClass().toString());
     factory = f;
   }

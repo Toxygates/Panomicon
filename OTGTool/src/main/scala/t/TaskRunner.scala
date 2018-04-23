@@ -21,27 +21,69 @@
 package t
 
 import scala.concurrent._
+import scala.language.implicitConversions
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
-object Tasklet {
-  def simple(name: String, f:() => Unit) = new Tasklet(name) {
-    def run() {
-      f()
+/**
+ * New monadic Task API that allows for comprehensions
+ * Tasks are synchronously executing tasks with deferred execution, typically meant
+ * to be run somewhere other than the main thread.
+ */
+trait Task[+T] {
+  self =>
+
+  def execute(): Try[T]
+
+  def map[S](f: T => S): Task[S] = new Task[S] {
+    def execute(): Try[S] = {
+      self.execute() match {
+        case Success(r) => Success(f(r))
+        case Failure(t) => Failure(t)
+      }
     }
+  }
+
+  def flatMap[S](f: T => Task[S]): Task[S] = new Task[S] {
+    def execute(): Try[S] = {
+      self.execute() match {
+        case Success(r) => {
+          val newTask = f(r)
+          if (!TaskRunner.shouldStop) {
+            newTask.execute()
+          } else {
+            Failure(new Exception("TaskRunner aborted"))
+          }
+        }
+        case Failure(t) => Failure(t)
+      }
+    }
+  }
+
+  def andThen[S](t: Task[S]): Task[S] = {
+    flatMap(_ => t)
+  }
+}
+
+object Task {
+  def success = new Task[Unit] {
+    def execute = Success(())
+  }
+
+  def simple[T](name: String)(doWork: => T) = new AtomicTask[T](name) {
+    override def run(): T = doWork
   }
 }
 
 /**
- * Tasklets are named, small, interruptible tasks
- * designed to run in sequence on a single thread dedicated to Tasklet running.
- * Note: it may be possible to achieve a simpler design by using Futures instead
- *  (with the andThen mechanism)
+ * All the actual work in any non-trivial Task will happen in AtomicTasks,
+ * which are tracked by the TaskRunner.
  */
-abstract class Tasklet(val name: String) {
-  import scala.concurrent.ExecutionContext.Implicits.global
+abstract class AtomicTask[+T](val name: String) extends Task[T] {
+  def run(): T
 
-  def run(): Unit
-
-  // The tasklet should regularly update this variable.
+  // The task should regularly update this variable.
   @volatile
   protected var _percentComplete: Double = 0.0
 
@@ -51,16 +93,34 @@ abstract class Tasklet(val name: String) {
   }
 
   /**
-   * Tasks can use this inside a work loop to cancel gracefully
+   * Tasks should periodically call this method to update progress and check
+   * whether they should abort.
    */
   def shouldContinue(pc: Double): Boolean = {
     _percentComplete = pc
     !TaskRunner.shouldStop
   }
 
-  def log(message: String) = TaskRunner.log(message)
+  def execute(): Try[T] = {
+    if (!TaskRunner.shouldStop) {
+      TaskRunner._currentAtomicTask = Some(this)
+      log("Start task \"" + name + "\"")
+      try {
+        val result = run()
+        log("Finish task \"" + name + "\"")
+        Success(result)
+      } catch {
+        case e @ (_: Exception | _: Error) =>
+          log("Failed task \"" + name + "\"")
+          Failure(e)
+      }
+    } else {
+      Failure(new Exception("Task not started due to TaskRunner shutdown"))
+    }
+  }
 
-  def logResult(message: String) = TaskRunner.logResult(name + ": " + message)
+  def log(message: String) = TaskRunner.log(message)
+  def logResult(message: String) = TaskRunner.logResult(s"$name: $message")
 }
 
 /**
@@ -71,8 +131,8 @@ abstract class Tasklet(val name: String) {
 object TaskRunner {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  @volatile private var _currentTask: Option[Tasklet] = None
-  @volatile private var tasks: Vector[Tasklet] = Vector()
+  @volatile var _currentAtomicTask: Option[AtomicTask[_]] = None
+
   @volatile private var _shouldStop = false
   @volatile private var _available: Boolean = true
 
@@ -80,14 +140,7 @@ object TaskRunner {
   @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
 
-  def queueSize(): Int = {
-    tasks.size
-  }
-
-  /**
-   * The task that is currently running or most recently completed.
-   */
-  def currentTask: Option[Tasklet] =  _currentTask
+  def currentAtomicTask = _currentAtomicTask
 
   def shouldStop = _shouldStop
 
@@ -127,8 +180,11 @@ object TaskRunner {
 
   def errorCause: Option[Throwable] = _errorCause
 
-  def runThenFinally(tasklets: Iterable[Tasklet])(cleanup: => Unit):
-    Future[Unit] = synchronized {
+  /**
+   * Run a task, and then perform some cleanup regardless of whether the task
+   * finished successfully. Does nothing if TaskRunner is unavailable.
+   */
+  def runThenFinally[A](task: Task[A])(cleanup: => Unit): Future[A] = synchronized {
     if (!available) {
       throw new Exception("TaskRunner is busy.")
     }
@@ -136,50 +192,41 @@ object TaskRunner {
     _resultMessages = Vector()
     _shouldStop = false
     _errorCause = None
-    tasks = tasklets.toVector
     _available = false
 
-    Future {
+    Future{
       println("TaskRunner starting")
-      while (!shouldStop) {
-        TaskRunner.synchronized {
-          if (!tasks.isEmpty) {
-            println(tasks.size + " tasks in queue")
-            _currentTask = tasks.headOption
-            tasks = tasks.tail
-          }
+      // Do we need a way to print number of tasks in queue?
+      val result = task.execute() match {
+        case Success(r) => {
+          println("TaskRunner completed successfully")
+          Success(r)
         }
-        if (_currentTask == None) {
-          _shouldStop = true
-        } else {
-          val nextt = _currentTask.get
-          log("Start task \"" + nextt.name + "\"")
-          try {
-            nextt.run() // could take a long time to complete
-            log("Finish task \"" + nextt.name + "\"")
-            _currentTask = None
-          } catch {
-            case t: Throwable =>
-              _currentTask = None
-              log("Error while running task " + nextt.name + ": " + t.getMessage())
-              t.printStackTrace() //TODO pass exception to log
-              log("Deleting remaining tasks")
-              _errorCause = Some(t)
-              shutdown()
-          }
+        case Failure(t) => {
+          log(s"Error while running task ${currentAtomicTask.get.name}: ${t.getMessage()}")
+          t.printStackTrace()
+          log("Remaining tasks will not be executed")
+          _errorCause = Some(t)
+          Failure(t)
         }
       }
       println("TaskRunner stopping")
       for (r <- _resultMessages) {
         println(r)
       }
-      cleanup
-      _available = true
+      try {
+        cleanup
+      } catch {
+        case e @ (_: Exception | _: Error) =>
+          log("Error during task cleanup: " + e.getMessage())
+          e.printStackTrace()
+      } finally {
+        _currentAtomicTask = None
+        _available = true
+      }
+      result.get
     }
   }
-
-  def runThenFinally(tasklet: Tasklet)(cleanup: => Unit): Future[Unit] =
-    runThenFinally(List(tasklet))(cleanup)
 
   /**
    * Stop the runner and drop any remaining non-started tasks.
@@ -189,7 +236,6 @@ object TaskRunner {
   def shutdown(): Unit = synchronized {
     println("TaskRunner shutdown requested")
     _shouldStop = true
-    tasks = Vector()
   }
 
 }

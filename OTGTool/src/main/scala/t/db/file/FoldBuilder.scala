@@ -22,44 +22,37 @@ package t.db.file
 
 import java.io._
 
-import scala.Vector
-
 import org.apache.commons.math3.stat.inference.TTest
 
 import friedrich.util.CmdLineOptions
 import t.db._
+import scala.collection.mutable.HashMap
+import scala.collection.{Map => CMap}
 
 /**
  * log-2 fold values constructed from the input data
  * The sample space of the output may be smaller (control samples have no folds)
  */
-abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressionData)
+abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
   extends RawExpressionData {
 
+  type Entry = (String, FoldPExpr)
+
+  override def probes = input.probes
+  
   def samples = input.samples.filter(!md.isControl(_))
 
-  var cachedResults = Map[Sample, Iterable[(Sample, String, E)]]()
+  protected lazy val groups = md.treatedControlGroups(input.samples)
 
-  /**
-   * This method may return values for more samples than the one requested. Callers should
-   * inspect the results for efficiency.
-   */
-  def values(s: Sample): Seq[(Sample, String, E)] = {
+  def values(s: Sample): Seq[Entry] = {
     println("Compute control values")
-    val groups = md.treatedControlGroups(input.samples)
-    var r = Vector[(Sample, String, E)]()
-
+    var r = List[Entry]()
     for ((ts, cs) <- groups;
       if ts.toSet.contains(s)) {
       println("Control barcodes: " + cs)
       println("Treated: " + ts)
-      r ++= makeFolds(cs.toSeq, ts.toSeq)
+      r = makeFolds(cs.toSeq, ts.toSeq, s, r)
     }
-
-    for (s <- r.map(_._1).distinct) {
-      cachedResults += s -> r
-    }
-
     r
   }
 
@@ -67,19 +60,17 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * Construct fold values for a sample group.
    */
   protected def makeFolds(controlSamples: Seq[Sample],
-      treatedSamples: Seq[Sample]): Seq[(Sample, String, E)]
+      treatedSamples: Seq[Sample], sample: Sample,
+      accumulator: List[Entry]): List[Entry]
 
   /**
    * Compute a control sample (as a mean).
-   * @param expr: expression values for each barcode. (probe -> value)
-   * @param calls: calls for each barcode (probe -> call)
-   * @param cbs: control barcodes.
    */
-  protected def controlMeanSample(controlSamples: Seq[Sample], from: RawExpressionData): Map[String, Double] = {
-    var controlValues = Map[String, Double]()
+  protected def controlMeanSample(data: Seq[CMap[String, FoldPExpr]]): CMap[String, Double] = {
+    var controlValues = HashMap[String, Double]()
 
-    for (probe <- from.probes) {
-      val usableVals = controlSamples.flatMap(from.expr(_, probe))
+    for (probe <- data.flatMap(_.keys).distinct) {
+      val usableVals = data.flatMap(_.get(probe).map(_._1))
       if (usableVals.size > 0) {
         val mean = usableVals.sum / usableVals.size
         controlValues += (probe -> mean)
@@ -112,122 +103,58 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
  * expression data for now.
  */
 class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
-  extends FoldValueBuilder[PExprValue](md, input) {
+  extends FoldValueBuilder(md, input) {
   val tt = new TTest
 
-  //TODO: factor out some code shared with the superclass
-
+  /**
+   * @param sample one of the treated samples to build fold values for.
+   */
   override protected def makeFolds(controlSamples: Seq[Sample],
-    treatedSamples: Seq[Sample]): Seq[(Sample, String, PExprValue)] = {
+    treatedSamples: Seq[Sample],
+    sample: Sample,
+    accumulator: List[Entry]): List[Entry] = {
 
-    val cached = input.cached(controlSamples ++ treatedSamples)
-
-    val controlMean = controlMeanSample(controlSamples, cached)
-    var r = Vector[(Sample, String, PExprValue)]()
     val l2 = Math.log(2)
-    var pVals = Map[String, Double]()
+ 
+    val controlData = input.data(controlSamples)
+    val treatedData = input.data(treatedSamples)
+    val sampleExpr = treatedData(sample).mapValues(_._1)
+    
+    val controlValues = controlData.values.toSeq
+    val treatedValues = treatedData.values.toSeq
+    val controlMean = controlMeanSample(controlValues)
+    
+    val probes = input.probes.toSeq
 
-    val controlData = controlSamples.map(cached.data)
-    val treatedData = treatedSamples.map(cached.data)
-      
-    for (probe <- cached.probes) {
-      val cs = controlData.flatMap(_.get(probe)).map(_._1)
-      val ts = treatedData.flatMap(_.get(probe)).map(_._1)
-      val pval = if (cs.size >= 2 && ts.size >= 2) {
-        tt.tTest(cs.toArray, ts.toArray)
-      } else {
-        Double.NaN
+    var r = accumulator
+    for (p <- probes) {
+      (sampleExpr.get(p), controlMean.get(p)) match {
+        case (Some(v), Some(control)) =>
+          
+          val cs = controlValues.flatMap(_.get(p)).map(_._1)
+          val ts = treatedValues.flatMap(_.get(p)).map(_._1)
+          val pval = if (cs.size >= 2 && ts.size >= 2) {
+            tt.tTest(cs.toArray, ts.toArray)
+          } else {
+            Double.NaN
+          }
+          
+          val foldVal = Math.log(v / control) / l2
+          val controlCalls = controlValues.flatMap(_.get(p).map(_._2))
+          val treatedCalls = treatedValues.flatMap(_.get(p).map(_._2))
+          val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
+          r ::= (p, (foldVal, pacall, pval))
+        case _ =>
+          r ::= (p, (Double.NaN, 'A', Double.NaN))
       }
-      pVals += (probe -> pval)
-    }
-
-    for (x <- treatedSamples) {
-      println(x)
-      r ++= cached.probes.map(p => {
-        (cached.expr(x, p), controlMean.get(p)) match {
-          case (Some(v), Some(control)) =>
-            val foldVal = Math.log(v / control) / l2
-            val controlCalls = controlSamples.flatMap(cached.call(_, p))
-            val treatedCalls = treatedSamples.flatMap(cached.call(_, p))
-            val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
-              (x, p, PExprValue(foldVal, pVals(p), pacall))
-          case _ =>
-            (x, p, PExprValue(Double.NaN, Double.NaN, 'A'))
-        }
-      })
     }
     r
   }
 
   import scala.collection.{Map => CMap}
 
-  def data(s: Sample): CMap[String, FoldPExpr] = {
-    val vs = (if (cachedResults.contains(s)) {
-      val r = cachedResults(s)
-      cachedResults -= s
-      r
-    } else {
-      values(s)
-    }).filter(_._1 == s)
-
-    Map() ++ vs.map(v => v._2 -> (v._3.value, v._3.call, v._3.p))
+  def data(s: Sample): CMap[String, FoldPExpr] = {       
+    HashMap() ++ values(s)
   }
 }
 
-object FoldBuilder extends CmdLineOptions {
-
-  def main(args: Array[String]) {
-    val input = require(stringOption(args, "-input"),
-      "Please specify input file with -input")
-    val calls = require(stringOption(args, "-calls"),
-      "Please specify calls file with -calls")
-
-    val mdfile = require(stringOption(args, "-metadata"),
-      "Please specify metadata file with -metadata")
-
-      //TODO - avoid/clarify dependency from t.db -> otg
-    val factory = new otg.OTGFactory 
-
-    val md = factory.tsvMetadata(mdfile, otg.model.sample.AttributeSet.getDefault)
-    val data = new CSVRawExpressionData(List(input), List(calls),
-        Some(md.samples.size), println)
-    val builder = new PFoldValueBuilder(md, data)
-
-    val output = input.replace(".csv", "_fold.csv")
-    val callout = calls.replace(".csv", "_fold.csv")
-    val pout = input.replace(".csv", "_fold_p.csv")
-
-    val writer = new BufferedWriter(new FileWriter(output))
-    val callwriter = new BufferedWriter(new FileWriter(callout))
-    val pwriter = new BufferedWriter(new FileWriter(pout))
-
-    val writers = List(writer, callwriter, pwriter)
-
-    try {
-      val samples = builder.samples.toSeq
-      val vals = samples.flatMap(builder.values)
-//      val samples = vals.map(_._1).toSeq.distinct
-      for (w <- writers) { headers(w, samples) }
-
-      val values = vals.groupBy(_._2)
-      for ((p, vs) <- values; sorted = vs.toSeq.sortBy(s => samples.indexOf(s._1))) {
-        for (w <- writers) { w.write("\"" + p + "\",") }
-
-        writer.write(sorted.map(_._3.value).mkString(","))
-        callwriter.write(sorted.map(x => "\"" + x._3.call + "\"").mkString(","))
-        pwriter.write(sorted.map(_._3.p).mkString(","))
-
-        for (w <- writers) { w.newLine() }
-      }
-    } finally {
-      for (w <- writers) { w.close() }
-    }
-  }
-
-  def headers(writer: BufferedWriter, samples: Iterable[Sample]) {
-    writer.write("\"\",")
-    writer.write(samples.map("\"" + _.identifier + "\"").mkString(","))
-    writer.newLine()
-  }
-
-}

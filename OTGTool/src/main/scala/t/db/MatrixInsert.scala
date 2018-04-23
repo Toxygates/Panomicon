@@ -20,7 +20,8 @@
 
 package t.db
 
-import t.Tasklet
+import t.AtomicTask
+import t.Task
 
 /*
  * Note: this is currently only used in tests.
@@ -55,9 +56,9 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
       (probe, (v, c, p)) <- raw.data(x)
     ) yield (probe, mkValue(v, c, p))
 
-  def insert(name: String): Tasklet = {
-    new Tasklet(name) {
-      def run() {
+  def insert(name: String): Task[Unit] = {
+    new AtomicTask[Unit](name) {
+      override def run(): Unit = {
         try {
           val ns = raw.samples.size
           log(s"$ns samples")
@@ -81,7 +82,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
             val sample = it.next
             val vs = values(sample)
 
-            val packed = vs.flatMap(vv => {
+            val packed = vs.toSeq.flatMap(vv => {
               val (probe, v) = vv
               if (knownProbes.contains(probe)) {
                 val pk = try {

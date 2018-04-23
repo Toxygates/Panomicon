@@ -23,17 +23,16 @@ package otgviewer.client.components;
 import static t.viewer.client.StorageParser.*;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
-
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 
 /**
  * A Composite that is also a DataViewListener. 
@@ -400,75 +399,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     SampleClass sc = t.common.client.Utils.unpackSampleClass(attributes, v);
     changeSampleClass(sc);    
-  }
-
-  /**
-   * Load saved state from the local storage. 
-   * If the loaded state is different from what was previously remembered in this widget, the appropriate 
-   * signals will fire.
-   */
-  public void loadState(Screen sc, AttributeSet attributes) {
-    StorageParser p = getParser(sc);
-    loadState(p, sc.schema(), attributes);
-  }
-
-  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
-    SampleClass sc = new SampleClass();
-    // Note: currently the "real" sample class, as chosen by the user on the
-    // column screen for example, is not stored, and hence not propagated
-    // between screens.
-    sampleClassChanged(sc);
-
-    try {
-      List<Group> cs = loadColumns(p, schema, "columns", chosenColumns, attributes);
-      if (cs != null) {
-        logger.info("Unpacked columns: " + cs.get(0) + ": "
-            + cs.get(0).getSamples()[0] + " ... ");
-        columnsChanged(cs);
-      }
-      Group g = unpackColumn(schema, p.getItem("customColumn"), attributes);
-      if (g != null) {
-        customColumnChanged(g);
-      }
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Unable to load state", e);
-      // one possible failure source is if data is stored in an incorrect
-      // format
-      columnsChanged(new ArrayList<Group>());
-      storeColumns(p); // overwrite the old data
-      storeCustomColumn(p, null); // ditto
-      logger.log(Level.WARNING, "Exception while parsing state", e);
-    }
-
-    String v = p.getItem("probes");
-    if (v != null && !v.equals("") && !v.equals(packProbes(chosenProbes))) {
-      chosenProbes = v.split("###");
-      probesChanged(chosenProbes);
-    } else if (v == null || v.equals("")) {
-      probesChanged(new String[0]);
-    }
-    List<ItemList> lists = loadItemLists(p);
-    if (lists.size() > 0) {
-      chosenItemLists = lists;
-      itemListsChanged(lists);
-    }
-    
-    ItemList geneSet = ItemList.unpack(p.getItem("geneset"));
-    if (geneSet != null) {
-      chosenGeneSet = geneSet;
-    }
-    geneSetChanged(geneSet);
-    
-    lists = loadClusteringLists(p);
-    if (lists.size() > 0) {
-      chosenClusteringList = lists;
-      clusteringListsChanged(lists);
-    }
-    
-    //Note: the ordering of the following 3 is important
-    loadDatasets(p);
-    loadSampleClass(p, attributes);
-    loadCompounds(p);
   }
 
   private int numPendingRequests = 0;
