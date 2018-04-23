@@ -756,19 +756,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       public void onSuccess(List<ExpressionRow> result) {
         if (result.size() > 0) {
           updateRowData(range.getStart(), result);
-          List<String> dispAts = new ArrayList<String>();
-          List<String> dispPs = new ArrayList<String>();
-
-          for (int i = 0; i < result.size(); ++i) {
-            String[] ats = result.get(i).getAtomicProbes();
-            for (String at : ats) {
-              dispAts.add(at);
-            }
-            dispPs.add(result.get(i).getProbe());
-          }
-
-          displayedAtomicProbes = dispAts.toArray(new String[0]);
-          displayedProbes = dispPs.toArray(new String[0]);
+          displayedAtomicProbes = result.stream().
+              flatMap(r -> Arrays.stream(r.getAtomicProbes())).
+              toArray(String[]::new);
+          displayedProbes = result.stream().map(r -> r.getProbe()).
+              toArray(String[]::new);          
           highlightedRow = -1;
           getAssociations();
         } else {
