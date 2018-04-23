@@ -32,6 +32,8 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
   private ImageResource image;
   private boolean displayText;
 
+  public static final String CLICK_ELEMENT_ID = "imageClickCell";
+  
   public ImageClickCell(ImageResource image, boolean displayText) {
     super("click");
     this.image = image;
@@ -41,8 +43,9 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
   public void render(Cell.Context context, T data, SafeHtmlBuilder sb) {
     if (displayText) {
       appendText(data, sb);
-    }
-    sb.append(SafeHtmlUtils.fromTrustedString("<span style=\"margin:5px\">"
+    }       
+    sb.append(SafeHtmlUtils.fromTrustedString("<span id=\"" + CLICK_ELEMENT_ID + 
+        "\" style=\"margin:5px\">"
         + AbstractImagePrototype.create(image).getHTML() + "</span>"));
   }
 

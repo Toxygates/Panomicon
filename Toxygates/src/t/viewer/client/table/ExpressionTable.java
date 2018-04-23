@@ -418,13 +418,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
      * clicks) or not (filter clicks).
      */
 
-    // Identify a click on the filter image.
-    // TODO use a more robust identification method (!!)
-    boolean shouldFilterClick =
-        ((target.startsWith("<img") || target.startsWith("<IMG")) && 
-            (target.indexOf("width:12") != -1 || // most browsers
-            target.indexOf("WIDTH: 12") != -1 || // IE9
-        target.indexOf("width: 12") != -1)); // IE8
+    boolean shouldFilterClick = target.equals(ImageClickCell.CLICK_ELEMENT_ID);
     if (shouldFilterClick) {
       // Identify the column that was filtered.
       int col = columnAt(x);
