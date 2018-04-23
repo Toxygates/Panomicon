@@ -27,13 +27,13 @@ import javax.annotation.Nullable;
 import com.google.gwt.cell.client.*;
 import com.google.gwt.dom.builder.shared.SpanBuilder;
 import com.google.gwt.dom.builder.shared.TableRowBuilder;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 
 import otgviewer.client.StandardColumns;
@@ -74,10 +74,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   
-  private HorizontalPanel analysisTools;
   private NavigationTools tools;
-  // We enable/disable this button when the value type changes
-  private Button foldChangeBtn;
+  private AnalysisTools analysisTools;
 
   private final MatrixServiceAsync matrixService;
   private final t.common.client.Resources resources;
@@ -91,10 +89,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   // For Analytics: we count every matrix load other than the first as a gene set change
   private boolean firstMatrixLoad = true;
 
-  /**
-   * For selecting sample groups to apply t-test/u-test to
-   */
-  private ListBox groupsel1 = new ListBox(), groupsel2 = new ListBox();
 
   /**
    * Names of the probes currently displayed
@@ -194,7 +188,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     asyncProvider.addDataDisplay(grid);
 
     tools = makeTools();
-    makeAnalysisTools();
+    analysisTools = new AnalysisTools(this);
     setEnabled(false);
   }
   
@@ -228,19 +222,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void setEnabled(boolean enabled) {
     tools.setEnabled(enabled);
-    Utils.setEnabled(analysisTools, enabled);
-    enableFoldChangeUI(enabled);
-  }
-
-  private void enableFoldChangeUI(boolean enabled) {
-    switch (chosenValueType) {
-      case Absolute:
-        foldChangeBtn.setEnabled(false);
-        break;
-      case Folds:
-        foldChangeBtn.setEnabled(true && enabled);
-        break;
-    }
+    analysisTools.setEnabled(chosenValueType, enabled);     
   }
 
   /**
@@ -290,66 +272,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     });    
   }
 
-  /**
-   * Tool panel for controlling two-column comparisons, such as t-tests and u-tests
-   */
-  private void makeAnalysisTools() {
-    analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.addStyleName("analysisTools");
-
-    analysisTools.add(groupsel1);
-    groupsel1.setVisibleItemCount(1);
-    analysisTools.add(groupsel2);
-    groupsel2.setVisibleItemCount(1);
-
-    analysisTools.add(new Button("Add T-test", (ClickHandler) e -> {
-      addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
-      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-          Analytics.LABEL_T_TEST);
-    }));
-
-    analysisTools.add(new Button("Add U-test", (ClickHandler) e -> {
-      addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
-      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-          Analytics.LABEL_U_TEST);
-    }));
-
-    foldChangeBtn = new Button("Add fold-change difference");
-    foldChangeBtn.addClickHandler(e -> {
-      addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
-      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-          Analytics.LABEL_FOLD_CHANGE_DIFFERENCE);
-    });
-    analysisTools.add(foldChangeBtn);
-
-    analysisTools.add(new Button("Remove tests", (ClickHandler) e -> {
-      removeTests();
-    }));
-    analysisTools.setVisible(false); // initially hidden
-  }
-
-  private static String selectedGroup(ListBox groupSelector) {
-    return groupSelector.getItemText(groupSelector.getSelectedIndex());
-  }
-
-  private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
-    if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
-      Window.alert("Please select two groups to compute " + name + ".");
-    } else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
-      Window.alert("Please select two different groups to perform " + name + ".");
-    } else {
-      final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1)).get();
-      final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2)).get();
-      synth.setGroups(g1, g2);
-      matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
-          "Adding test column failed") {
-        @Override
-        public void handleSuccess(ManagedMatrixInfo r) {
-          setMatrix(r);
-          setupColumns();
-        }
-      });
-    }
+  void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
+    final Group g1 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup1()).get();
+    final Group g2 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup2()).get();
+    synth.setGroups(g1, g2);
+    matrixService.addTwoGroupTest(synth,
+        new PendingAsyncCallback<ManagedMatrixInfo>(this, "Adding test column failed") {
+          @Override
+          public void handleSuccess(ManagedMatrixInfo r) {
+            setMatrix(r);
+            setupColumns();
+          }
+        });
   }
 
   public void downloadCSV(boolean individualSamples) {
@@ -715,20 +649,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     changeSampleClass(SampleClass.intersection(allCs));
     logger.info("Set SC to: " + chosenSampleClass.toString());
 
-    groupsel1.clear();
-    groupsel2.clear();
-    for (DataColumn<?> dc : columns) {
-      if (dc instanceof Group) {
-        groupsel1.addItem(dc.getShortTitle());
-        groupsel2.addItem(dc.getShortTitle());
-      }
-    }
-
-    if (columns.size() >= 2) {
-      groupsel1.setSelectedIndex(0);
-      groupsel2.setSelectedIndex(1);
-    }
-
+    analysisTools.columnsChanged(columns);
+    
     chartBarcodes = null;
     loadedData = false;
     logger.info("Columns changed (" + columns.size() + ")");
