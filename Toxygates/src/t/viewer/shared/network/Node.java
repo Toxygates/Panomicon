@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.shared.AssociationValue;
 
 @SuppressWarnings("serial")
 public class Node implements Serializable {

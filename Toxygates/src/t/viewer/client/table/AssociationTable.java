@@ -288,7 +288,7 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
   }
   
   AssociationSummary<T> associationSummary(AssociationColumn col) {
-    return new AssociationSummary<T>(col, grid.getDisplayedItems());
+    return new AssociationSummary<T>(col, grid.getVisibleItems());
   }
   
 }

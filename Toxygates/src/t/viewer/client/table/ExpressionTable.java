@@ -661,7 +661,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
     AssociationSummary<ExpressionRow> summary = 
-        new AssociationSummary<ExpressionRow>(col, grid.getDisplayedItems());
+        new AssociationSummary<ExpressionRow>(col, grid.getVisibleItems());
     StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
       500, 500);
   }
