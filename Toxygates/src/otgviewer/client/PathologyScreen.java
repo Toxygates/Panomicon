@@ -220,7 +220,7 @@ public class PathologyScreen extends Screen {
 
   class InspectCell extends ImageClickCell.StringImageClickCell {
     InspectCell() {
-      super(manager.resources().magnify(), false);
+      super(manager.resources().magnify(), "inspect", false);
     }
 
     @Override

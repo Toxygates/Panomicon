@@ -32,11 +32,11 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
   private ImageResource image;
   private boolean displayText;
 
-  public static final String CLICK_ELEMENT_ID = "imageClickCell";
-  
-  public ImageClickCell(ImageResource image, boolean displayText) {
+  private String clickIdString; 
+  public ImageClickCell(ImageResource image, String clickIdString, boolean displayText) {
     super("click");
     this.image = image;
+    this.clickIdString = clickIdString;
     this.displayText = displayText;
   }
 
@@ -44,7 +44,7 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
     if (displayText) {
       appendText(data, sb);
     }       
-    sb.append(SafeHtmlUtils.fromTrustedString("<span id=\"" + CLICK_ELEMENT_ID + 
+    sb.append(SafeHtmlUtils.fromTrustedString("<span id=\"" + clickIdString +  
         "\" style=\"margin:5px\">"
         + AbstractImagePrototype.create(image).getHTML() + "</span>"));
   }
@@ -74,8 +74,8 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
   abstract public void onClick(T value);
 
   abstract public static class StringImageClickCell extends ImageClickCell<String> {
-    public StringImageClickCell(ImageResource image, boolean displayText) {
-      super(image, displayText);
+    public StringImageClickCell(ImageResource image, String idString, boolean displayText) {
+      super(image, idString, displayText);
     }
 
     protected void appendText(String text, SafeHtmlBuilder sb) {
@@ -84,8 +84,8 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
   }
 
   abstract public static class SafeHtmlImageClickCell extends ImageClickCell<SafeHtml> {
-    public SafeHtmlImageClickCell(ImageResource image, boolean displayText) {
-      super(image, displayText);
+    public SafeHtmlImageClickCell(ImageResource image, String idString, boolean displayText) {
+      super(image, idString, displayText);
     }
 
     protected void appendText(SafeHtml text, SafeHtmlBuilder sb) {

@@ -418,7 +418,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
      * clicks) or not (filter clicks).
      */
 
-    boolean shouldFilterClick = target.equals(ImageClickCell.CLICK_ELEMENT_ID);
+    logger.info("Click target: " + target);
+    boolean shouldFilterClick = target.equals(FilterCell.CLICK_ID);
     if (shouldFilterClick) {
       // Identify the column that was filtered.
       int col = columnAt(x);
@@ -764,14 +765,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     });
     Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
-
+  
   /**
    * This cell displays an image that can be clicked to display charts.
    */
   class ToolCell extends ImageClickCell.StringImageClickCell {
 
     public ToolCell(DataListenerWidget owner) {
-      super(resources.chart(), false);
+      super(resources.chart(), "charts", false);
     }
 
     @Override

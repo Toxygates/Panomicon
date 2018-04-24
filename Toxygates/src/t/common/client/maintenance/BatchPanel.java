@@ -80,7 +80,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
 
     //TODO factor out column construction code, share with e.g. PathologyScreen
     final ImageClickCell<String> overviewCell = 
-        new ImageClickCell.StringImageClickCell(resources.magnify(), false) {
+        new ImageClickCell.StringImageClickCell(resources.magnify(), "overview", false) {
 
       @Override
       public void onClick(final String value) {       

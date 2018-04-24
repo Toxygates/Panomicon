@@ -47,7 +47,7 @@ public class UnitTable extends ResultTable<Unit> {
 
   class InspectCell extends ImageClickCell<Unit> {
     InspectCell() {
-      super(delegate.inspectCellImage(), false);
+      super(delegate.inspectCellImage(), "inspect", false);
     }
 
     @Override

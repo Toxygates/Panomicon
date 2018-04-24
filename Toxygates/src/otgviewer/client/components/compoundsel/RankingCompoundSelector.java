@@ -149,7 +149,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     final DataListenerWidget w;
 
     public ChartClickCell(DataListenerWidget w) {
-      super(resources.chart(), false);
+      super(resources.chart(), "charts", false);
       this.w = w;
     }
 
