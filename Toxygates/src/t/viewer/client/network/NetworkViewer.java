@@ -7,6 +7,10 @@ import javax.annotation.Nullable;
 
 import t.viewer.shared.network.Node;
 
+/**
+ * A viewer that displays a subset of a network.
+ *
+ */
 public interface NetworkViewer {
 
   List<Node> getSourceNodes();

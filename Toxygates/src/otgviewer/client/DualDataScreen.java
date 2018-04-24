@@ -18,10 +18,12 @@ import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
+import t.viewer.client.network.NetworkController;
 import t.viewer.client.network.NetworkViewer;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.*;
-import t.viewer.shared.*;
+import t.viewer.shared.Association;
+import t.viewer.shared.Synthetic;
 import t.viewer.shared.network.*;
 
 /**
@@ -95,6 +97,13 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
    */
   DualMode mode = DualMode.Forward;
   
+  NetworkController controller = new NetworkController(this) {
+    @Override
+    public Map<String, Collection<String>> linkingMap() {
+      return DualDataScreen.this.linkingMap();
+    }    
+  };
+  
   public DualDataScreen(ScreenManager man) {
     super(man);
     
@@ -162,7 +171,7 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
   protected void downloadNetwork(Format format) {
     if (mode.isSplit) {
       MatrixServiceAsync matrixService = manager().matrixService();
-      Network network = buildNetwork("miRNA-mRNA interactions");
+      Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
       matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(this) {
         public void handleSuccess(String url) {
           Utils.displayURL("Your download is ready.", "Download", url);
@@ -173,25 +182,15 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
     }
   }
   
-  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {    
-    if (fromMain && selected != null) {   
-      Map<String, Collection<AssociationValue>> lookup = linkingMap();
-      Collection<AssociationValue> assocs = lookup.get(selected);
-      if (assocs != null) {          
-        return lookup.get(selected).stream().map(av -> 
-            av.formalIdentifier()).collect(Collectors.toSet());        
+  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {
+    Map<String, Collection<String>> lookup = fromMain ? linkingMap() : mappingSummary.getReverseMap();    
+    if (selected != null) {   
+      if (lookup != null && lookup.containsKey(selected)) {          
+        return new HashSet<String>(lookup.get(selected));        
       } else {
         logger.warning("No association indications for " + selected);
       }
-    } else if (selected != null) {
-      Map<String, Collection<String>> lookup = mappingSummary.getReverseMap();
-      Collection<String> assocs = lookup.get(selected);
-      if (assocs != null) {
-        return new HashSet<String>(assocs);
-      } else {
-        logger.warning("No reverse association indications for " + selected);
-      }           
-    }    
+    }                
     return new HashSet<String>();
   }
   
@@ -370,38 +369,8 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
    * Maps mRNA-miRNA in forward mode, miRNA-mRNA in reverse mode
    * @return
    */
-  protected Map<String, Collection<AssociationValue>> linkingMap() {    
+  protected Map<String, Collection<String>> linkingMap() {    
     return mappingSummary.getFullMap();
-  }
-  
-  /**
-   * Build the interaction network represented by the current view in the two tables.
-   * @return
-   */
-  public Network buildNetwork(String title) {
-    List<Node> nodes = new ArrayList<Node>();
-    nodes.addAll(getSourceNodes());    
-    nodes.addAll(getDestNodes());
-    Map<String, Node> lookup = new HashMap<String, Node>();    
-    for (Node n: nodes) {
-      lookup.put(n.id(), n);
-    }
-
-    List<Interaction> interactions = new ArrayList<Interaction>();
-    Map<String, Collection<AssociationValue>> fullMap = linkingMap();
-    for (String mainProbe: fullMap.keySet()) {
-      for (AssociationValue av: fullMap.get(mainProbe)) {        
-        Node main = lookup.get(mainProbe);
-        Node side = lookup.get(av.formalIdentifier());
-        
-        //Directed interaction normally from miRNA to mRNA
-        Node from = (mode == DualMode.Forward) ? main : side;
-        Node to = (mode == DualMode.Forward)  ? side: main;
-        Interaction i = new Interaction(from, to, null, null);
-        interactions.add(i);
-      }
-    }
-    return new Network(title, nodes, interactions);
   }
   
   @Override
