@@ -5,6 +5,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.SingleSelectionModel;
+
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import t.common.shared.*;
@@ -13,15 +18,11 @@ import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
+import t.viewer.client.network.NetworkViewer;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.*;
 import t.viewer.shared.*;
 import t.viewer.shared.network.*;
-
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
  * A DataScreen that can display two tables side by side.
@@ -32,7 +33,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * The "main" table drives the side table, in the sense that what is being displayed in the
  * latter depends on the content of the former.
  */
-public class DualDataScreen extends DataScreen {
+public class DualDataScreen extends DataScreen implements NetworkViewer {
 
   protected ExpressionTable sideExpressionTable;
   
@@ -104,9 +105,9 @@ public class DualDataScreen extends DataScreen {
     sideExpressionTable.addStyleName("sideExpressionTable");
     
     expressionTable.selectionModel().addSelectionChangeHandler(e ->
-      setIndications(expressionTable, sideExpressionTable, true));      
+      onSourceSelectionChanged(getSelectedSourceNode()));
     sideExpressionTable.selectionModel().addSelectionChangeHandler(e ->
-      setIndications(sideExpressionTable, expressionTable, false));
+      onDestSelectionChanged(getSelectedDestNode()));
   }
   
   protected void flipDualView() {    
@@ -169,22 +170,6 @@ public class DualDataScreen extends DataScreen {
       });
     } else {
       Window.alert("Please view mRNA and miRNA samples simultaneously to download networks.");
-    }
-  }
-  
-  /**
-   * When the selection in one of the tables has changed, highlight the associated rows
-   * in the other table.
-   * @param fromTable
-   * @param toTable
-   * @param fromType
-   */
-  protected void setIndications(ExpressionTable fromTable, ExpressionTable toTable,
-                                boolean fromMain) {
-    if (mode.isSplit) {
-      ExpressionRow r =
-          ((SingleSelectionModel<ExpressionRow>) fromTable.selectionModel()).getSelectedObject();
-      toTable.setIndicatedProbes(getIndicatedRows(r != null ? r.getProbe() : null, fromMain), true);
     }
   }
   
@@ -395,8 +380,8 @@ public class DualDataScreen extends DataScreen {
    */
   public Network buildNetwork(String title) {
     List<Node> nodes = new ArrayList<Node>();
-    nodes.addAll(buildNodes(mode.mainType, expressionTable.getDisplayedRows()));    
-    nodes.addAll(buildNodes(mode.sideType, sideExpressionTable.getDisplayedRows()));
+    nodes.addAll(getSourceNodes());    
+    nodes.addAll(getDestNodes());
     Map<String, Node> lookup = new HashMap<String, Node>();    
     for (Node n: nodes) {
       lookup.put(n.id(), n);
@@ -417,6 +402,67 @@ public class DualDataScreen extends DataScreen {
       }
     }
     return new Network(title, nodes, interactions);
+  }
+  
+  @Override
+  public List<Node> getSourceNodes() {
+    return buildNodes(mode.mainType, expressionTable.getDisplayedRows());
+  }
+  
+  @Override
+  public List<Node> getDestNodes() {
+    return buildNodes(mode.sideType, sideExpressionTable.getDisplayedRows());    
+  }
+  
+  @Override
+  public String getSourceType() {
+    return mode.mainType;
+  }
+  
+  @Override
+  public String getDestType() {
+    return mode.sideType;
+  }
+  
+  @Nullable 
+  private String getSelectedNode(ExpressionTable table) {
+    ExpressionRow r =
+        ((SingleSelectionModel<ExpressionRow>) table.selectionModel()).getSelectedObject();
+    return (r != null ? r.getProbe() : null);
+  }
+  
+  @Override
+  public @Nullable String getSelectedSourceNode() {
+    return getSelectedNode(expressionTable);    
+  }
+  
+  @Override
+  public @Nullable String getSelectedDestNode() {
+    return getSelectedNode(sideExpressionTable);    
+  }
+
+  @Override
+  public void setHighlightedSourceNodes(Set<String> selected) {
+    expressionTable.setIndicatedProbes(selected, true);
+  }
+  
+  @Override
+  public void setHighlightedDestNodes(Set<String> selected) {
+    sideExpressionTable.setIndicatedProbes(selected, true);
+  }
+
+  @Override
+  public void onSourceSelectionChanged(String node) {    
+    if (mode.isSplit) {
+      setHighlightedDestNodes(getIndicatedRows(getSelectedSourceNode(), true));
+    }    
+  }
+
+  @Override
+  public void onDestSelectionChanged(String node) {
+    if (mode.isSplit) {
+      setHighlightedSourceNodes(getIndicatedRows(getSelectedDestNode(), false));
+    }
   }
 }
 
