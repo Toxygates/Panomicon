@@ -458,8 +458,8 @@ Expression table
 	font-weight: bold;
 }
 
-.indicatedRow {
-	background-color: #99ffff;
+.indicatedRow {		
+	background-color: #00eeff;
 }
 
 .dataColumn {

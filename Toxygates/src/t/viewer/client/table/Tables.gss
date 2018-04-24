@@ -94,7 +94,7 @@
 }
 
 .dataGridSelectedRow, .cellTableSelectedRow {
-  background: #628cd5;
+  background-color: #00D8E8;
   color: white;
   height: auto;
   overflow: auto;
