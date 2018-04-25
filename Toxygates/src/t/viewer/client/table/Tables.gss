@@ -1,5 +1,10 @@
 /* Based on com/google/gwt/user/cellview/client/DataGrid.gss and
    com/google/gwt/user/cellview/client/CellTable.gss
+   
+   All the styling in this stylesheet is from the original GWT stylesheets.
+   Please only remove declarations from this file; additional styling should
+   be put in OTGViewer.gss.   
+   
    Note: the DataGrid.Style and Celltable.Style interfaces requires 
    certain selectors to be present, so empty declaration blocks 
    shouldn't be deleted.
