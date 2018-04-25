@@ -362,7 +362,7 @@ public class Screen extends DataListenerWidget implements
     loadState(p, sc.schema(), attributes);
   }
 
-  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+  public void loadState(StorageParser parser, DataSchema schema, AttributeSet attributes) {
     SampleClass sc = new SampleClass();
     // Note: currently the "real" sample class, as chosen by the user on the
     // column screen for example, is not stored, and hence not propagated
@@ -370,13 +370,13 @@ public class Screen extends DataListenerWidget implements
     sampleClassChanged(sc);
 
     try {
-      List<Group> cs = loadColumns(p, schema, "columns", chosenColumns, attributes);
+      List<Group> cs = loadColumns(parser, schema, "columns", chosenColumns, attributes);
       if (cs != null) {
         logger.info("Unpacked columns: " + cs.get(0) + ": "
             + cs.get(0).getSamples()[0] + " ... ");
         columnsChanged(cs);
       }
-      Group g = unpackColumn(schema, p.getItem("customColumn"), attributes);
+      Group g = unpackColumn(schema, parser.getItem("customColumn"), attributes);
       if (g != null) {
         customColumnChanged(g);
       }
@@ -385,42 +385,43 @@ public class Screen extends DataListenerWidget implements
       // one possible failure source is if data is stored in an incorrect
       // format
       columnsChanged(new ArrayList<Group>());
-      storeColumns(p); // overwrite the old data
-      storeCustomColumn(p, null); // ditto
+      storeColumns(parser); // overwrite the old data
+      storeCustomColumn(parser, null); // ditto
       logger.log(Level.WARNING, "Exception while parsing state", e);
     }
 
-    String v = p.getItem("probes");
-    if (v != null && !v.equals("") && !v.equals(packProbes(chosenProbes))) {
-      chosenProbes = v.split("###");
+    String probeString = parser.getItem("probes");
+    if (probeString != null && !probeString.equals("") &&
+        !probeString.equals(packProbes(chosenProbes))) {
+      chosenProbes = probeString.split("###");
       probesChanged(chosenProbes);
-    } else if (v == null || v.equals("")) {
+    } else if (probeString == null || probeString.equals("")) {
       probesChanged(new String[0]);
     }
-    List<ItemList> lists = loadItemLists(p);
+    List<ItemList> lists = loadItemLists(parser);
     if (lists.size() > 0) {
       chosenItemLists = lists;
       itemListsChanged(lists);
     }
 
-    ItemList geneSet = ItemList.unpack(p.getItem("geneset"));
+    ItemList geneSet = ItemList.unpack(parser.getItem("geneset"));
     if (geneSet != null) {
       chosenGeneSet = geneSet;
     }
     geneSetChanged(geneSet);
 
-    lists = loadClusteringLists(p);
+    lists = loadClusteringLists(parser);
     if (lists.size() > 0) {
       chosenClusteringList = lists;
       clusteringListsChanged(lists);
     }
 
     // Note: the ordering of the following 3 is important
-    loadDatasets(p);
-    loadSampleClass(p, attributes);
-    loadCompounds(p);
+    loadDatasets(parser);
+    loadSampleClass(parser, attributes);
+    loadCompounds(parser);
 
-    String verbose = p.getItem("OTG.showGuide");
+    String verbose = parser.getItem("OTG.showGuide");
     if (verbose == null || verbose.equals("yes")) {
       showGuide = true;
     } else {
