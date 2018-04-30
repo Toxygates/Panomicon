@@ -342,7 +342,7 @@ public class DLWScreen extends DataListenerWidget implements
   public void show() {
     rootPanel.forceLayout();
     visible = true;
-    loadState(this, attributes());
+    loadState(attributes());
     if (showGuide) {
       showToolbar(guideBar);
     } else {
@@ -357,9 +357,9 @@ public class DLWScreen extends DataListenerWidget implements
    * Load saved state from the local storage. If the loaded state is different from what was
    * previously remembered in this widget, the appropriate signals will fire.
    */
-  public void loadState(DLWScreen sc, AttributeSet attributes) {
-    StorageParser p = getParser(sc);
-    loadState(p, sc.schema(), attributes);
+  public void loadState(AttributeSet attributes) {
+    StorageParser p = getParser(this);
+    loadState(p, this.schema(), attributes);
   }
 
   public void loadState(StorageParser parser, DataSchema schema, AttributeSet attributes) {

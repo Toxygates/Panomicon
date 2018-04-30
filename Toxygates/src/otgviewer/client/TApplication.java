@@ -585,7 +585,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
     for (DLWScreen s : screens) {
       if (s != from) {
-        s.loadState(s, appInfo.attributes());
+        s.loadState(appInfo.attributes());
         s.tryConfigure();
       }
     }
