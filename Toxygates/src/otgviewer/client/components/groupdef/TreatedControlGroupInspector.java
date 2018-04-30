@@ -19,7 +19,7 @@
  */
 package otgviewer.client.components.groupdef;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import t.common.shared.sample.Group;
 
@@ -28,7 +28,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 
 public class TreatedControlGroupInspector extends GroupInspector {
 
-  public TreatedControlGroupInspector(CompoundSelector cs, Screen scr) {
+  public TreatedControlGroupInspector(CompoundSelector cs, DLWScreen scr) {
     super(cs, scr);
   }
 

@@ -21,7 +21,7 @@ package otgviewer.client;
 
 import java.util.*;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.viewer.client.StorageParser;
@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 
 public abstract class ItemListsStoreHelper {
 
-  protected Screen screen;
+  protected DLWScreen screen;
   protected String type;
 
   protected Collection<StringList> predefinedLists;
@@ -39,7 +39,7 @@ public abstract class ItemListsStoreHelper {
 
   protected DialogBox inputDialog;
 
-  public ItemListsStoreHelper(String type, Screen screen) {
+  public ItemListsStoreHelper(String type, DLWScreen screen) {
     this.screen = screen;
     this.type = type;
     this.predefinedLists = screen.manager().appInfo().predefinedProbeLists();

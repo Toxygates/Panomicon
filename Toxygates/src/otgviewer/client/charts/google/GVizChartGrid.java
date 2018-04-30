@@ -21,7 +21,7 @@ package otgviewer.client.charts.google;
 import java.util.List;
 
 import otgviewer.client.charts.*;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.shared.sample.Sample;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -40,7 +40,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 
   public static final int MAX_WIDTH = 400;
 
-  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, Screen screen, GDTDataset table,
+  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, DLWScreen screen, GDTDataset table,
       final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
       String[] timesOrDoses, boolean columnsAreTimes, int totalWidth) {
     super(factory, screen, table, rowFilters, organisms, rowsAreMajors, timesOrDoses,

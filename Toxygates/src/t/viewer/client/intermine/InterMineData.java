@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.Analytics;
@@ -43,14 +43,14 @@ import com.google.gwt.user.client.ui.DialogBox;
  */
 public class InterMineData {
 
-  final Screen parent;
+  final DLWScreen parent;
   final IntermineServiceAsync tmService = (IntermineServiceAsync) GWT
       .create(IntermineService.class);
 
   private Logger logger = SharedUtils.getLogger("intermine");
   private @Nullable IntermineInstance preferredInstance;
 
-  public InterMineData(Screen parent, @Nullable IntermineInstance preferredInstance) {
+  public InterMineData(DLWScreen parent, @Nullable IntermineInstance preferredInstance) {
     this.parent = parent;
     this.preferredInstance = preferredInstance;
   }

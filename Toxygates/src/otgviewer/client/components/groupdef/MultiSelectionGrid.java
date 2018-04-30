@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
@@ -45,10 +45,10 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   private Map<SampleClass, SelectionTDGrid> sections = new HashMap<SampleClass, SelectionTDGrid>();
   private UnitListener listener;
   private VerticalPanel vp;
-  private final Screen scr;
+  private final DLWScreen scr;
   protected final Logger logger = SharedUtils.getLogger("msg");
 
-  public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {
+  public MultiSelectionGrid(DLWScreen scr, @Nullable SelectionTDGrid.UnitListener listener) {
     vp = new VerticalPanel();
     initWidget(vp);
     this.scr = scr;
@@ -57,7 +57,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
 
-  private SelectionTDGrid findOrCreateSection(Screen scr, SampleClass sc, boolean noCompounds) {
+  private SelectionTDGrid findOrCreateSection(DLWScreen scr, SampleClass sc, boolean noCompounds) {
     SelectionTDGrid g = sections.get(sc);
     if (g == null) {
       g = scr.factory().selectionTDGrid(scr, this);

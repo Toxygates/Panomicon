@@ -20,7 +20,7 @@ package otgviewer.client;
 import java.util.*;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.shared.*;
 import t.viewer.client.ClientState;
 import t.viewer.client.Utils;
@@ -31,7 +31,7 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   
   // private final Logger logger = SharedUtils.getLogger("ItemListsStoreHelper");
 
-  public StringListsStoreHelper(String type, Screen screen) {
+  public StringListsStoreHelper(String type, DLWScreen screen) {
     super(type, screen);
   }
 

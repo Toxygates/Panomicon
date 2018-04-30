@@ -71,7 +71,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private final String COLUMN_WIDTH = "10em";
 
-  private Screen screen;
+  private DLWScreen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   
   private NavigationTools tools;
@@ -172,7 +172,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
   }
 
-  public ExpressionTable(Screen _screen, boolean withPValueOption,
+  public ExpressionTable(DLWScreen _screen, boolean withPValueOption,
       TableStyle style) {
     super(_screen, style);
     this.withPValueOption = withPValueOption;

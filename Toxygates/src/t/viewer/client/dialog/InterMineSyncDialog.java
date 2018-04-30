@@ -63,7 +63,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
     setup();
   }
   
-  public InterMineSyncDialog(Screen parent, String action,
+  public InterMineSyncDialog(DLWScreen parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable IntermineInstance preferredInstance) {
     this(parent, action, withPassword, withReplace, null,

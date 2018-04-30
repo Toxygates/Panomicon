@@ -31,7 +31,7 @@ import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
 import otgviewer.client.charts.google.GVizFactory;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -67,13 +67,13 @@ public class Charts {
   // TODO where to instantiate this?
   private GVizFactory factory = new GVizFactory();
 
-  private Charts(Screen screen) {
+  private Charts(DLWScreen screen) {
     this.schema = screen.schema();
     this.sampleService = screen.manager().sampleService();
     this.seriesService = screen.manager().seriesService();
   }
 
-  public Charts(Screen screen, List<Group> groups) {
+  public Charts(DLWScreen screen, List<Group> groups) {
     this(screen);
     this.groups = groups;
 
@@ -92,14 +92,14 @@ public class Charts {
 
   }
 
-  public Charts(Screen screen, SampleClass[] sampleClasses) {
+  public Charts(DLWScreen screen, SampleClass[] sampleClasses) {
     this(screen);
     this.sampleClasses = sampleClasses;
     groups = new ArrayList<Group>();
   }
 
   public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
-      final String highlightDoseOrTime, final ChartAcceptor acceptor, final Screen screen) {
+      final String highlightDoseOrTime, final ChartAcceptor acceptor, final DLWScreen screen) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0), 
         new PendingAsyncCallback<String[]>(screen,
         "Unable to obtain independent points for series.") {
@@ -115,7 +115,7 @@ public class Charts {
   private void finishSeriesCharts(SeriesType seriesType, 
       final List<Series> series, final String[] indepPoints,
       final String highlightFixed, final ChartAcceptor acceptor,
-      final Screen screen) {
+      final DLWScreen screen) {
     // TODO get from schema or data
     try {
       final String[] fixedVals = series.stream().
@@ -159,7 +159,7 @@ public class Charts {
     }
   }
 
-  public void makeRowCharts(final Screen screen, final Sample[] barcodes, final ValueType vt,
+  public void makeRowCharts(final DLWScreen screen, final Sample[] barcodes, final ValueType vt,
       final String[] probes, final AChartAcceptor acceptor) {
     String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
@@ -207,7 +207,7 @@ public class Charts {
     }
   }
 
-  private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
+  private void finishRowCharts(DLWScreen screen, String[] probes, ValueType vt, List<Group> groups,
       Sample[] barcodes, AChartAcceptor acceptor) {
     DataSource dataSource =
         new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, screen);
@@ -216,7 +216,7 @@ public class Charts {
     acceptor.acceptCharts(acg);
   }
 
-  private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
+  private void finishRowCharts(DLWScreen screen, String[] probes, ValueType vt, List<Group> groups,
       Pair<Unit, Unit>[] units, AChartAcceptor acceptor) {
     Set<Unit> treated = new HashSet<Unit>();
     for (Pair<Unit, Unit> u : units) {

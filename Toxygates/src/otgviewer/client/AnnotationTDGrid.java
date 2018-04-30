@@ -28,7 +28,7 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
@@ -44,7 +44,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private ListBox annotationSelector;
   private Button annotationButton;
 
-  public AnnotationTDGrid(Screen screen) {
+  public AnnotationTDGrid(DLWScreen screen) {
     super(screen, false);
   }
 

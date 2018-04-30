@@ -38,7 +38,7 @@ import com.google.gwt.user.client.ui.*;
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
  */
-public class DataScreen extends Screen {
+public class DataScreen extends DLWScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;

@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.components.StringArrayTable;
 import t.viewer.client.Utils;
@@ -32,7 +32,7 @@ import t.viewer.client.Utils;
 /**
  * This is the first screen, where a dataset can be selected.
  */
-public class StartScreen extends Screen {
+public class StartScreen extends DLWScreen {
 
   public static String key = "st";
 

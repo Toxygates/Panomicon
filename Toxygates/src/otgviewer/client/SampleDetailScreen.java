@@ -41,7 +41,7 @@ import com.google.gwt.user.client.ui.*;
  * screen (the "custom column") to make it display samples that are not in the configured groups.
  */
 
-public class SampleDetailScreen extends Screen {
+public class SampleDetailScreen extends DLWScreen {
   private SampleServiceAsync sampleService;
 
   public static final String key = "ad";

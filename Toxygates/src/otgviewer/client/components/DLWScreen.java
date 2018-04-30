@@ -51,7 +51,7 @@ import t.viewer.shared.AppInfo;
  * the user, for example by making certain selections. This is a useful concept when late screens
  * depend on data that is selected in earlier screens.
  */
-public class Screen extends DataListenerWidget implements 
+public class DLWScreen extends DataListenerWidget implements 
   RequiresResize, ProvidesResize {
 
   protected DockLayoutPanel rootPanel;
@@ -162,7 +162,7 @@ public class Screen extends DataListenerWidget implements
     logger.info("Action queue: added " + qa.name);
   }
 
-  public Screen(String title, String key, boolean showGroups, ScreenManager man,
+  public DLWScreen(String title, String key, boolean showGroups, ScreenManager man,
       @Nullable TextResource helpHTML, @Nullable ImageResource helpImage) {
     this.showGroups = showGroups;
     this.helpHTML = helpHTML;
@@ -180,7 +180,7 @@ public class Screen extends DataListenerWidget implements
     setTitle(title);
   }
 
-  public Screen(String title, String key, boolean showGroups, ScreenManager man) {
+  public DLWScreen(String title, String key, boolean showGroups, ScreenManager man) {
     this(title, key, showGroups, man, man.resources().defaultHelpHTML(), null);
   }
 
@@ -311,7 +311,7 @@ public class Screen extends DataListenerWidget implements
     i = new PushButton(new Image(resources().close()));
     i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
     i.addStyleName("slightlySpaced");
-    final Screen sc = this;
+    final DLWScreen sc = this;
     i.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -357,7 +357,7 @@ public class Screen extends DataListenerWidget implements
    * Load saved state from the local storage. If the loaded state is different from what was
    * previously remembered in this widget, the appropriate signals will fire.
    */
-  public void loadState(Screen sc, AttributeSet attributes) {
+  public void loadState(DLWScreen sc, AttributeSet attributes) {
     StorageParser p = getParser(sc);
     loadState(p, sc.schema(), attributes);
   }

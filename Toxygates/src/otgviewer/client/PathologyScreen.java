@@ -33,7 +33,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.rpc.SampleServiceAsync;
 import otgviewer.shared.Pathology;
@@ -46,7 +46,7 @@ import t.viewer.client.Utils;
 /**
  * This screen displays information about pathological findings in a given set of sample groups.
  */
-public class PathologyScreen extends Screen {
+public class PathologyScreen extends DLWScreen {
   public static final String key = "path";
 
   private CellTable<Pathology> pathologyTable;

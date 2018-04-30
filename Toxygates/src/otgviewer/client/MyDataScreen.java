@@ -28,7 +28,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ListDataProvider;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.Utils;
 import t.common.client.maintenance.*;
@@ -38,7 +38,7 @@ import t.common.shared.maintenance.Instance;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
-public class MyDataScreen extends Screen {
+public class MyDataScreen extends DLWScreen {
 
   public static final String key = "my";
   

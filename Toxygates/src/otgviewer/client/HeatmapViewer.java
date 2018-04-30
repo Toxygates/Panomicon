@@ -3,7 +3,7 @@ package otgviewer.client;
 import java.util.*;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
@@ -19,8 +19,8 @@ import com.google.gwt.user.client.ui.*;
  */
 public class HeatmapViewer extends DataListenerWidget {
 
-  private Screen screen;
-  public HeatmapViewer(Screen screen) {
+  private DLWScreen screen;
+  public HeatmapViewer(DLWScreen screen) {
     this.screen = screen;
   }
 
@@ -29,7 +29,7 @@ public class HeatmapViewer extends DataListenerWidget {
   }
 
   public class HeatmapDialog extends t.clustering.client.HeatmapDialog<Group, String> {
-    final Screen screen = HeatmapViewer.this.screen;
+    final DLWScreen screen = HeatmapViewer.this.screen;
     private ValueType defaultType;
     private Button saveButton, enrichButton;
     private final ListBox valType;

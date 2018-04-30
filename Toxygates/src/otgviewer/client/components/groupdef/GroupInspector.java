@@ -53,7 +53,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
   private MultiSelectionGrid msg;
   private Map<String, Group> groups = new HashMap<String, Group>();
-  private final Screen screen;
+  private final DLWScreen screen;
   private final DataSchema schema;
   private Label titleLabel;
   private TextBox txtbxGroup;
@@ -77,7 +77,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     Style buttonCellBaseStyle();
   }
 
-  public GroupInspector(CompoundSelector cs, Screen scr) {
+  public GroupInspector(CompoundSelector cs, DLWScreen scr) {
     compoundSel = cs;
     this.screen = scr;
     schema = scr.schema();

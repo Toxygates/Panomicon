@@ -23,7 +23,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.Association;
@@ -45,7 +45,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
   private boolean waitingForAssociations = true;
 
-  public AssociationTable(Screen screen, TableStyle style) {
+  public AssociationTable(DLWScreen screen, TableStyle style) {
     super(screen, style);
     probeService = screen.manager().probeService();
   }

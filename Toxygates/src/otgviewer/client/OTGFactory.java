@@ -43,27 +43,27 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener) {
+  public SelectionTDGrid selectionTDGrid(DLWScreen scr, @Nullable UnitListener listener) {
     return new TreatedControlSelTDGrid(scr, listener);
   }
 
   @Override
-  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
+  public CompoundRanker compoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
     return new SimpleCompoundRanker(_screen, selector);
   }
 
   @Override
-  public GroupInspector groupInspector(CompoundSelector cs, Screen scr) {
+  public GroupInspector groupInspector(CompoundSelector cs, DLWScreen scr) {
     return new TreatedControlGroupInspector(cs, scr);
   }
 
   @Override
-  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups) {
+  public GroupLabels groupLabels(DLWScreen screen, DataSchema schema, List<Group> groups) {
     return new GroupLabels(screen, schema, groups);
   }
 
   @Override
-  public GeneSetEditor geneSetEditor(Screen screen) {
+  public GeneSetEditor geneSetEditor(DLWScreen screen) {
     return new GeneSetEditor(screen);
   }  
   
@@ -78,14 +78,14 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public void enrichment(Screen screen, StringList probes, 
+  public void enrichment(DLWScreen screen, StringList probes, 
       @Nullable IntermineInstance preferredInst) {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.enrich(probes);
   }
 
   @Override
-  public void multiEnrichment(Screen screen, StringList[] lists, 
+  public void multiEnrichment(DLWScreen screen, StringList[] lists, 
       @Nullable IntermineInstance preferredInst) {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.multiEnrich(lists);    
