@@ -108,13 +108,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   @Override
   public void sampleClassChanged(SampleClass sc) {
     super.sampleClassChanged(sc);
-    screen.enqueue(new DLWScreen.QueuedAction("loadCompounds") {
-      @Override
-      public void run() {
-        loadMajors();
-        // compoundEditor.clearSelection();
-      }
-    });
+    loadMajors();
   }
 
   @Override
