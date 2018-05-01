@@ -20,14 +20,15 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.*;
-import t.viewer.client.Utils;
-import t.viewer.client.intermine.InstanceSelector;
-import t.viewer.shared.intermine.IntermineInstance;
-
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.InputGrid;
+import otgviewer.client.components.Screen;
+import t.viewer.client.Utils;
+import t.viewer.client.intermine.InstanceSelector;
+import t.viewer.shared.intermine.IntermineInstance;
 
 abstract public class InterMineSyncDialog extends InteractionDialog {
 
@@ -50,7 +51,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
    * @param withReplace
    * @param instance must not be null if withPassword is true
    */
-  public InterMineSyncDialog(DataListenerWidget parent, String action,
+  public InterMineSyncDialog(Screen parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable InstanceSelector selector,
       @Nullable IntermineInstance instance) {
@@ -63,7 +64,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
     setup();
   }
   
-  public InterMineSyncDialog(DLWScreen parent, String action,
+  public InterMineSyncDialog(Screen parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable IntermineInstance preferredInstance) {
     this(parent, action, withPassword, withReplace, null,
@@ -86,6 +87,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
     }
   }
 
+  @Override
   protected Widget content() {
     VerticalPanel vp = new VerticalPanel();
     vp.setWidth("400px");

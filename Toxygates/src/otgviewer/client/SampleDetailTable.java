@@ -48,7 +48,7 @@ public class SampleDetailTable extends Composite {
   private SampleServiceAsync sampleService;
   private final @Nullable String title;
   private final boolean isSection;
-  private final DataListenerWidget waitListener;
+  private final Screen waitListener;
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
   

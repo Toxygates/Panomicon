@@ -20,6 +20,10 @@ package otgviewer.client.components.ranking;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
@@ -32,10 +36,6 @@ import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.SeriesType;
-
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
@@ -86,7 +86,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         // may need to be converted from gene symbols.
 
         probeService.identifiersToProbes(probes, true, false, false, null,
-            new PendingAsyncCallback<String[]>(this) {
+            new PendingAsyncCallback<String[]>(screen) {
               @Override
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
@@ -99,7 +99,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
       protected void itemsChanged(List<String> items) {
         probeService.identifiersToProbes(items.toArray(new String[0]), true, 
             false, false, null,
-            new PendingAsyncCallback<String[]>(this) {
+            new PendingAsyncCallback<String[]>(screen) {
               @Override
               public void handleSuccess(String[] resolved) {
                 setProbeList(Arrays.asList(resolved));

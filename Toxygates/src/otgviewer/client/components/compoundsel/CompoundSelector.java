@@ -132,7 +132,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
   void loadMajors() {
     sampleService.parameterValues(chosenSampleClass, majorParameter,
-        new PendingAsyncCallback<String[]>(this, "Unable to retrieve values for parameter: "
+        new PendingAsyncCallback<String[]>(screen, "Unable to retrieve values for parameter: "
             + majorParameter) {
 
           @Override

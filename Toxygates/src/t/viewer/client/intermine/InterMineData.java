@@ -23,9 +23,13 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DialogBox;
+
 import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.Analytics;
@@ -34,23 +38,19 @@ import t.viewer.client.dialog.*;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DialogBox;
-
 /**
  * Client side helper for InterMine data import/export.
  */
 public class InterMineData {
 
-  final DLWScreen parent;
+  final Screen parent;
   final IntermineServiceAsync tmService = (IntermineServiceAsync) GWT
       .create(IntermineService.class);
 
   private Logger logger = SharedUtils.getLogger("intermine");
   private @Nullable IntermineInstance preferredInstance;
 
-  public InterMineData(DLWScreen parent, @Nullable IntermineInstance preferredInstance) {
+  public InterMineData(Screen parent, @Nullable IntermineInstance preferredInstance) {
     this.parent = parent;
     this.preferredInstance = preferredInstance;
   }
@@ -80,6 +80,7 @@ public class InterMineData {
       final boolean asProbes, final boolean replace) {
     tmService.importLists(instance, user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
         parent, "Unable to import lists from " + instance.title()) {
+      @Override
       public void handleSuccess(StringList[] data) {
         ClientState state = parent.state();
         
@@ -89,12 +90,8 @@ public class InterMineData {
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
         // TODO revise pop-up message handling for this process
-        parent.itemListsChanged(mergeLists(state.itemLists, normal, replace,
-          "lists"));
-        parent.storeItemLists(parent.getParser());
-        parent.clusteringListsChanged(mergeLists(state.chosenClusteringList, clustering, 
-          replace, "clusters"));
-        parent.storeClusteringLists(parent.getParser());
+        parent.intermineImport(mergeLists(state.itemLists, normal, replace, "lists"),
+            mergeLists(state.chosenClusteringList, clustering, replace, "clusters"));
       }
     });
   }
@@ -125,6 +122,7 @@ public class InterMineData {
       final List<StringList> lists, final boolean replace) {
     tmService.exportLists(instance, user, pass, lists.toArray(new StringList[0]), replace,
         new PendingAsyncCallback<Void>(parent, "Unable to export lists to " + instance.title()) {
+          @Override
           public void handleSuccess(Void v) {
             Window.alert("The lists were successfully exported.");
           }
@@ -177,9 +175,11 @@ public class InterMineData {
   public void doEnrich(final IntermineInstance instance, final StringList list, 
                        final EnrichmentParams params) {
     ensureTokenAndThen(instance, new Runnable() {
+      @Override
       public void run() {
         tmService.enrichment(instance, list, params, imTokens.get(instance),
             new PendingAsyncCallback<String[][]>(parent, "Unable to perform enrichment analysis") {
+              @Override
               public void handleSuccess(String[][] result) {
                 StringArrayTable.displayDialog(result, "Enrichment results", 800, 600);
               }
@@ -217,6 +217,7 @@ public class InterMineData {
   public void doEnrich(final IntermineInstance instance, final StringList[] lists, 
                        final EnrichmentParams params) {
     ensureTokenAndThen(instance, new Runnable() {
+      @Override
       public void run() {
 
         tmService.multiEnrichment(
@@ -225,6 +226,7 @@ public class InterMineData {
             params,
             imTokens.get(instance),
             new PendingAsyncCallback<String[][][]>(parent, "Unable to perform enrichment analysis") {
+              @Override
               public void handleSuccess(String[][][] result) {
                 List<String[]> best = new ArrayList<String[]>();
                 best.add(append(new String[] {"Cluster", "Size"}, result[0][0])); // Headers

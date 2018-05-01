@@ -85,7 +85,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     sc.put(OTGAttribute.Compound, selCompound);
 
     ranker.sampleService.parameterValues(sc, OTGAttribute.DoseLevel.id(),
-        new PendingAsyncCallback<String[]>(ranker.selector, "Unable to retrieve dose levels.") {
+        new PendingAsyncCallback<String[]>(ranker.screen, "Unable to retrieve dose levels.") {
 
       @Override
       public void handleSuccess(String[] result) {

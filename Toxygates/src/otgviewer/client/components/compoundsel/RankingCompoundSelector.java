@@ -22,6 +22,10 @@ package otgviewer.client.components.compoundsel;
 
 import java.util.*;
 
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.components.*;
@@ -35,10 +39,6 @@ import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.shared.SeriesType;
-
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RankingCompoundSelector extends CompoundSelector {
 
@@ -79,7 +79,7 @@ public class RankingCompoundSelector extends CompoundSelector {
       };
       table.addColumn(textColumn, "Score");
 
-      ChartClickCell ccc = new ChartClickCell(this);
+      ChartClickCell ccc = new ChartClickCell(screen);
       IdentityColumn<String> clickCol = new IdentityColumn<String>(ccc);
       clickCol.setCellStyleNames("clickCell");
       table.addColumn(clickCol, "");
@@ -121,7 +121,8 @@ public class RankingCompoundSelector extends CompoundSelector {
 
     if (rules.size() > 0) { // do we have at least 1 rule?
       seriesService.rankedCompounds(seriesType, chosenDatasets, chosenSampleClass,
-          rules.toArray(new RankRule[0]), new PendingAsyncCallback<MatchResult[]>(this) {
+          rules.toArray(new RankRule[0]), new PendingAsyncCallback<MatchResult[]>(screen) {
+            @Override
             public void handleSuccess(MatchResult[] res) {
               ranks.clear();
               int rnk = 1;
@@ -136,6 +137,7 @@ public class RankingCompoundSelector extends CompoundSelector {
               compoundEditor.displayPicker();
             }
 
+            @Override
             public void handleFailure(Throwable caught) {
               Window.alert("Unable to rank compounds: " + caught.getMessage());
             }
@@ -146,13 +148,14 @@ public class RankingCompoundSelector extends CompoundSelector {
   }
 
   class ChartClickCell extends ImageClickCell.StringImageClickCell {
-    final DataListenerWidget w;
+    final Screen w;
 
-    public ChartClickCell(DataListenerWidget w) {
+    public ChartClickCell(Screen w) {
       super(resources.chart(), "charts", false);
       this.w = w;
     }
 
+    @Override
     public void onClick(final String value) {
       if (rankProbes.size() == 0) {
         Window.alert("These charts can only be displayed if compounds have been ranked.");
@@ -166,8 +169,10 @@ public class RankingCompoundSelector extends CompoundSelector {
 
     private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
       return new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
+        @Override
         public void handleSuccess(final List<Series> ss) {
           Utils.ensureVisualisationAndThen(new Runnable() {
+            @Override
             public void run() {
               makeSeriesCharts(rankedType, value, ss);
             }

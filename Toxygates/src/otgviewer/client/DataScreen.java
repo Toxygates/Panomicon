@@ -22,18 +22,19 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.*;
-import t.viewer.client.table.*;
+import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
+import t.viewer.client.table.TableStyle;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
@@ -297,5 +298,23 @@ public class DataScreen extends DLWScreen {
       boolean state = expressionTable.persistedVisibility(title, mi.getState());
       mi.setState(state);
     }
+  }
+
+  @Override
+  public boolean importProbes(String[] probes) {
+    boolean changed = super.importProbes(probes);
+    if (changed) {
+      updateProbes();
+    }
+    return changed;
+  }
+
+  @Override
+  public boolean importColumns(List<Group> groups) {
+    boolean changed = super.importColumns(groups);
+    if (changed) {
+      updateProbes();
+    }
+    return changed;
   }
 }

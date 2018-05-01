@@ -18,17 +18,17 @@
 
 package otgviewer.client.components;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.ProvidesResize;
+
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
+import otgviewer.client.rpc.ProbeServiceAsync;
+import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.DataSchema;
 import t.viewer.client.StorageParser;
 import t.viewer.client.rpc.*;
-import otgviewer.client.rpc.SampleServiceAsync;
-import otgviewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ProvidesResize;
 
 /**
  * A screen manager provides screen management services.
@@ -44,13 +44,13 @@ public interface ScreenManager extends ProvidesResize {
    * @param s
    * @param configured
    */
-  void setConfigured(DLWScreen s, boolean configured);
+  void setConfigured(Screen s, boolean configured);
 
   /**
    * Invalidate all screens' "configured" state and subsequently attempt their reconfiguration.
    * Precondition: all screens must have been displayed at least once using Screen.show()
    */
-  void reconfigureAll(DLWScreen from);
+  void reconfigureAll(Screen from);
 
   /**
    * Test whether the given screen is configured.

@@ -25,36 +25,38 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class PendingAsyncCallback<T> implements AsyncCallback<T> {
 
-  private DataListenerWidget widget;
+  private Screen screen;
   private String onErrorMessage;
 
-  public PendingAsyncCallback(DataListenerWidget _widget, String _onErrorMessage) {
-    widget = _widget;
+  public PendingAsyncCallback(Screen _widget, String _onErrorMessage) {
+    screen = _widget;
     onErrorMessage = _onErrorMessage;
-    widget.addPendingRequest();
+    screen.addPendingRequest();
   }
 
-  public PendingAsyncCallback(DataListenerWidget _widget) {
+  public PendingAsyncCallback(Screen _widget) {
     this(_widget, "There was a server-side error.");
   }
 
+  @Override
   public void onSuccess(T t) {
     handleSuccess(t);
-    widget.removePendingRequest();
+    screen.removePendingRequest();
   }
 
   public void handleSuccess(T t) {
     // Quiet success
   }
 
+  @Override
   public void onFailure(Throwable caught) {
     handleFailure(caught);
-    widget.removePendingRequest();
+    screen.removePendingRequest();
   }
 
   public void handleFailure(Throwable caught) {
     Window.alert(onErrorMessage + ":" + caught.getMessage());
-    widget.getLogger().log(Level.SEVERE, onErrorMessage, caught);
+    screen.getLogger().log(Level.SEVERE, onErrorMessage, caught);
   }
 
 }
