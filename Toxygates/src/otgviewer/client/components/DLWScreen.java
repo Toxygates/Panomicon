@@ -42,7 +42,6 @@ import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
-import t.viewer.shared.AppInfo;
 
 /**
  * This class is in the process of being phased out in favor of a more lightweight version not
@@ -201,11 +200,6 @@ public class DLWScreen extends DataListenerWidget implements Screen,
   @Override
   public ScreenManager manager() {
     return manager;
-  }
-
-  @Override
-  public AppInfo appInfo() {
-    return manager.appInfo();
   }
 
   public UIFactory factory() {

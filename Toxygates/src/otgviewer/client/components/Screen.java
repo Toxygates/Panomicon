@@ -18,15 +18,21 @@ import t.viewer.shared.AppInfo;
  * implemented by new screens not deriving from DataListenerWidget.
  */
 public interface Screen {
-  AppInfo appInfo();
+  default AppInfo appInfo() {
+    return manager().appInfo();
+  }
 
+  // Accessors
   ScreenManager manager();
-
   Logger getLogger();
-
   String getTitle();
-
   String key();
+  boolean enabled();
+  Widget widget();
+  List<MenuItem> analysisMenuItems();
+  List<MenuItem> menuItems();
+  ClientState state();
+  String additionalNavlinkStyle();
 
   void initGUI();
 
@@ -38,25 +44,13 @@ public interface Screen {
 
   void loadPersistedState();
 
-  String additionalNavlinkStyle();
-
-  boolean enabled();
-
   void enqueue(QueuedAction qa);
 
-  ClientState state();
-
   void addAnalysisMenuItem(MenuItem mi);
-
-  List<MenuItem> analysisMenuItems();
-
-  List<MenuItem> menuItems();
 
   void show();
 
   void hide();
-
-  Widget widget();
 
   void resizeInterface();
 
