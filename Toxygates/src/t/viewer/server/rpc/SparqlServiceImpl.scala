@@ -91,8 +91,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
-
-    //throw new Exception
+    
+    //TODO: we shouldn't have to do this more than once
+    val platforms = new t.sparql.Platforms(baseConfig)
+    platforms.populateAttributes(baseConfig.attributes)
 
     //TODO if staticInit does not read platformsAndProbes, some sparql queries
     //fail on startup in Toxygates (probably due to a race condition).
