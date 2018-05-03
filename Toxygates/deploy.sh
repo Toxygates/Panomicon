@@ -14,9 +14,10 @@ function makeWar {
     [ ! -d csv ] && mkdir csv
     rm csv/*.csv
     jar cf $OUTPUT toxygates images csv *.pdf *.css *.html.template *.zip
-    #Exclude classes in t/admin and t/global
+    #Exclude classes in some packages
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
-      -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
+      -path WEB-INF/classes/t/global -o \
+      -path WEB-INF/classes/t/tomcat \) -prune -o \( -type f -print \) )
     cd ..
 }
 
@@ -62,3 +63,4 @@ makeAdminWar
 
 mv war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
 
+jar cf gwtTomcatFilter.jar -C $TGCP t/tomcat
