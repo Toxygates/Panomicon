@@ -25,6 +25,21 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.charts.*;
+import com.google.gwt.cell.client.*;
+import com.google.gwt.dom.builder.shared.SpanBuilder;
+import com.google.gwt.dom.builder.shared.TableRowBuilder;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.*;
+
+import otgviewer.client.charts.AdjustableGrid;
+import otgviewer.client.charts.Charts;
+
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
@@ -71,26 +86,13 @@ import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
  */
 public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
-  /**
-   * Initial number of items to show per page at a time (but note that this number can be adjusted
-   * by the user in the 0-250 range)
-   */
-  public final static int SUGGESTED_INIT_PAGE_SIZE = 50;
-  final private int initPageSize;
-  
-  private final int MAX_PAGE_SIZE = 250;
-  private final int PAGE_SIZE_INCREMENT = 50;
-
   private final String COLUMN_WIDTH = "10em";
 
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   
-  private HorizontalPanel tools, analysisTools;
-  // We enable/disable this button when the value type changes
-  private Button foldChangeBtn = new Button("Add fold-change difference");
-
-  protected ListBox tableList = new ListBox();
+  private NavigationTools tools;
+  private AnalysisTools analysisTools;
 
   private final MatrixServiceAsync matrixService;
   private final t.common.client.Resources resources;
@@ -104,10 +106,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   // For Analytics: we count every matrix load other than the first as a gene set change
   private boolean firstMatrixLoad = true;
 
-  /**
-   * For selecting sample groups to apply t-test/u-test to
-   */
-  private ListBox groupsel1 = new ListBox(), groupsel2 = new ListBox();
 
   /**
    * Names of the probes currently displayed
@@ -129,9 +127,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final Logger logger = SharedUtils.getLogger("expressionTable");
 
   protected ValueType chosenValueType;
-  
-  private CheckBox pcb;
-  
   private String matrixId;
 
   protected class HeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
@@ -198,6 +193,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
   
+  protected final int initPageSize;
+  
   public ExpressionTable(Screen _screen, TableFlags flags,
       TableStyle style) {
     super(_screen, style, flags);
@@ -209,7 +206,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     screen = _screen;
 
     grid.setHeaderBuilder(new HeaderBuilder(grid));
-    grid.addStyleName("exprGrid");    
+    grid.addStyleName("exprGrid");
 
     if (!flags.allowHighlight) {
       selectionModel = new NoSelectionModel<ExpressionRow>();
@@ -225,10 +222,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     asyncProvider.addDataDisplay(grid);
 
-    //Note: might factor out the "tools" into a separate polymorphic class that might or might not be used
-    makeTools(flags.withPager);
-    //Same here
-    makeAnalysisTools();
+    tools = makeTools(flags.withPager);
+    analysisTools = new AnalysisTools(this);
+
     setEnabled(false);
   }
   
@@ -260,8 +256,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
   
   public ValueType getValueType() {
-    String vt = tableList.getItemText(tableList.getSelectedIndex());
-    return ValueType.unpack(vt);
+    return tools.getValueType();    
   }
 
   public Widget tools() {
@@ -278,131 +273,48 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    * @param enabled
    */
   private void setEnabled(boolean enabled) {
-    Utils.setEnabled(tools, enabled);
-    Utils.setEnabled(analysisTools, enabled);
-    enableFoldChangeUI(enabled);
-  }
-
-  private void enableFoldChangeUI(boolean enabled) {
-    switch (chosenValueType) {
-      case Absolute:
-        foldChangeBtn.setEnabled(false);
-        break;
-      case Folds:
-        foldChangeBtn.setEnabled(true && enabled);
-        break;
-    }
+    tools.setEnabled(enabled);
+    analysisTools.setEnabled(chosenValueType, enabled);     
   }
 
   /**
    * The main (navigation) tool panel
    */
-  private void makeTools(boolean withPager) {
-    tools = Utils.mkHorizontalPanel();
-
-    HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
-    horizontalPanel.addStyleName("colored");
-    horizontalPanel.addStyleName("slightlySpaced");
-    tools.add(horizontalPanel);
-
-    tableList.setVisibleItemCount(1);
-    horizontalPanel.add(tableList);
-    initTableList();
-    tableList.addChangeHandler(new ChangeHandler() {
+  private NavigationTools makeTools(boolean withPager) {
+    //TODO use withPager
+    NavigationTools r = new NavigationTools(this, grid, withPValueOption) {
       @Override
-      public void onChange(ChangeEvent event) {
-        removeSynthetics();
-        chosenValueType = getValueType();
-        getExpressions();
-      }
-    });
-
-
-    if (withPager) {
-
-      SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
-      SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
-        @Override
-        public void nextPage() {
-          super.nextPage();
-          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+      void onPValueChange(boolean newState) {
+        if (newState && ! hasPValueColumns()) {
+          Window.alert("Precomputed p-values are only available for sample groups "
+              + " in fold-change mode, consisting of a single time and dose.\n"
+              + "If you wish to compare two columns, use "
+              + "\"Compare two sample groups\" in the tools menu.");
+          
+          setDisplayPColumns(false);                        
+        } else {
+          setDisplayPColumns(newState);
+          setupColumns();
         }
-
-        @Override
-        public void previousPage() {
-          super.previousPage();
-          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-        }
-
-        @Override
-        public void setPage(int index) {
-          super.setPage(index);
-          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
-        }
-      };
-      sp.addStyleName("slightlySpaced");
-      horizontalPanel.add(sp);
-      sp.setDisplay(grid);
-
-      PageSizePager pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
-        @Override
-        protected void onRangeOrRowCountChanged() {
-          super.onRangeOrRowCountChanged();
-          if (getPageSize() > MAX_PAGE_SIZE) {
-            setPageSize(MAX_PAGE_SIZE);
-          }
-        }
-      };
-
-      pager.addStyleName("slightlySpaced");
-      horizontalPanel.add(pager);
-      pager.setDisplay(grid);
-    }
-
-    if (withPValueOption) {
-      pcb = new CheckBox("p-value columns");
-      horizontalPanel.add(pcb);
-      pcb.setValue(false);      
-      pcb.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (pcb.getValue() && ! hasPValueColumns()) {
-            Window.alert("Precomputed p-values are only available for sample groups "
-                + " in fold-change mode, consisting of a single time and dose.\n"
-                + "If you wish to compare two columns, use "
-                + "\"Compare two sample groups\" in the tools menu.");
-            
-            setDisplayPColumns(false);                        
-          } else {
-            setDisplayPColumns(pcb.getValue());
-            setupColumns();
-          }
-        }
-      });
-    }
+      }        
+    };
+    chosenValueType = r.getValueType();
+    return r;
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
     if (withPValueOption) {
       this.displayPColumns = displayPColumns;
-      pcb.setValue(displayPColumns);
+      tools.setPValueState(displayPColumns);      
     }    
-  }
-
-  protected void initTableList() {
-    tableList.addItem(ValueType.Folds.toString());
-    tableList.addItem(ValueType.Absolute.toString());
-    chosenValueType = ValueType.Folds;
   }
 
   public Widget analysisTools() {
     return analysisTools;
   }
 
-  private void removeSynthetics() {    
-    logMatrixInfo("Remove synthetic columns");
-    matrixService.removeSyntheticColumns(matrixId, 
-        new PendingAsyncCallback<ManagedMatrixInfo>(this, 
+  void removeTests() {    
+    matrixService.removeSyntheticColumns(matrixId, new PendingAsyncCallback<ManagedMatrixInfo>(this, 
         "There was an error removing the test columns.") {
 
       @Override
@@ -413,78 +325,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     });    
   }
 
-  /**
-   * The tool panel for controlling t-tests and u-tests
-   */
-  private void makeAnalysisTools() {
-    analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.addStyleName("analysisTools");
-
-    analysisTools.add(groupsel1);
-    groupsel1.setVisibleItemCount(1);
-    analysisTools.add(groupsel2);
-    groupsel2.setVisibleItemCount(1);
-
-    analysisTools.add(new Button("Add T-test", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
-        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-            Analytics.LABEL_T_TEST);
-      }
-    }));
-
-    analysisTools.add(new Button("Add U-test", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
-        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-            Analytics.LABEL_U_TEST);
-      }
-    }));
-
-    foldChangeBtn.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
-        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
-            Analytics.LABEL_FOLD_CHANGE_DIFFERENCE);
-      }
-    });
-    analysisTools.add(foldChangeBtn);
-
-    analysisTools.add(new Button("Remove tests", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent ce) {
-        removeSynthetics();
-      }
-    }));
-    analysisTools.setVisible(false); // initially hidden
-  }
-
-  private static String selectedGroup(ListBox groupSelector) {
-    return groupSelector.getItemText(groupSelector.getSelectedIndex());
-  }
-
-  private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
-    if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
-      Window.alert("Please select two groups to compute " + name + ".");
-    } else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
-      Window.alert("Please select two different groups to perform " + name + ".");
-    } else {
-      final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1)).get();
-      final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2)).get();
-      synth.setGroups(g1, g2);
-      matrixService.addSyntheticColumn(matrixId, synth, 
-          new PendingAsyncCallback<ManagedMatrixInfo>(this,
-          "Adding test column failed") {
-        @Override
-        public void handleSuccess(ManagedMatrixInfo r) {
-          setMatrix(r);
-          setupColumns();
-        }
-      });
-    }
+  void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
+    final Group g1 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup1()).get();
+    final Group g2 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup2()).get();
+    synth.setGroups(g1, g2);
+    matrixService.addSyntheticColumn(matrixId, synth,
+        new PendingAsyncCallback<ManagedMatrixInfo>(this, "Adding test column failed") {
+          @Override
+          public void handleSuccess(ManagedMatrixInfo r) {
+            setMatrix(r);
+            setupColumns();
+          }
+        });
   }
 
   public void downloadCSV(boolean individualSamples) {
@@ -633,16 +485,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
      * to intercept click events at this high level and choose whether to pass them on (non-filter
      * clicks) or not (filter clicks).
      */
-
-    // Identify a click on the filter image.
-    // TODO use a more robust identification method (!!)
-    boolean shouldFilterClick =
-        ((target.startsWith("<img") || target.startsWith("<IMG")) && 
-            (target.indexOf("width:12") != -1 || // most browsers
-            target.indexOf("WIDTH: 12") != -1 || // IE9
-        target.indexOf("width: 12") != -1)); // IE8
+    logger.info("Click target: " + target);
+    boolean shouldFilterClick = target.equals(FilterCell.CLICK_ID);
     if (shouldFilterClick && matrixInfo != null && matrixInfo.numRows() > 0) {
-      // Identify the column that was filtered. Requires numRows > 0
+      // Identify the column that was filtered.
       int col = columnAt(x);
       Column<ExpressionRow, ?> clickedCol = grid.getColumn(col);
       if (clickedCol instanceof ExpressionColumn) {
@@ -828,19 +674,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       public void onSuccess(List<ExpressionRow> result) {
         if (result.size() > 0) {
           updateRowData(range.getStart(), result);
-          List<String> dispAts = new ArrayList<String>();
-          List<String> dispPs = new ArrayList<String>();
-
-          for (int i = 0; i < result.size(); ++i) {
-            String[] ats = result.get(i).getAtomicProbes();
-            for (String at : ats) {
-              dispAts.add(at);
-            }
-            dispPs.add(result.get(i).getProbe());
-          }
-
-          displayedAtomicProbes = dispAts.toArray(new String[0]);
-          displayedProbes = dispPs.toArray(new String[0]);
+          displayedAtomicProbes = result.stream().
+              flatMap(r -> Arrays.stream(r.getAtomicProbes())).
+              toArray(String[]::new);
+          displayedProbes = result.stream().map(r -> r.getProbe()).
+              toArray(String[]::new);          
           highlightedRow = -1;
           getAssociations();
         } 
@@ -892,20 +730,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     changeSampleClass(SampleClass.intersection(allCs));
     logMatrixInfo("Set SC to: " + chosenSampleClass.toString());
 
-    groupsel1.clear();
-    groupsel2.clear();
-    for (DataColumn<?> dc : columns) {
-      if (dc instanceof Group) {
-        groupsel1.addItem(dc.getShortTitle());
-        groupsel2.addItem(dc.getShortTitle());
-      }
-    }
-
-    if (columns.size() >= 2) {
-      groupsel1.setSelectedIndex(0);
-      groupsel2.setSelectedIndex(1);
-    }
-
+    analysisTools.columnsChanged(columns);
+    
     chartBarcodes = null;
     loadedData = false;
     lastColumnFilters.clear();
@@ -953,7 +779,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     matrixInfo = matrix;
     lastColumnFilters = matrixInfo.columnFilters();
     asyncProvider.updateRowCount(matrix.numRows(), true);
-    int displayRows = (matrix.numRows() > initPageSize) ? initPageSize: matrix.numRows();
+    int initSize = NavigationTools.INIT_PAGE_SIZE;
+    int displayRows = (matrix.numRows() > initSize) ? initSize : matrix.numRows();
     grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
     setEnabled(true);
   }
@@ -1064,14 +891,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     });
     Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
-
+  
   /**
    * This cell displays an image that can be clicked to display charts.
    */
   class ToolCell extends ImageClickCell.StringImageClickCell {
 
     public ToolCell(DataListenerWidget owner) {
-      super(resources.chart(), false);
+      super(resources.chart(), "charts", false);
     }
 
     @Override

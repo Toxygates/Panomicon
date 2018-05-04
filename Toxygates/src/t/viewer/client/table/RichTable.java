@@ -87,11 +87,11 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
       @Override
       protected void onBrowserEvent2(Event event) {
         if ("click".equals(event.getType())) {
-          EventTarget et = event.getEventTarget();
+          EventTarget et = event.getEventTarget();          
           if (Element.is(et)) {
-            Element e = et.cast();
-            String target = e.getString();
-            if (interceptGridClick(target, event.getClientX(), event.getClientY())) {
+            Element e = et.cast();            
+            String targetId = e.getParentElement().getId();            
+            if (interceptGridClick(targetId, event.getClientX(), event.getClientY())) {
               return;
             }
           }

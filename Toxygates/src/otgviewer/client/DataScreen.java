@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import otgviewer.client.dialog.MirnaSourceDialog;
 import t.common.shared.*;
@@ -36,10 +40,6 @@ import t.viewer.shared.Association;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.intermine.IntermineInstance;
 import t.viewer.shared.mirna.MirnaSource;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
@@ -83,7 +83,7 @@ public class DataScreen extends Screen {
 
   protected ExpressionTable makeExpressionTable() {
     TableFlags flags = new TableFlags(defaultMatrix,
-        true, true, ExpressionTable.SUGGESTED_INIT_PAGE_SIZE, 
+        true, true, NavigationTools.INIT_PAGE_SIZE,
         mainTableTitle(), mainTableSelectable(),
         false);
     

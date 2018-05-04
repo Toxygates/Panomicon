@@ -28,10 +28,12 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 
 class FilterCell extends ImageClickCell.SafeHtmlImageClickCell {
   
+  public final static String CLICK_ID = "filterClick";
+  
   private static Resources resources = GWT.create(Resources.class);
   
   public FilterCell(boolean active) {
-    super(active ? resources.filterActive() : resources.filter(), true);
+    super(active ? resources.filterActive() : resources.filter(), CLICK_ID, true);
   }
 
   public void onClick(SafeHtml value) {
