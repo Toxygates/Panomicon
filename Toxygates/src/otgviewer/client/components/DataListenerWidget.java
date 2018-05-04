@@ -234,14 +234,14 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.clusteringListsChanged(chosenClusteringList);
   }
 
-  public StorageParser getParser(DLWScreen s) {
+  protected StorageParser getParser(Screen s) {
     return s.manager().getParser();    
   }
 
   /**
    * Store this widget's state into local storage.
    */
-  public void storeState(DLWScreen s) {
+  protected void storeState(Screen s) {
     StorageParser p = getParser(s);
     storeState(p);
   }
@@ -249,7 +249,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   /**
    * Store this widget's state into local storage.
    */
-  public void storeState(StorageParser p) {
+  protected void storeState(StorageParser p) {
     storeColumns(p);
     storeProbes(p);
     storeGeneSet(p);
