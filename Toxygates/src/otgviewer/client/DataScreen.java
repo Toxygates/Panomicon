@@ -432,4 +432,22 @@ public class DataScreen extends DLWScreen {
       mi.setState(state);
     }
   }
+
+  @Override
+  public boolean importProbes(String[] probes) {
+    boolean changed = super.importProbes(probes);
+    if (changed) {
+      updateProbes();
+    }
+    return changed;
+  }
+
+  @Override
+  public boolean importColumns(List<Group> groups) {
+    boolean changed = super.importColumns(groups);
+    if (changed) {
+      updateProbes();
+    }
+    return changed;
+  }
 }

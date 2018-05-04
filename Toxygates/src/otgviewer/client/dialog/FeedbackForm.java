@@ -18,15 +18,15 @@
 
 package otgviewer.client.dialog;
 
-import otgviewer.client.components.*;
-import t.viewer.client.Utils;
-import t.viewer.client.dialog.InteractionDialog;
-import t.viewer.client.rpc.MatrixServiceAsync;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.*;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.InteractionDialog;
+import t.viewer.client.rpc.MatrixServiceAsync;
 
 public class FeedbackForm extends InteractionDialog {
 
@@ -35,12 +35,13 @@ public class FeedbackForm extends InteractionDialog {
   private final MatrixServiceAsync matrixService;
   private final String emailAddresses;
 
-  public FeedbackForm(final DataListenerWidget parent, DLWScreen screen, String emailAddresses) {
+  public FeedbackForm(final Screen parent, String emailAddresses) {
     super(parent);
     this.emailAddresses = emailAddresses;
-    matrixService = screen.manager().matrixService();
+    matrixService = parent.manager().matrixService();
   }
 
+  @Override
   protected Widget content() {
     VerticalPanel vpanel = Utils.mkVerticalPanel();
 
@@ -70,6 +71,7 @@ public class FeedbackForm extends InteractionDialog {
         String fb = commentArea.getText();
         matrixService.sendFeedback(name, email, fb, new PendingAsyncCallback<Void>(parent,
             "There was a problem sending your feedback.") {
+          @Override
           public void handleSuccess(Void t) {
             Window.alert("Your feedback was sent.");
             userProceed();

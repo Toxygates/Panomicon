@@ -87,13 +87,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * All screens in the order that the links are displayed at the top.
    */
-  private List<DLWScreen> screens = new ArrayList<DLWScreen>();
+  private List<Screen> screens = new ArrayList<Screen>();
 
   /**
    * All available screens. The key in this map is the "key" field of each Screen instance, which
    * also corresponds to the history token used with GWT's history tracking mechanism.
    */
-  protected Map<String, DLWScreen> screensBykey = new HashMap<String, DLWScreen>();
+  protected Map<String, Screen> screensBykey = new HashMap<String, Screen>();
 
   /**
    * All currently configured screens. See the Screen class for an explanation of the "configured"
@@ -104,7 +104,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * The screen currently being displayed.
    */
-  protected DLWScreen currentScreen;
+  protected Screen currentScreen;
 
   protected final Logger logger = SharedUtils.getLogger("application");
 
@@ -220,12 +220,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mainDockPanel.addNorth(navOuter, css.navpanel_height());
   }
 
-  protected void readURLParameters(DLWScreen scr) {
+  protected void readURLParameters(Screen scr) {
     readImportedProbes(scr);
     readGroupURLparameters(scr);
   }
 
-  protected void readImportedProbes(final DLWScreen scr) {
+  protected void readImportedProbes(final Screen scr) {
     Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
 
@@ -253,15 +253,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
               new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
                 @Override
                 public void handleSuccess(String[] probes) {
-                  if (Arrays.equals(probes, scr.state().probes)) {
-                    return;
-                  }
-                  scr.probesChanged(probes);
-                  scr.storeState(scr);
-                  if (scr instanceof DataScreen) {
-                    // Force a data reload
-                    ((DataScreen) scr).updateProbes();
-                  }
+                  scr.importProbes(probes);
                 }
               });
         }
@@ -270,7 +262,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   }
 
-  protected void readGroupURLparameters(final DLWScreen scr) {
+  protected void readGroupURLparameters(final Screen scr) {
     Logger l = SharedUtils.getLogger();
     Map<String, List<String>> params = Window.Location.getParameterMap();
 
@@ -302,14 +294,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
                 i += 1;
                 finalGroups.add(g);
               }
-              if (finalGroups.size() > 0 && !finalGroups.equals(scr.chosenColumns())) {
-                scr.columnsChanged(finalGroups);
-                scr.storeState(scr);
-                if (scr instanceof DataScreen) {
-                  // Force a data reload
-                  ((DataScreen) scr).updateProbes();
-                }
-              }
+              scr.importColumns(finalGroups);
             }
           });
         }
@@ -390,7 +375,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     mi = new MenuItem("Leave feedback...", () -> {      
         FeedbackForm feedbackDialog =
-            new FeedbackForm(currentScreen, currentScreen,
+          new FeedbackForm(currentScreen,
                 "kenji@nibiohn.go.jp, y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com");
         feedbackDialog.display("Leave feedback", DialogPosition.Center);
       });
@@ -437,10 +422,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @param current
    */
-  void addWorkflowLinks(DLWScreen current) {
+  void addWorkflowLinks(Screen current) {
     navPanel.clear();
     for (int i = 0; i < screens.size(); ++i) {
-      final DLWScreen s = screens.get(i);
+      final Screen s = screens.get(i);
       // String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
       String link = s.getTitle();
       final Label label = new Label(link);
@@ -476,7 +461,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * @param token
    */
   private void showScreenForToken(String token, boolean firstLoad) {
-    DLWScreen s = pickScreen(token);
+    Screen s = pickScreen(token);
     if (firstLoad) {
       readURLParameters(s);
     }
@@ -489,9 +474,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @param s
    */
-  protected void showScreen(DLWScreen s) {
+  protected void showScreen(Screen s) {
     if (currentScreen != null) {
-      mainDockPanel.remove(currentScreen);
+      mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
       for (MenuItem mi : s.analysisMenuItems()) {
         toolsMenuBar.removeItem(mi);
@@ -512,7 +497,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
 
     addWorkflowLinks(currentScreen);
-    mainDockPanel.add(currentScreen);
+    mainDockPanel.add(currentScreen.widget());
     currentScreen.show();
     mainDockPanel.forceLayout(); // IE8
     resizeInterface();
@@ -523,7 +508,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @return
    */
-  protected DLWScreen pickScreen(String token) {
+  protected Screen pickScreen(String token) {
     if (!screensBykey.containsKey(token)) {
       return screensBykey.get(defaultScreenKey()); // default
     } else {
@@ -540,7 +525,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   @Override
   public void attemptProceed(String to) {
-    DLWScreen s = pickScreen(to);
+    Screen s = pickScreen(to);
     if (s.enabled()) {
       History.newItem(to);
     } else {
@@ -554,7 +539,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @param s
    */
-  protected void addScreenSeq(DLWScreen s) {
+  protected void addScreenSeq(Screen s) {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
     screensBykey.put(s.key(), s);
     screens.add(s);
@@ -568,7 +553,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   abstract protected void initScreens();
 
   @Override
-  public void setConfigured(DLWScreen s, boolean configured) {
+  public void setConfigured(Screen s, boolean configured) {
     if (configured) {
       configuredScreens.add(s.key());
     } else {
@@ -577,15 +562,15 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   @Override
-  public void reconfigureAll(DLWScreen from) {
-    for (DLWScreen s : screens) {
+  public void reconfigureAll(Screen from) {
+    for (Screen s : screens) {
       if (s != from) {
         s.setConfigured(false);
       }
     }
-    for (DLWScreen s : screens) {
+    for (Screen s : screens) {
       if (s != from) {
-        s.loadState(s, appInfo.attributes());
+        s.loadState(appInfo.attributes());
         s.tryConfigure();
       }
     }
@@ -658,7 +643,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     for (PersistedState<?> ps: getPersistedItems()) {
       ps.loadAndApply(getParser());
     }
-    for (DLWScreen s: screensBykey.values()) {
+    for (Screen s : screensBykey.values()) {
       s.loadPersistedState();
     }
   }

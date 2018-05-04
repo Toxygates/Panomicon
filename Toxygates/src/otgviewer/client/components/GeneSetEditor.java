@@ -23,6 +23,11 @@ import static t.common.client.Utils.makeButton;
 import java.util.*;
 import java.util.stream.Stream;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
@@ -32,11 +37,6 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -484,7 +484,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   }
 
   private void doTargetLookup(final String service, final boolean homologs) {
-    final DataListenerWidget w = screen;
+    final Screen w = screen;
     if (compoundList.getSelectedIndex() != -1) {
       String compound = compoundList.getItemText(compoundList.getSelectedIndex());
 

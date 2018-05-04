@@ -22,15 +22,15 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DLWScreen;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
 import t.viewer.shared.intermine.*;
 
-import com.google.gwt.user.client.ui.*;
-
 public class InterMineEnrichDialog extends InterMineSyncDialog {
 
-  public InterMineEnrichDialog(DLWScreen parent, String action, 
+  public InterMineEnrichDialog(Screen parent, String action,
       @Nullable IntermineInstance preferredInstance) {
     super(parent, action, false, false, preferredInstance);
   }

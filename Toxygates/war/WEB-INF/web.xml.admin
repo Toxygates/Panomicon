@@ -105,6 +105,13 @@
     <welcome-file>admin.html</welcome-file>
   </welcome-file-list>
 
+  <!-- Cache header editing filter, to ensure the application 
+  refreshes properly after updates. Must be in the tomcat classpath for the filter to work -->
+  <filter>
+    <filter-name>gwtCacheControlFilter</filter-name>
+    <filter-class>t.tomcat.NocacheFilter</filter-class>
+  </filter>
+
 <security-constraint>
   <web-resource-collection>
      <web-resource-name>Toxygates (Development version)</web-resource-name>

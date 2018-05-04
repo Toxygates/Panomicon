@@ -26,13 +26,13 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.*;
+import t.viewer.client.ClientState;
+import t.viewer.client.StorageParser;
 
 /**
  * A Composite that is also a DataViewListener. 
@@ -234,14 +234,14 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.clusteringListsChanged(chosenClusteringList);
   }
 
-  public StorageParser getParser(DLWScreen s) {
+  protected StorageParser getParser(Screen s) {
     return s.manager().getParser();    
   }
 
   /**
    * Store this widget's state into local storage.
    */
-  public void storeState(DLWScreen s) {
+  protected void storeState(Screen s) {
     StorageParser p = getParser(s);
     storeState(p);
   }
@@ -249,7 +249,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   /**
    * Store this widget's state into local storage.
    */
-  public void storeState(StorageParser p) {
+  protected void storeState(StorageParser p) {
     storeColumns(p);
     storeProbes(p);
     storeGeneSet(p);
@@ -399,29 +399,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     SampleClass sc = t.common.client.Utils.unpackSampleClass(attributes, v);
     changeSampleClass(sc);    
-  }
-
-  private int numPendingRequests = 0;
-
-  private DialogBox waitDialog;
-
-  // Load indicator handling
-  protected void addPendingRequest() {
-    numPendingRequests += 1;
-    if (numPendingRequests == 1) {
-      if (waitDialog == null) {
-        waitDialog = Utils.waitDialog();
-      } else {
-        waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
-      }
-    }
-  }
-
-  protected void removePendingRequest() {
-    numPendingRequests -= 1;
-    if (numPendingRequests == 0) {
-      waitDialog.hide();
-    }
   }
 
   protected List<Sample> getAllSamples() {

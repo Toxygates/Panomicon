@@ -20,18 +20,18 @@ package otgviewer.client;
 
 import java.util.Arrays;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * An interface component that helps users to select probes using some kind of higher level concept
@@ -54,11 +54,14 @@ abstract public class ProbeSelector extends DataListenerWidget implements
   private ListBox itemList;
   private Button addButton;
 
+  private Screen screen;
+
   private final ProbeServiceAsync probeService;
 
   private final static String CHILD_WIDTH = "100%";
 
   public ProbeSelector(DLWScreen screen, String label, boolean wb) {
+    this.screen = screen;
     this.probeService = screen.manager().probeService();
     this.withButton = wb;
     this.dp = new DockLayoutPanel(Unit.PX);
@@ -152,7 +155,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
    * @return
    */
   public AsyncCallback<String[]> retrieveProbesCallback() {
-    return new PendingAsyncCallback<String[]>(this) {
+    return new PendingAsyncCallback<String[]>(screen) {
       @Override
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get probes.");
@@ -178,7 +181,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       Arrays.sort(probes);
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
-      probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(this, 
+      probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(screen,
           "Unable to get gene symbols for probes") {
         @Override
         public void handleSuccess(String[][] syms) {

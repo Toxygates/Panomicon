@@ -42,16 +42,18 @@ import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
-import t.viewer.shared.AppInfo;
 
 /**
+ * This class is in the process of being phased out in favor of a more lightweight version not
+ * deriving from DataListenerWidget. Old comment follows:
+ * 
  * Screens are a high level building block for user interfaces. Sequences of screens can form a
  * workflow. Screens require a ScreenManager to assist inter-screen communication. Screens can be
  * hidden/visible and configured/deconfigured. A configured screen has been completely configured by
  * the user, for example by making certain selections. This is a useful concept when late screens
  * depend on data that is selected in earlier screens.
  */
-public class DLWScreen extends DataListenerWidget implements 
+public class DLWScreen extends DataListenerWidget implements Screen,
   RequiresResize, ProvidesResize {
 
   protected DockLayoutPanel rootPanel;
@@ -110,6 +112,16 @@ public class DLWScreen extends DataListenerWidget implements
 
   private boolean showGuide;
 
+  @Override
+  public Widget widget() {
+    return this;
+  }
+
+  @Override
+  public Logger getLogger() {
+    return logger;
+  }
+
   /**
    * An action to be invoked at some later time (for example when data becomes available)
    * 
@@ -156,6 +168,7 @@ public class DLWScreen extends DataListenerWidget implements
    * 
    * @param qa
    */
+  @Override
   public void enqueue(QueuedAction qa) {   
     actionQueue.remove(qa); // remove it if it's already there (so we can update it)
     actionQueue.add(qa);
@@ -184,12 +197,9 @@ public class DLWScreen extends DataListenerWidget implements
     this(title, key, showGroups, man, man.resources().defaultHelpHTML(), null);
   }
 
+  @Override
   public ScreenManager manager() {
     return manager;
-  }
-
-  public AppInfo appInfo() {
-    return manager.appInfo();
   }
 
   public UIFactory factory() {
@@ -213,6 +223,7 @@ public class DLWScreen extends DataListenerWidget implements
    * 
    * @return
    */
+  @Override
   public boolean enabled() {
     return true;
   }
@@ -229,6 +240,7 @@ public class DLWScreen extends DataListenerWidget implements
   /**
    * For subclass implementations to indicate that they have been configured
    */
+  @Override
   public void setConfigured(boolean cfg) {
     configured = cfg;
     manager.setConfigured(this, configured);
@@ -238,6 +250,7 @@ public class DLWScreen extends DataListenerWidget implements
    * Subclass implementations should use this method to check whether sufficient state to be
    * "configured" has been loaded. If it has, they should call setConfigured().
    */
+  @Override
   public void tryConfigure() {
     setConfigured(true);
   }
@@ -253,6 +266,7 @@ public class DLWScreen extends DataListenerWidget implements
     manager.attemptProceed(key);
   }
 
+  @Override
   @Nullable
   public String additionalNavlinkStyle() {
     return null;
@@ -267,6 +281,7 @@ public class DLWScreen extends DataListenerWidget implements
     return r;
   }
 
+  @Override
   public void initGUI() {
     statusPanel = new FlowPanel();
     statusPanel.addStyleName("statusPanel");
@@ -328,6 +343,7 @@ public class DLWScreen extends DataListenerWidget implements
     return hp;
   }
 
+  @Override
   public void showGuide() {
     showToolbar(guideBar);
     showGuide = true;
@@ -339,10 +355,11 @@ public class DLWScreen extends DataListenerWidget implements
    * This method will be called each time the screen is displayed anew. If overriding, make sure to
    * call the superclass method.
    */
+  @Override
   public void show() {
     rootPanel.forceLayout();
     visible = true;
-    loadState(this, attributes());
+    loadState(attributes());
     if (showGuide) {
       showToolbar(guideBar);
     } else {
@@ -357,9 +374,10 @@ public class DLWScreen extends DataListenerWidget implements
    * Load saved state from the local storage. If the loaded state is different from what was
    * previously remembered in this widget, the appropriate signals will fire.
    */
-  public void loadState(DLWScreen sc, AttributeSet attributes) {
-    StorageParser p = getParser(sc);
-    loadState(p, sc.schema(), attributes);
+  @Override
+  public void loadState(AttributeSet attributes) {
+    StorageParser p = getParser(this);
+    loadState(p, this.schema(), attributes);
   }
 
   public void loadState(StorageParser parser, DataSchema schema, AttributeSet attributes) {
@@ -456,6 +474,7 @@ public class DLWScreen extends DataListenerWidget implements
     }
   }
 
+  @Override
   public void resizeInterface() {
     for (Widget w : toolbars) {
       rootPanel.setWidgetSize(w, w.getOffsetHeight());
@@ -538,6 +557,7 @@ public class DLWScreen extends DataListenerWidget implements
    * This method will be called each time the screen is hidden. If overriding, make sure to call the
    * superclass method.
    */
+  @Override
   public void hide() {
     visible = false;
   }
@@ -546,14 +566,17 @@ public class DLWScreen extends DataListenerWidget implements
     menuItems.add(m);
   }
 
+  @Override
   public void addAnalysisMenuItem(MenuItem mi) {
     analysisMenuItems.add(mi);
   }
 
+  @Override
   public List<MenuItem> menuItems() {
     return menuItems;
   }
 
+  @Override
   public List<MenuItem> analysisMenuItems() {
     return analysisMenuItems;
   }
@@ -572,6 +595,7 @@ public class DLWScreen extends DataListenerWidget implements
     return null;
   }
 
+  @Override
   public String key() {
     return key;
   }
@@ -584,6 +608,7 @@ public class DLWScreen extends DataListenerWidget implements
     return helpHTML != null;
   }
 
+  @Override
   public void showHelp() {
     Utils.showHelp(getHelpHTML(), getHelpImage());
   }
@@ -627,6 +652,7 @@ public class DLWScreen extends DataListenerWidget implements
     return new ArrayList<>();
   }
 
+  @Override
   public void loadPersistedState() {
     for (PersistedState<?> ps: getPersistedItems()) {
       ps.loadAndApply(getParser());
@@ -646,4 +672,58 @@ public class DLWScreen extends DataListenerWidget implements
     configuredProceed(SampleDetailScreen.key);
   }
 
+  @Override
+  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
+    itemListsChanged(itemLists);
+    storeItemLists(getParser());
+    clusteringListsChanged(clusteringLists);
+    storeClusteringLists(getParser());
+  }
+
+  private int numPendingRequests = 0;
+
+  private DialogBox waitDialog;
+
+  // Load indicator handling
+  @Override
+  public void addPendingRequest() {
+    numPendingRequests += 1;
+    if (numPendingRequests == 1) {
+      if (waitDialog == null) {
+        waitDialog = Utils.waitDialog();
+      } else {
+        waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
+      }
+    }
+  }
+
+  @Override
+  public void removePendingRequest() {
+    numPendingRequests -= 1;
+    if (numPendingRequests == 0) {
+      waitDialog.hide();
+    }
+  }
+
+  @Override
+  public boolean importProbes(String[] probes) {
+    if (Arrays.equals(probes, chosenProbes)) {
+      return false;
+    } else {
+      probesChanged(probes);
+      storeState(this);
+      return true;
+    }
+  }
+
+  @Override
+  public boolean importColumns(List<Group> groups) {
+    if (groups.size() > 0 && !groups.equals(chosenColumns)) {
+      columnsChanged(groups);
+      storeState(this);
+      return true;
+    } else {
+      return false;
+    }
+  }
 }

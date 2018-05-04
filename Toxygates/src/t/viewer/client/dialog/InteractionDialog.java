@@ -18,20 +18,20 @@
 
 package t.viewer.client.dialog;
 
-import otgviewer.client.components.DataListenerWidget;
-import t.viewer.client.Utils;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import otgviewer.client.components.Screen;
+import t.viewer.client.Utils;
+
 abstract public class InteractionDialog {
 
   protected DialogBox db;
-  protected final DataListenerWidget parent;
+  protected final Screen parent;
 
-  public InteractionDialog(DataListenerWidget parent) {
+  public InteractionDialog(Screen parent) {
     this.parent = parent;
   }
 

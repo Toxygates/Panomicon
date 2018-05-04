@@ -27,8 +27,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.PendingAsyncCallback;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
@@ -74,12 +74,12 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compounds.get(0));
       sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
-          this, "Unable to get samples") {
+          screen, "Unable to get samples") {
         @Override
         public void handleSuccess(Sample[] bcs) {
 
           sampleService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
-              AnnotationTDGrid.this, "Unable to get annotations.") {
+              screen, "Unable to get annotations.") {
             @Override
             public void handleSuccess(Annotation a) {
               for (BioParamValue e : a.getAnnotations()) {
@@ -111,7 +111,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     sc.put(OTGAttribute.ExposureTime, time);
     sc.put(OTGAttribute.Compound, compound);
 
-    sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
+    sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(screen,
         "Unable to retrieve barcodes for the group definition.") {
       @Override
       public void handleSuccess(Sample[] barcodes) {
@@ -133,7 +133,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       final String time, final Sample[] barcodes) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
     Group g = new Group(schema, "temporary", barcodes, null);
-    sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
+    sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(screen,
         "Unable to get annotations.") {
       @Override
       public void handleSuccess(Annotation[] as) {

@@ -150,7 +150,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     fetchingMinor = true;
     logger.info("Fetch minor");
     sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(),
-        new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
+        new PendingAsyncCallback<String[]>(screen,
+            "Unable to fetch minor parameter for samples") {
           @Override
           public void handleSuccess(String[] times) {
             try {
@@ -190,7 +191,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     String[] compounds = chosenCompounds.toArray(new String[0]);
     final String[] fetchingForCompounds = compounds;
     sampleService.units(chosenSampleClass, schema.majorParameter().id(), compounds,
-        new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
+        new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "Unable to obtain samples.") {
 
           @Override
           public void handleFailure(Throwable caught) {

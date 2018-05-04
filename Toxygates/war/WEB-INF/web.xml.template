@@ -199,6 +199,15 @@
   <welcome-file-list>
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
+  
+  <!-- Cache header editing filter, to ensure the application 
+  refreshes properly after updates. Must be in the tomcat classpath for the filter to work -->
+  <filter>
+    <filter-name>gwtCacheControlFilter</filter-name>
+    <filter-class>t.tomcat.NocacheFilter</filter-class>
+  </filter>
+
+  
 
 <!-- The closing </web-app> will be filled in by scripts like 
 new_instance.public.sh -->

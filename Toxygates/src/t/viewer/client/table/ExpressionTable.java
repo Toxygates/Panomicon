@@ -298,7 +298,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   void removeTests() {    
-    matrixService.removeSyntheticColumns(matrixId, new PendingAsyncCallback<ManagedMatrixInfo>(this, 
+    matrixService.removeSyntheticColumns(matrixId, new PendingAsyncCallback<ManagedMatrixInfo>(screen, 
         "There was an error removing the test columns.") {
 
       @Override
@@ -313,8 +313,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     final Group g1 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup1()).get();
     final Group g2 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup2()).get();
     synth.setGroups(g1, g2);
+
     matrixService.addSyntheticColumn(matrixId, synth,
-        new PendingAsyncCallback<ManagedMatrixInfo>(this, "Adding test column failed") {
+        new PendingAsyncCallback<ManagedMatrixInfo>(screen, "Adding test column failed") {
           @Override
           public void handleSuccess(ManagedMatrixInfo r) {
             setMatrix(r);
@@ -331,7 +332,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
     
     matrixService.prepareCSVDownload(matrixId, individualSamples, 
-        new PendingAsyncCallback<String>(this,
+        new PendingAsyncCallback<String>(screen,
         "Unable to prepare the requested data for download.") {
 
       @Override

@@ -108,13 +108,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   @Override
   public void sampleClassChanged(SampleClass sc) {
     super.sampleClassChanged(sc);
-    screen.enqueue(new DLWScreen.QueuedAction("loadCompounds") {
-      @Override
-      public void run() {
-        loadMajors();
-        // compoundEditor.clearSelection();
-      }
-    });
+    loadMajors();
   }
 
   @Override
@@ -132,7 +126,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
   void loadMajors() {
     sampleService.parameterValues(chosenSampleClass, majorParameter,
-        new PendingAsyncCallback<String[]>(this, "Unable to retrieve values for parameter: "
+        new PendingAsyncCallback<String[]>(screen, "Unable to retrieve values for parameter: "
             + majorParameter) {
 
           @Override
