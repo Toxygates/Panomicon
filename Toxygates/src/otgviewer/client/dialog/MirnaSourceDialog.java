@@ -1,24 +1,24 @@
 package otgviewer.client.dialog;
 
-import otgviewer.client.components.Screen;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.DLWScreen;
 import t.viewer.client.PersistedState;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.mirna.MirnaSource;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
-
 public class MirnaSourceDialog extends InteractionDialog {
   MirnaSourceSelector selector;
   ProbeServiceAsync probeService;
   PersistedState<MirnaSource[]> state;
-  Screen screen;
+  DLWScreen screen;
   VerticalPanel vp;
   
-  public MirnaSourceDialog(Screen parent, 
+  public MirnaSourceDialog(DLWScreen parent, 
                            ProbeServiceAsync probeService,
                            MirnaSource[] availableSources,
                            PersistedState<MirnaSource[]> state) {

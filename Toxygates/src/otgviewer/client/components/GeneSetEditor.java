@@ -47,7 +47,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private DialogBox dialog;
 
-  private final Screen screen;
+  private final DLWScreen screen;
 
   private final ProbeServiceAsync probeService;
 
@@ -76,7 +76,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private List<SaveActionHandler> saveActions = new ArrayList<SaveActionHandler>();
 
-  public GeneSetEditor(Screen screen) {
+  public GeneSetEditor(DLWScreen screen) {
     super();
 
     this.screen = screen;

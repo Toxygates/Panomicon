@@ -21,7 +21,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
@@ -63,7 +63,7 @@ public class GeneOracle extends SuggestOracle {
 
   }
 
-  public GeneOracle(Screen screen) {
+  public GeneOracle(DLWScreen screen) {
     probeService = screen.manager().probeService();
   }
 

@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -166,10 +166,10 @@ abstract public class DataSource {
     protected final MatrixServiceAsync matrixService;
 
     protected String[] probes;
-    protected Screen screen;
+    protected DLWScreen screen;
 
     DynamicExpressionRowSource(DataSchema schema, String[] probes, Sample[] barcodes,
-        Screen screen) {
+        DLWScreen screen) {
       super(schema, barcodes, new ArrayList<ExpressionRow>());
       this.probes = probes;
       this.screen = screen;
@@ -219,7 +219,7 @@ abstract public class DataSource {
   static class DynamicUnitSource extends DynamicExpressionRowSource {
     private Unit[] units;
 
-    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, Screen screen) {
+    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, DLWScreen screen) {
       super(schema, probes, Unit.collectBarcodes(units), screen);
       this.units = units;
     }

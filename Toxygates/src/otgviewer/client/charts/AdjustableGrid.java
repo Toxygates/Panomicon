@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -48,7 +48,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private List<Group> groups;
   private VerticalPanel vp;
   private VerticalPanel ivp;
-  private Screen screen;
+  private DLWScreen screen;
   private Factory<D, DS> factory;
   private int computedWidth;
 
@@ -60,7 +60,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
   private final DataSchema schema;
 
-  public AdjustableGrid(Factory<D, DS> factory, Screen screen, DataSource source,
+  public AdjustableGrid(Factory<D, DS> factory, DLWScreen screen, DataSource source,
       List<Group> groups, ValueType vt) {
     this.source = source;
     this.groups = groups;

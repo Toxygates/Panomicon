@@ -3,7 +3,7 @@ package otgviewer.client;
 import static otg.model.sample.OTGAttribute.*;
 
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
@@ -17,7 +17,7 @@ import t.viewer.client.rpc.UserDataServiceAsync;
 public class AdjuvantFactory extends OTGFactory {
 
   @Override
-  public void sampleSummaryTable(Screen screen,
+  public void sampleSummaryTable(DLWScreen screen,
                                              ValueAcceptor<StringArrayTable> acceptor) {
     UserDataServiceAsync userData = screen.manager().userDataService();
     Dataset d = new Dataset("adjuvant", null, null, null, null, 0);

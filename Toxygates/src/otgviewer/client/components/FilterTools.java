@@ -37,10 +37,10 @@ import com.google.gwt.user.client.ui.*;
 public class FilterTools extends DataListenerWidget {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
-  final Screen screen;
+  final DLWScreen screen;
   final SampleServiceAsync sampleService;
 
-  public FilterTools(final Screen screen) {
+  public FilterTools(final DLWScreen screen) {
     this.screen = screen;
     sampleService = screen.manager().sampleService();
 

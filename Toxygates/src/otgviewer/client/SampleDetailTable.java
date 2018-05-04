@@ -104,7 +104,7 @@ public class SampleDetailTable extends Composite {
     }        
   };
   
-  public SampleDetailTable(Screen screen, @Nullable String title, boolean isSection) {
+  public SampleDetailTable(DLWScreen screen, @Nullable String title, boolean isSection) {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.waitListener = screen;

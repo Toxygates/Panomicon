@@ -44,7 +44,7 @@ import com.google.gwt.user.client.ui.*;
 abstract public class CompoundRanker extends DataListenerWidget {
   protected final Resources resources;
   final RankingCompoundSelector selector;
-  protected final Screen screen;
+  protected final DLWScreen screen;
   protected ListChooser listChooser;
 
   final GeneOracle oracle;
@@ -68,7 +68,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
    * 
    * @param selector the selector that this CompoundRanker will communicate with.
    */
-  public CompoundRanker(Screen _screen, RankingCompoundSelector selector) {
+  public CompoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
     this.selector = selector;
     screen = _screen;
     oracle = new GeneOracle(screen);

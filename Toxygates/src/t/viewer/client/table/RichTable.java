@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.viewer.client.PersistedState;
@@ -70,10 +70,10 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   }
 
   protected TableStyle style;
-  protected Screen screen;
+  protected DLWScreen screen;
   protected Label titleLabel = new Label();
  
-  public RichTable(Screen screen, TableStyle style, TableFlags flags) {
+  public RichTable(DLWScreen screen, TableStyle style, TableFlags flags) {
     this.screen = screen;
     this.schema = screen.schema();
     this.style = style;

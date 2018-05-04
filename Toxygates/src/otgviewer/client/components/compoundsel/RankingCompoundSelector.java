@@ -52,7 +52,7 @@ public class RankingCompoundSelector extends CompoundSelector {
   private boolean hasRankColumns = false;
   private final Resources resources;
   
-  public RankingCompoundSelector(Screen screen, String heading) {
+  public RankingCompoundSelector(DLWScreen screen, String heading) {
     super(screen, heading, false, false);
     this.seriesService = screen.manager().seriesService();
     this.resources = screen.resources();    

@@ -3,7 +3,7 @@ package otgviewer.client;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.ScreenManager;
 import t.model.SampleClass;
 
@@ -11,7 +11,7 @@ import t.model.SampleClass;
  * A screen that supports FilterTools. More code may be moved here from the various sub-screens
  * in the future.
  */
-abstract public class DataFilterScreen extends Screen {
+abstract public class DataFilterScreen extends DLWScreen {
     
   public DataFilterScreen(String title, String key, boolean showGroups, ScreenManager man,
       TextResource helpHTML, ImageResource helpImage) {

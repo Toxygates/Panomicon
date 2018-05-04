@@ -35,7 +35,7 @@ public class FeedbackForm extends InteractionDialog {
   private final MatrixServiceAsync matrixService;
   private final String emailAddresses;
 
-  public FeedbackForm(final DataListenerWidget parent, Screen screen, String emailAddresses) {
+  public FeedbackForm(final DataListenerWidget parent, DLWScreen screen, String emailAddresses) {
     super(parent);
     this.emailAddresses = emailAddresses;
     matrixService = screen.manager().matrixService();

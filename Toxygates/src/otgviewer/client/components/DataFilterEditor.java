@@ -116,7 +116,7 @@ public class DataFilterEditor extends DataListenerWidget {
     }
   }
 
-  public DataFilterEditor(Screen screen) {
+  public DataFilterEditor(DLWScreen screen) {
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");

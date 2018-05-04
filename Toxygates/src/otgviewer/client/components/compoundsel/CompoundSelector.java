@@ -48,12 +48,12 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   private DockLayoutPanel dp;
 
   private Widget north;
-  protected final Screen screen;
+  protected final DLWScreen screen;
   private final String majorParameter;
 
   private final static int MAX_AUTO_SEL = 20;
 
-  public CompoundSelector(final Screen screen, String heading, boolean withListSelector,
+  public CompoundSelector(final DLWScreen screen, String heading, boolean withListSelector,
       boolean withFreeEdit) {
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();
@@ -108,7 +108,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   @Override
   public void sampleClassChanged(SampleClass sc) {
     super.sampleClassChanged(sc);
-    screen.enqueue(new Screen.QueuedAction("loadCompounds") {
+    screen.enqueue(new DLWScreen.QueuedAction("loadCompounds") {
       @Override
       public void run() {
         loadMajors();
