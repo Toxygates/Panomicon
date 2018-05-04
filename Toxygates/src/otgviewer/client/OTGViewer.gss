@@ -440,6 +440,10 @@ Tables
 	background: #D0D0D0;
 }
 
+.dataGridSelectedRow, .cellTableSelectedRow {
+	background-color: #00D8E8;
+}
+
 /**************************************	
 Expression table
 **************************************/
