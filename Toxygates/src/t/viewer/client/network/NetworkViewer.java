@@ -29,7 +29,7 @@ public interface NetworkViewer {
   
   String getDestType();
   
-  void onSourceSelectionChanged(String node);
+  void onSourceSelectionChanged();
   
-  void onDestSelectionChanged(String node);
+  void onDestSelectionChanged();
 }

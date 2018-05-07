@@ -3,28 +3,24 @@ package otgviewer.client;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import com.google.gwt.view.client.SingleSelectionModel;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import t.common.shared.*;
-import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
+import t.viewer.client.network.DualTableNetwork;
 import t.viewer.client.network.NetworkController;
-import t.viewer.client.network.NetworkViewer;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.*;
 import t.viewer.shared.Association;
-import t.viewer.shared.Synthetic;
-import t.viewer.shared.network.*;
+import t.viewer.shared.network.Format;
+import t.viewer.shared.network.Network;
 
 /**
  * A DataScreen that can display two tables side by side.
@@ -35,7 +31,7 @@ import t.viewer.shared.network.*;
  * The "main" table drives the side table, in the sense that what is being displayed in the
  * latter depends on the content of the former.
  */
-public class DualDataScreen extends DataScreen implements NetworkViewer {
+public class DualDataScreen extends DataScreen {
 
   protected ExpressionTable sideExpressionTable;
   
@@ -97,12 +93,7 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
    */
   DualMode mode = DualMode.Forward;
   
-  NetworkController controller = new NetworkController(this) {
-    @Override
-    public Map<String, Collection<String>> linkingMap() {
-      return DualDataScreen.this.linkingMap();
-    }    
-  };
+  NetworkController controller;
   
   public DualDataScreen(ScreenManager man) {
     super(man);
@@ -113,10 +104,14 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
         mode.sideStyle());     
     sideExpressionTable.addStyleName("sideExpressionTable");
     
-    expressionTable.selectionModel().addSelectionChangeHandler(e ->
-      onSourceSelectionChanged(getSelectedSourceNode()));
-    sideExpressionTable.selectionModel().addSelectionChangeHandler(e ->
-      onDestSelectionChanged(getSelectedDestNode()));
+    expressionTable.selectionModel().addSelectionChangeHandler(e -> {
+      if (mode.isSplit) {
+        network.onSourceSelectionChanged();
+        } });
+    sideExpressionTable.selectionModel().addSelectionChangeHandler(e -> {
+      if (mode.isSplit) {    
+      network.onDestSelectionChanged();
+      } });
   }
   
   protected void flipDualView() {    
@@ -180,18 +175,6 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
     } else {
       Window.alert("Please view mRNA and miRNA samples simultaneously to download networks.");
     }
-  }
-  
-  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {
-    Map<String, Collection<String>> lookup = fromMain ? linkingMap() : mappingSummary.getReverseMap();    
-    if (selected != null) {   
-      if (lookup != null && lookup.containsKey(selected)) {          
-        return new HashSet<String>(lookup.get(selected));        
-      } else {
-        logger.warning("No association indications for " + selected);
-      }
-    }                
-    return new HashSet<String>();
   }
   
   //Initial title only - need the constant here since the field won't be initialised
@@ -262,6 +245,7 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
     expressionTable.setTitleHeader(mode.mainType);    
     expressionTable.setStyleAndApply(mode.mainStyle());
     if (mode.isSplit) {
+      makeNetwork();      
       sideExpressionTable.setTitleHeader(mode.sideType);      
       sideExpressionTable.setStyleAndApply(mode.sideStyle());
     }
@@ -291,11 +275,25 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
   }
   
+  protected DualTableNetwork makeNetwork() {
+    network = new DualTableNetwork(expressionTable, sideExpressionTable, 
+      mode.mainType, mode.sideType, mode.linkingType, MAX_SECONDARY_ROWS);
+    controller = new NetworkController(network) {
+      @Override
+      public Map<String, Collection<String>> linkingMap() {
+        return network.linkingMap();
+      }    
+    };
+    return network;
+  }
+  
+  protected DualTableNetwork network;
+  
   @Override
   protected void associationsUpdated(Association[] result) {
     super.associationsUpdated(result);    
     if (mode.isSplit) {
-      extractSideTableProbes();
+      network.extractSideTableProbes();
     }
   }
   
@@ -305,133 +303,6 @@ public class DualDataScreen extends DataScreen implements NetworkViewer {
     if (mode.isSplit) {
       sideExpressionTable.clearMatrix();
     }
-  }
-  
-  //Maps main table to side table via a column.
-  protected AssociationSummary<ExpressionRow> mappingSummary;
-  
-  private Synthetic.Precomputed buildCountColumn(String[][] rawData) {
-    Map<String, Double> counts = new HashMap<String, Double>();    
-    //The first row is headers    
-    for (int i = 1; i < rawData.length && i < MAX_SECONDARY_ROWS; i++) {    
-      counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
-    }
-    return new Synthetic.Precomputed("Count", 
-      "Number of times each " + mode.sideType + " appeared", counts,
-      null);
-
-  }
-  
-  protected void extractSideTableProbes() {
-    mappingSummary = expressionTable.associationSummary(mode.linkingType);  
-    if (sideExpressionTable.chosenColumns().isEmpty()) {
-      return;
-    }
-    
-    if (mappingSummary == null) {
-      logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");
-      return;
-    }
-    String[][] rawData = mappingSummary.getTable();
-    if (rawData.length < 2) {
-      logger.info("No secondary probes found in summary - not updating side table probes");
-      return;
-    }
-    String[] ids = Arrays.stream(rawData).skip(1).limit(MAX_SECONDARY_ROWS).
-        map(a -> a[1]).toArray(String[]::new);
-    logger.info("Extracted " + ids.length + " " + mode.sideType);    
-    
-    Synthetic.Precomputed countColumn = buildCountColumn(rawData);
-    List<Synthetic> synths = Arrays.asList(countColumn);
-    
-    changeSideTableProbes(ids, synths);
-  }
-  
-  protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {
-    sideExpressionTable.probesChanged(probes);
-    if (probes.length > 0) {
-      sideExpressionTable.getExpressions(synths, true);
-    }
-  }
-  
-  /**
-   * Build Nodes by using expression values from the first column in the rows.
-   * @param type
-   * @param rows
-   * @return
-   */
-  static List<Node> buildNodes(String kind, List<ExpressionRow> rows) {
-    return rows.stream().map(r -> 
-      Node.fromRow(r, kind)).collect(Collectors.toList());    
-  }
-  
-  /**
-   * Maps mRNA-miRNA in forward mode, miRNA-mRNA in reverse mode
-   * @return
-   */
-  protected Map<String, Collection<String>> linkingMap() {    
-    return mappingSummary.getFullMap();
-  }
-  
-  @Override
-  public List<Node> getSourceNodes() {
-    return buildNodes(mode.mainType, expressionTable.getDisplayedRows());
-  }
-  
-  @Override
-  public List<Node> getDestNodes() {
-    return buildNodes(mode.sideType, sideExpressionTable.getDisplayedRows());    
-  }
-  
-  @Override
-  public String getSourceType() {
-    return mode.mainType;
-  }
-  
-  @Override
-  public String getDestType() {
-    return mode.sideType;
-  }
-  
-  @Nullable 
-  private String getSelectedNode(ExpressionTable table) {
-    ExpressionRow r =
-        ((SingleSelectionModel<ExpressionRow>) table.selectionModel()).getSelectedObject();
-    return (r != null ? r.getProbe() : null);
-  }
-  
-  @Override
-  public @Nullable String getSelectedSourceNode() {
-    return getSelectedNode(expressionTable);    
-  }
-  
-  @Override
-  public @Nullable String getSelectedDestNode() {
-    return getSelectedNode(sideExpressionTable);    
-  }
-
-  @Override
-  public void setHighlightedSourceNodes(Set<String> selected) {
-    expressionTable.setIndicatedProbes(selected, true);
-  }
-  
-  @Override
-  public void setHighlightedDestNodes(Set<String> selected) {
-    sideExpressionTable.setIndicatedProbes(selected, true);
-  }
-
-  @Override
-  public void onSourceSelectionChanged(String node) {    
-    if (mode.isSplit) {
-      setHighlightedDestNodes(getIndicatedRows(getSelectedSourceNode(), true));
-    }    
-  }
-
-  @Override
-  public void onDestSelectionChanged(String node) {
-    if (mode.isSplit) {
-      setHighlightedSourceNodes(getIndicatedRows(getSelectedDestNode(), false));
-    }
-  }
+  }  
 }
 
