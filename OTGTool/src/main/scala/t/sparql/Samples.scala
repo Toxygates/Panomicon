@@ -305,7 +305,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
 
     val sampleClassFilterString = if (sampleClassFilter.constraints.isEmpty) "" else
-      s""".stripMargin|
+      s"""|
           |    FILTER( ${filterAttributes.map(a => s"?${a.id} = " + "\"" +
                            sampleClassFilter.constraints(a) + "\"").mkString(" && ") } )""".stripMargin
 
