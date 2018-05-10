@@ -30,8 +30,7 @@ import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
 import otgviewer.client.charts.google.GVizFactory;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.*;
 import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -67,13 +66,13 @@ public class Charts {
   // TODO where to instantiate this?
   private GVizFactory factory = new GVizFactory();
 
-  private Charts(DLWScreen screen) {
-    this.schema = screen.schema();
+  private Charts(Screen screen) {
+    this.schema = screen.manager().schema();
     this.sampleService = screen.manager().sampleService();
     this.seriesService = screen.manager().seriesService();
   }
 
-  public Charts(DLWScreen screen, List<Group> groups) {
+  public Charts(Screen screen, List<Group> groups) {
     this(screen);
     this.groups = groups;
 
@@ -159,7 +158,7 @@ public class Charts {
     }
   }
 
-  public void makeRowCharts(final DLWScreen screen, final Sample[] barcodes, final ValueType vt,
+  public void makeRowCharts(final Screen screen, final Sample[] barcodes, final ValueType vt,
       final String[] probes, final AChartAcceptor acceptor) {
     String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
@@ -207,7 +206,7 @@ public class Charts {
     }
   }
 
-  private void finishRowCharts(DLWScreen screen, String[] probes, ValueType vt, List<Group> groups,
+  private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
       Sample[] barcodes, AChartAcceptor acceptor) {
     DataSource dataSource =
         new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, screen);
@@ -216,8 +215,8 @@ public class Charts {
     acceptor.acceptCharts(acg);
   }
 
-  private void finishRowCharts(DLWScreen screen, String[] probes, ValueType vt, List<Group> groups,
-      Pair<Unit, Unit>[] units, AChartAcceptor acceptor) {
+  private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,      
+                               Pair<Unit, Unit>[] units, AChartAcceptor acceptor) {
     Set<Unit> treated = new HashSet<Unit>();
     for (Pair<Unit, Unit> u : units) {
       treated.add(u.first());

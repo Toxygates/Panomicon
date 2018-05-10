@@ -22,22 +22,20 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.cell.client.SafeHtmlCell;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import otgviewer.client.StandardColumns;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.Association;
 import t.viewer.shared.AssociationValue;
 import t.viewer.shared.table.SortKey;
 
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 /**
  * A RichTable that can display association columns.
- * 
- * @author johan
  *
  */
 abstract public class AssociationTable<T> extends RichTable<T> {
@@ -45,7 +43,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
   private boolean waitingForAssociations = true;
 
-  public AssociationTable(DLWScreen screen, TableStyle style) {
+  public AssociationTable(Screen screen, TableStyle style) {
     super(screen, style);
     probeService = screen.manager().probeService();
   }

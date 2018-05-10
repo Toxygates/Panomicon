@@ -20,18 +20,19 @@ package otgviewer.client.charts.google;
 
 import java.util.List;
 
-import otgviewer.client.charts.*;
-import otgviewer.client.components.DLWScreen;
-import t.common.shared.sample.Sample;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.*;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.events.ReadyHandler;
 import com.google.gwt.visualization.client.events.SelectHandler;
 import com.google.gwt.visualization.client.visualizations.corechart.*;
+
+import otgviewer.client.charts.*;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.ScreenUtils;
+import t.common.shared.sample.Sample;
 
 /**
  * A ChartGrid that uses the Google Visualization API.
@@ -40,7 +41,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 
   public static final int MAX_WIDTH = 400;
 
-  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, DLWScreen screen, GDTDataset table,
+  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, Screen screen, GDTDataset table,
       final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
       String[] timesOrDoses, boolean columnsAreTimes, int totalWidth) {
     super(factory, screen, table, rowFilters, organisms, rowsAreMajors, timesOrDoses,
@@ -90,7 +91,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
       ca.setWidth(style.bigMode ? fw * 0.7 : fw - 75);
       ca.setHeight(style.bigMode ? fh * 0.8 : fh - 75);
       o.setChartArea(ca);
-    }
+    } 
 
     final CoreChart c = new ColumnChart(dt, o);
     if (screen != null) {
@@ -103,8 +104,8 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           int row = s.getRow();
           String bc = dt.getProperty(row, col, "barcode");
           if (bc != null) {
-            Sample b = Sample.unpack(bc, screen.attributes());
-            screen.displaySampleDetail(b);
+            Sample b = Sample.unpack(bc, screen.appInfo().attributes());
+            ScreenUtils.displaySampleDetail(screen, b);
           }
         }
       });
