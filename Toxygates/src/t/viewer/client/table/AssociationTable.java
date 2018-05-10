@@ -26,7 +26,7 @@ import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
@@ -35,8 +35,6 @@ import t.viewer.shared.*;
 
 /**
  * A RichTable that can display association columns.
- * 
- * @author johan
  *
  */
 abstract public class AssociationTable<T extends ExpressionRow> extends RichTable<T> {
@@ -48,9 +46,7 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
   
   private boolean refreshEnabled = true;
 
-
-  public AssociationTable(DLWScreen screen, TableStyle style, 
-      TableFlags flags) {
+  public AssociationTable(Screen screen, TableStyle style, TableFlags flags) {
     super(screen, style, flags);
     probeService = screen.manager().probeService();
   }

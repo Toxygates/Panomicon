@@ -22,15 +22,15 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.google.gwt.user.client.ui.*;
+
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A chart grid where the user can interactively choose what kind of charts to display (for example,
@@ -48,7 +48,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private List<Group> groups;
   private VerticalPanel vp;
   private VerticalPanel ivp;
-  private DLWScreen screen;
+  private Screen screen;
   private Factory<D, DS> factory;
   private int computedWidth;
 
@@ -60,20 +60,20 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
   private final DataSchema schema;
 
-  public AdjustableGrid(Factory<D, DS> factory, DLWScreen screen, DataSource source,
+  public AdjustableGrid(Factory<D, DS> factory, Screen screen, DataSource source,
       List<Group> groups, ValueType vt) {
     this.source = source;
     this.groups = groups;
     this.screen = screen;
     this.factory = factory;
-    schema = screen.schema();
+    schema = screen.manager().schema();
 
     // TODO use schema somehow to handle organism propagation   
     organisms = groups.stream().
         flatMap(g -> g.collect(OTGAttribute.Organism)).
         distinct().collect(Collectors.toList());
 
-    Attribute majorParam = screen.schema().majorParameter();
+    Attribute majorParam = schema.majorParameter();
     this.majorVals = GroupUtils.collect(groups, majorParam).collect(Collectors.toList());
 
     vp = Utils.mkVerticalPanel();

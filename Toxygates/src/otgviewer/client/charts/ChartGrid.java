@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.*;
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
@@ -49,7 +49,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   String[] minsOrMeds;
   protected Dataset<D> dataset;
   protected Factory<?, ?> factory;
-  protected DLWScreen screen;
+  protected Screen screen;
   protected D[][] tables;
   final int totalWidth;
 
@@ -63,7 +63,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * @param columnsAreMins
    * @param totalWidth
    */
-  public ChartGrid(Factory<D, ?> factory, DLWScreen screen, Dataset<D> dataset,
+  public ChartGrid(Factory<D, ?> factory, Screen screen, Dataset<D> dataset,
       final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
       String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
     super();
@@ -88,7 +88,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     g = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);
     initWidget(g);
 
-    DataSchema schema = screen.schema();
+    DataSchema schema = screen.manager().schema();
 
 
     tables = factory.dataArray(rfsize * osize, minsOrMeds.length);

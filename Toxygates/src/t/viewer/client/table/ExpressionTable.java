@@ -72,7 +72,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private final String COLUMN_WIDTH = "10em";
 
-  private DLWScreen screen;
+  private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   
   private NavigationTools tools;
@@ -125,7 +125,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         String styleNames) {
       SpanBuilder spanBuilder = rowBuilder.startTH().colSpan(columnCount)
           .className(style.header() + " majorHeader " + styleNames).startSpan();
-      spanBuilder.title(group.tooltipText(screen.schema())).text(group.getName()).endSpan();
+      DataSchema schema = screen.manager().schema();
+      spanBuilder.title(group.tooltipText(schema)).text(group.getName()).endSpan();
       rowBuilder.endTH();
     }
 
@@ -179,12 +180,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   protected final int initPageSize;
   
-  public ExpressionTable(DLWScreen _screen, TableFlags flags,
+  public ExpressionTable(Screen _screen, TableFlags flags,
       TableStyle style) {
     super(_screen, style, flags);
     this.withPValueOption = flags.withPValueOption;
     this.matrixService = _screen.manager().matrixService();
-    this.resources = _screen.resources();
+    this.resources = _screen.manager().resources();
     this.matrixId = flags.matrixId;
     this.initPageSize = flags.initPageSize;
     screen = _screen;

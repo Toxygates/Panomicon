@@ -661,15 +661,9 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     
   /**
    * Display the sample detail screen and show information about the given barcode. 
-   * TODO: this method should probably be somewhere else.
-   * 
-   * @param b
    */
   public void displaySampleDetail(Sample b) {
-    StorageParser p = getParser(this);
-    Group g = new Group(schema(), "custom", new Sample[] {b});
-    storeCustomColumn(p, g);
-    configuredProceed(SampleDetailScreen.key);
+    ScreenUtils.displaySampleDetail(this, b);    
   }
 
   @Override

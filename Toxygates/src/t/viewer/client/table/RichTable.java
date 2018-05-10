@@ -23,15 +23,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.DLWScreen;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.viewer.client.PersistedState;
-
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -39,8 +34,13 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
-
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.viewer.client.PersistedState;
 
 
 /**
@@ -70,12 +70,13 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   }
 
   protected TableStyle style;
-  protected DLWScreen screen;
+
+  protected Screen screen;
   protected Label titleLabel = new Label();
  
-  public RichTable(DLWScreen screen, TableStyle style, TableFlags flags) {
+  public RichTable(Screen screen, TableStyle style, TableFlags flags) {
     this.screen = screen;
-    this.schema = screen.schema();
+    this.schema = screen.manager().schema();
     this.style = style;
     this.keepSortOnReload = flags.keepSortOnReload;
     
@@ -491,7 +492,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   protected void updateColumnState(Collection<HideableColumn<T, ?>> columns) {
     Set<String> vs = columns.stream().filter(c -> c.visible()).
         map(c -> c.columnInfo().title()).collect(Collectors.toSet());
-    columnState.changeAndPersist(screen.getParser(), vs);
+    columnState.changeAndPersist(screen.manager().getParser(), vs);
   }
   
   public boolean persistedVisibility(String columnId, boolean default_) {

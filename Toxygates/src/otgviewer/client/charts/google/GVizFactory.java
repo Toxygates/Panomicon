@@ -21,7 +21,7 @@ package otgviewer.client.charts.google;
 import java.util.List;
 
 import otgviewer.client.charts.*;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 
@@ -39,14 +39,14 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   @Override
-  public GVizChartGrid grid(DLWScreen screen, GDTDataset table, List<String> rowFilters,
+  public GVizChartGrid grid(Screen screen, GDTDataset table, List<String> rowFilters,
       List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
       boolean columnsAreTimes, int totalWidth) {
     return new GVizChartGrid(this, screen, table, rowFilters, organisms, rowsAreMajors,
         timesOrDoses, columnsAreTimes, totalWidth);
   }
 
-  public AdjustableGrid<GDTData, GDTDataset> adjustableGrid(DLWScreen screen, DataSource source,
+  public AdjustableGrid<GDTData, GDTDataset> adjustableGrid(Screen screen, DataSource source,
       List<Group> groups, ValueType vt) {
     return new AdjustableGrid<GDTData, GDTDataset>(this, screen, source, groups, vt);
   }
