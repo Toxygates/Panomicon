@@ -26,6 +26,7 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 
+//TODO To be renamed or removed, as this interface has nothing to do with DataView
 public interface DataViewListener {
   public void datasetsChanged(Dataset[] ds);
 

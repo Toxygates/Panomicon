@@ -33,11 +33,10 @@ import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.*;
+import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
-import t.viewer.shared.Association;
-import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.intermine.IntermineInstance;
 import t.viewer.shared.mirna.MirnaSource;
 
@@ -48,6 +47,8 @@ public class DataScreen extends DLWScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
+  protected DataView dataView;
+  
   protected ExpressionTable expressionTable;
 
   protected String[] lastProbes;
@@ -63,9 +64,10 @@ public class DataScreen extends DLWScreen {
     super("View data", key, true, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     geneSetToolbar = makeGeneSetSelector();
-    expressionTable = makeExpressionTable();
+    dataView = makeDataView();
+    this.addListener(dataView);    
+    expressionTable = dataView.expressionTable();
     expressionTable.setDisplayPColumns(false);
-    addListener(expressionTable);
     // To ensure that GeneSetToolbar has chosenColumns
     addListener(geneSetToolbar);
   }
@@ -74,93 +76,30 @@ public class DataScreen extends DLWScreen {
     return new GeneSetToolbar(this) {
       @Override
       public void itemsChanged(List<String> items) {
-        updateProbes();
+        reloadDataIfNeeded();
       }
     };
   }
   
   protected static final String defaultMatrix = "DEFAULT";
 
-  protected ExpressionTable makeExpressionTable() {
-    TableFlags flags = new TableFlags(defaultMatrix,
-        true, true, NavigationTools.INIT_PAGE_SIZE,
-        mainTableTitle(), mainTableSelectable(),
-        false);
-    
-    return new ExpressionTable(this, flags, TableStyle.getStyle("default")) {
-      @Override
-      protected void onGettingExpressionFailed() {
-        super.onGettingExpressionFailed();
-        // If a non-loadable gene list was specified, we try with the blank list
-        // (all probes for the species)
-        if (chosenProbes.length > 0) {
-          DataScreen.this.probesChanged(new String[0]);
-          DataScreen.this.geneSetChanged(null);
-          updateProbes();
+  protected DataView makeDataView() {
+    return new TableView(this, mainTableTitle(),
+      mainTableSelectable()) {
+        @Override
+        protected void beforeGetAssociations() {
+          super.beforeGetAssociations();
+          DataScreen.this.beforeGetAssociations();
         }
-        displayInfo("Data loading failed.");
-      }
-      
-      @Override
-      protected void associationsUpdated(Association[] result) {
-        DataScreen.this.associationsUpdated(result);
-      }
-      
-      @Override
-      public void getAssociations() {
-        DataScreen.this.beforeGetAssociations();
-        super.getAssociations();        
-      }
-      
-      @Override
-      protected void setMatrix(ManagedMatrixInfo matrix) {
-        super.setMatrix(matrix);
-        displayInfo("Successfully loaded " + matrix.numRows() + " probes");
-      }
     };
   }
   
   protected @Nullable String mainTableTitle() { return null; }
   
   protected boolean mainTableSelectable() { return false; }  
-  
+
+  //TODO remove
   protected void beforeGetAssociations() {}
-  
-  protected void associationsUpdated(Association[] result) {
-    Optional<Association> overLimit = 
-        Arrays.stream(result).filter(a -> a.overSizeLimit()).findAny();
-    if (overLimit.isPresent()) {       
-      displayInfo("Too many associations, limited view.");
-    } else {
-      displayInfo("");
-    }
-    
-  }
-  
-  protected boolean isMirnaGroup(Group g) {
-    return "miRNA".equals(GroupUtils.groupType(g));
-  }
-  
-  protected TableStyle styleForColumns(List<Group> columns) {
-    boolean foundMirna = false;
-    boolean foundNonMirna = false;    
-    for (Group g: chosenColumns) {
-      if (isMirnaGroup(g)) {      
-        foundMirna = true;
-      } else {
-        foundNonMirna = true;
-      }
-    }
-    
-    TableStyle r; 
-    if (foundMirna && ! foundNonMirna) {
-      r = TableStyle.getStyle("mirna");
-    } else {
-     r = TableStyle.getStyle("default");
-    }
-    logger.info("Use table style: " + r);
-    return r;    
-  }
 
   static final public int STANDARD_TOOL_HEIGHT = 43;
 
@@ -202,6 +141,7 @@ public class DataScreen extends DLWScreen {
   protected Widget mainTablePanel() {
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
     rlp.setWidth("100%");
+//    rlp.add(dataView);
     rlp.add(expressionTable);
     return rlp;
   }
@@ -313,34 +253,14 @@ public class DataScreen extends DLWScreen {
   /**
    * Trigger a data reload, if necessary.
    */
-  public void updateProbes() {
-    logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
-        + (lastProbes == null ? "null" : "" + lastProbes.length));
-
-    if (chosenColumns.size() == 0) {
-      Window.alert("Please define sample groups to see data.");
-      manager().attemptProceed(ColumnScreen.key);
-      return;
-    }
-    
-    // Attempt to avoid reloading the data
-    if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
-      logger.info("Data reloading needed");
-      expressionTable.setStyle(styleForColumns(chosenColumns));
-      expressionTable.getExpressions();      
-    } else if (!Arrays.equals(chosenProbes, lastProbes)) {
-      logger.info("Only refiltering is needed");
-      expressionTable.refilterData();
-    }
-
-    lastProbes = chosenProbes;
-    lastColumns = chosenColumns;
+  public void reloadDataIfNeeded() {
+    dataView.reloadDataIfNeeded();    
   }
 
   @Override
   public void show() {
     super.show();
-    updateProbes();
+    reloadDataIfNeeded();
   }
 
   @Override
@@ -437,7 +357,7 @@ public class DataScreen extends DLWScreen {
   public boolean importProbes(String[] probes) {
     boolean changed = super.importProbes(probes);
     if (changed) {
-      updateProbes();
+      reloadDataIfNeeded();
     }
     return changed;
   }
@@ -446,7 +366,7 @@ public class DataScreen extends DLWScreen {
   public boolean importColumns(List<Group> groups) {
     boolean changed = super.importColumns(groups);
     if (changed) {
-      updateProbes();
+      reloadDataIfNeeded();
     }
     return changed;
   }

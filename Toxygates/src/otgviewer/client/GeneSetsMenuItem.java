@@ -252,7 +252,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     return () -> {
       screen.geneSetChanged(null);
       screen.probesChanged(new String[0]);
-      screen.updateProbes();
+      screen.reloadDataIfNeeded();
     };
   }
   
@@ -263,7 +263,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     return () -> {
       screen.geneSetChanged(sl);
       screen.probesChanged(sl.items());
-      screen.updateProbes();
+      screen.reloadDataIfNeeded();
     };  
   }
 
@@ -302,7 +302,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       screen.geneSetChanged(new ClusteringList(ClusteringList.USER_CLUSTERING_TYPE, cl.name(), cl
           .algorithm(), new StringList[] {sl}));
       screen.probesChanged(sl.items());
-      screen.updateProbes();
+      screen.reloadDataIfNeeded();
     };
   }
 
@@ -337,14 +337,14 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     return () -> {
         screen.geneSetChanged(pc.getList());
         screen.probesChanged(pc.getList().items());
-        screen.updateProbes();
+        screen.reloadDataIfNeeded();
     };
   }
 
   private void switchToAllProbes() {
     screen.geneSetChanged(null);
     screen.probesChanged(new String[0]);
-    screen.updateProbes();
+    screen.reloadDataIfNeeded();
   }
 
   private void ensureSorted(List<? extends ItemList> list) {

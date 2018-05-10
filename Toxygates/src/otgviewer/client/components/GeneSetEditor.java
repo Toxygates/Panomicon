@@ -103,7 +103,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
         screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
             title, itemsArray));
         screen.probesChanged(itemsArray);
-        screen.updateProbes();
+        screen.reloadDataIfNeeded();
       }
 
       @Override

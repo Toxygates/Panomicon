@@ -120,7 +120,7 @@ public class DualDataScreen extends DataScreen {
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
 
-    updateProbes();
+    reloadDataIfNeeded();
   }
   
   protected SplitLayoutPanel splitLayout;
@@ -202,13 +202,15 @@ public class DualDataScreen extends DataScreen {
     return columnsOfType(from, mode.sideType);        
   }
   
-  protected TableStyle mainTableStyle() {
-    return super.styleForColumns(columnsForMainTable(chosenColumns));
-  }
+  //TODO refactor
+//  protected TableStyle mainTableStyle() {
+//    return super.styleForColumns(columnsForMainTable(chosenColumns));
+//  }
 
-  protected TableStyle sideTableStyle() {
-    return super.styleForColumns(columnsForSideTable(chosenColumns));    
-  }
+  //TODO refactor
+//  protected TableStyle sideTableStyle() {
+//    return super.styleForColumns(columnsForSideTable(chosenColumns));    
+//  }
   
   /**
    * Based on the available columns, pick the correct display mode.
@@ -262,14 +264,14 @@ public class DualDataScreen extends DataScreen {
   }  
   
   @Override
-  public void updateProbes() {   
+  public void reloadDataIfNeeded() {   
     if (mode.isSplit) {
       expressionTable.setAssociationAutoRefresh(false);
       mode.setVisibleColumns(expressionTable);      
       expressionTable.setAssociationAutoRefresh(true);
     }    
     
-    super.updateProbes();
+    super.reloadDataIfNeeded();
     sideExpressionTable.clearMatrix();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
@@ -289,13 +291,14 @@ public class DualDataScreen extends DataScreen {
   
   protected DualTableNetwork network;
   
-  @Override
-  protected void associationsUpdated(Association[] result) {
-    super.associationsUpdated(result);    
-    if (mode.isSplit) {
-      network.extractSideTableProbes();
-    }
-  }
+  //TODO refactor
+//  @Override
+//  protected void associationsUpdated(Association[] result) {
+//    super.associationsUpdated(result);    
+//    if (mode.isSplit) {
+//      network.extractSideTableProbes();
+//    }
+//  }
   
   @Override
   protected void beforeGetAssociations() {
