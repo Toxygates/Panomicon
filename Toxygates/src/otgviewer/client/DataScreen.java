@@ -39,7 +39,7 @@ import t.viewer.shared.intermine.IntermineInstance;
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
  */
-public class DataScreen extends DLWScreen {
+public class DataScreen extends DLWScreen implements ImportingScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
@@ -302,19 +302,25 @@ public class DataScreen extends DLWScreen {
 
   @Override
   public boolean importProbes(String[] probes) {
-    boolean changed = super.importProbes(probes);
-    if (changed) {
+    if (Arrays.equals(probes, chosenProbes)) {
+      return false;
+    } else {
+      probesChanged(probes);
+      storeState(this);
       updateProbes();
+      return true;
     }
-    return changed;
   }
 
   @Override
   public boolean importColumns(List<Group> groups) {
-    boolean changed = super.importColumns(groups);
-    if (changed) {
+    if (groups.size() > 0 && !groups.equals(chosenColumns)) {
+      columnsChanged(groups);
+      storeState(this);
       updateProbes();
+      return true;
+    } else {
+      return false;
     }
-    return changed;
   }
 }

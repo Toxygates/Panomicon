@@ -35,7 +35,6 @@ import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.*;
-import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
@@ -52,8 +51,6 @@ public class MinimalScreen implements Screen {
     void loadState(AttributeSet attributes);
     ClientState state();
 
-    boolean importProbes(String[] probes);
-    boolean importColumns(List<Group> groups);
     void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
   }
   
@@ -609,15 +606,5 @@ public class MinimalScreen implements Screen {
     if (numPendingRequests == 0) {
       waitDialog.hide();
     }
-  }
-
-  @Override
-  public boolean importProbes(String[] probes) {
-    return delegate.importProbes(probes);
-  }
-
-  @Override
-  public boolean importColumns(List<Group> groups) {
-    return delegate.importColumns(groups);
   }
 }

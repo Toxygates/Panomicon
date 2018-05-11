@@ -112,6 +112,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   protected Resources.OtgCssResource css = resources.otgViewerStyle();
 
+  protected ImportingScreen importingScreen;
+
   @Override
   public AppInfo appInfo() {
     return appInfo;
@@ -220,12 +222,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mainDockPanel.addNorth(navOuter, css.navpanel_height());
   }
 
-  protected void readURLParameters(Screen scr) {
-    readImportedProbes(scr);
-    readGroupURLparameters(scr);
+  protected boolean readURLParameters() {
+    return readImportedProbes() | readGroupURLparameters();
   }
 
-  protected void readImportedProbes(final Screen scr) {
+  protected boolean readImportedProbes() {
     Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
 
@@ -246,23 +247,27 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
     if (useProbes != null && useProbes.length > 0) {
       final String[] pr = useProbes;
-      scr.enqueue(new QueuedAction("Set probes from URL/POST") {
+      importingScreen.enqueue(new QueuedAction("Set probes from URL/POST") {
         @Override
         public void run() {
           probeService.identifiersToProbes(pr, true, true, false, null,
-              new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
+              new PendingAsyncCallback<String[]>(importingScreen,
+                  "Failed to resolve gene identifiers") {
                 @Override
                 public void handleSuccess(String[] probes) {
-                  scr.importProbes(probes);
+                  importingScreen.importProbes(probes);
                 }
               });
         }
       });
+      return true;
+    } else {
+      return false;
     }
 
   }
 
-  protected void readGroupURLparameters(final Screen scr) {
+  protected boolean readGroupURLparameters() {
     Logger l = SharedUtils.getLogger();
     Map<String, List<String>> params = Window.Location.getParameterMap();
 
@@ -280,11 +285,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
 
     if (useGroups.size() > 0) {
-      scr.enqueue(new QueuedAction("Set columns from URL") {
+      importingScreen.enqueue(new QueuedAction("Set columns from URL") {
         @Override
         public void run() {
-          sampleService.samplesById(useGroups, new PendingAsyncCallback<List<Sample[]>>(scr,
-              "Failed to look up samples") {
+          sampleService.samplesById(useGroups,
+              new PendingAsyncCallback<List<Sample[]>>(importingScreen,
+                  "Failed to look up samples") {
             @Override
             public void handleSuccess(List<Sample[]> samples) {
               int i = 0;
@@ -294,11 +300,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
                 i += 1;
                 finalGroups.add(g);
               }
-              scr.importColumns(finalGroups);
+                  importingScreen.importColumns(finalGroups);
             }
           });
         }
       });
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -461,11 +470,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * @param token
    */
   private void showScreenForToken(String token, boolean firstLoad) {
-    Screen s = pickScreen(token);
-    if (firstLoad) {
-      readURLParameters(s);
+    Screen screen;
+    if (firstLoad && readURLParameters()) {
+      screen = importingScreen;
+    } else {
+      screen = pickScreen(token);
     }
-    showScreen(s);
+    showScreen(screen);
     Analytics.trackPageView(Analytics.URL_PREFIX + token);
   }
 

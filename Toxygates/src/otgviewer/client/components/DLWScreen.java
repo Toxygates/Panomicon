@@ -35,7 +35,8 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.*;
+import otgviewer.client.Resources;
+import otgviewer.client.UIFactory;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -696,28 +697,6 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     numPendingRequests -= 1;
     if (numPendingRequests == 0) {
       waitDialog.hide();
-    }
-  }
-
-  @Override
-  public boolean importProbes(String[] probes) {
-    if (Arrays.equals(probes, chosenProbes)) {
-      return false;
-    } else {
-      probesChanged(probes);
-      storeState(this);
-      return true;
-    }
-  }
-
-  @Override
-  public boolean importColumns(List<Group> groups) {
-    if (groups.size() > 0 && !groups.equals(chosenColumns)) {
-      columnsChanged(groups);
-      storeState(this);
-      return true;
-    } else {
-      return false;
     }
   }
 }
