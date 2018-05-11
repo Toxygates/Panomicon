@@ -202,6 +202,10 @@
     <filter-class>t.tomcat.NocacheFilter</filter-class>
   </filter>
 
+  <filter-mapping>
+    <filter-name>gwtCacheControlFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
   
 
 <!-- The closing </web-app> will be filled in by scripts like 
