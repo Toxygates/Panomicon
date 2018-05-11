@@ -31,10 +31,11 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.*;
+import otgviewer.client.Resources;
+import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 
@@ -48,30 +49,14 @@ public class MinimalScreen implements Screen {
   public interface ScreenDelegate {
     void storeState();
     void loadState(AttributeSet attributes);
-
-    boolean importProbes(String[] probes);
-
-    boolean importColumns(List<Group> groups);
-
-    String[] chosenProbes();
-
-    void probesChanged(String[] probes);
-
-    List<Group> chosenColumns();
-
-    void columnsChanged(List<Group> columns);
-
-    void storeCustomColumn(StorageParser p, DataColumn<?> column);
+    ClientState state();
 
     void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
-
-    ClientState state();
   }
   
   private ScreenDelegate delegate;
     
   private String title;
-  
 
   @Override
   public String getTitle() {
@@ -104,7 +89,7 @@ public class MinimalScreen implements Screen {
    * Is this screen currently visible?
    */
   protected boolean visible = false;
-  private boolean showGroups = false;
+  // private boolean showGroups = false;
 
   /**
    * Is this screen currently configured?
@@ -180,9 +165,8 @@ public class MinimalScreen implements Screen {
     logger.info("Action queue: added " + qa.name);
   }
 
-  public MinimalScreen(String title, String key, boolean showGroups, ScreenManager man,
+  public MinimalScreen(String title, String key, ScreenManager man,
       @Nullable TextResource helpHTML, @Nullable ImageResource helpImage) {
-    this.showGroups = showGroups;
     this.helpHTML = helpHTML;
     this.helpImage = helpImage;
 
@@ -197,8 +181,8 @@ public class MinimalScreen implements Screen {
     this.title = title;
   }
 
-  public MinimalScreen(String title, String key, boolean showGroups, ScreenManager man) {
-    this(title, key, showGroups, man, man.resources().defaultHelpHTML(), null);
+  public MinimalScreen(String title, String key, ScreenManager man) {
+    this(title, key, man, man.resources().defaultHelpHTML(), null);
   }
 
   @Override
@@ -591,10 +575,7 @@ public class MinimalScreen implements Screen {
    * @param b
    */
   public void displaySampleDetail(Sample b) {
-    StorageParser p = getParser();
-    Group g = new Group(schema(), "custom", new Sample[] {b});
-    delegate.storeCustomColumn(p, g);
-    configuredProceed(SampleDetailScreen.key);
+    ScreenUtils.displaySampleDetail(this, b);
   }
 
   @Override
@@ -624,28 +605,6 @@ public class MinimalScreen implements Screen {
     numPendingRequests -= 1;
     if (numPendingRequests == 0) {
       waitDialog.hide();
-    }
-  }
-
-  @Override
-  public boolean importProbes(String[] probes) {
-    if (Arrays.equals(probes, delegate.chosenProbes())) {
-      return false;
-    } else {
-      delegate.probesChanged(probes);
-      delegate.storeState();
-      return true;
-    }
-  }
-
-  @Override
-  public boolean importColumns(List<Group> groups) {
-    if (groups.size() > 0 && !groups.equals(delegate.chosenColumns())) {
-      delegate.columnsChanged(groups);
-      delegate.storeState();
-      return true;
-    } else {
-      return false;
     }
   }
 }

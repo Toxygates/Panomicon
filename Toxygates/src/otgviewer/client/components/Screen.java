@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.ItemList;
-import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.ClientState;
 import t.viewer.shared.AppInfo;
@@ -63,8 +62,4 @@ public interface Screen {
   void addPendingRequest();
 
   void removePendingRequest();
-
-  boolean importProbes(String[] probes);
-
-  boolean importColumns(List<Group> groups);
 }

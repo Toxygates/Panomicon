@@ -18,16 +18,16 @@
 
 package otgviewer.client;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
 
 public class OTGViewer extends TApplication {
 
@@ -36,7 +36,8 @@ public class OTGViewer extends TApplication {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
     addScreenSeq(new SampleSearchScreen(this));
-    addScreenSeq(new DataScreen(this));
+    importingScreen = new DataScreen(this);
+    addScreenSeq(importingScreen);
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));    
