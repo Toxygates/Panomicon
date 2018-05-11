@@ -57,14 +57,16 @@ public interface UIFactory {
    * Enrichment for a gene set
    * @param screen
    */
-  void enrichment(DLWScreen screen, StringList list, @Nullable IntermineInstance preferredInstance);
+  void enrichment(ImportingScreen screen, StringList list,
+      @Nullable IntermineInstance preferredInstance);
 
   /**
    * Enrichment for multiple gene sets
    * @param screen
    * @param lists
    */
-  void multiEnrichment(DLWScreen screen, StringList[] lists, @Nullable IntermineInstance preferredInstance);
+  void multiEnrichment(ImportingScreen screen, StringList[] lists,
+      @Nullable IntermineInstance preferredInstance);
   
   boolean hasMyData();
   

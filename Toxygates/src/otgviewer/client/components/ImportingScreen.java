@@ -22,10 +22,18 @@ package otgviewer.client.components;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
+import t.viewer.shared.intermine.IntermineInstance;
 
 public interface ImportingScreen extends Screen {
   boolean importProbes(String[] probes);
 
   boolean importColumns(List<Group> groups);
+
+  void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
+
+  void runEnrichment(@Nullable IntermineInstance preferredInstance);
 }

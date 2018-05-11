@@ -34,7 +34,8 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
-import t.common.shared.*;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
@@ -50,8 +51,6 @@ public class MinimalScreen implements Screen {
     void storeState();
     void loadState(AttributeSet attributes);
     ClientState state();
-
-    void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
   }
   
   private ScreenDelegate delegate;
@@ -576,11 +575,6 @@ public class MinimalScreen implements Screen {
    */
   public void displaySampleDetail(Sample b) {
     ScreenUtils.displaySampleDetail(this, b);
-  }
-
-  @Override
-  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
-    delegate.intermineImport(itemLists, clusteringLists);
   }
 
   private int numPendingRequests = 0;

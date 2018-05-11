@@ -78,14 +78,14 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public void enrichment(DLWScreen screen, StringList probes, 
+  public void enrichment(ImportingScreen screen, StringList probes,
       @Nullable IntermineInstance preferredInst) {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.enrich(probes);
   }
 
   @Override
-  public void multiEnrichment(DLWScreen screen, StringList[] lists, 
+  public void multiEnrichment(ImportingScreen screen, StringList[] lists,
       @Nullable IntermineInstance preferredInst) {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.multiEnrich(lists);    

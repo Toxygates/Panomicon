@@ -667,14 +667,6 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     ScreenUtils.displaySampleDetail(this, b);    
   }
 
-  @Override
-  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
-    itemListsChanged(itemLists);
-    storeItemLists(getParser());
-    clusteringListsChanged(clusteringLists);
-    storeClusteringLists(getParser());
-  }
-
   private int numPendingRequests = 0;
 
   private DialogBox waitDialog;

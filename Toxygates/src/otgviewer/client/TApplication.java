@@ -74,7 +74,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
-  protected MenuBar menuBar, toolsMenuBar;
+  protected MenuBar menuBar;
 
   // Menu items to be shown to the left of menu items belonging to the current screen.
   protected List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
@@ -371,14 +371,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     MenuBar menuBar = new MenuBar(false);
     menuBar.setWidth("100%");
 
-    toolsMenuBar = new MenuBar(true);
-    MenuItem mi = new MenuItem("Tools", toolsMenuBar);
-    postMenuItems.add(mi);
-
-    setupToolsMenu(toolsMenuBar);
-
     MenuBar hm = new MenuBar(true);
-    mi = new MenuItem("Help / feedback", hm);
+    MenuItem mi = new MenuItem("Help / feedback", hm);
     postMenuItems.add(mi);
     mi.getElement().setId("helpMenu");
 
@@ -411,10 +405,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         Utils.showHelp(getVersionHTML(), null)
         ));
     return menuBar;
-  }
-
-  protected void setupToolsMenu(MenuBar toolsMenuBar) {
-
   }
 
   protected void showDataSources() {
@@ -489,9 +479,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     if (currentScreen != null) {
       mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
-      for (MenuItem mi : s.analysisMenuItems()) {
-        toolsMenuBar.removeItem(mi);
-      }
     }
     currentScreen = s;
     menuBar.clearItems();
@@ -501,10 +488,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     for (MenuItem mi : allItems) {
       menuBar.addItem(mi);
-    }
-
-    for (MenuItem mi : s.analysisMenuItems()) {
-      toolsMenuBar.addItem(mi);
     }
 
     addWorkflowLinks(currentScreen);

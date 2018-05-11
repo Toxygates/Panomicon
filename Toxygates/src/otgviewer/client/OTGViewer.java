@@ -18,7 +18,9 @@
 
 package otgviewer.client;
 
-import com.google.gwt.user.client.Window;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 
@@ -36,8 +38,14 @@ public class OTGViewer extends TApplication {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
     addScreenSeq(new SampleSearchScreen(this));
-    importingScreen = new DataScreen(this);
+
+    List<MenuItem> intermineItems = new ArrayList<MenuItem>();
+    for (IntermineInstance ii : appInfo.intermineInstances()) {
+      intermineItems.add(intermineMenu(ii));
+    }
+    importingScreen = new DataScreen(this, intermineItems);
     addScreenSeq(importingScreen);
+
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));    
@@ -86,13 +94,6 @@ public class OTGViewer extends TApplication {
   public UIFactory factory() {    
     return factory;
   }
-
-  @Override
-  protected void setupToolsMenu(MenuBar toolsMenuBar) {
-    for (IntermineInstance ii: appInfo.intermineInstances()) {
-      toolsMenuBar.addItem(intermineMenu(ii));
-    }  
-  }
   
   protected MenuItem intermineMenu(final IntermineInstance inst) {
     MenuBar mb = new MenuBar(true);
@@ -100,13 +101,13 @@ public class OTGViewer extends TApplication {
     MenuItem mi = new MenuItem(title + " data", mb);
 
     mb.addItem(new MenuItem("Import gene sets from " + title + "...", () -> {      
-        new InterMineData(currentScreen, inst).importLists(true);
+      new InterMineData(importingScreen, inst).importLists(true);
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_IMPORT_GENE_SETS,
             title);      
     }));
 
     mb.addItem(new MenuItem("Export gene sets to " + title + "...", () -> {      
-        new InterMineData(currentScreen, inst).exportLists();
+      new InterMineData(importingScreen, inst).exportLists();
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_EXPORT_GENE_SETS,
             title);      
     }));
@@ -115,11 +116,7 @@ public class OTGViewer extends TApplication {
         //TODO this should be disabled if we are not on the data screen.
         //The menu item is only here in order to be logically grouped with other 
         //TargetMine items, but it is a duplicate and may be removed.
-        if (currentScreen instanceof DataScreen) {
-          ((DataScreen) currentScreen).runEnrichment(inst);
-        } else {
-          Window.alert("Please go to the data screen to use this function.");
-        }      
+      importingScreen.runEnrichment(inst);
     }));
 
     mb.addItem(new MenuItem("Go to " + title, () -> 

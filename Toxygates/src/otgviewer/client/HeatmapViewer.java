@@ -22,25 +22,25 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.DLWScreen;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
 /**
  * Adapts the HeatmapDialog for use inside otgviewer.
  */
 public class HeatmapViewer extends DataListenerWidget {
 
-  private DLWScreen screen;
-  public HeatmapViewer(DLWScreen screen) {
+  private DataScreen screen;
+
+  public HeatmapViewer(DataScreen screen) {
     this.screen = screen;
   }
 
@@ -49,7 +49,7 @@ public class HeatmapViewer extends DataListenerWidget {
   }
 
   public class HeatmapDialog extends t.clustering.client.HeatmapDialog<Group, String> {
-    final DLWScreen screen = HeatmapViewer.this.screen;
+    final DataScreen screen = HeatmapViewer.this.screen;
     private ValueType defaultType;
     private Button saveButton, enrichButton;
     private final ListBox valType;

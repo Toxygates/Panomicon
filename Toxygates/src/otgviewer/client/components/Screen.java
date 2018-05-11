@@ -27,7 +27,6 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import otgviewer.client.components.DLWScreen.QueuedAction;
-import t.common.shared.ItemList;
 import t.model.sample.AttributeSet;
 import t.viewer.client.ClientState;
 import t.viewer.shared.AppInfo;
@@ -76,8 +75,6 @@ public interface Screen {
   void showGuide();
 
   void showHelp();
-
-  void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
 
   void addPendingRequest();
 

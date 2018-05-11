@@ -21,13 +21,13 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DialogBox;
+
 import otgviewer.client.components.DLWScreen;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.viewer.client.StorageParser;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DialogBox;
 
 public abstract class ItemListsStoreHelper {
 

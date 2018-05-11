@@ -54,9 +54,12 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
   private MenuItem heatMapMenu;
   Map<String, TickMenuItem> hideableMenuItems = new HashMap<String, TickMenuItem>();
 
-  public DataScreen(ScreenManager man) {
+  private List<MenuItem> intermineMenuItems;
+
+  DataScreen(ScreenManager man, List<MenuItem> intermineItems) {
     super("View data", key, true, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
+    intermineMenuItems = intermineItems;
     geneSetToolbar = makeGeneSetSelector();
     expressionTable = makeExpressionTable();
     expressionTable.setDisplayPColumns(false);
@@ -158,10 +161,15 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
     MenuItem mColumns = new MenuItem("View", false, menuBar);
     addMenu(mColumns);
 
+    menuBar = new MenuBar(true);
+    mActions = new MenuItem("Tools", false, menuBar);
+    for (MenuItem item : intermineMenuItems) {
+      menuBar.addItem(item);
+    }
     // TODO: this is effectively a tick menu item without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
-    addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false, false) {
+    menuBar.addItem(new TickMenuItem("Compare two sample groups", false, false) {
       @Override
       public void stateChange(boolean newState) {
         if (!visible) {
@@ -179,8 +187,8 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
         }
       }
     }.menuItem());
-
-    addAnalysisMenuItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));
+    menuBar.addItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));
+    addMenu(mActions);
     
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
@@ -188,6 +196,15 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
     }
   }
   
+  @Override
+  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
+    itemListsChanged(itemLists);
+    storeItemLists(getParser());
+    clusteringListsChanged(clusteringLists);
+    storeClusteringLists(getParser());
+  }
+
+  @Override
   public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
