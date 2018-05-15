@@ -87,6 +87,7 @@ public abstract class MinimalScreen implements Screen {
   protected void displayStatusPanel(List<Group> groups) {
     // statusPanel.setWidth(Window.getClientHeight() + "px");
     statusPanel.clear();
+    spOuter.setHeight("30px");
     Collections.sort(groups);
     Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), groups));
   }
@@ -285,7 +286,6 @@ public abstract class MinimalScreen implements Screen {
 
   protected HorizontalPanel mkStandardToolbar(Widget content, String styleName) {
     HorizontalPanel r = Utils.mkWidePanel();
-    r.setHeight("30px");
     r.add(content);
     r.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
     r.addStyleName(styleName);
