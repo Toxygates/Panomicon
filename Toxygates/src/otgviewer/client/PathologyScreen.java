@@ -209,6 +209,7 @@ public class PathologyScreen extends MinimalScreen {
   @Override
   public void show() {
     super.show();
+    displayStatusPanel(chosenColumns);
     if (visible
         && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null || !chosenColumns
             .equals(lastColumns))) {

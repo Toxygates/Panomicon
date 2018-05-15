@@ -58,7 +58,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GroupLabels groupLabels(DLWScreen screen, DataSchema schema, List<Group> groups) {
+  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups) {
     return new GroupLabels(screen, schema, groups);
   }
 

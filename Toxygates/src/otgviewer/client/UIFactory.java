@@ -45,7 +45,7 @@ public interface UIFactory {
   
   public GroupInspector groupInspector(CompoundSelector cs, DLWScreen scr);
   
-  public GroupLabels groupLabels(DLWScreen screen, DataSchema schema, List<Group> groups);
+  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups);
   
   public GeneSetEditor geneSetEditor(DLWScreen screen);
   

@@ -37,6 +37,7 @@ import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
@@ -79,6 +80,15 @@ public abstract class MinimalScreen implements Screen {
   @Override
   public void loadState(AttributeSet attributes) {
 
+  }
+
+  // Converted from updateStatusPanel. Rather than setting a showGroups flag, it's now 
+  // each screen's responsibility to call this if/when appropriate.
+  protected void displayStatusPanel(List<Group> groups) {
+    // statusPanel.setWidth(Window.getClientHeight() + "px");
+    statusPanel.clear();
+    Collections.sort(groups);
+    Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), groups));
   }
 
   /*
@@ -365,26 +375,12 @@ public abstract class MinimalScreen implements Screen {
     } else {
       hideToolbar(guideBar);
     }
-    // Consider reinstating later
-    //updateStatusPanel(); // needs access to the groups from loadState
     runActions();
     deferredResize();
   }
 
 //  Stubs stored for future reference
-
-//  public void loadState(StorageParser parser, DataSchema schema, AttributeSet attributes) {
-
-//  public void storeState(StorageParser p) {
-
 //  protected void changeColumns(List<Group> columns) {
-
-//  Consider reinstating later
-  /*
-   * protected void updateStatusPanel() { // statusPanel.setWidth(Window.getClientHeight() + "px");
-   * statusPanel.clear(); if (showGroups) { Collections.sort(chosenColumns);
-   * Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns)); } }
-   */
 
   @Override
   public void resizeInterface() {
