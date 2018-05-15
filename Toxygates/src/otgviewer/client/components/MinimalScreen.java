@@ -29,6 +29,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.Resources;
@@ -41,19 +42,13 @@ import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 
 /**
- * Screen implementation based on DLWScreen. Instead of inheriting from DataListenerWidget, we
- * delegate data-related calls to a delegate object.
+ * Screen implementation based on DLWScreen. Instead of inheriting from
+ * DataListenerWidget, we delegate data-related calls to a delegate object.
  * 
- * This is meant to become the canonical implementation of Screen.
+ * This class is meant to eventually become the canonical implementation of
+ * Screen.
  */
-public class MinimalScreen implements Screen {
-  public interface ScreenDelegate {
-    void storeState();
-    void loadState(AttributeSet attributes);
-    ClientState state();
-  }
-  
-  private ScreenDelegate delegate;
+public abstract class MinimalScreen implements Screen {
     
   private String title;
 
@@ -62,9 +57,28 @@ public class MinimalScreen implements Screen {
     return title;
   }
 
+  /*
+   * The following three methods stubs should be overridden if needed, but if they're not going to
+   * be used they can be left as they are.
+   */
   @Override
   public ClientState state() {
-    return delegate.state();
+    Window.alert("state() not implemented yet.");
+    throw new UnsupportedOperationException("state() not implemented yet.");
+  }
+
+  protected void storeState() {
+    Window.alert("storeState() not implemented yet.");
+    throw new UnsupportedOperationException("storeState() not implemented yet.");
+  }
+
+  /**
+   * Load saved state from the local storage. If the loaded state is different from what was
+   * previously remembered in this widget, the appropriate signals will fire.
+   */
+  @Override
+  public void loadState(AttributeSet attributes) {
+
   }
 
   /*
@@ -318,7 +332,7 @@ public class MinimalScreen implements Screen {
       public void onClick(ClickEvent event) {
         hideToolbar(guideBar);
         showGuide = false;
-        delegate.storeState();
+        storeState();
       }
     });
     hpi.add(i);
@@ -333,7 +347,7 @@ public class MinimalScreen implements Screen {
   public void showGuide() {
     showToolbar(guideBar);
     showGuide = true;
-    delegate.storeState();
+    storeState();
   }
 
 
@@ -355,15 +369,6 @@ public class MinimalScreen implements Screen {
     //updateStatusPanel(); // needs access to the groups from loadState
     runActions();
     deferredResize();
-  }
-
-  /**
-   * Load saved state from the local storage. If the loaded state is different from what was
-   * previously remembered in this widget, the appropriate signals will fire.
-   */
-  @Override
-  public void loadState(AttributeSet attributes) {
-    delegate.loadState(attributes);
   }
 
 //  Stubs stored for future reference
