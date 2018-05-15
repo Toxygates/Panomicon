@@ -75,7 +75,7 @@ public interface UIFactory {
    * The value will never be produced if no table should be displayed.
    * @param screen
    */
-  default void sampleSummaryTable(DLWScreen screen, 
+  default void sampleSummaryTable(Screen screen, 
                                   ValueAcceptor<StringArrayTable> acceptor) {    
   }
   
