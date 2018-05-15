@@ -26,9 +26,11 @@ import javax.annotation.Nullable;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 
+import t.common.client.Utils;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 
 /**
@@ -61,7 +63,6 @@ public class StorageParser {
     String v = storage.getItem(prefix + "." + key);
     // logger.info("GET " + prefix + "." + key + " -> " + v);
     return v;
-
   }
 
   public void clearItem(String key) {
@@ -118,4 +119,32 @@ public class StorageParser {
     return true;
   }
 
+  @Nullable
+  public SampleClass getSampleClass(AttributeSet attributes) {
+    String v = getItem("sampleClass");
+    if (v == null) {
+      return null;
+    } else {
+      return Utils.unpackSampleClass(attributes, v);
+    }
+  }
+
+  @Nullable
+  // Separator hierarchy for columns:
+  // ### > ::: > ^^^ > $$$
+  public List<Group> getColumns(DataSchema schema, String key, Collection<? extends SampleColumn> expectedColumns,
+      AttributeSet attributes) throws Exception {
+    // TODO unpack old format columns
+    String v = getItem(key);
+    List<Group> r = new ArrayList<Group>();
+    if (v == null) {
+      return null;
+    }
+    String[] spl = v.split("###");
+    for (String cl : spl) {
+      Group c = unpackColumn(schema, cl, attributes);
+      r.add(c);
+    }
+    return r;
+  }
 }

@@ -289,19 +289,14 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   protected List<Group> loadColumns(StorageParser p, DataSchema schema,
       String key, Collection<? extends SampleColumn> expectedColumns, AttributeSet attributes)
       throws Exception {
-    // TODO unpack old format columns
-    String v = p.getItem(key);
-    List<Group> r = new ArrayList<Group>();
-    if (v != null && !v.equals(packColumns(expectedColumns))) {
-      String[] spl = v.split("###");
-      for (String cl : spl) {
-        Group c = unpackColumn(schema, cl, attributes);
-        r.add(c);
-      }
-      return r;
+    List<Group> storedColumns = p.getColumns(schema, key, expectedColumns, attributes);
+    if (storedColumns == null || packColumns(storedColumns).equals(packColumns(expectedColumns))) {
+      return null;
+    } else {
+      return storedColumns;
     }
-    return null;
   }
+
 
   public void storeProbes(StorageParser p) {
     p.setItem("probes", packProbes(chosenProbes));
@@ -393,12 +388,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
   
   public void loadSampleClass(StorageParser p, AttributeSet attributes) {
-    String v = p.getItem("sampleClass");
-    if (v == null || v.equals(t.common.client.Utils.packSampleClass(chosenSampleClass))) {
-      return;
+    SampleClass storedClass = p.getSampleClass(attributes);
+    if (storedClass != null && !t.common.client.Utils.packSampleClass(storedClass)
+        .equals(t.common.client.Utils.packSampleClass(chosenSampleClass))) {
+      changeSampleClass(storedClass);
     }
-    SampleClass sc = t.common.client.Utils.unpackSampleClass(attributes, v);
-    changeSampleClass(sc);    
   }
 
   protected List<Sample> getAllSamples() {
