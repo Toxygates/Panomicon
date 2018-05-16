@@ -28,8 +28,7 @@ import com.google.gwt.user.client.Window;
 
 import t.common.client.Utils;
 import t.common.shared.*;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 
@@ -146,5 +145,17 @@ public class StorageParser {
       r.add(c);
     }
     return r;
+  }
+
+  public Group getCustomColumn(DataSchema schema, AttributeSet attributes) {
+    return unpackColumn(schema, getItem("customColumn"), attributes);
+  }
+
+  public void storeCustomColumn(DataColumn<?> column) {
+    if (column != null) {
+      setItem("customColumn", column.pack());
+    } else {
+      clearItem("customColumn");
+    }
   }
 }

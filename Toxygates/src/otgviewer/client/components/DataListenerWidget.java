@@ -277,11 +277,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   public static void storeCustomColumn(StorageParser p, DataColumn<?> column) {
-    if (column != null) {
-      p.setItem("customColumn", column.pack());
-    } else {
-      p.clearItem("customColumn");
-    }
+    p.storeCustomColumn(column);
   }
 
   // Separator hierarchy for columns:
