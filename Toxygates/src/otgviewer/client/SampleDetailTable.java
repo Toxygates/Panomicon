@@ -32,7 +32,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import t.common.shared.sample.*;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -104,7 +105,7 @@ public class SampleDetailTable extends Composite {
     }        
   };
   
-  public SampleDetailTable(DLWScreen screen, @Nullable String title, boolean isSection) {
+  public SampleDetailTable(Screen screen, @Nullable String title, boolean isSection) {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.waitListener = screen;

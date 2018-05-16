@@ -19,20 +19,20 @@
 package otgviewer.client;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
 
 import javax.annotation.Nullable;
-
-import otgviewer.client.components.*;
-import t.common.shared.sample.*;
-import t.model.SampleClass;
-import t.viewer.client.*;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.*;
+import t.common.shared.sample.*;
+import t.model.sample.AttributeSet;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * This screen displays detailed information about a sample or a set of samples, i.e. experimental
@@ -41,7 +41,7 @@ import com.google.gwt.user.client.ui.*;
  * screen (the "custom column") to make it display samples that are not in the configured groups.
  */
 
-public class SampleDetailScreen extends DLWScreen {
+public class SampleDetailScreen extends MinimalScreen {
   private SampleServiceAsync sampleService;
 
   public static final String key = "ad";
@@ -51,27 +51,35 @@ public class SampleDetailScreen extends DLWScreen {
 
   private ListBox columnList = new ListBox();
 
-  AnnotationTDGrid atd = new AnnotationTDGrid(this);
+  //  AnnotationTDGrid atd = new AnnotationTDGrid(this);
 
-  private List<Group> lastColumns;
+  //  private List<Group> lastColumns;
   private @Nullable SampleColumn currentColumn;
 
   private Button downloadButton;
   private HorizontalPanel tools;
 
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected SampleColumn chosenCustomColumn;
+
   public SampleDetailScreen(ScreenManager man) {
-    super("Sample details", key, true, man);
-    this.addListener(atd);
+    super("Sample details", key, man);
+    //    this.addListener(atd);
     sampleService = man.sampleService();
     mkTools();
   }
 
   @Override
-  public void columnsChanged(List<Group> columns) {
-    super.columnsChanged(columns);
-    if (visible && !columns.equals(lastColumns)) {
-      updateColumnList();
+  public void loadState(AttributeSet attributes) {
+    try {
+      chosenColumns = getParser().getColumns(schema(), "columns", chosenColumns, attributes);
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Exception while retrieving columns", e);
     }
+    chosenCustomColumn = getParser().getCustomColumn(schema(), attributes);
+    // TODO: serialize choice of displayed column, don't reload/rerender unless necessary, reconsider custom column behavior 
+    //    // consume the data so the custom column isn't shown when switching back to this screen
+    //    getParser().storeCustomColumn(null); 
   }
 
   @Override
@@ -155,20 +163,7 @@ public class SampleDetailScreen extends DLWScreen {
     if (visible) {
       updateColumnList();
       displayWith(columnList.getItemText(columnList.getSelectedIndex()));
-      lastColumns = chosenColumns;
-    }
-  }
-
-  @Override
-  public void customColumnChanged(SampleColumn customColumn) {
-    super.customColumnChanged(customColumn);
-    if (visible) {
-      updateColumnList();
-      StorageParser p = getParser(this);
-      if (p != null) {
-        // consume the data so it doesn't turn up again.
-        storeCustomColumn(p, null);
-      }
+      //      lastColumns = chosenColumns;
     }
   }
 
@@ -184,16 +179,16 @@ public class SampleDetailScreen extends DLWScreen {
 
     hp.add(columnList);
 
-    hp.add(new Button("Mini-heatmap...", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        List<String> compounds = 
-            chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).
-            distinct().collect(Collectors.toList());        
-        atd.compoundsChanged(compounds);
-        Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
-      }
-    }));
+    //    hp.add(new Button("Mini-heatmap...", new ClickHandler() {
+    //      @Override
+    //      public void onClick(ClickEvent event) {
+    //        List<String> compounds = 
+    //            chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).
+    //            distinct().collect(Collectors.toList());        
+    //        atd.compoundsChanged(compounds);
+    //        Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
+    //      }
+    //    }));
 
     columnList.addChangeHandler(new ChangeHandler() {
       @Override
@@ -237,9 +232,9 @@ public class SampleDetailScreen extends DLWScreen {
     loadSections(c, false);
     currentColumn = c;
     downloadButton.setEnabled(true);
-    SampleClass sc = SampleClassUtils.asMacroClass(c.getSamples()[0].sampleClass(),
-        manager.schema());
-    atd.sampleClassChanged(sc);
+    //    SampleClass sc = SampleClassUtils.asMacroClass(c.getSamples()[0].sampleClass(),
+    //        manager.schema());
+    //    atd.sampleClassChanged(sc);
   }
 
   private void displayWith(String column) {
