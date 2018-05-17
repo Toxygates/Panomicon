@@ -20,6 +20,7 @@ package otgviewer.client;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -29,9 +30,11 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
 import t.common.shared.sample.*;
+import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
@@ -51,7 +54,7 @@ public class SampleDetailScreen extends MinimalScreen {
 
   private ListBox columnList = new ListBox();
 
-  //  AnnotationTDGrid atd = new AnnotationTDGrid(this);
+  private AnnotationTDGrid atd;// = new AnnotationTDGrid(this);
 
   //  private List<Group> lastColumns;
   private @Nullable SampleColumn currentColumn;
@@ -59,13 +62,15 @@ public class SampleDetailScreen extends MinimalScreen {
   private Button downloadButton;
   private HorizontalPanel tools;
 
-  protected List<Group> chosenColumns = new ArrayList<Group>();
-  protected SampleColumn chosenCustomColumn;
+  private List<Group> chosenColumns = new ArrayList<Group>();
+  private SampleColumn chosenCustomColumn;
+  private SampleClass chosenSampleClass;
 
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, man);
     //    this.addListener(atd);
     sampleService = man.sampleService();
+    atd = new AnnotationTDGrid(this);
     mkTools();
   }
 
@@ -80,6 +85,7 @@ public class SampleDetailScreen extends MinimalScreen {
     // TODO: serialize choice of displayed column, don't reload/rerender unless necessary, reconsider custom column behavior 
     //    // consume the data so the custom column isn't shown when switching back to this screen
     //    getParser().storeCustomColumn(null); 
+    chosenSampleClass = getParser().getSampleClass(attributes);
   }
 
   @Override
@@ -179,16 +185,16 @@ public class SampleDetailScreen extends MinimalScreen {
 
     hp.add(columnList);
 
-    //    hp.add(new Button("Mini-heatmap...", new ClickHandler() {
-    //      @Override
-    //      public void onClick(ClickEvent event) {
-    //        List<String> compounds = 
-    //            chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).
-    //            distinct().collect(Collectors.toList());        
-    //        atd.compoundsChanged(compounds);
-    //        Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
-    //      }
-    //    }));
+    hp.add(new Button("Mini-heatmap...", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        List<String> compounds = chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).distinct()
+            .collect(Collectors.toList());
+        atd.sampleClassChanged(chosenSampleClass);
+        atd.compoundsChanged(compounds);
+        Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
+      }
+    }));
 
     columnList.addChangeHandler(new ChangeHandler() {
       @Override

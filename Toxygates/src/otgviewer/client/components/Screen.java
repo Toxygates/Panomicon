@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import otgviewer.client.components.DLWScreen.QueuedAction;
+import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
 import t.viewer.client.ClientState;
 import t.viewer.shared.AppInfo;
@@ -38,6 +39,10 @@ import t.viewer.shared.AppInfo;
 public interface Screen {
   default AppInfo appInfo() {
     return manager().appInfo();
+  }
+
+  default DataSchema schema() {
+    return manager().schema();
   }
 
   // Accessors

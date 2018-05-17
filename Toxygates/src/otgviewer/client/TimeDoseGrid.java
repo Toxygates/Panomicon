@@ -45,7 +45,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   protected final SampleServiceAsync sampleService;
 
-  protected DLWScreen screen;
+  protected Screen screen;
   protected final DataSchema schema;
 
   protected List<String> mediumValues = new ArrayList<String>();
@@ -64,7 +64,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
    */
   protected void initTools(HorizontalPanel toolPanel) {}
 
-  public TimeDoseGrid(DLWScreen screen, boolean hasDoseTimeGUIs) {
+  public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
     rootPanel = Utils.mkVerticalPanel();
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();
