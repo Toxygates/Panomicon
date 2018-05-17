@@ -57,4 +57,10 @@ abstract public class DataFilterScreen extends DLWScreen {
       initialised = true;
     }
   }
+
+  // FilterTools.Delegate method
+  public void filterToolsSampleClassChanged(SampleClass sc) {
+    sampleClassChanged(sc);
+    runActions();
+  }
 }

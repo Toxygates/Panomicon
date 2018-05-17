@@ -19,7 +19,6 @@
 package otgviewer.client;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -76,11 +75,7 @@ public class SampleDetailScreen extends MinimalScreen {
 
   @Override
   public void loadState(AttributeSet attributes) {
-    try {
-      chosenColumns = getParser().getColumns(schema(), "columns", chosenColumns, attributes);
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Exception while retrieving columns", e);
-    }
+    chosenColumns = getParser().getChosenColumns(schema(), attributes);
     chosenCustomColumn = getParser().getCustomColumn(schema(), attributes);
     // TODO: serialize choice of displayed column, don't reload/rerender unless necessary, reconsider custom column behavior 
     //    // consume the data so the custom column isn't shown when switching back to this screen

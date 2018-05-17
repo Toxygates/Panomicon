@@ -20,15 +20,15 @@ package otgviewer.client.components;
 
 import java.util.Arrays;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import t.common.client.Utils;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * Tools to select from the available datasets, and then from
@@ -37,11 +37,21 @@ import com.google.gwt.user.client.ui.*;
 public class FilterTools extends DataListenerWidget {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
-  final DLWScreen screen;
+  final Screen screen;
+  final Delegate delegate;
   final SampleServiceAsync sampleService;
 
-  public FilterTools(final DLWScreen screen) {
+  public interface Delegate {
+    void filterToolsSampleClassChanged(SampleClass sc);
+  }
+
+  public <T extends Screen & Delegate> FilterTools(T screen) {
+    this(screen, screen);
+  }
+
+  public FilterTools(final Screen screen, Delegate delegate) {
     this.screen = screen;
+    this.delegate = delegate;
     sampleService = screen.manager().sampleService();
 
     filterTools = new HorizontalPanel();
@@ -58,12 +68,7 @@ public class FilterTools extends DataListenerWidget {
       @Override
       protected void changeSampleClass(SampleClass sc) {
         super.changeSampleClass(sc);
-        screen.sampleClassChanged(sc);
-
-        // TODO Actions are enqueued in TimeDoseGrid and CompoundSelector.
-        // I'm not sure that exposing the action queue mechanism
-        // like this is a good thing to do. Think of a better way.
-        screen.runActions();
+        FilterTools.this.delegate.filterToolsSampleClassChanged(sc);
       }
     };
     this.addListener(dfe);

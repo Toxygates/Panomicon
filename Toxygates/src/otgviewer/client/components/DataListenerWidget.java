@@ -257,19 +257,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   protected void storeColumns(StorageParser p, String key,
       Collection<? extends SampleColumn> columns) {
-    if (!columns.isEmpty()) {
-      SampleColumn first = columns.iterator().next();
-      String representative =
-          (first.getSamples().length > 0) ? first.getSamples()[0].toString()
-              : "(no samples)";
-
-      logger.info("Storing columns for " + key + " : " + first + " : "
-          + representative + " ...");
-      p.setItem(key, packColumns(columns));
-    } else {
-      logger.info("Clearing stored columns for: " + key);
-      p.clearItem(key);
-    }
+    p.storeColumns(key, columns);
   }
 
   public void storeColumns(StorageParser p) {
@@ -285,7 +273,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   protected List<Group> loadColumns(StorageParser p, DataSchema schema,
       String key, Collection<? extends SampleColumn> expectedColumns, AttributeSet attributes)
       throws Exception {
-    List<Group> storedColumns = p.getColumns(schema, key, expectedColumns, attributes);
+    List<Group> storedColumns = p.getColumns(schema, key, attributes);
     if (storedColumns == null || packColumns(storedColumns).equals(packColumns(expectedColumns))) {
       return null;
     } else {
@@ -318,16 +306,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     p.setItem("compounds", packCompounds(p));
   }
   
-  private String packDatasets(StorageParser p) {
-    List<String> r = new ArrayList<String>();
-    for (Dataset d: chosenDatasets) {
-      r.add(d.getTitle());
-    }
-    return StorageParser.packList(r, "###");
-  }
-  
-  public void storeDatasets(StorageParser p) {  
-    p.setItem("datasets", packDatasets(p));
+  public void storeDatasets(StorageParser p) {
+    p.storeDatasets(chosenDatasets);
   }
   
   public void storeSampleClass(StorageParser p) {
@@ -360,15 +340,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
   
   public void loadDatasets(StorageParser p) {
-    String v = p.getItem("datasets");
-    if (v == null || v.equals(packDatasets(p))) {
+    Dataset[] storedDatasets = p.getDatasets();
+    if (storedDatasets == null
+        || StorageParser.packDatasets(storedDatasets).equals(StorageParser.packDatasets(chosenDatasets))) {
       return;
     }
-    List<Dataset> r = new ArrayList<Dataset>();
-    for (String ds: v.split("###")) {
-      r.add(new Dataset(ds, "", "", null, ds, 0));
-    }
-    changeDatasets(r.toArray(new Dataset[0]));
+    changeDatasets(storedDatasets);
   }
   
   public void loadCompounds(StorageParser p) {

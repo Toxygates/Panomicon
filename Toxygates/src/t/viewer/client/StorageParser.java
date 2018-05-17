@@ -19,6 +19,7 @@
 package t.viewer.client;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -131,8 +132,7 @@ public class StorageParser {
   @Nullable
   // Separator hierarchy for columns:
   // ### > ::: > ^^^ > $$$
-  public List<Group> getColumns(DataSchema schema, String key, Collection<? extends SampleColumn> expectedColumns,
-      AttributeSet attributes) throws Exception {
+  public List<Group> getColumns(DataSchema schema, String key, AttributeSet attributes) throws Exception {
     // TODO unpack old format columns
     String v = getItem(key);
     List<Group> r = new ArrayList<Group>();
@@ -147,8 +147,50 @@ public class StorageParser {
     return r;
   }
 
+  public List<Group> getChosenColumns(DataSchema schema, AttributeSet attributes) {
+    try {
+      return getColumns(schema, "columns", attributes);
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Exception while retrieving columns", e);
+      return null;
+    }
+  }
+
   public Group getCustomColumn(DataSchema schema, AttributeSet attributes) {
     return unpackColumn(schema, getItem("customColumn"), attributes);
+  }
+
+  public Dataset[] getDatasets() {
+    String v = getItem("datasets");
+    if (v == null) {
+      return null;
+    }
+    List<Dataset> r = new ArrayList<Dataset>();
+    for (String ds : v.split("###")) {
+      r.add(new Dataset(ds, "", "", null, ds, 0));
+    }
+    return r.toArray(new Dataset[0]);
+  }
+
+  public static String packDatasets(Dataset[] datasets) {
+    List<String> r = new ArrayList<String>();
+    for (Dataset d : datasets) {
+      r.add(d.getTitle());
+    }
+    return packList(r, "###");
+  }
+
+  public void storeColumns(String key, Collection<? extends SampleColumn> columns) {
+    if (!columns.isEmpty()) {
+      SampleColumn first = columns.iterator().next();
+      String representative = (first.getSamples().length > 0) ? first.getSamples()[0].toString() : "(no samples)";
+
+      logger.info("Storing columns for " + key + " : " + first + " : " + representative + " ...");
+      setItem(key, packColumns(columns));
+    } else {
+      logger.info("Clearing stored columns for: " + key);
+      clearItem(key);
+    }
   }
 
   public void storeCustomColumn(DataColumn<?> column) {
@@ -157,5 +199,9 @@ public class StorageParser {
     } else {
       clearItem("customColumn");
     }
+  }
+
+  public void storeDatasets(Dataset[] datasets) {
+    setItem("datasets", StorageParser.packDatasets(datasets));
   }
 }
