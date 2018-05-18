@@ -54,15 +54,18 @@ public interface BatchOperations extends MaintenanceOperations {
 
 
   /**
-   * Get attribute summaries and sample counts for a dataset
+   * Get attribute summaries and optionally sample counts for a dataset
    * as a pivot table.
    * The result is a row-major table. The first row will be column headers.
    * @param d
+   * @param cellAttribute The attribute to put in individual table cells, or 
+     null if the sample count is desired.
    * @return
    */
   String[][] datasetSampleSummary(Dataset d, 
                                   Attribute[] rowAttributes, 
-                                  Attribute[] columnAttributes);
+                                  Attribute[] columnAttributes,
+                                  @Nullable Attribute cellAttribute);
 
   
   /**

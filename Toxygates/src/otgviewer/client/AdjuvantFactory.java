@@ -21,10 +21,11 @@ public class AdjuvantFactory extends OTGFactory {
                                              ValueAcceptor<StringArrayTable> acceptor) {
     UserDataServiceAsync userData = screen.manager().userDataService();
     Dataset d = new Dataset("adjuvant", null, null, null, null, 0);
-    Attribute[] rowAttributes =  { Compound, AdmRoute, ExposureTime };
+    Attribute[] rowAttributes =  { Compound, ExposureTime };
     Attribute[] colAttributes = { Organism, Organ };
     
     userData.datasetSampleSummary(d, rowAttributes, colAttributes,
+        AdmRoute,
       new PendingAsyncCallback<String[][]>(screen) {
         public void handleSuccess(String[][] data) {
           StringArrayTable r = new StringArrayTable(data);

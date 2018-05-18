@@ -40,6 +40,7 @@ public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
 
   void datasetSampleSummary(Dataset d, Attribute[] rowAttributes,
                             Attribute[] columnAttributes,
+                            @Nullable Attribute cellValue,
                             AsyncCallback<String[][]> callback);
   
   void deleteBatchAsync(Batch b, AsyncCallback<Void> callback);

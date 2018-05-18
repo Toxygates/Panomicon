@@ -262,13 +262,13 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     val pattr = attributes.filter(isPredicateAttribute)
 
     Query(tPrefixes,
-      s"""|SELECT DISTINCT * 
+      s"""|SELECT DISTINCT *
           |  WHERE { GRAPH ?batchGraph {
           |    ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
           s"} ${sf.standardSampleFilters} } ",
       triplestore.mapQuery(_, 10000))
   }
-  
+
   /**
    * For a given set of attributes, count the number of samples for each existing
    * distinct combination of attribute values.
@@ -276,17 +276,25 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def sampleCountQuery(attributes: Iterable[Attribute])(implicit sf: SampleFilter):
     Query[Seq[Map[String, String]]] = {
     val pattr = attributes.filter(isPredicateAttribute)
-    val queryVars = pattr.map(a => s"?${a.id}").mkString(" ") 
-    
+    val queryVars = pattr.map(a => s"?${a.id}").mkString(" ")
+
+    //For adjuvant compounds, e.g. ADDA.ID and ADDA.IP, this gives us the name
+    //without the administration route suffix
+    import otg.model.sample.OTGAttribute._
+    val cmpPar = Compound.id
+    val extraVars = if (pattr.contains(Compound)) {
+      s"(SUBSTR(?$cmpPar, 0, strlen(?$cmpPar) - 2) as ?${cmpPar}Edit)"
+    } else ""
+
     Query(tPrefixes,
-      s"""|SELECT $queryVars (STR(COUNT(DISTINCT *)) AS ?count)
-          |  WHERE { GRAPH ?batchGraph { 
+      s"""|SELECT $queryVars (STR(COUNT(DISTINCT *)) AS ?count) $extraVars
+          |  WHERE { GRAPH ?batchGraph {
           |    ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
       s"""|  }
-          |  ${sf.standardSampleFilters} 
-          |} 
+          |  ${sf.standardSampleFilters}
+          |}
           |GROUP BY $queryVars""".stripMargin,
-          triplestore.mapQuery(_, 10000))      
+          triplestore.mapQuery(_, 10000))
   }
 
   /**
@@ -326,7 +334,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   def attributeValues(filter: TFilter, attribute: Attribute)(implicit sf: SampleFilter) =
     sampleAttributeQuery(attribute).constrain(filter)()
-  
+
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes + '\n' +
       "SELECT DISTINCT ?l ?sid WHERE { " +

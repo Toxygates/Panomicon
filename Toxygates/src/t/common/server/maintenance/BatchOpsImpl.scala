@@ -241,46 +241,58 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   def datasetSampleSummary(dataset: Dataset,
                            rowAttributes: Array[Attribute],
-                           columnAttributes: Array[Attribute]): Array[Array[String]] = {
+                           columnAttributes: Array[Attribute],
+                           cellAttribute: Attribute): Array[Array[String]] = {
     val batches = getBatches(Array(dataset.getTitle))
-    
+
     val samples = context.samples
-    val allAttribs = rowAttributes ++ columnAttributes
-    
+    val allAttribs = rowAttributes ++ columnAttributes ++ Option(cellAttribute)
+
     val adata = batches.toSeq.flatMap(b => {
       val batchURI = Batches.packURI(b.getTitle)
       val sf = SampleFilter(None, Some(batchURI))
-      samples.sampleCountQuery(allAttribs)(sf)()      
-    }).filter(_.keySet.size > 1) //For empty batches, the only key will be 'count'     
-    
+      samples.sampleCountQuery(allAttribs)(sf)()
+    }).filter(_.keySet.size > 1) //For empty batches, the only key will be 'count'
+
     /**
      * Construct a pivot table from the raw data.
      * Example: row attributes are compound, exposure period
      * Column attributes are Species, Organ
      * Resulting table of sample counts can be e.g.
-     * 
+     *
      * Compound | Exposure period | Rat/Liver | Rat/Kidney | Mouse/Liver | Mouse/Kidney
      * A        | 3h              |       3   |      6     |      3      |       6
      * B        | 3h              |       3   |      6     |      3      |       6
      */
     //
-    
+
+    import otg.model.sample.OTGAttribute._
     //NB the toSeq conversion is essential.
     //Equality for arrays is not deep by default
-    def rowKey(data: Map[String, String]) = rowAttributes.toSeq.map(a => data(a.id))
-    def colKey(data: Map[String, String]) = columnAttributes.toSeq.map(a => data(a.id))
-    
+    val compoundEdit = Compound.id + "Edit"
+
+    def getKey(data: Map[String, String])(key: Attribute) =
+      if (key == Compound && data.contains(compoundEdit)) data(compoundEdit) else data(key.id)
+
+    def rowKey(data: Map[String, String]) = rowAttributes.toSeq.map(getKey(data))
+    def colKey(data: Map[String, String]) = columnAttributes.toSeq.map(getKey(data))
+
     val byRow = adata.groupBy(rowKey).toSeq.sortBy(_._1.mkString(""))
-    val columns = adata.map(colKey).distinct 
-    
+    val columns = adata.map(colKey).distinct
+
     val headers = rowAttributes.map(_.title).toArray ++
       columns.map(_.mkString("/"))
-      
-    val rows = byRow.map {case (rkey, data) => 
-      rkey ++ columns.map(ckey => data.filter(colKey(_) == ckey).
-        map(_("count").toInt).sum.toString)
+
+    def cellValue(rows: Iterable[Map[String, String]]) =
+      Option(cellAttribute) match {
+        case Some(a) => rows.map(_(a.id)).toSeq.distinct.mkString(",")
+        case None => rows.map(_("count").toInt).sum.toString
+      }
+
+    val rows = byRow.map {case (rkey, data) =>
+      rkey ++ columns.map(ckey => cellValue(data.filter(colKey(_) == ckey)))
     }
-    
+
     Array(headers) ++ rows.map(_.toArray)
   }
 
