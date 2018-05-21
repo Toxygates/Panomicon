@@ -55,6 +55,10 @@ public interface Screen {
     return manager().resources();
   }
 
+  default AttributeSet attributes() {
+    return manager().appInfo().attributes();
+  }
+
   // Accessors
   ScreenManager manager();
   Logger getLogger();

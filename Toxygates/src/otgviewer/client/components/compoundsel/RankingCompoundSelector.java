@@ -52,10 +52,6 @@ public class RankingCompoundSelector extends CompoundSelector {
   private SeriesType rankedType = SeriesType.Time;
   private boolean hasRankColumns = false;
   private final Resources resources;
-  
-  public interface Delegate extends CompoundSelector.Delegate {
-    Resources resources();
-  }
 
   public <T extends Screen & Delegate> RankingCompoundSelector(T screen,
       String heading) {
@@ -66,7 +62,7 @@ public class RankingCompoundSelector extends CompoundSelector {
       String heading) {
     super(screen, delegate, heading, false, false);
     this.seriesService = screen.manager().seriesService();
-    this.resources = delegate.resources();
+    this.resources = screen.resources();
   }
 
   private void addRankColumns() {
@@ -194,7 +190,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
-      Charts cgf = new Charts(screen, new SampleClass[] {w.state().sampleClass});
+      Charts cgf = new Charts(screen, new SampleClass[] { w.manager().getParser().getSampleClass(w.attributes()) });
       cgf.makeSeriesCharts(seriesType, ss, scores.get(value).fixedValue(), 
           new Charts.ChartAcceptor() {
         @Override

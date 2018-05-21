@@ -32,10 +32,7 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.Resources;
-import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
-import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -212,22 +209,6 @@ public abstract class MinimalScreen implements Screen {
   @Override
   public ScreenManager manager() {
     return manager;
-  }
-
-  public UIFactory factory() {
-    return manager.factory();
-  }
-
-  public DataSchema schema() {
-    return manager.schema();
-  }
-
-  public AttributeSet attributes() {
-    return manager.appInfo().attributes();
-  }
-
-  public Resources resources() {
-    return manager.resources();
   }
 
   /**
