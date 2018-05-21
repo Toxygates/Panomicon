@@ -18,16 +18,17 @@
 
 package otgviewer.client.components.ranking;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import t.viewer.client.Utils;
 
 public class FullCompoundRanker extends CompoundRanker {
 
-  public FullCompoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
+  public FullCompoundRanker(Screen _screen, RankingCompoundSelector selector) {
     super(_screen, selector);
   }
 
+  @Override
   protected void addHeaderWidgets() {
     grid.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
     grid.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
@@ -36,10 +37,12 @@ public class FullCompoundRanker extends CompoundRanker {
     grid.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
   }
 
+  @Override
   protected int gridColumns() {
     return FullRuleInputHelper.REQUIRED_COLUMNS;
   }
 
+  @Override
   protected RuleInputHelper makeInputHelper(boolean isLast) {
     return new FullRuleInputHelper(this, isLast);
   }

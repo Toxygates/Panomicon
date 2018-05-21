@@ -18,25 +18,28 @@
 
 package otgviewer.client.components.ranking;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import t.viewer.client.Utils;
 
 public class SimpleCompoundRanker extends CompoundRanker {
 
-  public SimpleCompoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
+  public SimpleCompoundRanker(Screen _screen, RankingCompoundSelector selector) {
     super(_screen, selector);
   }
 
+  @Override
   protected void addHeaderWidgets() {
     grid.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
     grid.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
   }
 
+  @Override
   protected int gridColumns() {
     return SimpleRuleInputHelper.REQUIRED_COLUMNS;
   }
 
+  @Override
   protected RuleInputHelper makeInputHelper(boolean isLast) {
     return new SimpleRuleInputHelper(this, isLast);
   }

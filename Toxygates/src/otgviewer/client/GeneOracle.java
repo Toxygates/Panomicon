@@ -21,13 +21,13 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.components.DLWScreen;
-import t.model.SampleClass;
-import t.viewer.client.rpc.ProbeServiceAsync;
-
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
+
+import otgviewer.client.components.Screen;
+import t.model.SampleClass;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 /**
  * This oracle looks up gene symbols in real time as the user types. This is used to provide a list
@@ -63,7 +63,7 @@ public class GeneOracle extends SuggestOracle {
 
   }
 
-  public GeneOracle(DLWScreen screen) {
+  public GeneOracle(Screen screen) {
     probeService = screen.manager().probeService();
   }
 

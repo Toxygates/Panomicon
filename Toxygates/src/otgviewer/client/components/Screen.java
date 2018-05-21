@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
+import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.DataSchema;
@@ -48,6 +49,10 @@ public interface Screen {
 
   default UIFactory factory() {
     return manager().factory();
+  }
+
+  default Resources resources() {
+    return manager().resources();
   }
 
   // Accessors

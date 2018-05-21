@@ -41,7 +41,7 @@ public interface UIFactory {
 
   public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener);
 
-  public CompoundRanker compoundRanker(DLWScreen _screen, RankingCompoundSelector selector);
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector);
   
   public GroupInspector groupInspector(CompoundSelector cs, Screen scr,
       GroupInspector.Delegate delegate);

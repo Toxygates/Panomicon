@@ -24,25 +24,37 @@ import java.util.List;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
 import t.common.shared.ItemList;
+import t.model.SampleClass;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 
-public class RankingScreen extends DataFilterScreen implements FilterTools.Delegate,
+public class RankingScreen extends MinimalScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {
 
   public static final String key = "rank";
 
-  private RankingCompoundSelector cs;
+  private RankingCompoundSelector compoundSelector;
   private FilterTools filterTools;
   private ScrollPanel sp;
 
+  protected Dataset[] chosenDatasets;
+
+  @Override
+  public void loadState(AttributeSet attributes) {
+    chosenDatasets = getParser().getDatasets();
+    filterTools.datasetsChanged(chosenDatasets);
+    SampleClass sampleClass = getParser().getSampleClass(attributes);
+    filterTools.sampleClassChanged(sampleClass);
+    compoundSelector.sampleClassChanged(sampleClass);
+  }
+
   public RankingScreen(ScreenManager man) {
-    super("Compound ranking", key, false, man,
+    super("Compound ranking", key, man,
         man.resources().compoundRankingHTML(),
         man.resources().compoundRankingHelp());
     chosenDatasets = appInfo().datasets();
@@ -50,23 +62,23 @@ public class RankingScreen extends DataFilterScreen implements FilterTools.Deleg
       @Override
       public void datasetsChanged(Dataset[] ds) {
         super.datasetsChanged(ds);
-        cs.datasetsChanged(ds);
+        compoundSelector.datasetsChanged(ds);
         //TODO: should really change the datasets in the RankingScreen
         //but that would cause an infinite loop. 
         //Think about changing the way we propagate events and data.
       }      
     };
-    this.addListener(filterTools);
+    //this.addListener(filterTools);
 
-    cs = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
+    compoundSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
         storeCompounds(getParser(RankingScreen.this));
       }
     };
-    this.addListener(cs);
-    cs.addStyleName("compoundSelector");
+    //this.addListener(cs);
+    compoundSelector.addStyleName("compoundSelector");
   }
 
   @Override
@@ -74,12 +86,12 @@ public class RankingScreen extends DataFilterScreen implements FilterTools.Deleg
     super.addToolbars();
     HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
     addToolbar(hp, 0);
-    addLeftbar(cs, 350);
+    addLeftbar(compoundSelector, 350);
   }
 
   @Override
   public Widget content() {
-    CompoundRanker cr = factory().compoundRanker(this, cs);
+    CompoundRanker cr = factory().compoundRanker(this, compoundSelector);
     sp = makeScrolled(cr);
     return sp;
   }
@@ -92,7 +104,7 @@ public class RankingScreen extends DataFilterScreen implements FilterTools.Deleg
   @Override
   public void resizeInterface() {
     // Test carefully in IE8, IE9 and all other browsers if changing this method
-    cs.resizeInterface();
+    compoundSelector.resizeInterface();
     super.resizeInterface();
   }
 
@@ -103,5 +115,14 @@ public class RankingScreen extends DataFilterScreen implements FilterTools.Deleg
 
   // CompoundSelector.Delegate methods
   @Override
-  public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {}
+  public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
+    getParser().storeItemLists(itemLists);
+  }
+
+  // FilterTools.Delegate method
+  @Override
+  public void filterToolsSampleClassChanged(SampleClass sc) {
+    getParser().storeSampleClass(sc);
+    compoundSelector.sampleClassChanged(sc);
+  }
 }

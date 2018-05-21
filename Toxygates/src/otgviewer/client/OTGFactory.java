@@ -48,7 +48,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public CompoundRanker compoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
     return new SimpleCompoundRanker(_screen, selector);
   }
 

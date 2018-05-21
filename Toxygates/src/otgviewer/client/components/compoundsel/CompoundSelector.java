@@ -54,6 +54,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
   private final static int MAX_AUTO_SEL = 20;
 
+  public Delegate delegate() {
+    return delegate;
+  }
+
   public interface Delegate {
     void CompoundSelectorItemListsChanged(List<ItemList> itemLists);
   }
