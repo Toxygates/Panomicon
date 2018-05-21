@@ -287,7 +287,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   public void storeItemLists(StorageParser p) {
-    p.setItem("lists", packItemLists(chosenItemLists, "###"));
+    p.storeItemLists(chosenItemLists);
   }
 
   public void storeGeneSet(StorageParser p) {
@@ -312,7 +312,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   
   public void storeSampleClass(StorageParser p) {
     if (chosenSampleClass != null) {
-      p.setItem("sampleClass", t.common.client.Utils.packSampleClass(chosenSampleClass));
+      p.storeSampleClass(chosenSampleClass);
     }    
   }
   
@@ -349,15 +349,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
   
   public void loadCompounds(StorageParser p) {
-    String v = p.getItem("compounds");
-    if (v == null || v.equals(packCompounds(p))) {
+    List<String> storedCompounds = p.getCompounds();
+    if (storedCompounds == null || p.packCompounds(storedCompounds).equals(packCompounds(p))) {
       return;
     }
-    List<String> r = new ArrayList<String>();    
-    for (String c: v.split("###")) {
-      r.add(c);
-    }
-    changeCompounds(r);
+    changeCompounds(storedCompounds);
   }
   
   public void loadSampleClass(StorageParser p, AttributeSet attributes) {

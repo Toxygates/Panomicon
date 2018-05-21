@@ -180,6 +180,22 @@ public class StorageParser {
     return packList(r, "###");
   }
 
+  public List<String> getCompounds() {
+    String v = getItem("compounds");
+    if (v == null) {
+      return null;
+    }
+    List<String> r = new ArrayList<String>();
+    for (String c : v.split("###")) {
+      r.add(c);
+    }
+    return r;
+  }
+
+  public String packCompounds(List<String> compounds) {
+    return packList(compounds, "###");
+  }
+
   public void storeColumns(String key, Collection<? extends SampleColumn> columns) {
     if (!columns.isEmpty()) {
       SampleColumn first = columns.iterator().next();
@@ -203,5 +219,13 @@ public class StorageParser {
 
   public void storeDatasets(Dataset[] datasets) {
     setItem("datasets", StorageParser.packDatasets(datasets));
+  }
+
+  public void storeItemLists(List<ItemList> itemLists) {
+    setItem("lists", packItemLists(itemLists, "###"));
+  }
+
+  public void storeSampleClass(SampleClass sampleClass) {
+    setItem("sampleClass", t.common.client.Utils.packSampleClass(sampleClass));
   }
 }
