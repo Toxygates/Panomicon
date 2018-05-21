@@ -170,6 +170,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
     getParser().storeSampleClass(sc);
+    compoundSelector.sampleClassChanged(sc);
   }
 
   // GroupInspector.Delegate methods
