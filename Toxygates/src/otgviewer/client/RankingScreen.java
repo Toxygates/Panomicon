@@ -29,9 +29,11 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
+import t.common.shared.ItemList;
 import t.viewer.client.Utils;
 
-public class RankingScreen extends DataFilterScreen implements FilterTools.Delegate {
+public class RankingScreen extends DataFilterScreen implements FilterTools.Delegate,
+    RankingCompoundSelector.Delegate {
 
   public static final String key = "rank";
 
@@ -98,4 +100,8 @@ public class RankingScreen extends DataFilterScreen implements FilterTools.Deleg
   public String getGuideText() {
     return "Specify at least one gene symbol to rank compounds according to their effect.";
   }
+
+  // CompoundSelector.Delegate methods
+  @Override
+  public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {}
 }

@@ -43,7 +43,7 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(DLWScreen scr, @Nullable UnitListener listener) {
+  public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener) {
     return new TreatedControlSelTDGrid(scr, listener);
   }
 
@@ -53,8 +53,9 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GroupInspector groupInspector(CompoundSelector cs, DLWScreen scr) {
-    return new TreatedControlGroupInspector(cs, scr);
+  public GroupInspector groupInspector(CompoundSelector cs, Screen scr,
+      GroupInspector.Delegate delegate) {
+    return new TreatedControlGroupInspector(cs, scr, delegate);
   }
 
   @Override

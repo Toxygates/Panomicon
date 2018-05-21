@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
@@ -45,19 +45,19 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   private Map<SampleClass, SelectionTDGrid> sections = new HashMap<SampleClass, SelectionTDGrid>();
   private UnitListener listener;
   private VerticalPanel vp;
-  private final DLWScreen scr;
+  private final Screen screen;
   protected final Logger logger = SharedUtils.getLogger("msg");
 
-  public MultiSelectionGrid(DLWScreen scr, @Nullable SelectionTDGrid.UnitListener listener) {
+  public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {
     vp = new VerticalPanel();
     initWidget(vp);
-    this.scr = scr;
+    this.screen = scr;
     this.listener = listener;
   }
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
 
-  private SelectionTDGrid findOrCreateSection(DLWScreen scr, SampleClass sc, boolean noCompounds) {
+  private SelectionTDGrid findOrCreateSection(Screen scr, SampleClass sc, boolean noCompounds) {
     SelectionTDGrid g = sections.get(sc);
     if (g == null) {
       g = scr.factory().selectionTDGrid(scr, this);
@@ -120,7 +120,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 
   @Override
   public void sampleClassChanged(SampleClass sc) {
-    SelectionTDGrid g = findOrCreateSection(scr, sc, false);
+    SelectionTDGrid g = findOrCreateSection(screen, sc, false);
     if (g != currentGrid) {
       logger.info("SC change " + sc.toString());
       currentGrid = g;
@@ -146,14 +146,14 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     if (selection.length > 0) {
       logger.info("1st sel: " + selection[0]);
     }
-    final DataSchema schema = scr.schema();
+    final DataSchema schema = screen.schema();
 
     for (SelectionTDGrid g : sections.values()) {
       g.setAll(false, false);
     }
     expectedSelection = selection;
 
-    final Attribute majorParam = scr.schema().majorParameter();
+    final Attribute majorParam = screen.schema().majorParameter();
     Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
     for (Unit u : selection) {
       SampleClass sc = SampleClassUtils.asMacroClass(u, schema);
@@ -169,7 +169,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     for (SampleClass sc : lcompounds.keySet()) {
       List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
       Collections.sort(compounds);
-      SelectionTDGrid g = findOrCreateSection(scr, sc, true);
+      SelectionTDGrid g = findOrCreateSection(screen, sc, true);
       g.compoundsChanged(compounds, selection);
     }
   }

@@ -24,16 +24,6 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.*;
-import otgviewer.client.components.compoundsel.CompoundSelector;
-import t.common.client.components.SelectionTable;
-import t.common.shared.*;
-import t.common.shared.sample.*;
-import t.model.SampleClass;
-import t.viewer.client.*;
-import t.viewer.client.rpc.SampleServiceAsync;
-
 import com.google.gwt.cell.client.*;
 import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
 import com.google.gwt.core.client.GWT;
@@ -44,6 +34,16 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
+import otg.model.sample.OTGAttribute;
+import otgviewer.client.components.*;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import t.common.client.components.SelectionTable;
+import t.common.shared.*;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
+import t.viewer.client.*;
+import t.viewer.client.rpc.SampleServiceAsync;
+
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
  * grid is implemented in the SelectionTDGrid. The rest is in this class.
@@ -53,7 +53,8 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
   private MultiSelectionGrid msg;
   private Map<String, Group> groups = new HashMap<String, Group>();
-  private final DLWScreen screen;
+  private final Screen screen;
+  private final Delegate delegate;
   private final DataSchema schema;
   private Label titleLabel;
   private TextBox txtbxGroup;
@@ -71,15 +72,22 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   protected final Logger logger = SharedUtils.getLogger("group");
   private final SampleServiceAsync sampleService;
 
+  public interface Delegate {
+    void groupInspectorDatasetsChanged(Dataset[] ds);
+
+    void groupInspectorSampleClassChanged(SampleClass sc);
+  }
+
   public interface ButtonCellResources extends ButtonCellBase.DefaultAppearance.Resources {
     @Override
     @Source("otgviewer/client/ButtonCellBase.gss")
     Style buttonCellBaseStyle();
   }
 
-  public GroupInspector(CompoundSelector cs, DLWScreen scr) {
+  public GroupInspector(CompoundSelector cs, Screen scr, Delegate delegate) {
     compoundSel = cs;
     this.screen = scr;
+    this.delegate = delegate;
     schema = scr.schema();
     sampleService = scr.manager().sampleService();
     sp = new SplitLayoutPanel();
@@ -418,7 +426,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         }
       }
       Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
-      screen.datasetsChanged(enAr);
+      delegate.groupInspectorDatasetsChanged(enAr);
       sampleService.chooseDatasets(enAr, new PendingAsyncCallback<SampleClass[]>(screen));
       storeDatasets(getParser(screen));
       Window
@@ -580,7 +588,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     SampleClass macroClass = 
         SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(), schema);
     changeSampleClass(macroClass);
-    screen.sampleClassChanged(macroClass);
+    delegate.groupInspectorSampleClassChanged(macroClass);
 
     List<String> compounds = 
         SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).

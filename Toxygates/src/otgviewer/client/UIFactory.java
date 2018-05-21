@@ -39,11 +39,12 @@ import t.viewer.shared.intermine.IntermineInstance;
 
 public interface UIFactory {
 
-  public SelectionTDGrid selectionTDGrid(DLWScreen scr, @Nullable UnitListener listener);
+  public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener);
 
   public CompoundRanker compoundRanker(DLWScreen _screen, RankingCompoundSelector selector);
   
-  public GroupInspector groupInspector(CompoundSelector cs, DLWScreen scr);
+  public GroupInspector groupInspector(CompoundSelector cs, Screen scr,
+      GroupInspector.Delegate delegate);
   
   public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups);
   

@@ -19,19 +19,21 @@
  */
 package otgviewer.client.components.groupdef;
 
-import otgviewer.client.components.DLWScreen;
-import otgviewer.client.components.compoundsel.CompoundSelector;
-import t.common.shared.sample.Group;
-
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import t.common.shared.sample.Group;
+
 public class TreatedControlGroupInspector extends GroupInspector {
 
-  public TreatedControlGroupInspector(CompoundSelector cs, DLWScreen scr) {
-    super(cs, scr);
+  public TreatedControlGroupInspector(CompoundSelector cs, Screen scr,
+      Delegate delegate) {
+    super(cs, scr, delegate);
   }
 
+  @Override
   protected void makeGroupColumns(CellTable<Group> table) {
     TextColumn<Group> textColumn = new TextColumn<Group>() {
       @Override

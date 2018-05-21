@@ -383,5 +383,6 @@ public class SampleSearchScreen extends MinimalScreen
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
     chosenSampleClass = sc;
+    getParser().storeSampleClass(sc);
   }
 }

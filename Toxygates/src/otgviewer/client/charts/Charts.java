@@ -30,7 +30,8 @@ import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
 import otgviewer.client.charts.google.GVizFactory;
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -91,14 +92,14 @@ public class Charts {
 
   }
 
-  public Charts(DLWScreen screen, SampleClass[] sampleClasses) {
+  public Charts(Screen screen, SampleClass[] sampleClasses) {
     this(screen);
     this.sampleClasses = sampleClasses;
     groups = new ArrayList<Group>();
   }
 
   public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
-      final String highlightDoseOrTime, final ChartAcceptor acceptor, final DLWScreen screen) {
+      final String highlightDoseOrTime, final ChartAcceptor acceptor, final Screen screen) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0), 
         new PendingAsyncCallback<String[]>(screen,
         "Unable to obtain independent points for series.") {
@@ -114,7 +115,7 @@ public class Charts {
   private void finishSeriesCharts(SeriesType seriesType, 
       final List<Series> series, final String[] indepPoints,
       final String highlightFixed, final ChartAcceptor acceptor,
-      final DLWScreen screen) {
+      final Screen screen) {
     // TODO get from schema or data
     try {
       final String[] fixedVals = series.stream().

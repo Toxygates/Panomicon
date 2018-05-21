@@ -28,7 +28,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
@@ -52,10 +53,20 @@ public class RankingCompoundSelector extends CompoundSelector {
   private boolean hasRankColumns = false;
   private final Resources resources;
   
-  public RankingCompoundSelector(DLWScreen screen, String heading) {
-    super(screen, heading, false, false);
+  public interface Delegate extends CompoundSelector.Delegate {
+    Resources resources();
+  }
+
+  public <T extends Screen & Delegate> RankingCompoundSelector(T screen,
+      String heading) {
+    this(screen, screen, heading);
+  }
+
+  public RankingCompoundSelector(final Screen screen, Delegate delegate,
+      String heading) {
+    super(screen, delegate, heading, false, false);
     this.seriesService = screen.manager().seriesService();
-    this.resources = screen.resources();    
+    this.resources = delegate.resources();
   }
 
   private void addRankColumns() {
@@ -193,6 +204,4 @@ public class RankingCompoundSelector extends CompoundSelector {
       }, screen);
     }
   }
-
-
 }

@@ -26,44 +26,82 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
-import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
+import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
  */
-public class ColumnScreen extends DataFilterScreen implements FilterTools.Delegate {
+public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
+    GroupInspector.Delegate, CompoundSelector.Delegate {
   public static String key = "columns";
 
-  private GroupInspector gi;
-  private CompoundSelector cs;
+  private GroupInspector groupInspector;
+  private CompoundSelector compoundSelector;
   private FilterTools filterTools;
 
+  protected Dataset[] chosenDatasets;
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+
+  @Override
+  public void loadState(AttributeSet attributes) {
+    chosenDatasets = getParser().getDatasets();
+    filterTools.datasetsChanged(chosenDatasets);
+    SampleClass sampleClass = getParser().getSampleClass(attributes);
+    filterTools.sampleClassChanged(sampleClass);
+    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    compoundSelector.sampleClassChanged(sampleClass);
+
+    if (visible) {
+      try {
+        List<Group> ics =
+            getParser().getColumns(schema(), "inactiveColumns", attributes());
+        // loadColumns(getParser(), schema(), "inactiveColumns", new
+        // ArrayList<SampleColumn>(groupInspector
+        // .existingGroupsTable().inverseSelection()), attributes());
+        if (ics != null && ics.size() > 0) {
+          logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0]
+              + " ... ");
+          groupInspector.inactiveColumnsChanged(ics);
+        } else {
+          logger.info("No inactive columns available");
+        }
+
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Unable to load inactive columns", e);
+        Window.alert("Unable to load inactive columns.");
+      }
+    }
+
+    // This needs to happen after groupInspector.inactiveColumnsChanged, which causes
+    // the compound selector's selection to be cleared.
+    compoundSelector.compoundsChanged(getParser().getCompounds());
+  }
+
   public ColumnScreen(ScreenManager man) {
-    super("Sample groups", key, false, man, man.resources().groupDefinitionHTML(), 
+    super("Sample groups", key, man, man.resources().groupDefinitionHTML(),
         man.resources().groupDefinitionHelp());
 
-    cs = new CompoundSelector(this, man.schema().majorParameter().title(), true, true) {
+    compoundSelector = new CompoundSelector(this, man.schema().majorParameter().title(), true, true) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
         storeCompounds(getParser(ColumnScreen.this));
       }
     };
-    this.addListener(cs);
-    cs.addStyleName("compoundSelector");
+    // this.addListener(cs);
+    compoundSelector.addStyleName("compoundSelector");
 
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
-    this.addListener(filterTools);
+    // this.addListener(filterTools);
   }
 
   @Override
@@ -71,7 +109,7 @@ public class ColumnScreen extends DataFilterScreen implements FilterTools.Delega
     super.addToolbars();   
     HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
     addToolbar(hp, 0);
-    addLeftbar(cs, 350);
+    addLeftbar(compoundSelector, 350);
   }
 
   @Override
@@ -81,12 +119,12 @@ public class ColumnScreen extends DataFilterScreen implements FilterTools.Delega
 
   @Override
   public Widget content() {
-    gi = factory().groupInspector(cs, this);
-    this.addListener(gi);
-    cs.addListener(gi);
-    gi.datasetsChanged(chosenDatasets);
-    gi.addStaticGroups(appInfo().predefinedSampleGroups());
-    return gi;
+    groupInspector = factory().groupInspector(compoundSelector, this, this);
+    // this.addListener(groupInspector);
+    compoundSelector.addListener(groupInspector);
+    groupInspector.datasetsChanged(chosenDatasets);
+    groupInspector.addStaticGroups(appInfo().predefinedSampleGroups());
+    return groupInspector;
   }
 
   @Override
@@ -94,11 +132,11 @@ public class ColumnScreen extends DataFilterScreen implements FilterTools.Delega
     HorizontalPanel hp = Utils.mkWidePanel();
 
     Button b = new Button("Delete all groups",
-        (ClickHandler) e -> gi.confirmDeleteAllGroups());     
+        (ClickHandler) e -> groupInspector.confirmDeleteAllGroups());     
 
     Button b2 = new Button("Next: View data", 
         (ClickHandler) e -> {
-        if (gi.chosenColumns().size() == 0) {
+        if (groupInspector.chosenColumns().size() == 0) {
           Window.alert("Please define and activate at least one group.");
         } else {
           configuredProceed(DataScreen.key);
@@ -110,31 +148,8 @@ public class ColumnScreen extends DataFilterScreen implements FilterTools.Delega
   }
 
   @Override
-  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
-    super.loadState(p, schema, attributes);
-    if (visible) {
-      try {
-        List<Group> ics =
-            loadColumns(p, schema(), "inactiveColumns", new ArrayList<SampleColumn>(gi
-                .existingGroupsTable().inverseSelection()), attributes());
-        if (ics != null && ics.size() > 0) {
-          logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0]
-              + " ... ");
-          gi.inactiveColumnsChanged(ics);
-        } else {
-          logger.info("No inactive columns available");
-        }
-
-      } catch (Exception e) {
-        logger.log(Level.WARNING, "Unable to load inactive columns", e);
-        Window.alert("Unable to load inactive columns.");
-      }
-    }
-  }
-
-  @Override
   public void tryConfigure() {
-    if (chosenColumns.size() > 0) {
+    if (chosenColumns != null && chosenColumns.size() > 0) {
       setConfigured(true);
     }
   }
@@ -142,12 +157,36 @@ public class ColumnScreen extends DataFilterScreen implements FilterTools.Delega
   @Override
   public void resizeInterface() {
     // Test carefully in IE8, IE9 and all other browsers if changing this method
-    cs.resizeInterface();
+    compoundSelector.resizeInterface();
     super.resizeInterface();
   }
 
   @Override
   public String getGuideText() {
     return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
+  }
+
+  // FilterTools.Delegate method
+  @Override
+  public void filterToolsSampleClassChanged(SampleClass sc) {
+    getParser().storeSampleClass(sc);
+  }
+
+  // GroupInspector.Delegate methods
+  @Override
+  public void groupInspectorDatasetsChanged(Dataset[] ds) {
+    chosenDatasets = ds;
+    filterTools.datasetsChanged(ds);
+  }
+
+  @Override
+  public void groupInspectorSampleClassChanged(SampleClass sc) {
+    filterTools.sampleClassChanged(sc);
+  }
+
+  // CompoundSelector.Delegate methods
+  @Override
+  public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
+    getParser().storeItemLists(itemLists);
   }
 }
