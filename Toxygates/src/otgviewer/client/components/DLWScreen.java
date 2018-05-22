@@ -203,18 +203,22 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     return manager;
   }
 
+  @Override
   public UIFactory factory() {
     return manager.factory();
   }
 
+  @Override
   public DataSchema schema() {
     return manager.schema();
   }
 
+  @Override
   public AttributeSet attributes() {
     return manager.appInfo().attributes();
   }
 
+  @Override
   public Resources resources() {
     return manager.resources();    
   }
@@ -327,13 +331,12 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     i = new PushButton(new Image(resources().close()));
     i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
     i.addStyleName("slightlySpaced");
-    final DLWScreen sc = this;
     i.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         hideToolbar(guideBar);
         showGuide = false;
-        storeState(sc);
+        storeState();
       }
     });
     hpi.add(i);
@@ -348,7 +351,7 @@ public class DLWScreen extends DataListenerWidget implements Screen,
   public void showGuide() {
     showToolbar(guideBar);
     showGuide = true;
-    storeState(this);
+    storeState();
   }
 
 
@@ -446,6 +449,10 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     } else {
       showGuide = false;
     }
+  }
+
+  public void storeState() {
+    storeState(getParser());
   }
 
   @Override
@@ -601,6 +608,7 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     return key;
   }
 
+  @Override
   public StorageParser getParser() {
     return getParser(this);
   }

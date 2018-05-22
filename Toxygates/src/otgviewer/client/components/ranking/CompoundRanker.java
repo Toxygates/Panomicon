@@ -64,6 +64,10 @@ abstract public class CompoundRanker extends DataListenerWidget {
   
   final DataSchema schema;
 
+  public SampleClass sampleClass() {
+    return chosenSampleClass.copy();
+  }
+
   /**
    * 
    * @param selector the selector that this CompoundRanker will communicate with.
@@ -271,13 +275,13 @@ abstract public class CompoundRanker extends DataListenerWidget {
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     super.clusteringListsChanged(lists);     
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
   }
   
   

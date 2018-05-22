@@ -64,7 +64,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GeneSetEditor geneSetEditor(DLWScreen screen) {
+  public GeneSetEditor geneSetEditor(ImportingScreen screen) {
     return new GeneSetEditor(screen);
   }  
   

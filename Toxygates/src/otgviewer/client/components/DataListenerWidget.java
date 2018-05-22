@@ -31,7 +31,6 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.ClientState;
 import t.viewer.client.StorageParser;
 
 /**
@@ -66,13 +65,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   public DataListenerWidget() {
     super();
-  }
-  
-  public ClientState state() {
-    return new ClientState(chosenDatasets, chosenSampleClass,
-        chosenProbes, chosenCompounds, chosenColumns,
-        chosenCustomColumn, chosenItemLists, chosenGeneSet,
-        chosenClusteringList);
   }
 
   public void addListener(DataViewListener l) {
@@ -241,14 +233,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   /**
    * Store this widget's state into local storage.
    */
-  protected void storeState(Screen s) {
-    StorageParser p = getParser(s);
-    storeState(p);
-  }
-
-  /**
-   * Store this widget's state into local storage.
-   */
   protected void storeState(StorageParser p) {
     storeColumns(p);
     storeProbes(p);
@@ -364,7 +348,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
-  protected List<Sample> getAllSamples() {
+  public List<Sample> getAllSamples() {
     List<Sample> list = new ArrayList<Sample>();
     for (Group g : chosenColumns) {
       List<Sample> ss = Arrays.asList(g.getSamples());

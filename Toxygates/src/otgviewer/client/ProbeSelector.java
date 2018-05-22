@@ -60,7 +60,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
   private final static String CHILD_WIDTH = "100%";
 
-  public ProbeSelector(DLWScreen screen, String label, boolean wb) {
+  public ProbeSelector(Screen screen, String label, boolean wb) {
     this.screen = screen;
     this.probeService = screen.manager().probeService();
     this.withButton = wb;

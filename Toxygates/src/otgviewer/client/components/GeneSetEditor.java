@@ -47,7 +47,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private DialogBox dialog;
 
-  private final DLWScreen screen;
+  private final ImportingScreen screen;
 
   private final ProbeServiceAsync probeService;
 
@@ -76,13 +76,13 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private List<SaveActionHandler> saveActions = new ArrayList<SaveActionHandler>();
 
-  public GeneSetEditor(DLWScreen screen) {
+  public GeneSetEditor(ImportingScreen screen) {
     super();
 
     this.screen = screen;
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
-    probeService = screen.manager.probeService();
+    probeService = screen.manager().probeService();
 
     initWindow();
   }
@@ -489,7 +489,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       String compound = compoundList.getItemText(compoundList.getSelectedIndex());
 
       // Used for organism - TODO fix this for multi-organism cases
-      SampleClass sc = screen.chosenColumns.get(0).samples()[0].sampleClass();
+      SampleClass sc = screen.chosenColumns().get(0).samples()[0].sampleClass();
       logger.info("Target lookup for: " + sc.toString());
 
       probeService.probesTargetedByCompound(sc, compound, service, homologs,

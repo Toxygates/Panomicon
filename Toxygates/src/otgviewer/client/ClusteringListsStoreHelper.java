@@ -19,7 +19,7 @@ package otgviewer.client;
 
 import java.util.*;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.ImportingScreen;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.viewer.client.Utils;
@@ -29,13 +29,13 @@ import t.viewer.client.dialog.InputDialog;
 public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
   // private final Logger logger = SharedUtils.getLogger("ClusteringListsStoreHelper");
 
-  public ClusteringListsStoreHelper(String type, DLWScreen screen) {
+  public ClusteringListsStoreHelper(String type, ImportingScreen screen) {
     super(type, screen);
   }
 
   @Override
   protected void init() {
-    for (ItemList il : screen.state().chosenClusteringList) {
+    for (ItemList il : screen.clusteringList()) {
       if (il instanceof ClusteringList) {
         ClusteringList sl = (ClusteringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);

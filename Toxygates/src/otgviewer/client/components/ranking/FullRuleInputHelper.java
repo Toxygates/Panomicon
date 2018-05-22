@@ -81,7 +81,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
       return;
     }
     final String selCompound = refCompound.getItemText(selIndex);
-    SampleClass sc = ranker.state().sampleClass.copy();
+    SampleClass sc = ranker.sampleClass();
     sc.put(OTGAttribute.Compound, selCompound);
 
     ranker.sampleService.parameterValues(sc, OTGAttribute.DoseLevel.id(),
@@ -146,7 +146,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
         double[] data;
         String[] ss = syntheticCurveText.getText().split(" ");
         RankRule r = new RankRule(rt, probe);
-        SampleClass sc = ranker.state().sampleClass.copy();
+      SampleClass sc = ranker.sampleClass();
         int expectedPoints = ranker.schema.numDataPointsInSeries(sc);
 
         if (ss.length != expectedPoints) {

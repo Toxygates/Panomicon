@@ -23,17 +23,18 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.*;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.GeneSetEditor;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
-import t.viewer.client.ClientState;
-
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.*;
-import com.google.gwt.user.client.ui.*;
 
 public class GeneSetsMenuItem extends DataListenerWidget {
 
@@ -102,10 +103,9 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createUserSets() {
-    ClientState state = screen.state();
     root.addSeparator(new MenuItemCaptionSeparator("User sets"));
 
-    List<StringList> geneSets = StringList.pickProbeLists(state.itemLists, null);
+    List<StringList> geneSets = StringList.pickProbeLists(screen.itemLists(), null);
     ensureSorted(geneSets);
 
     for (final StringList sl : geneSets) {
@@ -123,11 +123,10 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createUserClusterings() {
-    ClientState state = screen.state();
     root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
 
     List<ClusteringList> clusterings =
-        ClusteringList.pickUserClusteringLists(state.chosenClusteringList, null);
+        ClusteringList.pickUserClusteringLists(screen.clusteringList(), null);
     ensureSorted(clusterings);
 
     for (final ClusteringList cl : clusterings) {
@@ -281,14 +280,14 @@ public class GeneSetsMenuItem extends DataListenerWidget {
         return;
       }
 
-      ClientState state = screen.state();
+      ItemList geneSet = screen.geneSet();
       StringListsStoreHelper helper =
           new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
       helper.delete(sl.name());
       Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_DELETE_GENE_SET);
       // If the user deletes chosen gene set, switch to "All probes" automatically.
-      if (state.geneSet != null && sl.type().equals(state.geneSet.type())
-          && sl.name().equals(state.geneSet.name())) {
+      if (geneSet != null && sl.type().equals(geneSet.type())
+          && sl.name().equals(geneSet.name())) {
         switchToAllProbes();
       }
     };
@@ -315,11 +314,10 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       ClusteringListsStoreHelper helper =
           new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen);
       helper.delete(cl.name());
-      ClientState state = screen.state();
+      ItemList geneSet = screen.geneSet();
 
       // If the user deletes chosen gene set, switch to "All probes" automatically.
-      if (state.geneSet != null && cl.type().equals(state.geneSet.type())
-          && cl.name().equals(state.geneSet.name())) {
+      if (geneSet != null && cl.type().equals(geneSet.type()) && cl.name().equals(geneSet.name())) {
         switchToAllProbes();
       }
     };

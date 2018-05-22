@@ -24,14 +24,14 @@ import java.util.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.ImportingScreen;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.viewer.client.StorageParser;
 
 public abstract class ItemListsStoreHelper {
 
-  protected DLWScreen screen;
+  protected ImportingScreen screen;
   protected String type;
 
   protected Collection<StringList> predefinedLists;
@@ -39,7 +39,7 @@ public abstract class ItemListsStoreHelper {
 
   protected DialogBox inputDialog;
 
-  public ItemListsStoreHelper(String type, DLWScreen screen) {
+  public ItemListsStoreHelper(String type, ImportingScreen screen) {
     this.screen = screen;
     this.type = type;
     this.predefinedLists = screen.manager().appInfo().predefinedProbeLists();
@@ -52,7 +52,7 @@ public abstract class ItemListsStoreHelper {
    * Obtain current item lists
    */
   protected void init() {
-    for (ItemList il : screen.state().itemLists) {
+    for (ItemList il : screen.itemLists()) {
       if (il instanceof StringList) {
         StringList sl = (StringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);

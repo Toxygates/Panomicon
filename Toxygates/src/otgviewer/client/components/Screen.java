@@ -31,7 +31,7 @@ import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
-import t.viewer.client.ClientState;
+import t.viewer.client.StorageParser;
 import t.viewer.shared.AppInfo;
 
 /**
@@ -59,6 +59,10 @@ public interface Screen {
     return manager().appInfo().attributes();
   }
 
+  default StorageParser getParser() {
+    return manager().getParser();
+  }
+
   // Accessors
   ScreenManager manager();
   Logger getLogger();
@@ -68,7 +72,6 @@ public interface Screen {
   Widget widget();
   List<MenuItem> analysisMenuItems();
   List<MenuItem> menuItems();
-  ClientState state();
   String additionalNavlinkStyle();
 
   void initGUI();

@@ -33,7 +33,6 @@ import otgviewer.client.components.PendingAsyncCallback;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.Analytics;
-import t.viewer.client.ClientState;
 import t.viewer.client.dialog.*;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
@@ -82,16 +81,14 @@ public class InterMineData {
         parent, "Unable to import lists from " + instance.title()) {
       @Override
       public void handleSuccess(StringList[] data) {
-        ClientState state = parent.state();
-        
         Collection<ItemList> rebuild =
             StringListsStoreHelper.rebuildLists(logger, Arrays.asList(data));
         List<StringList> normal = StringList.pickProbeLists(rebuild, null);
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
         // TODO revise pop-up message handling for this process
-        parent.intermineImport(mergeLists(state.itemLists, normal, replace, "lists"),
-            mergeLists(state.chosenClusteringList, clustering, replace, "clusters"));
+        parent.intermineImport(mergeLists(parent.itemLists(), normal, replace, "lists"),
+            mergeLists(parent.clusteringList(), clustering, replace, "clusters"));
       }
     });
   }
@@ -102,6 +99,7 @@ public class InterMineData {
    * @param asProbes
    */
   public void exportLists() {
+    final ImportingScreen importingParent = parent;
     InteractionDialog ui =
         new InterMineSyncDialog(parent, "Export", true, true, preferredInstance) {
           @Override
@@ -109,7 +107,8 @@ public class InterMineData {
               boolean replace) {
             super.userProceed();
             doExport(instance, user, pass, 
-                StringListsStoreHelper.compileLists(parent.state()), replace);
+                StringListsStoreHelper.compileLists(importingParent.itemLists(), importingParent.clusteringList()),
+                replace);
           }
 
         };

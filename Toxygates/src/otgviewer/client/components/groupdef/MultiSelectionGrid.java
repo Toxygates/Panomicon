@@ -181,7 +181,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
       if (tg != currentGrid && tg.getSelectedUnits(true).size() == 0) {
         vp.remove(i);
         vp.remove(i - 1);
-        sections.remove(tg.state().sampleClass);
+        sections.remove(tg.sampleClass());
         clearEmptySections();
         return;
       }

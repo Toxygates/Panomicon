@@ -35,7 +35,7 @@ public class ClassicOTGFactory extends OTGFactory {
   }
 
   @Override
-  public GeneSetEditor geneSetEditor(DLWScreen screen) {
+  public GeneSetEditor geneSetEditor(ImportingScreen screen) {
     return new GeneSetEditor(screen) {
       @Override
       protected boolean hasClustering() {

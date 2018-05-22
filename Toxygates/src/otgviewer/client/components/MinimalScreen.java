@@ -29,7 +29,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.DLWScreen.QueuedAction;
@@ -37,7 +36,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.*;
+import t.viewer.client.PersistedState;
+import t.viewer.client.Utils;
 
 /**
  * Screen implementation based on DLWScreen. Instead of inheriting from
@@ -55,24 +55,16 @@ public abstract class MinimalScreen implements Screen {
     return title;
   }
 
-  /*
-   * The following three methods stubs should be overridden if needed, but if they're not going to
-   * be used they can be left as they are.
-   */
-  @Override
-  public ClientState state() {
-    Window.alert("state() not implemented yet.");
-    throw new UnsupportedOperationException("state() not implemented yet.");
-  }
-
   protected void storeState() {
-    Window.alert("storeState() not implemented yet.");
-    throw new UnsupportedOperationException("storeState() not implemented yet.");
+    if (showGuide) {
+      getParser().setItem("OTG.showGuide", "yes");
+    } else {
+      getParser().setItem("OTG.showGuide", "no");
+    }
   }
 
   /**
-   * Load saved state from the local storage. If the loaded state is different from what was
-   * previously remembered in this widget, the appropriate signals will fire.
+   * Load saved state from local storage.
    */
   @Override
   public void loadState(AttributeSet attributes) {
@@ -487,10 +479,6 @@ public abstract class MinimalScreen implements Screen {
   @Override
   public String key() {
     return key;
-  }
-
-  public StorageParser getParser() {
-    return manager().getParser();
   }
 
   public boolean helpAvailable() {

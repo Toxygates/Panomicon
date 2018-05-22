@@ -54,6 +54,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
 
+  public SampleClass sampleClass() {
+    return chosenSampleClass.copy();
+  }
+
   protected abstract class UnitUI extends Composite {
     CheckBox cb = new CheckBox();
     Unit unit;

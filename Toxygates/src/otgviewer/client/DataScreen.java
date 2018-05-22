@@ -68,6 +68,25 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
     addListener(geneSetToolbar);
   }
 
+  @Override
+  public List<ItemList> clusteringList() {
+    return chosenClusteringList;
+  }
+
+  @Override
+  public List<ItemList> itemLists() {
+    return chosenItemLists;
+  }
+
+  public ItemList geneSet() {
+    return chosenGeneSet;
+  }
+
+  @Override
+  public List<Group> chosenColumns() {
+    return chosenColumns;
+  }
+
   protected GeneSetToolbar makeGeneSetSelector() {
     return new GeneSetToolbar(this) {
       @Override
@@ -323,7 +342,7 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
       return false;
     } else {
       probesChanged(probes);
-      storeState(this);
+      storeState();
       updateProbes();
       return true;
     }
@@ -333,7 +352,7 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
   public boolean importColumns(List<Group> groups) {
     if (groups.size() > 0 && !groups.equals(chosenColumns)) {
       columnsChanged(groups);
-      storeState(this);
+      storeState();
       updateProbes();
       return true;
     } else {
