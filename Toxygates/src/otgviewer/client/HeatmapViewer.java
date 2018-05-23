@@ -2,17 +2,18 @@ package otgviewer.client;
 
 import java.util.*;
 
-import otgviewer.client.components.DataListenerWidget;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.DataListenerWidget;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.components.DataView;
 import t.viewer.client.rpc.MatrixServiceAsync;
-
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * Adapts the HeatmapDialog for use inside otgviewer.
@@ -138,15 +139,15 @@ public class HeatmapViewer extends DataListenerWidget {
     }
   }
 
-  public static void show(DataScreen screen, ValueType defaultType) {
+  public static void show(DLWScreen screen, DataView view, ValueType defaultType) {
     HeatmapViewer viewer = new HeatmapViewer(screen);
-    show(viewer, screen, defaultType, DataScreen.defaultMatrix);
+    show(viewer, view, defaultType, DataScreen.defaultMatrix);
   }
 
-  public static void show(HeatmapViewer viewer, DataScreen screen, ValueType defaultType,
+  public static void show(HeatmapViewer viewer, DataView view, ValueType defaultType,
       String matrixId) {
-    screen.propagateTo(viewer);
-    viewer.probesChanged(screen.displayedAtomicProbes());
+    view.propagateTo(viewer);
+    viewer.probesChanged(view.displayedAtomicProbes());
 
     int probesCount = (viewer.chosenProbes != null ? viewer.chosenProbes.length : 0);
     if (probesCount == 0 || probesCount > 1000) {

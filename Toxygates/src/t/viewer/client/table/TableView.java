@@ -1,33 +1,129 @@
 package t.viewer.client.table;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 
-import otgviewer.client.ColumnScreen;
-import otgviewer.client.components.Screen;
+import otgviewer.client.*;
+import otgviewer.client.components.*;
+import otgviewer.client.dialog.MirnaSourceDialog;
 import t.common.shared.GroupUtils;
+import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.viewer.client.Analytics;
+import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
-import t.viewer.shared.Association;
-import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.table.RichTable.HideableColumn;
+import t.viewer.shared.*;
+import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * A DataView based on a single ExpressionTable.
  */
 public class TableView extends DataView {
+
   protected ExpressionTable expressionTable;
   
-  private Screen screen;
-  public TableView(Screen screen,
+  protected DLWScreen screen;
+  protected AppInfo appInfo;
+  protected ScreenManager manager;
+  protected UIFactory factory;
+  private Map<String, TickMenuItem> tickMenuItems = new HashMap<String, TickMenuItem>();
+
+  
+  public TableView(DLWScreen screen,
                    String mainTableTitle, 
                    boolean mainTableSelectable) {
     this.screen = screen;
+    this.appInfo = screen.appInfo();
+    this.manager = screen.manager();
+    this.factory = manager.factory();
+    
     this.expressionTable = makeExpressionTable(mainTableTitle, mainTableSelectable);
     this.addListener(expressionTable);
-//    initWidget(expressionTable);
+//    initWidget(expressionTable);   
+    setupMenus();
+  }
+  
+  protected void setupMenus() {
+    MenuBar menuBar = new MenuBar(true);
+    MenuItem mActions = new MenuItem("File", false, menuBar);
+    
+    MenuItem mntmDownloadCsv =
+        new MenuItem("Download CSV (grouped samples)...", false, () -> {          
+            expressionTable.downloadCSV(false);
+            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+                Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_GROUPED_SAMPLES);
+        });
+    menuBar.addItem(mntmDownloadCsv);
+    mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, () -> {      
+        expressionTable.downloadCSV(true);
+        Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+            Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);      
+    });
+    menuBar.addItem(mntmDownloadCsv);    
+    addTopLevelMenu(mActions);
+    
+    menuBar = new MenuBar(true);
+    //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
+    for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
+        final String title = c.columnInfo().title();
+   
+      tickMenuItems.put(title, 
+        //Automatically added to the menuBar
+      new TickMenuItem(menuBar, title, c.visible()) {
+        @Override
+        public void stateChange(boolean newState) {
+          expressionTable.setVisible(c, newState);
+          expressionTable.getAssociations();
+          if (newState) {
+              Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
+                      Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
+          }
+        }
+      });
+    }
+
+    MenuItem mColumns = new MenuItem("View", false, menuBar);
+    addTopLevelMenu(mColumns);
+
+    
+    // TODO: this is effectively a tick menu item without the tick.
+    // It would be nice to display the tick graphic, but then the textual alignment
+    // of the other items on the menu becomes odd.
+ 
+    addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false, false) {
+      @Override
+      public void stateChange(boolean newState) {
+        if (newState) {
+          screen.showToolbar(expressionTable.analysisTools());
+        } else {
+          screen.hideToolbar(expressionTable.analysisTools());
+        }
+      }
+      }.menuItem());
+    
+    
+    addAnalysisMenuItem(new MenuItem("Select MiRNA sources...", () -> {      
+      MirnaSource[] sources = appInfo.mirnaSources();        
+      new MirnaSourceDialog(screen, manager.probeService(), sources, 
+        mirnaState).
+        display("Choose miRNA sources", DialogPosition.Center);
+    }));
+
+    if (factory.hasHeatMapMenu()) {
+      MenuItem heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
+      addAnalysisMenuItem(heatMapMenu);
+    }
+  }
+  
+  protected void makeHeatMap() {
+    HeatmapViewer.show(screen, this, expressionTable.getValueType());
   }
   
   protected static final String defaultMatrix = "DEFAULT";
@@ -121,5 +217,63 @@ public class TableView extends DataView {
     return "miRNA".equals(GroupUtils.groupType(g));
   }
   
-  public ExpressionTable expressionTable() { return expressionTable; }  
+  public ExpressionTable expressionTable() { return expressionTable; }
+
+  protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
+      "miRNASources", "mirnaSources") {
+    @Override
+    protected String doPack(MirnaSource[] state) {
+      return Arrays.stream(state).map(ms -> ms.pack()).collect(Collectors.joining(":::"));
+    }
+
+    @Override
+    protected MirnaSource[] doUnpack(String state) {
+      String[] spl = state.split(":::");
+      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).
+          filter(ms -> ms != null).toArray(MirnaSource[]::new);
+    }
+
+    @Override
+    public void onValueChange(MirnaSource[] state) {
+      if (state != null) {        
+        manager.probeService().setMirnaSources(state, new AsyncCallback<Void>() {
+          @Override
+          public void onFailure(Throwable caught) {
+            Window.alert("Unable to set miRNA sources.");
+          }
+
+          @Override
+          public void onSuccess(Void result) {
+            expressionTable.getAssociations();
+          }
+        });
+      }
+    }
+  };
+  
+  
+  public List<PersistedState<?>> getPersistedItems() {
+    List<PersistedState<?>> r = super.getPersistedItems();
+    r.addAll(expressionTable.getPersistedItems());
+    r.add(mirnaState);
+    return r;
+  }
+  
+  public void loadPersistedState() {
+    super.loadPersistedState();
+    for (String title: tickMenuItems.keySet()) {
+      TickMenuItem mi = tickMenuItems.get(title);
+      boolean state = expressionTable.persistedVisibility(title, mi.getState());
+      mi.setState(state);
+    }
+  }
+  
+  public String[] displayedAtomicProbes() {
+    String[] r = expressionTable.currentMatrixInfo().getAtomicProbes();
+    if (r.length < expressionTable.currentMatrixInfo().numRows()) {
+      Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
+    }
+    return r;
+  }
+
 }

@@ -18,7 +18,6 @@ import t.viewer.client.network.DualTableNetwork;
 import t.viewer.client.network.NetworkController;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.*;
-import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
 

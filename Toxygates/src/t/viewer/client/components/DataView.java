@@ -2,8 +2,11 @@ package t.viewer.client.components;
 
 import java.util.*;
 
+import com.google.gwt.user.client.ui.MenuItem;
+
 import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.sample.Group;
+import t.viewer.client.PersistedState;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.shared.Association;
 
@@ -46,4 +49,33 @@ public abstract class DataView extends DataListenerWidget {
   
   //TODO remove
   abstract public ExpressionTable expressionTable();
+  
+  protected List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
+  protected List<MenuItem> topLevelMenus = new ArrayList<MenuItem>();
+  
+  protected void addAnalysisMenuItem(MenuItem mi) {
+    analysisMenuItems.add(mi);
+  }
+  
+  protected void addTopLevelMenu(MenuItem mi) {
+    topLevelMenus.add(mi);
+  }
+  
+  /**
+   * Menu items to be added to the analysis menu.
+   */
+  public Collection<MenuItem> analysisMenuItems() { return analysisMenuItems; }
+ 
+  /**
+   * Top level menus to be installed.
+   */
+  public Collection<MenuItem> topLevelMenus() { return topLevelMenus; }
+ 
+  public List<PersistedState<?>> getPersistedItems() {
+    return new ArrayList<PersistedState<?>>();
+  }
+  
+  public void loadPersistedState() { }
+  
+  abstract public String[] displayedAtomicProbes();
 }
