@@ -93,7 +93,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
 
   private void storeItemLists() {
     screen.itemListsChanged(buildItemLists());
-    screen.storeItemLists(screen.getParser());
   }
   
   private final static String SET_PREFIX = "Set:";

@@ -160,6 +160,15 @@ public class StorageParser {
     return unpackColumn(schema, getItem("customColumn"), attributes);
   }
 
+  public String[] getProbes() {
+    String probeString = getItem("probes");
+    if (probeString != null && !probeString.equals("")) {
+      return probeString.split("###");
+    } else {
+      return new String[0];
+    }
+  }
+
   public Dataset[] getDatasets() {
     String v = getItem("datasets");
     if (v == null) {
@@ -196,6 +205,33 @@ public class StorageParser {
     return packList(compounds, "###");
   }
 
+  public List<ItemList> getItemLists() {
+    return getLists("lists");
+  }
+
+  public List<ItemList> getClusteringLists() {
+    return getLists("clusterings");
+  }
+
+  public List<ItemList> getLists(String name) {
+    List<ItemList> r = new ArrayList<ItemList>();
+    String v = getItem(name);
+    if (v != null) {
+      String[] spl = v.split("###");
+      for (String x : spl) {
+        ItemList il = ItemList.unpack(x);
+        if (il != null) {
+          r.add(il);
+        }
+      }
+    }
+    return r;
+  }
+
+  public ItemList getGeneSet() {
+    return ItemList.unpack(getItem("geneset"));
+  }
+
   public void storeColumns(String key, Collection<? extends SampleColumn> columns) {
     if (!columns.isEmpty()) {
       SampleColumn first = columns.iterator().next();
@@ -227,5 +263,17 @@ public class StorageParser {
 
   public void storeSampleClass(SampleClass sampleClass) {
     setItem("sampleClass", t.common.client.Utils.packSampleClass(sampleClass));
+  }
+
+  public void storeProbes(String[] probes) {
+    setItem("probes", packProbes(probes));
+  }
+
+  public void storeGeneSet(ItemList geneList) {
+    setItem("geneset", (geneList != null ? geneList.pack() : ""));
+  }
+
+  public void storeClusteringLists(List<ItemList> clusteringList) {
+    setItem("clusterings", packItemLists(clusteringList, "###"));
   }
 }

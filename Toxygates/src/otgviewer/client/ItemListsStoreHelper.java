@@ -134,7 +134,6 @@ public abstract class ItemListsStoreHelper {
     
     if (itemLists.get(type).remove(name) != null) {
       screen.itemListsChanged(buildItemLists());
-      screen.storeItemLists(screen.getParser());
     }
   }
 

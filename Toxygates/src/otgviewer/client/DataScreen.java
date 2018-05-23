@@ -28,8 +28,8 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.components.*;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
+import t.common.shared.sample.*;
+import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
@@ -39,7 +39,7 @@ import t.viewer.shared.intermine.IntermineInstance;
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
  */
-public class DataScreen extends DLWScreen implements ImportingScreen {
+public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
@@ -56,16 +56,38 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
 
   private List<MenuItem> intermineMenuItems;
 
+  GeneSetsMenuItem geneSetsMenu;
+
+  protected String[] chosenProbes = new String[0];
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+  public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+  public ItemList chosenGeneSet = null;
+  protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+
+  @Override
+  public void loadState(AttributeSet attributes) {
+    StorageParser parser = getParser();
+    chosenProbes = parser.getProbes();
+    chosenColumns = parser.getChosenColumns(schema(), attributes());
+    chosenItemLists = parser.getItemLists();
+    chosenGeneSet = parser.getGeneSet();
+    chosenClusteringList = parser.getClusteringLists();
+
+    expressionTable.columnsChanged(chosenColumns);
+    expressionTable.sampleClassChanged(parser.getSampleClass(attributes()));
+    expressionTable.probesChanged(chosenProbes);
+
+    geneSetToolbar.geneSetChanged(chosenGeneSet);
+  }
+
   DataScreen(ScreenManager man, List<MenuItem> intermineItems) {
-    super("View data", key, true, man, man.resources().dataDisplayHTML(),
+    super("View data", key, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     intermineMenuItems = intermineItems;
     geneSetToolbar = makeGeneSetSelector();
     expressionTable = makeExpressionTable();
     expressionTable.setDisplayPColumns(false);
-    addListener(expressionTable);
     // To ensure that GeneSetToolbar has chosenColumns
-    addListener(geneSetToolbar);
   }
 
   @Override
@@ -173,8 +195,8 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
       });
     }
 
-    GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
-    addListener(geneSetsMenu);
+    geneSetsMenu = factory().geneSetsMenuItem(this);
+    //addListener(geneSetsMenu);
     addMenu(geneSetsMenu.menuItem());
 
     MenuItem mColumns = new MenuItem("View", false, menuBar);
@@ -218,9 +240,30 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
   @Override
   public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
     itemListsChanged(itemLists);
-    storeItemLists(getParser());
     clusteringListsChanged(clusteringLists);
-    storeClusteringLists(getParser());
+  }
+
+  @Override
+  public List<Sample> getAllSamples() {
+    List<Sample> list = new ArrayList<Sample>();
+    for (Group g : chosenColumns) {
+      List<Sample> ss = Arrays.asList(g.getSamples());
+      list.addAll(ss);
+    }
+    return list;
+  }
+
+  @Override
+  public void propagateTo(DataViewListener other) {
+    other.datasetsChanged(getParser().getDatasets());
+    other.sampleClassChanged(getParser().getSampleClass(attributes()));
+    other.probesChanged(chosenProbes);
+    other.compoundsChanged(getParser().getCompounds());
+    other.columnsChanged(chosenColumns);
+    other.customColumnChanged(getParser().getCustomColumn(schema(), attributes()));
+    other.itemListsChanged(chosenItemLists);
+    other.geneSetChanged(chosenGeneSet);
+    other.clusteringListsChanged(chosenClusteringList);
   }
 
   @Override
@@ -291,24 +334,41 @@ public class DataScreen extends DLWScreen implements ImportingScreen {
         + "Click on column headers to sort data.";
   }
 
-  @Override
   public void probesChanged(String[] probes) {
-    super.probesChanged(probes);
     logger.info("received " + probes.length + " probes");
 
-    StorageParser p = getParser(this);
-    storeProbes(p);
+    chosenProbes = probes;
+
+    getParser().storeProbes(chosenProbes);
 
     lastProbes = null;
     lastColumns = null;
+    expressionTable.probesChanged(probes);
+  }
+
+  public void geneSetChanged(ItemList geneSet) {
+    chosenGeneSet = geneSet;
+    getParser().storeGeneSet(geneSet);
+    geneSetToolbar.geneSetChanged(geneSet);
+  }
+
+  public void columnsChanged(List<Group> columns) {
+    chosenColumns = columns;
+    expressionTable.columnsChanged(columns);
   }
 
   @Override
-  public void geneSetChanged(ItemList geneSet) {
-    super.geneSetChanged(geneSet);
+  public void itemListsChanged(List<ItemList> lists) {
+    chosenItemLists = lists;
+    getParser().storeItemLists(lists);
+    geneSetsMenu.itemListsChanged(lists);
+  }
 
-    StorageParser p = getParser(this);
-    storeGeneSet(p);
+  @Override
+  public void clusteringListsChanged(List<ItemList> lists) {
+    chosenClusteringList = lists;
+    getParser().storeClusteringLists(lists);
+    geneSetsMenu.clusteringListsChanged(lists);
   }
 
   public String[] displayedAtomicProbes() {

@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
-import t.viewer.client.StorageParser;
 import t.viewer.shared.intermine.IntermineInstance;
 
 public interface ImportingScreen extends Screen {
@@ -47,15 +46,9 @@ public interface ImportingScreen extends Screen {
 
   void itemListsChanged(List<ItemList> lists);
 
-  void storeClusteringLists(StorageParser p);
-
-  void storeItemLists(StorageParser p);
-
   List<Group> chosenColumns();
 
   List<Sample> getAllSamples();
 
   void propagateTo(DataViewListener other);
-
-  void storeState();
 }

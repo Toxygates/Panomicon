@@ -104,7 +104,6 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
 
   private void storeItemLists() {
     screen.clusteringListsChanged(buildItemLists());
-    screen.storeClusteringLists(screen.getParser());
   }
 
   /**
@@ -120,7 +119,6 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
     
     if (itemLists.get(type).remove(name) != null) {
       screen.clusteringListsChanged(buildItemLists());
-      screen.storeClusteringLists(screen.getParser());
     }
   }
 

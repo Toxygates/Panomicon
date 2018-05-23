@@ -301,27 +301,16 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
   
   public List<ItemList> loadItemLists(StorageParser p) {
-    return loadLists(p, "lists");
+    return p.getLists("lists");
   }
 
   public List<ItemList> loadClusteringLists(StorageParser p) {
-    return loadLists(p, "clusterings");
+    return p.getLists("clusterings");
   }
 
-  public List<ItemList> loadLists(StorageParser p, String name) {
-    List<ItemList> r = new ArrayList<ItemList>();
-    String v = p.getItem(name);
-    if (v != null) {
-      String[] spl = v.split("###");
-      for (String x : spl) {
-        ItemList il = ItemList.unpack(x);
-        if (il != null) {
-          r.add(il);
-        }
-      }
-    }
-    return r;
-  }
+  //  public List<ItemList> loadLists(StorageParser p, String name) {
+  //    return p.loadLists(name);
+  //  }
   
   public void loadDatasets(StorageParser p) {
     Dataset[] storedDatasets = p.getDatasets();
