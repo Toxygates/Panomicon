@@ -195,8 +195,10 @@ public class StorageParser {
       return null;
     }
     List<String> r = new ArrayList<String>();
-    for (String c : v.split("###")) {
-      r.add(c);
+    if (v.length() > 0) {
+      for (String c : v.split("###")) {
+        r.add(c);
+      }
     }
     return r;
   }
