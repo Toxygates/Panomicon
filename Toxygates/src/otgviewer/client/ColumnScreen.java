@@ -93,7 +93,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
-        storeCompounds(getParser(ColumnScreen.this));
+        ColumnScreen.this.getParser().storeCompounds(chosenCompounds);
       }
     };
     // this.addListener(cs);

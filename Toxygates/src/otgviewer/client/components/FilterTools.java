@@ -102,7 +102,7 @@ public class FilterTools extends DataListenerWidget {
           @Override
           public void onOK() {
             datasetsChanged(getSelected().toArray(new Dataset[0]));
-            storeDatasets(getParser(screen));            
+            screen.getParser().storeDatasets(chosenDatasets);
             db.hide();
           }
 

@@ -597,11 +597,8 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   }
 
   public void createNew(String[] initProbes) {
-    // Create temporary DataListenerWidget to avoid loading probes chosen in parent screen
-    DataListenerWidget dlw = new DataListenerWidget();
-    screen.propagateTo(dlw);
-    dlw.probesChanged(initProbes);
-    dlw.propagateTo(this);
+    screen.propagateTo(this);
+    chosenProbes = initProbes;
 
     originalProbes = null;
     originalTitle = getAvailableName();

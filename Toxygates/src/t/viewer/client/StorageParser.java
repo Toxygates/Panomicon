@@ -232,6 +232,10 @@ public class StorageParser {
     return ItemList.unpack(getItem("geneset"));
   }
 
+  public void storeCompounds(List<String> compounds) {
+    setItem("compounds", packList(compounds, "###"));
+  }
+
   public void storeColumns(String key, Collection<? extends SampleColumn> columns) {
     if (!columns.isEmpty()) {
       SampleColumn first = columns.iterator().next();

@@ -38,8 +38,7 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import t.common.shared.*;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
@@ -455,9 +454,12 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     storeState(getParser());
   }
 
-  @Override
+  // Storage code moved from DataListenerWidget below
+
   public void storeState(StorageParser p) {
-    super.storeState(p);
+    storeColumns(p);
+    storeProbes(p);
+    storeGeneSet(p);
     if (showGuide) {
       p.setItem("OTG.showGuide", "yes");
     } else {
@@ -697,6 +699,118 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     numPendingRequests -= 1;
     if (numPendingRequests == 0) {
       waitDialog.hide();
+    }
+  }
+
+  public void propagateTo(DataViewListener other) {
+    other.datasetsChanged(chosenDatasets);
+    other.sampleClassChanged(chosenSampleClass);
+    other.probesChanged(chosenProbes);
+    other.compoundsChanged(chosenCompounds);
+    other.columnsChanged(chosenColumns);
+    other.customColumnChanged(chosenCustomColumn);
+    other.itemListsChanged(chosenItemLists);
+    other.geneSetChanged(chosenGeneSet);
+    other.clusteringListsChanged(chosenClusteringList);
+  }
+
+  protected StorageParser getParser(Screen s) {
+    return s.manager().getParser();
+  }
+
+  protected void storeColumns(StorageParser p, String key, Collection<? extends SampleColumn> columns) {
+    p.storeColumns(key, columns);
+  }
+
+  public void storeColumns(StorageParser p) {
+    storeColumns(p, "columns", chosenColumns);
+  }
+
+  public static void storeCustomColumn(StorageParser p, DataColumn<?> column) {
+    p.storeCustomColumn(column);
+  }
+
+  // Separator hierarchy for columns:
+  // ### > ::: > ^^^ > $$$
+  protected List<Group> loadColumns(StorageParser p, DataSchema schema, String key,
+      Collection<? extends SampleColumn> expectedColumns, AttributeSet attributes) throws Exception {
+    List<Group> storedColumns = p.getColumns(schema, key, attributes);
+    if (storedColumns == null
+        || StorageParser.packColumns(storedColumns).equals(StorageParser.packColumns(expectedColumns))) {
+      return null;
+    } else {
+      return storedColumns;
+    }
+  }
+
+  public void storeProbes(StorageParser p) {
+    p.setItem("probes", packProbes(chosenProbes));
+  }
+
+  public void storeItemLists(StorageParser p) {
+    p.storeItemLists(chosenItemLists);
+  }
+
+  public void storeGeneSet(StorageParser p) {
+    p.setItem("geneset", (chosenGeneSet != null ? chosenGeneSet.pack() : ""));
+  }
+
+  public void storeClusteringLists(StorageParser p) {
+    p.setItem("clusterings", StorageParser.packItemLists(chosenClusteringList, "###"));
+  }
+
+  private String packCompounds(StorageParser p) {
+    return StorageParser.packList(chosenCompounds, "###");
+  }
+
+  public void storeCompounds(StorageParser p) {
+    p.setItem("compounds", packCompounds(p));
+  }
+
+  public void storeDatasets(StorageParser p) {
+    p.storeDatasets(chosenDatasets);
+  }
+
+  public void storeSampleClass(StorageParser p) {
+    if (chosenSampleClass != null) {
+      p.storeSampleClass(chosenSampleClass);
+    }
+  }
+
+  public List<ItemList> loadItemLists(StorageParser p) {
+    return p.getLists("lists");
+  }
+
+  public List<ItemList> loadClusteringLists(StorageParser p) {
+    return p.getLists("clusterings");
+  }
+
+  public List<ItemList> loadLists(StorageParser p, String name) {
+    return p.getLists(name);
+  }
+
+  public void loadDatasets(StorageParser p) {
+    Dataset[] storedDatasets = p.getDatasets();
+    if (storedDatasets == null
+        || StorageParser.packDatasets(storedDatasets).equals(StorageParser.packDatasets(chosenDatasets))) {
+      return;
+    }
+    changeDatasets(storedDatasets);
+  }
+
+  public void loadCompounds(StorageParser p) {
+    List<String> storedCompounds = p.getCompounds();
+    if (storedCompounds == null || p.packCompounds(storedCompounds).equals(packCompounds(p))) {
+      return;
+    }
+    changeCompounds(storedCompounds);
+  }
+
+  public void loadSampleClass(StorageParser p, AttributeSet attributes) {
+    SampleClass storedClass = p.getSampleClass(attributes);
+    if (storedClass != null && !t.common.client.Utils.packSampleClass(storedClass)
+        .equals(t.common.client.Utils.packSampleClass(chosenSampleClass))) {
+      changeSampleClass(storedClass);
     }
   }
 }

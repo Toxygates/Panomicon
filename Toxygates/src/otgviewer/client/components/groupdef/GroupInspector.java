@@ -193,8 +193,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
       @Override
       protected void selectionChanged(Set<Group> selected) {
         chosenColumns = new ArrayList<Group>(selected);
-        StorageParser p = getParser(screen);
-        storeColumns(p);
+        storeColumns();
         updateConfigureStatus(true);
       }
     };
@@ -310,9 +309,8 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
     chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
     logger.info(chosenColumns.size() + " columns have been chosen");
-    StorageParser p = getParser(screen);
     if (store) {
-      storeColumns(p);
+      storeColumns();
     }
     txtbxGroup.setText("");
     updateConfigureStatus(true);
@@ -428,7 +426,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
       Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
       delegate.groupInspectorDatasetsChanged(enAr);
       sampleService.chooseDatasets(enAr, new PendingAsyncCallback<SampleClass[]>(screen));
-      storeDatasets(getParser(screen));
+      screen.getParser().storeDatasets(chosenDatasets);
       Window
           .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
     }
@@ -476,10 +474,9 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     prepareForNewGroup();
   }
 
-  @Override
-  public void storeColumns(StorageParser p) {
-    super.storeColumns(p);
-    storeColumns(p, "inactiveColumns",
+  private void storeColumns() {
+    screen.getParser().storeColumns("columns", chosenColumns);
+    screen.getParser().storeColumns("inactiveColumns",
         new ArrayList<SampleColumn>(existingGroupsTable.inverseSelection()));
   }
 

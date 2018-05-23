@@ -74,7 +74,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
-        storeCompounds(getParser(RankingScreen.this));
+        RankingScreen.this.getParser().storeCompounds(chosenCompounds);
       }
     };
     //this.addListener(cs);
