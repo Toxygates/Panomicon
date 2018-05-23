@@ -56,8 +56,9 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     filterTools.datasetsChanged(chosenDatasets);
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
-    chosenColumns = getParser().getChosenColumns(schema(), attributes);
     compoundSelector.sampleClassChanged(sampleClass);
+    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    groupInspector.columnsChanged(chosenColumns);
 
     if (visible) {
       try {
