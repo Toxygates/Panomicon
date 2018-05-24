@@ -19,6 +19,7 @@
 package otgviewer.client.components;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -34,12 +35,16 @@ import t.viewer.shared.AppInfo;
  * Tools to select from the available datasets, and then from
  * the available sample macro classes within those datasets.
  */
-public class FilterTools extends DataListenerWidget {
+public class FilterTools extends Composite {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
   final Screen screen;
   final Delegate delegate;
   final SampleServiceAsync sampleService;
+
+  private Logger logger;
+
+  protected Dataset[] chosenDatasets = new Dataset[0];
 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
@@ -52,6 +57,7 @@ public class FilterTools extends DataListenerWidget {
   public FilterTools(final Screen screen, Delegate delegate) {
     this.screen = screen;
     this.delegate = delegate;
+    logger = screen.getLogger();
     sampleService = screen.manager().sampleService();
 
     filterTools = new HorizontalPanel();
@@ -71,7 +77,6 @@ public class FilterTools extends DataListenerWidget {
         FilterTools.this.delegate.filterToolsSampleClassChanged(sc);
       }
     };
-    this.addListener(dfe);
     filterTools.add(dfe);
   }
 
@@ -118,9 +123,8 @@ public class FilterTools extends DataListenerWidget {
     db.show();
   }
 
-  @Override
   public void datasetsChanged(Dataset[] ds) {
-    super.datasetsChanged(ds);
+    chosenDatasets = ds;
     getSampleClasses();
   }
 
@@ -133,5 +137,9 @@ public class FilterTools extends DataListenerWidget {
         dfe.setAvailable(sampleClasses);
       }
     });
+  }
+  
+  public void sampleClassChanged(SampleClass sc) {
+    dfe.sampleClassChanged(sc);
   }
 }
