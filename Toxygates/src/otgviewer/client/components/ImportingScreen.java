@@ -48,6 +48,4 @@ public interface ImportingScreen extends Screen {
   List<Group> chosenColumns();
 
   String[] chosenProbes();
-
-  void propagateTo(DataViewListener other);
 }

@@ -251,19 +251,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  public void propagateTo(DataViewListener other) {
-    other.datasetsChanged(getParser().getDatasets());
-    other.sampleClassChanged(getParser().getSampleClass(attributes()));
-    other.probesChanged(chosenProbes);
-    other.compoundsChanged(getParser().getCompounds());
-    other.columnsChanged(chosenColumns);
-    other.customColumnChanged(getParser().getCustomColumn(schema(), attributes()));
-    other.itemListsChanged(chosenItemLists);
-    other.geneSetChanged(chosenGeneSet);
-    other.clusteringListsChanged(chosenClusteringList);
-  }
-
-  @Override
   public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
