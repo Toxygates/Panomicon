@@ -117,7 +117,6 @@ abstract public class CompoundRanker extends DataListenerWidget {
       }
     };
     listChooser.addStyleName("colored");
-    selector.addListener(listChooser);
 
     csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     initWidget(csVerticalPanel);
