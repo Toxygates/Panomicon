@@ -41,7 +41,7 @@ import t.viewer.client.rpc.ProbeServiceAsync;
  * search for items matching that name (for example pathways). The hits will be displayed. Next,
  * when the user selects one such object, the corresponding probes will be obtained.
  */
-abstract public class ProbeSelector extends DataListenerWidget implements
+abstract public class ProbeSelector extends Composite implements
     RequiresResize {
 
   private String[] loadedProbes;
@@ -143,6 +143,8 @@ abstract public class ProbeSelector extends DataListenerWidget implements
    * @param item
    */
   abstract protected void getProbes(Term term);
+
+  abstract public void probesChanged(String[] probes);
 
   @Override
   public void onResize() {

@@ -258,7 +258,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   protected void addProbeSelectionTools(StackLayoutPanel probeSelStack) {
     ProbeSelector psel = probeSelector();
     probeSelStack.add(psel, "Keyword search", STACK_ITEM_HEIGHT);
-    addListener(psel);
 
     if (hasChembl() || hasDrugbank()) {
       Widget targets =
@@ -319,7 +318,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
       @Override
       public void probesChanged(String[] probes) {
-        super.probesChanged(probes);
         addProbes(probes);
       }
     };
