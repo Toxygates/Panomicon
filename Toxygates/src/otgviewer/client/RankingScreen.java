@@ -68,7 +68,6 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
         //Think about changing the way we propagate events and data.
       }      
     };
-    //this.addListener(filterTools);
 
     compoundSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
@@ -77,7 +76,6 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
         RankingScreen.this.getParser().storeCompounds(chosenCompounds);
       }
     };
-    //this.addListener(cs);
     compoundSelector.addStyleName("compoundSelector");
   }
 

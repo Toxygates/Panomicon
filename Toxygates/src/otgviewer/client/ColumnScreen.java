@@ -97,12 +97,10 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         ColumnScreen.this.getParser().storeCompounds(chosenCompounds);
       }
     };
-    // this.addListener(cs);
     compoundSelector.addStyleName("compoundSelector");
 
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
-    // this.addListener(filterTools);
   }
 
   @Override
@@ -121,7 +119,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public Widget content() {
     groupInspector = factory().groupInspector(compoundSelector, this, this);
-    // this.addListener(groupInspector);
     compoundSelector.addListener(groupInspector);
     groupInspector.datasetsChanged(chosenDatasets);
     groupInspector.addStaticGroups(appInfo().predefinedSampleGroups());

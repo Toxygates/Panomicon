@@ -204,7 +204,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     }
 
     geneSetsMenu = factory().geneSetsMenuItem(this);
-    //addListener(geneSetsMenu);
     addMenu(geneSetsMenu.menuItem());
 
     MenuItem mColumns = new MenuItem("View", false, menuBar);
