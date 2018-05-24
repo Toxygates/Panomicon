@@ -232,8 +232,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     addMenu(mActions);
     
     if (factory().hasHeatMapMenu()) {
-      heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
-      addAnalysisMenuItem(heatMapMenu);
+      menuBar.addItem(new MenuItem("Show heat map", () -> makeHeatMap()));
     }
   }
   

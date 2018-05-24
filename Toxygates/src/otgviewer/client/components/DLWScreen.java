@@ -76,8 +76,6 @@ public class DLWScreen extends DataListenerWidget implements Screen,
    */
   protected boolean configured = false;
   private List<MenuItem> menuItems = new ArrayList<MenuItem>();
-  private List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
-
 
   /**
    * Widgets to be shown below the main content area, if any.
@@ -577,18 +575,8 @@ public class DLWScreen extends DataListenerWidget implements Screen,
   }
 
   @Override
-  public void addAnalysisMenuItem(MenuItem mi) {
-    analysisMenuItems.add(mi);
-  }
-
-  @Override
   public List<MenuItem> menuItems() {
     return menuItems;
-  }
-
-  @Override
-  public List<MenuItem> analysisMenuItems() {
-    return analysisMenuItems;
   }
 
   /**

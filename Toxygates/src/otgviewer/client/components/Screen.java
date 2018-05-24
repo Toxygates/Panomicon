@@ -70,7 +70,6 @@ public interface Screen {
   String key();
   boolean enabled();
   Widget widget();
-  List<MenuItem> analysisMenuItems();
   List<MenuItem> menuItems();
   String additionalNavlinkStyle();
 
@@ -85,8 +84,6 @@ public interface Screen {
   void loadPersistedState();
 
   void enqueue(QueuedAction qa);
-
-  void addAnalysisMenuItem(MenuItem mi);
 
   void show();
 
