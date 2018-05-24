@@ -28,7 +28,8 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.components.*;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
-import t.common.shared.sample.*;
+import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 import t.viewer.client.table.ExpressionTable;
@@ -78,6 +79,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     expressionTable.probesChanged(chosenProbes);
 
     geneSetToolbar.geneSetChanged(chosenGeneSet);
+
+    geneSetsMenu.itemListsChanged(chosenItemLists);
   }
 
   DataScreen(ScreenManager man, List<MenuItem> intermineItems) {
@@ -107,6 +110,11 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public List<Group> chosenColumns() {
     return chosenColumns;
+  }
+
+  @Override
+  public String[] chosenProbes() {
+    return chosenProbes;
   }
 
   protected GeneSetToolbar makeGeneSetSelector() {
@@ -240,16 +248,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
     itemListsChanged(itemLists);
     clusteringListsChanged(clusteringLists);
-  }
-
-  @Override
-  public List<Sample> getAllSamples() {
-    List<Sample> list = new ArrayList<Sample>();
-    for (Group g : chosenColumns) {
-      List<Sample> ss = Arrays.asList(g.getSamples());
-      list.addAll(ss);
-    }
-    return list;
   }
 
   @Override

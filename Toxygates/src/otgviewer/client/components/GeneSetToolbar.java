@@ -29,7 +29,7 @@ import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
 
-public class GeneSetToolbar extends DataListenerWidget {
+public class GeneSetToolbar extends Composite {
 
   public static final String ALL_PROBES = "All Probes";
   private static final String PATH_SEPARATOR = " / ";
@@ -80,11 +80,11 @@ public class GeneSetToolbar extends DataListenerWidget {
   }
 
   private void geneSetEditorEdit() {
-    geneSetEditor().edit(screen.chosenGeneSet.name());
+    geneSetEditor().edit((StringList) screen.chosenGeneSet);
   }
 
   private GeneSetEditor geneSetEditor() {
-    return GeneSetEditor.make(screen, this);
+    return GeneSetEditor.make(screen);
   }
 
   public Widget selector() {
@@ -96,9 +96,7 @@ public class GeneSetToolbar extends DataListenerWidget {
    */
   public void itemsChanged(List<String> items) {};
 
-  @Override
   public void geneSetChanged(ItemList geneSet) {
-    super.geneSetChanged(geneSet);
 
     btnEdit.setEnabled(false);
 

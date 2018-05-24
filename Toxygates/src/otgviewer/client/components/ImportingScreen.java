@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 
 import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
 import t.viewer.shared.intermine.IntermineInstance;
 
 public interface ImportingScreen extends Screen {
@@ -48,7 +47,7 @@ public interface ImportingScreen extends Screen {
 
   List<Group> chosenColumns();
 
-  List<Sample> getAllSamples();
+  String[] chosenProbes();
 
   void propagateTo(DataViewListener other);
 }

@@ -21,6 +21,7 @@ package otgviewer.client.components;
 import static t.common.client.Utils.makeButton;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -38,7 +39,7 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 
-public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
+public class GeneSetEditor extends Composite implements HasSaveActionHandler {
 
   private static final String NEW_TITLE_PREFIX = "NewGeneSet";
 
@@ -76,10 +77,15 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private List<SaveActionHandler> saveActions = new ArrayList<SaveActionHandler>();
 
+  private Logger logger;
+
+  public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+
   public GeneSetEditor(ImportingScreen screen) {
     super();
 
     this.screen = screen;
+    logger = screen.getLogger();
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
     probeService = screen.manager().probeService();
@@ -91,10 +97,9 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
    * Construct a gene set editor in a DataScreen and set up listeners
    * appropriately.
    * @param screen
-   * @param parent
    * @return
    */
-  public static GeneSetEditor make(final DataScreen screen, final DataListenerWidget parent) {
+  public static GeneSetEditor make(final DataScreen screen) {
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {
       @Override
@@ -109,7 +114,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       @Override
       public void onCanceled() {}
     });
-    parent.addListener(gse);
     return gse;
   }
   
@@ -169,10 +173,10 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
           }
         }
 
-        probesChanged(listedProbes.toArray(new String[0]));
+        setProbes(listedProbes.toArray(new String[0]));
       });
     
-    Button removeAll = makeButton("Remove all probes", () -> probesChanged(new String[0]));
+    Button removeAll = makeButton("Remove all probes", () -> setProbes(new String[0]));
 
     buttons.add(removeSelected);
     buttons.add(removeAll);
@@ -449,8 +453,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    probeService.identifiersToProbes(probes, true, false, titleMatch, 
-        screen.getAllSamples(),
+    probeService.identifiersToProbes(probes, true, false, titleMatch, Group.getAllSamples(screen.chosenColumns()),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain manual probes (technical error).") {
           @Override
@@ -570,11 +573,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     return null;
   }
 
-  /**
-   * The incoming probes signal will set the probes well as call the outgoing signal.
-   */
-  @Override
-  public void probesChanged(String[] probes) {
+  private void setProbes(String[] probes) {
     probesList.clear();
     for (String p : probes) {
       // TODO look up syms here?
@@ -582,21 +581,18 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     }
     listedProbes.clear();
     listedProbes.addAll(Arrays.asList(probes));
-
-    super.probesChanged(probes); // calls changeProbes
   }
 
-  @Override
-  public void columnsChanged(List<Group> cs) {
-    super.columnsChanged(cs);
+  private void setColumns(List<Group> cs) {
     Stream<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
-    compounds.forEach(c -> compoundList.addItem(c));    
+    compounds.forEach(c -> compoundList.addItem(c));
   }
 
   public void createNew(String[] initProbes) {
-    screen.propagateTo(this);
-    chosenProbes = initProbes;
+    chosenItemLists = screen.itemLists();
+    setProbes(initProbes);
+    setColumns(screen.chosenColumns());
 
     originalProbes = null;
     originalTitle = getAvailableName();
@@ -605,11 +601,13 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     dialog.show();
   }
 
-  public void edit(String name) {
-    screen.propagateTo(this);
+  public void edit(StringList stringList) {
+    chosenItemLists = screen.itemLists();
+    setProbes(stringList.items());
+    setColumns(screen.chosenColumns());
 
     originalProbes = new HashSet<String>(listedProbes);
-    originalTitle = name;
+    originalTitle = stringList.name();
     editingExistingGeneSet = true;
     titleText.setText(originalTitle);
     dialog.show();

@@ -19,6 +19,7 @@
 package otgviewer.client;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -30,6 +31,8 @@ import otgviewer.client.components.*;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
@@ -54,13 +57,17 @@ abstract public class ProbeSelector extends Composite implements
   private ListBox itemList;
   private Button addButton;
 
-  private Screen screen;
+  private ImportingScreen screen;
 
   private final ProbeServiceAsync probeService;
 
   private final static String CHILD_WIDTH = "100%";
 
-  public ProbeSelector(Screen screen, String label, boolean wb) {
+  public List<Sample> getAllSamples() {
+    return Group.getAllSamples(screen.chosenColumns());
+  }
+
+  public ProbeSelector(ImportingScreen screen, String label, boolean wb) {
     this.screen = screen;
     this.probeService = screen.manager().probeService();
     this.withButton = wb;

@@ -29,14 +29,13 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GeneSetEditor;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
 
-public class GeneSetsMenuItem extends DataListenerWidget {
+public class GeneSetsMenuItem extends Composite {
 
   protected final Logger logger = SharedUtils.getLogger("GeneSetsMenuItem");
 
@@ -355,9 +354,9 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void geneSetEditor(@Nullable final StringList list) {
-    GeneSetEditor gse = GeneSetEditor.make(screen, this); 
+    GeneSetEditor gse = GeneSetEditor.make(screen);
     if (list != null) {
-      gse.edit(list.name());
+      gse.edit(list);
     } else {
       gse.createNew(screen.displayedAtomicProbes());
     } 
@@ -370,9 +369,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
    * 
    * @see otgviewer.client.DataScreen#show()
    */
-  @Override
   public void itemListsChanged(List<ItemList> lists) {
-    super.itemListsChanged(lists);
     root.clearItems();
     createMenuItem();
   }
@@ -384,9 +381,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
    * 
    * @see otgviewer.client.DataScreen#show()
    */
-  @Override
   public void clusteringListsChanged(List<ItemList> lists) {
-    super.clusteringListsChanged(lists);
     root.clearItems();
     createMenuItem();
   }
