@@ -39,6 +39,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   public static final String key = "rank";
 
   private RankingCompoundSelector compoundSelector;
+  private CompoundRanker compoundRanker;
   private FilterTools filterTools;
   private ScrollPanel sp;
 
@@ -60,14 +61,37 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
 
+    compoundRanker = factory().compoundRanker(this);
+
     compoundSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
-        RankingScreen.this.getParser().storeCompounds(chosenCompounds);
+        RankingScreen.this.getParser().storeCompounds(compounds);
+        compoundRanker.compoundsChanged(compounds);
+      }
+
+      @Override
+      public void sampleClassChanged(SampleClass sc) {
+        super.sampleClassChanged(sc);
+        compoundRanker.sampleClassChanged(sc);
+      }
+
+      @Override
+      public void itemListsChanged(List<ItemList> lists) {
+        super.itemListsChanged(lists);
+        compoundRanker.itemListsChanged(lists);
+      }
+
+      @Override
+      protected void changeAvailableCompounds(List<String> compounds) {
+        super.changeAvailableCompounds(compounds);
+        compoundRanker.availableCompoundsChanged(compounds);
       }
     };
     compoundSelector.addStyleName("compoundSelector");
+
+    compoundRanker.setSelector(compoundSelector);
   }
 
   @Override
@@ -80,8 +104,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
 
   @Override
   public Widget content() {
-    CompoundRanker cr = factory().compoundRanker(this, compoundSelector);
-    sp = makeScrolled(cr);
+    sp = makeScrolled(compoundRanker);
     return sp;
   }
 

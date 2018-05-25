@@ -58,6 +58,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
     chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    List<String> compounds = getParser().getCompounds();
+    groupInspector.compoundsChanged(compounds);
     groupInspector.columnsChanged(chosenColumns);
 
     if (visible) {
@@ -83,7 +85,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
     // This needs to happen after groupInspector.inactiveColumnsChanged, which causes
     // the compound selector's selection to be cleared.
-    compoundSelector.compoundsChanged(getParser().getCompounds());
+    compoundSelector.compoundsChanged(compounds);
   }
 
   public ColumnScreen(ScreenManager man) {
@@ -94,7 +96,14 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
-        ColumnScreen.this.getParser().storeCompounds(chosenCompounds);
+        groupInspector.compoundsChanged(compounds);
+        ColumnScreen.this.getParser().storeCompounds(compounds);
+      }
+
+      @Override
+      public void sampleClassChanged(SampleClass sc) {
+        super.sampleClassChanged(sc);
+        groupInspector.sampleClassChanged(sc);
       }
     };
     compoundSelector.addStyleName("compoundSelector");
@@ -119,7 +128,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public Widget content() {
     groupInspector = factory().groupInspector(compoundSelector, this, this);
-    compoundSelector.addListener(groupInspector);
     groupInspector.datasetsChanged(chosenDatasets);
     groupInspector.addStaticGroups(appInfo().predefinedSampleGroups());
     return groupInspector;
@@ -169,6 +177,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void filterToolsSampleClassChanged(SampleClass sc) {
     getParser().storeSampleClass(sc);
     compoundSelector.sampleClassChanged(sc);
+    groupInspector.sampleClassChanged(sc);
   }
 
   // GroupInspector.Delegate methods

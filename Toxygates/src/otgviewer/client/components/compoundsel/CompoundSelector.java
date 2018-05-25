@@ -19,6 +19,7 @@
 package otgviewer.client.components.compoundsel;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -26,10 +27,10 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import t.common.client.components.SetEditor;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.StackedListEditor;
@@ -40,7 +41,7 @@ import t.viewer.client.rpc.SampleServiceAsync;
  * 
  * Receives: dataFilter Emits: compounds
  */
-public class CompoundSelector extends DataListenerWidget implements RequiresResize {
+public class CompoundSelector extends Composite implements RequiresResize, StackedListEditor.Delegate {
 
   protected final SampleServiceAsync sampleService;
 
@@ -53,6 +54,13 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   private final String majorParameter;
 
   private final static int MAX_AUTO_SEL = 20;
+
+  protected Logger logger;
+
+  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected SampleClass chosenSampleClass;
+  protected List<String> chosenCompounds = new ArrayList<String>();
+  public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
 
   public Delegate delegate() {
     return delegate;
@@ -70,6 +78,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   public CompoundSelector(final Screen screen, Delegate delegate, String heading,
       boolean withListSelector, boolean withFreeEdit) {
     this.screen = screen;
+    logger = screen.getLogger();
     this.delegate = delegate;
     this.sampleService = screen.manager().sampleService();
     dp = new DockLayoutPanel(Unit.PX);
@@ -87,7 +96,6 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
     final Collection<StringList> predefLists =
         (isAdjuvant ? TemporaryCompoundLists.predefinedLists() : new ArrayList<StringList>());
-
     compoundEditor =
         new StackedListEditor(this, "compounds", heading, MAX_AUTO_SEL, predefLists,
             withListSelector, withFreeEdit) {
@@ -119,15 +127,14 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
     compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());
   }
 
-  @Override
   public void sampleClassChanged(SampleClass sc) {
-    super.sampleClassChanged(sc);
+    chosenSampleClass = sc;
     loadMajors();
   }
 
   @Override
   public void itemListsChanged(List<ItemList> lists) {
-    super.itemListsChanged(lists);
+    chosenItemLists = lists;
     compoundEditor.setLists(lists);
   }
 
@@ -156,10 +163,17 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
         });
   }
 
-  @Override
   public void compoundsChanged(List<String> compounds) {
-    super.compoundsChanged(compounds);
+    chosenCompounds = compounds;
     setSelection(compounds);
+  }
+
+  public void changeCompounds(List<String> compounds) {
+    chosenCompounds = compounds;
+  }
+
+  protected void changeAvailableCompounds(List<String> compounds) {
+
   }
 
   public void setSelection(List<String> compounds) {
@@ -177,5 +191,4 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   public void resizeInterface() {
     dp.setWidgetSize(north, 40);
   }
-
 }
