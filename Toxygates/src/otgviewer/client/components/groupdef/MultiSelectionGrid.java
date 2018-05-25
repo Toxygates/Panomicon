@@ -23,10 +23,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import t.common.shared.*;
@@ -39,7 +37,7 @@ import t.model.sample.Attribute;
  * A SelectionTDGrid with multiple sections, one for each data filter. Dispatches compound and
  * filter change signals to subgrids appropriately.
  */
-public class MultiSelectionGrid extends DataListenerWidget implements SelectionTDGrid.UnitListener {
+public class MultiSelectionGrid extends Composite implements SelectionTDGrid.UnitListener {
 
   private SelectionTDGrid currentGrid;
   private Map<SampleClass, SelectionTDGrid> sections = new HashMap<SampleClass, SelectionTDGrid>();
@@ -47,6 +45,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   private VerticalPanel vp;
   private final Screen screen;
   protected final Logger logger = SharedUtils.getLogger("msg");
+
+  protected List<String> chosenCompounds = new ArrayList<String>();
 
   public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {
     vp = new VerticalPanel();
@@ -118,7 +118,6 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
-  @Override
   public void sampleClassChanged(SampleClass sc) {
     SelectionTDGrid g = findOrCreateSection(screen, sc, false);
     if (g != currentGrid) {
@@ -128,8 +127,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
-  @Override
   public void compoundsChanged(List<String> compounds) {
+    chosenCompounds = compounds;
     if (currentGrid != null) {
       currentGrid.compoundsChanged(compounds);
     }

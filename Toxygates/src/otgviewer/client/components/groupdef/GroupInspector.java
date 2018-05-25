@@ -101,7 +101,6 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
     msg = new MultiSelectionGrid(scr, this);
     vp.add(msg);
-    addListener(msg);
 
     vp.setWidth("440px");
 
@@ -363,15 +362,11 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
   @Override
   public void sampleClassChanged(SampleClass sc) {
+    super.sampleClassChanged(sc);
     if (!sc.equals(chosenSampleClass)) {
-      super.sampleClassChanged(sc);
-      // groups.clear();
-      // existingGroupsTable.setItems(new ArrayList<Group>(), true);
       compoundsChanged(new ArrayList<String>());
-      // newGroup();
-    } else {
-      super.sampleClassChanged(sc);
     }
+    msg.sampleClassChanged(sc);
   }
 
   @Override
@@ -456,6 +451,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     } else {
       setEditing(true);
     }
+    msg.compoundsChanged(compounds);
   }
 
   public void inactiveColumnsChanged(List<Group> columns) {
