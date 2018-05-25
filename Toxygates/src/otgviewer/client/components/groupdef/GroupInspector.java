@@ -239,7 +239,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
    * @param selectedUnits
    */
   @Override
-  public void unitsChanged(DataListenerWidget sender, List<Unit> selectedUnits) {
+  public void unitsChanged(List<Unit> selectedUnits) {
     if (selectedUnits.isEmpty() && nameIsAutoGen) {
       //retract the previous suggestion
       txtbxGroup.setText("");
@@ -250,7 +250,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   }
 
   @Override
-  public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
+  public void availableUnitsChanged(List<Pair<Unit, Unit>> units) {
     availableUnits = units;
   }
 

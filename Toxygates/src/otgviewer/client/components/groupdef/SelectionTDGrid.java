@@ -29,7 +29,6 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.SampleDetailTable;
 import otgviewer.client.TimeDoseGrid;
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
@@ -119,16 +118,15 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     /**
      * Indicates that the selection has changed.
      * 
-     * @param sender
      * @param units
      */
-    void unitsChanged(DataListenerWidget sender, List<Unit> units);
+    void unitsChanged(List<Unit> units);
 
     /**
      * Indicates that the available units have changed. Passed as pairs of treated and control
      * units.
      */
-    void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units);
+    void availableUnitsChanged(List<Pair<Unit, Unit>> units);
   }
 
   protected abstract UnitUI makeUnitUI(final Unit unit);
@@ -178,7 +176,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   private void fireUnitsChanged() {
     if (listener != null) {
-      listener.unitsChanged(this, getSelectedUnits(true));
+      listener.unitsChanged(getSelectedUnits(true));
     }
   }
 
@@ -417,7 +415,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
 
     if (listener != null) {
-      listener.availableUnitsChanged(this, availableUnits);
+      listener.availableUnitsChanged(availableUnits);
     }
   }
   

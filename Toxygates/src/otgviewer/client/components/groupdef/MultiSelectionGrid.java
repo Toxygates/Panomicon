@@ -75,11 +75,11 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   }
 
   @Override
-  public void unitsChanged(DataListenerWidget sender, List<Unit> units) {
+  public void unitsChanged(List<Unit> units) {
     List<Unit> fullSel = fullSelection(true);
     List<Unit> fullSelAll = fullSelection(false);
     if (listener != null) {
-      listener.unitsChanged(this, fullSel);
+      listener.unitsChanged(fullSel);
     }
     logger.info("U.Chgd. Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
     if (fullSelAll.size() == expectedSelection.length && expectedSelection.length > 0) {
@@ -89,10 +89,10 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   }
 
   @Override
-  public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
+  public void availableUnitsChanged(List<Pair<Unit, Unit>> units) {
     List<Pair<Unit, Unit>> fullAvailability = allAvailable();
     if (listener != null) {
-      listener.availableUnitsChanged(this, fullAvailability);
+      listener.availableUnitsChanged(fullAvailability);
     }
   }
 
