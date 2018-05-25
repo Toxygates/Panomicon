@@ -58,16 +58,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
         man.resources().compoundRankingHTML(),
         man.resources().compoundRankingHelp());
     chosenDatasets = appInfo().datasets();
-    filterTools = new FilterTools(this) {
-      @Override
-      public void datasetsChanged(Dataset[] ds) {
-        super.datasetsChanged(ds);
-        compoundSelector.datasetsChanged(ds);
-        //TODO: should really change the datasets in the RankingScreen
-        //but that would cause an infinite loop. 
-        //Think about changing the way we propagate events and data.
-      }      
-    };
+    filterTools = new FilterTools(this);
 
     compoundSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
