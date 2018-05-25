@@ -39,13 +39,6 @@ import t.model.sample.AttributeSet;
 import t.viewer.client.PersistedState;
 import t.viewer.client.Utils;
 
-/**
- * Screen implementation based on DLWScreen. Instead of inheriting from
- * DataListenerWidget, we delegate data-related calls to a delegate object.
- * 
- * This class is meant to eventually become the canonical implementation of
- * Screen.
- */
 public abstract class MinimalScreen implements Screen {
     
   private String title;

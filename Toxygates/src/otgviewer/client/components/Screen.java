@@ -34,10 +34,6 @@ import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
 import t.viewer.shared.AppInfo;
 
-/**
- * Minimal screen interface encapsulating the core functionality in DLWScreen that will need to be
- * implemented by new screens not deriving from DataListenerWidget.
- */
 public interface Screen {
   default AppInfo appInfo() {
     return manager().appInfo();
