@@ -40,7 +40,8 @@ import otgviewer.client.StandardColumns;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import t.common.client.ImageClickCell;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -366,7 +367,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   @Override
   protected Cell<String> toolCell() {
-    return new ToolCell(this);
+    return new ToolCell();
   }
 
   private void addSynthColumn(ManagedMatrixInfo matrixInfo, int column, String borderStyle) {
@@ -637,7 +638,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     for (Group g : columns) {
       allCs.addAll(SampleClassUtils.classes(Arrays.asList(g.getSamples())));
     }
-    changeSampleClass(SampleClass.intersection(allCs));
+    sampleClassChanged(SampleClass.intersection(allCs));
     logger.info("Set SC to: " + chosenSampleClass.toString());
 
     analysisTools.columnsChanged(columns);
@@ -767,7 +768,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   class ToolCell extends ImageClickCell.StringImageClickCell {
 
-    public ToolCell(DataListenerWidget owner) {
+    public ToolCell() {
       super(resources.chart(), "charts", false);
     }
 

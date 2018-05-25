@@ -19,6 +19,7 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -34,13 +35,15 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.RequiresResize;
 
 import otgviewer.client.StandardColumns;
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.model.SampleClass;
 import t.viewer.client.PersistedState;
 
 
@@ -49,7 +52,7 @@ import t.viewer.client.PersistedState;
  * columns. It also manages a list of named column sections. Columns in a given section are adjacent
  * to each other.
  */
-abstract public class RichTable<T> extends DataListenerWidget implements RequiresResize {
+abstract public class RichTable<T> extends Composite implements RequiresResize {
   protected DataGrid<T> grid;
   protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
   protected int highlightedRow = -1;
@@ -62,6 +65,12 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   protected List<String> columnSections = new ArrayList<String>();
   // Track the number of columns in each section
   protected Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
+
+  Logger logger;
+
+  protected SampleClass chosenSampleClass;
+  protected String[] chosenProbes = new String[0];
+  protected List<Group> chosenColumns = new ArrayList<Group>();
 
   public interface Resources extends DataGrid.Resources {
     @Override
@@ -78,6 +87,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     this.screen = screen;
     this.schema = screen.manager().schema();
     this.style = style;
+    logger = screen.getLogger();
     hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
     grid = new DataGrid<T>(50, resources) {
@@ -475,5 +485,17 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   
   public List<PersistedState<?>> getPersistedItems() {
     return Arrays.asList(columnState);    
+  }
+
+  public void columnsChanged(List<Group> columns) {
+    chosenColumns = columns;
+  }
+
+  public void sampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
+  }
+
+  public void probesChanged(String[] probes) {
+    chosenProbes = probes;
   }
 }
