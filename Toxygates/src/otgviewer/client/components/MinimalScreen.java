@@ -31,7 +31,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.DLWScreen.QueuedAction;
+import otgviewer.client.QueuedAction;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -150,7 +150,7 @@ public abstract class MinimalScreen implements Screen {
 
   protected void runActions() {
     for (QueuedAction qa : actionQueue) {
-      logger.info("Action queue: run " + qa.name);
+      logger.info("Action queue: run " + qa.name());
       qa.run();
     }
     actionQueue.clear();
@@ -166,7 +166,7 @@ public abstract class MinimalScreen implements Screen {
   public void enqueue(QueuedAction qa) {
     actionQueue.remove(qa); // remove it if it's already there (so we can update it)
     actionQueue.add(qa);
-    logger.info("Action queue: added " + qa.name);
+    logger.info("Action queue: added " + qa.name());
   }
 
   public MinimalScreen(String title, String key, ScreenManager man,

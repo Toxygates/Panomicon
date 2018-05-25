@@ -26,9 +26,7 @@ import java.util.logging.Logger;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
-import otgviewer.client.Resources;
-import otgviewer.client.UIFactory;
-import otgviewer.client.components.DLWScreen.QueuedAction;
+import otgviewer.client.*;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
