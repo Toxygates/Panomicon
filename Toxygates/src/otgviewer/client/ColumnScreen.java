@@ -92,20 +92,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     super("Sample groups", key, man, man.resources().groupDefinitionHTML(),
         man.resources().groupDefinitionHelp());
 
-    compoundSelector = new CompoundSelector(this, man.schema().majorParameter().title(), true, true) {
-      @Override
-      public void changeCompounds(List<String> compounds) {
-        super.changeCompounds(compounds);
-        groupInspector.compoundsChanged(compounds);
-        ColumnScreen.this.getParser().storeCompounds(compounds);
-      }
-
-      @Override
-      public void sampleClassChanged(SampleClass sc) {
-        super.sampleClassChanged(sc);
-        groupInspector.sampleClassChanged(sc);
-      }
-    };
+    compoundSelector = new CompoundSelector(this, man.schema().majorParameter().title(), true, true);
     compoundSelector.addStyleName("compoundSelector");
 
     chosenDatasets = appInfo().datasets();
@@ -196,5 +183,16 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
     getParser().storeItemLists(itemLists);
+  }
+
+  @Override
+  public void CompoundSelectorCompoundsChanged(List<String> compounds) {
+    groupInspector.compoundsChanged(compounds);
+    ColumnScreen.this.getParser().storeCompounds(compounds);
+  }
+
+  @Override
+  public void CompoundSelectorSampleClassChanged(SampleClass sc) {
+    groupInspector.sampleClassChanged(sc);
   }
 }

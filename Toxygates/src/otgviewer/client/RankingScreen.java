@@ -66,27 +66,14 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
 
     compoundSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
-      public void changeCompounds(List<String> compounds) {
-        super.changeCompounds(compounds);
-        RankingScreen.this.getParser().storeCompounds(compounds);
-        compoundRanker.compoundsChanged(compounds);
-      }
-
-      @Override
-      public void sampleClassChanged(SampleClass sc) {
-        super.sampleClassChanged(sc);
-        compoundRanker.sampleClassChanged(sc);
-      }
-
-      @Override
       public void itemListsChanged(List<ItemList> lists) {
         super.itemListsChanged(lists);
         compoundRanker.itemListsChanged(lists);
       }
 
       @Override
-      protected void changeAvailableCompounds(List<String> compounds) {
-        super.changeAvailableCompounds(compounds);
+      protected void availableCompoundsChanged(List<String> compounds) {
+        super.availableCompoundsChanged(compounds);
         compoundRanker.availableCompoundsChanged(compounds);
       }
     };
@@ -130,6 +117,17 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   @Override
   public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
     getParser().storeItemLists(itemLists);
+  }
+
+  @Override
+  public void CompoundSelectorCompoundsChanged(List<String> compounds) {
+    RankingScreen.this.getParser().storeCompounds(compounds);
+    compoundRanker.compoundsChanged(compounds);
+  }
+
+  @Override
+  public void CompoundSelectorSampleClassChanged(SampleClass sc) {
+    compoundRanker.sampleClassChanged(sc);
   }
 
   // FilterTools.Delegate method

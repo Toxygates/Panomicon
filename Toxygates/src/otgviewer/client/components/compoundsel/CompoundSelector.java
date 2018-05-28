@@ -68,6 +68,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   public interface Delegate {
     void CompoundSelectorItemListsChanged(List<ItemList> itemLists);
+
+    void CompoundSelectorCompoundsChanged(List<String> compounds);
+
+    void CompoundSelectorSampleClassChanged(SampleClass sampleClass);
   }
 
   public <T extends Screen & Delegate> CompoundSelector(T screen, String heading,
@@ -104,7 +108,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
             List<String> r = new ArrayList<String>();
             r.addAll(selected);
             Collections.sort(r);
-            changeCompounds(r);
+            setCompounds(r);
           }
 
           @Override
@@ -127,15 +131,14 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());
   }
 
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
-    loadMajors();
+  @Override
+  public void onResize() {
+    // Since this is not a ResizeComposite, we need to pass on this signal manually
+    dp.onResize();
   }
 
-  @Override
-  public void itemListsChanged(List<ItemList> lists) {
-    chosenItemLists = lists;
-    compoundEditor.setLists(lists);
+  public void resizeInterface() {
+    dp.setWidgetSize(north, 40);
   }
 
   public List<String> getCompounds() {
@@ -155,7 +158,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
             Arrays.sort(result);
             List<String> r = new ArrayList<String>((Arrays.asList(result)));
             compoundEditor.setItems(r, false, true);
-            changeAvailableCompounds(Arrays.asList(result));
+            availableCompoundsChanged(Arrays.asList(result));
             if (!compoundEditor.getSelection().isEmpty()) {
               compoundEditor.triggerChange();
             }
@@ -163,32 +166,34 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
         });
   }
 
+  public void setSelection(List<String> compounds) {
+    compoundEditor.setSelection(compounds);
+    Collections.sort(compounds);
+    setCompounds(compounds);
+  }
+
+  private void setCompounds(List<String> compounds) {
+    chosenCompounds = compounds;
+    delegate.CompoundSelectorCompoundsChanged(compounds);
+  }
+
+  public void sampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
+    loadMajors();
+    delegate.CompoundSelectorSampleClassChanged(sc);
+  }
+
+  @Override
+  public void itemListsChanged(List<ItemList> lists) {
+    chosenItemLists = lists;
+    compoundEditor.setLists(lists);
+  }
+
   public void compoundsChanged(List<String> compounds) {
     chosenCompounds = compounds;
     setSelection(compounds);
   }
 
-  public void changeCompounds(List<String> compounds) {
-    chosenCompounds = compounds;
-  }
-
-  protected void changeAvailableCompounds(List<String> compounds) {
-
-  }
-
-  public void setSelection(List<String> compounds) {
-    compoundEditor.setSelection(compounds);
-    Collections.sort(compounds);
-    changeCompounds(compounds);
-  }
-
-  @Override
-  public void onResize() {
-    // Since this is not a ResizeComposite, we need to pass on this signal manually
-    dp.onResize();
-  }
-
-  public void resizeInterface() {
-    dp.setWidgetSize(north, 40);
+  protected void availableCompoundsChanged(List<String> compounds) {
   }
 }
