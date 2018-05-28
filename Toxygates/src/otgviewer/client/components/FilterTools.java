@@ -72,8 +72,8 @@ public class FilterTools extends Composite {
 
     dfe = new DataFilterEditor(screen) {
       @Override
-      protected void changeSampleClass(SampleClass sc) {
-        super.changeSampleClass(sc);
+      protected void setSampleClass(SampleClass sc) {
+        super.setSampleClass(sc);
         FilterTools.this.delegate.filterToolsSampleClassChanged(sc);
       }
     };

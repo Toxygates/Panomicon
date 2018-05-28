@@ -370,14 +370,10 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void sampleClassChanged(SampleClass sc) {
-    changeSampleClass(sc);
+    chosenSampleClass = sc;
     if (!sc.equals(chosenSampleClass)) {
       compoundsChanged(new ArrayList<String>());
     }
-  }
-
-  protected void changeSampleClass(SampleClass sc) {
-    chosenSampleClass = sc;
     msg.sampleClassChanged(sc);
   }
 
