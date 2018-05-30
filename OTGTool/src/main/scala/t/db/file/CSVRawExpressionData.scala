@@ -72,7 +72,6 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
 //          s"Wrong number of column headers - expected $expectedColumns got ${columns.size}")
 //    }
 //
-    var call: Vector[T] = Vector.empty
     for (l <- ls) {
       lineHandler(columns, l)
     }
@@ -83,23 +82,33 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
   private[this] def readValuesFromTable[T](file: String, ss: Set[Sample],
     extract: String => T): CMap[Sample, CMap[String, T]] = {
 
-    var raw: Vector[Array[String]] = Vector.empty
-    val columns = traverseFile(file, (columns, l) => {
+    var raw: Vector[Seq[String]] = Vector.empty
+    var keptColumns: Option[Seq[String]] = None
+    var keptIndices: Option[Seq[Int]] = None
+    
+    traverseFile(file, (columns, l) => {
+      
+      if(keptColumns == None) {
+        keptColumns = Some(Seq(columns.head) ++
+           columns.map(unquote(_)).filter(x => ss.contains(Sample(x))))
+        keptIndices = Some(Seq(0) ++
+           columns.indices.filter(i => ss.contains(Sample(unquote(columns(i))))))
+      }
+      
       val spl = l.split(",", -1).map(_.trim)
       if (expectedColumns != None && spl.size < expectedColumns.get) {
         val wmsg =
             s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
         parseWarningHandler(wmsg)
       } else {
-        raw :+= spl
+        raw :+= keptIndices.get.map(spl)
       }
     })
 
     var r = Map[Sample, CMap[String, T]]()
-    for (c <- 1 until columns.size;
-      sampleId = unquote(columns(c));
-      sample = Sample(sampleId);
-      if ss.contains(sample)) {
+    for (c <- 1 until keptColumns.get.size;
+      sampleId = keptColumns.get(c);
+      sample = Sample(sampleId)) {      
 
       var col = scala.collection.mutable.Map[String, T]()
       col ++= raw.map(r => {

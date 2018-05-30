@@ -51,10 +51,10 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
 
   protected def mkValue(v: FoldPExpr): E
 
-  def values(x: Sample) =
-    for (
-      (probe, (v, c, p)) <- raw.data(x)
-    ) yield (probe, mkValue(v, c, p))
+  def values(xs: Iterable[Sample]) =
+    for ((x, data) <- raw.data(xs);
+      values = data.toSeq.map {case (probe, (v, c, p)) => (probe, mkValue(v, c, p)) }
+    ) yield (x, values)
 
   def insert(name: String): Task[Unit] = {
     new AtomicTask[Unit](name) {
@@ -76,32 +76,33 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
           val pmap = context.probeMap
           var pcomp = 0d
           var nvalues = 0
-
-          val it = raw.samples.iterator
+          
+          //CSVRawExpressionData is more efficient with chunked reading
+          val it = raw.samples.iterator.grouped(50)
           while (it.hasNext && shouldContinue(pcomp)) {
-            val sample = it.next
-            val vs = values(sample)
-
-            val packed = vs.toSeq.flatMap(vv => {
-              val (probe, v) = vv
-              if (knownProbes.contains(probe)) {
-                val pk = try {
-                  pmap.pack(probe)
-                } catch {
-                  case lf: LookupFailedException =>
-                    throw new LookupFailedException(
-                      s"Unknown probe: $probe. Did you forget to upload a platform definition?")
-                  case t: Throwable => throw t
+            val sampleChunk = it.next
+            for ((sample, vs) <- values(sampleChunk)) {
+              val packed = vs.toSeq.flatMap(vv => {
+                val (probe, v) = vv
+                if (knownProbes.contains(probe)) {
+                  val pk = try {
+                    pmap.pack(probe)
+                  } catch {
+                    case lf: LookupFailedException =>
+                      throw new LookupFailedException(
+                        s"Unknown probe: $probe. Did you forget to upload a platform definition?")
+                    case t: Throwable => throw t
+                  }
+                  Some(sample, pk, v)
+                } else {
+                  log(s"Not inserting unknown probe '$probe'")
+                  None
                 }
-                Some(sample, pk, v)
-              } else {
-                log(s"Not inserting unknown probe '$probe'")
-                None
-              }
-            })
-            nvalues += packed.size
-            db.writeMany(packed)
-            pcomp += 100.0 / ns
+              })
+              nvalues += packed.size
+              db.writeMany(packed)
+              pcomp += 100.0 / ns
+            }
           }
 
           logResult(s"${nvalues} values written")
