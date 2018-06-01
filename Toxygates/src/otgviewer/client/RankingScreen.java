@@ -136,4 +136,10 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     getParser().storeSampleClass(sc);
     compoundSelector.sampleClassChanged(sc);
   }
+
+  @Override
+  public void filterToolsDatasetsChanged(Dataset[] ds) {
+    chosenDatasets = ds;
+    getParser().storeDatasets(chosenDatasets);
+  }
 }

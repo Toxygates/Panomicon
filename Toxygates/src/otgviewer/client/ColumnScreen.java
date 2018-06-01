@@ -47,13 +47,14 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   private CompoundSelector compoundSelector;
   private FilterTools filterTools;
 
-  protected Dataset[] chosenDatasets;
+  protected Dataset[] chosenDatasets = new Dataset[0];
   protected List<Group> chosenColumns = new ArrayList<Group>();
 
   @Override
   public void loadState(AttributeSet attributes) {
     chosenDatasets = getParser().getDatasets();
     filterTools.datasetsChanged(chosenDatasets);
+    groupInspector.datasetsChanged(chosenDatasets);
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
@@ -94,8 +95,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
     compoundSelector = new CompoundSelector(this, man.schema().majorParameter().title(), true, true);
     compoundSelector.addStyleName("compoundSelector");
-
-    chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
   }
 
@@ -172,6 +171,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void groupInspectorDatasetsChanged(Dataset[] ds) {
     chosenDatasets = ds;
     filterTools.datasetsChanged(ds);
+  }
+
+  @Override
+  public void filterToolsDatasetsChanged(Dataset[] ds) {
+    getParser().storeDatasets(ds);
+    groupInspector.datasetsChanged(ds);
   }
 
   @Override
