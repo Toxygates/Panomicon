@@ -133,16 +133,14 @@ public class StorageParser {
   // Separator hierarchy for columns:
   // ### > ::: > ^^^ > $$$
   public List<Group> getColumns(DataSchema schema, String key, AttributeSet attributes) throws Exception {
-    // TODO unpack old format columns
     String v = getItem(key);
     List<Group> r = new ArrayList<Group>();
-    if (v == null) {
-      return null;
-    }
-    String[] spl = v.split("###");
-    for (String cl : spl) {
-      Group c = unpackColumn(schema, cl, attributes);
-      r.add(c);
+    if (v != null) {
+      String[] spl = v.split("###");
+      for (String cl : spl) {
+        Group c = unpackColumn(schema, cl, attributes);
+        r.add(c);
+      }
     }
     return r;
   }
