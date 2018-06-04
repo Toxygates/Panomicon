@@ -31,7 +31,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.QueuedAction;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -144,29 +143,6 @@ public abstract class MinimalScreen implements Screen {
   @Override
   public Logger getLogger() {
     return logger;
-  }
-
-  private List<QueuedAction> actionQueue = new LinkedList<QueuedAction>();
-
-  protected void runActions() {
-    for (QueuedAction qa : actionQueue) {
-      logger.info("Action queue: run " + qa.name());
-      qa.run();
-    }
-    actionQueue.clear();
-  }
-
-  /**
-   * Add an action to the queue (or replace an action with the same name). Actions are executed in
-   * order, but the order can change if replacement occurs.
-   * 
-   * @param qa
-   */
-  @Override
-  public void enqueue(QueuedAction qa) {
-    actionQueue.remove(qa); // remove it if it's already there (so we can update it)
-    actionQueue.add(qa);
-    logger.info("Action queue: added " + qa.name());
   }
 
   public MinimalScreen(String title, String key, ScreenManager man,
@@ -339,7 +315,6 @@ public abstract class MinimalScreen implements Screen {
     } else {
       hideToolbar(guideBar);
     }
-    runActions();
     deferredResize();
   }
 

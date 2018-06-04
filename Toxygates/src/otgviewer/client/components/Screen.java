@@ -26,7 +26,8 @@ import java.util.logging.Logger;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
-import otgviewer.client.*;
+import otgviewer.client.Resources;
+import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
@@ -76,8 +77,6 @@ public interface Screen {
   void loadState(AttributeSet attributes);
 
   void loadPersistedState();
-
-  void enqueue(QueuedAction qa);
 
   void show();
 

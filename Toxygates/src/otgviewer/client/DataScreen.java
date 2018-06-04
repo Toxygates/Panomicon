@@ -28,8 +28,7 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.components.*;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
+import t.common.shared.sample.*;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 import t.viewer.client.table.ExpressionTable;
@@ -64,6 +63,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
   public ItemList chosenGeneSet = null;
   protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+
+  private String[] urlProbes = null;
+  private List<String[]> urlGroups;
+  private List<String> groupNames;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -299,6 +302,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public void show() {
     super.show();
+    getProbes();
+    getColumns();
     updateProbes();
   }
   
@@ -380,6 +385,27 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
+  public void setUrlProbes(String[] probes) {
+    urlProbes = probes;
+  }
+
+  /**
+   * Fetch probes if applicable. Used to load probes that were read from URL string.
+   */
+  public void getProbes() {
+    if (urlProbes != null) {
+      manager().probeService().identifiersToProbes(urlProbes, true, true, false, null,
+          new PendingAsyncCallback<String[]>(this,
+              "Failed to resolve gene identifiers") {
+            @Override
+            public void handleSuccess(String[] probes) {
+              importProbes(probes);
+            }
+          });
+    }
+    urlProbes = null;
+  }
+
   public boolean importProbes(String[] probes) {
     if (Arrays.equals(probes, chosenProbes)) {
       return false;
@@ -392,6 +418,36 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
+  public void setUrlColumns(List<String[]> groups, List<String> names) {
+    urlGroups = groups;
+    groupNames = names;
+  }
+
+  /**
+   * Fetch columns if applicable. Used to load columns that were read from URL string.
+   */
+  public void getColumns() {
+    if (urlGroups != null) {
+      manager().sampleService().samplesById(urlGroups,
+          new PendingAsyncCallback<List<Sample[]>>(this,
+              "Failed to look up samples") {
+            @Override
+            public void handleSuccess(List<Sample[]> samples) {
+              int i = 0;
+              List<Group> finalGroups = new ArrayList<Group>();
+              for (Sample[] ss : samples) {
+                Group g = new Group(schema(), groupNames.get(i), ss);
+                i += 1;
+                finalGroups.add(g);
+              }
+              groupNames = null;
+              importColumns(finalGroups);
+            }
+          });
+    }
+    urlGroups = null;
+  }
+
   public boolean importColumns(List<Group> groups) {
     if (groups.size() > 0 && !groups.equals(chosenColumns)) {
       columnsChanged(groups);
