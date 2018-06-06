@@ -194,6 +194,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     setSelection(compounds);
   }
 
+  public void datasetsChanged(Dataset[] datasets) {
+    chosenDatasets = datasets;
+  }
+
   protected void availableCompoundsChanged(List<String> compounds) {
   }
 }

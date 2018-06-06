@@ -51,6 +51,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     filterTools.datasetsChanged(chosenDatasets);
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
+    compoundSelector.datasetsChanged(chosenDatasets);
     compoundSelector.sampleClassChanged(sampleClass);
     compoundSelector.compoundsChanged(getParser().getCompounds());
   }
@@ -141,5 +142,6 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   public void filterToolsDatasetsChanged(Dataset[] ds) {
     chosenDatasets = ds;
     getParser().storeDatasets(chosenDatasets);
+    compoundSelector.datasetsChanged(chosenDatasets);
   }
 }
