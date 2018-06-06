@@ -1,4 +1,4 @@
-package otgviewer.client;
+package t.viewer.client.table;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -7,39 +7,30 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
+import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.ScreenManager;
-import t.common.shared.*;
+import t.common.shared.AType;
+import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
-import t.model.sample.AttributeSet;
-import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
 import t.viewer.client.network.DualTableNetwork;
 import t.viewer.client.network.NetworkController;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.table.*;
+import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
 
 /**
- * A DataScreen that can display two tables side by side.
- * The dual mode will only activate if appropriate columns have been
- * defined and saved for both tables. Otherwise, the screen will revert to
- * single-table mode.
- * 
- * The "main" table drives the side table, in the sense that what is being displayed in the
- * latter depends on the content of the former.
+ * A DataView that displays an interaction network as two tables.
  */
-public class DualDataScreen extends DataScreen {
-
+public class DualTableView extends TableView {
   protected ExpressionTable sideExpressionTable;
-  
   protected final static String sideMatrix = "SECONDARY";
-  
   final static int MAX_SECONDARY_ROWS = Network.MAX_SIZE;
   
+
   static enum DualMode {
-    Forward("mRNA", "miRNA", AType.MiRNA, true) {
+    Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
         table.setVisible(AType.MiRNA, true);
@@ -47,29 +38,24 @@ public class DualDataScreen extends DataScreen {
       }
     },
     
-    Reverse("miRNA", "mRNA", AType.MRNA, true) {
+    Reverse("miRNA", "mRNA", AType.MRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
         table.setVisible(AType.MiRNA, false);
         table.setVisible(AType.MRNA, true);
       }
-    },
-    SingleMRNA("mRNA", "miRNA", null, false), SingleMiRNA("miRNA", "mRNA", null, false);
+    };
     
     final String mainType, sideType;
-    final AType linkingType;
-    final boolean isSplit;
-    DualMode(String mainType, String sideType, AType linkingType, boolean isSplit) {
+    final AType linkingType;    
+    DualMode(String mainType, String sideType, AType linkingType) {
       this.mainType = mainType;
       this.sideType = sideType;
-      this.linkingType = linkingType;
-      this.isSplit = isSplit;
+      this.linkingType = linkingType;      
     }
     
     int sideTableWidth() { 
-      if (!isSplit) {
-        return 0;
-      } else if (sideType.equals("miRNA")) {
+      if (sideType.equals("miRNA")) {
         return 550;
       } else {
         return 800;
@@ -94,25 +80,52 @@ public class DualDataScreen extends DataScreen {
   
   NetworkController controller;
   
-  public DualDataScreen(ScreenManager man) {
-    super(man);
-    
-    TableFlags flags = new TableFlags(sideMatrix, true, false, 
-        MAX_SECONDARY_ROWS, mode.sideType, true, true);
-    sideExpressionTable = new ExpressionTable(this, flags,
-        mode.sideStyle());     
+  protected SplitLayoutPanel splitLayout;
+  
+  
+  public DualTableView(DLWScreen screen, String mainTableTitle, boolean mainTableSelectable) {
+    super(screen, mainTableTitle, mainTableSelectable);
+    TableFlags flags =
+        new TableFlags(sideMatrix, true, false, MAX_SECONDARY_ROWS, mode.sideType, true, true);
+
+    sideExpressionTable = new ExpressionTable(screen, flags, mode.sideStyle());
     sideExpressionTable.addStyleName("sideExpressionTable");
-    
-    expressionTable.selectionModel().addSelectionChangeHandler(e -> {
-      if (mode.isSplit) {
-        network.onSourceSelectionChanged();
-        } });
-    sideExpressionTable.selectionModel().addSelectionChangeHandler(e -> {
-      if (mode.isSplit) {    
-      network.onDestSelectionChanged();
-      } });
+
+    expressionTable.selectionModel().addSelectionChangeHandler(e -> {      
+      network.onSourceSelectionChanged();      
+    });
+    sideExpressionTable.selectionModel().addSelectionChangeHandler(e -> {   
+      network.onDestSelectionChanged();   
+    });       
   }
   
+  /*
+   * Note: It's probably best/easiest to rebuild the layout completely
+   * each time the chosen columns change
+   */
+  @Override
+  protected Widget content() {    
+    splitLayout = new SplitLayoutPanel();    
+    splitLayout.setWidth("100%");
+    splitLayout.addEast(sideExpressionTable, 550);
+    splitLayout.add(expressionTable);    
+    return splitLayout;
+  }
+  
+  protected DualTableNetwork makeNetwork() {
+    network = new DualTableNetwork(expressionTable, sideExpressionTable, 
+      mode.mainType, mode.sideType, mode.linkingType, MAX_SECONDARY_ROWS);
+    controller = new NetworkController(network) {
+      @Override
+      public Map<String, Collection<String>> linkingMap() {
+        return network.linkingMap();
+      }    
+    };
+    return network;
+  }
+  
+  protected DualTableNetwork network;
+
   protected void flipDualView() {    
     preferredDoubleMode = mode.flip();    
     List<Group> allColumns = new ArrayList<Group>(chosenColumns);
@@ -122,33 +135,32 @@ public class DualDataScreen extends DataScreen {
     reloadDataIfNeeded();
   }
   
-  protected SplitLayoutPanel splitLayout;
-  
-  /*
-   * Note: It's probably best/easiest to rebuild the layout completely
-   * each time the chosen columns change
-   */
   @Override
-  protected Widget mainTablePanel() {    
-    splitLayout = new SplitLayoutPanel();    
-    splitLayout.setWidth("100%");
-    splitLayout.addEast(sideExpressionTable, 550);
-    splitLayout.add(expressionTable);    
-    return splitLayout;
+  protected void beforeGetAssociations() {
+    super.beforeGetAssociations();
+    sideExpressionTable.clearMatrix();
+  }
+  
+  //TODO refactor
+  @Override
+  protected void associationsUpdated(Association[] result) {
+    super.associationsUpdated(result);
+    network.extractSideTableProbes();
+  }
+  
+  private Widget tools;
+  @Override
+  public Widget tools() {
+    if (tools == null) {
+      Button flipButton = new Button("Flip mRNA-microRNA", (ClickHandler) event -> flipDualView());
+      tools = Utils.mkHorizontalPanel(true, flipButton);
+    }
+    return Utils.mkHorizontalPanel(true, super.tools(), tools);
   }
   
   @Override
-  protected void addToolbars() {
-    super.addToolbars();
-    Button flipButton = new Button("Flip mRNA-microRNA", 
-      (ClickHandler) event -> flipDualView());
-    Widget tools = Utils.mkHorizontalPanel(true, flipButton);
-    mainTools.add(tools);
-  }
-  
-  @Override
-  protected void setupMenuItems() {
-    super.setupMenuItems();
+  protected void setupMenus() {
+    super.setupMenus();
     MenuItem mi = new MenuItem("Download interaction network (DOT)...", 
       () -> downloadNetwork(Format.DOT));             
     addAnalysisMenuItem(mi);
@@ -163,22 +175,18 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected void downloadNetwork(Format format) {
-    if (mode.isSplit) {
-      MatrixServiceAsync matrixService = manager().matrixService();
-      Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
-      matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(this) {
-        public void handleSuccess(String url) {
-          Utils.displayURL("Your download is ready.", "Download", url);
-        }
-      });
-    } else {
-      Window.alert("Please view mRNA and miRNA samples simultaneously to download networks.");
-    }
+    MatrixServiceAsync matrixService = screen.manager().matrixService();
+    Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
+    matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(screen) {
+      public void handleSuccess(String url) {
+        Utils.displayURL("Your download is ready.", "Download", url);
+      }
+    });
   }
   
   //Initial title only - need the constant here since the field won't be initialised
-  @Override
-  protected String mainTableTitle() { return "mRNA"; }     
+//  @Override
+//  protected String mainTableTitle() { return "mRNA"; }     
   
   protected boolean mainTableSelectable() { return true; }  
   
@@ -220,23 +228,19 @@ public class DualDataScreen extends DataScreen {
         toArray(String[]::new);
     if (types.length >= 2) {
       return preferredDoubleMode;
-    } else if (types.length == 1 && types[0].equals("mRNA")) {
-      return DualMode.SingleMRNA;
-    } else if (types.length == 1 && types[0].equals("miRNA")) {
-      return DualMode.SingleMiRNA;
     } else {
-      logger.warning("No valid dual mode found.");
-      return DualMode.SingleMRNA;
+      logger.severe("DualTableView constructed but only one column type");
+      return null;
     }
   }
   
-  @Override
-  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
-    //TODO this is a state management hack to force the columns to be fully re-initialised
-    //every time we show the screen.
-    chosenColumns = new ArrayList<Group>();
-    super.loadState(p, schema, attributes);
-  }
+//  @Override
+//  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+//    //TODO this is a state management hack to force the columns to be fully re-initialised
+//    //every time we show the screen.
+//    chosenColumns = new ArrayList<Group>();
+//    super.loadState(p, schema, attributes);
+//  }
   
   @Override
   protected void changeColumns(List<Group> columns) {
@@ -245,11 +249,10 @@ public class DualDataScreen extends DataScreen {
     
     expressionTable.setTitleHeader(mode.mainType);    
     expressionTable.setStyleAndApply(mode.mainStyle());
-    if (mode.isSplit) {
-      makeNetwork();      
-      sideExpressionTable.setTitleHeader(mode.sideType);      
-      sideExpressionTable.setStyleAndApply(mode.sideStyle());
-    }
+    
+    makeNetwork();
+    sideExpressionTable.setTitleHeader(mode.sideType);
+    sideExpressionTable.setStyleAndApply(mode.sideStyle());
 
     super.changeColumns(columnsForMainTable(columns));
     
@@ -263,48 +266,15 @@ public class DualDataScreen extends DataScreen {
   }  
   
   @Override
-  public void reloadDataIfNeeded() {   
-    if (mode.isSplit) {
-      expressionTable.setAssociationAutoRefresh(false);
-      mode.setVisibleColumns(expressionTable);      
-      expressionTable.setAssociationAutoRefresh(true);
-    }    
-    
+  public void reloadDataIfNeeded() {       
+    expressionTable.setAssociationAutoRefresh(false);
+    mode.setVisibleColumns(expressionTable);      
+    expressionTable.setAssociationAutoRefresh(true);
+
     super.reloadDataIfNeeded();
     sideExpressionTable.clearMatrix();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
   }
   
-  protected DualTableNetwork makeNetwork() {
-    network = new DualTableNetwork(expressionTable, sideExpressionTable, 
-      mode.mainType, mode.sideType, mode.linkingType, MAX_SECONDARY_ROWS);
-    controller = new NetworkController(network) {
-      @Override
-      public Map<String, Collection<String>> linkingMap() {
-        return network.linkingMap();
-      }    
-    };
-    return network;
-  }
-  
-  protected DualTableNetwork network;
-  
-  //TODO refactor
-//  @Override
-//  protected void associationsUpdated(Association[] result) {
-//    super.associationsUpdated(result);    
-//    if (mode.isSplit) {
-//      network.extractSideTableProbes();
-//    }
-//  }
-  
-  @Override
-  protected void beforeGetAssociations() {
-    super.beforeGetAssociations();
-    if (mode.isSplit) {
-      sideExpressionTable.clearMatrix();
-    }
-  }  
 }
-

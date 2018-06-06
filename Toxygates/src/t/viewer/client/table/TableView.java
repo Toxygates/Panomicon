@@ -5,13 +5,13 @@ import java.util.stream.Collectors;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.dialog.MirnaSourceDialog;
 import t.common.shared.GroupUtils;
+import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
@@ -46,10 +46,24 @@ public class TableView extends DataView {
     
     this.expressionTable = makeExpressionTable(mainTableTitle, mainTableSelectable);
     this.addListener(expressionTable);
-//    initWidget(expressionTable);   
+    expressionTable.setDisplayPColumns(false);
+    initWidget(content());   
     setupMenus();
+    
+    addToolbar(expressionTable.analysisTools());
   }
   
+  public ValueType chosenValueType() {
+    return expressionTable.chosenValueType;
+  }
+  
+  protected Widget content() {
+    ResizeLayoutPanel rlp = new ResizeLayoutPanel();
+    rlp.setWidth("100%");    
+    rlp.add(expressionTable);
+    return rlp;
+  }
+
   protected void setupMenus() {
     MenuBar menuBar = new MenuBar(true);
     MenuItem mActions = new MenuItem("File", false, menuBar);
@@ -276,4 +290,10 @@ public class TableView extends DataView {
     return r;
   }
 
+  @Override
+  public Widget tools() {
+    return expressionTable.tools();
+  }  
+  
+  
 }

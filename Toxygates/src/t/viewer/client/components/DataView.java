@@ -2,9 +2,12 @@ package t.viewer.client.components;
 
 import java.util.*;
 
-import com.google.gwt.user.client.ui.MenuItem;
+import javax.annotation.Nullable;
+
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.DataListenerWidget;
+import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.viewer.client.PersistedState;
 import t.viewer.client.table.ExpressionTable;
@@ -42,6 +45,8 @@ public abstract class DataView extends DataListenerWidget {
     }    
   }
   
+  abstract public ValueType chosenValueType();
+  
   /**
    * Reload data if necessary, when probes or columns have changed
    */
@@ -78,4 +83,15 @@ public abstract class DataView extends DataListenerWidget {
   public void loadPersistedState() { }
   
   abstract public String[] displayedAtomicProbes();
+  
+  @Nullable 
+  public Widget tools() { return null; }
+  
+  
+  protected List<Widget> toolbars = new ArrayList<Widget>();
+  protected void addToolbar(Widget toolbar) {
+    toolbars.add(toolbar);
+  }
+  
+  public Collection<Widget> toolbars() { return toolbars; }
 }

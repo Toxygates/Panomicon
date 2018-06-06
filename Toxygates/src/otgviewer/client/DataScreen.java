@@ -30,7 +30,6 @@ import t.common.shared.StringList;
 import t.common.shared.sample.Group;
 import t.viewer.client.*;
 import t.viewer.client.components.DataView;
-import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.TableView;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -42,8 +41,6 @@ public class DataScreen extends DLWScreen {
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
   protected DataView dataView;
-  
-  protected ExpressionTable expressionTable;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
@@ -56,13 +53,12 @@ public class DataScreen extends DLWScreen {
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
-    geneSetToolbar = makeGeneSetSelector();
-    dataView = makeDataView();
-    this.addListener(dataView);    
-    expressionTable = dataView.expressionTable();
-    expressionTable.setDisplayPColumns(false);
+    geneSetToolbar = makeGeneSetSelector();    
     // To ensure that GeneSetToolbar has chosenColumns
     addListener(geneSetToolbar);
+    dataView = makeDataView();
+    addListener(dataView);
+    setupMenuItems();
   }
 
   protected GeneSetToolbar makeGeneSetSelector() {
@@ -76,17 +72,6 @@ public class DataScreen extends DLWScreen {
   
   protected static final String defaultMatrix = "DEFAULT";
 
-  protected DataView makeDataView() {
-    return new TableView(this, mainTableTitle(),
-      mainTableSelectable()) {
-        @Override
-        protected void beforeGetAssociations() {
-          super.beforeGetAssociations();
-          DataScreen.this.beforeGetAssociations();
-        }
-    };
-  }
-  
   protected @Nullable String mainTableTitle() { return null; }
   
   protected boolean mainTableSelectable() { return false; }  
@@ -113,11 +98,16 @@ public class DataScreen extends DLWScreen {
     super.addToolbars();
     mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    mainTools.add(expressionTable.tools());
+    Widget dvTools = dataView.tools();
+    if (dvTools != null) {
+      mainTools.add(dvTools);
+    }
     mainTools.add(geneSetToolbar.selector());    
     mainTools.add(makeInfoPanel());
-    addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
-    addToolbar(expressionTable.analysisTools(), STANDARD_TOOL_HEIGHT);
+    addToolbar(mainTools, STANDARD_TOOL_HEIGHT);    
+    for (Widget w: dataView.toolbars()) {
+      addToolbar(w, STANDARD_TOOL_HEIGHT);
+    }    
   }
 
   protected void displayInfo(String message) {
@@ -126,18 +116,37 @@ public class DataScreen extends DLWScreen {
   }
   
   @Override
-  public Widget content() {
-    setupMenuItems();
-    return mainTablePanel();
+  public Widget content() {    
+    return dataView;
+  }
+
+//  protected DataView pickDataView() {
+//    String[] types = chosenColumns.stream().map(g -> GroupUtils.groupType(g)).distinct().
+//        toArray(String[]::new);
+//    DataView dataView = types.length >= 2 ? 
+//        makeDualTableView() : makeTableView();    
+//    
+//    this.addListener(dataView);            
+//    return dataView;
+//  }
+  
+//  protected TableView makeDualTableView() {
+//    //TODO need to override beforeGetAssociations?
+//    return new DualTableView(this, mainTableTitle(),
+//      mainTableSelectable());          
+//  }
+
+  protected TableView makeDataView() {
+    return new TableView(this, mainTableTitle(),
+      mainTableSelectable()) {
+        @Override
+        protected void beforeGetAssociations() {
+          super.beforeGetAssociations();
+          DataScreen.this.beforeGetAssociations();
+        }
+    };
   }
   
-  protected Widget mainTablePanel() {
-    ResizeLayoutPanel rlp = new ResizeLayoutPanel();
-    rlp.setWidth("100%");
-//    rlp.add(dataView);
-    rlp.add(expressionTable);
-    return rlp;
-  }
 
   protected void setupMenuItems() {
     for (MenuItem mi: dataView.topLevelMenus()) {
@@ -179,6 +188,7 @@ public class DataScreen extends DLWScreen {
   @Override
   public void show() {
     super.show();
+    
     reloadDataIfNeeded();
   }
 
@@ -216,7 +226,6 @@ public class DataScreen extends DLWScreen {
   public String[] displayedAtomicProbes() {
     return dataView.displayedAtomicProbes();    
   }
-  
 
   @Override
   public List<PersistedState<?>> getPersistedItems() {
