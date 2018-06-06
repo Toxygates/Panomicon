@@ -21,11 +21,6 @@ public abstract class DataView extends DataListenerWidget {
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
-  //menu items
-  
-  //toolbars
-  
-  //associations
   
   /**
    * May be overridden to display status messages about data loading

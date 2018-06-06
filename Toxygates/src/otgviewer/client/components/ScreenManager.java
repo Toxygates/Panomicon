@@ -50,7 +50,7 @@ public interface ScreenManager extends ProvidesResize {
    * Invalidate all screens' "configured" state and subsequently attempt their reconfiguration.
    * Precondition: all screens must have been displayed at least once using Screen.show()
    */
-  void reconfigureAll(Screen from);
+  void reconfigureAll(String fromToken);
 
   /**
    * Test whether the given screen is configured.

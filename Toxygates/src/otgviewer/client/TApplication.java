@@ -305,7 +305,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   private void prepareScreens() {
     initScreens(); // Need access to the nav. panel
     showScreenForToken(History.getToken(), true);
-    reconfigureAll(pickScreen(History.getToken()));
+    reconfigureAll(History.getToken());
   }
 
   protected static Storage tryGetStorage() {
@@ -482,7 +482,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         toolsMenuBar.removeItem(mi);
       }
     }
-    currentScreen = s;
+    currentScreen = s.preferredReplacement();
     menuBar.clearItems();
     List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
     allItems.addAll(s.menuItems());
@@ -543,6 +543,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
     screensBykey.put(s.key(), s);
     screens.add(s);
+    screens.addAll(s.potentialReplacements());
     s.initGUI();
     s.tryConfigure(); // give it a chance to register itself as configured
   }
@@ -562,14 +563,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   @Override
-  public void reconfigureAll(Screen from) {
+  public void reconfigureAll(String fromToken) {
     for (Screen s : screens) {
-      if (s != from) {
+      if (!s.key().equals(fromToken)) {
         s.setConfigured(false);
       }
     }
     for (Screen s : screens) {
-      if (s != from) {
+      if (!s.key().equals(fromToken)) {
         s.loadState(appInfo.attributes());
         s.tryConfigure();
       }
@@ -643,7 +644,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     for (PersistedState<?> ps: getPersistedItems()) {
       ps.loadAndApply(getParser());
     }
-    for (Screen s : screensBykey.values()) {
+    for (Screen s : screens) {
       s.loadPersistedState();
     }
   }

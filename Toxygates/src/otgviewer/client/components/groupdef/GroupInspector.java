@@ -329,7 +329,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     }
     enableDatasetsIfNeeded(chosenColumns);
     if (internalTriggered) {
-      screen.manager().reconfigureAll(screen);
+      screen.manager().reconfigureAll(screen.key());
     }
   }
 

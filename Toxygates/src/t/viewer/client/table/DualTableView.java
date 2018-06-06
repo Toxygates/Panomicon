@@ -83,14 +83,8 @@ public class DualTableView extends TableView {
   protected SplitLayoutPanel splitLayout;
   
   
-  public DualTableView(DLWScreen screen, String mainTableTitle, boolean mainTableSelectable) {
-    super(screen, mainTableTitle, mainTableSelectable);
-    TableFlags flags =
-        new TableFlags(sideMatrix, true, false, MAX_SECONDARY_ROWS, mode.sideType, true, true);
-
-    sideExpressionTable = new ExpressionTable(screen, flags, mode.sideStyle());
-    sideExpressionTable.addStyleName("sideExpressionTable");
-
+  public DualTableView(DLWScreen screen, String mainTableTitle) {
+    super(screen, mainTableTitle, true);
     expressionTable.selectionModel().addSelectionChangeHandler(e -> {      
       network.onSourceSelectionChanged();      
     });
@@ -105,6 +99,13 @@ public class DualTableView extends TableView {
    */
   @Override
   protected Widget content() {    
+    DualMode mode = DualMode.Forward;
+    TableFlags flags =
+        new TableFlags(sideMatrix, true, false, MAX_SECONDARY_ROWS, mode.sideType, true, true);
+
+    sideExpressionTable = new ExpressionTable(screen, flags, mode.sideStyle());
+    sideExpressionTable.addStyleName("sideExpressionTable");
+
     splitLayout = new SplitLayoutPanel();    
     splitLayout.setWidth("100%");
     splitLayout.addEast(sideExpressionTable, 550);

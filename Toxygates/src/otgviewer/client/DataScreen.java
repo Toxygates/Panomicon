@@ -34,7 +34,7 @@ import t.viewer.client.table.TableView;
 import t.viewer.shared.intermine.IntermineInstance;
 
 /**
- * The main data display screen. Data is displayed in the ExpressionTable widget.
+ * The main data display screen. It displays data in a single DataView instance.
  */
 public class DataScreen extends DLWScreen {
 
@@ -120,22 +120,6 @@ public class DataScreen extends DLWScreen {
     return dataView;
   }
 
-//  protected DataView pickDataView() {
-//    String[] types = chosenColumns.stream().map(g -> GroupUtils.groupType(g)).distinct().
-//        toArray(String[]::new);
-//    DataView dataView = types.length >= 2 ? 
-//        makeDualTableView() : makeTableView();    
-//    
-//    this.addListener(dataView);            
-//    return dataView;
-//  }
-  
-//  protected TableView makeDualTableView() {
-//    //TODO need to override beforeGetAssociations?
-//    return new DualTableView(this, mainTableTitle(),
-//      mainTableSelectable());          
-//  }
-
   protected TableView makeDataView() {
     return new TableView(this, mainTableTitle(),
       mainTableSelectable()) {
@@ -146,7 +130,6 @@ public class DataScreen extends DLWScreen {
         }
     };
   }
-  
 
   protected void setupMenuItems() {
     for (MenuItem mi: dataView.topLevelMenus()) {
