@@ -78,7 +78,6 @@ public class DLWScreen extends DataListenerWidget implements Screen,
   private List<MenuItem> menuItems = new ArrayList<MenuItem>();
   private List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
 
-
   /**
    * Widgets to be shown below the main content area, if any.
    */

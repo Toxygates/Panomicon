@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -27,8 +27,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
@@ -44,7 +44,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private ListBox annotationSelector;
   private Button annotationButton;
 
-  public AnnotationTDGrid(DLWScreen screen) {
+  public AnnotationTDGrid(Screen screen) {
     super(screen, false);
   }
 

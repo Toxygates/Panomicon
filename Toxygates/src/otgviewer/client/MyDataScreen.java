@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,7 +28,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ListDataProvider;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.MinimalScreen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.Utils;
 import t.common.client.maintenance.*;
@@ -38,7 +38,7 @@ import t.common.shared.maintenance.Instance;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
-public class MyDataScreen extends DLWScreen {
+public class MyDataScreen extends MinimalScreen {
 
   public static final String key = "my";
   
@@ -55,7 +55,7 @@ public class MyDataScreen extends DLWScreen {
   private Label keyLabel;
   
   public MyDataScreen(ScreenManager man) {
-    super("My data", key, false, man);
+    super("My data", key, man);
     userData = man.userDataService();
     resources = man.resources();
     addToolbar(cmds, 35);

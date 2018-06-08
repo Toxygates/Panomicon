@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -45,7 +45,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   protected final SampleServiceAsync sampleService;
 
-  protected DLWScreen screen;
+  protected Screen screen;
   protected final DataSchema schema;
 
   protected List<String> mediumValues = new ArrayList<String>();
@@ -64,7 +64,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
    */
   protected void initTools(HorizontalPanel toolPanel) {}
 
-  public TimeDoseGrid(DLWScreen screen, boolean hasDoseTimeGUIs) {
+  public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
     rootPanel = Utils.mkVerticalPanel();
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();

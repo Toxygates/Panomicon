@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,15 +18,22 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg
+package otgviewer.client.components;
 
-import t.sparql.Triplestore
-import t.sparql.QueryUtils
-import scala.language.implicitConversions
+import java.util.List;
 
-//TODO code duplication with t.sparql.secondary
-package object sparql extends t.sparql.QueryUtils {
-  val commonPrefixes = t.sparql.secondary.commonPrefixes
+import javax.annotation.Nullable;
 
-  implicit def withQueries(p: Pathology) = new PathologySparql(p)
+import t.common.shared.ItemList;
+import t.common.shared.sample.Group;
+import t.viewer.shared.intermine.IntermineInstance;
+
+public interface ImportingScreen extends Screen {
+  boolean importProbes(String[] probes);
+
+  boolean importColumns(List<Group> groups);
+
+  void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
+
+  void runEnrichment(@Nullable IntermineInstance preferredInstance);
 }

@@ -30,7 +30,7 @@ import t.viewer.client.table.TableView;
  * depending on the configured state.
  * This screen itself has no content and will not be shown.
  */
-public class MultiDataScreen extends DLWScreen {
+public class MultiDataScreen extends DLWScreen implements ImportingScreen {
 
   private DataScreen singleTableScreen, dualTableScreen;
   

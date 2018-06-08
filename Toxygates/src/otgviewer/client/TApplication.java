@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -74,7 +74,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
-  protected MenuBar menuBar, toolsMenuBar;
+  protected MenuBar menuBar;
 
   // Menu items to be shown to the left of menu items belonging to the current screen.
   protected List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
@@ -116,6 +116,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   protected AppInfo appInfo = null;
 
   protected Resources.OtgCssResource css = resources.otgViewerStyle();
+
+  protected ImportingScreen importingScreen;
 
   @Override
   public AppInfo appInfo() {
@@ -225,12 +227,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mainDockPanel.addNorth(navOuter, css.navpanel_height());
   }
 
-  protected void readURLParameters(Screen scr) {
-    readImportedProbes(scr);
-    readGroupURLparameters(scr);
+  protected boolean readURLParameters() {
+    return readImportedProbes() | readGroupURLparameters();
   }
 
-  protected void readImportedProbes(final Screen scr) {
+  protected boolean readImportedProbes() {
     Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
 
@@ -251,23 +252,27 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
     if (useProbes != null && useProbes.length > 0) {
       final String[] pr = useProbes;
-      scr.enqueue(new QueuedAction("Set probes from URL/POST") {
+      importingScreen.enqueue(new QueuedAction("Set probes from URL/POST") {
         @Override
         public void run() {
           probeService.identifiersToProbes(pr, true, true, false, null,
-              new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
+              new PendingAsyncCallback<String[]>(importingScreen,
+                  "Failed to resolve gene identifiers") {
                 @Override
                 public void handleSuccess(String[] probes) {
-                  scr.importProbes(probes);
+                  importingScreen.importProbes(probes);
                 }
               });
         }
       });
+      return true;
+    } else {
+      return false;
     }
 
   }
 
-  protected void readGroupURLparameters(final Screen scr) {
+  protected boolean readGroupURLparameters() {
     Logger l = SharedUtils.getLogger();
     Map<String, List<String>> params = Window.Location.getParameterMap();
 
@@ -285,11 +290,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
 
     if (useGroups.size() > 0) {
-      scr.enqueue(new QueuedAction("Set columns from URL") {
+      importingScreen.enqueue(new QueuedAction("Set columns from URL") {
         @Override
         public void run() {
-          sampleService.samplesById(useGroups, new PendingAsyncCallback<List<Sample[]>>(scr,
-              "Failed to look up samples") {
+          sampleService.samplesById(useGroups,
+              new PendingAsyncCallback<List<Sample[]>>(importingScreen,
+                  "Failed to look up samples") {
             @Override
             public void handleSuccess(List<Sample[]> samples) {
               int i = 0;
@@ -299,11 +305,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
                 i += 1;
                 finalGroups.add(g);
               }
-              scr.importColumns(finalGroups);
+                  importingScreen.importColumns(finalGroups);
             }
           });
         }
       });
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -367,14 +376,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     MenuBar menuBar = new MenuBar(false);
     menuBar.setWidth("100%");
 
-    toolsMenuBar = new MenuBar(true);
-    MenuItem mi = new MenuItem("Tools", toolsMenuBar);
-    postMenuItems.add(mi);
-
-    setupToolsMenu(toolsMenuBar);
-
     MenuBar hm = new MenuBar(true);
-    mi = new MenuItem("Help / feedback", hm);
+    MenuItem mi = new MenuItem("Help / feedback", hm);
     postMenuItems.add(mi);
     mi.getElement().setId("helpMenu");
 
@@ -407,10 +410,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         Utils.showHelp(getVersionHTML(), null)
         ));
     return menuBar;
-  }
-
-  protected void setupToolsMenu(MenuBar toolsMenuBar) {
-
   }
 
   protected void showDataSources() {
@@ -464,11 +463,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * @param token
    */
   private void showScreenForToken(String token, boolean firstLoad) {
-    Screen s = pickScreen(token);
-    if (firstLoad) {
-      readURLParameters(s);
+    Screen screen;
+    if (firstLoad && readURLParameters()) {
+      screen = importingScreen;
+    } else {
+      screen = pickScreen(token);
     }
-    showScreen(s);
+    showScreen(screen);
     Analytics.trackPageView(Analytics.URL_PREFIX + token);
   }
 
@@ -481,9 +482,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     if (currentScreen != null) {
       mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
-      for (MenuItem mi : s.analysisMenuItems()) {
-        toolsMenuBar.removeItem(mi);
-      }
     }
     currentScreen = s.preferredReplacement();
     menuBar.clearItems();
@@ -493,10 +491,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     for (MenuItem mi : allItems) {
       menuBar.addItem(mi);
-    }
-
-    for (MenuItem mi : currentScreen.analysisMenuItems()) {
-      toolsMenuBar.addItem(mi);
     }
 
     addWorkflowLinks(currentScreen);

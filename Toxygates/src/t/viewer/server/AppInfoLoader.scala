@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package t.viewer.server
 
 import t.sparql.Probes
@@ -14,9 +34,9 @@ import t.viewer.shared.mirna.MirnaSource
 import t.viewer.server.Conversions._
 
 class AppInfoLoader(probeStore: Probes,
-                    configuration: Configuration,
-                    baseConfig: BaseConfig,
-                    appName: String) {
+    configuration: Configuration,
+    baseConfig: BaseConfig,
+    appName: String) {
 
   /**
    * Called when AppInfo needs a full refresh.
@@ -43,7 +63,7 @@ class AppInfoLoader(probeStore: Probes,
 
   def probeClusterings(probeLists: Iterable[StringList]) = {
     val cls = probeLists.flatMap(x => Option(ProbeClustering.buildFrom(x)))
-    
+
     new java.util.LinkedList(seqAsJavaList(cls.toSeq))
   }
 
@@ -77,7 +97,7 @@ class AppInfoLoader(probeStore: Probes,
     platforms.sharedList.toArray
   }
 
-    protected def getMirnaSourceInfo: Array[MirnaSource] = {
+  protected def getMirnaSourceInfo: Array[MirnaSource] = {
     val dynamic = probeStore.mirnaSources.map(s =>
       new MirnaSource(s._1, s._2, s._3, s._4, asJDouble(s._5), s._6.getOrElse(0)))
     val static = staticMirnaSources

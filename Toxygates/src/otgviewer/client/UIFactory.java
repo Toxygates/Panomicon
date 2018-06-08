@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -45,7 +45,7 @@ public interface UIFactory {
   
   public GroupInspector groupInspector(CompoundSelector cs, DLWScreen scr);
   
-  public GroupLabels groupLabels(DLWScreen screen, DataSchema schema, List<Group> groups);
+  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups);
   
   public GeneSetEditor geneSetEditor(DLWScreen screen);
   
@@ -57,14 +57,16 @@ public interface UIFactory {
    * Enrichment for a gene set
    * @param screen
    */
-  void enrichment(DLWScreen screen, StringList list, @Nullable IntermineInstance preferredInstance);
+  void enrichment(ImportingScreen screen, StringList list,
+      @Nullable IntermineInstance preferredInstance);
 
   /**
    * Enrichment for multiple gene sets
    * @param screen
    * @param lists
    */
-  void multiEnrichment(DLWScreen screen, StringList[] lists, @Nullable IntermineInstance preferredInstance);
+  void multiEnrichment(ImportingScreen screen, StringList[] lists,
+      @Nullable IntermineInstance preferredInstance);
   
   boolean hasMyData();
   
@@ -73,7 +75,7 @@ public interface UIFactory {
    * The value will never be produced if no table should be displayed.
    * @param screen
    */
-  default void sampleSummaryTable(DLWScreen screen, 
+  default void sampleSummaryTable(Screen screen, 
                                   ValueAcceptor<StringArrayTable> acceptor) {    
   }
   

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -29,58 +29,67 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.*;
+import otgviewer.client.Resources;
+import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 
 /**
- * Screen implementation based on DLWScreen. Instead of inheriting from DataListenerWidget, we
- * delegate data-related calls to a delegate object.
+ * Screen implementation based on DLWScreen. Instead of inheriting from
+ * DataListenerWidget, we delegate data-related calls to a delegate object.
  * 
- * This is meant to become the canonical implementation of Screen.
+ * This class is meant to eventually become the canonical implementation of
+ * Screen.
  */
-public class MinimalScreen implements Screen {
-  public interface ScreenDelegate {
-    void storeState();
-    void loadState(AttributeSet attributes);
-
-    boolean importProbes(String[] probes);
-
-    boolean importColumns(List<Group> groups);
-
-    String[] chosenProbes();
-
-    void probesChanged(String[] probes);
-
-    List<Group> chosenColumns();
-
-    void columnsChanged(List<Group> columns);
-
-    void storeCustomColumn(StorageParser p, DataColumn<?> column);
-
-    void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
-
-    ClientState state();
-  }
-  
-  private ScreenDelegate delegate;
+public abstract class MinimalScreen implements Screen {
     
   private String title;
-  
 
   @Override
   public String getTitle() {
     return title;
   }
 
+  /*
+   * The following three methods stubs should be overridden if needed, but if they're not going to
+   * be used they can be left as they are.
+   */
   @Override
   public ClientState state() {
-    return delegate.state();
+    Window.alert("state() not implemented yet.");
+    throw new UnsupportedOperationException("state() not implemented yet.");
+  }
+
+  protected void storeState() {
+    Window.alert("storeState() not implemented yet.");
+    throw new UnsupportedOperationException("storeState() not implemented yet.");
+  }
+
+  /**
+   * Load saved state from the local storage. If the loaded state is different from what was
+   * previously remembered in this widget, the appropriate signals will fire.
+   */
+  @Override
+  public void loadState(AttributeSet attributes) {
+
+  }
+
+  // Converted from updateStatusPanel. Rather than setting a showGroups flag, it's now 
+  // each screen's responsibility to call this if/when appropriate.
+  protected void displayStatusPanel(List<Group> groups) {
+    // statusPanel.setWidth(Window.getClientHeight() + "px");
+    statusPanel.clear();
+    spOuter.setHeight("30px");
+    Collections.sort(groups);
+    Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), groups));
   }
 
   /*
@@ -104,7 +113,7 @@ public class MinimalScreen implements Screen {
    * Is this screen currently visible?
    */
   protected boolean visible = false;
-  private boolean showGroups = false;
+  // private boolean showGroups = false;
 
   /**
    * Is this screen currently configured?
@@ -180,9 +189,8 @@ public class MinimalScreen implements Screen {
     logger.info("Action queue: added " + qa.name);
   }
 
-  public MinimalScreen(String title, String key, boolean showGroups, ScreenManager man,
+  public MinimalScreen(String title, String key, ScreenManager man,
       @Nullable TextResource helpHTML, @Nullable ImageResource helpImage) {
-    this.showGroups = showGroups;
     this.helpHTML = helpHTML;
     this.helpImage = helpImage;
 
@@ -197,8 +205,8 @@ public class MinimalScreen implements Screen {
     this.title = title;
   }
 
-  public MinimalScreen(String title, String key, boolean showGroups, ScreenManager man) {
-    this(title, key, showGroups, man, man.resources().defaultHelpHTML(), null);
+  public MinimalScreen(String title, String key, ScreenManager man) {
+    this(title, key, man, man.resources().defaultHelpHTML(), null);
   }
 
   @Override
@@ -278,7 +286,6 @@ public class MinimalScreen implements Screen {
 
   protected HorizontalPanel mkStandardToolbar(Widget content, String styleName) {
     HorizontalPanel r = Utils.mkWidePanel();
-    r.setHeight("30px");
     r.add(content);
     r.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
     r.addStyleName(styleName);
@@ -335,7 +342,7 @@ public class MinimalScreen implements Screen {
       public void onClick(ClickEvent event) {
         hideToolbar(guideBar);
         showGuide = false;
-        delegate.storeState();
+        storeState();
       }
     });
     hpi.add(i);
@@ -350,7 +357,7 @@ public class MinimalScreen implements Screen {
   public void showGuide() {
     showToolbar(guideBar);
     showGuide = true;
-    delegate.storeState();
+    storeState();
   }
 
 
@@ -368,35 +375,12 @@ public class MinimalScreen implements Screen {
     } else {
       hideToolbar(guideBar);
     }
-    // Consider reinstating later
-    //updateStatusPanel(); // needs access to the groups from loadState
     runActions();
     deferredResize();
   }
 
-  /**
-   * Load saved state from the local storage. If the loaded state is different from what was
-   * previously remembered in this widget, the appropriate signals will fire.
-   */
-  @Override
-  public void loadState(AttributeSet attributes) {
-    delegate.loadState(attributes);
-  }
-
 //  Stubs stored for future reference
-
-//  public void loadState(StorageParser parser, DataSchema schema, AttributeSet attributes) {
-
-//  public void storeState(StorageParser p) {
-
 //  protected void changeColumns(List<Group> columns) {
-
-//  Consider reinstating later
-  /*
-   * protected void updateStatusPanel() { // statusPanel.setWidth(Window.getClientHeight() + "px");
-   * statusPanel.clear(); if (showGroups) { Collections.sort(chosenColumns);
-   * Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns)); } }
-   */
 
   @Override
   public void resizeInterface() {
@@ -591,15 +575,7 @@ public class MinimalScreen implements Screen {
    * @param b
    */
   public void displaySampleDetail(Sample b) {
-    StorageParser p = getParser();
-    Group g = new Group(schema(), "custom", new Sample[] {b});
-    delegate.storeCustomColumn(p, g);
-    configuredProceed(SampleDetailScreen.key);
-  }
-
-  @Override
-  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
-    delegate.intermineImport(itemLists, clusteringLists);
+    ScreenUtils.displaySampleDetail(this, b);
   }
 
   private int numPendingRequests = 0;
@@ -624,28 +600,6 @@ public class MinimalScreen implements Screen {
     numPendingRequests -= 1;
     if (numPendingRequests == 0) {
       waitDialog.hide();
-    }
-  }
-
-  @Override
-  public boolean importProbes(String[] probes) {
-    if (Arrays.equals(probes, delegate.chosenProbes())) {
-      return false;
-    } else {
-      delegate.probesChanged(probes);
-      delegate.storeState();
-      return true;
-    }
-  }
-
-  @Override
-  public boolean importColumns(List<Group> groups) {
-    if (groups.size() > 0 && !groups.equals(delegate.chosenColumns())) {
-      delegate.columnsChanged(groups);
-      delegate.storeState();
-      return true;
-    } else {
-      return false;
     }
   }
 }

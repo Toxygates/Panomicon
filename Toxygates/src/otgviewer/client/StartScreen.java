@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.MinimalScreen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.components.StringArrayTable;
 import t.viewer.client.Utils;
@@ -32,12 +32,12 @@ import t.viewer.client.Utils;
 /**
  * This is the first screen, where a dataset can be selected.
  */
-public class StartScreen extends DLWScreen {
+public class StartScreen extends MinimalScreen {
 
   public static String key = "st";
 
   public StartScreen(ScreenManager man) {
-    super("Start", key, false, man, man.resources().startHTML(), null);
+    super("Start", key, man, man.resources().startHTML(), null);
   }
 
   final private HTML welcomeHtml = new HTML();

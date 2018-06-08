@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -18,11 +18,10 @@
 
 package otgviewer.client;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
-
-import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
 import t.common.shared.ItemList;
@@ -33,10 +32,12 @@ import t.viewer.client.components.DataView;
 import t.viewer.client.table.TableView;
 import t.viewer.shared.intermine.IntermineInstance;
 
+import com.google.gwt.user.client.ui.*;
+
 /**
  * The main data display screen. It displays data in a single DataView instance.
  */
-public class DataScreen extends DLWScreen {
+public class DataScreen extends DLWScreen implements ImportingScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
@@ -50,7 +51,9 @@ public class DataScreen extends DLWScreen {
   @Nullable
   private MenuItem heatMapMenu;
 
-  public DataScreen(ScreenManager man) {
+  private List<MenuItem> intermineMenuItems;
+
+  DataScreen(ScreenManager man, List<MenuItem> intermineItems) {
     super("View data", key, true, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     geneSetToolbar = makeGeneSetSelector();    
@@ -131,7 +134,12 @@ public class DataScreen extends DLWScreen {
     };
   }
 
+  protected MenuBar analysisMenu;
   protected void setupMenuItems() {
+    analysisMenu = new MenuBar(true);
+    MenuItem analysisItem = new MenuItem("Tools", false, analysisMenu);
+    addMenu(analysisItem);
+        
     for (MenuItem mi: dataView.topLevelMenus()) {
       addMenu(mi);
     }
@@ -143,9 +151,23 @@ public class DataScreen extends DLWScreen {
 
     GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
     addListener(geneSetsMenu);
-    addMenu(geneSetsMenu.menuItem());        
+    addMenu(geneSetsMenu.menuItem());       
   }
   
+  @Override
+  public void addAnalysisMenuItem(MenuItem mi) {
+    analysisMenu.add(mi);
+  }
+  
+  @Override
+  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
+    itemListsChanged(itemLists);
+    storeItemLists(getParser());
+    clusteringListsChanged(clusteringLists);
+    storeClusteringLists(getParser());
+  }
+
+  @Override
   public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
@@ -215,19 +237,25 @@ public class DataScreen extends DLWScreen {
 
   @Override
   public boolean importProbes(String[] probes) {
-    boolean changed = super.importProbes(probes);
-    if (changed) {
+    if (Arrays.equals(probes, chosenProbes)) {
+      return false;
+    } else {
+      probesChanged(probes);
+      storeState(this);
       reloadDataIfNeeded();
+      return true;
     }
-    return changed;
   }
 
   @Override
   public boolean importColumns(List<Group> groups) {
-    boolean changed = super.importColumns(groups);
-    if (changed) {
+    if (groups.size() > 0 && !groups.equals(chosenColumns)) {
+      columnsChanged(groups);
+      storeState(this);
       reloadDataIfNeeded();
+      return true;
+    } else {
+      return false;
     }
-    return changed;
   }
 }

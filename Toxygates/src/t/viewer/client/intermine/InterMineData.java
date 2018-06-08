@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -28,8 +28,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
 import otgviewer.client.StringListsStoreHelper;
+import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.Analytics;
@@ -43,14 +43,14 @@ import t.viewer.shared.intermine.IntermineInstance;
  */
 public class InterMineData {
 
-  final Screen parent;
+  final ImportingScreen parent;
   final IntermineServiceAsync tmService = (IntermineServiceAsync) GWT
       .create(IntermineService.class);
 
   private Logger logger = SharedUtils.getLogger("intermine");
   private @Nullable IntermineInstance preferredInstance;
 
-  public InterMineData(Screen parent, @Nullable IntermineInstance preferredInstance) {
+  public InterMineData(ImportingScreen parent, @Nullable IntermineInstance preferredInstance) {
     this.parent = parent;
     this.preferredInstance = preferredInstance;
   }

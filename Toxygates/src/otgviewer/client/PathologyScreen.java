@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -19,6 +19,7 @@
 package otgviewer.client;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.MinimalScreen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.rpc.SampleServiceAsync;
 import otgviewer.shared.Pathology;
@@ -41,12 +42,13 @@ import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 
 /**
  * This screen displays information about pathological findings in a given set of sample groups.
  */
-public class PathologyScreen extends DLWScreen {
+public class PathologyScreen extends MinimalScreen {
   public static final String key = "path";
 
   private CellTable<Pathology> pathologyTable;
@@ -55,6 +57,19 @@ public class PathologyScreen extends DLWScreen {
 
   private SampleClass lastClass;
   private List<Group> lastColumns;
+
+  protected SampleClass chosenSampleClass;
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+
+  @Override
+  public void loadState(AttributeSet attributes) {
+    chosenSampleClass = getParser().getSampleClass(attributes);
+    try {
+      chosenColumns = getParser().getColumns(schema(), "columns", chosenColumns, attributes);
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Exception while retrieving columns", e);
+    }
+  }
 
   public interface Resources extends CellTable.Resources {
     @Override
@@ -72,7 +87,7 @@ public class PathologyScreen extends DLWScreen {
   private final SampleServiceAsync sampleService;
 
   public PathologyScreen(ScreenManager man) {
-    super("Pathologies", key, true, man);
+    super("Pathologies", key, man);
     Resources resources = GWT.create(Resources.class);
     pathologyTable = new CellTable<Pathology>(15, resources);
     sampleService = man.sampleService();
@@ -194,6 +209,7 @@ public class PathologyScreen extends DLWScreen {
   @Override
   public void show() {
     super.show();
+    displayStatusPanel(chosenColumns);
     if (visible
         && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null || !chosenColumns
             .equals(lastColumns))) {
