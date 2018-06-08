@@ -40,7 +40,7 @@ public class MultiDataScreen extends MinimalScreen {
   private List<Group> chosenColumns;
   
   public MultiDataScreen(ScreenManager man) {
-    super("View data", DataScreen.key, false, man);
+    super("View data", DataScreen.key, man, null, null);
     
     //TODO update wiring to yuji's new system
     singleTableScreen = new DataScreen(man);

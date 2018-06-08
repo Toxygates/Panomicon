@@ -21,15 +21,9 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.components.ImportingScreen;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
-import t.viewer.client.*;
-import t.viewer.client.intermine.InterMineData;
-import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
+import t.viewer.client.PersistedState;
 
 public class OTGViewer extends TApplication {
 
@@ -37,19 +31,8 @@ public class OTGViewer extends TApplication {
   protected void initScreens() {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
-    addScreenSeq(new SampleSearchScreen(this));
-//<<<<<<< local
-//    addScreenSeq(new MultiDataScreen(this));
-//=======
-//
-//    List<MenuItem> intermineItems = new ArrayList<MenuItem>();
-//    for (IntermineInstance ii : appInfo.intermineInstances()) {
-//      intermineItems.add(intermineMenu(ii));
-//    }
-//    importingScreen = new DataScreen(this, intermineItems);
-//    addScreenSeq(importingScreen);
-//
-//>>>>>>> other
+    addScreenSeq(new SampleSearchScreen(this));   
+    addScreenSeq(new MultiDataScreen(this));
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));    
@@ -97,38 +80,6 @@ public class OTGViewer extends TApplication {
   @Override
   public UIFactory factory() {    
     return factory;
-  }
-  
-  protected static MenuItem intermineMenu(final ImportingScreen screen,
-      final IntermineInstance inst) {
-    MenuBar mb = new MenuBar(true);
-    final String title = inst.title();
-    MenuItem mi = new MenuItem(title + " data", mb);
-
-    mb.addItem(new MenuItem("Import gene sets from " + title + "...", () -> {      
-      new InterMineData(screen, inst).importLists(true);
-        Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_IMPORT_GENE_SETS,
-            title);      
-    }));
-
-    mb.addItem(new MenuItem("Export gene sets to " + title + "...", () -> {      
-      new InterMineData(screen, inst).exportLists();
-        Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_EXPORT_GENE_SETS,
-            title);      
-    }));
-
-    mb.addItem(new MenuItem("Enrichment...", () -> {      
-        //TODO this should be disabled if we are not on the data screen.
-        //The menu item is only here in order to be logically grouped with other 
-        //TargetMine items, but it is a duplicate and may be removed.
-      screen.runEnrichment(inst);
-    }));
-
-    mb.addItem(new MenuItem("Go to " + title, () -> 
-        Utils.displayURL("Go to " + title + " in a new window?", "Go", inst.webURL())
-        ));
-      
-    return mi;
   }
 
   @Override

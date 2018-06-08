@@ -107,4 +107,8 @@ public interface Screen {
   default Collection<Screen> potentialReplacements() {
     return new ArrayList<Screen>();
   }
+  
+  void showToolbar(Widget toolbar);
+  
+  void hideToolbar(Widget toolbar);
 }

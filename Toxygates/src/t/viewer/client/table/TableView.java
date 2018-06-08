@@ -1,13 +1,8 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import org.apache.log4j.Logger;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.*;
 import otgviewer.client.components.*;
@@ -25,6 +20,10 @@ import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 /**
  * A DataView based on a single ExpressionTable.
  */
@@ -32,14 +31,14 @@ public class TableView extends DataView {
 
   protected ExpressionTable expressionTable;
   
-  protected Screen screen;
+  protected ImportingScreen screen;
   protected AppInfo appInfo;
   protected ScreenManager manager;
   protected UIFactory factory;
   private Map<String, TickMenuItem> tickMenuItems = new HashMap<String, TickMenuItem>();
   protected Logger logger;
   
-  public TableView(Screen screen,
+  public TableView(ImportingScreen screen,
                    String mainTableTitle, 
                    boolean mainTableSelectable) {
     this.screen = screen;
@@ -174,7 +173,7 @@ public class TableView extends DataView {
         // (all probes for the species)
         if (chosenProbes.length > 0) {
           TableView.this.probesChanged(new String[0]);
-          TableView.this.geneSetChanged(null);
+          TableView.this.onGettingExpressionFailed();
           reloadDataIfNeeded();
         }
         displayInfo("Data loading failed.");
@@ -198,6 +197,9 @@ public class TableView extends DataView {
       }
     };
   }  
+  
+  //TODO hook to be overridden - try to remove this
+  protected void onGettingExpressionFailed() { }
   
   public void reloadDataIfNeeded() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "

@@ -3,8 +3,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
 import t.common.shared.AType;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
@@ -82,7 +82,7 @@ public class DualTableView extends TableView {
   protected SplitLayoutPanel splitLayout;
   
   
-  public DualTableView(Screen screen, String mainTableTitle) {
+  public DualTableView(ImportingScreen screen, String mainTableTitle) {
     super(screen, mainTableTitle, true);
     expressionTable.selectionModel().addSelectionChangeHandler(e -> {      
       network.onSourceSelectionChanged();      

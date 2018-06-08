@@ -51,10 +51,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   // together with UIFactory.hasHeatMapMenu
   @Nullable
   private MenuItem heatMapMenu;
-
-  private List<MenuItem> intermineMenuItems;
-
-  GeneSetsMenuItem geneSetsMenu;
+  protected GeneSetsMenuItem geneSetsMenu;
+  
 
   protected String[] chosenProbes = new String[0];
   protected List<Group> chosenColumns = new ArrayList<Group>();
@@ -77,13 +75,12 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     dataView.columnsChanged(chosenColumns);
     dataView.sampleClassChanged(parser.getSampleClass(attributes()));
     dataView.probesChanged(chosenProbes);  
-
     geneSetToolbar.geneSetChanged(chosenGeneSet);
 
     geneSetsMenu.itemListsChanged(chosenItemLists);
   }
 
-  DataScreen(ScreenManager man, List<MenuItem> intermineItems) {
+  DataScreen(ScreenManager man) {
     super("View data", key, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     geneSetToolbar = makeGeneSetSelector();    
@@ -182,6 +179,11 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
           super.beforeGetAssociations();
           DataScreen.this.beforeGetAssociations();
         }
+
+        @Override
+        protected void onGettingExpressionFailed() {
+          geneSetChanged(null);
+        }        
     };
   }
 
@@ -193,6 +195,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
         
     for (MenuItem mi: dataView.topLevelMenus()) {
       addMenu(mi);
+    }
+    
+    for (MenuItem mi: intermineMenuItems(appInfo())) {
+      addAnalysisMenuItem(mi);
     }
     
     addAnalysisMenuItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));   
