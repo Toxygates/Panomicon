@@ -18,8 +18,7 @@
 
 package otgviewer.client;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +26,7 @@ import otgviewer.client.components.*;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 import t.viewer.client.components.DataView;
@@ -61,6 +61,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
   public ItemList chosenGeneSet = null;
   protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+
+  private String[] urlProbes = null;
+  private List<String[]> urlGroups;
+  private List<String> groupNames;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -196,75 +200,18 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
       addAnalysisMenuItem(mi);
     }
 
-<<<<<<< local
-    GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
-    addListener(geneSetsMenu);
+    geneSetsMenu = factory().geneSetsMenuItem(this);
     addMenu(geneSetsMenu.menuItem());       
   }
   
-  @Override
   public void addAnalysisMenuItem(MenuItem mi) {
-    analysisMenu.add(mi);
-=======
-    geneSetsMenu = factory().geneSetsMenuItem(this);
-    //addListener(geneSetsMenu);
-    addMenu(geneSetsMenu.menuItem());
-
-    MenuItem mColumns = new MenuItem("View", false, menuBar);
-    addMenu(mColumns);
-
-    menuBar = new MenuBar(true);
-    mActions = new MenuItem("Tools", false, menuBar);
-    for (MenuItem item : intermineMenuItems) {
-      menuBar.addItem(item);
-    }
-    // TODO: this is effectively a tick menu item without the tick.
-    // It would be nice to display the tick graphic, but then the textual alignment
-    // of the other items on the menu becomes odd.
-    menuBar.addItem(new TickMenuItem("Compare two sample groups", false, false) {
-      @Override
-      public void stateChange(boolean newState) {
-        if (!visible) {
-          // Trigger screen
-          manager.attemptProceed(DataScreen.key);
-          setState(true);
-          showToolbar(expressionTable.analysisTools());
-        } else {
-          // Just toggle
-          if (newState) {
-            showToolbar(expressionTable.analysisTools());
-          } else {
-            hideToolbar(expressionTable.analysisTools());
-          }
-        }
-      }
-    }.menuItem());
-    menuBar.addItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));
-    addMenu(mActions);
-    
-    if (factory().hasHeatMapMenu()) {
-      menuBar.addItem(new MenuItem("Show heat map", () -> makeHeatMap()));
-    }
->>>>>>> other
+    analysisMenu.addItem(mi);
   }
   
   @Override
   public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
     itemListsChanged(itemLists);
     clusteringListsChanged(clusteringLists);
-  }
-
-  @Override
-  public void propagateTo(DataViewListener other) {
-    other.datasetsChanged(getParser().getDatasets());
-    other.sampleClassChanged(getParser().getSampleClass(attributes()));
-    other.probesChanged(chosenProbes);
-    other.compoundsChanged(getParser().getCompounds());
-    other.columnsChanged(chosenColumns);
-    other.customColumnChanged(getParser().getCustomColumn(schema(), attributes()));
-    other.itemListsChanged(chosenItemLists);
-    other.geneSetChanged(chosenGeneSet);
-    other.clusteringListsChanged(chosenClusteringList);
   }
 
   @Override
@@ -291,8 +238,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public void show() {
     super.show();
-    
-    reloadDataIfNeeded();
+    getProbes();
+    getColumns();
+    reloadDataIfNeeded();   
   }
 
   @Override
@@ -353,6 +301,27 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
+  public void setUrlProbes(String[] probes) {
+    urlProbes = probes;
+  }
+
+  /**
+   * Fetch probes if applicable. Used to load probes that were read from URL string.
+   */
+  public void getProbes() {
+    if (urlProbes != null) {
+      manager().probeService().identifiersToProbes(urlProbes, true, true, false, null,
+          new PendingAsyncCallback<String[]>(this,
+              "Failed to resolve gene identifiers") {
+            @Override
+            public void handleSuccess(String[] probes) {
+              importProbes(probes);
+            }
+          });
+    }
+    urlProbes = null;
+  }
+
   public boolean importProbes(String[] probes) {
     if (Arrays.equals(probes, chosenProbes)) {
       return false;
@@ -365,6 +334,36 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
+  public void setUrlColumns(List<String[]> groups, List<String> names) {
+    urlGroups = groups;
+    groupNames = names;
+  }
+
+  /**
+   * Fetch columns if applicable. Used to load columns that were read from URL string.
+   */
+  public void getColumns() {
+    if (urlGroups != null) {
+      manager().sampleService().samplesById(urlGroups,
+          new PendingAsyncCallback<List<Sample[]>>(this,
+              "Failed to look up samples") {
+            @Override
+            public void handleSuccess(List<Sample[]> samples) {
+              int i = 0;
+              List<Group> finalGroups = new ArrayList<Group>();
+              for (Sample[] ss : samples) {
+                Group g = new Group(schema(), groupNames.get(i), ss);
+                i += 1;
+                finalGroups.add(g);
+              }
+              groupNames = null;
+              importColumns(finalGroups);
+            }
+          });
+    }
+    urlGroups = null;
+  }
+
   public boolean importColumns(List<Group> groups) {
     if (groups.size() > 0 && !groups.equals(chosenColumns)) {
       columnsChanged(groups);

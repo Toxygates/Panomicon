@@ -3,6 +3,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
@@ -14,6 +16,7 @@ import t.common.shared.GroupUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
@@ -29,23 +32,22 @@ public class TableView extends DataView {
 
   protected ExpressionTable expressionTable;
   
-  protected DLWScreen screen;
+  protected Screen screen;
   protected AppInfo appInfo;
   protected ScreenManager manager;
   protected UIFactory factory;
   private Map<String, TickMenuItem> tickMenuItems = new HashMap<String, TickMenuItem>();
-
+  protected Logger logger;
   
-  public TableView(DLWScreen screen,
+  public TableView(Screen screen,
                    String mainTableTitle, 
                    boolean mainTableSelectable) {
     this.screen = screen;
     this.appInfo = screen.appInfo();
     this.manager = screen.manager();
     this.factory = manager.factory();
-    
+    this.logger = Logger.getLogger("tableView");
     this.expressionTable = makeExpressionTable(mainTableTitle, mainTableSelectable);
-    this.addListener(expressionTable);
     expressionTable.setDisplayPColumns(false);
     initWidget(content());   
     setupMenus();
@@ -53,6 +55,21 @@ public class TableView extends DataView {
     addToolbar(expressionTable.analysisTools());
   }
   
+  @Override
+  public void columnsChanged(List<Group> columns) {
+    expressionTable.columnsChanged(columns);
+  }
+
+  @Override
+  public void sampleClassChanged(SampleClass sc) {
+    expressionTable.sampleClassChanged(sc);
+  }
+
+  @Override
+  public void probesChanged(String[] probes) {
+    expressionTable.probesChanged(probes);
+  }
+
   public ValueType chosenValueType() {
     return expressionTable.chosenValueType;
   }

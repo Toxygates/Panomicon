@@ -49,7 +49,7 @@ import t.viewer.client.rpc.SampleServiceAsync;
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
  * grid is implemented in the SelectionTDGrid. The rest is in this class.
  */
-abstract public class GroupInspector extends DataListenerWidget implements RequiresResize,
+abstract public class GroupInspector extends Composite implements RequiresResize,
     SelectionTDGrid.UnitListener {
 
   private MultiSelectionGrid msg;
@@ -72,6 +72,15 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
   protected final Logger logger = SharedUtils.getLogger("group");
   private final SampleServiceAsync sampleService;
+
+  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected SampleClass chosenSampleClass;
+  protected List<String> chosenCompounds = new ArrayList<String>();
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+
+  public List<Group> chosenColumns() {
+    return chosenColumns;
+  }
 
   public interface Delegate {
     void groupInspectorDatasetsChanged(Dataset[] ds);
@@ -102,7 +111,6 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
     msg = new MultiSelectionGrid(scr, this);
     vp.add(msg);
-    addListener(msg);
 
     vp.setWidth("440px");
 
@@ -248,7 +256,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
    * @param selectedUnits
    */
   @Override
-  public void unitsChanged(DataListenerWidget sender, List<Unit> selectedUnits) {
+  public void unitsChanged(List<Unit> selectedUnits) {
     if (selectedUnits.isEmpty() && nameIsAutoGen) {
       //retract the previous suggestion
       txtbxGroup.setText("");
@@ -259,7 +267,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   }
 
   @Override
-  public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
+  public void availableUnitsChanged(List<Pair<Unit, Unit>> units) {
     availableUnits = units;
   }
 
@@ -370,22 +378,16 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     return name;
   }
 
-  @Override
   public void sampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
     if (!sc.equals(chosenSampleClass)) {
-      super.sampleClassChanged(sc);
-      // groups.clear();
-      // existingGroupsTable.setItems(new ArrayList<Group>(), true);
       compoundsChanged(new ArrayList<String>());
-      // newGroup();
-    } else {
-      super.sampleClassChanged(sc);
     }
+    msg.sampleClassChanged(sc);
   }
 
-  @Override
   public void datasetsChanged(Dataset[] ds) {
-    super.datasetsChanged(ds);
+    chosenDatasets = ds;
     disableGroupsIfNeeded(ds);
   }
 
@@ -433,6 +435,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         }
       }
       Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
+      datasetsChanged(enAr);
       delegate.groupInspectorDatasetsChanged(enAr);
       sampleService.chooseDatasets(enAr, new PendingAsyncCallback<SampleClass[]>(screen));
       screen.getParser().storeDatasets(chosenDatasets);
@@ -441,9 +444,8 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     }
   }
 
-  @Override
   public void columnsChanged(List<Group> columns) {
-    super.columnsChanged(columns);
+    chosenColumns = columns;
     clearNonStaticGroups();
 
     for (Group g : columns) {
@@ -457,14 +459,14 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     prepareForNewGroup();
   }
 
-  @Override
   public void compoundsChanged(List<String> compounds) {
-    super.compoundsChanged(compounds);
+    chosenCompounds = compounds;
     if (compounds.size() == 0) {
       setEditing(false);
     } else {
       setEditing(true);
     }
+    msg.compoundsChanged(compounds);
   }
 
   public void inactiveColumnsChanged(List<Group> columns) {
@@ -593,7 +595,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     Group g = groups.get(name);
     SampleClass macroClass = 
         SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(), schema);
-    changeSampleClass(macroClass);
+    sampleClassChanged(macroClass);
     delegate.groupInspectorSampleClassChanged(macroClass);
 
     List<String> compounds = 

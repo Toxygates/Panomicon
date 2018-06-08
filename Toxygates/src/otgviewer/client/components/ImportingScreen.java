@@ -29,9 +29,9 @@ import t.common.shared.sample.Group;
 import t.viewer.shared.intermine.IntermineInstance;
 
 public interface ImportingScreen extends Screen {
-  boolean importProbes(String[] probes);
+  void setUrlProbes(String[] probes);
 
-  boolean importColumns(List<Group> groups);
+  void setUrlColumns(List<String[]> groups, List<String> names);
 
   void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
 
@@ -48,6 +48,4 @@ public interface ImportingScreen extends Screen {
   List<Group> chosenColumns();
 
   String[] chosenProbes();
-
-  void propagateTo(DataViewListener other);
 }

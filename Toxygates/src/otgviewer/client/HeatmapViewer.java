@@ -23,12 +23,7 @@ package otgviewer.client;
 import java.util.*;
 import java.util.logging.Logger;
 
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
-import otgviewer.client.components.DLWScreen;
-import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.ImportingScreen;
 import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
@@ -36,18 +31,22 @@ import t.viewer.client.Analytics;
 import t.viewer.client.components.DataView;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 /**
  * Adapts the HeatmapDialog for use inside otgviewer.
  */
 public class HeatmapViewer extends Composite {
 
-  private DataScreen screen;
+  private ImportingScreen screen;
   private Logger logger;
 
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected String[] chosenProbes = new String[0];
 
-  public HeatmapViewer(DataScreen screen) {
+  public HeatmapViewer(ImportingScreen screen) {
     this.screen = screen;
     logger = screen.getLogger();
   }
@@ -58,7 +57,7 @@ public class HeatmapViewer extends Composite {
   }
 
   public class HeatmapDialog extends t.clustering.client.HeatmapDialog<Group, String> {
-    final DataScreen screen = HeatmapViewer.this.screen;
+    final ImportingScreen screen = HeatmapViewer.this.screen;
     private ValueType defaultType;
     private Button saveButton, enrichButton;
     private final ListBox valType;
@@ -166,13 +165,13 @@ public class HeatmapViewer extends Composite {
     }
   }
 
-  public static void show(DLWScreen screen, DataView view, ValueType defaultType) {
+  public static void show(ImportingScreen screen, DataView view, ValueType defaultType) {
     HeatmapViewer viewer = new HeatmapViewer(screen);
     show(viewer, view, defaultType, DataScreen.defaultMatrix);
   }
 
   public static void show(HeatmapViewer viewer, DataView view, ValueType defaultType,
-      String matrixId) {
+      String matrixId) {    
     viewer.chosenColumns = view.chosenColumns();
     viewer.chosenProbes = view.displayedAtomicProbes();
 

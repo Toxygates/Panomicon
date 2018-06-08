@@ -363,9 +363,9 @@ public class GeneSetsMenuItem extends Composite {
   }
 
   /**
-   * Refresh menu items on itemListsChanged fired. Note the events would be also fired when the
-   * DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#lodaState ->
-   * DataListenerWidget#lodaState]
+   * Refresh menu items on itemListsChanged fired. Note the events would be also
+   * fired when the DataScreen is activated. [DataScreen#show -> Screen#show ->
+   * Screen#lodaState -> ? ]
    * 
    * @see otgviewer.client.DataScreen#show()
    */
@@ -375,9 +375,9 @@ public class GeneSetsMenuItem extends Composite {
   }
 
   /**
-   * Refresh menu items on clusteringListsChanged fired. Note the events would be also fired when
-   * the DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#loadState ->
-   * DataListenerWidget#loadState]
+   * Refresh menu items on clusteringListsChanged fired. Note the events would be
+   * also fired when the DataScreen is activated. [DataScreen#show -> Screen#show
+   * -> Screen#loadState -> ? ]
    * 
    * @see otgviewer.client.DataScreen#show()
    */

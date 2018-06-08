@@ -112,7 +112,7 @@ public class DataFilterEditor extends Composite {
 
       if (allSet && emitChange) {
 //        logger.info("Propagate change to " + r.toString());
-        changeSampleClass(r);
+        setSampleClass(r);
       }
     }
   }
@@ -160,7 +160,7 @@ public class DataFilterEditor extends Composite {
 
   // Called as a result of user manipulation of data filter; overridden in 
   // FilterTools to send message back to screen
-  protected void changeSampleClass(SampleClass sc) {
+  protected void setSampleClass(SampleClass sc) {
     chosenSampleClass = sc;
   }
 }

@@ -20,7 +20,6 @@
 package otgviewer.client;
 
 import otgviewer.client.components.*;
-import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.FullCompoundRanker;
 
@@ -30,8 +29,8 @@ import otgviewer.client.components.ranking.FullCompoundRanker;
  */
 public class ClassicOTGFactory extends OTGFactory {
   @Override
-  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
-    return new FullCompoundRanker(_screen, selector);
+  public CompoundRanker compoundRanker(Screen _screen) {
+    return new FullCompoundRanker(_screen);
   }
 
   @Override

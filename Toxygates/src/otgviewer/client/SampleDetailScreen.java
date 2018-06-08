@@ -67,7 +67,6 @@ public class SampleDetailScreen extends MinimalScreen {
 
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, man);
-    //    this.addListener(atd);
     sampleService = man.sampleService();
     atd = new AnnotationTDGrid(this);
     mkTools();

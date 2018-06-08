@@ -41,14 +41,13 @@ import t.viewer.shared.SeriesType;
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
  * compound selector and performed on the server side.
  */
-abstract public class CompoundRanker extends DataListenerWidget {
+abstract public class CompoundRanker extends Composite {
   protected final Resources resources;
-  final RankingCompoundSelector selector;
+  private RankingCompoundSelector selector;
   protected final Screen screen;
   protected ListChooser listChooser;
 
   final GeneOracle oracle;
-  List<String> availableCompounds = chosenCompounds;
 
   protected final ProbeServiceAsync probeService;
   protected final SampleServiceAsync sampleService;
@@ -64,6 +63,13 @@ abstract public class CompoundRanker extends DataListenerWidget {
   
   final DataSchema schema;
 
+  protected SampleClass chosenSampleClass;
+  protected List<String> chosenCompounds = new ArrayList<String>();
+  protected List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+  protected ItemList chosenGeneSet = null;
+  protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+  List<String> availableCompounds = chosenCompounds;
+
   public SampleClass sampleClass() {
     return chosenSampleClass.copy();
   }
@@ -72,8 +78,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
    * 
    * @param selector the selector that this CompoundRanker will communicate with.
    */
-  public CompoundRanker(Screen _screen, RankingCompoundSelector selector) {
-    this.selector = selector;
+  public CompoundRanker(Screen _screen) {
     screen = _screen;
     oracle = new GeneOracle(screen);
     schema = screen.schema();
@@ -81,7 +86,6 @@ abstract public class CompoundRanker extends DataListenerWidget {
     probeService = _screen.manager().probeService();
     sampleService = _screen.manager().sampleService();
 
-    selector.addListener(this);
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
       @Override
       protected void preSaveAction() {
@@ -150,6 +154,10 @@ abstract public class CompoundRanker extends DataListenerWidget {
     hp.add(rankTypePanel);
     
     hp.add(new Button("Rank", (ClickHandler) e -> performRanking()));      
+  }
+
+  public void setSelector(RankingCompoundSelector selector) {
+    this.selector = selector;
   }
 
   protected abstract int gridColumns();
@@ -251,18 +259,19 @@ abstract public class CompoundRanker extends DataListenerWidget {
   }
 
 
-  @Override
   public void sampleClassChanged(SampleClass sc) {
-    super.sampleClassChanged(sc);
+    chosenSampleClass = sc;
     oracle.setFilter(sc);
     for (RuleInputHelper rih : inputHelpers) {
       rih.sampleClassChanged(sc);
     }
   }
 
-  @Override
+  public void compoundsChanged(List<String> compounds) {
+    chosenCompounds = compounds;
+  }
+
   public void availableCompoundsChanged(List<String> compounds) {
-    super.availableCompoundsChanged(compounds);
     if (!compounds.equals(availableCompounds)) {
       for (RuleInputHelper rih : inputHelpers) {
         rih.availableCompoundsChanged(compounds);
@@ -271,15 +280,13 @@ abstract public class CompoundRanker extends DataListenerWidget {
     availableCompounds = compounds;
   }
 
-  @Override
   public void itemListsChanged(List<ItemList> lists) {
-    super.itemListsChanged(lists);
+    chosenItemLists = lists;
     listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
   }
 
-  @Override
   public void clusteringListsChanged(List<ItemList> lists) {
-    super.clusteringListsChanged(lists);     
+    chosenClusteringList = lists;
     listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
   }
   

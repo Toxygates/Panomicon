@@ -39,14 +39,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
-import otgviewer.client.components.DLWScreen.QueuedAction;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.rpc.ProbeService;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import otgviewer.client.rpc.SampleService;
 import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.*;
+import t.common.shared.sample.SampleGroup;
 import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
@@ -251,20 +250,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       }
     }
     if (useProbes != null && useProbes.length > 0) {
-      final String[] pr = useProbes;
-      importingScreen.enqueue(new QueuedAction("Set probes from URL/POST") {
-        @Override
-        public void run() {
-          probeService.identifiersToProbes(pr, true, true, false, null,
-              new PendingAsyncCallback<String[]>(importingScreen,
-                  "Failed to resolve gene identifiers") {
-                @Override
-                public void handleSuccess(String[] probes) {
-                  importingScreen.importProbes(probes);
-                }
-              });
-        }
-      });
+      importingScreen.setUrlProbes(useProbes);
       return true;
     } else {
       return false;
@@ -290,26 +276,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
 
     if (useGroups.size() > 0) {
-      importingScreen.enqueue(new QueuedAction("Set columns from URL") {
-        @Override
-        public void run() {
-          sampleService.samplesById(useGroups,
-              new PendingAsyncCallback<List<Sample[]>>(importingScreen,
-                  "Failed to look up samples") {
-            @Override
-            public void handleSuccess(List<Sample[]> samples) {
-              int i = 0;
-              List<Group> finalGroups = new ArrayList<Group>();
-              for (Sample[] ss : samples) {
-                Group g = new Group(schema(), groupNames.get(i), ss);
-                i += 1;
-                finalGroups.add(g);
-              }
-                  importingScreen.importColumns(finalGroups);
-            }
-          });
-        }
-      });
+      importingScreen.setUrlColumns(useGroups, groupNames);
       return true;
     } else {
       return false;

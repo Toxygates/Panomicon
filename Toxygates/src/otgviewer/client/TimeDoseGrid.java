@@ -24,7 +24,8 @@ import java.util.logging.Logger;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -35,7 +36,7 @@ import t.viewer.client.rpc.SampleServiceAsync;
  * A widget that displays times and doses for a number of compounds in a grid layout. For each
  * position in the grid, an arbitrary widget can be displayed.
  */
-abstract public class TimeDoseGrid extends DataListenerWidget {
+abstract public class TimeDoseGrid extends Composite {
   private Grid grid = new Grid();
 
   protected VerticalPanel rootPanel;
@@ -56,6 +57,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   protected Logger logger = SharedUtils.getLogger("tdgrid");
 
   protected String emptyMessage;
+
+  protected SampleClass chosenSampleClass;
+  protected List<String> chosenCompounds = new ArrayList<String>();
 
   /**
    * To be overridden by subclasses
@@ -102,9 +106,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     mainPanel.add(grid);
   }
 
-  @Override
   public void sampleClassChanged(SampleClass sc) {
-    super.sampleClassChanged(sc);
+    chosenSampleClass = sc;
     if (!sc.equals(chosenSampleClass)) {
       minorValues = new ArrayList<String>();
       logger.info("SC change trigger minor " + sc);
@@ -112,9 +115,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     } 
   }
 
-  @Override
   public void compoundsChanged(List<String> compounds) {
-    super.compoundsChanged(compounds);
+    chosenCompounds = compounds;
     rootPanel.clear();
     if (compounds.isEmpty()) {
       setEmptyMessage(emptyMessage);

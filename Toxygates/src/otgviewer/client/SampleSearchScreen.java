@@ -29,6 +29,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
+import t.common.shared.Dataset;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.*;
@@ -384,5 +385,10 @@ public class SampleSearchScreen extends MinimalScreen
   public void filterToolsSampleClassChanged(SampleClass sc) {
     chosenSampleClass = sc;
     getParser().storeSampleClass(sc);
+  }
+
+  @Override
+  public void filterToolsDatasetsChanged(Dataset[] ds) {
+    getParser().storeDatasets(ds);
   }
 }

@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.Screen;
+
 /**
  * A piece of client state that can be individually stored and applied.
  * @param <T> The type of the state
@@ -86,6 +88,15 @@ abstract public class PersistedState<T> {
    * Optionally override this method to get callbacks when the value changes
    */
   protected void onValueChange(@Nullable T state) { }
+  
+  /**
+   * Convenience method
+   * @param screen
+   * @param newState
+   */
+  public void changeAndPersist(Screen screen, @Nullable T newState) {
+    changeAndPersist(screen.manager().getParser(), newState);
+  }
   
   /**
    * Change the value of this state as a result of e.g. 

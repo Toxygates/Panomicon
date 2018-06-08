@@ -47,17 +47,20 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   private CompoundSelector compoundSelector;
   private FilterTools filterTools;
 
-  protected Dataset[] chosenDatasets;
+  protected Dataset[] chosenDatasets = new Dataset[0];
   protected List<Group> chosenColumns = new ArrayList<Group>();
 
   @Override
   public void loadState(AttributeSet attributes) {
     chosenDatasets = getParser().getDatasets();
     filterTools.datasetsChanged(chosenDatasets);
+    groupInspector.datasetsChanged(chosenDatasets);
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
     chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    List<String> compounds = getParser().getCompounds();
+    groupInspector.compoundsChanged(compounds);
     groupInspector.columnsChanged(chosenColumns);
 
     if (visible) {
@@ -83,26 +86,16 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
     // This needs to happen after groupInspector.inactiveColumnsChanged, which causes
     // the compound selector's selection to be cleared.
-    compoundSelector.compoundsChanged(getParser().getCompounds());
+    compoundSelector.compoundsChanged(compounds);
   }
 
   public ColumnScreen(ScreenManager man) {
     super("Sample groups", key, man, man.resources().groupDefinitionHTML(),
         man.resources().groupDefinitionHelp());
 
-    compoundSelector = new CompoundSelector(this, man.schema().majorParameter().title(), true, true) {
-      @Override
-      public void changeCompounds(List<String> compounds) {
-        super.changeCompounds(compounds);
-        ColumnScreen.this.getParser().storeCompounds(chosenCompounds);
-      }
-    };
-    // this.addListener(cs);
+    compoundSelector = new CompoundSelector(this, man.schema().majorParameter().title(), true, true);
     compoundSelector.addStyleName("compoundSelector");
-
-    chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
-    // this.addListener(filterTools);
   }
 
   @Override
@@ -121,8 +114,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public Widget content() {
     groupInspector = factory().groupInspector(compoundSelector, this, this);
-    // this.addListener(groupInspector);
-    compoundSelector.addListener(groupInspector);
     groupInspector.datasetsChanged(chosenDatasets);
     groupInspector.addStaticGroups(appInfo().predefinedSampleGroups());
     return groupInspector;
@@ -172,6 +163,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void filterToolsSampleClassChanged(SampleClass sc) {
     getParser().storeSampleClass(sc);
     compoundSelector.sampleClassChanged(sc);
+    groupInspector.sampleClassChanged(sc);
   }
 
   // GroupInspector.Delegate methods
@@ -179,6 +171,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void groupInspectorDatasetsChanged(Dataset[] ds) {
     chosenDatasets = ds;
     filterTools.datasetsChanged(ds);
+  }
+
+  @Override
+  public void filterToolsDatasetsChanged(Dataset[] ds) {
+    getParser().storeDatasets(ds);
+    groupInspector.datasetsChanged(ds);
   }
 
   @Override
@@ -190,5 +188,16 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
     getParser().storeItemLists(itemLists);
+  }
+
+  @Override
+  public void CompoundSelectorCompoundsChanged(List<String> compounds) {
+    groupInspector.compoundsChanged(compounds);
+    ColumnScreen.this.getParser().storeCompounds(compounds);
+  }
+
+  @Override
+  public void CompoundSelectorSampleClassChanged(SampleClass sc) {
+    groupInspector.sampleClassChanged(sc);
   }
 }

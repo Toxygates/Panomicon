@@ -3,8 +3,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import t.common.shared.AType;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
@@ -82,7 +82,7 @@ public class DualTableView extends TableView {
   protected SplitLayoutPanel splitLayout;
   
   
-  public DualTableView(DLWScreen screen, String mainTableTitle) {
+  public DualTableView(Screen screen, String mainTableTitle) {
     super(screen, mainTableTitle, true);
     expressionTable.selectionModel().addSelectionChangeHandler(e -> {      
       network.onSourceSelectionChanged();      
@@ -244,7 +244,7 @@ public class DualTableView extends TableView {
 //  }
   
   @Override
-  protected void changeColumns(List<Group> columns) {
+  public void columnsChanged(List<Group> columns) {
     logger.info("Dual mode pick for " + columns.size() + " columns");
     mode = pickMode(columns);    
     
@@ -255,7 +255,7 @@ public class DualTableView extends TableView {
     sideExpressionTable.setTitleHeader(mode.sideType);
     sideExpressionTable.setStyleAndApply(mode.sideStyle());
 
-    super.changeColumns(columnsForMainTable(columns));
+    super.columnsChanged(columnsForMainTable(columns));
     
     List<Group> sideColumns = columnsForSideTable(columns);
     if (sideExpressionTable != null && !sideColumns.isEmpty()) {    

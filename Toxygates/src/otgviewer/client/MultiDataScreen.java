@@ -22,6 +22,9 @@ import java.util.*;
 
 import otgviewer.client.components.*;
 import t.common.shared.GroupUtils;
+import t.common.shared.sample.Group;
+import t.model.sample.AttributeSet;
+import t.viewer.client.StorageParser;
 import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
 
@@ -30,16 +33,17 @@ import t.viewer.client.table.TableView;
  * depending on the configured state.
  * This screen itself has no content and will not be shown.
  */
-public class MultiDataScreen extends DLWScreen implements ImportingScreen {
+public class MultiDataScreen extends MinimalScreen {
 
   private DataScreen singleTableScreen, dualTableScreen;
+  
+  private List<Group> chosenColumns;
   
   public MultiDataScreen(ScreenManager man) {
     super("View data", DataScreen.key, false, man);
     
     //TODO update wiring to yuji's new system
     singleTableScreen = new DataScreen(man);
-    addListener(singleTableScreen);
     
     dualTableScreen = new DataScreen(man) {
       @Override
@@ -52,9 +56,15 @@ public class MultiDataScreen extends DLWScreen implements ImportingScreen {
 //      super.beforeGetAssociations();
 //      DataScreen.this.beforeGetAssociations();
 //    }
-    };
-    addListener(dualTableScreen);
+    };    
   }
+  
+  @Override
+  public void loadState(AttributeSet attributes) {
+    StorageParser parser = getParser();    
+    chosenColumns = parser.getChosenColumns(schema(), attributes());    
+  }
+  
 
   public Screen preferredReplacement() {
     String[] types =

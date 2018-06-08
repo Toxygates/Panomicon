@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
-import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
@@ -34,10 +33,6 @@ import t.viewer.shared.AppInfo;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
-/**
- * Minimal screen interface encapsulating the core functionality in DLWScreen that will need to be
- * implemented by new screens not deriving from DataListenerWidget.
- */
 public interface Screen {
   default AppInfo appInfo() {
     return manager().appInfo();
@@ -82,8 +77,6 @@ public interface Screen {
   void loadState(AttributeSet attributes);
 
   void loadPersistedState();
-
-  void enqueue(QueuedAction qa);
 
   void show();
 

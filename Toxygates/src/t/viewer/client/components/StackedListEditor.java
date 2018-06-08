@@ -33,7 +33,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
-import otgviewer.client.components.*;
+import otgviewer.client.components.ListChooser;
+import otgviewer.client.components.ResizableTextArea;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.common.shared.*;
@@ -251,6 +252,10 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     }
   }
 
+  public interface Delegate {
+    void itemListsChanged(List<ItemList> itemLists);
+  }
+
   protected List<SelectionMethod<String>> methods = new ArrayList<SelectionMethod<String>>();
   protected Set<String> selectedItems = new HashSet<String>();
   protected Set<String> availableItems = new HashSet<String>();
@@ -269,7 +274,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * @param itemTitle Header for the item type being selected (in certain cases)
    * @param predefinedLists Predefined lists that the user may choose from
    */
-  public StackedListEditor(final DataListenerWidget parent, 
+  public StackedListEditor(final Delegate delegate,
       String listType, String itemTitle,
       int maxAutoSel, Collection<StringList> predefinedLists,
       boolean withListSelector, boolean withFreeEdit) {
@@ -292,7 +297,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
         @Override
         protected void listsChanged(List<ItemList> itemLists) {
-          parent.chosenItemLists = itemLists;
+          delegate.itemListsChanged(itemLists);
           sle.listsChanged(itemLists);
         }
       };

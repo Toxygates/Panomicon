@@ -4,23 +4,27 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.ui.*;
-
-import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
+import t.model.SampleClass;
 import t.viewer.client.PersistedState;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.shared.Association;
+
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A composite that displays information from a set of columns and a 
  * set of probes. 
  */
-public abstract class DataView extends DataListenerWidget {
+public abstract class DataView extends Composite {
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
+  
+  protected SampleClass chosenSampleClass;
+  protected String[] chosenProbes = new String[0];
+  protected List<Group> chosenColumns = new ArrayList<Group>();
   
   /**
    * May be overridden to display status messages about data loading
@@ -89,4 +93,20 @@ public abstract class DataView extends DataListenerWidget {
   }
   
   public Collection<Widget> toolbars() { return toolbars; }
+  
+  public void columnsChanged(List<Group> columns) {
+    chosenColumns = columns;
+  }
+
+  public List<Group> chosenColumns() {
+    return chosenColumns;
+  }
+  
+  public void sampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
+  }
+
+  public void probesChanged(String[] probes) {
+    chosenProbes = probes;
+  }
 }

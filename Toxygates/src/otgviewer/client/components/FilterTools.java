@@ -48,6 +48,7 @@ public class FilterTools extends Composite {
 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
+    void filterToolsDatasetsChanged(Dataset[] ds);
   }
 
   public <T extends Screen & Delegate> FilterTools(T screen) {
@@ -72,8 +73,8 @@ public class FilterTools extends Composite {
 
     dfe = new DataFilterEditor(screen) {
       @Override
-      protected void changeSampleClass(SampleClass sc) {
-        super.changeSampleClass(sc);
+      protected void setSampleClass(SampleClass sc) {
+        super.setSampleClass(sc);
         FilterTools.this.delegate.filterToolsSampleClassChanged(sc);
       }
     };
@@ -107,7 +108,7 @@ public class FilterTools extends Composite {
           @Override
           public void onOK() {
             datasetsChanged(getSelected().toArray(new Dataset[0]));
-            screen.getParser().storeDatasets(chosenDatasets);
+            delegate.filterToolsDatasetsChanged(chosenDatasets);
             db.hide();
           }
 

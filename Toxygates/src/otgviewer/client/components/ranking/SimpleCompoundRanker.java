@@ -19,13 +19,12 @@
 package otgviewer.client.components.ranking;
 
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import t.viewer.client.Utils;
 
 public class SimpleCompoundRanker extends CompoundRanker {
 
-  public SimpleCompoundRanker(Screen _screen, RankingCompoundSelector selector) {
-    super(_screen, selector);
+  public SimpleCompoundRanker(Screen _screen) {
+    super(_screen);
   }
 
   @Override
