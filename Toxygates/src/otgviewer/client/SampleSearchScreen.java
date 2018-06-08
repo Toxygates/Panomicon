@@ -22,26 +22,31 @@ package otgviewer.client;
 
 import java.util.*;
 
-import otgviewer.client.components.*;
-import t.common.shared.sample.*;
-import t.model.sample.*;
-import t.viewer.client.Utils;
-import t.viewer.client.components.search.*;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
-
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-public class SampleSearchScreen extends DataFilterScreen implements Search.Delegate, ResultTable.Delegate {
+import otgviewer.client.components.*;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
+import t.model.sample.*;
+import t.viewer.client.Utils;
+import t.viewer.client.components.search.*;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SampleServiceAsync;
+
+public class SampleSearchScreen extends MinimalScreen
+    implements Search.Delegate, ResultTable.Delegate, FilterTools.Delegate {
   public static final String key = "search";
 
   private SampleServiceAsync sampleService;
 
   private FilterTools filterTools;
+
+  protected SampleClass chosenSampleClass;
+  protected List<Group> chosenColumns = new ArrayList<Group>();
 
   private Widget tools;
   private ConditionEditor conditionEditor;
@@ -65,6 +70,14 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
 
   private Collection<ParameterTickItem> parameterMenuItems;
 
+  @Override
+  public void loadState(AttributeSet attributes) {
+    filterTools.datasetsChanged(getParser().getDatasets());
+    chosenSampleClass = getParser().getSampleClass(attributes);
+    filterTools.sampleClassChanged(chosenSampleClass);
+    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+  }
+
   private void getParameterInfo() {
     List<Attribute> searchParams = attributes().getNumerical();
     List<Attribute> nonSearchParams = attributes().getString();
@@ -77,10 +90,9 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   }
 
   public SampleSearchScreen(ScreenManager man) {
-    super("Sample search", key, true, man, man.resources().sampleSearchHTML(),
+    super("Sample search", key, man, man.resources().sampleSearchHTML(),
         man.resources().sampleSearchHelp());
     filterTools = new FilterTools(this);
-    this.addListener(filterTools);
 
     sampleService = man.sampleService();
 
@@ -122,8 +134,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
             Group pendingGroup = new Group(schema(), name, allUnits);
 
             chosenColumns.add(pendingGroup);
-            columnsChanged(chosenColumns);
-            storeColumns(manager().getParser());
+          getParser().storeColumns("columns", chosenColumns);
 
             currentSearch.helper().selectionTable().clearSelection();
 
@@ -144,8 +155,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
 
   private String findAvailableGroupName(String prefix) throws Exception {
     List<Group> inactiveGroups =
-        loadColumns(manager().getParser(), schema(), "inactiveColumns", new ArrayList<Group>(),
-            attributes());
+        getParser().getColumns(schema(), "inactiveColumns", attributes());
 
     Set<String> groupNames = new HashSet<String>();
     for (Group group : chosenColumns) {
@@ -367,5 +377,12 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   @Override
   protected ImageResource getHelpImage() {
     return resources().sampleSearchHelp();
+  }
+
+  //FilterTools.Delegate method
+  @Override
+  public void filterToolsSampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
+    getParser().storeSampleClass(sc);
   }
 }

@@ -19,6 +19,11 @@
 package otgviewer.client.components;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
 import t.common.client.Utils;
 import t.common.shared.Dataset;
@@ -26,22 +31,33 @@ import t.model.SampleClass;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-
 /**
  * Tools to select from the available datasets, and then from
  * the available sample macro classes within those datasets.
  */
-public class FilterTools extends DataListenerWidget {
+public class FilterTools extends Composite {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
-  final DLWScreen screen;
+  final Screen screen;
+  final Delegate delegate;
   final SampleServiceAsync sampleService;
 
-  public FilterTools(final DLWScreen screen) {
+  private Logger logger;
+
+  protected Dataset[] chosenDatasets = new Dataset[0];
+
+  public interface Delegate {
+    void filterToolsSampleClassChanged(SampleClass sc);
+  }
+
+  public <T extends Screen & Delegate> FilterTools(T screen) {
+    this(screen, screen);
+  }
+
+  public FilterTools(final Screen screen, Delegate delegate) {
     this.screen = screen;
+    this.delegate = delegate;
+    logger = screen.getLogger();
     sampleService = screen.manager().sampleService();
 
     filterTools = new HorizontalPanel();
@@ -58,15 +74,9 @@ public class FilterTools extends DataListenerWidget {
       @Override
       protected void changeSampleClass(SampleClass sc) {
         super.changeSampleClass(sc);
-        screen.sampleClassChanged(sc);
-
-        // TODO Actions are enqueued in TimeDoseGrid and CompoundSelector.
-        // I'm not sure that exposing the action queue mechanism
-        // like this is a good thing to do. Think of a better way.
-        screen.runActions();
+        FilterTools.this.delegate.filterToolsSampleClassChanged(sc);
       }
     };
-    this.addListener(dfe);
     filterTools.add(dfe);
   }
 
@@ -97,7 +107,7 @@ public class FilterTools extends DataListenerWidget {
           @Override
           public void onOK() {
             datasetsChanged(getSelected().toArray(new Dataset[0]));
-            storeDatasets(getParser(screen));            
+            screen.getParser().storeDatasets(chosenDatasets);
             db.hide();
           }
 
@@ -113,9 +123,8 @@ public class FilterTools extends DataListenerWidget {
     db.show();
   }
 
-  @Override
   public void datasetsChanged(Dataset[] ds) {
-    super.datasetsChanged(ds);
+    chosenDatasets = ds;
     getSampleClasses();
   }
 
@@ -128,5 +137,9 @@ public class FilterTools extends DataListenerWidget {
         dfe.setAvailable(sampleClasses);
       }
     });
+  }
+  
+  public void sampleClassChanged(SampleClass sc) {
+    dfe.sampleClassChanged(sc);
   }
 }

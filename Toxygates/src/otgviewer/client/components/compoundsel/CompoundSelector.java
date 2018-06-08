@@ -48,14 +48,29 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   private DockLayoutPanel dp;
 
   private Widget north;
-  protected final DLWScreen screen;
+  protected final Screen screen;
+  protected final Delegate delegate;
   private final String majorParameter;
 
   private final static int MAX_AUTO_SEL = 20;
 
-  public CompoundSelector(final DLWScreen screen, String heading, boolean withListSelector,
-      boolean withFreeEdit) {
+  public Delegate delegate() {
+    return delegate;
+  }
+
+  public interface Delegate {
+    void CompoundSelectorItemListsChanged(List<ItemList> itemLists);
+  }
+
+  public <T extends Screen & Delegate> CompoundSelector(T screen, String heading,
+      boolean withListSelector, boolean withFreeEdit) {
+    this(screen, screen, heading, withListSelector, withFreeEdit);
+  }
+
+  public CompoundSelector(final Screen screen, Delegate delegate, String heading,
+      boolean withListSelector, boolean withFreeEdit) {
     this.screen = screen;
+    this.delegate = delegate;
     this.sampleService = screen.manager().sampleService();
     dp = new DockLayoutPanel(Unit.PX);
     this.majorParameter = screen.schema().majorParameter().id();
@@ -86,8 +101,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
           @Override
           protected void listsChanged(List<ItemList> itemLists) {
-            screen.itemListsChanged(itemLists);
-            screen.storeItemLists(getParser(screen));
+            delegate.CompoundSelectorItemListsChanged(itemLists);
           }
           
           @Override

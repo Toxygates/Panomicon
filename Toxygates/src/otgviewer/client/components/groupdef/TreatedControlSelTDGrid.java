@@ -19,7 +19,7 @@
  */
 package otgviewer.client.components.groupdef;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.shared.sample.Unit;
 
 /**
@@ -27,7 +27,7 @@ import t.common.shared.sample.Unit;
  */
 public class TreatedControlSelTDGrid extends SelectionTDGrid {
 
-  public TreatedControlSelTDGrid(DLWScreen screen, UnitListener listener) {
+  public TreatedControlSelTDGrid(Screen screen, UnitListener listener) {
     super(screen, listener);
   }
 

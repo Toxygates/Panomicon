@@ -20,8 +20,6 @@
 
 package otgviewer.client.components;
 
-import static t.viewer.client.StorageParser.*;
-
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -30,9 +28,6 @@ import com.google.gwt.user.client.ui.Composite;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.model.sample.AttributeSet;
-import t.viewer.client.ClientState;
-import t.viewer.client.StorageParser;
 
 /**
  * A Composite that is also a DataViewListener. 
@@ -66,13 +61,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   public DataListenerWidget() {
     super();
-  }
-  
-  public ClientState state() {
-    return new ClientState(chosenDatasets, chosenSampleClass,
-        chosenProbes, chosenCompounds, chosenColumns,
-        chosenCustomColumn, chosenItemLists, chosenGeneSet,
-        chosenClusteringList);
   }
 
   public void addListener(DataViewListener l) {
@@ -222,176 +210,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
-  public void propagateTo(DataViewListener other) {
-    other.datasetsChanged(chosenDatasets);
-    other.sampleClassChanged(chosenSampleClass);
-    other.probesChanged(chosenProbes);
-    other.compoundsChanged(chosenCompounds);
-    other.columnsChanged(chosenColumns);
-    other.customColumnChanged(chosenCustomColumn);
-    other.itemListsChanged(chosenItemLists);
-    other.geneSetChanged(chosenGeneSet);
-    other.clusteringListsChanged(chosenClusteringList);
-  }
-
-  protected StorageParser getParser(Screen s) {
-    return s.manager().getParser();    
-  }
-
-  /**
-   * Store this widget's state into local storage.
-   */
-  protected void storeState(Screen s) {
-    StorageParser p = getParser(s);
-    storeState(p);
-  }
-
-  /**
-   * Store this widget's state into local storage.
-   */
-  protected void storeState(StorageParser p) {
-    storeColumns(p);
-    storeProbes(p);
-    storeGeneSet(p);
-  }
-
-  protected void storeColumns(StorageParser p, String key,
-      Collection<? extends SampleColumn> columns) {
-    if (!columns.isEmpty()) {
-      SampleColumn first = columns.iterator().next();
-      String representative =
-          (first.getSamples().length > 0) ? first.getSamples()[0].toString()
-              : "(no samples)";
-
-      logger.info("Storing columns for " + key + " : " + first + " : "
-          + representative + " ...");
-      p.setItem(key, packColumns(columns));
-    } else {
-      logger.info("Clearing stored columns for: " + key);
-      p.clearItem(key);
-    }
-  }
-
-  public void storeColumns(StorageParser p) {
-    storeColumns(p, "columns", chosenColumns);
-  }
-
-  public static void storeCustomColumn(StorageParser p, DataColumn<?> column) {
-    p.storeCustomColumn(column);
-  }
-
-  // Separator hierarchy for columns:
-  // ### > ::: > ^^^ > $$$
-  protected List<Group> loadColumns(StorageParser p, DataSchema schema,
-      String key, Collection<? extends SampleColumn> expectedColumns, AttributeSet attributes)
-      throws Exception {
-    List<Group> storedColumns = p.getColumns(schema, key, expectedColumns, attributes);
-    if (storedColumns == null || packColumns(storedColumns).equals(packColumns(expectedColumns))) {
-      return null;
-    } else {
-      return storedColumns;
-    }
-  }
-
-
-  public void storeProbes(StorageParser p) {
-    p.setItem("probes", packProbes(chosenProbes));
-  }
-
-  public void storeItemLists(StorageParser p) {
-    p.setItem("lists", packItemLists(chosenItemLists, "###"));
-  }
-
-  public void storeGeneSet(StorageParser p) {
-    p.setItem("geneset", (chosenGeneSet != null ? chosenGeneSet.pack() : ""));
-  }
-
-  public void storeClusteringLists(StorageParser p) {
-    p.setItem("clusterings", packItemLists(chosenClusteringList, "###"));
-  }
-  
-  private String packCompounds(StorageParser p) {
-    return StorageParser.packList(chosenCompounds, "###");
-  }
-  
-  public void storeCompounds(StorageParser p) {
-    p.setItem("compounds", packCompounds(p));
-  }
-  
-  private String packDatasets(StorageParser p) {
-    List<String> r = new ArrayList<String>();
-    for (Dataset d: chosenDatasets) {
-      r.add(d.getTitle());
-    }
-    return StorageParser.packList(r, "###");
-  }
-  
-  public void storeDatasets(StorageParser p) {  
-    p.setItem("datasets", packDatasets(p));
-  }
-  
-  public void storeSampleClass(StorageParser p) {
-    if (chosenSampleClass != null) {
-      p.setItem("sampleClass", t.common.client.Utils.packSampleClass(chosenSampleClass));
-    }    
-  }
-  
-  public List<ItemList> loadItemLists(StorageParser p) {
-    return loadLists(p, "lists");
-  }
-
-  public List<ItemList> loadClusteringLists(StorageParser p) {
-    return loadLists(p, "clusterings");
-  }
-
-  public List<ItemList> loadLists(StorageParser p, String name) {
-    List<ItemList> r = new ArrayList<ItemList>();
-    String v = p.getItem(name);
-    if (v != null) {
-      String[] spl = v.split("###");
-      for (String x : spl) {
-        ItemList il = ItemList.unpack(x);
-        if (il != null) {
-          r.add(il);
-        }
-      }
-    }
-    return r;
-  }
-  
-  public void loadDatasets(StorageParser p) {
-    String v = p.getItem("datasets");
-    if (v == null || v.equals(packDatasets(p))) {
-      return;
-    }
-    List<Dataset> r = new ArrayList<Dataset>();
-    for (String ds: v.split("###")) {
-      r.add(new Dataset(ds, "", "", null, ds, 0));
-    }
-    changeDatasets(r.toArray(new Dataset[0]));
-  }
-  
-  public void loadCompounds(StorageParser p) {
-    String v = p.getItem("compounds");
-    if (v == null || v.equals(packCompounds(p))) {
-      return;
-    }
-    List<String> r = new ArrayList<String>();    
-    for (String c: v.split("###")) {
-      r.add(c);
-    }
-    changeCompounds(r);
-  }
-  
-  public void loadSampleClass(StorageParser p, AttributeSet attributes) {
-    SampleClass storedClass = p.getSampleClass(attributes);
-    if (storedClass != null && !t.common.client.Utils.packSampleClass(storedClass)
-        .equals(t.common.client.Utils.packSampleClass(chosenSampleClass))) {
-      changeSampleClass(storedClass);
-    }
-  }
-
-  protected List<Sample> getAllSamples() {
+  public List<Sample> getAllSamples() {
     List<Sample> list = new ArrayList<Sample>();
     for (Group g : chosenColumns) {
       List<Sample> ss = Arrays.asList(g.getSamples());

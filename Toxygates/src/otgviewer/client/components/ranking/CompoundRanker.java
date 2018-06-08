@@ -44,7 +44,7 @@ import t.viewer.shared.SeriesType;
 abstract public class CompoundRanker extends DataListenerWidget {
   protected final Resources resources;
   final RankingCompoundSelector selector;
-  protected final DLWScreen screen;
+  protected final Screen screen;
   protected ListChooser listChooser;
 
   final GeneOracle oracle;
@@ -64,11 +64,15 @@ abstract public class CompoundRanker extends DataListenerWidget {
   
   final DataSchema schema;
 
+  public SampleClass sampleClass() {
+    return chosenSampleClass.copy();
+  }
+
   /**
    * 
    * @param selector the selector that this CompoundRanker will communicate with.
    */
-  public CompoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
+  public CompoundRanker(Screen _screen, RankingCompoundSelector selector) {
     this.selector = selector;
     screen = _screen;
     oracle = new GeneOracle(screen);
@@ -109,12 +113,10 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
       @Override
       protected void listsChanged(List<ItemList> lists) {
-        screen.itemListsChanged(lists);
-        screen.storeItemLists(getParser(screen));
+        selector.delegate().CompoundSelectorItemListsChanged(lists);
       }
     };
     listChooser.addStyleName("colored");
-    selector.addListener(listChooser);
 
     csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     initWidget(csVerticalPanel);
@@ -272,13 +274,13 @@ abstract public class CompoundRanker extends DataListenerWidget {
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     super.clusteringListsChanged(lists);     
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
   }
   
   

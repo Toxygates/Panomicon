@@ -23,11 +23,12 @@ package otgviewer.client.components;
 import java.util.*;
 import java.util.logging.Logger;
 
+import otgviewer.client.Resources;
+import otgviewer.client.UIFactory;
 import otgviewer.client.components.DLWScreen.QueuedAction;
 import t.common.shared.DataSchema;
-import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
-import t.viewer.client.ClientState;
+import t.viewer.client.StorageParser;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.user.client.ui.MenuItem;
@@ -46,6 +47,22 @@ public interface Screen {
     return manager().schema();
   }
 
+  default UIFactory factory() {
+    return manager().factory();
+  }
+
+  default Resources resources() {
+    return manager().resources();
+  }
+
+  default AttributeSet attributes() {
+    return manager().appInfo().attributes();
+  }
+
+  default StorageParser getParser() {
+    return manager().getParser();
+  }
+
   // Accessors
   ScreenManager manager();
   Logger getLogger();
@@ -53,9 +70,7 @@ public interface Screen {
   String key();
   boolean enabled();
   Widget widget();
-  List<MenuItem> analysisMenuItems();
   List<MenuItem> menuItems();
-  ClientState state();
   String additionalNavlinkStyle();
 
   void initGUI();
@@ -69,8 +84,6 @@ public interface Screen {
   void loadPersistedState();
 
   void enqueue(QueuedAction qa);
-
-  void addAnalysisMenuItem(MenuItem mi);
 
   void show();
 

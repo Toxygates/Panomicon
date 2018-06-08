@@ -43,18 +43,19 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(DLWScreen scr, @Nullable UnitListener listener) {
+  public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener) {
     return new TreatedControlSelTDGrid(scr, listener);
   }
 
   @Override
-  public CompoundRanker compoundRanker(DLWScreen _screen, RankingCompoundSelector selector) {
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
     return new SimpleCompoundRanker(_screen, selector);
   }
 
   @Override
-  public GroupInspector groupInspector(CompoundSelector cs, DLWScreen scr) {
-    return new TreatedControlGroupInspector(cs, scr);
+  public GroupInspector groupInspector(CompoundSelector cs, Screen scr,
+      GroupInspector.Delegate delegate) {
+    return new TreatedControlGroupInspector(cs, scr, delegate);
   }
 
   @Override
@@ -63,7 +64,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GeneSetEditor geneSetEditor(DLWScreen screen) {
+  public GeneSetEditor geneSetEditor(ImportingScreen screen) {
     return new GeneSetEditor(screen);
   }  
   

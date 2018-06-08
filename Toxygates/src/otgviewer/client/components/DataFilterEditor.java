@@ -23,18 +23,19 @@ import java.util.logging.Logger;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 
-public class DataFilterEditor extends DataListenerWidget {
+public class DataFilterEditor extends Composite {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
   final SCListBox[] selectors;
   private final Attribute[] parameters;
   protected final Logger logger;
+
+  protected SampleClass chosenSampleClass;
 
   class SCListBox extends ListBox {
     int idx;
@@ -116,7 +117,7 @@ public class DataFilterEditor extends DataListenerWidget {
     }
   }
 
-  public DataFilterEditor(DLWScreen screen) {
+  public DataFilterEditor(Screen screen) {
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");
@@ -147,14 +148,19 @@ public class DataFilterEditor extends DataListenerWidget {
     changeFrom(0, true); // Propagate the constraint
   }
 
-  @Override
+  // Incoming message from FilterTools
   public void sampleClassChanged(SampleClass sc) {
-    // do NOT call superclass method. Prevent signal from being passed on.
     chosenSampleClass = sc;
 
     for (int i = 0; i < selectors.length; ++i) {
       selectors[i].trySelect(sc.get(parameters[i]));      
       changeFrom(i, false);
     }
+  }
+
+  // Called as a result of user manipulation of data filter; overridden in 
+  // FilterTools to send message back to screen
+  protected void changeSampleClass(SampleClass sc) {
+    chosenSampleClass = sc;
   }
 }

@@ -30,7 +30,7 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.SampleDetailTable;
 import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -53,6 +53,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
+
+  public SampleClass sampleClass() {
+    return chosenSampleClass.copy();
+  }
 
   protected abstract class UnitUI extends Composite {
     CheckBox cb = new CheckBox();
@@ -131,7 +135,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   private UnitListener listener;
 
-  public SelectionTDGrid(DLWScreen screen, @Nullable UnitListener listener) {
+  public SelectionTDGrid(Screen screen, @Nullable UnitListener listener) {
     super(screen, true);
     this.listener = listener;
   }

@@ -28,7 +28,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
-import otgviewer.client.components.*;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
@@ -51,11 +52,17 @@ public class RankingCompoundSelector extends CompoundSelector {
   private SeriesType rankedType = SeriesType.Time;
   private boolean hasRankColumns = false;
   private final Resources resources;
-  
-  public RankingCompoundSelector(DLWScreen screen, String heading) {
-    super(screen, heading, false, false);
+
+  public <T extends Screen & Delegate> RankingCompoundSelector(T screen,
+      String heading) {
+    this(screen, screen, heading);
+  }
+
+  public RankingCompoundSelector(final Screen screen, Delegate delegate,
+      String heading) {
+    super(screen, delegate, heading, false, false);
     this.seriesService = screen.manager().seriesService();
-    this.resources = screen.resources();    
+    this.resources = screen.resources();
   }
 
   private void addRankColumns() {
@@ -183,7 +190,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
-      Charts cgf = new Charts(screen, new SampleClass[] {w.state().sampleClass});
+      Charts cgf = new Charts(screen, new SampleClass[] { w.manager().getParser().getSampleClass(w.attributes()) });
       cgf.makeSeriesCharts(seriesType, ss, scores.get(value).fixedValue(), 
           new Charts.ChartAcceptor() {
         @Override
@@ -193,6 +200,4 @@ public class RankingCompoundSelector extends CompoundSelector {
       }, screen);
     }
   }
-
-
 }

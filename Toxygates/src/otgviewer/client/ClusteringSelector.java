@@ -25,14 +25,14 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
-import t.common.shared.*;
+import t.common.shared.ItemList;
+import t.common.shared.StringList;
 import t.common.shared.clustering.Algorithm;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
 
-public abstract class ClusteringSelector extends DataListenerWidget implements RequiresResize {
+public abstract class ClusteringSelector extends Composite implements RequiresResize {
 
   private DockLayoutPanel dp;
 
@@ -232,7 +232,6 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
         updateAddButton();
       }
     };
-    addListener(cluster);
     selector.setText(3, 0, "Cluster");
     selector.setWidget(3, 1, cluster);
 

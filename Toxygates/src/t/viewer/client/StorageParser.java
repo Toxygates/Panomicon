@@ -19,6 +19,7 @@
 package t.viewer.client;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -131,8 +132,7 @@ public class StorageParser {
   @Nullable
   // Separator hierarchy for columns:
   // ### > ::: > ^^^ > $$$
-  public List<Group> getColumns(DataSchema schema, String key, Collection<? extends SampleColumn> expectedColumns,
-      AttributeSet attributes) throws Exception {
+  public List<Group> getColumns(DataSchema schema, String key, AttributeSet attributes) throws Exception {
     // TODO unpack old format columns
     String v = getItem(key);
     List<Group> r = new ArrayList<Group>();
@@ -147,8 +147,108 @@ public class StorageParser {
     return r;
   }
 
+  public List<Group> getChosenColumns(DataSchema schema, AttributeSet attributes) {
+    try {
+      return getColumns(schema, "columns", attributes);
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Exception while retrieving columns", e);
+      return null;
+    }
+  }
+
   public Group getCustomColumn(DataSchema schema, AttributeSet attributes) {
     return unpackColumn(schema, getItem("customColumn"), attributes);
+  }
+
+  public String[] getProbes() {
+    String probeString = getItem("probes");
+    if (probeString != null && !probeString.equals("")) {
+      return probeString.split("###");
+    } else {
+      return new String[0];
+    }
+  }
+
+  public Dataset[] getDatasets() {
+    String v = getItem("datasets");
+    if (v == null) {
+      return null;
+    }
+    List<Dataset> r = new ArrayList<Dataset>();
+    for (String ds : v.split("###")) {
+      r.add(new Dataset(ds, "", "", null, ds, 0));
+    }
+    return r.toArray(new Dataset[0]);
+  }
+
+  public static String packDatasets(Dataset[] datasets) {
+    List<String> r = new ArrayList<String>();
+    for (Dataset d : datasets) {
+      r.add(d.getTitle());
+    }
+    return packList(r, "###");
+  }
+
+  public List<String> getCompounds() {
+    String v = getItem("compounds");
+    if (v == null) {
+      return null;
+    }
+    List<String> r = new ArrayList<String>();
+    if (v.length() > 0) {
+      for (String c : v.split("###")) {
+        r.add(c);
+      }
+    }
+    return r;
+  }
+
+  public String packCompounds(List<String> compounds) {
+    return packList(compounds, "###");
+  }
+
+  public List<ItemList> getItemLists() {
+    return getLists("lists");
+  }
+
+  public List<ItemList> getClusteringLists() {
+    return getLists("clusterings");
+  }
+
+  public List<ItemList> getLists(String name) {
+    List<ItemList> r = new ArrayList<ItemList>();
+    String v = getItem(name);
+    if (v != null) {
+      String[] spl = v.split("###");
+      for (String x : spl) {
+        ItemList il = ItemList.unpack(x);
+        if (il != null) {
+          r.add(il);
+        }
+      }
+    }
+    return r;
+  }
+
+  public ItemList getGeneSet() {
+    return ItemList.unpack(getItem("geneset"));
+  }
+
+  public void storeCompounds(List<String> compounds) {
+    setItem("compounds", packList(compounds, "###"));
+  }
+
+  public void storeColumns(String key, Collection<? extends SampleColumn> columns) {
+    if (!columns.isEmpty()) {
+      SampleColumn first = columns.iterator().next();
+      String representative = (first.getSamples().length > 0) ? first.getSamples()[0].toString() : "(no samples)";
+
+      logger.info("Storing columns for " + key + " : " + first + " : " + representative + " ...");
+      setItem(key, packColumns(columns));
+    } else {
+      logger.info("Clearing stored columns for: " + key);
+      clearItem(key);
+    }
   }
 
   public void storeCustomColumn(DataColumn<?> column) {
@@ -157,5 +257,29 @@ public class StorageParser {
     } else {
       clearItem("customColumn");
     }
+  }
+
+  public void storeDatasets(Dataset[] datasets) {
+    setItem("datasets", StorageParser.packDatasets(datasets));
+  }
+
+  public void storeItemLists(List<ItemList> itemLists) {
+    setItem("lists", packItemLists(itemLists, "###"));
+  }
+
+  public void storeSampleClass(SampleClass sampleClass) {
+    setItem("sampleClass", t.common.client.Utils.packSampleClass(sampleClass));
+  }
+
+  public void storeProbes(String[] probes) {
+    setItem("probes", packProbes(probes));
+  }
+
+  public void storeGeneSet(ItemList geneList) {
+    setItem("geneset", (geneList != null ? geneList.pack() : ""));
+  }
+
+  public void storeClusteringLists(List<ItemList> clusteringList) {
+    setItem("clusterings", packItemLists(clusteringList, "###"));
   }
 }

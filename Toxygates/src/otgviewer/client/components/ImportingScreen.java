@@ -36,4 +36,18 @@ public interface ImportingScreen extends Screen {
   void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
 
   void runEnrichment(@Nullable IntermineInstance preferredInstance);
+
+  List<ItemList> clusteringList();
+
+  List<ItemList> itemLists();
+
+  void clusteringListsChanged(List<ItemList> lists);
+
+  void itemListsChanged(List<ItemList> lists);
+
+  List<Group> chosenColumns();
+
+  String[] chosenProbes();
+
+  void propagateTo(DataViewListener other);
 }

@@ -39,7 +39,7 @@ import t.viewer.client.dialog.InputDialog;
  * 
  *
  */
-public class ListChooser extends DataListenerWidget {
+public class ListChooser extends Composite {
 
   public static final int SAVE_SUCCESS = 0;
   public static final int SAVE_FAILURE = 1;

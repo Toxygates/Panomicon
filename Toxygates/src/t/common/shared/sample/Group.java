@@ -67,6 +67,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     this(schema, name, Unit.collectBarcodes(units), color);
   }
 
+  @Override
   public String getShortTitle() {
     return name;
   }
@@ -137,7 +138,6 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
       color = groupColors[0];
     }
 
-
     String[] s2 = barcodes.split("\\^\\^\\^");
     Sample[] bcs = new Sample[s2.length];
     for (int i = 0; i < s2.length; ++i) {
@@ -149,4 +149,12 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   }
 
+  public static List<Sample> getAllSamples(List<Group> columns) {
+    List<Sample> list = new ArrayList<Sample>();
+    for (Group g : columns) {
+      List<Sample> ss = Arrays.asList(g.getSamples());
+      list.addAll(ss);
+    }
+    return list;
+  }
 }

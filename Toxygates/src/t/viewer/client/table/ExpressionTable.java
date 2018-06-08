@@ -690,11 +690,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
 
   @Override
-  public void sampleClassChanged(SampleClass sc) {
-    logMatrixInfo("Change SC to " + sc);
-  }
-
-  @Override
   public void columnsChanged(List<Group> columns) {
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
     HashSet<Group> newColumns = new HashSet<Group>(columns);

@@ -37,8 +37,7 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.*;
 import t.common.shared.*;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
@@ -76,7 +75,6 @@ public class DLWScreen extends DataListenerWidget implements Screen,
    */
   protected boolean configured = false;
   private List<MenuItem> menuItems = new ArrayList<MenuItem>();
-  private List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
 
   /**
    * Widgets to be shown below the main content area, if any.
@@ -201,18 +199,22 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     return manager;
   }
 
+  @Override
   public UIFactory factory() {
     return manager.factory();
   }
 
+  @Override
   public DataSchema schema() {
     return manager.schema();
   }
 
+  @Override
   public AttributeSet attributes() {
     return manager.appInfo().attributes();
   }
 
+  @Override
   public Resources resources() {
     return manager.resources();    
   }
@@ -325,13 +327,12 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     i = new PushButton(new Image(resources().close()));
     i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
     i.addStyleName("slightlySpaced");
-    final DLWScreen sc = this;
     i.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         hideToolbar(guideBar);
         showGuide = false;
-        storeState(sc);
+        storeState();
       }
     });
     hpi.add(i);
@@ -346,7 +347,7 @@ public class DLWScreen extends DataListenerWidget implements Screen,
   public void showGuide() {
     showToolbar(guideBar);
     showGuide = true;
-    storeState(this);
+    storeState();
   }
 
 
@@ -446,9 +447,16 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     }
   }
 
-  @Override
+  public void storeState() {
+    storeState(getParser());
+  }
+
+  // Storage code moved from DataListenerWidget below
+
   public void storeState(StorageParser p) {
-    super.storeState(p);
+    storeColumns(p);
+    storeProbes(p);
+    storeGeneSet(p);
     if (showGuide) {
       p.setItem("OTG.showGuide", "yes");
     } else {
@@ -566,18 +574,8 @@ public class DLWScreen extends DataListenerWidget implements Screen,
   }
 
   @Override
-  public void addAnalysisMenuItem(MenuItem mi) {
-    analysisMenuItems.add(mi);
-  }
-
-  @Override
   public List<MenuItem> menuItems() {
     return menuItems;
-  }
-
-  @Override
-  public List<MenuItem> analysisMenuItems() {
-    return analysisMenuItems;
   }
 
   /**
@@ -599,6 +597,7 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     return key;
   }
 
+  @Override
   public StorageParser getParser() {
     return getParser(this);
   }
@@ -698,14 +697,57 @@ public class DLWScreen extends DataListenerWidget implements Screen,
     }
   }
 
+<<<<<<< local
   @Override
   public boolean importProbes(String[] probes) {
     if (Arrays.equals(probes, chosenProbes)) {
       return false;
+=======
+  public void propagateTo(DataViewListener other) {
+    other.datasetsChanged(chosenDatasets);
+    other.sampleClassChanged(chosenSampleClass);
+    other.probesChanged(chosenProbes);
+    other.compoundsChanged(chosenCompounds);
+    other.columnsChanged(chosenColumns);
+    other.customColumnChanged(chosenCustomColumn);
+    other.itemListsChanged(chosenItemLists);
+    other.geneSetChanged(chosenGeneSet);
+    other.clusteringListsChanged(chosenClusteringList);
+  }
+
+  protected StorageParser getParser(Screen s) {
+    return s.manager().getParser();
+  }
+
+  protected void storeColumns(StorageParser p, String key, Collection<? extends SampleColumn> columns) {
+    p.storeColumns(key, columns);
+  }
+
+  public void storeColumns(StorageParser p) {
+    storeColumns(p, "columns", chosenColumns);
+  }
+
+  public static void storeCustomColumn(StorageParser p, DataColumn<?> column) {
+    p.storeCustomColumn(column);
+  }
+
+  // Separator hierarchy for columns:
+  // ### > ::: > ^^^ > $$$
+  protected List<Group> loadColumns(StorageParser p, DataSchema schema, String key,
+      Collection<? extends SampleColumn> expectedColumns, AttributeSet attributes) throws Exception {
+    List<Group> storedColumns = p.getColumns(schema, key, attributes);
+    if (storedColumns == null
+        || StorageParser.packColumns(storedColumns).equals(StorageParser.packColumns(expectedColumns))) {
+      return null;
+>>>>>>> other
     } else {
+<<<<<<< local
       probesChanged(probes);
       storeState(this);
       return true;
+=======
+      return storedColumns;
+>>>>>>> other
     }
   }
 
@@ -717,6 +759,74 @@ public class DLWScreen extends DataListenerWidget implements Screen,
       return true;
     } else {
       return false;
+  public void storeProbes(StorageParser p) {
+    p.setItem("probes", packProbes(chosenProbes));
+  }
+
+  public void storeItemLists(StorageParser p) {
+    p.storeItemLists(chosenItemLists);
+  }
+
+  public void storeGeneSet(StorageParser p) {
+    p.setItem("geneset", (chosenGeneSet != null ? chosenGeneSet.pack() : ""));
+  }
+
+  public void storeClusteringLists(StorageParser p) {
+    p.setItem("clusterings", StorageParser.packItemLists(chosenClusteringList, "###"));
+  }
+
+  private String packCompounds(StorageParser p) {
+    return StorageParser.packList(chosenCompounds, "###");
+  }
+
+  public void storeCompounds(StorageParser p) {
+    p.setItem("compounds", packCompounds(p));
+  }
+
+  public void storeDatasets(StorageParser p) {
+    p.storeDatasets(chosenDatasets);
+  }
+
+  public void storeSampleClass(StorageParser p) {
+    if (chosenSampleClass != null) {
+      p.storeSampleClass(chosenSampleClass);
+    }
+  }
+  
+  public List<ItemList> loadItemLists(StorageParser p) {
+    return p.getLists("lists");
+  }
+
+  public List<ItemList> loadClusteringLists(StorageParser p) {
+    return p.getLists("clusterings");
+  }
+
+  public List<ItemList> loadLists(StorageParser p, String name) {
+    return p.getLists(name);
+  }
+
+  public void loadDatasets(StorageParser p) {
+    Dataset[] storedDatasets = p.getDatasets();
+    if (storedDatasets == null
+        || StorageParser.packDatasets(storedDatasets).equals(StorageParser.packDatasets(chosenDatasets))) {
+      return;
+    }
+    changeDatasets(storedDatasets);
+  }
+
+  public void loadCompounds(StorageParser p) {
+    List<String> storedCompounds = p.getCompounds();
+    if (storedCompounds == null || p.packCompounds(storedCompounds).equals(packCompounds(p))) {
+      return;
+    }
+    changeCompounds(storedCompounds);
+  }
+
+  public void loadSampleClass(StorageParser p, AttributeSet attributes) {
+    SampleClass storedClass = p.getSampleClass(attributes);
+    if (storedClass != null && !t.common.client.Utils.packSampleClass(storedClass)
+        .equals(t.common.client.Utils.packSampleClass(chosenSampleClass))) {
+      changeSampleClass(storedClass);
     }
   }
 }

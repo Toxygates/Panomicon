@@ -20,9 +20,8 @@ package otgviewer.client;
 import java.util.*;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.DLWScreen;
+import otgviewer.client.components.ImportingScreen;
 import t.common.shared.*;
-import t.viewer.client.ClientState;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
@@ -31,7 +30,7 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   
   // private final Logger logger = SharedUtils.getLogger("ItemListsStoreHelper");
 
-  public StringListsStoreHelper(String type, DLWScreen screen) {
+  public StringListsStoreHelper(String type, ImportingScreen screen) {
     super(type, screen);
   }
 
@@ -94,7 +93,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
 
   private void storeItemLists() {
     screen.itemListsChanged(buildItemLists());
-    screen.storeItemLists(screen.getParser());
   }
   
   private final static String SET_PREFIX = "Set:";
@@ -110,12 +108,12 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     List<StringList> r = new ArrayList<StringList>();
     
     for (StringList l : StringList.pickProbeLists(ils, null)) {
-      r.add((StringList) l.copyWithName(SET_PREFIX + l.name()));
+      r.add(l.copyWithName(SET_PREFIX + l.name()));
     }
     
     for (ItemList cl: ClusteringList.pickUserClusteringLists(ils, null)) {
       for (StringList l: ((ClusteringList) cl).asStringLists()) {
-        r.add((StringList) l.copyWithName(CLUSTER_PREFIX + l.name()));
+        r.add(l.copyWithName(CLUSTER_PREFIX + l.name()));
       }
     }
     
@@ -123,15 +121,15 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   }
   
   /**
-   * Given a DataListenerWidget, extract both clusters and normal lists
-   * into a unified StringList format.
+   * Compile item lists and clustering list into a StringList format.
+   * 
    * @param parent
    * @return
    */
-  public static List<StringList> compileLists(ClientState parentState) {    
+  public static List<StringList> compileLists(List<ItemList> itemLists, List<ItemList> clusteringList) {
     List<ItemList> r = new ArrayList<ItemList>();
-    r.addAll(parentState.itemLists);
-    r.addAll(parentState.chosenClusteringList);
+    r.addAll(itemLists);
+    r.addAll(clusteringList);
     return compileLists(r);    
   }
   

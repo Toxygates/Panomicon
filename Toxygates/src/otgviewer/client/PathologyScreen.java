@@ -19,7 +19,6 @@
 package otgviewer.client;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,11 +63,7 @@ public class PathologyScreen extends MinimalScreen {
   @Override
   public void loadState(AttributeSet attributes) {
     chosenSampleClass = getParser().getSampleClass(attributes);
-    try {
-      chosenColumns = getParser().getColumns(schema(), "columns", chosenColumns, attributes);
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Exception while retrieving columns", e);
-    }
+    chosenColumns = getParser().getChosenColumns(schema(), attributes);
   }
 
   public interface Resources extends CellTable.Resources {

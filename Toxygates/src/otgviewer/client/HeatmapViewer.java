@@ -21,6 +21,7 @@
 package otgviewer.client;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
@@ -38,12 +39,17 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 /**
  * Adapts the HeatmapDialog for use inside otgviewer.
  */
-public class HeatmapViewer extends DataListenerWidget {
+public class HeatmapViewer extends Composite {
 
   private DataScreen screen;
+  private Logger logger;
+
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected String[] chosenProbes = new String[0];
 
   public HeatmapViewer(DataScreen screen) {
     this.screen = screen;
+    logger = screen.getLogger();
   }
 
   public HeatmapDialog dialog(ValueType defaultType, String matrixId) {
@@ -167,8 +173,8 @@ public class HeatmapViewer extends DataListenerWidget {
 
   public static void show(HeatmapViewer viewer, DataView view, ValueType defaultType,
       String matrixId) {
-    view.propagateTo(viewer);
-    viewer.probesChanged(view.displayedAtomicProbes());
+    viewer.chosenColumns = view.chosenColumns();
+    viewer.chosenProbes = view.displayedAtomicProbes();
 
     int probesCount = (viewer.chosenProbes != null ? viewer.chosenProbes.length : 0);
     if (probesCount == 0 || probesCount > 1000) {
