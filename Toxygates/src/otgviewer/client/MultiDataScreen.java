@@ -37,6 +37,7 @@ public class MultiDataScreen extends DLWScreen {
   public MultiDataScreen(ScreenManager man) {
     super("View data", DataScreen.key, false, man);
     
+    //TODO update wiring to yuji's new system
     singleTableScreen = new DataScreen(man);
     addListener(singleTableScreen);
     
@@ -62,8 +63,8 @@ public class MultiDataScreen extends DLWScreen {
   }
 
   @Override
-  public boolean configured() {
-    return singleTableScreen.configured() || dualTableScreen.configured();
+  public boolean enabled() {
+    return singleTableScreen.enabled() || dualTableScreen.enabled();
   }
 
   @Override

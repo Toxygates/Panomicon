@@ -156,8 +156,6 @@ public class DataScreen extends DLWScreen {
 
   @Override
   public boolean enabled() {
-    // return manager.isConfigured(ProbeScreen.key)
-    // && manager.isConfigured(ColumnScreen.key);
     return manager.isConfigured(ColumnScreen.key);
   }
 

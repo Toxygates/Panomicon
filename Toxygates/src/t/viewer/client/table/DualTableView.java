@@ -3,10 +3,6 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
 import otgviewer.client.components.DLWScreen;
 import otgviewer.client.components.PendingAsyncCallback;
 import t.common.shared.AType;
@@ -19,6 +15,9 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
+
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A DataView that displays an interaction network as two tables.
@@ -229,9 +228,10 @@ public class DualTableView extends TableView {
         toArray(String[]::new);
     if (types.length >= 2) {
       return preferredDoubleMode;
-    } else {
-      logger.severe("DualTableView constructed but only one column type");
-      return null;
+    } else {      
+      //Happens during loadState even when this view will not be shown - 
+      //TODO - fix when updating wiring to Yuji's new system
+      return DualMode.Forward;
     }
   }
   

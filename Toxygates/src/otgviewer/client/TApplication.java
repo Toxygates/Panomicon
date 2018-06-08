@@ -85,10 +85,15 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   private HorizontalPanel navPanel;
 
   /**
-   * All screens in the order that the links are displayed at the top.
+   * Linkable screens in the order that the links are displayed at the top of the page.
+   */
+  private List<Screen> topLevelScreens = new ArrayList<Screen>();
+  
+  /**
+   * All screens (including replacements, not directly linkable)
    */
   private List<Screen> screens = new ArrayList<Screen>();
-
+  
   /**
    * All available screens. The key in this map is the "key" field of each Screen instance, which
    * also corresponds to the history token used with GWT's history tracking mechanism.
@@ -424,9 +429,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   void addWorkflowLinks(Screen current) {
     navPanel.clear();
-    for (int i = 0; i < screens.size(); ++i) {
-      final Screen s = screens.get(i);
-      // String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
+    for (Screen s: topLevelScreens) {
       String link = s.getTitle();
       final Label label = new Label(link);
       label.setStylePrimaryName("navlink");
@@ -448,7 +451,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
           label.addStyleDependentName("disabled");
         }
       }
-      if (i == 0) {
+      if (topLevelScreens.get(0) == s) {
         label.addStyleDependentName("first");
       }
       navPanel.add(label);
@@ -485,14 +488,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     currentScreen = s.preferredReplacement();
     menuBar.clearItems();
     List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
-    allItems.addAll(s.menuItems());
+    allItems.addAll(currentScreen.menuItems());
     allItems.addAll(postMenuItems);
 
     for (MenuItem mi : allItems) {
       menuBar.addItem(mi);
     }
 
-    for (MenuItem mi : s.analysisMenuItems()) {
+    for (MenuItem mi : currentScreen.analysisMenuItems()) {
       toolsMenuBar.addItem(mi);
     }
 
@@ -542,6 +545,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   protected void addScreenSeq(Screen s) {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
     screensBykey.put(s.key(), s);
+    topLevelScreens.add(s);
     screens.add(s);
     screens.addAll(s.potentialReplacements());
     s.initGUI();
