@@ -436,6 +436,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     } else {
       screen = pickScreen(token);
     }
+    if (firstLoad) {
+      screen.loadState(appInfo.attributes());
+    }
     showScreen(screen);
     Analytics.trackPageView(Analytics.URL_PREFIX + token);
   }
