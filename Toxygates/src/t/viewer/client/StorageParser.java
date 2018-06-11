@@ -170,7 +170,7 @@ public class StorageParser {
   public Dataset[] getDatasets() {
     String v = getItem("datasets");
     if (v == null) {
-      return null;
+      return new Dataset[0];
     }
     List<Dataset> r = new ArrayList<Dataset>();
     for (String ds : v.split("###")) {
