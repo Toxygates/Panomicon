@@ -84,8 +84,6 @@ public class TableView extends DataView {
   }
 
   protected void setupMenus() {
-    MenuBar menuBar = new MenuBar(true);
-    MenuItem mActions = new MenuItem("File", false, menuBar);
     
     MenuItem mntmDownloadCsv =
         new MenuItem("Download CSV (grouped samples)...", false, () -> {          
@@ -93,16 +91,15 @@ public class TableView extends DataView {
             Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
                 Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_GROUPED_SAMPLES);
         });
-    menuBar.addItem(mntmDownloadCsv);
+    fileMenu.addItem(mntmDownloadCsv);
     mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, () -> {      
         expressionTable.downloadCSV(true);
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
             Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);      
     });
-    menuBar.addItem(mntmDownloadCsv);    
-    addTopLevelMenu(mActions);
+    fileMenu.addItem(mntmDownloadCsv);    
     
-    menuBar = new MenuBar(true);
+    MenuBar menuBar = new MenuBar(true);
     //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
     for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
         final String title = c.columnInfo().title();

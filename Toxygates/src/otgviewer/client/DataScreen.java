@@ -189,10 +189,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   protected MenuBar analysisMenu;
   protected void setupMenuItems() {
-    analysisMenu = new MenuBar(true);
-    MenuItem analysisItem = new MenuItem("Tools", false, analysisMenu);
-    addMenu(analysisItem);
-        
+    analysisMenu = dataView.analysisMenu();    
     for (MenuItem mi: dataView.topLevelMenus()) {
       addMenu(mi);
     }
@@ -202,9 +199,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     }
     
     addAnalysisMenuItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));   
-    for (MenuItem mi: dataView.analysisMenuItems()) {
-      addAnalysisMenuItem(mi);
-    }
 
     geneSetsMenu = factory().geneSetsMenuItem(this);
     addMenu(geneSetsMenu.menuItem());       

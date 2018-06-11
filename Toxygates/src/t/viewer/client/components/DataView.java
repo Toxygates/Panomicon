@@ -26,6 +26,18 @@ public abstract class DataView extends Composite {
   protected String[] chosenProbes = new String[0];
   protected List<Group> chosenColumns = new ArrayList<Group>();
   
+  public DataView() {
+    fileMenu = addMenu("File");
+    analysisMenu = addMenu("Tools");    
+  }
+  
+  private MenuBar addMenu(String title) {
+    MenuBar mb = new MenuBar(true);
+    MenuItem mi = new MenuItem(title, false, mb);
+    topLevelMenus.add(mi);
+    return mb;
+  }
+  
   /**
    * May be overridden to display status messages about data loading
    * @param message
@@ -54,21 +66,20 @@ public abstract class DataView extends Composite {
   //TODO remove
   abstract public ExpressionTable expressionTable();
   
-  protected List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
+  protected MenuBar analysisMenu, fileMenu;
+  
+  public MenuBar analysisMenu() { return analysisMenu; }
+  public MenuBar fileMenu() { return fileMenu; }
+
   protected List<MenuItem> topLevelMenus = new ArrayList<MenuItem>();
   
   protected void addAnalysisMenuItem(MenuItem mi) {
-    analysisMenuItems.add(mi);
+    analysisMenu.addItem(mi);
   }
   
   protected void addTopLevelMenu(MenuItem mi) {
     topLevelMenus.add(mi);
   }
-  
-  /**
-   * Menu items to be added to the analysis menu.
-   */
-  public Collection<MenuItem> analysisMenuItems() { return analysisMenuItems; }
  
   /**
    * Top level menus to be installed.
