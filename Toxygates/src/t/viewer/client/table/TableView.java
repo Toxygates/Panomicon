@@ -56,16 +56,19 @@ public class TableView extends DataView {
   
   @Override
   public void columnsChanged(List<Group> columns) {
+    super.columnsChanged(columns);
     expressionTable.columnsChanged(columns);
   }
 
   @Override
   public void sampleClassChanged(SampleClass sc) {
+    super.sampleClassChanged(sc);
     expressionTable.sampleClassChanged(sc);
   }
 
   @Override
   public void probesChanged(String[] probes) {
+    super.probesChanged(probes);
     expressionTable.probesChanged(probes);
   }
 
