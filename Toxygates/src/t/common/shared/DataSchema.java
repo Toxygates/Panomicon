@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.viewer.shared.SeriesType;
 
 
 /**
@@ -192,7 +193,7 @@ public abstract class DataSchema implements Serializable {
     return platform.substring(0, 3) + "..";
   }
 
-  public abstract int numDataPointsInSeries(SampleClass sc);
+  public abstract int numDataPointsInSeries(SampleClass sc, SeriesType st);
 
   // TODO move down to otg
   @Nullable

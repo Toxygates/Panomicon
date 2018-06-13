@@ -23,6 +23,7 @@ import otg.model.sample.OTGAttribute;
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.viewer.shared.SeriesType;
 
 @SuppressWarnings("serial")
 public class TestSchema extends DataSchema {
@@ -67,7 +68,7 @@ public class TestSchema extends DataSchema {
   }
 
   @Override
-  public int numDataPointsInSeries(SampleClass sc) {
+  public int numDataPointsInSeries(SampleClass sc, SeriesType st) {
     return 0;
   }
 

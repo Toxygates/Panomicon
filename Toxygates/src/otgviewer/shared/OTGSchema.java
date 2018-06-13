@@ -25,6 +25,7 @@ import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
+import t.viewer.shared.SeriesType;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {
@@ -217,12 +218,17 @@ public class OTGSchema extends DataSchema {
    * TODO this is brittle
    */
   @Override
-  public int numDataPointsInSeries(SampleClass sc) {
-    if (sc.get(OTGAttribute.TestType) != null &&
-        sc.get(OTGAttribute.TestType).equals("in vitro")) {
-      return 3;
-    }
-    return 4;
+  public int numDataPointsInSeries(SampleClass sc, SeriesType st) {
+    switch (st) {
+      case Dose:
+        return 3;
+      default:
+        if (sc.get(OTGAttribute.TestType) != null
+            && sc.get(OTGAttribute.TestType).equals("in vitro")) {
+          return 3;
+        }
+       return 4;
+     }    
   }
 
   @Override

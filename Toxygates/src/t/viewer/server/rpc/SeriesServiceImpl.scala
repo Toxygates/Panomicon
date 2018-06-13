@@ -122,14 +122,19 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
-      val rr = ranked.toList.sortWith((x1, x2) =>
+      val byName = ranked.toSeq.sortBy(_._1)
+      
+       /*
+       * Since the sort is stable, equal scores will retain the by name ordering from above
+        */
+      val byScore = byName.sortWith((x1, x2) =>
         SafeMath.safeIsGreater(x1._3, x2._3)
       )
 
       val allowedMajorVals = allowedMajors(ds, sc)
       val fixedAttrVals = schema.sortedValues(seriesType.fixedAttribute)
 
-      val r = rr.map(p => new MatchResult(p._1, p._3, p._2)).
+      val r = byScore.map(p => new MatchResult(p._1, p._3, p._2)).
         filter(x => allowedMajorVals.contains(x.compound))
 
       for (s <- r.take(10)) {
