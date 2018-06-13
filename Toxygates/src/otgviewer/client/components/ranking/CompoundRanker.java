@@ -232,9 +232,11 @@ abstract public class CompoundRanker extends Composite {
     }
   }
 
-  private void performRanking() {
-    SeriesType seriesType = timeRadio.getValue() ? SeriesType.Time : SeriesType.Dose;
-    
+  SeriesType rankingType() {
+    return timeRadio.getValue() ? SeriesType.Time : SeriesType.Dose;
+  }
+  
+  private void performRanking() {    
     List<RankRule> rules = new ArrayList<RankRule>();
     rankProbes = new ArrayList<String>();
     for (RuleInputHelper rih : inputHelpers) {
@@ -254,7 +256,7 @@ abstract public class CompoundRanker extends Composite {
       }
     }
 
-    selector.performRanking(seriesType, rankProbes, rules);
+    selector.performRanking(rankingType(), rankProbes, rules);
     Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING);
   }
 

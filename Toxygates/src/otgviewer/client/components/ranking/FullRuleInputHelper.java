@@ -29,6 +29,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.model.SampleClass;
+import t.viewer.shared.SeriesType;
 
 public class FullRuleInputHelper extends RuleInputHelper {
 
@@ -57,6 +58,10 @@ public class FullRuleInputHelper extends RuleInputHelper {
 
     refDose.setStylePrimaryName("colored");
     refDose.setEnabled(false);
+  }
+  
+  protected SeriesType currentRankingMode() {
+    return ranker.rankingType();
   }
 
   final static int REQUIRED_COLUMNS = 6;
@@ -146,12 +151,13 @@ public class FullRuleInputHelper extends RuleInputHelper {
         double[] data;
         String[] ss = syntheticCurveText.getText().split(" ");
         RankRule r = new RankRule(rt, probe);
-      SampleClass sc = ranker.sampleClass();
-        int expectedPoints = ranker.schema.numDataPointsInSeries(sc);
+        SampleClass sc = ranker.sampleClass();
+        final int expectedPoints = 
+            ranker.schema.numDataPointsInSeries(sc, currentRankingMode());
 
-        if (ss.length != expectedPoints) {
+        if (ss.length < expectedPoints) {
           throw new RankRuleException("Please supply " + expectedPoints
-              + " space-separated values as the synthetic curve." + " (Example: 1 -2 ...)");
+              + " space-separated values as the synthetic curve." + " (Example: '1 -2 3' ...)");
         } else {
           data = new double[expectedPoints];
           for (int j = 0; j < ss.length; ++j) {
