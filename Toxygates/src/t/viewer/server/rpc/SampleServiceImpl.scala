@@ -101,7 +101,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   protected def appInfo = {
     Option(getThreadLocalRequest.getSession.
       getAttribute(ProbeServiceImpl.APPINFO_KEY).asInstanceOf[AppInfo]).
-      getOrElse(throw new Exception("AppInfo not initialised"))
+      getOrElse(throw new NoSessionException("AppInfo not initialised"))
   }
 
   protected def stateKey = "sparql"
