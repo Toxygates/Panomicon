@@ -1,0 +1,67 @@
+<!-- <body onload="changeVisualizationLibrary()"> <!--onload="initListeners()"> -->
+  <h1>Network Visualization for Toxygates</h1>
+  <p>Draw the network that shows relations between messenger RNA and micro RNA datasets.</p>
+
+  <form>
+    <!-- Web components used for the loading of data -->
+    <fieldset>
+      <legend>Data Selection: </legend>
+      <div>Select file:</div>
+      <input type="file" id="fileSelect" type="submit"/>
+      <br />
+
+      <div>Type of Data:</div>
+      <select id="fileType">
+        <option value="Edge" selected>Interaction Data</option>
+        <option value="Node">Node Data</option>
+        <option value="Json">JSON Graph</option>
+      </select>
+      <br />
+
+      <button type="button" onclick="loadFile()" >Load</button>
+    </fieldset>
+  </form>
+
+  <form>
+    <fieldset>
+      <legend>User Interaction</legend>
+      <div>Select Library:</div>
+      <select id="library" onchange="changeVisualizationLibrary()">
+        <option value="Cyto" selected="selected" >Cytoscape.js</option>
+        <option value="Vis">Vis.js</option>
+      </select>
+      <br />
+
+      <div>Apply Layout:</div>
+      <select id="layout" onchange="updateLayout()"> <!--  disabled="true"> -->
+      </select>
+      <br />
+
+      <div>Color By:</div>
+      <select id="colorBy" disabled="true">
+      <option value="None">None</option>
+      </select>
+      <br />
+
+      <div>Mouse interacion:</div>
+      <select id="mouse" onchange="updateInteraction()">
+        <option value="selection">Selection</option>
+        <option value="addNode">Add Node - Not implemented</option>
+        <option value="addInteraction">Add Edge - Not implemented</option>
+      </select>
+      <br />
+
+      <button type="button" value="export" id="export" onclick="exportJson()">Export</button>
+    </fieldset>
+  </form>
+
+  <div class="visualization" id="display"></div>
+
+  <div class="vizNotes" id="selectionList">Current Selection (only-Cyto):</div>
+  <!-- <div id="myModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+      <h2>Toxygates</h2>
+      </div>
+    </div>
+  </div> -->

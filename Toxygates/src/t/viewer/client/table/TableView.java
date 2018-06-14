@@ -4,6 +4,10 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.dialog.MirnaSourceDialog;
@@ -16,13 +20,10 @@ import t.viewer.client.Analytics;
 import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.network.NetworkVisualizationDialog;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A DataView based on a single ExpressionTable.
@@ -72,6 +73,7 @@ public class TableView extends DataView {
     expressionTable.probesChanged(probes);
   }
 
+  @Override
   public ValueType chosenValueType() {
     return expressionTable.chosenValueType;
   }
@@ -150,6 +152,10 @@ public class TableView extends DataView {
       MenuItem heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
       addAnalysisMenuItem(heatMapMenu);
     }
+
+    addAnalysisMenuItem(new MenuItem("Test network viz dialog", () -> {
+      new NetworkVisualizationDialog(screen.resources(), logger).initWindow();
+    }));
   }
   
   protected void makeHeatMap() {
@@ -201,6 +207,7 @@ public class TableView extends DataView {
   //TODO hook to be overridden - try to remove this
   protected void onGettingExpressionFailed() { }
   
+  @Override
   public void reloadDataIfNeeded() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
@@ -250,6 +257,7 @@ public class TableView extends DataView {
     return "miRNA".equals(GroupUtils.groupType(g));
   }
   
+  @Override
   public ExpressionTable expressionTable() { return expressionTable; }
 
   protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
@@ -285,6 +293,7 @@ public class TableView extends DataView {
   };
   
   
+  @Override
   public List<PersistedState<?>> getPersistedItems() {
     List<PersistedState<?>> r = super.getPersistedItems();
     r.addAll(expressionTable.getPersistedItems());
@@ -292,6 +301,7 @@ public class TableView extends DataView {
     return r;
   }
   
+  @Override
   public void loadPersistedState() {
     super.loadPersistedState();
     for (String title: tickMenuItems.keySet()) {
@@ -301,6 +311,7 @@ public class TableView extends DataView {
     }
   }
   
+  @Override
   public String[] displayedAtomicProbes() {
     String[] r = expressionTable.currentMatrixInfo().getAtomicProbes();
     if (r.length < expressionTable.currentMatrixInfo().numRows()) {
