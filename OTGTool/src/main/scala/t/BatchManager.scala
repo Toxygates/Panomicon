@@ -552,7 +552,7 @@ class BatchManager(context: Context) {
       callFile: Option[String]): Task[RawExpressionData] =
     new AtomicTask[RawExpressionData]("Read raw expression data") {
       override def run() = {
-        new CSVRawExpressionData(List(niFile), callFile.toList,
+        new CSVRawExpressionData(niFile, callFile,
             Some(md.samples.size), m => log(s"Warning: $m"))
       }
     }

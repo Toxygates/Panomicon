@@ -32,8 +32,8 @@ class ParseException(msg: String) extends Exception
  * Call files may be absent (by passing in an empty list), in which case
  * all values are treated as present.
  */
-class CSVRawExpressionData(exprFiles: Iterable[String],
-    callFiles: Iterable[String], expectedSamples: Option[Int],
+class CSVRawExpressionData(exprFile: String,
+    callFile: Option[String], expectedSamples: Option[Int],
     parseWarningHandler: (String) => Unit) extends RawExpressionData {
 
   private def samplesInFile(file: String) = {
@@ -43,10 +43,10 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
   }
 
   override lazy val samples: Iterable[Sample] =
-    exprFiles.toVector.flatMap(f => samplesInFile(f)).distinct
+    samplesInFile(exprFile).distinct
 
   override lazy val probes: Iterable[String] =
-    exprFiles.toVector.flatMap(f => probesInFile(f)).distinct
+    probesInFile(exprFile).toSeq
 
   private def probesInFile(file: String) = {
     val lines = Source.fromFile(file).getLines
@@ -132,7 +132,7 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
   private[this] def unquote(x: String) = x.replace("\"", "")
 
   private[this] def readCalls(file: String, ss: Set[Sample]): CMap[Sample, CMap[String, Char]] = {
-    //take the second char in a string like "A" or "P"
+    //get the second char in a string like "A" or "P"
     readValuesFromTable(file, ss, x => unquote(x)(0))
   }
 
@@ -146,16 +146,12 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
   }
 
   override def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
-    val expr = exprFiles.map(readExprValues(_, ss.toSet))
-    val call = callFiles.map(readCalls(_, ss.toSet))
+    val exprs = readExprValues(exprFile, ss.toSet)
+    val calls = readCalls(exprFile, ss.toSet)
 
-    //NB, samples must not be repeated across files - we should check this
-    val allExprs = Map() ++ expr.flatten
-    val allCalls = Map() ++ call.flatten
-
-    allExprs.map {
+    exprs.map {
       case (s, col) => {
-        val sampleCalls = allCalls.get(s)
+        val sampleCalls = calls.get(s)
         s -> col.map {
           case (p, v) => {
             if (sampleCalls != None && !sampleCalls.get.contains(p)) {
