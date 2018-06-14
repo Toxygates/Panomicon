@@ -617,9 +617,17 @@ class BatchManager(context: Context) {
           log("Nothing to do, batch has no samples")
           return
         }
+        var percentComplete = 0d
+        val chunks = ss.grouped(25)
         val db = config.data.extWriter(database)
         try {
-          deleteFromDB(db, ss)
+          for (
+            chunk <- chunks;
+            if shouldContinue(percentComplete)
+          ) {
+            deleteFromDB(db, chunk)
+            percentComplete += 100 * 25 / ss.size
+          }
         } finally {
           db.release()
         }
