@@ -26,9 +26,14 @@ import t.db.testing.TestData
 import t.db.PExprValue
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.scalacheck.Gen
+import org.scalacheck._
+import org.scalacheck.Prop._
+import Arbitrary.arbitrary
+import org.scalatest.prop.Checkers
 
 @RunWith(classOf[JUnitRunner])
-class KCChunkMatrixDBTest extends TTestSuite {
+class KCChunkMatrixDBTest extends TTestSuite with Checkers {
   import KCDBTest._
   import TestData._
   import KCChunkMatrixDB._
@@ -48,9 +53,40 @@ class KCChunkMatrixDBTest extends TTestSuite {
     testExtDb(edb, makeTestData(true))
     edb.release
   }
-
+  
+  type VC = VectorChunk[PExprValue]
+  
+  def mkValues(start: Int, n: Int): Seq[PExprValue] = 
+    (start until (start + n)).map(i => randomPExpr(probeMap.unpack(i)))
+  def mkValues(n: Int): Seq[PExprValue] = mkValues(0, n)
+  
+  val genPExprValues: Gen[Seq[(Int, PExprValue)]] = for {
+    size <- Gen.choose(1, 100)
+    factor <- Gen.choose(0, 3)
+    start = factor * CHUNKSIZE
+    end = start + size
+    data = (start until end) zip mkValues(start, size)
+  } yield data
+   
+  
+  def genChunk: Gen[VC] = for {    
+    sample <- arbitrary[Int]
+    data <- genPExprValues
+    startProbe = data.head._1
+  } yield new VectorChunk[PExprValue](sample, startProbe, data)
+  
+  implicit def arbChunk = Arbitrary(genChunk)
+  
+  test("Vector chunk props") {
+     check { (c:VC) => c.probes.size == c.xs.size }
+     check { (c:VC) =>       
+       (c.probes).forall( n => 
+         (c.remove(n).xs.size == c.xs.size - 1)
+         )
+      }
+  }
+  
   test("Vector Chunk") {
-    def mkValues(n: Int) = (0 until n).map(i => randomPExpr(probeMap.unpack(i)))
 
     var vc = new VectorChunk[PExprValue](0, 0, Seq())
     val xs = (mkValues(500).zipWithIndex)
