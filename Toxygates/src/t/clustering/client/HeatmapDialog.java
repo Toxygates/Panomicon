@@ -22,8 +22,6 @@ package t.clustering.client;
 import java.util.*;
 import java.util.logging.Logger;
 
-import t.clustering.shared.*;
-
 import com.google.gwt.core.client.*;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -32,6 +30,9 @@ import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
+
+import t.clustering.shared.*;
+import t.common.client.Utils;
 
 /**
  * GUI for configuring, requesting, and displaying a heatmap.
@@ -80,12 +81,12 @@ abstract public class HeatmapDialog<C, R> {
     // but keep the dialog invisible until drawing heat map is finished
     dialog.show();
     dialog.setVisible(false);
-    injectOnce();
+    injectOnceAndBeginClustering();
   }
 
-  private void injectOnce() {
+  private void injectOnceAndBeginClustering() {
     if (!injected) {
-      inject(new ArrayList<String>(Arrays.asList(injectList)));
+      Utils.inject(new ArrayList<String>(Arrays.asList(injectList)), logger, () -> beginClustering());
       injected = true;
     } else {
       beginClustering();
@@ -95,27 +96,6 @@ abstract public class HeatmapDialog<C, R> {
   private void beginClustering() {
     initializeHeatmap();
     executeClustering(lastClusteringAlgorithm);
-  }
-
-  private void inject(final List<String> p_jsList) {
-    final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
-
-    ScriptInjector.fromUrl(js).setCallback(new Callback<Void, Exception>() {
-      @Override
-      public void onFailure(Exception e) {
-        logger.severe("Script load failed. (" + js + ")");
-      }
-
-      @Override
-      public void onSuccess(Void ok) {
-        //Injected all scripts
-        if (!p_jsList.isEmpty()) {
-          inject(p_jsList);
-        } else {
-          beginClustering();
-        }
-      }
-    }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
 
   private void initializeHeatmap() {

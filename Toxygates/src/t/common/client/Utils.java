@@ -18,14 +18,12 @@
 
 package t.common.client;
 
-import java.util.*;
-
-import t.common.shared.ManagedItem;
-import t.model.SampleClass;
-import t.model.sample.Attribute;
-import t.model.sample.AttributeSet;
 import static t.model.sample.CoreParameter.Type;
 
+import java.util.*;
+import java.util.logging.Logger;
+
+import com.google.gwt.core.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -33,6 +31,11 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
+
+import t.common.shared.ManagedItem;
+import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
 
 public class Utils {
 
@@ -61,6 +64,7 @@ public class Utils {
   public static TextColumn<String[]> makeColumn(CellTable<String[]> table, final int idx,
       String title, String width) {
     TextColumn<String[]> col = new TextColumn<String[]>() {
+      @Override
       public String getValue(String[] x) {
         if (x.length > idx) {
           return x[idx];
@@ -131,5 +135,26 @@ public class Utils {
     }
     
     return new SampleClass(d);
+  }
+
+  public static void inject(final List<String> p_jsList, Logger logger, final Runnable callback) {
+    final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
+
+    ScriptInjector.fromUrl(js).setCallback(new Callback<Void, Exception>() {
+      @Override
+      public void onFailure(Exception e) {
+        logger.severe("Script load failed. (" + js + ")");
+      }
+
+      @Override
+      public void onSuccess(Void ok) {
+        //Injected all scripts
+        if (!p_jsList.isEmpty()) {
+          inject(p_jsList, logger, callback);
+        } else {
+          callback.run();
+        }
+      }
+    }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
 }
