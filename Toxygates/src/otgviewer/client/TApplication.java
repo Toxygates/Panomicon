@@ -436,7 +436,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     } else {
       screen = pickScreen(token);
     }
-    if (firstLoad) {
+    // TODO: remove this after revamping MultiDataScreen
+    // This is currently necessary because MultiDataScreen needs to have state loaded 
+    // before showScreen is called, in order to choose its replacement screen.
+    if (firstLoad && screen instanceof MultiDataScreen) {
       screen.loadState(appInfo.attributes());
     }
     showScreen(screen);
