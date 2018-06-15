@@ -76,7 +76,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
           val pmap = context.probeMap
           var pcomp = 0d
           var nvalues = 0
-          
+
           //CSVRawExpressionData is more efficient with chunked reading
           val it = raw.samples.iterator.grouped(50)
           while (it.hasNext && shouldContinue(pcomp)) {
@@ -93,14 +93,14 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
                         s"Unknown probe: $probe. Did you forget to upload a platform definition?")
                     case t: Throwable => throw t
                   }
-                  Some(sample, pk, v)
+                  Some(pk, v)
                 } else {
                   log(s"Not inserting unknown probe '$probe'")
                   None
                 }
               })
               nvalues += packed.size
-              db.writeMany(packed)
+              db.writeMany(sample, packed)
               pcomp += 100.0 / ns
             }
           }
