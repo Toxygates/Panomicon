@@ -108,6 +108,8 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
   /**
    * @param sample one of the treated samples to build fold values for.
+   * TODO this method should operate per control group rather than per sample,
+   * ideally
    */
   override protected def makeFolds(controlSamples: Seq[Sample],
     treatedSamples: Seq[Sample],
@@ -119,20 +121,24 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     val controlData = input.data(controlSamples)
     val treatedData = input.data(treatedSamples)
     val sampleExpr = treatedData(sample).mapValues(_._1)
-    
+//    
     val controlValues = controlData.values.toSeq
-    val treatedValues = treatedData.values.toSeq
+//    val treatedValues = treatedData.values.toSeq
     val controlMean = controlMeanSample(controlValues)
     
     val probes = input.probes.toSeq
-
+    
+    val controlExpr = controlSamples.map(input.exprs)
+    val treatedExpr = treatedSamples.map(input.exprs)
+    val controlCall = controlSamples.map(input.calls)
+    val treatedCall = treatedSamples.map(input.calls)
+    
     var r = accumulator
-    for (p <- probes) {
+    for ((p, i) <- probes.zipWithIndex) {
       (sampleExpr.get(p), controlMean.get(p)) match {
-        case (Some(v), Some(control)) =>
-          
-          val cs = controlValues.flatMap(_.get(p)).map(_._1)
-          val ts = treatedValues.flatMap(_.get(p)).map(_._1)
+        case (Some(v), Some(control)) =>//         
+          val cs = controlExpr.flatMap(_(i))
+           val ts = treatedExpr.flatMap(_(i))          
           val pval = if (cs.size >= 2 && ts.size >= 2) {
             tt.tTest(cs.toArray, ts.toArray)
           } else {
@@ -140,8 +146,8 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
           }
           
           val foldVal = Math.log(v / control) / l2
-          val controlCalls = controlValues.flatMap(_.get(p).map(_._2))
-          val treatedCalls = treatedValues.flatMap(_.get(p).map(_._2))
+          val controlCalls = controlCall.flatMap(_(i))
+          val treatedCalls = treatedCall.flatMap(_(i))
           val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
           r ::= (p, (foldVal, pacall, pval))
         case _ =>

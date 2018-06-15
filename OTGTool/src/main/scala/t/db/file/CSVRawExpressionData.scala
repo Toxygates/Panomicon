@@ -217,7 +217,15 @@ class CachedCSVRawExpressionData(exprFile: String,
             s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
         parseWarningHandler(wmsg)
       } else {
-        raw += spl.drop(1).map(extract)
+        try {
+          raw += spl.drop(1).map(extract)
+        } catch {
+          case nfe: NumberFormatException =>
+            val wmsg = s"Number format error: unable to parse row for probe ${spl(0)}. " +
+              "Try with non-cached mode for more detailed error message."
+            parseWarningHandler(wmsg)
+            throw nfe
+        }
       }
     })
 
@@ -229,6 +237,12 @@ class CachedCSVRawExpressionData(exprFile: String,
     }
     r
   }
+   
+  override def calls(x: Sample): Seq[Option[Char]] = 
+    callsCache(x).map(Some(_)) 
+  
+  override def exprs(x: Sample): Seq[Option[Double]] = 
+    exprCache(x).map(Some(_))    
 
   override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
     val (preExisting, notYetRead) = ss.partition(callsCache.contains(_))
