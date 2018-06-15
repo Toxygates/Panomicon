@@ -153,6 +153,8 @@ class CSVRawExpressionData(exprFile: String,
     readValuesFromTable(file, ss, x => unquote(x)(0))
   }
 
+  lazy val defaultCalls = probes.map(_ => 'P')
+
   /**
    * Read expression values from a file.
    * The result is a map that maps samples to probe IDs and values.
@@ -168,7 +170,7 @@ class CSVRawExpressionData(exprFile: String,
     val calls = callFile.map(readCalls(_, ss.toSeq.distinct)).getOrElse(Map())
 
     exprs.map { case (s, col) => {
-        val sampleCalls = calls.getOrElse(s, probes.map(_ => 'P'))
+        val sampleCalls = calls.getOrElse(s, defaultCalls)
         s -> (Map() ++ (probes.iterator zip (col.iterator zip sampleCalls.iterator)).map {
           case (p, (v, c)) => {
             (p -> (v, c, Double.NaN))
@@ -237,12 +239,12 @@ class CachedCSVRawExpressionData(exprFile: String,
     }
     r
   }
-   
-  override def calls(x: Sample): Seq[Option[Char]] = 
-    callsCache(x).map(Some(_)) 
-  
-  override def exprs(x: Sample): Seq[Option[Double]] = 
-    exprCache(x).map(Some(_))    
+
+  override def calls(x: Sample): Seq[Option[Char]] =
+    callsCache.getOrElse(x, defaultCalls).map(Some(_))
+
+  override def exprs(x: Sample): Seq[Option[Double]] =
+    exprCache(x).map(Some(_))
 
   override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
     val (preExisting, notYetRead) = ss.partition(callsCache.contains(_))
