@@ -23,8 +23,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.*;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -69,7 +68,12 @@ abstract public class HeatmapDialog<C, R> {
 
   public HeatmapDialog(String matrixId, Logger logger, ClusteringServiceAsync<C, R> service) {
     clusteringService = service;
-    dialog = new DialogBox();
+    dialog = new DialogBox() {
+      @Override
+      protected void beginDragging(MouseDownEvent event) {
+        event.preventDefault();
+      };
+    };
     this.logger = logger;
     this.matrixId = matrixId;
   }
