@@ -27,6 +27,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
@@ -63,6 +64,8 @@ abstract public class HeatmapDialog<C, R> {
   protected String matrixId;
 
   protected Algorithm lastClusteringAlgorithm = new Algorithm();
+
+  private HandlerRegistration resizeHandler;
 
   public HeatmapDialog(String matrixId, Logger logger, ClusteringServiceAsync<C, R> service) {
     clusteringService = service;
@@ -182,7 +185,7 @@ abstract public class HeatmapDialog<C, R> {
     final ScrollPanel mainContent = new ScrollPanel();
     mainContent.setPixelSize(mainWidth(), mainHeight());
     mainContent.setWidget(new HTML("<div id=\"inchlib\"></div>"));
-    Window.addResizeHandler(new ResizeHandler() {
+    resizeHandler = Window.addResizeHandler(new ResizeHandler() {
       @Override
       public void onResize(ResizeEvent event) {
         int width = mainWidth();
@@ -327,6 +330,7 @@ abstract public class HeatmapDialog<C, R> {
       @Override
       public void onClick(ClickEvent event) {
         HeatmapDialog.this.dialog.hide();
+        resizeHandler.removeHandler();
       }
     });
     buttonGroup.add(btnClose);
