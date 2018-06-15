@@ -23,6 +23,7 @@ package t.db.file
 import scala.io.Source
 import scala.collection.{ Map => CMap }
 import t.db._
+import scala.collection.mutable.ArrayBuffer
 
 class ParseException(msg: String) extends Exception
 
@@ -42,10 +43,10 @@ class CSVRawExpressionData(exprFile: String,
     columns.drop(1).toVector.map(s => Sample(unquote(s)))
   }
 
-  override lazy val samples: Iterable[Sample] =
+  override lazy val samples: Seq[Sample] =
     samplesInFile(exprFile).distinct
 
-  override lazy val probes: Iterable[String] =
+  override lazy val probes: Seq[String] =
     probesInFile(exprFile).toSeq
 
   private def probesInFile(file: String) = {
@@ -57,9 +58,9 @@ class CSVRawExpressionData(exprFile: String,
     ) yield probe
   }
 
-  private val expectedColumns = expectedSamples.map(_ + 1)
+  protected val expectedColumns = expectedSamples.map(_ + 1)
 
-  private[this] def traverseFile[T](file: String,
+  protected def traverseFile[T](file: String,
     lineHandler: (Array[String], String) => Unit): Array[String] = {
     println("Read " + file)
     val s = Source.fromFile(file)
@@ -79,50 +80,66 @@ class CSVRawExpressionData(exprFile: String,
     columns
   }
 
-  private[this] def readValuesFromTable[T](file: String, ss: Set[Sample],
-    extract: String => T): CMap[Sample, CMap[String, T]] = {
+  protected def probeBuffer[T] = {
+    var r = ArrayBuffer[T]()
+    r.sizeHint(probes.size)
+    r
+  }
 
-    var raw: Vector[Seq[String]] = Vector.empty
+  protected def sampleBuffer[T] = {
+    var r = ArrayBuffer[T]()
+    r.sizeHint(samples.size)
+    r
+  }
+
+  /**
+   * Traverse the file but only read the relevant columns. Saves memory.
+   */
+  protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
+    extract: String => T): CMap[Sample, Seq[T]] = {
+    val samples = ss.map(_.sampleId).toSet
+
+    val raw = probeBuffer[Seq[String]]
     var keptColumns: Option[Seq[String]] = None
     var keptIndices: Option[Seq[Int]] = None
-    
+
     traverseFile(file, (columns, l) => {
-      
+
       if(keptColumns == None) {
-        keptColumns = Some(Seq(columns.head) ++
-           columns.map(unquote(_)).filter(x => ss.contains(Sample(x))))
-        keptIndices = Some(Seq(0) ++
-           columns.indices.filter(i => ss.contains(Sample(unquote(columns(i))))))
+        keptColumns = Some(ArrayBuffer(columns.head) ++
+           columns.map(unquote(_)).filter(x => samples.contains(x)))
+        keptIndices = Some(ArrayBuffer(0) ++
+           columns.indices.filter(i => samples.contains(unquote(columns(i)))))
       }
-      
-      val spl = l.split(",", -1).map(_.trim)
+
+      val spl = l.split(",", -1).map(x => x.trim)
       if (expectedColumns != None && spl.size < expectedColumns.get) {
         val wmsg =
             s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
         parseWarningHandler(wmsg)
       } else {
-        raw :+= keptIndices.get.map(spl)
+        raw += keptIndices.get.map(spl)
       }
     })
 
-    var r = Map[Sample, CMap[String, T]]()
+    val rawAndProbes = raw zip probes
+
+    var r = Map[Sample, Seq[T]]()
     for (c <- 1 until keptColumns.get.size;
       sampleId = keptColumns.get(c);
-      sample = Sample(sampleId)) {      
+      sample = Sample(sampleId)) {
 
-      var col = scala.collection.mutable.Map[String, T]()
-      col ++= raw.map(r => {
-        val pr = unquote(r(0))
+      val col = rawAndProbes.map {case (row, probe) =>
         try {
-          pr -> extract(r(c))
+          extract(row(c))
         } catch {
           case nfe: NumberFormatException =>
-            val wmsg = "Number format error: unable to parse string '" + r(c) + "' for probe " +
-              pr + " and sample " + sampleId
+            val wmsg = s"Number format error: unable to parse string '${row(c)}' for probe $probe" +
+              s" and sample $sampleId"
             parseWarningHandler(wmsg)
             throw nfe
         }
-      })
+      }
       r += sample -> col
     }
 
@@ -131,7 +148,7 @@ class CSVRawExpressionData(exprFile: String,
 
   private[this] def unquote(x: String) = x.replace("\"", "")
 
-  private[this] def readCalls(file: String, ss: Set[Sample]): CMap[Sample, CMap[String, Char]] = {
+  protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
     //get the second char in a string like "A" or "P"
     readValuesFromTable(file, ss, x => unquote(x)(0))
   }
@@ -140,27 +157,23 @@ class CSVRawExpressionData(exprFile: String,
    * Read expression values from a file.
    * The result is a map that maps samples to probe IDs and values.
    */
-  private[this] def readExprValues(file: String, ss: Set[Sample]): CMap[Sample, CMap[String, Double]] = {
+  protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Double]] = {
     import java.lang.{Double => JDouble}
-    readValuesFromTable(file, ss, _.toDouble).mapValues(_.filter(v => !JDouble.isNaN(v._2)))
+    readValuesFromTable(file, ss, _.toDouble)
   }
 
+  import java.lang.{Double => JDouble}
   override def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
-    val exprs = readExprValues(exprFile, ss.toSet)
-    val calls = readCalls(exprFile, ss.toSet)
+    val exprs = readExprValues(exprFile, ss.toSeq.distinct)
+    val calls = callFile.map(readCalls(_, ss.toSeq.distinct)).getOrElse(Map())
 
-    exprs.map {
-      case (s, col) => {
-        val sampleCalls = calls.get(s)
-        s -> col.map {
-          case (p, v) => {
-            if (sampleCalls != None && !sampleCalls.get.contains(p)) {
-              throw new Exception(s"No call available for probe $p in sample $s")
-            }
-            val useCall = sampleCalls.map(_(p)).getOrElse('P')
-            (p -> (v, useCall, Double.NaN))
+    exprs.map { case (s, col) => {
+        val sampleCalls = calls.getOrElse(s, probes.map(_ => 'P'))
+        s -> (Map() ++ (probes.iterator zip (col.iterator zip sampleCalls.iterator)).map {
+          case (p, (v, c)) => {
+            (p -> (v, c, Double.NaN))
           }
-        }
+        }).filter(v => ! JDouble.isNaN(v._2._1))
       }
     }
   }
@@ -168,4 +181,71 @@ class CSVRawExpressionData(exprFile: String,
   def data(s: Sample): CMap[String, FoldPExpr] = {
     data(Set(s)).head._2
   }
+}
+
+/**
+ * Immediately caches all samples in memory.
+ */
+class CachedCSVRawExpressionData(exprFile: String,
+    callFile: Option[String], expectedSamples: Option[Int],
+    parseWarningHandler: (String) => Unit)
+    extends CSVRawExpressionData(exprFile,
+        callFile, expectedSamples, parseWarningHandler) {
+
+  var exprCache: CMap[Sample, Seq[Double]] = Map()
+  var callsCache: CMap[Sample, Seq[Char]] = Map()
+
+  exprCache = readExprValues(exprFile, samples)
+  callsCache = callFile match {
+    case Some(f) => readCalls(f, samples)
+    case _ => Map()
+  }
+
+  /*
+   * Read all data at once, ignoring the ss parameter.
+   */
+   override protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
+    extract: String => T): CMap[Sample, Seq[T]] = {
+
+    val raw = probeBuffer[Seq[T]]
+
+    traverseFile(file, (columns, l) => {
+
+      val spl = l.split(",", -1).map(x => x.trim)
+      if (expectedColumns != None && spl.size < expectedColumns.get) {
+        val wmsg =
+            s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
+        parseWarningHandler(wmsg)
+      } else {
+        raw += spl.drop(1).map(extract)
+      }
+    })
+
+    var r = Map[Sample, Seq[T]]()
+
+    for (c <- 0 until samples.size;
+      sample = samples(c)) {
+      r += sample -> raw.map(_(c))
+    }
+    r
+  }
+
+  override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
+    val (preExisting, notYetRead) = ss.partition(callsCache.contains(_))
+    if (!notYetRead.isEmpty) {
+      callsCache ++= super.readCalls(file, notYetRead)
+    }
+    val sampleSet = ss.toSet
+    callsCache.filter(x => sampleSet.contains(x._1))
+  }
+
+  override protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Double]] = {
+    val (preExisting, notYetRead) = ss.partition(exprCache.contains(_))
+    if (!notYetRead.isEmpty) {
+      exprCache ++= super.readExprValues(file, notYetRead)
+    }
+    val sampleSet = ss.toSet
+    exprCache.filter(x => sampleSet.contains(x._1))
+  }
+
 }

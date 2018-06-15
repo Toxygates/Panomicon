@@ -34,6 +34,7 @@ import t.util.TempFiles
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.CoreParameter
 import t.db.file.TSVMetadata
+import t.db.file.CachedCSVRawExpressionData
 
 /**
  * Batch management CLI
@@ -53,6 +54,7 @@ object BatchManager extends ManagerTool {
           val title = require(stringOption(args, "-title"),
             "Please specify a title with -title")
           val append = booleanOption(args, "-append")
+          val cached = booleanOption(args, "-cached")
           val comment = stringOption(args, "-comment").getOrElse("")
 
           val bm = new BatchManager(context)
@@ -75,7 +77,7 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 val task = bm.add(Batch(title, comment, None, None),
                   metadata, dataFile, callFile,
-                  if (first) append else true)
+                  if (first) append else true, cached = cached)
                 first = false
                 task
               })
@@ -90,7 +92,7 @@ object BatchManager extends ManagerTool {
               new Platforms(config).populateAttributes(config.attributes)
               //val md = factory.tsvMetadata(metaFile, config.attributes)
               startTaskRunner(bm.add(Batch(title, comment, None, None),
-                metaFile, dataFile, callFile, append))
+                metaFile, dataFile, callFile, append, cached = cached))
           }
 
         case "recalculate" =>
@@ -244,7 +246,8 @@ class BatchManager(context: Context) {
 
   def add[S <: Series[S]](batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
-    append: Boolean, simpleLog2: Boolean = false): Task[Unit] = {
+    append: Boolean, simpleLog2: Boolean = false,
+    cached: Boolean = false): Task[Unit] = {
 
     for {
       metadata <- readTSVMetadata(metadataFile)
@@ -258,8 +261,8 @@ class BatchManager(context: Context) {
           mc <- Task.simple("Create matrix context") {
             matrixContext()
           }
-          _ <- addExprData(metadata, dataFile, callFile)(mc) andThen
-            addFoldsData(metadata, dataFile, callFile, simpleLog2)(mc) andThen
+          _ <- addExprData(metadata, dataFile, callFile, cached)(mc) andThen
+            addFoldsData(metadata, dataFile, callFile, simpleLog2, cached)(mc) andThen
             addTimeSeriesData(metadata)(mc) andThen
             addDoseSeriesData(metadata)(mc)
         } yield ())
@@ -549,19 +552,24 @@ class BatchManager(context: Context) {
   }
 
   def readCSVExpressionData(md: Metadata, niFile: String,
-      callFile: Option[String]): Task[RawExpressionData] =
+      callFile: Option[String], cached: Boolean): Task[RawExpressionData] =
     new AtomicTask[RawExpressionData]("Read raw expression data") {
       override def run() = {
-        new CSVRawExpressionData(niFile, callFile,
+        if (cached) {
+          new CachedCSVRawExpressionData(niFile, callFile,
             Some(md.samples.size), m => log(s"Warning: $m"))
-      }
+        } else {
+          new CSVRawExpressionData(niFile, callFile,
+            Some(md.samples.size), m => log(s"Warning: $m"))
+        }
     }
+  }
 
-  def addExprData(md: Metadata, niFile: String, callFile: Option[String])
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String], cached: Boolean)
       (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.exprDb)
     for {
-      data <- readCSVExpressionData(md, niFile, callFile)
+      data <- readCSVExpressionData(md, niFile, callFile, cached)
       _ <- new SimpleValueInsert(db, data).insert("Insert expression value data")
     } yield ()
   }
@@ -582,10 +590,10 @@ class BatchManager(context: Context) {
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
-      simpleLog2: Boolean)
+      simpleLog2: Boolean, cached: Boolean)
       (implicit mc: MatrixContext): Task[Unit] = {
     for {
-      data <- readCSVExpressionData(md, foldFile, callFile)
+      data <- readCSVExpressionData(md, foldFile, callFile, cached)
       _ <- addFoldsData(md, data, simpleLog2)
     } yield ()
   }
@@ -626,7 +634,7 @@ class BatchManager(context: Context) {
             if shouldContinue(percentComplete)
           ) {
             deleteFromDB(db, chunk)
-            percentComplete += 100 * 25 / ss.size
+            percentComplete += 100 * 25.0 / ss.size
           }
         } finally {
           db.release()
