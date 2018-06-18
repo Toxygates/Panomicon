@@ -96,6 +96,8 @@ trait ExprValue {
    * Flag to indicate that a missing value was auto-generated as padding by the database.
    */
   var isPadding: Boolean = false
+  
+  final def paddingOption = if (isPadding) None else Some(this) 
 }
 
 /**

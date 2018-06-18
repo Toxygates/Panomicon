@@ -66,6 +66,78 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
   }
 
   def data(s: Sample): Map[String, FoldPExpr] = _data(s)
-  
+    
   def logEvent(message: String) {}
+  
+  def close() { reader.release() }
+}
+
+import scala.collection.{Map => CMap}
+
+/**
+ * Preferred choice for sample-major access.
+ * Inefficient for other use cases.
+ *
+ */
+class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
+  requestedSamples: Iterable[Sample],
+   requestedProbes: Iterable[Int]) extends ColumnExpressionData {
+  
+  override val samples: Iterable[Sample] = reader.sortSamples(requestedSamples)
+  
+  val codedProbes = reader.sortProbes(requestedProbes)
+  override val probes = 
+     codedProbes.map(reader.probeMap.unpack)
+  
+  var currentSamples: Seq[Sample] = Seq()
+  var currentCalls: Seq[Seq[Option[Char]]] = Seq()
+  var currentExprs: Seq[Seq[Option[Double]]] = Seq()
+  
+  def logEvent(s: String) { println(s) }
+  
+  /**
+   * Pre-cache data for the given samples.
+   * Should be a subset of the samples requested at construction.
+   */
+  override def loadData(ss: Iterable[Sample]) {
+    if (!((ss.toSet -- currentSamples.toSet).isEmpty)) {
+      val loadSamples = reader.sortSamples(ss)
+      logEvent(s"DB read $loadSamples")
+      val d = reader.valuesInSamples(loadSamples, codedProbes, true)
+      currentSamples = loadSamples
+      currentCalls = d.map(_.map(_.paddingOption.map(_.call)).toSeq).toSeq
+      currentExprs = d.map(_.map(_.paddingOption.map(_.value)).toSeq).toSeq
+    }
+  }
+  
+  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
+    loadData(ss)
+    Map() ++ ss.map(s => s -> data(s))
+  }
+  
+  def data(s: Sample): CMap[String, FoldPExpr] = {
+    loadData(Seq(s))
+    val pec = (probes zip (exprs(s) zip calls(s)))
+    Map() ++ pec.collect { case (p, (Some(exp), Some(call))) => 
+      p -> (exp, call, 0.0)
+    }
+  }
+  
+    /**
+   * Obtain calls for all probes.
+   */
+  def calls(x: Sample): Seq[Option[Char]] = {
+    loadData(Seq(x))
+    currentCalls(currentSamples indexOf x)
+  }
+  
+  /**
+   * Obtain expression values for all probes.
+   */
+  def exprs(x: Sample): Seq[Option[Double]] = {
+    loadData(Seq(x))
+    currentExprs(currentSamples indexOf x)
+  }
+  
+  def close() { reader.release() }
 }
