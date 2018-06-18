@@ -53,7 +53,7 @@ trait MatrixContext {
   def probeSets: Map[String, Seq[Int]] = Map()
 
   def defaultExpectedProbes = probeMap.keys.toSeq
-      
+
   /**
    * Probes expected to be present in the database for a given sample.
    * They are not guaranteed to actually be present.
@@ -174,9 +174,9 @@ trait MatrixDBWriter[E <: ExprValue] {
 
   def write(s: Sample, probe: Int, e: E): Unit
 
-  def writeMany(vs: Iterable[(Sample, Int, E)]): Unit = {
+  def writeMany(s: Sample, vs: Iterable[(Int, E)]): Unit = {
     for (v <- vs) {
-      write(v._1, v._2, v._3)
+      write(s, v._1, v._2)
     }
   }
 

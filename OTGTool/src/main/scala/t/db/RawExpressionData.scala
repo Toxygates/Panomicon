@@ -47,15 +47,22 @@ trait RawExpressionData {
   def call(x: Sample, probe: String): Option[Char] = data(x).get(probe).map(_._2)
 
   /**
+   * Obtain calls for all probes.
+   */
+  def calls(x: Sample): Seq[Option[Char]] =
+    probes.toSeq.map(p => call(x, p))
+  
+  /**
    * Obtain an expression value.
    */
   def expr(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._1)
 
   /**
-   * Obtain a p-value.
+   * Obtain expression values for all probes.
    */
-  def p(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._3)
-
+  def exprs(x: Sample): Seq[Option[Double]] =
+    probes.toSeq.map(p => expr(x, p))
+  
   def probes: Iterable[String] = probesInSamples
 
   lazy val probesInSamples =

@@ -44,6 +44,40 @@ case class VectorChunk[E <: ExprValue] (sample: Int, start: Int, xs: Seq[(Int, E
     xs.map(_._1)
 
   /**
+   * Write multiple values. The values to be inserted must be
+   * sorted by probe.
+   */
+  def insert(newVals: Iterable[(Int, E)]): VectorChunk[E] = {
+    val itAll = new Iterator[(Int, E)] {
+      val iold = xs.iterator.buffered
+      val inew = newVals.iterator.buffered
+
+      def hasNext: Boolean = iold.hasNext || inew.hasNext
+      def bothHaveNext = iold.hasNext && inew.hasNext
+      def next = {
+        if (bothHaveNext) {
+          if (iold.head._1 < inew.head._1) {
+            iold.next
+          } else if (inew.head._1 == iold.head._1) {
+            iold.next //advance and drop
+            inew.next
+          } else {
+            inew.next
+          }
+        } else if (inew.hasNext) {
+          inew.next
+        } else if (iold.hasNext) {
+          iold.next
+        } else {
+          throw new UnsupportedOperationException("Exhausted")
+        }
+      }
+
+    }
+    this.copy(xs = itAll.toSeq)
+  }
+
+  /**
    * Write the given probe's value, or create it if it doesn't exist.
    */
   def insert(p: Int, x: E): VectorChunk[E] = {
@@ -124,16 +158,16 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   protected def extractValue(sample: Int, start: Int,
       data: Array[Byte]): V = {
     val b = ByteBuffer.wrap(data)
-    var r = List[(Int, PExprValue)]()
+    var r = Vector[(Int, PExprValue)]()
 
     while(b.hasRemaining()) {
       val pr = b.getInt
       val x = b.getDouble
       val p = b.getDouble
       val c = b.getChar
-      r ::= (pr, PExprValue(x, p, c))
+      r :+= (pr, PExprValue(x, p, c))
     }
-    VectorChunk(sample, start, r.reverse)
+    VectorChunk(sample, start, r)
   }
 
   /**
@@ -216,7 +250,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
   implicit val probeMap = mc.probeMap
 
-  def sortSamples(xs: Iterable[Sample]): Seq[Sample] =   
+  def sortSamples(xs: Iterable[Sample]): Seq[Sample] =
     xs.toSeq.sortBy(_.getDbCode.getOrElse(0))
 
   def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, PExprValue)] = {
@@ -231,8 +265,8 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
   private def potentialChunks(x: Sample, probes: Iterable[Int]): Iterable[V] = {
     val keys = probes.map(p => chunkStartFor(p)).toSeq.distinct
-    for (k <- keys; dbcode <- x.getDbCode) 
-      yield findOrCreateChunk(dbcode, k)    
+    for (k <- keys; dbcode <- x.getDbCode)
+      yield findOrCreateChunk(dbcode, k)
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
@@ -293,18 +327,13 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     }
   }
 
-  override def writeMany(vs: Iterable[(Sample, Int, PExprValue)]): Unit = {
-    val bySample = vs.groupBy(_._1)
-    for ((s, svs) <- bySample) {
-      val byChunk = svs.groupBy(v => chunkStartFor(v._2))
-      for ((c, vs) <- byChunk) {
-       synchronized {
-          var ch = findOrCreateChunk(s.dbCode, vs.head._2)
-          for (v <- vs) {
-            ch = ch.insert(v._2, v._3)
-          }
-          updateChunk(ch)
-        }
+  override def writeMany(s: Sample, vs: Iterable[(Int, PExprValue)]): Unit = {
+    val byChunk = vs.groupBy(v => chunkStartFor(v._1))
+    for ((c, vs) <- byChunk) {
+      synchronized {
+        var ch = findOrCreateChunk(s.dbCode, vs.head._1)
+        ch = ch.insert(vs.toSeq.sortBy(_._1))
+        updateChunk(ch)
       }
     }
   }
