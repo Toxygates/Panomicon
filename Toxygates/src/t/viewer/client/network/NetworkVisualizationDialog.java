@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.Resources;
@@ -23,10 +28,17 @@ public class NetworkVisualizationDialog {
 
   private Boolean injected = false;
 
+  private HandlerRegistration resizeHandler;
+
   public NetworkVisualizationDialog(Resources resources, Logger logger) {
     this.resources = resources;
     this.logger = logger;
-    dialog = new DialogBox();
+    dialog = new DialogBox() {
+      @Override
+      protected void beginDragging(MouseDownEvent event) {
+        event.preventDefault();
+      };
+    };
   }
 
   public void initWindow() {
@@ -45,14 +57,49 @@ public class NetworkVisualizationDialog {
     }
   }
 
+  protected int mainWidth() {
+    return Window.getClientWidth() - 44;
+  }
+
+  protected int mainHeight() {
+    return Window.getClientHeight() - 62;
+  }
+
   private void createPanel() {
     dialog.setText("Network visualization");
 
-    VerticalPanel panel = new VerticalPanel();
-    panel.setPixelSize(1000, 1000);
-    HTML mapHtmlDiv = new HTML(resources.networkVisualizationHTML().getText());
-    panel.add(mapHtmlDiv);
+    DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
+    dockPanel.setPixelSize(mainWidth(), mainHeight());
 
-    dialog.setWidget(panel);
+    // VerticalPanel vPanel = new VerticalPanel();
+    // vPanel.setPixelSize(mainWidth(), mainHeight());
+    HTML mapHtmlDiv = new HTML(resources.networkVisualizationHTML().getText());
+    // vPanel.add(mapHtmlDiv);
+
+    FlowPanel buttonGroup = new FlowPanel();
+    Button btnClose = new Button("Close");
+    btnClose.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        NetworkVisualizationDialog.this.dialog.hide();
+        resizeHandler.removeHandler();
+      }
+    });
+    buttonGroup.add(btnClose);
+
+    dockPanel.addNorth(mapHtmlDiv, 365);
+    dockPanel.addSouth(buttonGroup, 27);
+
+    SimplePanel displayPanel = new SimplePanel();
+    displayPanel.setStyleName("visualization");
+    displayPanel.getElement().setId("display");
+    dockPanel.add(displayPanel);
+
+    resizeHandler = Window.addResizeHandler((ResizeEvent event) -> {
+      dockPanel.setPixelSize(mainWidth(), mainHeight());
+    });
+    dialog.setWidget(dockPanel);
+    dialog.center();
+    dialog.setModal(true);
   }
 }
