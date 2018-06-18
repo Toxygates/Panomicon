@@ -102,7 +102,7 @@ abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
  * This could be stored in a separate table, but for simplicity, we are grouping it with
  * expression data for now.
  */
-class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
+class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
   extends FoldValueBuilder(md, input) {
   val tt = new TTest
 
@@ -128,10 +128,10 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     
     val probes = input.probes.toSeq
     
-    val controlExpr = controlSamples.map(input.exprs)
-    val treatedExpr = treatedSamples.map(input.exprs)
-    val controlCall = controlSamples.map(input.calls)
-    val treatedCall = treatedSamples.map(input.calls)
+    val controlExpr = controlSamples.map(input.exprs).toList
+    val treatedExpr = treatedSamples.map(input.exprs).toList
+    val controlCall = controlSamples.map(input.calls).toList
+    val treatedCall = treatedSamples.map(input.calls).toList
     
     var r = accumulator
     for ((p, i) <- probes.zipWithIndex) {
