@@ -39,7 +39,7 @@ abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
   type Entry = (String, FoldPExpr)
 
   override def probes = input.probes
-  
+
   def samples = input.samples.filter(!md.isControl(_))
 
   protected lazy val groups = md.treatedControlGroups(input.samples)
@@ -102,7 +102,7 @@ abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
  * This could be stored in a separate table, but for simplicity, we are grouping it with
  * expression data for now.
  */
-class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
+class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
   extends FoldValueBuilder(md, input) {
   val tt = new TTest
 
@@ -117,34 +117,34 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
     accumulator: List[Entry]): List[Entry] = {
 
     val l2 = Math.log(2)
- 
+
     val controlData = input.data(controlSamples)
     val treatedData = input.data(treatedSamples)
     val sampleExpr = treatedData(sample).mapValues(_._1)
-//    
+//
     val controlValues = controlData.values.toSeq
 //    val treatedValues = treatedData.values.toSeq
     val controlMean = controlMeanSample(controlValues)
-    
+
     val probes = input.probes.toSeq
-    
-    val controlExpr = controlSamples.map(input.exprs).toList
-    val treatedExpr = treatedSamples.map(input.exprs).toList
-    val controlCall = controlSamples.map(input.calls).toList
-    val treatedCall = treatedSamples.map(input.calls).toList
-    
+
+    val controlExpr = controlSamples.map(input.exprs)
+    val treatedExpr = treatedSamples.map(input.exprs)
+    val controlCall = controlSamples.map(input.calls)
+    val treatedCall = treatedSamples.map(input.calls)
+
     var r = accumulator
     for ((p, i) <- probes.zipWithIndex) {
       (sampleExpr.get(p), controlMean.get(p)) match {
-        case (Some(v), Some(control)) =>//         
+        case (Some(v), Some(control)) =>
           val cs = controlExpr.flatMap(_(i))
-           val ts = treatedExpr.flatMap(_(i))          
+           val ts = treatedExpr.flatMap(_(i))
           val pval = if (cs.size >= 2 && ts.size >= 2) {
             tt.tTest(cs.toArray, ts.toArray)
           } else {
             Double.NaN
           }
-          
+
           val foldVal = Math.log(v / control) / l2
           val controlCalls = controlCall.flatMap(_(i))
           val treatedCalls = treatedCall.flatMap(_(i))
@@ -159,8 +159,7 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
 
   import scala.collection.{Map => CMap}
 
-  def data(s: Sample): CMap[String, FoldPExpr] = {       
+  def data(s: Sample): CMap[String, FoldPExpr] = {
     HashMap() ++ values(s)
   }
 }
-

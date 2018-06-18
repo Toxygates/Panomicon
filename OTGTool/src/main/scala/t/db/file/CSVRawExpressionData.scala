@@ -47,7 +47,7 @@ class CSVRawExpressionData(exprFile: String,
     samplesInFile(exprFile).distinct
 
   override lazy val probes: Seq[String] =
-    probesInFile(exprFile).toSeq
+    probesInFile(exprFile).toVector
 
   private def probesInFile(file: String) = {
     val lines = Source.fromFile(file).getLines
@@ -140,7 +140,7 @@ class CSVRawExpressionData(exprFile: String,
             throw nfe
         }
       }
-      r += sample -> col
+      r += sample -> col.toVector
     }
 
     r
