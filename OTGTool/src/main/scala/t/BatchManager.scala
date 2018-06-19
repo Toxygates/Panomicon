@@ -262,9 +262,7 @@ class BatchManager(context: Context) {
             matrixContext()
           }
           _ <- addExprData(metadata, dataFile, callFile, cached)(mc) andThen
-            addFoldsData(metadata, dataFile, callFile, simpleLog2, cached)(mc) andThen
-            addTimeSeriesData(metadata)(mc) andThen
-            addDoseSeriesData(metadata)(mc)
+                recalculateFoldsAndSeries(batch, metadata, simpleLog2)
         } yield ())
     } yield ()
   }
@@ -290,7 +288,8 @@ class BatchManager(context: Context) {
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
 
     val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
-    val dbReader = config.data.absoluteDBReader
+    
+    val dbReader = () => config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
 
     val recalculateChunks = (for (unitChunk <- units.grouped(50);
@@ -308,10 +307,10 @@ class BatchManager(context: Context) {
     addEnums(metadata) andThen recalculateChunks
   }
 
-  def retrieveExpressionData(reader: MatrixDBReader[ExprValue], requestedSamples: Iterable[Sample],
-      requestedProbes: Iterable[Int]) = new AtomicTask[DBExpressionData]("Retrieve expression data") {
-    override def run(): DBExpressionData = {
-      new DBExpressionData(reader, requestedSamples, requestedProbes) {
+  def retrieveExpressionData(reader: () => MatrixDBReader[ExprValue], requestedSamples: Iterable[Sample],
+      requestedProbes: Iterable[Int]) = new AtomicTask[DBColumnExpressionData]("Retrieve expression data") {
+    override def run(): DBColumnExpressionData = {
+      new DBColumnExpressionData(reader(), requestedSamples, requestedProbes) {
         override def logEvent(msg: String) { log(msg) }
       }
     }
@@ -574,27 +573,21 @@ class BatchManager(context: Context) {
     } yield ()
   }
 
-  def addFoldsData(md: Metadata, data: RawExpressionData, simpleLog2: Boolean)
+  def addFoldsData(md: Metadata, data: ColumnExpressionData, simpleLog2: Boolean)
       (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.foldDb)
     for {
       fvs <- Task.simple("Generate expression data") {
         if (simpleLog2) {
-          new Log2Data(data)
+            ???
+//TODO remove or update? No longer needed (historically used for Tritigate)            
+//          new Log2Data(data)
         } else {
           new PFoldValueBuilder(md, data)
         }
       }
-      _ <- new SimpleValueInsert(db, fvs).insert("Insert fold value data")
-    } yield ()
-  }
-
-  def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
-      simpleLog2: Boolean, cached: Boolean)
-      (implicit mc: MatrixContext): Task[Unit] = {
-    for {
-      data <- readCSVExpressionData(md, foldFile, callFile, cached)
-      _ <- addFoldsData(md, data, simpleLog2)
+      _ <- new SimpleValueInsert(db, fvs).insert("Insert fold value data") andThen
+      Task.simple("Close expr reader") { data.release } //TODO best place for this?
     } yield ()
   }
 
@@ -681,20 +674,27 @@ class BatchManager(context: Context) {
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       var inserted = 0
-      try {
+      val controlGroups = md.treatedControlGroups(md.samples)
+      val total = controlGroups.size
+      
+      try {        
         target = KCSeriesDB[S](dbName, true, builder, false)
-        val xs = builder.makeNew(source, md)
-        val total = xs.size
-        var pcomp = 0d
-        val it = xs.iterator
-        while (it.hasNext && shouldContinue(pcomp)) {
-          val x = it.next
-          target.addPoints(x)
-          pcomp += 100.0 / total
-          inserted += 1
-        }
+          var pcomp = 0d
+          for ( //TODO might want to chunk these
+            cg <- controlGroups;
+            if shouldContinue(pcomp)
+          ) {
+            val filtered = new FilteredMetadata(md, cg._1)
+            val xs = builder.makeNew(source, filtered)
+
+            for (x <- xs; if shouldContinue(pcomp)) {
+              target.addPoints(x)              
+              }
+            pcomp = 100.0 * inserted / total
+            inserted += 1
+          }
       } finally {
-        logResult(s"$inserted series inserted")
+        logResult(s"Series for $inserted control groups inserted")
         if (target != null) {
           target.release
         }

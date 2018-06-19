@@ -98,6 +98,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
   /**
    * Pre-cache data for the given samples.
    * Should be a subset of the samples requested at construction.
+   * Does nothing if the requested samples have already been cached.
    */
   override def loadData(ss: Iterable[Sample]) {
     if (!((ss.toSet -- currentSamples.toSet).isEmpty)) {
@@ -139,5 +140,5 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
     currentExprs(currentSamples indexOf x)
   }
   
-  def close() { reader.release() }
+  override def release() { reader.release() }
 }

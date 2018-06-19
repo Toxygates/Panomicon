@@ -33,7 +33,7 @@ import scala.collection.{Map => CMap}
  * log-2 fold values constructed from the input data
  * The sample space of the output may be smaller (control samples have no folds)
  */
-abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
+abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
   extends RawExpressionData {
 
   type Entry = (String, FoldPExpr)
@@ -102,7 +102,7 @@ abstract class FoldValueBuilder(md: Metadata, input: RawExpressionData)
  * This could be stored in a separate table, but for simplicity, we are grouping it with
  * expression data for now.
  */
-class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
+class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
   extends FoldValueBuilder(md, input) {
   val tt = new TTest
 
@@ -118,6 +118,8 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
     val l2 = Math.log(2)
 
+    input.loadData(controlSamples ++ treatedSamples)
+    
     val controlData = input.data(controlSamples)
     val treatedData = input.data(treatedSamples)
     val sampleExpr = treatedData(sample).mapValues(_._1)
