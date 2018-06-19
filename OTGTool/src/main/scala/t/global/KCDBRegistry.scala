@@ -172,7 +172,7 @@ object KCDBRegistry {
     while(inWriting.size > 0) {
       tryCloseWriters
       if (inWriting.size > 0) {
-        println("Trying to close writers (waiting for: )" + inWriting)
+        println(s"Trying to close writers (waiting for: $inWriting)")
         Thread.sleep(100)
       }
     }
