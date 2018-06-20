@@ -52,7 +52,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
   protected def mkValue(v: FoldPExpr): E
 
   def values(xs: Iterable[Sample]) =
-    for ((x, data) <- raw.data(xs);
+    for ((x, data) <- raw.data(xs).toSeq;
       values = data.toSeq.map {case (probe, (v, c, p)) => (probe, mkValue(v, c, p)) }
     ) yield (x, values)
 
