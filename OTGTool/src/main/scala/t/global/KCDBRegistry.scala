@@ -167,10 +167,11 @@ object KCDBRegistry {
   /**
    * This method should be called after writing has been finished
    * to close all writers.
+   * @param force if true, we close writers even if readers are also open on the same files.
    */
-  def closeWriters(): Unit = {
+  def closeWriters(force: Boolean = false): Unit = {
     while(inWriting.size > 0) {
-      tryCloseWriters
+      tryCloseWriters(force)
       if (inWriting.size > 0) {
         println(s"Trying to close writers (waiting for: $inWriting)")
         Thread.sleep(100)
@@ -178,9 +179,9 @@ object KCDBRegistry {
     }
   }
 
-  private def tryCloseWriters: Unit = synchronized {
+  private def tryCloseWriters(force: Boolean): Unit = synchronized {
     val all = inWriting
-    for (f <- all; if getReadCount(f) == 0) {
+    for (f <- all; if (getReadCount(f) == 0 || force)) {
       openDBs(f).close()
       inWriting -= f
       openDBs -= f

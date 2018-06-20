@@ -72,6 +72,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     // Runs on normal shutdown or when user interrupt received
     Runtime.getRuntime.addShutdownHook(new Thread() { override def run = {
       if (TaskRunner.busy) TaskRunner.shutdown()
+      KCDBRegistry.closeWriters(true)
       mainThread.join() // because program will shut down when this thread does
     }})
 
@@ -81,7 +82,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     } catch {
       case e: Exception => e.printStackTrace
     } finally {
-      KCDBRegistry.closeWriters
+      KCDBRegistry.closeWriters()
     }
   }
 
