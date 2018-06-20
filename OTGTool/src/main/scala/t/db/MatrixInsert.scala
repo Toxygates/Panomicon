@@ -27,13 +27,13 @@ import t.Task
  * Note: this is currently only used in tests.
  */
 abstract class BasicValueInsert[E <: ExprValue](val db: MatrixDBWriter[E],
-    raw: RawExpressionData)(implicit mc: MatrixContext) extends MatrixInsert[E](raw)
+    raw: ColumnExpressionData)(implicit mc: MatrixContext) extends MatrixInsert[E](raw)
 
 /**
  * Insert values consisting of an intensity, a p-value, and a call, i.e. PExprValue.
  * All expression database files currently use this format.
  */
-class SimpleValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpressionData)
+class SimpleValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: ColumnExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[PExprValue](raw) {
   def mkValue(v: FoldPExpr) =
     PExprValue(v._1, v._3, v._2)
@@ -44,7 +44,7 @@ class SimpleValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpress
   lazy val db = getDB()
 }
 
-abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
+abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
 (implicit context: MatrixContext) {
 
   def db: MatrixDBWriter[E]

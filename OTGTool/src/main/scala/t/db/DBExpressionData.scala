@@ -24,8 +24,7 @@ import t.db._
 import scala.collection.mutable.{Set => MSet}
 
 class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: Iterable[Sample],
-    val requestedProbes: Iterable[Int])
-    extends RawExpressionData {
+    val requestedProbes: Iterable[Int]) {
 
   val samples: Iterable[Sample] = reader.sortSamples(requestedSamples)
 
@@ -57,7 +56,7 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
     Map() ++ (samples zip values)
   }
 
-  override lazy val probes: Iterable[String] = {
+  lazy val probes: Iterable[String] = {
     var r = MSet[String]()
     for ((sample, lookup) <- _data) {
       r ++= lookup.keys
@@ -111,11 +110,6 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
     }
   }
   
-  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
-    loadData(ss)
-    Map() ++ ss.map(s => s -> data(s))
-  }
-  
   def data(s: Sample): CMap[String, FoldPExpr] = {
     loadData(Seq(s))
     val pec = (probes zip (exprs(s) zip calls(s)))
@@ -124,10 +118,10 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
     }
   }
   
-    /**
+  /**
    * Obtain calls for all probes.
    */
-  def calls(x: Sample): Seq[Option[Char]] = {
+  override def calls(x: Sample): Seq[Option[Char]] = {
     loadData(Seq(x))
     currentCalls(currentSamples indexOf x)
   }
@@ -135,7 +129,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
   /**
    * Obtain expression values for all probes.
    */
-  def exprs(x: Sample): Seq[Option[Double]] = {
+  override def exprs(x: Sample): Seq[Option[Double]] = {
     loadData(Seq(x))
     currentExprs(currentSamples indexOf x)
   }

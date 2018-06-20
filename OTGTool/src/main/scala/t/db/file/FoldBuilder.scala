@@ -34,7 +34,7 @@ import scala.collection.{Map => CMap}
  * The sample space of the output may be smaller (control samples have no folds)
  */
 abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
-  extends RawExpressionData {
+  extends ColumnExpressionData {
 
   type Entry = (String, FoldPExpr)
 
@@ -44,7 +44,7 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
 
   protected lazy val groups = md.treatedControlGroups(input.samples)
 
-  def values(s: Sample): Seq[Entry] = {
+  def data(s: Sample): CMap[String, FoldPExpr] = {
     println("Compute control values")
     var r = List[Entry]()
     for ((ts, cs) <- groups;
@@ -53,7 +53,7 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
       println("Treated: " + ts)
       r = makeFolds(cs.toSeq, ts.toSeq, s, r)
     }
-    r
+    Map() ++ r
   }
 
   /**
@@ -159,9 +159,9 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
     r
   }
 
-  import scala.collection.{Map => CMap}
-
-  def data(s: Sample): CMap[String, FoldPExpr] = {
-    HashMap() ++ values(s)
-  }
+//  import scala.collection.{Map => CMap}
+//
+//  def data(s: Sample): CMap[String, FoldPExpr] = {
+//    HashMap() ++ values(s)
+//  }
 }

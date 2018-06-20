@@ -45,7 +45,11 @@ class MatrixInsertTest extends TTestSuite {
 
     val s1 = db.records.map(ev => (ev._1, context.probeMap.unpack(ev._2),
         ev._3.value, ev._3.call))
-    val s2 = data.dataMap.flatMap(x => x._2.map(y => (x._1, y._1, y._2._1, y._2._2)))
+    val s2 = for {
+      s <- data.samples;
+      (probe, PExprValue(expr, p, call, prb)) <- data.asExtValues(s)
+    } yield (s, probe, expr, call)
+          
     s1 should (contain theSameElementsAs s2)
 
     db.released should be(true)

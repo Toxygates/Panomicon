@@ -34,7 +34,7 @@ class ParseException(msg: String) extends Exception
  */
 class CSVRawExpressionData(exprFile: String,
     callFile: Option[String], expectedSamples: Option[Int],
-    parseWarningHandler: (String) => Unit) extends RawExpressionData {
+    parseWarningHandler: (String) => Unit) extends ColumnExpressionData {
 
   private def samplesInFile(file: String) = {
     val line = Source.fromFile(file).getLines.next
@@ -188,8 +188,7 @@ class CSVRawExpressionData(exprFile: String,
 class CachedCSVRawExpressionData(exprFile: String,
     callFile: Option[String], expectedSamples: Option[Int],
     parseWarningHandler: (String) => Unit)
-    extends CSVRawExpressionData(exprFile,
-        callFile, expectedSamples, parseWarningHandler) with ColumnExpressionData {
+    extends CSVRawExpressionData(exprFile, callFile, expectedSamples, parseWarningHandler) {
 
   var exprCache: CMap[Sample, Seq[Double]] = Map()
   var callsCache: CMap[Sample, Seq[Char]] = Map()

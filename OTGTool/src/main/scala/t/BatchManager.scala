@@ -551,8 +551,8 @@ class BatchManager(context: Context) {
   }
 
   def readCSVExpressionData(md: Metadata, niFile: String,
-      callFile: Option[String], cached: Boolean): Task[RawExpressionData] =
-    new AtomicTask[RawExpressionData]("Read raw expression data") {
+      callFile: Option[String], cached: Boolean): Task[ColumnExpressionData] =
+    new AtomicTask[ColumnExpressionData]("Read raw expression data") {
       override def run() = {
         if (cached) {
           new CachedCSVRawExpressionData(niFile, callFile,
@@ -579,9 +579,7 @@ class BatchManager(context: Context) {
     for {
       fvs <- Task.simple("Generate expression data") {
         if (simpleLog2) {
-            ???
-//TODO remove or update? No longer needed (historically used for Tritigate)            
-//          new Log2Data(data)
+          new Log2Data(data)
         } else {
           new PFoldValueBuilder(md, data)
         }

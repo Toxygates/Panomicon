@@ -23,79 +23,71 @@ package t.db
 import scala.collection.{ Map => CMap }
 
 /**
- * RawExpressionData is sample data that has not yet been inserted into the database.
- */
-trait RawExpressionData {
-
-  lazy val asExtValues: CMap[Sample, CMap[String, PExprValue]] =
-    dataMap.mapValues(_.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1)))
-
-  /**
-   * Map samples to (probe -> (expr value, call, p))
-   * 
-   * TODO should this be FoldPExpr or a simpler type e.g. ExprValue?
-   * No RawExpression data implementation supports reading p-values.
-   */
-  def dataMap: CMap[Sample, CMap[String, FoldPExpr]] =
-    Map() ++ samples.map(s => s -> data(s))
-
-  def data(s: Sample): CMap[String, FoldPExpr]
-
-  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] =
-    Map() ++ ss.map(s => s -> data(s))
-
-  /**
-   * Obtain a call value.
-   */
-  def call(x: Sample, probe: String): Option[Char] = data(x).get(probe).map(_._2)
-
-  /**
-   * Obtain an expression value.
-   */
-  def expr(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._1)
-
-  def probes: Iterable[String] = probesInSamples
-
-  lazy val probesInSamples =
-    samples.toSeq.flatMap(data(_).keys).distinct
-
-  def samples: Iterable[Sample]
-}
-
-/**
- * Adds methods for efficient sample-based lookup.
- * Values are returned in the order specified by the probes sequence.
+ * Efficient sample-based lookup from a data source.
+ * For some methods, values are returned in the order specified by the probes sequence.
  */
 trait ColumnExpressionData {
   def probes: Seq[String] 
   def samples: Iterable[Sample]
   
   /**
-   * Pre-cache data
+   * Pre-cache data for efficiency, if the implementation supports it.
+   * Calling this method is optional.
    */
   def loadData(ss: Iterable[Sample]) {}
   
   def data(s: Sample): CMap[String, FoldPExpr]
   
-  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]]
-  
+  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
+    loadData(ss)
+    Map() ++ ss.map(s => s -> data(s))
+  }
+ 
   /**
    * Obtain calls for all probes.
+   * Default implementation for convenience, may be overridden
    */
-  def calls(x: Sample): Seq[Option[Char]] 
+  def calls(x: Sample): Seq[Option[Char]] = {
+    val d = data(x)
+    probes.map(p => d.get(p).map(_._2))
+  }
   
   /**
    * Obtain expression values for all probes.
+   * Default implementation for convenience, may be overridden
    */
-  def exprs(x: Sample): Seq[Option[Double]] 
+  def exprs(x: Sample): Seq[Option[Double]] = {
+    val d = data(x)
+    probes.map(p => d.get(p).map(_._1))
+  }
  
   /**
    * Release the resource after use.
    */
   def release() {}
+  
+  /**
+   * Used mainly by tests
+   */
+  def asExtValue(s: Sample, probe: String) = { 
+    val v = data(s).get(probe)
+    v.map(v => PExprValue(v._1, v._3, v._2, probe))
+  }
+  
+  /**
+   * Used mainly by tests
+   */
+  def asExtValues(s: Sample): CMap[String, PExprValue] =
+    Map() ++ data(s).toSeq.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1))
 }
 
-class Log2Data(raw: RawExpressionData) extends RawExpressionData {
+/**
+ * This style of log2 computation was used historically in Tritigate
+ * but is not currently used in Toxygates.
+ */
+class Log2Data(raw: ColumnExpressionData) extends ColumnExpressionData {
+  def probes = raw.probes
+  
   override def data(s: Sample) = raw.data(s).mapValues(x => (ExprValue.log2(x._1), x._2, x._3))
 
   def samples = raw.samples

@@ -62,10 +62,10 @@ class MatrixMapperTest extends TTestSuite {
       ms = m.toSet;
       s <- d.samples
     ) {
-      val data = d.dataMap.mapValues(vs => vs.filter(p => ms.contains(p._1)))
-      val vs = data(s).toSeq.map(r => ExprValue(r._2._1, r._2._2, r._1))
+      val data = for (p <- d.probes; if ms.contains(p);
+        v = d.asExtValues(s)(p)) yield v
       for (p <- m) {
-        val filt = vs.filter(_.present)
+        val filt = data.filter(_.present)
         if (filt.size > 0) {
           val c = vm.convert(p, filt)
           //for size 2 we use mean rather than median.
