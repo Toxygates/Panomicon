@@ -3,21 +3,20 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
 import t.common.shared.AType;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
-import t.viewer.client.network.DualTableNetwork;
-import t.viewer.client.network.NetworkController;
+import t.viewer.client.network.*;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
-
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A DataView that displays an interaction network as two tables.
@@ -161,6 +160,11 @@ public class DualTableView extends TableView {
   @Override
   protected void setupMenus() {
     super.setupMenus();
+    addAnalysisMenuItem(new MenuItem("Visualize network", () -> {
+      new NetworkVisualizationDialog(screen.resources(), logger)
+          .initWindow(controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward));
+    }));
+
     MenuItem mi = new MenuItem("Download interaction network (DOT)...", 
       () -> downloadNetwork(Format.DOT));             
     addAnalysisMenuItem(mi);
@@ -178,6 +182,7 @@ public class DualTableView extends TableView {
     MatrixServiceAsync matrixService = screen.manager().matrixService();
     Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
     matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(screen) {
+      @Override
       public void handleSuccess(String url) {
         Utils.displayURL("Your download is ready.", "Download", url);
       }

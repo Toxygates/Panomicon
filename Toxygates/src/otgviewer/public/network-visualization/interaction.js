@@ -21,7 +21,7 @@ class Interaction{
     this.label = args[0];
     this.weight = args[1];
   }
-
+  
   /** setters and getters **/
   // get from(){ return this.from; }
   // get to(){ return this.to; }
@@ -32,4 +32,9 @@ class Interaction{
   // set to(t){ this._to = t; }
   // set label(l){ this._label = l; }
   // set weight(w){ this._weight = w; }
+}
+
+// Needed for now because I can't figure out how to access the Interaction class from within GWT.
+function makeInteraction(from, to, label, weight) {
+  return new Interaction(from, to, label, weight);
 }

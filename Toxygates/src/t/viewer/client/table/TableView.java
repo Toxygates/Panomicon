@@ -20,7 +20,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.network.NetworkVisualizationDialog;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
@@ -152,10 +151,6 @@ public class TableView extends DataView {
       MenuItem heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
       addAnalysisMenuItem(heatMapMenu);
     }
-
-    addAnalysisMenuItem(new MenuItem("Test network viz dialog", () -> {
-      new NetworkVisualizationDialog(screen.resources(), logger).initWindow();
-    }));
   }
   
   protected void makeHeatMap() {

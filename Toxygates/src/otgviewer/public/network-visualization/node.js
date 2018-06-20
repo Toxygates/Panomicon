@@ -75,3 +75,8 @@ class Node{
   }
 
 }
+
+// Needed for now because I can't figure out how to access the Node class from within GWT. 
+function makeNode(id, type, symbol) {
+  return new Node(id, type, symbol);
+}
