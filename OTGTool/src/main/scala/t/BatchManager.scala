@@ -673,16 +673,19 @@ class BatchManager(context: Context) {
       var target: KCSeriesDB[S] = null
       var inserted = 0
       val controlGroups = md.treatedControlGroups(md.samples)
-      val total = controlGroups.size
+      val treated = controlGroups.toSeq.flatMap(_._1)
+        
+      val bySeries = builder.groupSamples(treated, md).map(_._2)
+      val total = bySeries.size
       
       try {        
         target = KCSeriesDB[S](dbName, true, builder, false)
           var pcomp = 0d
           for ( //TODO might want to chunk these
-            cg <- controlGroups;
+            samples <- bySeries;
             if shouldContinue(pcomp)
           ) {
-            val filtered = new FilteredMetadata(md, cg._1)
+            val filtered = new FilteredMetadata(md, samples)
             val xs = builder.makeNew(source, filtered)
 
             for (x <- xs; if shouldContinue(pcomp)) {

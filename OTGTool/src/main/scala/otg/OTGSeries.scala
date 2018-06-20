@@ -161,13 +161,19 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
     OTGSeries(seriesType, attribs(Repeat), attribs(Organ), attribs(Organism), 0,
       attribs(Compound), attribs(seriesType.lastConstraint), attribs(TestType), Vector())
   }
+  
+  /**
+   * Group samples that belong to the same series together.
+   */
+  def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(OTGSeries, Iterable[Sample])] = 
+    xs.groupBy(buildEmpty(_, md))
 
   def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     val timeOrDoseMap = seriesType.independentVariableMap
     
-    val grouped = samples.groupBy(buildEmpty(_, md))
+    val grouped = groupSamples(samples, md)
     var r = Vector[OTGSeries]()
 
     for ((series, xs) <- grouped) {

@@ -79,6 +79,11 @@ trait SeriesBuilder[S <: Series[S]] {
   def rebuild(from: S, points: Iterable[SeriesPoint]): S
 
   /**
+   * Group samples belonging to the same series together.
+   */
+  def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(S, Iterable[Sample])]
+    
+  /**
    * Generate all keys belonging to the (partially specified)
    * series key.
    */
