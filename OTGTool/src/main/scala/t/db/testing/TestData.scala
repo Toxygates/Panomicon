@@ -131,11 +131,11 @@ object TestData {
     new SampleIndex(dbIds)
   }
 
-  def makeTestData(sparse: Boolean): RawExpressionData = {
+  def makeTestData(sparse: Boolean): ColumnExpressionData = {
     makeTestData(sparse, samples)
   }
 
-  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): RawExpressionData = {
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): ColumnExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
     for (s <- useSamples) {
       var thisProbe = Map[String, (Double, Char, Double)]()
@@ -146,9 +146,10 @@ object TestData {
       }
       testData += (s -> thisProbe)
     }
-    new RawExpressionData {
+    new ColumnExpressionData {
       val d = testData
       def samples = d.keys.toSeq
+      def probes = probeMap.tokens.toSeq
       def data(s: Sample) = d(s)
     }
   }
@@ -171,9 +172,8 @@ object TestData {
     r
   }
 
-  def populate(db: MatrixDBWriter[PExprValue], d: RawExpressionData) {
-    val evs = d.asExtValues
-    for ((s, vs) <- evs; (p, v) <- vs) {
+  def populate(db: MatrixDBWriter[PExprValue], d: ColumnExpressionData) {    
+    for (s <- d.samples; (p, v) <- d.asExtValues(s)) {
       db.write(s, probeMap.pack(p), v)
     }
   }

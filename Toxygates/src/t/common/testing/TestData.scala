@@ -25,6 +25,7 @@ import t.common.shared.sample.Group
 import t.db.RawExpressionData
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ExprMatrix
+import t.db.ColumnExpressionData
 
 /**
  * @author johan
@@ -35,7 +36,7 @@ object TestData {
 
   def exprMatrix: ExprMatrix = exprMatrix(TTestData.makeTestData(true))
 
-  def exprMatrix(rd: RawExpressionData): ExprMatrix = {
+  def exprMatrix(rd: ColumnExpressionData): ExprMatrix = {
     val probes = rd.probes.toSeq
     val samples = rd.samples.toSeq
     val rows = for (p <- probes) yield samples.map(s => rd.asExtValues(s)(p))
