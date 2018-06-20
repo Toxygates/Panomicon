@@ -32,6 +32,9 @@ trait RawExpressionData {
 
   /**
    * Map samples to (probe -> (expr value, call, p))
+   * 
+   * TODO should this be FoldPExpr or a simpler type e.g. ExprValue?
+   * No RawExpression data implementation supports reading p-values.
    */
   def dataMap: CMap[Sample, CMap[String, FoldPExpr]] =
     Map() ++ samples.map(s => s -> data(s))
@@ -47,28 +50,49 @@ trait RawExpressionData {
   def call(x: Sample, probe: String): Option[Char] = data(x).get(probe).map(_._2)
 
   /**
-   * Obtain calls for all probes.
-   */
-  def calls(x: Sample): Seq[Option[Char]] =
-    probes.toSeq.map(p => call(x, p))
-  
-  /**
    * Obtain an expression value.
    */
   def expr(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._1)
 
-  /**
-   * Obtain expression values for all probes.
-   */
-  def exprs(x: Sample): Seq[Option[Double]] =
-    probes.toSeq.map(p => expr(x, p))
-  
   def probes: Iterable[String] = probesInSamples
 
   lazy val probesInSamples =
     samples.toSeq.flatMap(data(_).keys).distinct
 
   def samples: Iterable[Sample]
+}
+
+/**
+ * Adds methods for efficient sample-based lookup.
+ * Values are returned in the order specified by the probes sequence.
+ */
+trait ColumnExpressionData {
+  def probes: Seq[String] 
+  def samples: Iterable[Sample]
+  
+  /**
+   * Pre-cache data
+   */
+  def loadData(ss: Iterable[Sample]) {}
+  
+  def data(s: Sample): CMap[String, FoldPExpr]
+  
+  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]]
+  
+  /**
+   * Obtain calls for all probes.
+   */
+  def calls(x: Sample): Seq[Option[Char]] 
+  
+  /**
+   * Obtain expression values for all probes.
+   */
+  def exprs(x: Sample): Seq[Option[Double]] 
+ 
+  /**
+   * Release the resource after use.
+   */
+  def release() {}
 }
 
 class Log2Data(raw: RawExpressionData) extends RawExpressionData {

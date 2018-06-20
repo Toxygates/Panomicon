@@ -29,9 +29,8 @@ class ParseException(msg: String) extends Exception
 
 /**
  * Raw data in CSV files.
- * Will be read one sample at a time.
- * Call files may be absent (by passing in an empty list), in which case
- * all values are treated as present.
+ * Will be read a few samples at a time, saving memory, possibly sacrificing speed.
+ * Call files may be absent, in which case all values are treated as present call (P).
  */
 class CSVRawExpressionData(exprFile: String,
     callFile: Option[String], expectedSamples: Option[Int],
@@ -47,7 +46,7 @@ class CSVRawExpressionData(exprFile: String,
     samplesInFile(exprFile).distinct
 
   override lazy val probes: Seq[String] =
-    probesInFile(exprFile).toSeq
+    probesInFile(exprFile).toVector
 
   private def probesInFile(file: String) = {
     val lines = Source.fromFile(file).getLines
@@ -92,9 +91,6 @@ class CSVRawExpressionData(exprFile: String,
     r
   }
 
-  /**
-   * Traverse the file but only read the relevant columns. Saves memory.
-   */
   protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
     extract: String => T): CMap[Sample, Seq[T]] = {
     val samples = ss.map(_.sampleId).toSet
@@ -106,6 +102,7 @@ class CSVRawExpressionData(exprFile: String,
     traverseFile(file, (columns, l) => {
 
       if(keptColumns == None) {
+        println("Read columns: " + ss.mkString(" "))
         keptColumns = Some(ArrayBuffer(columns.head) ++
            columns.map(unquote(_)).filter(x => samples.contains(x)))
         keptIndices = Some(ArrayBuffer(0) ++
@@ -140,7 +137,7 @@ class CSVRawExpressionData(exprFile: String,
             throw nfe
         }
       }
-      r += sample -> col
+      r += sample -> col.toVector
     }
 
     r
@@ -186,13 +183,13 @@ class CSVRawExpressionData(exprFile: String,
 }
 
 /**
- * Immediately caches all samples in memory.
+ * Immediately caches all samples in memory to gain more speed.
  */
 class CachedCSVRawExpressionData(exprFile: String,
     callFile: Option[String], expectedSamples: Option[Int],
     parseWarningHandler: (String) => Unit)
     extends CSVRawExpressionData(exprFile,
-        callFile, expectedSamples, parseWarningHandler) {
+        callFile, expectedSamples, parseWarningHandler) with ColumnExpressionData {
 
   var exprCache: CMap[Sample, Seq[Double]] = Map()
   var callsCache: CMap[Sample, Seq[Char]] = Map()
