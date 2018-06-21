@@ -82,6 +82,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
           val it = raw.samples.iterator.grouped(50)
           while (it.hasNext && shouldContinue(pcomp)) {
             val sampleChunk = it.next
+            raw.loadData(sampleChunk)
             for ((sample, vs) <- values(sampleChunk);
               if shouldContinue(pcomp)) {
               val packed = vs.toSeq.flatMap(vv => {

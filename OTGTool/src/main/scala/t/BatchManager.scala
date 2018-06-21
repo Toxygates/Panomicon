@@ -723,6 +723,9 @@ class BatchManager(context: Context) {
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
+      
+      //Note: this can probably be made considerably faster by structuring it like addSeriesData
+      //above, but then TriplestoreMetadata.controlSamples would have to be implemented first.
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       try {
