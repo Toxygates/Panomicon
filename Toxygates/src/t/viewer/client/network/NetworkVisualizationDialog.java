@@ -119,10 +119,13 @@ public class NetworkVisualizationDialog {
       var id = node.@t.viewer.shared.network.Node::id()();
       var symbol = node.@t.viewer.shared.network.Node::symbol()();
       var type = node.@t.viewer.shared.network.Node::type()();
+      if (type == 'miRNA') {
+        type = 'microRNA';
+      }
       //var weight = node.@t.viewer.shared.network.Node::weight()();
       //      console.log("Node info: id = " + id + "; symbol = " + symbol
       //          + "; type = " + type + "; weight = " + weight);
-      var newNode = new $wnd.makeNode(id, type, symbol);
+      var newNode = new $wnd.makeNode(id, type, id);
       jsNodes.push(newNode);
     }
 
