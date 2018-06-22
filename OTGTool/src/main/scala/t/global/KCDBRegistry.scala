@@ -116,7 +116,7 @@ object KCDBRegistry {
     var count = 0
     var r: Option[DB] = innerGetWriter(file)
     //sleep at most 20s here, waiting for readers to finish
-    while (count < 20 && r == None) {
+    while (count < 200 && r == None) {
       Thread.sleep(100)
       count += 1
       r = innerGetWriter(file)

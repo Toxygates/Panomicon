@@ -284,11 +284,11 @@ class BatchManager(context: Context) {
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
     val probeMap = new Probes(config.triplestore).platformsAndProbes
-    val probes = platforms.flatMap(probeMap(_))
+    val probes = platforms.flatMap(probeMap(_)).toSeq
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
 
     val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
-    
+
     val dbReader = () => config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
 
@@ -297,24 +297,31 @@ class BatchManager(context: Context) {
       filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
     ) yield {
       for {
-        expressionData <- retrieveExpressionData(dbReader, sampleChunk, codedProbes)
-        _ <- addFoldsData(filteredMetadata, expressionData, simpleLog2) andThen
+        _ <- insertFoldsDataFromExpressionData(dbReader, codedProbes,
+            filteredMetadata, simpleLog2) andThen
           addTimeSeriesData(filteredMetadata) andThen
           addDoseSeriesData(filteredMetadata)
       } yield ()
     }).reduce(_ andThen _)
 
     addEnums(metadata) andThen recalculateChunks
+
   }
 
-  def retrieveExpressionData(reader: () => MatrixDBReader[ExprValue], requestedSamples: Iterable[Sample],
-      requestedProbes: Iterable[Int]) = new AtomicTask[DBColumnExpressionData]("Retrieve expression data") {
-    override def run(): DBColumnExpressionData = {
-      new DBColumnExpressionData(reader(), requestedSamples, requestedProbes) {
-        override def logEvent(msg: String) { log(msg) }
+  def insertFoldsDataFromExpressionData(reader: () => MatrixDBReader[ExprValue],
+    probes: Iterable[Int], metadata: Metadata, simpleLog2: Boolean)(implicit mc: MatrixContext) =
+    new AtomicTask[Unit]("Insert fold value data from expression data") {
+      def run() {
+        val expressionData = new DBColumnExpressionData(reader(), metadata.samples, probes) {
+          override def logEvent(msg: String) { log(msg) }
+        }
+        try {
+          addFoldsData(metadata, expressionData, simpleLog2).execute()
+        } finally {
+          expressionData.release()
+        }
       }
     }
-  }
 
   def readTSVMetadata(filename: String) = new AtomicTask[Metadata]("Read TSV metadata") {
     override def run(): Metadata = {
@@ -584,8 +591,7 @@ class BatchManager(context: Context) {
           new PFoldValueBuilder(md, data)
         }
       }
-      _ <- new SimpleValueInsert(db, fvs).insert("Insert fold value data") andThen
-      Task.simple("Close expr reader") { data.release } //TODO best place for this?
+      _ <- new SimpleValueInsert(db, fvs).insert("Insert fold value data")
     } yield ()
   }
 
@@ -674,11 +680,11 @@ class BatchManager(context: Context) {
       var inserted = 0
       val controlGroups = md.treatedControlGroups(md.samples)
       val treated = controlGroups.toSeq.flatMap(_._1)
-        
+
       val bySeries = builder.groupSamples(treated, md).map(_._2)
       val total = bySeries.size
-      
-      try {        
+
+      try {
         target = KCSeriesDB[S](dbName, true, builder, false)
           var pcomp = 0d
           for ( //TODO might want to chunk these
@@ -689,7 +695,7 @@ class BatchManager(context: Context) {
             val xs = builder.makeNew(source, filtered)
 
             for (x <- xs; if shouldContinue(pcomp)) {
-              target.addPoints(x)              
+              target.addPoints(x)
               }
             pcomp = 100.0 * inserted / total
             inserted += 1
@@ -723,7 +729,7 @@ class BatchManager(context: Context) {
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
-      
+
       //Note: this can probably be made considerably faster by structuring it like addSeriesData
       //above, but then TriplestoreMetadata.controlSamples would have to be implemented first.
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
