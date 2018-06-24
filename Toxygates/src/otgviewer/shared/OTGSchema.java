@@ -25,7 +25,6 @@ import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
-import t.viewer.shared.SeriesType;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {

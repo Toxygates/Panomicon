@@ -20,13 +20,13 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.*;
-import t.common.shared.Dataset;
-import t.model.SampleClass;
-import t.viewer.shared.*;
-
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
+import otgviewer.shared.*;
+import t.common.shared.Dataset;
+import t.common.shared.SeriesType;
+import t.model.SampleClass;
 
 /**
  * A service for retrieving averaged time series and for ranking compounds.

@@ -28,8 +28,8 @@ import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
+import t.common.shared.SeriesType;
 import t.model.SampleClass;
-import t.viewer.shared.SeriesType;
 
 public class FullRuleInputHelper extends RuleInputHelper {
 

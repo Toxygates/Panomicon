@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
-import t.viewer.shared.SeriesType;
 
 
 /**

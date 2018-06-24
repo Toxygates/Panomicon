@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared;
+package t.common.shared;
 import t.model.sample.Attribute;
 import static otg.model.sample.OTGAttribute.*;
 

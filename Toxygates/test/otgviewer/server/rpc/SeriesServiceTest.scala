@@ -27,7 +27,7 @@ import otgviewer.server.AssociationResolverTest
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
 import t.TTestSuite
-import t.viewer.shared.SeriesType
+import t.common.shared.SeriesType
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {

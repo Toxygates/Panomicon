@@ -33,13 +33,13 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
+import t.common.shared.SeriesType;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.shared.SeriesType;
 
 public class RankingCompoundSelector extends CompoundSelector {
 

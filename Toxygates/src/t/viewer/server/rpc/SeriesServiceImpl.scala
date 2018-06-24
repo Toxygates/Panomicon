@@ -42,9 +42,9 @@ import t.viewer.server.Conversions._
 import t.viewer.shared.NoSuchProbeException
 import otg.model.sample.OTGAttribute
 import otg.model.sample.OTGAttribute._
-import t.viewer.shared.SeriesType
 import otg.TimeSeries
 import t.util.SafeMath
+import t.common.shared.SeriesType
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
@@ -123,7 +123,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
       val byName = ranked.toSeq.sortBy(_._1)
-      
+
        /*
        * Since the sort is stable, equal scores will retain the by name ordering from above
         */
@@ -167,7 +167,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
           db.read(fromShared(new SSeries("", p, seriesType.independentAttribute,
             sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
     })
-    
+
     /*
      * We should remove series where the fixed attribute is Control from the database,
      * and then remove this check.

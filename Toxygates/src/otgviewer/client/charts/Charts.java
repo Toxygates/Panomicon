@@ -39,7 +39,6 @@ import t.model.SampleClass;
 import t.model.sample.CoreParameter;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.shared.SeriesType;
 
 public class Charts {
 

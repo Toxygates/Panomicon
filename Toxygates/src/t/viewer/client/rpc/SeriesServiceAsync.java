@@ -20,12 +20,12 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import otgviewer.shared.*;
 import t.common.shared.Dataset;
+import t.common.shared.SeriesType;
 import t.model.SampleClass;
-import t.viewer.shared.SeriesType;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SeriesServiceAsync {
   void rankedCompounds(SeriesType seriesType, Dataset[] ds, SampleClass sc, RankRule[] rules,

@@ -21,9 +21,9 @@ package t.common.testing;
 
 import otg.model.sample.OTGAttribute;
 import t.common.shared.DataSchema;
+import t.common.shared.SeriesType;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
-import t.viewer.shared.SeriesType;
 
 @SuppressWarnings("serial")
 public class TestSchema extends DataSchema {
