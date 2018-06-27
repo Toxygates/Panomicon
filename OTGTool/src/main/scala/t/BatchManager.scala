@@ -527,7 +527,7 @@ class BatchManager(context: Context) {
           //TODO check existence of samples
 
           val total = metadata.samples.size
-          val grs = metadata.samples.grouped(1000)
+          val grs = metadata.samples.grouped(250)
           var percentComplete = 0d
           while (grs.hasNext && shouldContinue(percentComplete)) {
             val g = grs.next
@@ -537,7 +537,7 @@ class BatchManager(context: Context) {
             val ttl = Batches.metadataToTTL(metadata, tempFiles, g)
             val context = Batches.context(title)
             ts.addTTL(ttl, context)
-            percentComplete += 1000.0 * 100.0 / total
+            percentComplete += 250.0 * 100.0 / total
           }
 
           for (s <- summaries) {
