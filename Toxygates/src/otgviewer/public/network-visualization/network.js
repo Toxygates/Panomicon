@@ -205,3 +205,7 @@ class Network{
 
 
 } // class Network
+
+function makeNetwork(title="", interactions=[], nodes=[]) {
+  return new Network(title, interactions, nodes);
+}

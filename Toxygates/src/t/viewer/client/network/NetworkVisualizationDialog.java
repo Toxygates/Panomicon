@@ -49,7 +49,8 @@ public class NetworkVisualizationDialog {
     createPanel();
 
     injectOnce(() -> {
-          loadNetwork(network);
+      convertAndStoreNetwork(network);
+      startVisualization();
     });
 
     dialog.show();
@@ -111,7 +112,11 @@ public class NetworkVisualizationDialog {
     dialog.setModal(true);
   }
 
-  private native void loadNetwork(Network network) /*-{
+  /**
+   * Converts a Network.java object to a JavaScript Network object, and stores it
+   * as window.convertedNetwork.
+   */
+  private static native void convertAndStoreNetwork(Network network) /*-{
     var networkName = network.@t.viewer.shared.network.Network::title()();
 
     var nodes = network.@t.viewer.shared.network.Network::nodes()();
@@ -153,9 +158,17 @@ public class NetworkVisualizationDialog {
       jsInteractions.push(newInteraction);
     }
 
-    $wnd.toxyNet.title = networkName;
-    $wnd.toxyNet.nodes = jsNodes;
-    $wnd.toxyNet.interactions = jsInteractions;
+    $wnd.convertedNetwork = $wnd.makeNetwork(networkName, jsInteractions,
+        jsNodes);
+  }-*/;
+
+  /**
+   * Loads the converted and stored network into the JavaScript visualization
+   * system, and tells it to redraw the visualization. Called after scripts and UI
+   * panel have been injected.
+   */
+  private native void startVisualization() /*-{
+    $wnd.toxyNet = $wnd.convertedNetwork;
     $wnd.repaint();
   }-*/;
 }
