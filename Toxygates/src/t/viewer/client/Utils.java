@@ -20,6 +20,10 @@ package t.viewer.client;
 
 import static t.common.client.Utils.makeScrolled;
 
+import java.util.List;
+import java.util.logging.Logger;
+
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.http.client.*;
@@ -311,5 +315,26 @@ public class Utils {
   
   public static SafeHtml tooltipSpan(String tooltip, String text) {
       return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + text + "</span>");
+  }
+
+  public static void inject(final List<String> p_jsList, Logger logger, final Runnable callback) {
+    final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
+
+    ScriptInjector.fromUrl(js).setCallback(new Callback<Void, Exception>() {
+      @Override
+      public void onFailure(Exception e) {
+        logger.severe("Script load failed. (" + js + ")");
+      }
+
+      @Override
+      public void onSuccess(Void ok) {
+        //Injected all scripts
+        if (!p_jsList.isEmpty()) {
+          inject(p_jsList, logger, callback);
+        } else {
+          callback.run();
+        }
+      }
+    }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
 }

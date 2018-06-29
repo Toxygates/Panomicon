@@ -32,7 +32,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import t.clustering.shared.*;
-import t.common.client.Utils;
+import t.viewer.client.Utils;
 
 /**
  * GUI for configuring, requesting, and displaying a heatmap.

@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -14,7 +15,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.Resources;
-import t.common.client.Utils;
+import t.viewer.client.Utils;
 import t.viewer.shared.network.Network;
 
 public class NetworkVisualizationDialog {
@@ -26,15 +27,15 @@ public class NetworkVisualizationDialog {
 
   protected DialogBox dialog;
 
-  private Resources resources;
   private Logger logger;
 
   private static Boolean injected = false;
 
   private HandlerRegistration resizeHandler;
 
+  HTML uiDiv = new HTML();
+
   public NetworkVisualizationDialog(Resources resources, Logger logger) {
-    this.resources = resources;
     this.logger = logger;
     dialog = new DialogBox() {
       @Override
@@ -48,7 +49,7 @@ public class NetworkVisualizationDialog {
     createPanel();
 
     injectOnce(() -> {
-      loadNetwork(network);
+          loadNetwork(network);
     });
 
     dialog.show();
@@ -56,7 +57,13 @@ public class NetworkVisualizationDialog {
 
   private void injectOnce(final Runnable callback) {
     if (!injected) {
-      Utils.inject(new ArrayList<String>(Arrays.asList(injectList)), logger, callback);
+      Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
+        @Override
+        protected void setHTML(String html) {
+          uiDiv.setHTML(html);
+          Utils.inject(new ArrayList<String>(Arrays.asList(injectList)), logger, callback);
+        }
+      });
       injected = true;
     } else {
       callback.run();
@@ -76,8 +83,6 @@ public class NetworkVisualizationDialog {
 
     DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
     dockPanel.setPixelSize(mainWidth(), mainHeight());
-
-    HTML uiDiv = new HTML(resources.networkVisualizationHTML().getText());
 
     FlowPanel buttonGroup = new FlowPanel();
     Button btnClose = new Button("Close");
