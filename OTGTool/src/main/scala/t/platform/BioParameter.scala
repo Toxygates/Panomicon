@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -107,7 +107,7 @@ class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends
 object BioParameter {
 
   def convert(x: String) = x match {
-      case "NA" => None
+      case "NA" | "na" => None
       case _    => Some(x.toDouble)
     }
 
