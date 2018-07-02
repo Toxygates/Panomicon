@@ -273,7 +273,7 @@ class BatchManager(context: Context) {
       metadata <- readTSVMetadata(metaFile)
       _ <- updateMetadataCheck(batch.title, metadata, config) andThen
         deleteRDF(batch.title) andThen
-        addMetadata(batch, metadata, false) andThen
+        addMetadata(batch, metadata, false, true) andThen
         (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2) else Task.success)
     } yield ()
   }
@@ -330,7 +330,7 @@ class BatchManager(context: Context) {
   }
 
   def addMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
-      append: Boolean): Task[Unit] = {
+      append: Boolean, update: Boolean = false): Task[Unit] = {
     val ts = config.triplestore.get
 
     val addRecordIfNecessary =
@@ -342,7 +342,7 @@ class BatchManager(context: Context) {
       }
 
     addRecordIfNecessary andThen
-      addSampleIDs(metadata) andThen
+      (if (!update) addSampleIDs(metadata) else Task.success) andThen
       addRDF(batch.title, metadata, ts)
   }
 
