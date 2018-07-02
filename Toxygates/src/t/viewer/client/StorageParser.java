@@ -123,7 +123,7 @@ public class StorageParser {
   public SampleClass getSampleClass(AttributeSet attributes) {
     String v = getItem("sampleClass");
     if (v == null) {
-      return null;
+      return new SampleClass();
     } else {
       return Utils.unpackSampleClass(attributes, v);
     }
@@ -150,7 +150,7 @@ public class StorageParser {
       return getColumns(schema, "columns", attributes);
     } catch (Exception e) {
       logger.log(Level.WARNING, "Exception while retrieving columns", e);
-      return null;
+      return new ArrayList<Group>();
     }
   }
 
@@ -190,7 +190,7 @@ public class StorageParser {
   public List<String> getCompounds() {
     String v = getItem("compounds");
     if (v == null) {
-      return null;
+      return new ArrayList<String>();
     }
     List<String> r = new ArrayList<String>();
     if (v.length() > 0) {
