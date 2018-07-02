@@ -21,9 +21,7 @@ package t.common.client;
 import static t.model.sample.CoreParameter.Type;
 
 import java.util.*;
-import java.util.logging.Logger;
 
-import com.google.gwt.core.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -135,26 +133,5 @@ public class Utils {
     }
     
     return new SampleClass(d);
-  }
-
-  public static void inject(final List<String> p_jsList, Logger logger, final Runnable callback) {
-    final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
-
-    ScriptInjector.fromUrl(js).setCallback(new Callback<Void, Exception>() {
-      @Override
-      public void onFailure(Exception e) {
-        logger.severe("Script load failed. (" + js + ")");
-      }
-
-      @Override
-      public void onSuccess(Void ok) {
-        //Injected all scripts
-        if (!p_jsList.isEmpty()) {
-          inject(p_jsList, logger, callback);
-        } else {
-          callback.run();
-        }
-      }
-    }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
 }
