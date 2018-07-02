@@ -31,6 +31,8 @@ public class NetworkVisualizationDialog {
 
   private static Boolean injected = false;
 
+  DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
+
   private HandlerRegistration resizeHandler;
 
   HTML uiDiv = new HTML();
@@ -48,9 +50,16 @@ public class NetworkVisualizationDialog {
   public void initWindow(@Nullable Network network) {
     createPanel();
 
-    injectOnce(() -> {
-      convertAndStoreNetwork(network);
-      startVisualization();
+    Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
+      @Override
+      protected void setHTML(String html) {
+        uiDiv.setHTML(html);
+        injectOnce(() -> {
+          setupDockPanel();
+          convertAndStoreNetwork(network);
+          startVisualization();
+        });
+      }
     });
 
     dialog.show();
@@ -58,13 +67,7 @@ public class NetworkVisualizationDialog {
 
   private void injectOnce(final Runnable callback) {
     if (!injected) {
-      Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
-        @Override
-        protected void setHTML(String html) {
-          uiDiv.setHTML(html);
-          Utils.inject(new ArrayList<String>(Arrays.asList(injectList)), logger, callback);
-        }
-      });
+      Utils.inject(new ArrayList<String>(Arrays.asList(injectList)), logger, callback);
       injected = true;
     } else {
       callback.run();
@@ -82,9 +85,21 @@ public class NetworkVisualizationDialog {
   private void createPanel() {
     dialog.setText("Network visualization");
 
-    DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
     dockPanel.setPixelSize(mainWidth(), mainHeight());
 
+    resizeHandler = Window.addResizeHandler((ResizeEvent event) -> {
+      dockPanel.setPixelSize(mainWidth(), mainHeight());
+    });
+    dialog.setWidget(dockPanel);
+    dialog.center();
+    dialog.setModal(true);
+  }
+
+  /**
+   * Sets up the dock panel. Needs to happen later so that ui panel height can
+   * be fetched from injected JavaScript.
+   */
+  private void setupDockPanel() {
     FlowPanel buttonGroup = new FlowPanel();
     Button btnClose = new Button("Close");
     btnClose.addClickHandler(new ClickHandler() {
@@ -96,21 +111,18 @@ public class NetworkVisualizationDialog {
     });
     buttonGroup.add(btnClose);
 
-    dockPanel.addNorth(uiDiv, 235);
+    dockPanel.addNorth(uiDiv, getUiHeight());
     dockPanel.addSouth(buttonGroup, 27);
 
     SimplePanel displayPanel = new SimplePanel();
     displayPanel.setStyleName("visualization");
     displayPanel.getElement().setId("display");
     dockPanel.add(displayPanel);
-
-    resizeHandler = Window.addResizeHandler((ResizeEvent event) -> {
-      dockPanel.setPixelSize(mainWidth(), mainHeight());
-    });
-    dialog.setWidget(dockPanel);
-    dialog.center();
-    dialog.setModal(true);
   }
+
+  private native int getUiHeight() /*-{
+    return $wnd.uiHeight();
+  }-*/;
 
   /**
    * Converts a Network.java object to a JavaScript Network object, and stores it
@@ -163,12 +175,11 @@ public class NetworkVisualizationDialog {
   }-*/;
 
   /**
-   * Loads the converted and stored network into the JavaScript visualization
-   * system, and tells it to redraw the visualization. Called after scripts and UI
-   * panel have been injected.
+   * Called after UI HTML has been loaded, all scripts have been injected, and
+   * network has been converted and stored in the JavaScript window, to inform the
+   * visualization system that it should start drawing the network.
    */
   private native void startVisualization() /*-{
-    $wnd.toxyNet = $wnd.convertedNetwork;
-    $wnd.repaint();
+    $wnd.onReadyForVisualization();
   }-*/;
 }

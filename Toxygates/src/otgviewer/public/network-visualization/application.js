@@ -497,3 +497,20 @@ function initListeners(){
   // });
 
 }
+
+/**
+ * Called by Toxygates to get the desired height, in pixels, of the user interaction div.  
+ */
+function uiHeight(){
+  return 235;
+}
+
+
+/**
+ * Called by Toxygates once the interface UI HTML has been loaded and all 
+ * scripts have been injected.  
+ */
+function onReadyForVisualization(){
+  toxyNet = convertedNetwork; // Gets converted network from Toxygates
+  repaint();
+}
