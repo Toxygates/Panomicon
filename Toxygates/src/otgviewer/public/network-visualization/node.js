@@ -56,6 +56,10 @@ class Node{
   addWeight(label, value){
      this.weight[label] = value;
    }
+  
+  setWeights(weights) {
+    this.weight = weights;
+  }
 
    /**
     *

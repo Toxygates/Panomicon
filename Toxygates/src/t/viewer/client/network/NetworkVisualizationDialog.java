@@ -145,7 +145,8 @@ public class NetworkVisualizationDialog {
     }
 
     var jsNodes = mapJavaList(
-        network.@t.viewer.shared.network.Network::nodes()(), function(node) {
+        network.@t.viewer.shared.network.Network::nodes()(),
+        function(node) {
           var id = node.@t.viewer.shared.network.Node::id()();
           var symbols = mapJavaList(
               node.@t.viewer.shared.network.Node::symbols()(),
@@ -156,8 +157,20 @@ public class NetworkVisualizationDialog {
           if (type == 'miRNA') {
             type = 'microRNA';
           }
-          var weight = node.@t.viewer.shared.network.Node::weight()();
-          return new $wnd.makeNode(id, type, symbols);
+
+          var jsWeights = {};
+          var weights = node.@t.viewer.shared.network.Node::weights()();
+          var weightKeySet = weights.@java.util.HashMap::keySet()();
+          var weightKeyIterator = weightKeySet.@java.util.Set::iterator()();
+          while (weightKeyIterator.@java.util.Iterator::hasNext()()) {
+            var key = weightKeyIterator.@java.util.Iterator::next()();
+            var weight = weights.@java.util.HashMap::get(Ljava/lang/Object;)(key);
+            jsWeights[key] = weight;
+          }
+
+          var newNode = new $wnd.makeNode(id, type, symbols);
+          newNode.setWeights(jsWeights);
+          return newNode;
         });
 
     var jsInteractions = mapJavaList(
