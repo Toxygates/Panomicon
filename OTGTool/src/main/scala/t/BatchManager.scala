@@ -115,11 +115,12 @@ object BatchManager extends ManagerTool {
           val bm = new BatchManager(context)
           val metaFile = require(stringOption(args, "-metadata"),
             "Please specify a metadata file with -metadata")
+          val force = booleanOption(args, "-force")
           val recalculate = booleanOption(args, "-recalculate")
           new Platforms(config).populateAttributes(config.attributes)
           //val md = factory.tsvMetadata(metaFile, config.attributes)
           startTaskRunner(bm.updateMetadata(Batch(title, comment, None, None),
-              metaFile, recalculate))
+              metaFile, recalculate, force = force))
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -268,10 +269,11 @@ class BatchManager(context: Context) {
   }
 
   def updateMetadata[S <: Series[S]](batch: Batch, metaFile: String,
-      recalculate: Boolean = false, simpleLog2: Boolean = false): Task[Unit] = {
+      recalculate: Boolean = false, simpleLog2: Boolean = false,
+      force: Boolean = false): Task[Unit] = {
     for {
       metadata <- readTSVMetadata(metaFile)
-      _ <- updateMetadataCheck(batch.title, metadata, config) andThen
+      _ <- updateMetadataCheck(batch.title, metadata, config, force) andThen
         deleteRDF(batch.title) andThen
         addMetadata(batch, metadata, false, true) andThen
         (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2) else Task.success)
@@ -428,14 +430,15 @@ class BatchManager(context: Context) {
       }
   }
 
-  def updateMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig) =
+  def updateMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig,
+      force: Boolean) =
       new AtomicTask[Unit]("Check validity of metadata update") {
     override def run(): Unit = {
       checkValidIdentifier(title, "batch ID")
 
       val batches = new Batches(baseConfig.triplestore)
       val batchExists = batches.list.contains(title)
-      if (!batchExists) {
+      if (!batchExists && !force) {
         throw new Exception(s"Cannot update metadata for nonexistent batch $title")
       }
 
@@ -445,14 +448,14 @@ class BatchManager(context: Context) {
       metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
 
       val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
-      if (notInBatch.size > 0) {
+      if (notInBatch.size > 0 && !force) {
         val msg = "New metadata file contained the following samples that " +
           s"could not be found in the existing batch: ${notInBatch mkString " "}"
         throw new Exception(msg)
       }
 
       val notInMetadata = batchSampleIds.filter(x => !(foundInBatch contains x))
-      if (notInMetadata.size > 0) {
+      if (notInMetadata.size > 0 && !force) {
         val msg = "New metadata file is missing the following batch samples: " +
           (notInMetadata mkString " ")
         throw new Exception(msg)
