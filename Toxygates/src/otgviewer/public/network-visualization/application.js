@@ -507,7 +507,7 @@ function uiHeight(){
 
 
 /**
- * Called by Toxygates once the interface UI HTML has been loaded and all 
+ * Called by Toxygates once the user interface HTML has been loaded and all 
  * scripts have been injected.  
  */
 function onReadyForVisualization(){

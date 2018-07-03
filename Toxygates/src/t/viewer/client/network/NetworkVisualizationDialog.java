@@ -131,44 +131,46 @@ public class NetworkVisualizationDialog {
   private static native void convertAndStoreNetwork(Network network) /*-{
     var networkName = network.@t.viewer.shared.network.Network::title()();
 
-    var nodes = network.@t.viewer.shared.network.Network::nodes()();
-    var nodeCount = nodes.@java.util.List::size()();
-
-    var jsNodes = [];
-    var i;
-    for (i = 0; i < nodeCount; i++) {
-      var node = nodes.@java.util.List::get(I)(i);
-      var id = node.@t.viewer.shared.network.Node::id()();
-      var symbol = node.@t.viewer.shared.network.Node::symbol()();
-      var type = node.@t.viewer.shared.network.Node::type()();
-      if (type == 'miRNA') {
-        type = 'microRNA';
+    // Helper function to map a function over every element of a Java list and  
+    // store the result in a JavaScript list.
+    function mapJavaList(list, func) {
+      var resultList = [];
+      var itemCount = list.@java.util.List::size()();
+      var i;
+      for (i = 0; i < itemCount; i++) {
+        var item = list.@java.util.List::get(I)(i);
+        resultList.push(func(item));
       }
-      //var weight = node.@t.viewer.shared.network.Node::weight()();
-      //      console.log("Node info: id = " + id + "; symbol = " + symbol
-      //          + "; type = " + type + "; weight = " + weight);
-      var newNode = new $wnd.makeNode(id, type, id);
-      jsNodes.push(newNode);
+      return resultList;
     }
 
-    var interactions = network.@t.viewer.shared.network.Network::interactions()();
-    var interactionCount = interactions.@java.util.List::size()();
+    var jsNodes = mapJavaList(
+        network.@t.viewer.shared.network.Network::nodes()(), function(node) {
+          var id = node.@t.viewer.shared.network.Node::id()();
+          var symbols = mapJavaList(
+              node.@t.viewer.shared.network.Node::symbols()(),
+              function(symbol) {
+                return symbol;
+              });
+          var type = node.@t.viewer.shared.network.Node::type()();
+          if (type == 'miRNA') {
+            type = 'microRNA';
+          }
+          var weight = node.@t.viewer.shared.network.Node::weight()();
+          return new $wnd.makeNode(id, type, symbols);
+        });
 
-    var jsInteractions = [];
-    var j;
-    for (j = 0; j < interactionCount; j++) {
-      var interaction = interactions.@java.util.List::get(I)(j);
-      var label = interaction.@t.viewer.shared.network.Interaction::label()();
-      var weight = interaction.@t.viewer.shared.network.Interaction::weight()();
-      var from = interaction.@t.viewer.shared.network.Interaction::from()();
-      var fromId = from.@t.viewer.shared.network.Node::id()();
-      var to = interaction.@t.viewer.shared.network.Interaction::to()();
-      var toId = to.@t.viewer.shared.network.Node::id()();
-      //      console.log("Node info: label = " + label + "; weight = " + weight
-      //          + "; from = " + from + "; to = " + to);
-      var newInteraction = $wnd.makeInteraction(fromId, toId, label, weight);
-      jsInteractions.push(newInteraction);
-    }
+    var jsInteractions = mapJavaList(
+        network.@t.viewer.shared.network.Network::interactions()(),
+        function(interaction) {
+          var label = interaction.@t.viewer.shared.network.Interaction::label()();
+          var weight = interaction.@t.viewer.shared.network.Interaction::weight()();
+          var from = interaction.@t.viewer.shared.network.Interaction::from()();
+          var fromId = from.@t.viewer.shared.network.Node::id()();
+          var to = interaction.@t.viewer.shared.network.Interaction::to()();
+          var toId = to.@t.viewer.shared.network.Node::id()();
+          return $wnd.makeInteraction(fromId, toId, label, weight);
+        });
 
     $wnd.convertedNetwork = $wnd.makeNetwork(networkName, jsInteractions,
         jsNodes);

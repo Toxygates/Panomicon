@@ -53,7 +53,7 @@ class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
       w.close
     }
   }
-  
+
   /*
    * Reference: http://www.graphviz.org/pdf/dotguide.pdf
    */
@@ -78,13 +78,14 @@ class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
       w.close()
     }
   }
-  
+
   def nodeLabel(n: Node) = style match {
     case IDOnly => n.id()
-    case SymbolOnly => n.symbol()
+    case SymbolOnly => n.symbolString()
     case IDAndSymbol =>
-      if (n.symbol != null && n.symbol != "")
-        s"${n.symbol} [${n.id}]"
+      val symbolString = n.symbolString()
+      if (symbolString != "")
+        s"${symbolString} [${n.id}]"
       else
         n.id
   }
