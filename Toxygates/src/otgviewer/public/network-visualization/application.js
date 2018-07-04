@@ -507,6 +507,14 @@ function uiHeight(){
 
 
 /**
+ * Test method for save functionality
+ */
+function saveStuff(){
+  window.saveNetworkToToxygates(toxyNet);
+}
+
+
+/**
  * Called by Toxygates once the user interface HTML has been loaded and all 
  * scripts have been injected.  
  */

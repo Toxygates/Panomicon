@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -49,6 +50,7 @@ public class NetworkVisualizationDialog {
 
   public void initWindow(@Nullable Network network) {
     createPanel();
+    exportSaveNetwork();
 
     Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
       @Override
@@ -187,6 +189,30 @@ public class NetworkVisualizationDialog {
 
     $wnd.convertedNetwork = $wnd.makeNetwork(networkName, jsInteractions,
         jsNodes);
+  }-*/;
+
+  /**
+   * Handles the logic for actually saving a network from the visualization dialog. Currently a
+   * placeholder implementation for testing.
+   * 
+   * @param network the actual JavaScript object representing a network
+   * @param jsonString
+   */
+  public native void saveNetwork(JavaScriptObject network) /*-{
+    console.log("NetworkVisualizationDialog.saveNetwork called");
+    console.log("Stringified network: \"" + JSON.stringify(network) + "\"");
+    $wnd.savedNetwork = network;
+  }-*/;
+
+  /**
+   * Exports the saveNetwork method to the window so that it can be called from hand-written
+   * JavaScript.
+   */
+  public native void exportSaveNetwork() /*-{
+    var that = this;
+    $wnd.saveNetworkToToxygates = $entry(function(network, jsonString) {
+      that.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
+    });
   }-*/;
 
   /**
