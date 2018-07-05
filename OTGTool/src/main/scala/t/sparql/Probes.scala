@@ -314,8 +314,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
         g.map(_.get("protid"))).flatten.toSet.mkString(", ")
 
       p.copy(
-        proteins = g.map(p => Protein(obtain(p, "prot"))).toSet,
-        titles = g.map(obtain(_, "title")).toSet, //NB not used
+        proteins = g.map(p => Protein(obtain(p, "prot"))).toSeq.distinct,
+        titles = g.map(obtain(_, "title")).toSeq.distinct, //NB not used
         name = obtain(g.head, "title") + tritiTitle,
         platform = obtain(g.head, "plat"))
     })
