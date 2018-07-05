@@ -53,7 +53,7 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
   override def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
     def obtainMany(m: Iterable[Map[String, String]], key: String) = {
       val r = m.filter(_.get("relation") == Some(key)).map(_("value"))
-      if (!r.isEmpty) r else Seq("")
+      r.toSeq.distinct
     }
 
     def obtain(m: Map[String, String], key: String) =
@@ -82,12 +82,12 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
       val ident = g.head("l")
       val platform = obtain(g.head, "plat")
       Probe(identifier = ident,
-        proteins = obtainMany(g, protRel).map(x => Protein(x)).toSet,
+        proteins = obtainMany(g, protRel).map(x => Protein(x)),
         genes = obtainMany(g, entrezRel).map(x =>
           Gene(x,
-            keggShortCode = B2RKegg.platformTaxon(platform))).toSet,
-        symbols = obtainMany(g, symbolRel).map(x => Gene(x, symbol = x)).toSet,
-        titles = obtainMany(g, titleRel).toSet, //NB not used
+            keggShortCode = B2RKegg.platformTaxon(platform))),
+        symbols = obtainMany(g, symbolRel).map(x => Gene(x, symbol = x)),
+        titles = obtainMany(g, titleRel), //NB not used
         name = obtainMany(g, titleRel).head,
         platform = platform)
     })
