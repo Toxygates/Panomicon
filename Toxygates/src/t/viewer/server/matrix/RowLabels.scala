@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -49,7 +49,8 @@ class RowLabels(context: Context, schema: DataSchema) {
     val p = atomics(0)
     val pr = pm.get(p)
     new ExpressionRow(p,
-      pr.map(_.name).getOrElse(""),
+        //TODO make sure to pass all titles into ExpressionRow
+      pr.toSeq.flatMap(_.titles).headOption.getOrElse(""),
       pr.toArray.flatMap(_.genes.map(_.identifier)),
       pr.toArray.flatMap(_.symbols.map(_.symbol)),
       r.getValues)

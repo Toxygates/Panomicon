@@ -43,6 +43,8 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
   /**
    * Single probe constructor
    * 
+   * TODO should accept multiple gene titles
+   * 
    * @param _probe
    * @param _title
    * @param _geneId
