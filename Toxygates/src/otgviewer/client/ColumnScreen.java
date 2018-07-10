@@ -41,7 +41,7 @@ import t.viewer.client.Utils;
  */
 public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     GroupInspector.Delegate, CompoundSelector.Delegate {
-  public static String key = "columns";
+  public final static String key = "columns";
 
   private GroupInspector groupInspector;
   private CompoundSelector compoundSelector;
@@ -199,5 +199,5 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void CompoundSelectorSampleClassChanged(SampleClass sc) {
     groupInspector.sampleClassChanged(sc);
-  }
+  }  
 }
