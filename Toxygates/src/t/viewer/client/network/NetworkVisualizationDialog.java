@@ -170,7 +170,7 @@ public class NetworkVisualizationDialog {
             jsWeights[key] = weight;
           }
 
-          var newNode = new $wnd.makeNode(id, type, symbols);
+          var newNode = $wnd.makeNode(id, type, symbols);
           newNode.setWeights(jsWeights);
           return newNode;
         });
