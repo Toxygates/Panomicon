@@ -177,7 +177,7 @@ public class SampleSearchScreen extends MinimalScreen
   }
 
   @Override
-  public Widget content() {
+  protected Widget content() {
     setupMenuItems();
 
     ScrollPanel searchPanel = new ScrollPanel();

@@ -43,7 +43,7 @@ public class StartScreen extends MinimalScreen {
   final private HTML welcomeHtml = new HTML();
 
   @Override
-  public Widget content() {
+  protected Widget content() {
     VerticalPanel vp = Utils.mkTallPanel();
     vp.setWidth("100%");
    

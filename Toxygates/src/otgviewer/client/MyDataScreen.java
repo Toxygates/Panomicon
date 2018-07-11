@@ -68,7 +68,7 @@ public class MyDataScreen extends MinimalScreen {
   }
   
   @Override
-  public Widget content() {
+  protected Widget content() {
     final Set<String> instancesForBatch = new HashSet<String>();       
     instancesForBatch.add(appInfo().instanceName());
     

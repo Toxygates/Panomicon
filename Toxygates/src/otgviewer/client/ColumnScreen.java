@@ -112,7 +112,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   }
 
   @Override
-  public Widget content() {
+  protected Widget content() {
     groupInspector = factory().groupInspector(compoundSelector, this, this);
     groupInspector.datasetsChanged(chosenDatasets);
     groupInspector.addStaticGroups(appInfo().predefinedSampleGroups());
@@ -120,7 +120,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   }
 
   @Override
-  public Widget bottomContent() {
+  protected Widget bottomContent() {
     HorizontalPanel hp = Utils.mkWidePanel();
 
     Button b = new Button("Delete all groups",

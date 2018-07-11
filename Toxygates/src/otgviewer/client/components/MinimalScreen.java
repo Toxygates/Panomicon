@@ -81,7 +81,7 @@ public abstract class MinimalScreen implements Screen {
    * * Not overriding Widget.OnResize (probably problematic)
    */
 
-  protected DockLayoutPanel rootPanel;
+  protected DockLayoutPanel screenPanel;
 
   /**
    * Each screen is uniquely identified by its key.
@@ -137,7 +137,7 @@ public abstract class MinimalScreen implements Screen {
 
   @Override
   public Widget widget() {
-    return rootPanel;
+    return screenPanel;
   }
 
   @Override
@@ -153,7 +153,7 @@ public abstract class MinimalScreen implements Screen {
     // PX must be used for measurements or there will be problems in e.g. internet explorer.
     // This problem might possibly be solved if everything is changed to use the new-style
     // LayoutPanels.
-    rootPanel = new DockLayoutPanel(Unit.PX);
+    screenPanel = new DockLayoutPanel(Unit.PX);
 
     manager = man;
     this.key = key;
@@ -232,6 +232,12 @@ public abstract class MinimalScreen implements Screen {
     return r;
   }
 
+  /**
+   * This method is responsible for populating the screenPanel with appropriate toolbars,
+   * side bars, and main content.
+   * Normally this method is only called once. RebuildGUI() may optionally be 
+   * called to force the screen to reconstruct itself.
+   */
   @Override
   public void initGUI() {
     statusPanel = new FlowPanel();
@@ -247,9 +253,9 @@ public abstract class MinimalScreen implements Screen {
       HorizontalPanel hp = Utils.mkWidePanel();
       hp.add(bottom);
       hp.setHeight("40px");
-      rootPanel.addSouth(hp, 40);
+      screenPanel.addSouth(hp, 40);
     }
-    rootPanel.add(content());
+    screenPanel.add(content());
   }
 
   private Widget mkGuideTools() {
@@ -307,7 +313,7 @@ public abstract class MinimalScreen implements Screen {
    */
   @Override
   public void show() {
-    rootPanel.forceLayout();
+    screenPanel.forceLayout();
     visible = true;
     loadState(attributes());
     if (showGuide) {
@@ -324,12 +330,12 @@ public abstract class MinimalScreen implements Screen {
   @Override
   public void resizeInterface() {
     for (Widget w : toolbars) {
-      rootPanel.setWidgetSize(w, w.getOffsetHeight());
+      screenPanel.setWidgetSize(w, w.getOffsetHeight());
     }
     // for (Widget w: leftbars) {
     // rootPanel.setWidgetSize(w, w.getOffsetWidth());
     // }
-    rootPanel.forceLayout();
+    screenPanel.forceLayout();
   }
 
   protected boolean shouldShowStatusBar() {
@@ -351,7 +357,7 @@ public abstract class MinimalScreen implements Screen {
 
   protected void addToolbar(Widget toolbar, int size) {
     toolbars.add(toolbar);
-    rootPanel.addNorth(toolbar, size);
+    screenPanel.addNorth(toolbar, size);
   }
 
   /**
@@ -373,7 +379,7 @@ public abstract class MinimalScreen implements Screen {
    */
   public void showToolbar(Widget toolbar, int size) {
     toolbar.setVisible(true);
-    rootPanel.setWidgetSize(toolbar, size);
+    screenPanel.setWidgetSize(toolbar, size);
     deferredResize();
   }
 
@@ -384,7 +390,7 @@ public abstract class MinimalScreen implements Screen {
 
   protected void addLeftbar(Widget leftbar, int size) {
     // leftbars.add(leftbar);
-    rootPanel.addWest(leftbar, size);
+    screenPanel.addWest(leftbar, size);
   }
 
   /**
@@ -409,7 +415,7 @@ public abstract class MinimalScreen implements Screen {
     visible = false;
   }
 
-  public void addMenu(MenuItem m) {
+  protected void addMenu(MenuItem m) {
     menuItems.add(m);
   }
 
@@ -419,16 +425,13 @@ public abstract class MinimalScreen implements Screen {
   }
 
   /**
-   * Override this method to define the main content of the screen. Stored state may not have been
-   * loaded when this method is invoked.
-   * 
-   * @return
+   * Subclasses should override this method to define the main content of the screen. 
+   * Stored state may not have been loaded when this method is invoked.
    */
-  public Widget content() {
-    return new SimplePanel();
-  }
+  abstract protected Widget content();
+    
 
-  public Widget bottomContent() {
+  protected Widget bottomContent() {
     return null;
   }
 
@@ -526,5 +529,17 @@ public abstract class MinimalScreen implements Screen {
     if (numPendingRequests == 0) {
       waitDialog.hide();
     }
+  }
+  
+  /**
+   * Rebuild the GUI of this screen completely.
+   * As this is not part of the standard lifecycle, not every screen needs to support
+   * this method.
+   */
+  protected void rebuild() {
+    toolbars.clear();
+    menuItems.clear();
+    screenPanel.clear();
+    initGUI();
   }
 }

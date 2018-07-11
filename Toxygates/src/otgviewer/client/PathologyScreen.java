@@ -119,7 +119,7 @@ public class PathologyScreen extends MinimalScreen {
   }
 
   @Override
-  public Widget content() {
+  protected Widget content() {
     scrollPanel.setWidget(pathologyTable);
     pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     pathologyTable.setWidth("auto");

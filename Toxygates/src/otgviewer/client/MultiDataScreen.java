@@ -20,6 +20,9 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
+
 import otgviewer.client.components.*;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
@@ -86,6 +89,11 @@ public class MultiDataScreen extends MinimalScreen {
   @Override
   public Collection<Screen> potentialReplacements() {
     return Arrays.asList(singleTableScreen, dualTableScreen);
+  }
+
+  @Override
+  protected Widget content() {
+    return new SimplePanel();
   }
   
 }

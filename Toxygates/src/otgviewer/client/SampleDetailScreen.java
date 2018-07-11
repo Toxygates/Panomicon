@@ -220,7 +220,7 @@ public class SampleDetailScreen extends MinimalScreen {
   }
 
   @Override
-  public Widget content() {
+  protected Widget content() {
     sectionsPanel = Utils.mkVerticalPanel();
 
     HorizontalPanel hp = Utils.mkWidePanel(); // to make it centered

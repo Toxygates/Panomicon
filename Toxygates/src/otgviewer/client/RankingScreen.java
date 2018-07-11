@@ -92,7 +92,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   }
 
   @Override
-  public Widget content() {
+  protected Widget content() {
     sp = makeScrolled(compoundRanker);
     return sp;
   }

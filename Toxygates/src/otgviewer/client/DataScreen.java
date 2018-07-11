@@ -167,7 +167,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
   
   @Override
-  public Widget content() {    
+  protected Widget content() {    
     return dataView;
   }
 
