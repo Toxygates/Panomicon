@@ -49,12 +49,12 @@ public class DualTableNetwork implements NetworkViewer {
   
   @Override
   public List<Node> getSourceNodes() {
-    return buildNodes(mainType, mainTable.getDisplayedRows());
+    return buildNodes(mainType, mainTable.getDisplayedRows(), index -> mainTable.matrixInfo.columnName((index)));
   }
   
   @Override
   public List<Node> getDestNodes() {
-    return buildNodes(sideType, sideTable.getDisplayedRows());    
+    return buildNodes(sideType, sideTable.getDisplayedRows(), index -> sideTable.matrixInfo.columnName((index)));
   }
   
   @Nullable 
@@ -181,8 +181,7 @@ public class DualTableNetwork implements NetworkViewer {
    * @param rows
    * @return
    */
-  static List<Node> buildNodes(String kind, List<ExpressionRow> rows) {
-    return rows.stream().map(r -> 
-      Node.fromRow(r, kind)).collect(Collectors.toList());    
+  static List<Node> buildNodes(String kind, List<ExpressionRow> rows, Node.ColumnNameProvider columnNames) {
+    return rows.stream().map(r -> Node.fromRow(r, kind, columnNames)).collect(Collectors.toList());
   }
 }

@@ -18,8 +18,11 @@ public class Node implements Serializable {
   //GWT constructor
   Node() {}
   
+  public interface ColumnNameProvider {
+    public String get(int index);
+  }
 
-  public static Node fromRow(ExpressionRow row, String type) {
+  public static Node fromRow(ExpressionRow row, String type, ColumnNameProvider columnNames) {
     // When there's no gene symbol, for some reason row.geneSymbols gives us a singleton
     // list with an empty string, which we don't want here.
     String[] geneSymbols = row.getGeneSyms();
@@ -28,7 +31,8 @@ public class Node implements Serializable {
     }
     ExpressionValue[] values = row.getValues();
     Map<String, Double> weights = IntStream.range(0, values.length).boxed()
-        .collect(Collectors.toMap(i -> "Column " + (i + 1), i -> values[i].getValue()));
+        .collect(Collectors.toMap(i -> columnNames.get(i), i -> values[i].getValue()));
+    //        .collect(Collectors.toMap(i -> "Column " + (i + 1), i -> values[i].getValue()));
 
     return new Node(row.getProbe(), 
         Arrays.asList(geneSymbols), type, new HashMap<String, Double>(weights));

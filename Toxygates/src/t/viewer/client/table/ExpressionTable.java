@@ -102,7 +102,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private String[] displayedProbes = new String[0];
 
   private boolean loadedData = false;
-  private ManagedMatrixInfo matrixInfo = null;
+  public ManagedMatrixInfo matrixInfo = null;
   private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
   
   private Sample[] chartBarcodes = null;
@@ -797,6 +797,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
   }
   
+  @Override
   protected boolean isIndicated(ExpressionRow row) {
     return indicatedRows.contains(row.getProbe());
   }
