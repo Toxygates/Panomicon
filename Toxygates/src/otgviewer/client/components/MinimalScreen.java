@@ -235,7 +235,7 @@ public abstract class MinimalScreen implements Screen {
   /**
    * This method is responsible for populating the screenPanel with appropriate toolbars,
    * side bars, and main content.
-   * Normally this method is only called once. RebuildGUI() may optionally be 
+   * Normally this method is only called once. rebuild() may optionally be 
    * called to force the screen to reconstruct itself.
    */
   @Override

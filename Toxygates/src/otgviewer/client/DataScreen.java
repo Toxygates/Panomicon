@@ -22,18 +22,18 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
-import t.viewer.client.components.DataView;
+import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
+import t.viewer.client.table.TableView.ViewType;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The main data display screen. It displays data in a single DataView instance.
@@ -42,7 +42,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
-  protected DataView dataView;
+  protected TableView dataView;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
@@ -71,7 +71,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     chosenColumns = parser.getChosenColumns(schema(), attributes());
     chosenItemLists = parser.getItemLists();
     chosenGeneSet = parser.getGeneSet();
-    chosenClusteringList = parser.getClusteringLists();
+    chosenClusteringList = parser.getClusteringLists();    
     dataView.columnsChanged(chosenColumns);
     dataView.sampleClassChanged(parser.getSampleClass(attributes()));
     dataView.probesChanged(chosenProbes);  
@@ -171,20 +171,40 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     return dataView;
   }
 
-  protected TableView makeDataView() {
-    return new TableView(this, mainTableTitle(),
-      mainTableSelectable()) {
-        @Override
-        protected void beforeGetAssociations() {
-          super.beforeGetAssociations();
-          DataScreen.this.beforeGetAssociations();
-        }
+  public TableView.ViewType preferredViewType() {
+    StorageParser parser = getParser();    
+    chosenColumns = parser.getChosenColumns(schema(), attributes());
+    String[] types =
+        chosenColumns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);    
+    return types.length >= 2 ? ViewType.Dual : ViewType.Single;
+  }
 
-        @Override
-        protected void onGettingExpressionFailed() {
-          geneSetChanged(null);
-        }        
-    };
+  protected TableView makeDataView() {
+    ViewType type = preferredViewType();
+    switch(type) {
+      case Dual:
+        return new DualTableView(this, mainTableTitle());
+        //Needed?
+//      @Override
+//      protected void beforeGetAssociations() {
+//        super.beforeGetAssociations();
+//        DataScreen.this.beforeGetAssociations();
+//      }
+      default:
+      case Single:
+        return new TableView(this, mainTableTitle(), mainTableSelectable()) {
+          @Override
+          protected void beforeGetAssociations() {
+            super.beforeGetAssociations();
+            DataScreen.this.beforeGetAssociations();
+          }
+
+          @Override
+          protected void onGettingExpressionFailed() {
+            geneSetChanged(null);
+          }
+        };      
+    }
   }
 
   protected MenuBar analysisMenu;
@@ -236,7 +256,26 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  public void show() {
+  protected void rebuild() {
+    dataView = makeDataView();
+    super.rebuild();
+    logger.info("DataScreen rebuilding to " + preferredViewType());
+    setupMenuItems();
+    loadState(attributes());
+  }
+
+  @Override
+  public void preShow() {
+    StorageParser parser = getParser();    
+    chosenColumns = parser.getChosenColumns(schema(), attributes());    
+    ViewType type = preferredViewType();
+    if (type != dataView.type()) {
+      rebuild();
+    }
+  }
+  
+  @Override
+  public void show() {         
     super.show();
     getProbes();
     getColumns();

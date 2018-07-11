@@ -84,12 +84,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   private HorizontalPanel navPanel;
 
   /**
-   * Linkable screens in the order that the links are displayed at the top of the page.
-   */
-  private List<Screen> topLevelScreens = new ArrayList<Screen>();
-  
-  /**
-   * All screens (including replacements, not directly linkable)
+   * All screens in order of links being displayed at the top
    */
   private List<Screen> screens = new ArrayList<Screen>();
   
@@ -395,7 +390,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   void addWorkflowLinks(Screen current) {
     navPanel.clear();
-    for (Screen s: topLevelScreens) {
+    for (Screen s: screens) {
       String link = s.getTitle();
       final Label label = new Label(link);
       label.setStylePrimaryName("navlink");
@@ -417,7 +412,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
           label.addStyleDependentName("disabled");
         }
       }
-      if (topLevelScreens.get(0) == s) {
+      if (screens.get(0) == s) {
         label.addStyleDependentName("first");
       }
       navPanel.add(label);
@@ -436,12 +431,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     } else {
       screen = pickScreen(token);
     }
-    // TODO: remove this after revamping MultiDataScreen
-    // This is currently necessary because MultiDataScreen needs to have state loaded 
-    // before showScreen is called, in order to choose its replacement screen.
-    if (firstLoad && screen instanceof MultiDataScreen) {
-      screen.loadState(appInfo.attributes());
-    }
     showScreen(screen);
     Analytics.trackPageView(Analytics.URL_PREFIX + token);
   }
@@ -456,7 +445,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
     }
-    currentScreen = s.preferredReplacement();
+    s.preShow();
+    currentScreen = s;
     menuBar.clearItems();
     List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
     allItems.addAll(currentScreen.menuItems());
@@ -511,10 +501,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   protected void addScreenSeq(Screen s) {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
-    screensBykey.put(s.key(), s);
-    topLevelScreens.add(s);
+    screensBykey.put(s.key(), s);    
     screens.add(s);
-    screens.addAll(s.potentialReplacements());
     s.initGUI();
     s.tryConfigure(); // give it a chance to register itself as configured
   }

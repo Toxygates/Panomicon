@@ -14,6 +14,7 @@ import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.table.TableView.ViewType;
 import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
@@ -89,6 +90,10 @@ public class DualTableView extends TableView {
     sideExpressionTable.selectionModel().addSelectionChangeHandler(e -> {   
       network.onDestSelectionChanged();   
     });       
+  }
+  
+  public ViewType type() {
+    return ViewType.Dual;
   }
   
   /*
@@ -224,22 +229,6 @@ public class DualTableView extends TableView {
 //    return super.styleForColumns(columnsForSideTable(chosenColumns));    
 //  }
   
-  /**
-   * Based on the available columns, pick the correct display mode.
-   * The mode may be split or non-split.
-   */
-  protected DualMode pickMode(List<Group> columns) {
-    String[] types = columns.stream().map(g -> GroupUtils.groupType(g)).distinct().
-        toArray(String[]::new);
-    if (types.length >= 2) {
-      return preferredDoubleMode;
-    } else {      
-      //Happens during loadState even when this view will not be shown - 
-      //TODO - fix when updating wiring to Yuji's new system
-      return DualMode.Forward;
-    }
-  }
-  
 //  @Override
 //  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
 //    //TODO this is a state management hack to force the columns to be fully re-initialised
@@ -251,7 +240,7 @@ public class DualTableView extends TableView {
   @Override
   public void columnsChanged(List<Group> columns) {
     logger.info("Dual mode pick for " + columns.size() + " columns");
-    mode = pickMode(columns);    
+    mode = preferredDoubleMode;    
     
     expressionTable.setTitleHeader(mode.mainType);    
     expressionTable.setStyleAndApply(mode.mainStyle());

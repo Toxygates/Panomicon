@@ -29,6 +29,10 @@ import t.viewer.shared.mirna.MirnaSource;
  */
 public class TableView extends DataView {
 
+  public static enum ViewType {
+    Single, Dual;    
+  }
+  
   protected ExpressionTable expressionTable;
   
   protected ImportingScreen screen;
@@ -52,6 +56,10 @@ public class TableView extends DataView {
     setupMenus();
     
     addToolbar(expressionTable.analysisTools());
+  }
+  
+  public ViewType type() {
+    return ViewType.Single;
   }
   
   @Override
