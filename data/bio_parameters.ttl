@@ -1,0 +1,746 @@
+<http://level-five.jp/t/probe/terminal_bw>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "terminal_bw" ;
+        <http://level-five.jp/t/label>  "Terminal body weight (g)" ;
+        <http://level-five.jp/t/section>
+                "Organ weight" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/liver_wt>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "liver_wt" ;
+        <http://level-five.jp/t/label>  "Liver weight (g)" ;
+        <http://level-five.jp/t/section>
+                "Organ weight" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/kidney_total_wt>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "kidney_total_wt" ;
+        <http://level-five.jp/t/label>  "Kidney weight total (g)" ;
+        <http://level-five.jp/t/section>
+                "Organ weight" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/kidney_wt_left>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "kidney_wt_left" ;
+        <http://level-five.jp/t/label>  "Kidney weight left (g)" ;
+        <http://level-five.jp/t/section>
+                "Organ weight" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/kidney_wt_right>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "kidney_wt_right" ;
+        <http://level-five.jp/t/label>  "Kidney weight right (g)" ;
+        <http://level-five.jp/t/section>
+                "Organ weight" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/RBC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "RBC" ;
+        <http://level-five.jp/t/label>  "Red blood cell count (x 10^4/uL)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Hb>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Hb" ;
+        <http://level-five.jp/t/label>  "Hb (g/DL)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Ht>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Ht" ;
+        <http://level-five.jp/t/label>  "Ht (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/MCV>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "MCV" ;
+        <http://level-five.jp/t/label>  "MCV (fL)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/MCH>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "MCH" ;
+        <http://level-five.jp/t/label>  "MCH (pg)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/MCHC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "MCHC" ;
+        <http://level-five.jp/t/label>  "Mean corpuscular hemoglobin concentration (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Plat>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Plat" ;
+        <http://level-five.jp/t/label>  "Platelet count (x 10^4/uL)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/WBC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "WBC" ;
+        <http://level-five.jp/t/label>  "White blood cell count (x 10^2/uL)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Neu>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Neu" ;
+        <http://level-five.jp/t/label>  "Neutrophil (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Eos>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Eos" ;
+        <http://level-five.jp/t/label>  "Eosinophil (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Bas>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Bas" ;
+        <http://level-five.jp/t/label>  "Basophil (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Mono>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Mono" ;
+        <http://level-five.jp/t/label>  "Monocyte (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Lym>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Lym" ;
+        <http://level-five.jp/t/label>  "Lymphocyte (%)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/PT>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "PT" ;
+        <http://level-five.jp/t/label>  "Prothrombin time (s)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/APTT>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "APTT" ;
+        <http://level-five.jp/t/label>  "Activated partial thromboplastin time (s)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Fbg>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Fbg" ;
+        <http://level-five.jp/t/label>  "Fibrinogen (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/ALP>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "ALP" ;
+        <http://level-five.jp/t/label>  "Alkaline Phosphatase (IU/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/TC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "TC" ;
+        <http://level-five.jp/t/label>  "Total cholesterol (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/TBIL>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "TBIL" ;
+        <http://level-five.jp/t/label>  "Total bilirubin (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/DBIL>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "DBIL" ;
+        <http://level-five.jp/t/label>  "DBIL (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/GLC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "GLC" ;
+        <http://level-five.jp/t/label>  "Glucose (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/BUN>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "BUN" ;
+        <http://level-five.jp/t/label>  "Urea nitrogen (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/CRE>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "CRE" ;
+        <http://level-five.jp/t/label>  "Creatinine (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Na>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Na" ;
+        <http://level-five.jp/t/label>  "Na (meq/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/K>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "K" ;
+        <http://level-five.jp/t/label>  "K (meq/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Cl>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Cl" ;
+        <http://level-five.jp/t/label>  "Cl (meq/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Ca>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Ca" ;
+        <http://level-five.jp/t/label>  "Ca (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/IP>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "IP" ;
+        <http://level-five.jp/t/label>  "Inorganic phosphorus (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/TP>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "TP" ;
+        <http://level-five.jp/t/label>  "Total protein (g/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/RALB>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "RALB" ;
+        <http://level-five.jp/t/label>  "Albumin (g/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/AGratio>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "AGratio" ;
+        <http://level-five.jp/t/label>  "A / G ratio" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/AST>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "AST" ;
+        <http://level-five.jp/t/label>  "Aspertase aminotransferase (ASAT) (IU/L) (formerly GOT)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/ALT>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "ALT" ;
+        <http://level-five.jp/t/label>  "Alaline aminotransferase (ALAT) (IU/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/LDH>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "LDH" ;
+        <http://level-five.jp/t/label>  "Lactate dehydrogenase (IU/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/GTP>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "GTP" ;
+        <http://level-five.jp/t/label>  "gamma-GTP (IU/L)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/DNA>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "DNA" ;
+        <http://level-five.jp/t/label>  "DNA (%)" ;
+        <http://level-five.jp/t/section>
+                "Cell viability" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/sample_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "sample_id" ;
+        <http://level-five.jp/t/label>  "Sample ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/platform_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "platform_id" ;
+        <http://level-five.jp/t/label>  "Platform ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/exp_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "exp_id" ;
+        <http://level-five.jp/t/label>  "Experiment ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/control_group>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "control_group" ;
+        <http://level-five.jp/t/label>  "Control group" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/group_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "group_id" ;
+        <http://level-five.jp/t/label>  "Group ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/individual_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "individual_id" ;
+        <http://level-five.jp/t/label>  "Individual ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/organ_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "organ_id" ;
+        <http://level-five.jp/t/label>  "Organ" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/material_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "material_id" ;
+        <http://level-five.jp/t/label>  "Material ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/compound_name>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "compound_name" ;
+        <http://level-five.jp/t/label>  "Compound" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/compound_abbr>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "compound_abbr" ;
+        <http://level-five.jp/t/label>  "Compound abbreviation" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/compound_no>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "compound_no" ;
+        <http://level-five.jp/t/label>  "Compound no" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/cas_number>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "cas_number" ;
+        <http://level-five.jp/t/label>  "CAS number" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/kegg_drug>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "kegg_drug" ;
+        <http://level-five.jp/t/label>  "KEGG drug" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/kegg_compound>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "kegg_compound" ;
+        <http://level-five.jp/t/label>  "KEGG compound" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/organism>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "organism" ;
+        <http://level-five.jp/t/label>  "Organism" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/test_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "test_type" ;
+        <http://level-five.jp/t/label>  "Test type" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/sin_rep_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "sin_rep_type" ;
+        <http://level-five.jp/t/label>  "Repeat?" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/sex_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "sex_type" ;
+        <http://level-five.jp/t/label>  "Sex" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/strain_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "strain_type" ;
+        <http://level-five.jp/t/label>  "Strain" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/adm_route_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "adm_route_type" ;
+        <http://level-five.jp/t/label>  "Administration route" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/animal_age_week>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "animal_age_week" ;
+        <http://level-five.jp/t/label>  "Animal age (weeks)" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/exposure_time>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "exposure_time" ;
+        <http://level-five.jp/t/label>  "Exposure time" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/dose>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "dose" ;
+        <http://level-five.jp/t/label>  "Dose" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/dose_unit>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "dose_unit" ;
+        <http://level-five.jp/t/label>  "Dose unit" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/dose_level>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "dose_level" ;
+        <http://level-five.jp/t/label>  "Dose level" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/medium_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "medium_type" ;
+        <http://level-five.jp/t/label>  "Medium type" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/product_information>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "product_information" ;
+        <http://level-five.jp/t/label>  "Product information" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/cro_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "cro_type" ;
+        <http://level-five.jp/t/label>  "CRO type" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "type" ;
+        <http://level-five.jp/t/label>  "Type" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/GR>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "GR" ;
+        <http://level-five.jp/t/label>  "Granulocyte (percentage in WBC) %" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/GRA9>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "GRA9" ;
+        <http://level-five.jp/t/label>  "Granulocyte (x 10^9/L)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/HGB>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "HGB" ;
+        <http://level-five.jp/t/label>  "Hemoglobin (g/dL)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/HCT>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "HCT" ;
+        <http://level-five.jp/t/label>  "Hematocrit (%)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/MCHCg>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "MCHCg" ;
+        <http://level-five.jp/t/label>  "Mean corpuscular hemoglobin concentration (g/dL)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/RWDC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "RWDc" ;
+        <http://level-five.jp/t/label>  "Red cell distribution width (coeff. of variation) (%)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/PLT>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "PLT" ;
+        <http://level-five.jp/t/label>  "Platelet count (x10^9/L)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/PCT>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "PCT" ;
+        <http://level-five.jp/t/label>  "Procalcitonin" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/MPV>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "MPV" ;
+        <http://level-five.jp/t/label>  "Mean platelets volume" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/PDWC>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "PDWc" ;
+        <http://level-five.jp/t/label>  "Platelet distribution width (coeff. of variation)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/WBC9>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "WBC9" ;
+        <http://level-five.jp/t/label>  "White blood cell count (x 10^9/L)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Lym9>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Lym9" ;
+        <http://level-five.jp/t/label>  "Lymphocyte (x 10^9/L)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Mono9>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Mono9" ;
+        <http://level-five.jp/t/label>  "Monocyte (x 10^9/L)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/RBC12>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "RBC12" ;
+        <http://level-five.jp/t/label>  "Red blood cell count (x 10^12/L)" ;
+        <http://level-five.jp/t/section>
+                "Hematology" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/RDWc>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "RDWc" ;
+        <http://level-five.jp/t/label>  "RDWc (%)" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/volume>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "volume" ;
+        <http://level-five.jp/t/label>  "Volume" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/vehicle_type>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "vehicle_type" ;
+        <http://level-five.jp/t/label>  "Vehicle type" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/tgp_sample_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "tgp_sample_id" ;
+        <http://level-five.jp/t/label>  "TGP Sample ID" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/exp_date>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "exp_date" ;
+        <http://level-five.jp/t/label>  "Experiment date" ;
+        <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/TG>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "TG" ;
+        <http://level-five.jp/t/label>  "Triglyceride (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/PL>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "PL" ;
+        <http://level-five.jp/t/label>  "Phospholipids (mg/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/Alb>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Alb" ;
+        <http://level-five.jp/t/label>  "Albumin (g/dL)" ;
+        <http://level-five.jp/t/section>
+                "Biochemistry" ;
+        <http://level-five.jp/t/type>   "numerical" .
+
+<http://level-five.jp/t/probe/compound_fullname>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "compound_fullname" ;
+        <http://level-five.jp/t/label>  "Compound full name" ;
+        <http://level-five.jp/t/type>   "text" .
