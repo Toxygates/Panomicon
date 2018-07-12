@@ -605,13 +605,6 @@
         <http://level-five.jp/t/label>  "Mean corpuscular hemoglobin concentration (g/dL)" ;
         <http://level-five.jp/t/type>   "numerical" .
 
-<http://level-five.jp/t/probe/RWDC>
-        a                               <http://level-five.jp/t/probe> ;
-        <http://www.w3.org/2000/01/rdf-schema#label>
-                "RWDc" ;
-        <http://level-five.jp/t/label>  "Red cell distribution width (coeff. of variation) (%)" ;
-        <http://level-five.jp/t/type>   "numerical" .
-
 <http://level-five.jp/t/probe/PLT>
         a                               <http://level-five.jp/t/probe> ;
         <http://www.w3.org/2000/01/rdf-schema#label>
@@ -637,7 +630,7 @@
         a                               <http://level-five.jp/t/probe> ;
         <http://www.w3.org/2000/01/rdf-schema#label>
                 "PDWc" ;
-        <http://level-five.jp/t/label>  "Platelet distribution width (coeff. of variation)" ;
+        <http://level-five.jp/t/label>  "Platelet distribution width with coefficient of variation (%)" ;
         <http://level-five.jp/t/type>   "numerical" .
 
 <http://level-five.jp/t/probe/WBC9>
@@ -680,7 +673,7 @@
         a                               <http://level-five.jp/t/probe> ;
         <http://www.w3.org/2000/01/rdf-schema#label>
                 "RDWc" ;
-        <http://level-five.jp/t/label>  "RDWc (%)" ;
+        <http://level-five.jp/t/label>  "Red cell distribution width with coefficient of variation (%)" ;
         <http://level-five.jp/t/type>   "numerical" .
 
 <http://level-five.jp/t/probe/volume>
