@@ -28,7 +28,6 @@ import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
-import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

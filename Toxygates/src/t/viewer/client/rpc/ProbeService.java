@@ -24,15 +24,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
 import t.common.shared.AType;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.*;
-import t.viewer.shared.mirna.MirnaSource;
+
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A service that provides information about probes and related objects
