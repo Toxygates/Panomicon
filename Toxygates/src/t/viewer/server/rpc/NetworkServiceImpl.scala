@@ -22,6 +22,7 @@ package t.viewer.server.rpc
 import t.viewer.client.rpc.NetworkService
 import t.viewer.shared.mirna.MirnaSource
 import t.viewer.shared.TimeoutException
+import t.platform.mirna.MiRDBConverter
 
 object NetworkState {
   val stateKey = "network"
@@ -34,6 +35,8 @@ class NetworkState {
 abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
   protected def stateKey = NetworkState.stateKey
   protected def newState = new NetworkState
+
+  def mirnaDir = context.config.data.mirnaDir
 
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {

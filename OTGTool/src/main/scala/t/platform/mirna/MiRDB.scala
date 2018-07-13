@@ -4,21 +4,30 @@ import scala.io.Source
 import java.io.PrintWriter
 
 /**
- * Tool for converting filtered mirDB data into suitable
- * RDF format.
+ * Tool for ingesting filtered mirDB data.
  */
-object MiRDBConverter {
+class MiRDBConverter(inputFile: String) {
+  def size =  Source.fromFile(inputFile).getLines.size
 
   /*
    * Example records:
    * hsa-let-7a-2-3p NM_153690       54.8873
    * hsa-let-7a-2-3p NM_001127715    92.914989543
    */
-  def main(args: Array[String]) {
-    val size =  Source.fromFile(args(0)).getLines.size
-    val lines = Source.fromFile(args(0)).getLines
-    //trig format
-    val w = new PrintWriter(args(1))
+  def lines = Source.fromFile(inputFile).getLines
+
+  def makeTable = {
+    val builder = new TargetTableBuilder
+
+    for (l <- lines) {
+      val spl = l.split("\\s+")
+      builder.add(spl(0), spl(1), spl(2).toDouble)
+    }
+    builder.build
+  }
+
+  def makeTrig(output: String) {
+    val w = new PrintWriter(output)
     try {
       val graph = "<http://level-five.jp/t/mapping/mirdb>"
       val label = "miRDB 5.0"
@@ -38,5 +47,10 @@ object MiRDBConverter {
       w.close()
     }
   }
+}
 
+object MiRDBConverter {
+  def main(args: Array[String]) {
+    new MiRDBConverter(args(0)).makeTrig(args(1))
+  }
 }

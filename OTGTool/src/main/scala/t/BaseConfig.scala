@@ -102,6 +102,8 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   def probeIndex: String = probeDb + KCIndexDB.options
   def enumIndex: String = enumDb + KCIndexDB.options
 
+  def mirnaDir = s"$dir/mirna"
+  
   //TODO remove the fold wrap when possible
   def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
     new TransformingWrapper(db) {
