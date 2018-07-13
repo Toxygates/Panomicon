@@ -119,6 +119,15 @@
 		<url-pattern>/toxygates/userData</url-pattern>
 	</servlet-mapping>
 
+ 	<servlet>
+		<servlet-name>networkServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.NetworkServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>networkServlet</servlet-name>
+		<url-pattern>/toxygates/network</url-pattern>
+	</servlet-mapping>
+	
 	<servlet>
 		<servlet-name>geneSetServlet</servlet-name>
 		<servlet-class>t.viewer.server.rpc.GeneSetServlet</servlet-class>
