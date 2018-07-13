@@ -28,8 +28,6 @@ import t.viewer.shared.TimeoutException
 import t.viewer.shared.mirna.MirnaSource
 
 class ProbeState {
-  var mirnaSources: Array[MirnaSource] = Array()
-
   /*
    * Currently, the only use of this is in the association resolver,
    * which needs it for chembl/drugbank target lookup.
@@ -246,10 +244,4 @@ with ProbeService {
 
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
-
-  @throws[TimeoutException]
-  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    getState().mirnaSources = sources
-  }
-
 }

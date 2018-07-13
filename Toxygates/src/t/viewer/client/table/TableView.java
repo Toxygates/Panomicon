@@ -280,7 +280,7 @@ public class TableView extends DataView {
     @Override
     public void onValueChange(MirnaSource[] state) {
       if (state != null) {        
-        manager.probeService().setMirnaSources(state, new AsyncCallback<Void>() {
+        manager.networkService().setMirnaSources(state, new AsyncCallback<Void>() {
           @Override
           public void onFailure(Throwable caught) {
             Window.alert("Unable to set miRNA sources.");

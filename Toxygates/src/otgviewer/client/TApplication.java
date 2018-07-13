@@ -70,7 +70,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       .create(SeriesService.class);
   private static UserDataServiceAsync userDataService = (UserDataServiceAsync) GWT
       .create(UserDataService.class);
-
+  private static NetworkServiceAsync networkService = (NetworkServiceAsync) GWT
+      .create(NetworkService.class);
+  
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
   protected MenuBar menuBar;
@@ -589,6 +591,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   @Override
   public UserDataServiceAsync userDataService() {
     return userDataService;
+  }
+  
+  @Override
+  public NetworkServiceAsync networkService() {
+    return networkService;
   }
 
   /**

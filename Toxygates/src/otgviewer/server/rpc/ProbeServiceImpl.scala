@@ -14,6 +14,7 @@ import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.Intermines
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
+import t.viewer.server.rpc.NetworkState
 
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otgviewer.client.rpc.ProbeService {
@@ -94,9 +95,12 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     _probes: Array[String]): Array[Association] = {
     implicit val sf = getState.sampleFilter
 
+    val mirnaSources = getOtherServiceState[NetworkState](NetworkState.stateKey)
+      .map(_.mirnaSources).getOrElse(Array())
+
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
-        targetmine, getState().mirnaSources,
+        targetmine, mirnaSources,
         sc, types, _probes).resolve
   }
 }

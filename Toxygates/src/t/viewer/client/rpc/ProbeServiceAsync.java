@@ -60,7 +60,4 @@ public interface ProbeServiceAsync {
 
   void associations(SampleClass sc, AType[] types, String[] probes,
       AsyncCallback<Association[]> callback);
-
-  void setMirnaSources(MirnaSource[] sources, AsyncCallback<Void> callback);
-
 }

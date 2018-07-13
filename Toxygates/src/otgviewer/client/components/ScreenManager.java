@@ -84,6 +84,8 @@ public interface ScreenManager extends ProvidesResize {
   SeriesServiceAsync seriesService();
   
   UserDataServiceAsync userDataService();
+  
+  NetworkServiceAsync networkService();
 
   UIFactory factory();
   
