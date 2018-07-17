@@ -16,13 +16,13 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.clustering;
+package t.viewer.shared.clustering;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 
-import t.common.shared.StringList;
+import t.viewer.shared.StringList;
 
 @SuppressWarnings("serial")
 public class ProbeClustering implements Serializable {

@@ -29,7 +29,7 @@ import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
 import org.json.JSONObject
 
-import t.common.shared.StringList
+import t.viewer.shared.StringList
 import t.sparql._
 import t.sparql.Probes
 import t.sparql.secondary._

@@ -16,12 +16,15 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared;
+package t.viewer.shared;
 
 import java.io.Serializable;
 import java.util.Collection;
 
-import t.common.shared.clustering.ProbeClustering;
+import t.clustering.shared.ClusteringList;
+import t.common.shared.Packable;
+import t.common.shared.SharedUtils;
+import t.viewer.shared.clustering.ProbeClustering;
 
 /**
  * A typed, named list of items.

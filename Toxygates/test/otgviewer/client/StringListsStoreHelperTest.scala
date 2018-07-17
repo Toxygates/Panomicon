@@ -23,21 +23,16 @@ package otgviewer.client
 import java.util.logging.Logger
 
 import scala.collection.JavaConversions._
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
-import t.common.shared.StringList
-import t.common.shared.ClusteringList
-import java.util.logging.Logger
 
 import org.junit.runner.RunWith
 
 import t.TTestSuite
-import org.scalatest.Matchers
+import t.clustering.shared.ClusteringList
+import org.scalatest.junit.JUnitRunner
+import t.viewer.shared.StringList
 
 @RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends TTestSuite {
-
-  import java.util.{ ArrayList => JList }
 
   val clusters = Seq(
     Seq("p1", "p2", "p3"),

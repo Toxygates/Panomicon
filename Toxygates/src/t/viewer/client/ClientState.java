@@ -23,10 +23,10 @@ package t.viewer.client;
 import java.util.List;
 
 import t.common.shared.Dataset;
-import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
+import t.viewer.shared.ItemList;
 
 /**
  * Captures the current client-side state.

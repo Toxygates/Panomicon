@@ -18,7 +18,7 @@
 
 package t.viewer.client.intermine;
 
-import t.common.shared.StringList;
+import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.*;
 
 import com.google.gwt.user.client.rpc.RemoteService;

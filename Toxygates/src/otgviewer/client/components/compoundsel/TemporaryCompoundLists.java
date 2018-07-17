@@ -20,12 +20,12 @@
 
 package otgviewer.client.components.compoundsel;
 
-import static t.common.shared.StringList.COMPOUND_LIST_TYPE;
+import static t.viewer.shared.StringList.COMPOUND_LIST_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import t.common.shared.StringList;
+import t.viewer.shared.StringList;
 
 public class TemporaryCompoundLists {
 

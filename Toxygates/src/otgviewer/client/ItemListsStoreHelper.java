@@ -25,9 +25,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
 import otgviewer.client.components.ImportingScreen;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
 import t.viewer.client.StorageParser;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 public abstract class ItemListsStoreHelper {
 

@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.clustering;
+package t.viewer.shared.clustering;
 
 import java.util.*;
 

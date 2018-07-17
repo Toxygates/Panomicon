@@ -32,8 +32,8 @@ import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.DataSchema;
-import t.common.shared.StringList;
 import t.common.shared.sample.Group;
+import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
 public interface UIFactory {

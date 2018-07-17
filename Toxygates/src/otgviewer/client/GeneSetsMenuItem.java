@@ -31,9 +31,12 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.GeneSetEditor;
 import t.clustering.shared.Algorithm;
+import t.clustering.shared.ClusteringList;
 import t.common.shared.*;
-import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
+import t.viewer.shared.clustering.ProbeClustering;
 
 public class GeneSetsMenuItem extends Composite {
 
@@ -172,7 +175,7 @@ public class GeneSetsMenuItem extends Composite {
     Collection<ProbeClustering> clusterings = screen.appInfo().probeClusterings();
 
     // append items recursively
-    for (t.common.shared.clustering.Algorithm algo : t.common.shared.clustering.Algorithm
+    for (t.viewer.shared.clustering.Algorithm algo : t.viewer.shared.clustering.Algorithm
         .values()) {
       MenuBar mb = new MenuBar(true);
 
@@ -183,7 +186,7 @@ public class GeneSetsMenuItem extends Composite {
     root.addSeparator(new MenuItemSeparator());
   }
 
-  private void appendChildren(MenuBar parent, t.common.shared.clustering.Algorithm algo,
+  private void appendChildren(MenuBar parent, t.viewer.shared.clustering.Algorithm algo,
       Collection<ProbeClustering> clusterings) {
     for (String cl : algo.getClusterings()) {
       MenuBar mb = new MenuBar(true);

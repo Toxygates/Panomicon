@@ -39,6 +39,8 @@ import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.common.shared.*;
 import t.viewer.client.Utils;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 /**
  * A StackedListEditor unifies multiple different methods of editing a list of strings. Strings can

@@ -30,11 +30,11 @@ import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.Dataset;
-import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
+import t.viewer.shared.ItemList;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.

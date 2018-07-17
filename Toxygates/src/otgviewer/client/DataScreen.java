@@ -33,6 +33,8 @@ import t.viewer.client.*;
 import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
 import t.viewer.client.table.TableView.ViewType;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
 /**

@@ -20,8 +20,6 @@ package t.common.shared;
 
 import java.util.*;
 
-import t.viewer.shared.AppInfo;
-
 
 @SuppressWarnings("serial")
 public class Dataset extends ManagedItem {
@@ -100,8 +98,8 @@ public class Dataset extends ManagedItem {
     return !isSharedDataset(title);
   }
 
-  public static Dataset[] defaultSelection(AppInfo info) {
-    return Arrays.stream(info.datasets()).
+  public static Dataset[] defaultSelection(Dataset[] from) {
+    return Arrays.stream(from).
         filter(x -> isInDefaultSelection(x.getTitle())).toArray(Dataset[]::new);
   }
   

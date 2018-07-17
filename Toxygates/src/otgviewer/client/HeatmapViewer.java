@@ -25,11 +25,13 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.ImportingScreen;
 import t.clustering.shared.Algorithm;
+import t.clustering.shared.ClusteringList;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.DataView;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;

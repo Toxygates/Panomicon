@@ -25,12 +25,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.ItemList;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.AppInfo;
+import t.viewer.shared.ItemList;
 import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.ui.MenuBar;

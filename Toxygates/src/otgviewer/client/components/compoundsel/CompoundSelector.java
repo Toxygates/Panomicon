@@ -35,6 +35,8 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 /**
  * This widget is for selecting a compound or a set of compounds using various data sources.

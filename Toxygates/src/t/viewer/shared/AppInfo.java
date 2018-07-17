@@ -24,9 +24,9 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import t.common.shared.*;
-import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
+import t.viewer.shared.clustering.ProbeClustering;
 import t.viewer.shared.intermine.IntermineInstance;
 import t.viewer.shared.mirna.MirnaSource;
 

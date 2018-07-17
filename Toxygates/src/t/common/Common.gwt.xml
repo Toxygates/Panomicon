@@ -9,8 +9,7 @@
 <module rename-to="t.common.Common">
 	<inherits name="com.google.gwt.user.User" />
 	<inherits name="t.model.Model" />
-	<inherits name="gwtupload.GWTUpload" />
-	<inherits name="t.clustering.Clustering" />		
+	<inherits name="gwtupload.GWTUpload" />		
 	<source path="client"/>
 	<source path='shared' />
 	

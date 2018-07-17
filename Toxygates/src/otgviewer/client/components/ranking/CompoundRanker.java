@@ -34,6 +34,7 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.ItemList;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a

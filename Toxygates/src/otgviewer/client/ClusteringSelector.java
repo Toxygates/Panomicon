@@ -26,11 +26,11 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.ListChooser;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
-import t.common.shared.clustering.Algorithm;
-import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
+import t.viewer.shared.clustering.Algorithm;
+import t.viewer.shared.clustering.ProbeClustering;
 
 public abstract class ClusteringSelector extends Composite implements RequiresResize {
 

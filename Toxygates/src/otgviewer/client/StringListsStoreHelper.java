@@ -21,10 +21,12 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.ImportingScreen;
-import t.common.shared.*;
+import t.clustering.shared.ClusteringList;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 public class StringListsStoreHelper extends ItemListsStoreHelper {
   

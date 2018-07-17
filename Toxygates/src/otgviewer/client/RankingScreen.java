@@ -28,10 +28,10 @@ import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
-import t.common.shared.ItemList;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
+import t.viewer.shared.ItemList;
 
 public class RankingScreen extends MinimalScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {

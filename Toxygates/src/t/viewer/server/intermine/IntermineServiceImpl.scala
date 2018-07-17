@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 
 import org.intermine.webservice.client.results.TabTableResult
 
-import t.common.shared.StringList
+import t.viewer.shared.StringList
 import t.sparql.Probes
 import t.viewer.client.intermine.IntermineService
 import t.viewer.server.Configuration
@@ -52,7 +52,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
 
   // TODO: pass in a preferred species, get status info back
   def importLists(inst: IntermineInstance, user: String, pass: String,
-    asProbes: Boolean): Array[t.common.shared.StringList] = {
+    asProbes: Boolean): Array[StringList] = {
     val conn = mines.connector(inst, platforms)
     try {
       val ls = conn.getListService(Some(user), Some(pass))

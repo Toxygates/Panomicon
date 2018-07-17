@@ -18,34 +18,25 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared
+package t.viewer.shared
 
-import t.clustering.shared._
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ClusteringListTest extends TTestSuite {
+class StringListTest extends TTestSuite {
 
-  val items = List(new StringList("type", "list1", Array("a", "b", "c")), new StringList("type", "list2", Array("d", "e", "f")))
-  val algorithm = new Algorithm(Methods.WARD_D, Distances.COERRELATION, Methods.WARD_D2, Distances.EUCLIDIAN)
-
-  import ClusteringList._
+  val items = List("a", "b", "c")
 
   test("basic") {
-    val l = new ClusteringList(USER_CLUSTERING_TYPE,
-        "test.name", algorithm, items.toArray)
-    l.addParam("cutoff", "1.0")
+    val l = new StringList("probes", "test.name", items.toArray)
     assert(l.size() === items.size)
     assert(l.items() === items.toArray)
     val p = l.pack()
     val up = ItemList.unpack(p)
+    assert(up.packedItems().toArray === items.toArray)
     assert(up.name() === l.name())
     assert(up.`type` === l.`type`)
-    assert(up.asInstanceOf[ClusteringList].algorithm() == algorithm)
-    assert(up.asInstanceOf[ClusteringList].params().size == 1)
-    assert(up.asInstanceOf[ClusteringList].params().get("cutoff") == "1.0")
   }
-
 }

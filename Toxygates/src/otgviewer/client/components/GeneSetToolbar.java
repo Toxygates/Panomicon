@@ -25,9 +25,11 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.DataScreen;
-import t.common.shared.*;
-import t.common.shared.clustering.ProbeClustering;
+import t.clustering.shared.ClusteringList;
 import t.viewer.client.Utils;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
+import t.viewer.shared.clustering.ProbeClustering;
 
 public class GeneSetToolbar extends Composite {
 

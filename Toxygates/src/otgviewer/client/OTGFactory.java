@@ -30,9 +30,9 @@ import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import t.common.shared.DataSchema;
-import t.common.shared.StringList;
 import t.common.shared.sample.Group;
 import t.viewer.client.intermine.InterMineData;
+import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
 

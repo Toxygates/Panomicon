@@ -18,7 +18,7 @@
 
 package t.viewer.client.intermine;
 
-import t.common.shared.StringList;
+import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
 

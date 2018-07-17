@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared;
+package t.viewer.shared;
 
 import java.util.*;
 

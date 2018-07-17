@@ -18,14 +18,16 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared;
+package t.clustering.shared;
 
 import java.util.*;
 import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
-import t.clustering.shared.*;
+import t.common.shared.SharedUtils;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 @SuppressWarnings("serial")
 public class ClusteringList extends ItemList {
@@ -41,9 +43,9 @@ public class ClusteringList extends ItemList {
   /**
    * This constructor should NOT be used except unpacking from stored item
    * To instantiate ClusteringList, use <code>ClusteringList(String, String, Algorithm, StringList[])</code>
-   * @see t.common.shared.ItemList#unpack(String)
+   * @see t.viewer.shared.ItemList#unpack(String)
    */
-  protected ClusteringList(String type, String name, String[] items) {
+  public ClusteringList(String type, String name, String[] items) {
     super(type, name);
 
     this.algorithm = extractAlgorithm(items[0]);
@@ -177,7 +179,7 @@ public class ClusteringList extends ItemList {
 
   public StringList[] items() {
     return clusters;
-  }
+  } 
 
   @Override
   public int size() {

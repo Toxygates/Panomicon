@@ -24,12 +24,12 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
 import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 /**
  * The ListChooser allows the user to select from a range of named lists, as well as save and delete

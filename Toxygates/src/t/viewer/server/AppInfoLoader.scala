@@ -21,8 +21,8 @@
 package t.viewer.server
 
 import t.sparql.Probes
-import t.common.shared.clustering.ProbeClustering
-import t.common.shared.StringList
+import t.viewer.shared.clustering.ProbeClustering
+import t.viewer.shared.StringList
 import t.viewer.shared.AppInfo
 import scala.collection.JavaConversions._
 import t.common.shared.Platform
