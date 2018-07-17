@@ -127,10 +127,22 @@ public class NetworkVisualizationDialog {
   }-*/;
 
   /**
-   * Converts a Network.java object to a JavaScript Network object, and stores it
-   * as window.convertedNetwork.
+   * Converts a Java network to a JavaScript network , and stores it as
+   * window.convertedNetwork.
    */
   private static native void convertAndStoreNetwork(Network network) /*-{
+    // Test code for network conversion; will be deleted after implementing network save functionality. 
+    //    var jsOne = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
+    //    var javaOne = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(jsOne);
+    //    $wnd.originalNetwork = jsOne;
+    //    $wnd.convertedNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(javaOne);
+    $wnd.convertedNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
+  }-*/;
+
+  /**
+   * Converts a Java network to a JavaScript network.
+   */
+  private static native JavaScriptObject convertNetworkToJS(Network network) /*-{
     var networkName = network.@t.viewer.shared.network.Network::title()();
 
     // Helper function to map a function over every element of a Java list and  
@@ -187,9 +199,40 @@ public class NetworkVisualizationDialog {
           return $wnd.makeInteraction(fromId, toId, label, weight);
         });
 
-    $wnd.convertedNetwork = $wnd.makeNetwork(networkName, jsInteractions,
-        jsNodes);
+    return $wnd.makeNetwork(networkName, jsInteractions, jsNodes);
   }-*/;
+
+  /**
+   * Converts a JavaScript network to a Java network.
+   */
+  private static native Network convertNetworkToJava(JavaScriptObject network) /*-{
+  var javaNodes = @java.util.ArrayList::new(I)(network.nodes.length);
+  var nodeDictionary = {};
+  network.nodes.forEach(function(node) {
+    var javaWeights = @java.util.HashMap::new(I)(Object.keys(node.weight).length);
+    Object.keys(node.weight).forEach(function(key) {
+      //javaWeights.@java.util.HashMap::put(Ljava/lang/String;Ljava/lang/Double;)(key, node.weight[key]);
+      javaWeights.@java.util.HashMap::put(Ljava/lang/Object;Ljava/lang/Object;)(key, node.weight[key]);
+    });
+    var javaSymbols = @java.util.ArrayList::new(I)(node.symbol.length);
+    node.symbol.forEach(function(symbol) {
+      javaSymbols.@java.util.ArrayList::add(Ljava/lang/Object;)(symbol);
+    });
+    var javaNode = @t.viewer.shared.network.Node::new(Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/HashMap;)(node.id, javaSymbols, node.type, javaWeights);
+    javaNodes.@java.util.ArrayList::add(Ljava/lang/Object;)(javaNode);
+    nodeDictionary[node.id] = javaNode;
+  });
+  
+  var javaInteractions = @java.util.ArrayList::new(I)(network.interactions.length);
+  network.interactions.forEach(function(interaction) {
+    var from = nodeDictionary[interaction.from];
+    var to =  nodeDictionary[interaction.to];
+    var javaInteraction = @t.viewer.shared.network.Interaction::new(Lt/viewer/shared/network/Node;Lt/viewer/shared/network/Node;Ljava/lang/String;Ljava/lang/Double;)(from, to, interaction.label, interaction.weight);
+    javaInteractions.@java.util.ArrayList::add(Ljava/lang/Object;)(javaInteraction);
+  });
+  
+  return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;)(network.title, javaNodes, javaInteractions);
+}-*/;
 
   /**
    * Handles the logic for actually saving a network from the visualization dialog. Currently a
