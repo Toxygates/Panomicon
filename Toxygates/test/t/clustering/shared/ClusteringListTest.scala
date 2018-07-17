@@ -20,7 +20,7 @@
 
 package t.clustering.shared
 
-import t.clustering.client.ClusteringList._
+import t.clustering.shared.ClusteringList._
 import t.clustering.shared._
 import t.viewer.shared._
 
