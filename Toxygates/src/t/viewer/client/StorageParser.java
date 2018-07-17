@@ -32,6 +32,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.shared.AppInfo;
 
 /**
  * Storage parsing/serialising code. Some is still spread out in other classes, 
@@ -167,10 +168,10 @@ public class StorageParser {
     }
   }
 
-  public Dataset[] getDatasets() {
+  public Dataset[] getDatasets(AppInfo info) {
     String v = getItem("datasets");
-    if (v == null) {
-      return new Dataset[0];
+    if (v == null) {      
+      return Dataset.defaultSelection(info);        
     }
     List<Dataset> r = new ArrayList<Dataset>();
     for (String ds : v.split("###")) {

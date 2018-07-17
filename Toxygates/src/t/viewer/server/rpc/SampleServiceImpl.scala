@@ -108,7 +108,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   protected def newState = {
     //Initialise the selected datasets by selecting all, except shared user data.
     val defaultVisible = appInfo.datasets.filter(ds =>
-      !Dataset.isSharedDataset(ds.getTitle))
+      Dataset.isInDefaultSelection(ds.getTitle))
 
     val s = new SampleState(instanceURI)
     s.sampleFilter = sampleFilterFor(defaultVisible, None)
