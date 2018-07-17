@@ -151,6 +151,6 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
 
   protected void showBatchOverview(String title, String[][] data) {
     StringArrayTable.displayDialog(data, "Overview for for batch " + title, 
-        800, 600);    
+        900, 700);    
   }
 }

@@ -29,6 +29,6 @@ class MaintenanceServiceImpl extends t.admin.server.MaintenanceServiceImpl
   with OTGServiceServlet {
 
   override protected def overviewParameters: Seq[Attribute] =
-    Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel,
+    Seq(Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
       ExposureTime, Platform, ControlGroup)
 }
