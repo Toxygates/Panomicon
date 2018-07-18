@@ -1,6 +1,6 @@
 package t.platform.mirna
 
-import t.platform.Probe
+import t.platform._
 
 /**
  * Memory-efficient table for transcription factor targets.
@@ -15,16 +15,16 @@ class TargetTable(val sources: Array[String],
 
   def size: Int = sources.length
 
-  def asTriples: Iterable[(String, String, Double)] =
+  def asTriples: Iterable[(String, RefSeq, Double)] =
     (0 until size).map(i =>
-      (sources(i), targets(i), scores(i)))
+      (sources(i), RefSeq(targets(i)), scores(i)))
 
   def scoreFilter(minScore: Double): TargetTable = {
     val builder = new TargetTableBuilder
     for {
       i <- 0 until size;
       if scores(i) >= minScore
-    } builder.add(sources(i), targets(i), scores(i))
+    } builder.add(sources(i), RefSeq(targets(i)), scores(i))
 
     builder.build
   }
@@ -33,8 +33,8 @@ class TargetTable(val sources: Array[String],
    * Find probes in the platform that match the given transcripts.
    * TODO: this could be a static lookup map?
    */
-  def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[String]): 
-    Iterable[(String, Probe)] = {
+  def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]): 
+    Iterable[(RefSeq, Probe)] = {
     val allTrn = transcripts.toSet
     for {
       p <- platform;
@@ -72,9 +72,9 @@ class TargetTableBuilder() {
   var taIn = List[String]()
   var scoIn = List[Double]()
 
-  def add(source: String, target: String, score: Double) {
+  def add(source: String, target: RefSeq, score: Double) {
     soIn ::= source
-    taIn ::= target
+    taIn ::= target.id
     scoIn ::= score
   }
 

@@ -128,7 +128,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
       (probeId, probes) <- probes.groupBy(_._2);
       entrez = Seq() ++ probes.flatMap(_._3).map(Gene(_));
-      transcripts = probes.flatMap(_._4);
+      transcripts = probes.flatMap(_._4.map(RefSeq(_)));
       pr = Probe(probeId, genes = entrez, platform = pf, transcripts = transcripts))
       yield (pf, pr)
 

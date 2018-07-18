@@ -40,8 +40,7 @@ case class Probe(val identifier: String, override val name: String = "",
   val proteins: Iterable[Protein] = Seq(),
   val genes: Iterable[Gene] = Seq(),
   val symbols: Iterable[Gene] = Seq(),
-  //Refseq transcripts
-  val transcripts: Iterable[String] = Seq(),
+  val transcripts: Iterable[RefSeq] = Seq(),
   val platform: String = "") extends StoredBioObject[Probe] {
 
   def symbolStrings = symbols.map(_.symbol)
