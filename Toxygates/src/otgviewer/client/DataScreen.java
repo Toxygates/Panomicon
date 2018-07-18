@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
-import t.common.shared.*;
+import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
@@ -53,7 +53,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   // together with UIFactory.hasHeatMapMenu
   @Nullable
   private MenuItem heatMapMenu;
-  protected GeneSetsMenuItem geneSetsMenu;
+  protected GeneSetsMenu geneSetsMenu;
   
 
   protected String[] chosenProbes = new String[0];
@@ -222,7 +222,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     
     addAnalysisMenuItem(new MenuItem("Enrichment...", () -> runEnrichment(null)));   
 
-    geneSetsMenu = factory().geneSetsMenuItem(this);
+    geneSetsMenu = factory().geneSetsMenu(this);
     addMenu(geneSetsMenu.menuItem());       
   }
   

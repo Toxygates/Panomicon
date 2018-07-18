@@ -51,7 +51,7 @@ public interface UIFactory {
   
   public boolean hasHeatMapMenu();
   
-  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen);
+  public GeneSetsMenu geneSetsMenu(DataScreen screen);
 
   /**
    * Enrichment for a gene set

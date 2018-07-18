@@ -38,7 +38,7 @@ import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.clustering.ProbeClustering;
 
-public class GeneSetsMenuItem {
+public class GeneSetsMenu {
 
   protected final Logger logger = SharedUtils.getLogger("GeneSetsMenuItem");
 
@@ -49,7 +49,7 @@ public class GeneSetsMenuItem {
   
   private final int ITEMS_PER_MENU = 20;
 
-  public GeneSetsMenuItem(DataScreen screen) {
+  public GeneSetsMenu(DataScreen screen) {
     this.screen = screen;
     root = new MenuBar(true);
     mi = new MenuItem("Gene Sets", false, root);

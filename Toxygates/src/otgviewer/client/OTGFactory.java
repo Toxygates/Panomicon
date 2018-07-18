@@ -73,8 +73,8 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen) {
-    return new GeneSetsMenuItem(screen);
+  public GeneSetsMenu geneSetsMenu(DataScreen screen) {
+    return new GeneSetsMenu(screen);
   }
 
   @Override
