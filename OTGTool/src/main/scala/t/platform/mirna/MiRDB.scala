@@ -22,7 +22,7 @@ class MiRDBConverter(inputFile: String) {
 
     for (l <- lines) {
       val spl = l.split("\\s+")
-      builder.add(spl(0), RefSeq(spl(1)), spl(2).toDouble)
+      builder.add(MiRNA(spl(0)), RefSeq(spl(1)), spl(2).toDouble)
     }
     builder.build
   }

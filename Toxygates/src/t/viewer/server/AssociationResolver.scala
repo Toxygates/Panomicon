@@ -32,9 +32,7 @@ import t.sparql.Probes
 import t.sparql.SampleFilter
 import t.sparql.secondary._
 import t.viewer.server.Conversions._
-
 import t.viewer.shared.Association
-import t.viewer.shared.Association._
 import t.viewer.shared.mirna.MirnaSource
 
 /**
@@ -56,6 +54,7 @@ class AssociationResolver(probeStore: Probes,
   @volatile protected var sizeLimitExceeded = false
 
   //Look up all core associations first.
+  //TODO this might not be needed - platformsCache might do a better job
   val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
 
   lazy val proteins = toBioMap(aprobes, (_: Probe).proteins)
@@ -64,7 +63,7 @@ class AssociationResolver(probeStore: Probes,
    * Look up a single association type for the given set of probes.
    */
   def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
-    import AType._
+    import t.common.shared.AType._
     at match {
       // The type annotation :BBMap is needed on at least one (!) match pattern
       // to make the match statement compile. TODO: research this

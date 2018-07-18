@@ -95,12 +95,14 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     _probes: Array[String]): Array[Association] = {
     implicit val sf = getState.sampleFilter
 
-    val mirnaSources = getOtherServiceState[NetworkState](NetworkState.stateKey)
-      .map(_.mirnaSources).getOrElse(Array())
-
+    val netState = getOtherServiceState[NetworkState](NetworkState.stateKey) 
+    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
+    
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
+        platformsCache,
         b2rKegg, uniprot, chembl, drugBank,
         targetmine, mirnaSources,
+        netState.map(_.targetTable),
         sc, types, _probes).resolve
   }
 }

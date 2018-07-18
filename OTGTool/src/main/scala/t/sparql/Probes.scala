@@ -111,7 +111,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    */
   private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
     val query = s"""$tPrefixes
-       |SELECT DISTINCT ?gl ?pl ?ent ?rs WHERE {
+       |SELECT DISTINCT ?gl ?pl ?ent ?trn WHERE {
        |  GRAPH ?g {
        |    ?p a t:probe; rdfs:label ?pl.
        |    OPTIONAL {

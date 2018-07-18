@@ -34,6 +34,7 @@ import t.sparql.secondary._
 import otg.model.sample.OTGAttribute
 import t.model.sample.Attribute
 import otg.sparql._
+import t.viewer.server.Platforms
 
 object AssociationResolverTest {
 
@@ -66,10 +67,11 @@ class AssociationResolverTest extends TTestSuite {
   val chembl = new ChEMBL()
   val drugBank = new DrugBank()
 
-  def ar(types: Array[AType]) = new AssociationResolver(probeStore,
+  def ar(types: Array[AType]) = new AssociationResolver(probeStore,      
       sampleStore,
+      new t.viewer.server.Platforms(Map()),
       b2rKegg, uniprot, chembl, drugBank,
-      None, Seq(),
+      None, Seq(), None,
       sc, types, probes
       )(SampleFilter())
 

@@ -23,6 +23,7 @@ import t.viewer.client.rpc.NetworkService
 import t.viewer.shared.mirna.MirnaSource
 import t.viewer.shared.TimeoutException
 import t.platform.mirna.MiRDBConverter
+import t.platform.mirna.TargetTable
 
 object NetworkState {
   val stateKey = "network"
@@ -30,6 +31,7 @@ object NetworkState {
 
 class NetworkState {
   var mirnaSources: Array[MirnaSource] = Array()
+  var targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
 }
 
 abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
