@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
+import otgviewer.client.NetworkMenu;
 import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
 import t.common.shared.AType;
@@ -14,7 +15,6 @@ import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.table.TableView.ViewType;
 import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
@@ -92,6 +92,7 @@ public class DualTableView extends TableView {
     });       
   }
   
+  @Override
   public ViewType type() {
     return ViewType.Dual;
   }
@@ -165,25 +166,15 @@ public class DualTableView extends TableView {
   @Override
   protected void setupMenus() {
     super.setupMenus();
-    addAnalysisMenuItem(new MenuItem("Visualize network", () -> {
-      new NetworkVisualizationDialog(screen.resources(), logger)
-          .initWindow(controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward));
-    }));
-
-    MenuItem mi = new MenuItem("Download interaction network (DOT)...", 
-      () -> downloadNetwork(Format.DOT));             
-    addAnalysisMenuItem(mi);
-    
-    mi = new MenuItem("Download interaction network (SIF)...", 
-      () -> downloadNetwork(Format.SIF));       
-    addAnalysisMenuItem(mi);
-    
-    mi = new MenuItem("Download interaction network (Custom)...", 
-      () -> downloadNetwork(Format.Custom));       
-    addAnalysisMenuItem(mi);    
+    topLevelMenus.add(new NetworkMenu(this).menuItem());
   }
   
-  protected void downloadNetwork(Format format) {
+  public void visualizeNetwork() {
+    new NetworkVisualizationDialog(screen.resources(), logger)
+        .initWindow(controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward));
+  }
+
+  public void downloadNetwork(Format format) {
     MatrixServiceAsync matrixService = screen.manager().matrixService();
     Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
     matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(screen) {
