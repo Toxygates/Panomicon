@@ -107,25 +107,29 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Read all platforms. Slow.
+   * Probes will be annotated with entrez and refseq transcript information only.
    */
   private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
     val query = s"""$tPrefixes
-       |SELECT DISTINCT ?gl ?pl ?ent WHERE {
+       |SELECT DISTINCT ?gl ?pl ?ent ?rs WHERE {
        |  GRAPH ?g {
        |    ?p a t:probe; rdfs:label ?pl.
        |    OPTIONAL {
        |      ?p t:entrez ?ent.
+       |      ?p t:refseqTrn ?trn.
        |    }
        |   } . ?g rdfs:label ?gl .
        |}""".stripMargin
 
-    val r = triplestore.mapQuery(query, 30000).map(x => (x("gl"), x("pl"), x.get("ent")))
+    val r = triplestore.mapQuery(query, 30000).map(x => 
+      (x("gl"), x("pl"), x.get("ent"), x.get("trn")))
 
-    //Note that probes might have multiple entrez records
+    //Note that probes might have multiple entrez and refseq annotations.
     val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
       (probeId, probes) <- probes.groupBy(_._2);
-      entrez = Seq() ++ probes.map(_._3).flatten.map(Gene(_));
-      pr = Probe(probeId, genes = entrez, platform = pf))
+      entrez = Seq() ++ probes.flatMap(_._3).map(Gene(_));
+      transcripts = probes.flatMap(_._4);
+      pr = Probe(probeId, genes = entrez, platform = pf, transcripts = transcripts))
       yield (pf, pr)
 
     Map() ++ all.groupBy(_._1).mapValues(_.map(_._2))
