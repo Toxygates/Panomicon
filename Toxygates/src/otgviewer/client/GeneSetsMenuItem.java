@@ -32,13 +32,13 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.components.GeneSetEditor;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
-import t.common.shared.*;
+import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.clustering.ProbeClustering;
 
-public class GeneSetsMenuItem extends Composite {
+public class GeneSetsMenuItem {
 
   protected final Logger logger = SharedUtils.getLogger("GeneSetsMenuItem");
 
