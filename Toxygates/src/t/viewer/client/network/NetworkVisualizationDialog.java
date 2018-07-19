@@ -136,6 +136,8 @@ public class NetworkVisualizationDialog {
     //    var javaOne = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(jsOne);
     //    $wnd.originalNetwork = jsOne;
     //    $wnd.convertedNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(javaOne);
+    //    console
+    //        .log(@t.viewer.client.network.NetworkVisualizationDialog::packNetwork(Lt/viewer/shared/network/Network;)(network));
     $wnd.convertedNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
   }-*/;
 
@@ -203,6 +205,15 @@ public class NetworkVisualizationDialog {
   }-*/;
 
   /**
+   * Converts a Java network to a string by first converting it to a JavaScript
+   * network, then converting it to JSON.
+   */
+  public static native String packNetwork(Network network) /*-{
+    var network = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
+    return JSON.stringify(network);
+  }-*/;
+
+  /**
    * Converts a JavaScript network to a Java network.
    */
   private static native Network convertNetworkToJava(JavaScriptObject network) /*-{
@@ -233,6 +244,11 @@ public class NetworkVisualizationDialog {
   
   return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;)(network.title, javaNodes, javaInteractions);
 }-*/;
+
+  public static native Network unpackNetwork(String packedString) /*-{
+    var network = JSON.parse(packedString);
+    return @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
+  }-*/;
 
   /**
    * Handles the logic for actually saving a network from the visualization dialog. Currently a
