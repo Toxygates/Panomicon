@@ -65,7 +65,7 @@ class TargetTable(val sources: Array[String],
    * Efficient mRNA to miRNA lookup.
    * Probes in the platform must have transcripts populated.
    */
-  def reverseTargets(mRNAs: Iterable[Probe], platform: Iterable[Probe]): Iterable[(Probe, MiRNA)] = {
+  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA)] = {
     val allTrns = mRNAs.flatMap(p => p.transcripts.map(tr => (tr, p)))
     val allTrLookup = allTrns.groupBy(_._1) 
     val allTrKeys = allTrLookup.keySet
@@ -86,7 +86,7 @@ class TargetTable(val sources: Array[String],
     if (fromMirna) {
       ???
     } else {
-      makeMultiMap(reverseTargets(probes, platform).map(x => 
+      makeMultiMap(reverseTargets(probes).map(x => 
         (x._1, DefaultBio(x._2.id, x._2.id, Some("miRDB 5.0")))))
     }
   }

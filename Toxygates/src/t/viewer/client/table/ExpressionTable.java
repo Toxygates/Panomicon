@@ -803,14 +803,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   public void getExpressions() {
-    List<Synthetic> ss = Arrays.asList();
-    getExpressions(ss, false);
+    getExpressions(false);
   }
   
   /**
    * Load data (when there is nothing stored in our server side session)
    */
-  public void getExpressions(List<Synthetic> initSynthColumns, boolean preserveFilters) {
+  public void getExpressions(boolean preserveFilters) {
     setEnabled(false);
     List<ColumnFilter> initFilters = preserveFilters ? lastColumnFilters : 
       new ArrayList<ColumnFilter>();    
@@ -820,7 +819,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         + chosenProbes.length + " probes");
     // load data
     matrixService.loadMatrix(matrixId, chosenColumns, chosenProbes, chosenValueType,
-        initFilters, initSynthColumns, 
+        initFilters, 
         new AsyncCallback<ManagedMatrixInfo>() {
           @Override
           public void onFailure(Throwable caught) {

@@ -110,7 +110,7 @@ class AssociationResolver(probeStore: OTGProbes,
                 val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
                 //TODO filter the platforms properly
                 t.associationLookup(lookedUp, fromMirna,
-                probeStore.platformsAndProbes.flatMap(_._2))
+                  probeStore.platformsAndProbes.flatMap(_._2))
             }
 
         //TODO handle reverse lookup case here

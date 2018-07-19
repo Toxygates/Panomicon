@@ -45,7 +45,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface MatrixService extends ClusteringService<Group, String>, RemoteService {
 
   ManagedMatrixInfo loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
-      List<ColumnFilter> initFilters, List<Synthetic> initSynthetics);
+      List<ColumnFilter> initFilters);
 
   /**
    * Filter data that has already been loaded into the session.

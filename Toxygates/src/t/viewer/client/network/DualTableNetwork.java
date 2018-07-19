@@ -6,15 +6,14 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.view.client.SingleSelectionModel;
-
 import t.common.shared.AType;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.table.AssociationSummary;
 import t.viewer.client.table.ExpressionTable;
-import t.viewer.shared.Synthetic;
 import t.viewer.shared.network.Node;
+
+import com.google.gwt.view.client.SingleSelectionModel;
 
 public class DualTableNetwork implements NetworkViewer {
   private final ExpressionTable mainTable, sideTable;
@@ -150,29 +149,14 @@ public class DualTableNetwork implements NetworkViewer {
         map(a -> a[1]).toArray(String[]::new);
     logger.info("Extracted " + ids.length + " " + sideType);    
     
-    Synthetic.Precomputed countColumn = buildCountColumn(rawData);
-    List<Synthetic> synths = Arrays.asList(countColumn);
-    
-    changeSideTableProbes(ids, synths);
+    changeSideTableProbes(ids);
   }
   
-  protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {
+  protected void changeSideTableProbes(String[] probes) {
     sideTable.probesChanged(probes);
     if (probes.length > 0) {
-      sideTable.getExpressions(synths, true);
+      sideTable.getExpressions(true);
     }
-  }
-  
-  private Synthetic.Precomputed buildCountColumn(String[][] rawData) {
-    Map<String, Double> counts = new HashMap<String, Double>();    
-    //The first row is headers    
-    for (int i = 1; i < rawData.length && i < maxSideRows; i++) {    
-      counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
-    }
-    return new Synthetic.Precomputed("Count", 
-      "Number of times each " + sideType + " appeared", counts,
-      null);
-
   }
   
   /**
