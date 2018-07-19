@@ -32,8 +32,10 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.client.network.NetworkVisualizationDialog;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.network.Network;
 
 /**
  * Storage parsing/serialising code. Some is still spread out in other classes, 
@@ -230,6 +232,18 @@ public class StorageParser {
     return r;
   }
 
+  public List<Network> getNetworks() {
+    List<Network> networks = new ArrayList<Network>();
+    String value = getItem("networks");
+    if (value != null) {
+      String[] splits = value.split("###");
+      for (String packedNetwork : splits) {
+        networks.add(NetworkVisualizationDialog.unpackNetwork(packedNetwork));
+      }
+    }
+    return networks;
+  }
+
   public ItemList getGeneSet() {
     return ItemList.unpack(getItem("geneset"));
   }
@@ -265,6 +279,15 @@ public class StorageParser {
 
   public void storeItemLists(List<ItemList> itemLists) {
     setItem("lists", packItemLists(itemLists, "###"));
+  }
+
+
+  public void storeNetworks(List<Network> networks) {
+    List<String> networkStrings = new ArrayList<String>();
+    for (Network network : networks) {
+      networkStrings.add(NetworkVisualizationDialog.packNetwork(network));
+    }
+    setItem("networks", packList(networkStrings, "###"));
   }
 
   public void storeSampleClass(SampleClass sampleClass) {

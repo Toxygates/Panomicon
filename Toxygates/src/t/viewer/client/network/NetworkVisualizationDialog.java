@@ -208,7 +208,7 @@ public class NetworkVisualizationDialog {
    * Converts a Java network to a string by first converting it to a JavaScript
    * network, then converting it to JSON.
    */
-  private static native String packNetwork(Network network) /*-{
+  public static native String packNetwork(Network network) /*-{
     var network = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
     return JSON.stringify(network);
   }-*/;
@@ -245,7 +245,7 @@ public class NetworkVisualizationDialog {
   return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;)(network.title, javaNodes, javaInteractions);
 }-*/;
 
-  private static native Network unpackNetwork(String packedString) /*-{
+  public static native Network unpackNetwork(String packedString) /*-{
     var network = JSON.parse(packedString);
     return @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
   }-*/;
