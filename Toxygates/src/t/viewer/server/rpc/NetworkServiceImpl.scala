@@ -39,12 +39,20 @@ object NetworkState {
   //Temporary location for this
   def buildCountMap(mat: ManagedMatrix,
     targetTable: TargetTable,
-    platforms: t.viewer.server.Platforms) = {
-    val resolved = platforms.resolve(mat.current.rowKeys.toSeq)
+    platforms: t.viewer.server.Platforms,
+    fromMiRNA: Boolean) = {
+    val lookup = mat.current.rowKeys.toSeq
+
     //TODO filter by species etc
-    val all = platforms.data.toSeq.flatMap(_._2.toSeq)
-    val targets = targetTable.reverseTargets(resolved)
-    targets.groupBy(_._2).map(x => (x._1.id, new JDouble(x._2.size)))
+    if (fromMiRNA) {
+      val all = platforms.data.toSeq.flatMap(_._2.toSeq)
+      val targets = targetTable.targets(lookup.map(MiRNA(_)), all)
+      targets.groupBy(_._2).map(x => (x._1.identifier, new JDouble(x._2.size)))
+    } else {
+      val resolved = platforms.resolve(lookup)
+      val targets = targetTable.reverseTargets(resolved)
+      targets.groupBy(_._2).map(x => (x._1.id, new JDouble(x._2.size)))
+    }
   }
 }
 
@@ -73,7 +81,9 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val matState = getOtherServiceState[MatrixState](MatrixState.stateKey).getOrElse(
         throw new NoDataLoadedException("No MatrixState available"))
     val mat = matState.matrix(sourceMatrixId)
-    val countMap = NetworkState.buildCountMap(mat, getState.targetTable, platforms)
+    val fromMiRNA = false
+    val countMap = NetworkState.buildCountMap(mat, getState.targetTable, platforms,
+        fromMiRNA)
     val countColumn = new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
         new JHMap(mapAsJavaMap(countMap)), null)
   }

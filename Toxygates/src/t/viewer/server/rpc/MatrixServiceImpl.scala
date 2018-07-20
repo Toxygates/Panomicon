@@ -44,6 +44,10 @@ import t.viewer.server.matrix._
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.Format
 import t.viewer.server.network.Serializer
+import t.common.shared.GroupUtils
+import t.model.sample.CoreParameter
+import otg.model.sample.OTGAttribute
+import t.platform.Species
 
 object MatrixServiceImpl {
 
@@ -125,8 +129,14 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       getOtherServiceState[NetworkState](NetworkState.stateKey) match {
         case Some(netstate) =>
           val platforms = t.viewer.server.Platforms(context.probes)
+          val gt = GroupUtils.groupType(groups(0)) //type of first side table group
+          val species = GroupUtils.groupAttribute(groups(0), OTGAttribute.Organism)
+          //TODO perform filtering at initial load, store in netstate
+          val targets = netstate.targetTable.speciesFilter(Species.withName(species))
+          val fromMiRNA = gt == "mRNA"
           val countMap = NetworkState.buildCountMap(getState.matrix("DEFAULT"),
-              netstate.targetTable, platforms)
+              netstate.targetTable, platforms,
+              fromMiRNA)
           val pset = mat.initProbes.toSet
           val filtered = countMap.filter(x => pset.contains(x._1))
           mat.addSynthetic(

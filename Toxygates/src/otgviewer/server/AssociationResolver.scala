@@ -105,7 +105,9 @@ class AssociationResolver(probeStore: OTGProbes,
                 println("Warning: no mirnaTable available, lookups will fail")
                 emptyMMap()
               case Some(t) =>
-                println(s"Lookup from miRNA table of size ${t.size}")
+                //TODO should perform this filtering once and store in matrix state
+                val filtTable = t.speciesFilter(species)
+                println(s"Lookup from miRNA table of size ${filtTable.size}")
                 //TODO unify this lookup with the "aprobes" mechanism
                 val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
                 //TODO filter the platforms properly
