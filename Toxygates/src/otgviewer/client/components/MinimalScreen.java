@@ -315,7 +315,6 @@ public abstract class MinimalScreen implements Screen {
   public void show() {
     screenPanel.forceLayout();
     visible = true;
-    loadState(attributes());
     if (showGuide) {
       showToolbar(guideBar);
     } else {
@@ -366,6 +365,7 @@ public abstract class MinimalScreen implements Screen {
    * 
    * @param toolbar
    */
+  @Override
   public void showToolbar(Widget toolbar) {
     showToolbar(toolbar, toolbar.getOffsetHeight());
   }
@@ -383,6 +383,7 @@ public abstract class MinimalScreen implements Screen {
     deferredResize();
   }
 
+  @Override
   public void hideToolbar(Widget toolbar) {
     toolbar.setVisible(false);
     deferredResize();

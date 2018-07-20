@@ -73,13 +73,26 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     chosenColumns = parser.getChosenColumns(schema(), attributes());
     chosenItemLists = parser.getItemLists();
     chosenGeneSet = parser.getGeneSet();
-    chosenClusteringList = parser.getClusteringLists();    
+    chosenClusteringList = parser.getClusteringLists();
+    ViewType type = preferredViewType();
+    if (type != dataView.type()) {
+      rebuild();
+    }
+
     dataView.columnsChanged(chosenColumns);
     dataView.sampleClassChanged(parser.getSampleClass(attributes()));
     dataView.probesChanged(chosenProbes);  
     geneSetToolbar.geneSetChanged(chosenGeneSet);
 
     geneSetsMenu.itemListsChanged(chosenItemLists);
+  }
+
+  @Override
+  protected void rebuild() {
+    dataView = makeDataView();
+    super.rebuild();
+    logger.info("DataScreen rebuilding to " + preferredViewType());
+    setupMenuItems();
   }
 
   DataScreen(ScreenManager man) {
@@ -255,25 +268,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
    */
   public void reloadDataIfNeeded() {
     dataView.reloadDataIfNeeded();    
-  }
-
-  @Override
-  protected void rebuild() {
-    dataView = makeDataView();
-    super.rebuild();
-    logger.info("DataScreen rebuilding to " + preferredViewType());
-    setupMenuItems();
-    loadState(attributes());
-  }
-
-  @Override
-  public void preShow() {
-    StorageParser parser = getParser();    
-    chosenColumns = parser.getChosenColumns(schema(), attributes());    
-    ViewType type = preferredViewType();
-    if (type != dataView.type()) {
-      rebuild();
-    }
   }
   
   @Override

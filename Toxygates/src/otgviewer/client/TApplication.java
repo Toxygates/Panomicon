@@ -447,8 +447,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
     }
-    s.preShow();
+
     currentScreen = s;
+    currentScreen.loadState(appInfo.attributes());
+
     menuBar.clearItems();
     List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
     allItems.addAll(currentScreen.menuItems());
