@@ -97,12 +97,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   protected Map<String, Screen> screensBykey = new HashMap<String, Screen>();
 
   /**
-   * All currently configured screens. See the Screen class for an explanation of the "configured"
-   * concept.
-   */
-  private Set<String> configuredScreens = new HashSet<String>();
-
-  /**
    * The screen currently being displayed.
    */
   protected Screen currentScreen;
@@ -283,7 +277,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   private void prepareScreens() {
     initScreens(); // Need access to the nav. panel
     showScreenForToken(History.getToken(), true);
-    reconfigureAll(History.getToken());
+    resetWorkflowLinks();
   }
 
   protected static Storage tryGetStorage() {
@@ -508,7 +502,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     screensBykey.put(s.key(), s);    
     screens.add(s);
     s.initGUI();
-    s.tryConfigure(); // give it a chance to register itself as configured
   }
 
   /**
@@ -517,33 +510,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   abstract protected void initScreens();
 
   @Override
-  public void setConfigured(Screen s, boolean configured) {
-    if (configured) {
-      configuredScreens.add(s.key());
-    } else {
-      configuredScreens.remove(s.key());
-    }
-  }
-
-  @Override
-  public void reconfigureAll(String fromToken) {
-    for (Screen s : screens) {
-      if (!s.key().equals(fromToken)) {
-        s.setConfigured(false);
-      }
-    }
-    for (Screen s : screens) {
-      if (!s.key().equals(fromToken)) {
-        s.loadState(appInfo.attributes());
-        s.tryConfigure();
-      }
-    }
+  public void resetWorkflowLinks() {
     addWorkflowLinks(currentScreen);
-  }
-
-  @Override
-  public boolean isConfigured(String key) {
-    return configuredScreens.contains(key);
   }
 
   protected TextResource getAboutHTML() {

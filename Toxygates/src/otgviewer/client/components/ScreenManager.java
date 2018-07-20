@@ -39,26 +39,10 @@ import t.viewer.shared.AppInfo;
 public interface ScreenManager extends ProvidesResize {
 
   /**
-   * Indicate that the given screen is or is not configured.
-   * 
-   * @param s
-   * @param configured
-   */
-  void setConfigured(Screen s, boolean configured);
-
-  /**
    * Invalidate all screens' "configured" state and subsequently attempt their reconfiguration.
    * Precondition: all screens must have been displayed at least once using Screen.show()
    */
-  void reconfigureAll(String fromToken);
-
-  /**
-   * Test whether the given screen is configured.
-   * 
-   * @param key
-   * @return
-   */
-  boolean isConfigured(String key);
+  void resetWorkflowLinks();
 
   /**
    * Try to proceed to a new screen, displaying it instead of the current one.

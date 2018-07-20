@@ -189,35 +189,6 @@ public abstract class MinimalScreen implements Screen {
     return configured;
   }
 
-  /**
-   * For subclass implementations to indicate that they have been configured
-   */
-  @Override
-  public void setConfigured(boolean cfg) {
-    configured = cfg;
-    manager.setConfigured(this, configured);
-  }
-
-  /**
-   * Subclass implementations should use this method to check whether sufficient state to be
-   * "configured" has been loaded. If it has, they should call setConfigured().
-   */
-  @Override
-  public void tryConfigure() {
-    setConfigured(true);
-  }
-
-  /**
-   * Indicate that this screen has finished configuring itself and attempt to display another
-   * screen.
-   * 
-   * @param key
-   */
-  protected void configuredProceed(String key) {
-    setConfigured(true);
-    manager.attemptProceed(key);
-  }
-
   @Override
   @Nullable
   public String additionalNavlinkStyle() {

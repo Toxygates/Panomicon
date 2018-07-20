@@ -260,7 +260,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public boolean enabled() {
-    return manager.isConfigured(ColumnScreen.key);
+    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes());
+    return chosenColumns != null && chosenColumns.size() > 0;
   }
 
   /**
