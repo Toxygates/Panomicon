@@ -40,7 +40,8 @@ object NetworkState {
   def buildCountMap(mat: ManagedMatrix,
     targetTable: TargetTable,
     platforms: t.viewer.server.Platforms) = {
-    val resolved = platforms.resolve(mat.initProbes)
+    val resolved = platforms.resolve(mat.current.rowKeys.toSeq)
+    //TODO filter by species etc
     val all = platforms.data.toSeq.flatMap(_._2.toSeq)
     val targets = targetTable.reverseTargets(resolved)
     targets.groupBy(_._2).map(x => (x._1.id, new JDouble(x._2.size)))
