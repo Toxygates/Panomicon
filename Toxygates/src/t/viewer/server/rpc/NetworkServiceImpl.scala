@@ -45,7 +45,10 @@ object NetworkState {
 
     //TODO filter by species etc
     if (fromMiRNA) {
-      val all = platforms.data.toSeq.flatMap(_._2.toSeq)
+      val gr = mat.currentInfo.columnGroup(0)
+      val sp = t.viewer.server.Conversions.groupSpecies(gr)
+
+      val all = platforms.data(sp.expectedPlatform)
       val targets = targetTable.targets(lookup.map(MiRNA(_)), all)
       targets.groupBy(_._2).map(x => (x._1.identifier, new JDouble(x._2.size)))
     } else {

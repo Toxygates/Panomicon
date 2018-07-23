@@ -130,9 +130,9 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
         case Some(netstate) =>
           val platforms = t.viewer.server.Platforms(context.probes)
           val gt = GroupUtils.groupType(groups(0)) //type of first side table group
-          val species = GroupUtils.groupAttribute(groups(0), OTGAttribute.Organism)
+          val species = groupSpecies(groups(0))
           //TODO perform filtering at initial load, store in netstate
-          val targets = netstate.targetTable.speciesFilter(Species.withName(species))
+          val targets = netstate.targetTable.speciesFilter(species)
           val fromMiRNA = gt == "mRNA"
           val countMap = NetworkState.buildCountMap(getState.matrix("DEFAULT"),
               netstate.targetTable, platforms,
