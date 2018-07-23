@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import otg.model.sample.OTGAttribute;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
