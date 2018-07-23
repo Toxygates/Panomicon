@@ -88,6 +88,11 @@ class TargetTable(val sources: Array[String],
     yield (probe, source)
   }
 
+  final def limitSize[T](data: Iterable[T], limit: Option[Int]) = limit match {
+    case Some(n) => data take n
+    case None => data
+  }
+  
   /**
    * Convenience method.
    * If not from MiRNA, then probes must have transcripts populated.
@@ -95,14 +100,17 @@ class TargetTable(val sources: Array[String],
    */
   def associationLookup(probes: Seq[Probe],
                      fromMirna: Boolean,
-                     platform: Iterable[Probe]): MMap[Probe, DefaultBio] = {
+                     platform: Iterable[Probe],
+                     sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
     if (fromMirna) {
       makeMultiMap(
-          targets(probes.map(p => MiRNA(p.identifier)), platform).map(x =>
-            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some("miRDB 5.0"))))
-          )
+          limitSize(
+            targets(probes.map(p => MiRNA(p.identifier)), platform), 
+          sizeLimit).map(x =>
+            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some("miRDB 5.0")))            
+          ))    
     } else {
-      makeMultiMap(reverseTargets(probes).map(x =>
+      makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
         (x._1, DefaultBio(x._2.id, x._2.id, Some("miRDB 5.0")))))
     }
   }

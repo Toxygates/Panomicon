@@ -96,37 +96,42 @@ class AssociationResolver(probeStore: OTGProbes,
     def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe],
                      fromMirna: Boolean): MMap[Probe, DefaultBio] = {
       val species = asSpecies(sc)
-
+      val sizeLimit = Some(1000)
+      
       try {
-      source.id match {
-        case "http://level-five.jp/t/mapping/mirdb" =>
-            mirnaTable match {
-              case None =>
-                println("Warning: no mirnaTable available, lookups will fail")
-                emptyMMap()
-              case Some(t) =>
-                //TODO should perform this filtering once and store in matrix state
-                val filtTable = t.speciesFilter(species)
-                println(s"Lookup from miRNA table of size ${filtTable.size}")
-                //TODO unify this lookup with the "aprobes" mechanism
-                val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
-                //TODO filter the platforms properly
-                t.associationLookup(lookedUp, fromMirna,
-                  probeStore.platformsAndProbes.flatMap(_._2))
+        source.id match {
+          case "http://level-five.jp/t/mapping/mirdb" =>
+          mirnaTable match {
+            case None =>
+            println("Warning: no mirnaTable available, lookups will fail")
+            emptyMMap()
+            case Some(t) =>
+            //TODO should perform this filtering once and store in matrix state
+            val filtTable = t.speciesFilter(species)
+            println(s"Lookup from miRNA table of size ${filtTable.size}")
+            //TODO unify this lookup with the "aprobes" mechanism
+            val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
+            //TODO filter the platforms properly
+            val data = t.associationLookup(lookedUp, fromMirna,
+              probeStore.platformsAndProbes.flatMap(_._2), sizeLimit)
+            if (Some(data.size) == sizeLimit) {
+              sizeLimitExceeded = true
             }
+            data
+          }
 
-        //TODO handle reverse lookup case here
-        case AppInfoLoader.TARGETMINE_SOURCE =>
-            toBioMap(probes, (_: Probe).genes) combine
-              mirnaResolver.forGenes(probes.flatMap(_.genes))
+          //TODO handle reverse lookup case here
+          case AppInfoLoader.TARGETMINE_SOURCE =>
+          toBioMap(probes, (_: Probe).genes) combine
+          mirnaResolver.forGenes(probes.flatMap(_.genes))
 
-        case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
-      }
+          case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
+        }
 
       } catch {
         case e: Exception =>
-          e.printStackTrace()
-          emptyMMap()
+        e.printStackTrace()
+        emptyMMap()
       }
     }
 
