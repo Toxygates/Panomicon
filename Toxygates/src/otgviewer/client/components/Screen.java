@@ -20,8 +20,11 @@
 
 package otgviewer.client.components;
 
-import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
+
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.Widget;
 
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
@@ -29,9 +32,6 @@ import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
 import t.viewer.client.StorageParser;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.Widget;
 
 public interface Screen {
   default AppInfo appInfo() {
@@ -69,10 +69,6 @@ public interface Screen {
   String additionalNavlinkStyle();
 
   void initGUI();
-
-  void tryConfigure();
-
-  void setConfigured(boolean cfg);
 
   void loadState(AttributeSet attributes);
 

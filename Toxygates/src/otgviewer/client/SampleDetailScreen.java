@@ -169,7 +169,8 @@ public class SampleDetailScreen extends MinimalScreen {
 
   @Override
   public boolean enabled() {
-    return manager.isConfigured(ColumnScreen.key);
+    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes());
+    return chosenColumns != null && chosenColumns.size() > 0;
   }
 
   private void mkTools() {

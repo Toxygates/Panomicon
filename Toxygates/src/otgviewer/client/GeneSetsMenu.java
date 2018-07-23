@@ -24,12 +24,11 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.GeneSetEditor;
+import otgviewer.client.components.MenuItemCaptionSeparator;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.SharedUtils;
@@ -63,25 +62,6 @@ public class GeneSetsMenu {
 
   protected boolean hasPredefinedClustering() {
     return true;
-  }
-
-  /*
-   * Hack GWT-MenuItemSeparator to indicate caption upon the separator
-   */
-  class MenuItemCaptionSeparator extends MenuItemSeparator {
-    public MenuItemCaptionSeparator(String caption) {
-      super();
-      getElement().removeAllChildren();
-
-      Element div = DOM.createDiv();
-      div.setInnerHTML(caption.replaceAll("\n", "<br>"));
-      DOM.appendChild(getElement(), div);
-      setStyleName(div, "menuSeparatorCaption");
-
-      div = DOM.createDiv();
-      DOM.appendChild(getElement(), div);
-      setStyleName(div, "menuSeparatorInner");
-    }
   }
 
   /**

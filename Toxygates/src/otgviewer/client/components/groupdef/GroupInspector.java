@@ -336,14 +336,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   private void updateConfigureStatus(boolean internalTriggered) {
-    if (chosenColumns.size() == 0) {
-      screen.setConfigured(false);
-    } else if (chosenColumns.size() > 0) {
-      screen.setConfigured(true);
-    }
     enableDatasetsIfNeeded(chosenColumns);
     if (internalTriggered) {
-      screen.manager().reconfigureAll(screen.key());
+      screen.manager().resetWorkflowLinks();
     }
   }
 

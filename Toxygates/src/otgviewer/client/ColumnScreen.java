@@ -18,7 +18,6 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -48,7 +47,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   private FilterTools filterTools;
 
   protected Dataset[] chosenDatasets = new Dataset[0];
-  protected List<Group> chosenColumns = new ArrayList<Group>();
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -58,7 +56,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
-    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes);
     List<String> compounds = getParser().getCompounds();
     groupInspector.compoundsChanged(compounds);
     groupInspector.columnsChanged(chosenColumns);
@@ -131,19 +129,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         if (groupInspector.chosenColumns().size() == 0) {
           Window.alert("Please define and activate at least one group.");
         } else {
-          configuredProceed(DataScreen.key);
+            manager.attemptProceed(key);
         }
       });
 
     hp.add(Utils.mkHorizontalPanel(true, b, b2));
     return hp;
-  }
-
-  @Override
-  public void tryConfigure() {
-    if (chosenColumns != null && chosenColumns.size() > 0) {
-      setConfigured(true);
-    }
   }
 
   @Override
