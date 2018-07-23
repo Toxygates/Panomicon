@@ -131,6 +131,7 @@ public class DualTableNetwork implements NetworkViewer {
    * Future: this class could install a listener in the mainTable by itself?
    */
   public void extractSideTableProbes() {
+    logger.info("Begin extract side table probes");
     mappingSummary = mainTable.associationSummary(linkingType);  
     if (sideTable.chosenColumns().isEmpty()) {
       return;
@@ -138,15 +139,13 @@ public class DualTableNetwork implements NetworkViewer {
     
     if (mappingSummary == null) {
       logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");
-      return;
-    }
-    String[][] rawData = mappingSummary.getTable();
-    if (rawData.length < 2) {
+      return;  
+    }    
+    String[] ids = mappingSummary.getIDs(maxSideRows);
+    if (ids.length < 2) {
       logger.info("No secondary probes found in summary - not updating side table probes");
       return;
     }
-    String[] ids = Arrays.stream(rawData).skip(1).limit(maxSideRows).
-        map(a -> a[1]).toArray(String[]::new);
     logger.info("Extracted " + ids.length + " " + sideType);    
     
     changeSideTableProbes(ids);
