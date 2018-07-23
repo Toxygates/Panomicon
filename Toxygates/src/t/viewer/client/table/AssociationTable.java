@@ -242,13 +242,15 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
       }
 
       for (String at : atomicProbesForRow(expressionRow)) {
-        if (a.data().containsKey(at)) {
-          all.addAll(a.data().get(at));
+        Set<AssociationValue> result = a.data().get(at);
+        if (result != null) {
+          all.addAll(result);            
         }
       }
       for (String gi : geneIdsForRow(expressionRow)) {
-        if (a.data().containsKey(gi)) {
-          all.addAll(a.data().get(gi));
+        Set<AssociationValue> result = a.data().get(gi);        
+        if (result != null) {      
+          all.addAll(result);
         }
       }
       return all;
