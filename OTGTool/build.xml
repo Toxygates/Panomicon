@@ -1,4 +1,4 @@
-<project name="AntCompileTest" default="compile" basedir="."
+<project name="OTGTool" default="compile" basedir="."
   xmlns:ivy="antlib:org.apache.ivy.ant">
 
   <!-- mostly from: http://www.scala-lang.org/node/98 -->
@@ -61,6 +61,11 @@
       <exclude name="${scala-test.dir}/**/*.scala" />
     </scalac>
   </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}" failonerror="false" />
+  </target>
+
 
 </project>
 
