@@ -15,7 +15,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.Resources;
 import t.viewer.client.Utils;
 import t.viewer.shared.network.Network;
 
@@ -27,19 +26,22 @@ public class NetworkVisualizationDialog {
       "network-visualization/application.js" };
 
   protected DialogBox dialog;
-
+  DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
+  HTML uiDiv = new HTML();
+  private HandlerRegistration resizeHandler;
   private Logger logger;
+  private Delegate delegate;
 
   private static Boolean injected = false;
 
-  DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
+  public interface Delegate {
+    void saveNetwork(Network network);
+    //List<Network> networks();
+  }
 
-  private HandlerRegistration resizeHandler;
-
-  HTML uiDiv = new HTML();
-
-  public NetworkVisualizationDialog(Resources resources, Logger logger) {
+  public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
     this.logger = logger;
+    this.delegate = delegate;
     dialog = new DialogBox() {
       @Override
       protected void beginDragging(MouseDownEvent event) {
@@ -103,6 +105,7 @@ public class NetworkVisualizationDialog {
    */
   private void setupDockPanel() {
     FlowPanel buttonGroup = new FlowPanel();
+
     Button btnClose = new Button("Close");
     btnClose.addClickHandler(new ClickHandler() {
       @Override
@@ -112,6 +115,17 @@ public class NetworkVisualizationDialog {
       }
     });
     buttonGroup.add(btnClose);
+
+    Button btnSave = new Button("Save and close");
+    btnSave.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        saveCurrentNetwork();
+        NetworkVisualizationDialog.this.dialog.hide();
+        resizeHandler.removeHandler();
+      }
+    });
+    buttonGroup.add(btnSave);
 
     dockPanel.addNorth(uiDiv, getUiHeight());
     dockPanel.addSouth(buttonGroup, 27);
@@ -131,13 +145,6 @@ public class NetworkVisualizationDialog {
    * window.convertedNetwork.
    */
   private static native void convertAndStoreNetwork(Network network) /*-{
-    // Test code for network conversion; will be deleted after implementing network save functionality. 
-    //    var jsOne = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
-    //    var javaOne = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(jsOne);
-    //    $wnd.originalNetwork = jsOne;
-    //    $wnd.convertedNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(javaOne);
-    //    console
-    //        .log(@t.viewer.client.network.NetworkVisualizationDialog::packNetwork(Lt/viewer/shared/network/Network;)(network));
     $wnd.convertedNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
   }-*/;
 
@@ -145,6 +152,11 @@ public class NetworkVisualizationDialog {
    * Converts a Java network to a JavaScript network.
    */
   private static native JavaScriptObject convertNetworkToJS(Network network) /*-{
+    //    var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
+    //    if (jsonString != "") {
+    //      return JSON.parse(jsonString);
+    //    }
+
     var networkName = network.@t.viewer.shared.network.Network::title()();
 
     // Helper function to map a function over every element of a Java list and  
@@ -209,6 +221,11 @@ public class NetworkVisualizationDialog {
    * network, then converting it to JSON.
    */
   public static native String packNetwork(Network network) /*-{
+    var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
+    if (jsonString != "") {
+      return jsonString;
+    }
+
     var network = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
     return JSON.stringify(network);
   }-*/;
@@ -242,7 +259,9 @@ public class NetworkVisualizationDialog {
     javaInteractions.@java.util.ArrayList::add(Ljava/lang/Object;)(javaInteraction);
   });
   
-  return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;)(network.title, javaNodes, javaInteractions);
+  var jsonString = JSON.stringify(network);
+  
+  return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)(network.title, javaNodes, javaInteractions, jsonString);
 }-*/;
 
   public static native Network unpackNetwork(String packedString) /*-{
@@ -251,16 +270,16 @@ public class NetworkVisualizationDialog {
   }-*/;
 
   /**
-   * Handles the logic for actually saving a network from the visualization dialog. Currently a
-   * placeholder implementation for testing.
-   * 
-   * @param network the actual JavaScript object representing a network
-   * @param jsonString
+   * Handles the logic for actually saving a network from the visualization dialog
    */
   public native void saveNetwork(JavaScriptObject network) /*-{
-    console.log("NetworkVisualizationDialog.saveNetwork called");
-    console.log("Stringified network: \"" + JSON.stringify(network) + "\"");
-    $wnd.savedNetwork = network;
+    var javaNetwork = @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
+    var delegate = this.@t.viewer.client.network.NetworkVisualizationDialog::delegate;
+    delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::saveNetwork(Lt/viewer/shared/network/Network;)(javaNetwork);
+  }-*/;
+
+  public native void saveCurrentNetwork() /*-{
+    this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet);
   }-*/;
 
   /**

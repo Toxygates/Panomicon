@@ -281,7 +281,6 @@ public class StorageParser {
     setItem("lists", packItemLists(itemLists, "###"));
   }
 
-
   public void storeNetworks(List<Network> networks) {
     List<String> networkStrings = new ArrayList<String>();
     for (Network network : networks) {

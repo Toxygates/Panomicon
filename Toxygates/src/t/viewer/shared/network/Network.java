@@ -19,15 +19,20 @@ public class Network implements Serializable {
   private List<Interaction> interactions = new ArrayList<Interaction>();
   private List<Node> nodes = new ArrayList<Node>();
   private String title;
+  private String jsonString = "";
   
   Network() {}
   
+  public Network(String title, List<Node> nodes, List<Interaction> interactions) {
+    this(title, nodes, interactions, "");
+  }
+
   public Network(String title,
-                 List<Node> nodes,
-                 List<Interaction> interactions) {
+      List<Node> nodes, List<Interaction> interactions, String jsonString) {
     this.title = title;
     this.nodes = nodes;
     this.interactions = interactions;
+    this.jsonString = jsonString;
   }
   
   public List<Interaction> interactionsFrom(Node from) {
@@ -43,4 +48,8 @@ public class Network implements Serializable {
   public List<Node> nodes() { return nodes; }
   
   public List<Interaction> interactions() { return interactions; }   
+
+  public String jsonString() {
+    return jsonString;
+  }
 }
