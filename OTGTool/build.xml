@@ -4,6 +4,7 @@
   <!-- mostly from: http://www.scala-lang.org/node/98 -->
 
   <property name="sources.dir" value="src" />
+  <property name="lib.dir" value="lib" />
   <property name="scala-source.dir" value="main/scala" />
   <property name="java-source.dir" value="main/java" />
   <property name="scala-test.dir" value="main/test" />
@@ -51,6 +52,11 @@
 
   <target name="compile" depends="init">
     <ivy:cachepath pathid="ivy.classpath" />
+
+    <!-- Needed for bundling/packaging of front-end. Deletes obsolete artifacts. -->
+    <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+      sync="true" type="bundle,jar" />
+
     <mkdir dir="${build.dir}" />
     <scalac srcdir="${sources.dir}"
       destdir="${build.dir}"
@@ -60,6 +66,11 @@
       <include name="${java-source.dir}/**/*.java" />
       <exclude name="${scala-test.dir}/**/*.scala" />
     </scalac>
+    <javac srcdir="${sources.dir}"
+      destdir="${build.dir}"
+      classpathref="full.classpath">
+      <include name="${java-source.dir}/**/*.java" />
+    </javac>
   </target>
 
   <target name="clean">

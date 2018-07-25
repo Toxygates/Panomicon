@@ -66,7 +66,7 @@
     <path refid="gwtpath" />
   </path>
 
-  <target name="scalac" depends="init,resolve">
+  <target name="classfiles" depends="init,resolve">
     <ivy:cachepath pathid="ivy.classpath" />
     <mkdir dir="${build.dir}" />
     <scalac srcdir="${sources.dir}"
@@ -76,8 +76,13 @@
       <include name="**/*.scala" />
       <include name="**/*.java" />
     </scalac>
-  </target>
+    <javac srcdir="${sources.dir}"
+      destdir="${build.dir}"
+      classpathref="full.classpath">
+      <include name="**/*.java" />
+    </javac>
 
+  </target>
 
   <path id="gwtpath">
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
@@ -90,7 +95,7 @@
   <!-- Arguments to gwtc and devmode targets -->
   <property name="gwt.args" value="-style PRETTY -strict" />
 
-  <target name="gwtc" depends="scalac">
+  <target name="gwtc" depends="classfiles">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" maxmemory="1g">
       <classpath>
         <pathelement location="src"/>
@@ -106,7 +111,11 @@
 
   </target>
 
-  <target name="build" depends="gwtc" />
+  <target name="build" depends="gwtc">
+  <!-- Deletes obsolete artifacts. -->
+      <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+        sync="true" type="bundle,jar" />
+  </target>
 
   <target name="compile" depends="build" />
 
