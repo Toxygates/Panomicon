@@ -4,9 +4,7 @@
   <!-- mostly from: http://www.scala-lang.org/node/98 -->
 
   <property name="sources.dir" value="src" />
-  <property name="otgtool.sources.dir" value="../OTGTool/src" />
-  <property name="otgtool.scala-source.dir" value="main/scala" />
-  <property name="otgtool.java-source.dir" value="main/java" />
+  <property name="otgtool.root" value="../OTGTool" />
 
   <property name="test.dir" value="test" />
   <property name="build.dir" value="war/WEB-INF/classes" />
@@ -28,22 +26,22 @@
     <path id="build.classpath">
       <pathelement location="${scala-library.jar}" />
       <pathelement location="${build.dir}" />
-      <pathelement location="../OTGTool/classes" />
+      <pathelement location="${otgtool.root}/classes" />
       <fileset dir="mlib">
         <include name="**/*.jar" />
       </fileset>
-      <fileset dir="../OTGTool/mlib">
+      <fileset dir="${otgtool.root}/mlib">
         <include name="**/*.jar" />
       </fileset>
-      <fileset dir="../OTGTool/lib/jar">
+      <fileset dir="${otgtool.root}/lib/jar">
         <include name="**/*.jar" />
       </fileset>
-      <fileset dir="../OTGTool/lib/bundle">
+      <fileset dir="${otgtool.root}/lib/bundle">
         <include name="**/*.jar" />
       </fileset>
 
       <!-- for t.model.Model gwt.xml -->
-      <pathelement location="../OTGTool/src/main/java" />
+      <pathelement location="${otgtool.root}/src/main/java" />
     </path>
     <taskdef resource="scala/tools/ant/antlib.xml">
       <classpath>
@@ -108,8 +106,9 @@
 
   </target>
 
-  <target name="build" depends="gwtc">
-  </target>
+  <target name="build" depends="gwtc" />
+
+  <target name="compile" depends="build" />
 
   <target name="clean">
     <delete dir="${build.dir}" failonerror="false" />
