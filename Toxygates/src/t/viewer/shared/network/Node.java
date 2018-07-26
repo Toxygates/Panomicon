@@ -23,12 +23,7 @@ public class Node implements Serializable {
   }
 
   public static Node fromRow(ExpressionRow row, String type, ColumnNameProvider columnNames) {
-    // When there's no gene symbol, for some reason row.geneSymbols gives us a singleton
-    // list with an empty string, which we don't want here.
     String[] geneSymbols = row.getGeneSyms();
-    if (geneSymbols.length == 1 && geneSymbols[0] == "") {
-      geneSymbols = new String[0];
-    }
     ExpressionValue[] values = row.getValues();
     Map<String, Double> weights = IntStream.range(0, values.length).boxed()
         .collect(Collectors.toMap(i -> columnNames.get(i), i -> values[i].getValue()));
