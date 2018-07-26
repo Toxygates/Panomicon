@@ -1,18 +1,32 @@
 package otgviewer.client;
 
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
+import java.util.List;
 
-import t.viewer.client.table.DualTableView;
+import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.MenuItemCaptionSeparator;
 import t.viewer.shared.network.Format;
+import t.viewer.shared.network.Network;
 
 public class NetworkMenu {
   private MenuBar root;
   private MenuItem mi;
-  private DualTableView dualTable;
+  private Delegate delegate;
 
-  public NetworkMenu(DualTableView dualTable) {
-    this.dualTable = dualTable;
+  public interface Delegate {
+    void visualizeNetwork();
+
+    void deleteNetwork(Network network);
+
+    void visualizeNetwork(Network network);
+
+    void downloadNetwork(Format format);
+
+    List<Network> networks();
+  }
+
+  public NetworkMenu(Delegate delegate) {
+    this.delegate = delegate;
     root = new MenuBar(true);
     mi = new MenuItem("Network", false, root);
 
@@ -24,10 +38,25 @@ public class NetworkMenu {
   }
 
   private void createMenuItem() {
-    root.addItem(new MenuItem("Visualize network", () -> dualTable.visualizeNetwork()));
-    root.addItem(new MenuItem("Download interaction network (DOT)...", () -> dualTable.downloadNetwork(Format.DOT)));
-    root.addItem(new MenuItem("Download interaction network (SIF)...", () -> dualTable.downloadNetwork(Format.SIF)));
+    root.addItem(new MenuItem("Visualize network", () -> delegate.visualizeNetwork()));
+    root.addSeparator(new MenuItemCaptionSeparator("Stored networks"));
+
+    for (final Network network : delegate.networks()) {
+      MenuBar item = new MenuBar(true);
+
+      item.addItem(new MenuItem("Visualize", false, () -> delegate.visualizeNetwork(network)));
+      item.addItem(new MenuItem("Delete", false, () -> delegate.deleteNetwork(network)));
+      root.addItem(network.title(), item);
+    }
+    root.addSeparator(new MenuItemSeparator());
+    root.addItem(new MenuItem("Download interaction network (DOT)...", () -> delegate.downloadNetwork(Format.DOT)));
+    root.addItem(new MenuItem("Download interaction network (SIF)...", () -> delegate.downloadNetwork(Format.SIF)));
     root.addItem(
-        new MenuItem("Download interaction network (Custom)...", () -> dualTable.downloadNetwork(Format.Custom)));
+        new MenuItem("Download interaction network (Custom)...", () -> delegate.downloadNetwork(Format.Custom)));
+  }
+
+  public void networksChanged() {
+    root.clearItems();
+    createMenuItem();
   }
 }

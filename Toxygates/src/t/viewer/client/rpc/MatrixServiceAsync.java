@@ -20,6 +20,8 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import t.clustering.client.ClusteringServiceAsync;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
@@ -28,8 +30,6 @@ import t.common.shared.sample.Group;
 import t.viewer.shared.*;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
@@ -58,6 +58,7 @@ public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String>
   void prepareHeatmap(String id, List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
       Algorithm algorithm, int featureDecimalDigits, AsyncCallback<String> callback);
 
-  void prepareNetworkDownload(Network network, Format format, AsyncCallback<String> callback);
+  void prepareNetworkDownload(Network network, Format format, String messengerWeightColumn, String microWeightColumn,
+      AsyncCallback<String> callback);
 
 }

@@ -13,7 +13,8 @@ case object IDAndSymbol extends NetworkStyle
 /**
  * Serializes interaction networks and writes them to files.
  */
-class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
+class Serializer(network: Network, messengerWeightColumn: String, microWeightColumn: String,
+    style: NetworkStyle = IDAndSymbol) {
   def writeTo(file: String, format: Format) {
     format match {
       case Format.DOT => writeDOT(file)
@@ -23,12 +24,21 @@ class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
     }
   }
 
+  def nodeWeight(node: Node): Double = {
+    // TODO stop using these magic strings
+    if (node.`type` == "mRNA") {
+      node.weights().get(messengerWeightColumn);
+    } else {
+      node.weights().get(microWeightColumn);
+    }
+  }
+
   def writeCustom(file: String) {
     val w = new PrintWriter(file)
     try {
       w.println("[nodes]")
       for (n <- network.nodes) {
-        w.println(s""" ${n.id} ${n.`type`} ${n.weight} """)
+        w.println(s""" ${n.id} ${n.`type`} ${nodeWeight(n)} """)
       }
 
       w.println("[edges]")
@@ -90,15 +100,15 @@ class Serializer(network: Network, style: NetworkStyle = IDAndSymbol) {
         n.id
   }
 
-  val maxWeight = SafeMath.safeMax(network.nodes.map(_.weight))
-  val minWeight = SafeMath.safeMin(network.nodes.map(_.weight))
+  val maxWeight = SafeMath.safeMax(network.nodes.map(nodeWeight(_)))
+  val minWeight = SafeMath.safeMin(network.nodes.map(nodeWeight(_)))
 
   def color(n: Node) = {
-    if (java.lang.Double.isNaN(n.weight()) ||
-        java.lang.Double.isInfinite(n.weight)) {
+    if (java.lang.Double.isNaN(nodeWeight(n)) ||
+        java.lang.Double.isInfinite(nodeWeight(n))) {
       "white"
     } else {
-      val blue = (127 * (n.weight() - minWeight) / (maxWeight - minWeight)).toInt
+      val blue = (127 * (nodeWeight(n) - minWeight) / (maxWeight - minWeight)).toInt
       "#%02x%02x%02x".format(0, 128 + blue, 128 + blue)
     }
   }

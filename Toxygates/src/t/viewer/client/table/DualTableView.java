@@ -22,11 +22,13 @@ import t.viewer.shared.network.Network;
 /**
  * A DataView that displays an interaction network as two tables.
  */
-public class DualTableView extends TableView {
+public class DualTableView extends TableView implements NetworkMenu.Delegate, NetworkVisualizationDialog.Delegate {
   protected ExpressionTable sideExpressionTable;
+  private NetworkMenu networkMenu;
+
   protected final static String sideMatrix = "SECONDARY";
   final static int MAX_SECONDARY_ROWS = Network.MAX_SIZE;
-  
+  private List<Network> _networks; // Don't access directly; see explanation below
 
   static enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA) {
@@ -89,7 +91,7 @@ public class DualTableView extends TableView {
     });
     sideExpressionTable.selectionModel().addSelectionChangeHandler(e -> {   
       network.onDestSelectionChanged();   
-    });       
+    });
   }
   
   @Override
@@ -166,23 +168,8 @@ public class DualTableView extends TableView {
   @Override
   protected void setupMenus() {
     super.setupMenus();
-    topLevelMenus.add(new NetworkMenu(this).menuItem());
-  }
-  
-  public void visualizeNetwork() {
-    new NetworkVisualizationDialog(screen.resources(), logger)
-        .initWindow(controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward));
-  }
-
-  public void downloadNetwork(Format format) {
-    MatrixServiceAsync matrixService = screen.manager().matrixService();
-    Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
-    matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(screen) {
-      @Override
-      public void handleSuccess(String url) {
-        Utils.displayURL("Your download is ready.", "Download", url);
-      }
-    });
+    networkMenu = new NetworkMenu(this);
+    topLevelMenus.add(networkMenu.menuItem());
   }
   
   //Initial title only - need the constant here since the field won't be initialised
@@ -263,4 +250,62 @@ public class DualTableView extends TableView {
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
   }
   
+  // NetworkMenu.Delegate methods
+  @Override
+  public void visualizeNetwork() {
+    new NetworkVisualizationDialog(this, logger)
+        .initWindow(controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward));
+  }
+
+  @Override
+  public void downloadNetwork(Format format) {
+    MatrixServiceAsync matrixService = screen.manager().matrixService();
+    Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
+    String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
+        : sideExpressionTable.matrixInfo.columnName(0);
+    String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)
+        : sideExpressionTable.matrixInfo.columnName(0);
+    matrixService.prepareNetworkDownload(network, format, messengerFirstColumn, microFirstColumn,
+        new PendingAsyncCallback<String>(screen) {
+      @Override
+      public void handleSuccess(String url) {
+        Utils.displayURL("Your download is ready.", "Download", url);
+      }
+    });
+  }
+
+  /*
+   * The networks need to be available in a superclass constructor, so this 
+   * needs to be initialized when it first gets used, which is earlier than 
+   * DualTableView's constructor code is executed.  
+   */
+  @Override
+  public List<Network> networks() {
+    if (_networks == null) {
+      _networks = screen.getParser().getNetworks();
+    }
+    return _networks;
+  }
+
+  // NetworkVisualizationDialog.Delegate methods
+  @Override
+  public void saveNetwork(Network network) {
+    networks().add(network);
+    screen.getParser().storeNetworks(networks());
+    networkMenu.networksChanged();
+  }
+
+  @Override
+  public void deleteNetwork(Network network) {
+    if (!networks().remove(network)) {
+
+    }
+    screen.getParser().storeNetworks(networks());
+    networkMenu.networksChanged();
+  }
+
+  @Override
+  public void visualizeNetwork(Network network) {
+    new NetworkVisualizationDialog(this, logger).initWindow(network);
+  }
 }
