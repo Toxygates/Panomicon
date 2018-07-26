@@ -32,7 +32,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.network.NetworkVisualizationDialog;
+import t.viewer.client.network.NetworkConversion;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.network.Network;
@@ -238,7 +238,7 @@ public class StorageParser {
     if (value != null) {
       String[] splits = value.split("###");
       for (String packedNetwork : splits) {
-        networks.add(NetworkVisualizationDialog.unpackNetwork(packedNetwork));
+        networks.add(NetworkConversion.unpackNetwork(packedNetwork));
       }
     }
     return networks;
@@ -284,7 +284,7 @@ public class StorageParser {
   public void storeNetworks(List<Network> networks) {
     List<String> networkStrings = new ArrayList<String>();
     for (Network network : networks) {
-      networkStrings.add(NetworkVisualizationDialog.packNetwork(network));
+      networkStrings.add(NetworkConversion.packNetwork(network));
     }
     setItem("networks", packList(networkStrings, "###"));
   }
