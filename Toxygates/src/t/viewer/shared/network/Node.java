@@ -61,9 +61,6 @@ public class Node implements Serializable {
   public String id() { return id; }
   public String type() { return type; }
 
-  public double weight() {
-    return weights.get("Column 1");
-  }
   public Map<String, Double> weights() {
     return weights;
   }

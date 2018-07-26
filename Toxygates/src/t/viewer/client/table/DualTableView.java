@@ -261,7 +261,12 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   public void downloadNetwork(Format format) {
     MatrixServiceAsync matrixService = screen.manager().matrixService();
     Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
-    matrixService.prepareNetworkDownload(network, format, new PendingAsyncCallback<String>(screen) {
+    String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
+        : sideExpressionTable.matrixInfo.columnName(0);
+    String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)
+        : sideExpressionTable.matrixInfo.columnName(0);
+    matrixService.prepareNetworkDownload(network, format, messengerFirstColumn, microFirstColumn,
+        new PendingAsyncCallback<String>(screen) {
       @Override
       public void handleSuccess(String url) {
         Utils.displayURL("Your download is ready.", "Download", url);
