@@ -152,10 +152,10 @@ public class NetworkVisualizationDialog {
    * Converts a Java network to a JavaScript network.
    */
   private static native JavaScriptObject convertNetworkToJS(Network network) /*-{
-    //    var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
-    //    if (jsonString != "") {
-    //      return JSON.parse(jsonString);
-    //    }
+    var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
+    if (jsonString != "") {
+      return @t.viewer.client.network.NetworkVisualizationDialog::reanimateNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)(JSON.parse(jsonString));
+    }
 
     var networkName = network.@t.viewer.shared.network.Network::title()();
 
@@ -267,6 +267,22 @@ public class NetworkVisualizationDialog {
   public static native Network unpackNetwork(String packedString) /*-{
     var network = JSON.parse(packedString);
     return @t.viewer.client.network.NetworkVisualizationDialog::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
+  }-*/;
+
+  /**
+   * Restores the prototypes of a network and its nodes and interactions, ensuring
+   * that they have the appropriate class methods. Used on networks deserialized
+   * from JSON to restore their functionality.
+   */
+  public static native JavaScriptObject reanimateNetwork(JavaScriptObject network) /*-{
+    Object.setPrototypeOf(network, $wnd.makeNetwork().__proto__);
+    network.interactions.forEach(function(interaction) {
+      Object.setPrototypeOf(interaction, $wnd.makeInteraction().__proto__);
+    });
+    network.nodes.forEach(function(node) {
+      Object.setPrototypeOf(node, $wnd.makeNode().__proto__);
+    });
+    return network;
   }-*/;
 
   /**
