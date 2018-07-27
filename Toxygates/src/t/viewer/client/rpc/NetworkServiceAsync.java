@@ -22,7 +22,7 @@ package t.viewer.client.rpc;
 
 import t.common.shared.sample.Group;
 import t.viewer.shared.mirna.MirnaSource;
-import t.viewer.shared.network.NetworkInfo;
+import t.viewer.shared.network.*;
 
 import java.util.List;
 
@@ -34,5 +34,8 @@ public interface NetworkServiceAsync {
 
   void loadNetwork(List<Group> mainColumns, String[] mainProbes, List<Group> sideColumns,
       AsyncCallback<NetworkInfo> callback);
+
+  void prepareNetworkDownload(Network network, Format format, String messengerWeightColumn,
+      String microWeightColumn, AsyncCallback<String> callback);
 
 }

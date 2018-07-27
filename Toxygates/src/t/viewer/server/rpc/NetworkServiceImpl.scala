@@ -34,6 +34,11 @@ import java.util.{HashMap => JHMap, List => JList}
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.NetworkInfo
 import t.common.shared.sample.Group
+import t.viewer.server.CSVHelper
+import t.viewer.shared.network.Network
+import t.viewer.server.network.Serializer
+import t.viewer.shared.network.Format
+import t.viewer.server.Configuration
 
 object NetworkState {
   val stateKey = "network"
@@ -69,12 +74,17 @@ class NetworkState {
 abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
   protected def stateKey = NetworkState.stateKey
   protected def newState = new NetworkState
-
+  var config: Configuration = _
+  
   def mirnaDir = context.config.data.mirnaDir
 
   private def probeStore: Probes = context.probes
   lazy val platforms = t.viewer.server.Platforms(probeStore)
 
+  override def localInit(c: Configuration) {
+    config = c
+  }
+  
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     getState().mirnaSources = sources
@@ -97,6 +107,13 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
                   sideColumns: JList[Group]): NetworkInfo = {
       
     ???
+  }
+
+  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, microWeightColumn: String): String = {
+    val s = new Serializer(network, messengerWeightColumn, microWeightColumn)
+    val file = CSVHelper.filename("toxygates", format.suffix)
+    s.writeTo(s"${config.csvDirectory}/$file", format)
+    s"${config.csvUrlBase}/$file"
   }
 
 }

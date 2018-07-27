@@ -368,11 +368,4 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
     names
 
-  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, microWeightColumn: String): String = {
-    val s = new Serializer(network, messengerWeightColumn, microWeightColumn)
-    val file = CSVHelper.filename("toxygates", format.suffix)
-    s.writeTo(s"${config.csvDirectory}/$file", format)
-    s"${config.csvUrlBase}/$file"
-  }
-
 }
