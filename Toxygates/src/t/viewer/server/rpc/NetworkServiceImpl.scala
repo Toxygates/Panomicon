@@ -29,9 +29,11 @@ import t.sparql.Probes
 import t.viewer.shared.Synthetic
 import scala.collection.JavaConversions._
 import t.platform.mirna._
-import java.util.{ HashMap => JHMap }
 import java.lang.{ Double => JDouble }
+import java.util.{HashMap => JHMap, List => JList} 
 import t.viewer.server.matrix.ManagedMatrix
+import t.viewer.shared.network.NetworkInfo
+import t.common.shared.sample.Group
 
 object NetworkState {
   val stateKey = "network"
@@ -78,8 +80,6 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     getState().mirnaSources = sources
   }
 
-  import java.util.{HashMap => JHMap}
-  import java.lang.{Double => JDouble}
   def buildNetwork(sourceMatrixId: String) {
     val matState = getOtherServiceState[MatrixState](MatrixState.stateKey).getOrElse(
         throw new NoDataLoadedException("No MatrixState available"))
@@ -89,6 +89,14 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
         fromMiRNA)
     val countColumn = new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
         new JHMap(mapAsJavaMap(countMap)), null)
+  }
+  
+  private val mainId = "PRIMARY"
+  private val sideId = "SECONDARY"
+  def loadNetwork(mainColumns: JList[Group], mainProbes: Array[String], 
+                  sideColumns: JList[Group]): NetworkInfo = {
+      
+    ???
   }
 
 }

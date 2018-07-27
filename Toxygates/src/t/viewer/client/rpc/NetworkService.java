@@ -20,8 +20,12 @@
 
 package t.viewer.client.rpc;
 
+import t.common.shared.sample.Group;
 import t.viewer.shared.TimeoutException;
 import t.viewer.shared.mirna.MirnaSource;
+import t.viewer.shared.network.NetworkInfo;
+
+import java.util.List;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -38,5 +42,16 @@ public interface NetworkService extends RemoteService {
    */
   void setMirnaSources(MirnaSource[] sources) throws TimeoutException;
   
+  /**
+   * Load a network.
+   * @param mainColumns Columns for the main table
+   * @param mainProbes Probes to load in the main table (or empty for default set,
+   * follows the same rules as MatrixService.loadMatrix)
+   * @param sideColumns Columns for the side table. Probes will be determined by 
+   *    associations from the main table.
+   * @return Information about the loaded network.
+   */
+  NetworkInfo loadNetwork(List<Group> mainColumns, String[] mainProbes,
+                          List<Group> sideColumns);
   
 }
