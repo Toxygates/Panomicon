@@ -30,7 +30,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   final static int MAX_SECONDARY_ROWS = Network.MAX_SIZE;
   private List<Network> _networks; // Don't access directly; see explanation below
 
-  static enum DualMode {
+  public static enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
@@ -47,8 +47,9 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
       }
     };
     
-    final String mainType, sideType;
-    final AType linkingType;    
+    public final String mainType, sideType;
+    public final AType linkingType;
+
     DualMode(String mainType, String sideType, AType linkingType) {
       this.mainType = mainType;
       this.sideType = sideType;
@@ -121,7 +122,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   protected DualTableNetwork makeNetwork() {
     network = new DualTableNetwork(expressionTable, sideExpressionTable, 
-      mode.mainType, mode.sideType, mode.linkingType, MAX_SECONDARY_ROWS);
+        mode, MAX_SECONDARY_ROWS);
     controller = new NetworkController(network) {
       @Override
       public Map<String, Collection<String>> linkingMap() {

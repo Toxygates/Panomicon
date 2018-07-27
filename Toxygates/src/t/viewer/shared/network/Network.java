@@ -16,6 +16,9 @@ public class Network implements Serializable {
    */
   public static final int MAX_SIZE = 200;
   
+  public static final String mrnaType = "mRNA";
+  public static final String mirnaType = "miRNA";
+
   private List<Interaction> interactions = new ArrayList<Interaction>();
   private List<Node> nodes = new ArrayList<Node>();
   private String title;

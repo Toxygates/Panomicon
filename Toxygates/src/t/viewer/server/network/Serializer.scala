@@ -26,7 +26,7 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
 
   def nodeWeight(node: Node): Double = {
     // TODO stop using these magic strings
-    if (node.`type` == "mRNA") {
+    if (node.`type` == Network.mrnaType) {
       node.weights().get(messengerWeightColumn);
     } else {
       node.weights().get(microWeightColumn);
@@ -115,8 +115,8 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
 
   def attributes(n: Node) = {
     n.`type` match {
-      case "miRNA" => s"""color=blue, fillcolor="${color(n)}" """
-      case "mRNA" => s"""color=green, fillcolor="${color(n)}" """
+      case Network.mirnaType => s"""color=blue, fillcolor="${color(n)}" """
+      case Network.mrnaType => s"""color=green, fillcolor="${color(n)}" """
       case _ => ""
     }
   }

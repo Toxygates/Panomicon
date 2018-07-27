@@ -25,10 +25,6 @@ public interface NetworkViewer {
   
   @Nullable String getSelectedDestNode();
   
-  String getSourceType();
-  
-  String getDestType();
-  
   void onSourceSelectionChanged();
   
   void onDestSelectionChanged();

@@ -8,19 +8,19 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.view.client.SingleSelectionModel;
 
-import t.common.shared.AType;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.table.AssociationSummary;
+import t.viewer.client.table.DualTableView.DualMode;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.shared.Synthetic;
+import t.viewer.shared.network.Network;
 import t.viewer.shared.network.Node;
 
 public class DualTableNetwork implements NetworkViewer {
   private final ExpressionTable mainTable, sideTable;
   
-  private final String mainType, sideType;
-  private final AType linkingType;
+  private final DualMode dualMode;
   
   private final int maxSideRows;
   
@@ -31,30 +31,27 @@ public class DualTableNetwork implements NetworkViewer {
    * 
    * @param mainTable The table that shows the main nodes (controlling the network display)
    * @param sideTable The table that shows the secondary nodes.
-   * @param mainType The type of the main/source nodes, e.g. mRNA
-   * @param sideType The type of the side/destination nodes, e.g. miRNA
-   * @param linkingType The association type that contains the mapping from main to side nodes.
+   * @param dualMode The mode of the network (encodes information about the types of nodes in each
+   *        table, and how they are linked
    */
   public DualTableNetwork(ExpressionTable mainTable, ExpressionTable sideTable,                          
-                          String mainType, String sideType, 
-                          AType linkingType,
-                          int maxSideRows) {
+      DualMode dualMode, int maxSideRows) {
     this.mainTable = mainTable;
     this.sideTable = sideTable;
-    this.mainType = mainType;
-    this.sideType = sideType;
-    this.linkingType = linkingType;
+    this.dualMode = dualMode;
     this.maxSideRows = maxSideRows;
   }
   
   @Override
   public List<Node> getSourceNodes() {
-    return buildNodes(mainType, mainTable.getDisplayedRows(), index -> mainTable.matrixInfo.columnName((index)));
+    String type = (dualMode == DualMode.Forward) ? Network.mrnaType : Network.mirnaType; 
+    return buildNodes(type, mainTable.getDisplayedRows(), index -> mainTable.matrixInfo.columnName((index)));
   }
   
   @Override
   public List<Node> getDestNodes() {
-    return buildNodes(sideType, sideTable.getDisplayedRows(), index -> sideTable.matrixInfo.columnName((index)));
+    String type = (dualMode == DualMode.Forward) ? Network.mirnaType : Network.mrnaType;
+    return buildNodes(type, sideTable.getDisplayedRows(), index -> sideTable.matrixInfo.columnName((index)));
   }
   
   @Nullable 
@@ -94,16 +91,6 @@ public class DualTableNetwork implements NetworkViewer {
     setHighlightedSourceNodes(getIndicatedRows(getSelectedDestNode(), false));    
   }
   
-  @Override
-  public String getSourceType() {
-    return mainType;
-  }
-  
-  @Override
-  public String getDestType() {
-    return sideType;
-  }
-  
   protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {
     Map<String, Collection<String>> lookup = fromMain ? linkingMap() : mappingSummary.getReverseMap();    
     if (selected != null) {   
@@ -132,7 +119,7 @@ public class DualTableNetwork implements NetworkViewer {
    * Future: this class could install a listener in the mainTable by itself?
    */
   public void extractSideTableProbes() {
-    mappingSummary = mainTable.associationSummary(linkingType);  
+    mappingSummary = mainTable.associationSummary(dualMode.linkingType);
     if (sideTable.chosenColumns().isEmpty()) {
       return;
     }
@@ -148,7 +135,7 @@ public class DualTableNetwork implements NetworkViewer {
     }
     String[] ids = Arrays.stream(rawData).skip(1).limit(maxSideRows).
         map(a -> a[1]).toArray(String[]::new);
-    logger.info("Extracted " + ids.length + " " + sideType);    
+    logger.info("Extracted " + ids.length + " " + dualMode.sideType);
     
     Synthetic.Precomputed countColumn = buildCountColumn(rawData);
     List<Synthetic> synths = Arrays.asList(countColumn);
@@ -170,7 +157,7 @@ public class DualTableNetwork implements NetworkViewer {
       counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
     }
     return new Synthetic.Precomputed("Count", 
-      "Number of times each " + sideType + " appeared", counts,
+      "Number of times each " + dualMode.sideType + " appeared", counts,
       null);
 
   }
