@@ -44,7 +44,6 @@ import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.client.ImageClickCell;
-import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -222,9 +221,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     logger.info("Matrix " + matrixId + ":" + msg);
   }
   
-  private void logMatrix(Level level, String msg) {
-    logger.log(level, "Matrix " + matrixId + ":" + msg);
-  }
+  // private void logMatrix(Level level, String msg) {
+  // logger.log(level, "Matrix " + matrixId + ":" + msg);
+  // }
   
   private void logMatrix(Level level, String msg, Throwable throwable) {
     logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
@@ -481,23 +480,25 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       if (clickedCol instanceof ExpressionColumn) {
         ExpressionColumn ec = (ExpressionColumn) clickedCol;
         editColumnFilter(ec.matrixColumn());
-      } else if (clickedCol instanceof AssociationTable.AssociationColumn){
-        displayColumnSummary((AssociationColumn) clickedCol);
+      } else if (clickedCol instanceof AssociationTable.AssociationColumn) {
+        @SuppressWarnings("unchecked")
+        AssociationColumn ac = (AssociationColumn) clickedCol;
+        displayColumnSummary(ac);
       }
     }
     // If we return true, the click will not be passed on to the other widgets
     return shouldFilterClick;
   }
   
-  /**
-   * Display a summary of a column.
-   */
-  private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
-    AssociationSummary<ExpressionRow> summary = 
-        new AssociationSummary<ExpressionRow>(col, grid.getVisibleItems());
-    StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
-      500, 500);
-  }
+  // /**
+  // * Display a summary of a column.
+  // */
+  // private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
+  // AssociationSummary<ExpressionRow> summary =
+  // new AssociationSummary<ExpressionRow>(col, grid.getVisibleItems());
+  // StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
+  // 500, 500);
+  // }
   
   protected void editColumnFilter(int column) {
     ColumnFilter filt = matrixInfo.columnFilter(column);    
