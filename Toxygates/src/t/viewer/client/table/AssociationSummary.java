@@ -3,6 +3,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.shared.AssociationValue;
 
@@ -37,43 +39,71 @@ public class AssociationSummary<T extends ExpressionRow> {
       full.put(row.getProbe(), values.stream().map(v ->
         v.formalIdentifier()).collect(Collectors.toList()));
     }    
-    for (AssociationValue key: unique) {
-      HistogramEntry he = countItem(key);
-      sortedByCount.add(he);
-    }
+    sortedByCount = countItems();
+    
     Collections.sort(sortedByCount, new Comparator<HistogramEntry>() {
-
       //Sort in descending order by count
       @Override
       public int compare(HistogramEntry o1, HistogramEntry o2) {
         return o2.count - o1.count;
-      }
-      
+      }      
     });
   }
   
-  HistogramEntry countItem(AssociationValue item) {
+  private List<HistogramEntry> countItems() {    
+    Collections.sort(data, new Comparator<AssociationValue>() {
+      //Note, this does not correspond exactly to equals/hashcode for AssociationValue
+      @Override
+      public int compare(AssociationValue o1, AssociationValue o2) {        
+        return o1.formalIdentifier().compareTo(o2.formalIdentifier());
+      }      
+    });
+    
+    List<HistogramEntry> r = new ArrayList<HistogramEntry>();
     int count = 0;
-    for (AssociationValue key: data) {
-      if (key.equals(item)) {
+    AssociationValue last = null;
+    for (AssociationValue v: data) {
+      if (last == null || !v.formalIdentifier().equals(last.formalIdentifier())) {
+        if (last != null) {
+          r.add(new HistogramEntry(last, count));
+        }
+        count = 1;
+        last = v;
+      } else {
         count += 1;
-      }
+      }      
     }
-    return new HistogramEntry(item, count);    
+    return r;
+  }
+  
+  public String[][] getTable() {
+    return getTable(null);
   }
   
   /**
    * Histogram summary table.
    * @return
    */
-  public String[][] getTable() {
-    String[][] r = new String[sortedByCount.size() + 1][3];
+  public String[][] getTable(@Nullable Integer limit) {
+    int useSize = ((limit != null && limit < sortedByCount.size()) ? limit : sortedByCount.size());
+    
+    String[][] r = new String[useSize + 1][3];
     r[0] = new String[] { "Title", "ID", "Count" };
-    for (int i = 0; i < sortedByCount.size(); i++) {
+    for (int i = 0; i < useSize; i++) {
       HistogramEntry he = sortedByCount.get(i);
       r[i + 1][0] = he.entry.title();
       r[i + 1][1] = he.entry.formalIdentifier();
       r[i + 1][2] = he.count + "";
+    }
+    return r;
+  }
+  
+  public String[] getIDs(@Nullable Integer limit) {
+    int useSize = ((limit != null && limit < sortedByCount.size()) ? limit : sortedByCount.size());
+    String[] r = new String[useSize + 1];
+    for (int i = 0; i < useSize; i++) {
+      HistogramEntry he = sortedByCount.get(i);      
+      r[i + 1] = he.entry.formalIdentifier();
     }
     return r;
   }

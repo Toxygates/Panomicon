@@ -44,6 +44,10 @@ import t.viewer.server.matrix._
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.Format
 import t.viewer.server.network.Serializer
+import t.common.shared.GroupUtils
+import t.model.sample.CoreParameter
+import otg.model.sample.OTGAttribute
+import t.platform.Species
 
 object MatrixServiceImpl {
 
@@ -56,6 +60,10 @@ object MatrixServiceImpl {
     }
     orthologs.get
   }
+}
+
+object MatrixState {
+  def stateKey = "matrix"
 }
 
 class MatrixState {
@@ -103,20 +111,41 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     mcontext = context.matrix
   }
 
-  protected def stateKey = "matrix"
+  protected def stateKey = MatrixState.stateKey
   protected def newState = new MatrixState
 
   def loadMatrix(id: String, groups: JList[Group], probes: Array[String],
     typ: ValueType,
-    initFilters: JList[ColumnFilter], initSynthetics: JList[Synthetic]): ManagedMatrixInfo = {
+    initFilters: JList[ColumnFilter]): ManagedMatrixInfo = {
 
     getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
           groups, probes, typ, false))
     val mat = getState.matrix(id)
-    for (s <- initSynthetics) {
-      mat.addSynthetic(s)
+
+    //Temporary location for this
+    if (id == "SECONDARY") {
+      import java.util.{HashMap => JHMap}
+      getOtherServiceState[NetworkState](NetworkState.stateKey) match {
+        case Some(netstate) =>
+          val platforms = t.viewer.server.Platforms(context.probes)
+          val gt = GroupUtils.groupType(groups(0)) //type of first side table group
+          val species = groupSpecies(groups(0))
+          //TODO perform filtering at initial load, store in netstate
+          val targets = netstate.targetTable.speciesFilter(species)
+          val fromMiRNA = gt == "mRNA"
+          val countMap = NetworkState.buildCountMap(getState.matrix("DEFAULT"),
+              netstate.targetTable, platforms,
+              fromMiRNA)
+          val pset = mat.initProbes.toSet
+          val filtered = countMap.filter(x => pset.contains(x._1))
+          mat.addSynthetic(
+              new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
+          new JHMap(mapAsJavaMap(filtered)), null))
+        case _ =>
+      }
     }
+
     if (!initFilters.isEmpty) {
       mat.setFilters(initFilters)
     }
@@ -338,12 +367,5 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
     names
-
-  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, microWeightColumn: String): String = {
-    val s = new Serializer(network, messengerWeightColumn, microWeightColumn)
-    val file = CSVHelper.filename("toxygates", format.suffix)
-    s.writeTo(s"${config.csvDirectory}/$file", format)
-    s"${config.csvUrlBase}/$file"
-  }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,32 +20,37 @@
 
 package otgviewer.server
 
-import t._
-import t.platform.Species._
 import otg.sparql._
+import t._
 import t.common.shared.AType
+import t.db.DefaultBio
 import t.model.SampleClass
 import t.platform.Probe
+import t.platform.Species._
+import t.platform.mirna.TargetTable
 import t.sparql._
 import t.sparql.secondary._
 import t.sparql.toBioMap
+import t.viewer.server.Conversions._
 import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.TargetmineColumns
 import t.viewer.shared.mirna.MirnaSource
-import t.db.DefaultBio
-import t.viewer.server.Conversions._
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
+ * TODO: this is a little complex, should be split up or arranged differently
  */
 class AssociationResolver(probeStore: OTGProbes,
     sampleStore: OTGSamples,
+    platforms: t.viewer.server.Platforms,
     b2rKegg: B2RKegg,
     uniprot: Uniprot,
     chembl: ChEMBL,
     drugBank: DrugBank,
     targetmine: Option[IntermineConnector],
+    //TODO stop passing this in when all miRNA sources are unified in the TargetTable
     mirnaSources: Seq[MirnaSource],
+    mirnaTable: Option[TargetTable],
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String])(implicit sf: SampleFilter) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, mirnaSources, sc, types, _probes) {
@@ -91,34 +96,42 @@ class AssociationResolver(probeStore: OTGProbes,
     def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe],
                      fromMirna: Boolean): MMap[Probe, DefaultBio] = {
       val species = asSpecies(sc)
-
+      val sizeLimit = Some(1000)
+      
       try {
-      source.id match {
-        case "http://level-five.jp/t/mapping/mirdb" =>
-          val mirnaLimit = t.viewer.shared.network.Network.MAX_SIZE
-          val r = probeStore.mirnaAssociations(probes,
-            if (source.limit == null) None else Some(source.limit),
-            fromMirna,
-            Some(mirnaLimit),
-            Some(species))
-
-          if (r.valuesIterator.flatten.size >= mirnaLimit) {
-            sizeLimitExceeded = true
+        source.id match {
+          case "http://level-five.jp/t/mapping/mirdb" =>
+          mirnaTable match {
+            case None =>
+            println("Warning: no mirnaTable available, lookups will fail")
+            emptyMMap()
+            case Some(t) =>
+            //TODO should perform this filtering once and store in matrix state
+            val filtTable = t.speciesFilter(species)
+            println(s"Lookup from miRNA table of size ${filtTable.size}")
+            //TODO unify this lookup with the "aprobes" mechanism
+            val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
+            //TODO filter the platforms properly
+            val data = t.associationLookup(lookedUp, fromMirna,
+              probeStore.platformsAndProbes.flatMap(_._2), sizeLimit)
+            if (Some(data.size) == sizeLimit) {
+              sizeLimitExceeded = true
+            }
+            data
           }
-          r
 
-        //TODO handle reverse lookup case here
-        case AppInfoLoader.TARGETMINE_SOURCE =>
-            toBioMap(probes, (_: Probe).genes) combine
-              mirnaResolver.forGenes(probes.flatMap(_.genes))
+          //TODO handle reverse lookup case here
+          case AppInfoLoader.TARGETMINE_SOURCE =>
+          toBioMap(probes, (_: Probe).genes) combine
+          mirnaResolver.forGenes(probes.flatMap(_.genes))
 
-        case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
-      }
+          case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
+        }
 
       } catch {
         case e: Exception =>
-          e.printStackTrace()
-          emptyMMap()
+        e.printStackTrace()
+        emptyMMap()
       }
     }
 
@@ -143,7 +156,7 @@ class AssociationResolver(probeStore: OTGProbes,
     lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
 
   override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
-    import AType._
+    import t.common.shared.AType._
     at match {
       case GOMF       => probeStore.mfGoTerms(probes)
       case GOBP       => probeStore.bpGoTerms(probes)

@@ -14,7 +14,7 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.network.*;
-import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.NetworkServiceAsync;
 import t.viewer.shared.Association;
 import t.viewer.shared.network.Format;
 import t.viewer.shared.network.Network;
@@ -259,13 +259,13 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void downloadNetwork(Format format) {
-    MatrixServiceAsync matrixService = screen.manager().matrixService();
+    NetworkServiceAsync networkService = screen.manager().networkService();
     Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
     String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
         : sideExpressionTable.matrixInfo.columnName(0);
     String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)
         : sideExpressionTable.matrixInfo.columnName(0);
-    matrixService.prepareNetworkDownload(network, format, messengerFirstColumn, microFirstColumn,
+    networkService.prepareNetworkDownload(network, format, messengerFirstColumn, microFirstColumn,
         new PendingAsyncCallback<String>(screen) {
       @Override
       public void handleSuccess(String url) {

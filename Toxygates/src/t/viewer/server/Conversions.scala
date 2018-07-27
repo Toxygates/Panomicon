@@ -35,6 +35,8 @@ import t.db.{ExprValue => TExprValue}
 import t.platform.Species
 import otg.model.sample.OTGAttribute
 import t.viewer.shared.AssociationValue
+import t.common.shared.GroupUtils
+import t.common.shared.sample.Group
 
 object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
@@ -83,5 +85,8 @@ object Conversions {
 
   def asJDouble(x: Option[Double]): java.lang.Double =
     x.map(new java.lang.Double(_)).getOrElse(null)
+
+  def groupSpecies(g: Group) =
+    Species.withName(GroupUtils.groupAttribute(g, OTGAttribute.Organism))
 
 }

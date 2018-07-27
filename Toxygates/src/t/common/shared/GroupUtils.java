@@ -18,7 +18,8 @@
 
 package t.common.shared;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import t.common.shared.sample.*;
@@ -94,5 +95,5 @@ public class GroupUtils {
   
   public static String groupType(Group g) {
     return groupAttribute(g, CoreParameter.Type);    
-  }
+  }  
 }

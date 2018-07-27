@@ -23,14 +23,12 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
-  var homologene: B2RHomologene = _
   var targetmine: Option[IntermineConnector] = None
 
   override def localInit(c: Configuration) {
     super.localInit(c)
     chembl = new ChEMBL()
     drugBank = new DrugBank()
-    homologene = new B2RHomologene()
 
     val mines = new Intermines(c.intermineInstances)
     mines.byTitle.get("TargetMine") match {
@@ -95,12 +93,14 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     _probes: Array[String]): Array[Association] = {
     implicit val sf = getState.sampleFilter
 
-    val mirnaSources = getOtherServiceState[NetworkState](NetworkState.stateKey)
-      .map(_.mirnaSources).getOrElse(Array())
+    val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
+    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
 
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
+        platformsCache,
         b2rKegg, uniprot, chembl, drugBank,
         targetmine, mirnaSources,
+        netState.map(_.targetTable),
         sc, types, _probes).resolve
   }
 }

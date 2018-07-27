@@ -35,17 +35,19 @@ object Probe {
 //TODO reconsider which members should be standard for a T application in general
 //Most of these are used by Toxygates, but not by Tritigate
 case class Probe(val identifier: String, override val name: String = "",
+  //Gene titles
   val titles: Iterable[String] = Seq(),
   val proteins: Iterable[Protein] = Seq(),
   val genes: Iterable[Gene] = Seq(),
   val symbols: Iterable[Gene] = Seq(),
+  val transcripts: Iterable[RefSeq] = Seq(),
   val platform: String = "") extends StoredBioObject[Probe] {
 
   def symbolStrings = symbols.map(_.symbol)
 
   //GenBioObject overrides hashCode
   override def equals(other: Any): Boolean = other match {
-    case Probe(id, _, _, _, _, _, _) => id == identifier
+    case Probe(id, _, _, _, _, _, _, _) => id == identifier
     case _                           => false
   }
 

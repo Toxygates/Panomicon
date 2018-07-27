@@ -20,12 +20,24 @@
 
 package t.viewer.client.rpc;
 
+import java.util.List;
+
+import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
 import t.viewer.shared.mirna.MirnaSource;
+import t.viewer.shared.network.*;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface NetworkServiceAsync {
 
   void setMirnaSources(MirnaSource[] sources, AsyncCallback<Void> callback);
+
+  void loadNetwork(List<Group> mainColumns, String[] mainProbes, List<Group> sideColumns,
+      ValueType typ,      
+      AsyncCallback<NetworkInfo> callback);
+
+  void prepareNetworkDownload(Network network, Format format, String messengerWeightColumn,
+      String microWeightColumn, AsyncCallback<String> callback);
 
 }
