@@ -20,12 +20,13 @@
 
 package t.viewer.client.rpc;
 
+import java.util.List;
+
+import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.viewer.shared.TimeoutException;
 import t.viewer.shared.mirna.MirnaSource;
 import t.viewer.shared.network.*;
-
-import java.util.List;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -52,7 +53,7 @@ public interface NetworkService extends RemoteService {
    * @return Information about the loaded network.
    */
   NetworkInfo loadNetwork(List<Group> mainColumns, String[] mainProbes,
-                          List<Group> sideColumns);
+                          List<Group> sideColumns, ValueType typ);
   
 
   /**

@@ -30,7 +30,7 @@ import t.viewer.shared.Synthetic
 import scala.collection.JavaConversions._
 import t.platform.mirna._
 import java.lang.{ Double => JDouble }
-import java.util.{HashMap => JHMap, List => JList} 
+import java.util.{HashMap => JHMap, List => JList}
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.NetworkInfo
 import t.common.shared.sample.Group
@@ -39,6 +39,8 @@ import t.viewer.shared.network.Network
 import t.viewer.server.network.Serializer
 import t.viewer.shared.network.Format
 import t.viewer.server.Configuration
+import t.viewer.server.matrix.MatrixController
+import t.common.shared.ValueType
 
 object NetworkState {
   val stateKey = "network"
@@ -66,7 +68,7 @@ object NetworkState {
   }
 }
 
-class NetworkState {
+class NetworkState extends MatrixState {
   var mirnaSources: Array[MirnaSource] = Array()
   var targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
 }
@@ -75,7 +77,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   protected def stateKey = NetworkState.stateKey
   protected def newState = new NetworkState
   var config: Configuration = _
-  
+
   def mirnaDir = context.config.data.mirnaDir
 
   private def probeStore: Probes = context.probes
@@ -84,7 +86,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   override def localInit(c: Configuration) {
     config = c
   }
-  
+
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     getState().mirnaSources = sources
@@ -100,13 +102,24 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val countColumn = new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
         new JHMap(mapAsJavaMap(countMap)), null)
   }
-  
+
   private val mainId = "PRIMARY"
   private val sideId = "SECONDARY"
-  def loadNetwork(mainColumns: JList[Group], mainProbes: Array[String], 
-                  sideColumns: JList[Group]): NetworkInfo = {
-      
-    ???
+  def loadNetwork(mainColumns: JList[Group], mainProbes: Array[String],
+                  sideColumns: JList[Group], typ: ValueType): NetworkInfo = {
+
+    //Orthologous mode is not supported for network loading
+    getState.controllers += (mainId ->
+      MatrixController(context, () => List(), mainColumns, mainProbes, typ, false))
+    val mainMat = getState.matrix(mainId)
+
+    getState.controllers += (sideId ->
+      MatrixController(context, () => List(), sideColumns, List(), typ, false))
+    val sideMat = getState.matrix(sideId)
+
+    //To do: init filters, count columns, ...
+    
+    new NetworkInfo(mainMat.info, sideMat.info)
   }
 
   def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, microWeightColumn: String): String = {
