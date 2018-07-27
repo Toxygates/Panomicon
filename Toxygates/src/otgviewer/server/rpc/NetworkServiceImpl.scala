@@ -22,11 +22,6 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       None
   }
 
-  override def localInit(config: Configuration) {
-    super.localInit(config)
-    dataTable
-  }
-
   override def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     super.setMirnaSources(sources)
     dataTable match {
