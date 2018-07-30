@@ -16,6 +16,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InputDialog;
 import t.viewer.shared.network.Network;
 
 public class NetworkVisualizationDialog {
@@ -25,7 +27,7 @@ public class NetworkVisualizationDialog {
       "network-visualization/utils.js", "network-visualization/vis.min.js",
       "network-visualization/application.js" };
 
-  protected DialogBox dialog;
+  protected DialogBox mainDialog, networkNameDialog;
   DockLayoutPanel dockPanel = new DockLayoutPanel(Unit.PX);
   HTML uiDiv = new HTML();
   private HandlerRegistration resizeHandler;
@@ -42,7 +44,7 @@ public class NetworkVisualizationDialog {
   public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
     this.logger = logger;
     this.delegate = delegate;
-    dialog = new DialogBox() {
+    mainDialog = new DialogBox() {
       @Override
       protected void beginDragging(MouseDownEvent event) {
         event.preventDefault();
@@ -66,7 +68,7 @@ public class NetworkVisualizationDialog {
       }
     });
 
-    dialog.show();
+    mainDialog.show();
   }
 
   private void injectOnce(final Runnable callback) {
@@ -87,16 +89,16 @@ public class NetworkVisualizationDialog {
   }
 
   private void createPanel() {
-    dialog.setText("Network visualization");
+    mainDialog.setText("Network visualization");
 
     dockPanel.setPixelSize(mainWidth(), mainHeight());
 
     resizeHandler = Window.addResizeHandler((ResizeEvent event) -> {
       dockPanel.setPixelSize(mainWidth(), mainHeight());
     });
-    dialog.setWidget(dockPanel);
-    dialog.center();
-    dialog.setModal(true);
+    mainDialog.setWidget(dockPanel);
+    mainDialog.center();
+    mainDialog.setModal(true);
   }
 
   /**
@@ -110,7 +112,7 @@ public class NetworkVisualizationDialog {
     btnClose.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        NetworkVisualizationDialog.this.dialog.hide();
+        mainDialog.hide();
         resizeHandler.removeHandler();
       }
     });
@@ -120,9 +122,7 @@ public class NetworkVisualizationDialog {
     btnSave.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        saveCurrentNetwork();
-        NetworkVisualizationDialog.this.dialog.hide();
-        resizeHandler.removeHandler();
+        showNetworkNameDialog(currentNetworkName());
       }
     });
     buttonGroup.add(btnSave);
@@ -134,6 +134,23 @@ public class NetworkVisualizationDialog {
     displayPanel.setStyleName("visualization");
     displayPanel.getElement().setId("display");
     dockPanel.add(displayPanel);
+  }
+
+  private void showNetworkNameDialog(String title) {
+    InputDialog entry = new InputDialog("Please enter a name for the network.", title) {
+      @Override
+      protected void onChange(String value) {
+        if (value != "") { // Empty string means OK button with blank text input
+          networkNameDialog.hide();
+          if (value != null) { // Cancel button
+            saveCurrentNetwork(value);
+            mainDialog.hide();
+            resizeHandler.removeHandler();
+          }
+        }
+      }
+    };
+    networkNameDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
   }
 
   private native int getUiHeight() /*-{
@@ -157,7 +174,12 @@ public class NetworkVisualizationDialog {
     delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::saveNetwork(Lt/viewer/shared/network/Network;)(javaNetwork);
   }-*/;
 
-  public native void saveCurrentNetwork() /*-{
+  public static native String currentNetworkName() /*-{
+    return $wnd.toxyNet.title;
+  }-*/;
+
+  public native void saveCurrentNetwork(String title) /*-{
+    $wnd.toxyNet.title = title;
     this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet);
   }-*/;
 
