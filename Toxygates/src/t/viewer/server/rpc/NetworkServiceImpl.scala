@@ -41,6 +41,8 @@ import t.viewer.shared.network.Format
 import t.viewer.server.Configuration
 import t.viewer.server.matrix.MatrixController
 import t.common.shared.ValueType
+import t.common.shared.GroupUtils
+import t.viewer.server.Conversions._
 
 object NetworkState {
   val stateKey = "network"
@@ -103,21 +105,44 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
         new JHMap(mapAsJavaMap(countMap)), null)
   }
 
+  /*
+   * The main network loading operation.
+   * Needs to load two matrices and also set up count columns
+   * and the mapping between the two.
+   */
   private val mainId = "PRIMARY"
   private val sideId = "SECONDARY"
   def loadNetwork(mainColumns: JList[Group], mainProbes: Array[String],
                   sideColumns: JList[Group], typ: ValueType): NetworkInfo = {
 
     //Orthologous mode is not supported for network loading
+    val orthMappings = () => List()
     getState.controllers += (mainId ->
-      MatrixController(context, () => List(), mainColumns, mainProbes, typ, false))
+      MatrixController(context, orthMappings, mainColumns, mainProbes, typ, false))
     val mainMat = getState.matrix(mainId)
 
+    val sideProbes = ???
     getState.controllers += (sideId ->
-      MatrixController(context, () => List(), sideColumns, List(), typ, false))
+      MatrixController(context, orthMappings, sideColumns, sideProbes, typ, false))
     val sideMat = getState.matrix(sideId)
 
-    //To do: init filters, count columns, ...
+    val platforms = t.viewer.server.Platforms(context.probes)
+    val gt = GroupUtils.groupType(sideColumns(0))
+    val species = groupSpecies(sideColumns(0))
+    
+    //TODO perform filtering at initial load, store in state
+    var targets = getState.targetTable
+    targets = targets.speciesFilter(species)
+    val fromMiRNA = gt == Network.mrnaType;
+    val countMap = NetworkState.buildCountMap(mainMat, targets, platforms,
+      fromMiRNA)
+    val pset = sideMat.initProbes.toSet
+    val filtered = countMap.filter(x => pset.contains(x._1))
+    sideMat.addSynthetic(
+      new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
+        new JHMap(mapAsJavaMap(filtered)), null))
+    
+    //To do: init filters...
     
     new NetworkInfo(mainMat.info, sideMat.info)
   }
