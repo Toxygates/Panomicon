@@ -61,25 +61,21 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     groupInspector.compoundsChanged(compounds);
     groupInspector.columnsChanged(chosenColumns);
 
-    if (visible) {
-      try {
-        List<Group> ics =
-            getParser().getColumns(schema(), "inactiveColumns", attributes());
-        // loadColumns(getParser(), schema(), "inactiveColumns", new
-        // ArrayList<SampleColumn>(groupInspector
-        // .existingGroupsTable().inverseSelection()), attributes());
-        if (ics != null && ics.size() > 0) {
-          logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0]
-              + " ... ");
-          groupInspector.inactiveColumnsChanged(ics);
-        } else {
-          logger.info("No inactive columns available");
-        }
-
-      } catch (Exception e) {
-        logger.log(Level.WARNING, "Unable to load inactive columns", e);
-        Window.alert("Unable to load inactive columns.");
+    try {
+      List<Group> ics = getParser().getColumns(schema(), "inactiveColumns", attributes());
+      // loadColumns(getParser(), schema(), "inactiveColumns", new
+      // ArrayList<SampleColumn>(groupInspector
+      // .existingGroupsTable().inverseSelection()), attributes());
+      if (ics != null && ics.size() > 0) {
+        logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
+        groupInspector.inactiveColumnsChanged(ics);
+      } else {
+        logger.info("No inactive columns available");
       }
+
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Unable to load inactive columns", e);
+      Window.alert("Unable to load inactive columns.");
     }
 
     // This needs to happen after groupInspector.inactiveColumnsChanged, which causes
