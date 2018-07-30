@@ -6,9 +6,8 @@
 
 <module>
 	<inherits name="com.google.gwt.user.User" />
-	<inherits name="t.common.Common" />
-	<inherits name="t.clustering.Clustering" />
-	<inherits name="otgviewer.toxygates" />
+	<inherits name="t.common.Common" />	
+	<inherits name="t.clustering.Clustering" />	 
 	<inherits name="com.google.gwt.logging.Logging"/>
 		
 	<source path="client"/>
