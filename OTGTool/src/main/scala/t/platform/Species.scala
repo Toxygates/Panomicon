@@ -45,6 +45,11 @@ object Species extends Enumeration(0) {
       case Rat   => "rno"
       case Mouse => "mmu"
     }
+    def expectedPlatform = s match {
+      case Human => "HG-U133_Plus_2"
+      case Rat => "Rat230_2"
+      case Mouse => "Mouse430_2"
+    }
   }
 
   val supportedSpecies = List(Rat, Human, Mouse)

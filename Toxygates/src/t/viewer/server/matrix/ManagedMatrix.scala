@@ -279,7 +279,8 @@ trait Synthetics extends CoreMatrix {
             Array[SSample]())
         }
         val data = precomp.getData
-        val inOrder = (0 until current.rows).map(i => data.get(current.rowAt(i)).toDouble)
+        val inOrder = (0 until current.rows).map(i =>
+          Option(data.get(current.rowAt(i))).map(_.toDouble).getOrElse(0d))
 
         current = current.appendStatic(inOrder, precomp.getName)
       case _ => throw new Exception("Unexpected test type")

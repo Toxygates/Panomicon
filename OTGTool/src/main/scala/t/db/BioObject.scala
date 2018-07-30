@@ -29,6 +29,7 @@ trait BioObject {
   def identifier: String
   def name: String
   def additionalInfo: Option[String] = None
+  def asDefaultBio = DefaultBio(identifier, name, additionalInfo)
 }
 
 /**

@@ -20,5 +20,10 @@ package t.viewer.shared;
 
 @SuppressWarnings("serial")
 public class NoDataLoadedException extends ServerError {
+  
   public NoDataLoadedException() {}
+  
+  public NoDataLoadedException(String cause) {
+    super(cause);
+  }
 }

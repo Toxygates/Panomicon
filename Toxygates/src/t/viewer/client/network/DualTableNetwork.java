@@ -13,7 +13,6 @@ import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.table.AssociationSummary;
 import t.viewer.client.table.DualTableView.DualMode;
 import t.viewer.client.table.ExpressionTable;
-import t.viewer.shared.Synthetic;
 import t.viewer.shared.network.Network;
 import t.viewer.shared.network.Node;
 
@@ -126,40 +125,22 @@ public class DualTableNetwork implements NetworkViewer {
     
     if (mappingSummary == null) {
       logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");
-      return;
-    }
-    String[][] rawData = mappingSummary.getTable();
-    if (rawData.length < 2) {
+      return;  
+    }    
+    String[] ids = mappingSummary.getIDs(maxSideRows);
+    if (ids.length < 2) {
       logger.info("No secondary probes found in summary - not updating side table probes");
       return;
     }
-    String[] ids = Arrays.stream(rawData).skip(1).limit(maxSideRows).
-        map(a -> a[1]).toArray(String[]::new);
-    logger.info("Extracted " + ids.length + " " + dualMode.sideType);
     
-    Synthetic.Precomputed countColumn = buildCountColumn(rawData);
-    List<Synthetic> synths = Arrays.asList(countColumn);
-    
-    changeSideTableProbes(ids, synths);
+    changeSideTableProbes(ids);
   }
   
-  protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {
+  protected void changeSideTableProbes(String[] probes) {
     sideTable.probesChanged(probes);
     if (probes.length > 0) {
-      sideTable.getExpressions(synths, true);
+      sideTable.getExpressions(true);
     }
-  }
-  
-  private Synthetic.Precomputed buildCountColumn(String[][] rawData) {
-    Map<String, Double> counts = new HashMap<String, Double>();    
-    //The first row is headers    
-    for (int i = 1; i < rawData.length && i < maxSideRows; i++) {    
-      counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
-    }
-    return new Synthetic.Precomputed("Count", 
-      "Number of times each " + dualMode.sideType + " appeared", counts,
-      null);
-
   }
   
   /**
