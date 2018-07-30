@@ -20,21 +20,26 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import t.viewer.client.Utils;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
+import t.viewer.client.Utils;
+
 public class InputDialog extends Composite {
 
   public InputDialog(String message) {
+    this(message, "");
+  }
+
+  public InputDialog(String message, String initialText) {
     VerticalPanel vp = new VerticalPanel();
     vp.setWidth("100%");
     vp.add(new Label(message));
     initWidget(vp);
 
     final TextBox input = new TextBox();
+    input.setText(initialText);
     vp.add(input);
 
     Button b = new Button("OK");
