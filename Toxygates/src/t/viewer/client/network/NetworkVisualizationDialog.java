@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -54,6 +56,7 @@ public class NetworkVisualizationDialog {
         event.preventDefault();
       };
     };
+    uiDiv.getElement().setId("netvizdiv");
   }
 
   public void initWindow(@Nullable Network network) {
@@ -77,6 +80,7 @@ public class NetworkVisualizationDialog {
 
   private void injectOnce(final Runnable callback) {
     if (!injected) {
+      loadCss(GWT.getModuleBaseURL() + "network-visualization/style.css");
       Utils.inject(new ArrayList<String>(Arrays.asList(injectList)), logger, callback);
       injected = true;
     } else {
@@ -205,5 +209,19 @@ public class NetworkVisualizationDialog {
    */
   private native void startVisualization() /*-{
     $wnd.onReadyForVisualization();
+  }-*/;
+
+  /**
+   * Injects CSS from a URL
+   */
+  public static void loadCss(String url) {
+    LinkElement link = Document.get().createLinkElement();
+    link.setRel("stylesheet");
+    link.setHref(url);
+    attachToHead(link);
+  }
+
+  protected static native void attachToHead(JavaScriptObject scriptElement) /*-{
+    $doc.getElementsByTagName("head")[0].appendChild(scriptElement);
   }-*/;
 }
