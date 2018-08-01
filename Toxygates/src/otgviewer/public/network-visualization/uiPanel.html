@@ -1,35 +1,130 @@
+  <!-- ***************************************************************  -->
+  <!--                    uiPanel - START                               -->
+  <!-- ***************************************************************  -->
   <form>
     <fieldset>
       <legend>User Interaction</legend>
-      <div>Select Library:</div>
-      <select id="library" onchange="changeVisualizationLibrary()">
-        <option value="Cyto" selected="selected" >Cytoscape.js</option>
-        <option value="Vis">Vis.js</option>
-      </select>
-      <br />
 
       <div>Apply Layout:</div>
-      <select id="layout" onchange="updateLayout()"> <!--  disabled="true"> -->
+      <select id="layoutSelect">
+        <option value="null" selected>None</option>
+        <option value="random">Random</option>
+        <option value="grid">Grid</option>
+        <option value="circle">Circle</option>
+        <option value="concentric">Concentric</option>
+        <option value="breadthfirst">BreadthFirst</option>
+        <option value="cose">Force Directed</option>
       </select>
       <br />
 
-      <div>Color By:</div>
-      <select id="colorBy" disabled="true">
-      <option value="None">None</option>
-      </select>
-      <br />
-
-      <div>Mouse interacion:</div>
-      <select id="mouse" onchange="updateInteraction()">
-        <option value="selection">Selection</option>
-        <option value="addNode">Add Node - Not implemented</option>
-        <option value="addInteraction">Add Edge - Not implemented</option>
-      </select>
-      <br />
-
-      <button type="button" value="export" id="export" onclick="exportJson()">Export</button>
     </fieldset>
   </form>
 
-  <div class="vizNotes" id="selectionList">Current Selection (only-Cyto):</div>
-  
+  <!-- ***************************************************************  -->
+  <!--                      uiPanel - END                               -->
+  <!-- ***************************************************************  -->
+
+  <!-- Visualization canvas  -->
+  <div class="visualization" id="display"></div>
+
+
+  <!-- ***************************************************************  -->
+  <!-- Modal Components - only to be shown on user request -->
+
+  <!-- Window used to update node properties -->
+  <div id="updateNodeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-modal="updateNodeModal">&times;</span>
+      <h1>Node Properties</h1>
+      <h3>Data</h3>
+      ID: <input type="text" id="nodeID" disabled><br />
+      Label: <input type="text" id="nodeLabel"><br />
+      Type: <select id="nodeType">
+      </select><br />
+      Weights: <select id="nodeWeights">
+      </select>
+      <input type="text" id=weightValue style="text-align: right" disabled><br />
+
+      <h3>Visualization</h3>
+      Color: <input type="color" id="nodeColor" ><br />
+      Shape: <select id="nodeShape">
+        <option value="ellipse">Ellipse</option>
+        <option value="triangle">Triangle</option>
+        <option value="rectangle">Rectangle</option>
+        <option value="barrel">Barrel</option>
+        <option value="rhomboid">Rhomboid</option>
+        <option value="diamond">Diamond</option>
+        <option value="pentagon">Pentagon</option>
+        <option value="hexagon">Hexagon</option>
+        <option value="heptagon">Heptagon</option>
+        <option value="octagon">Octagon</option>
+        <option value="star">Star</option>
+        <option value="tag">Tag</option>
+        <option value="vee">Vee</option>
+      </select><br />
+      <span class="button" id="updateNode" data-modal="updateNodeModal">Update</span>
+    </div>
+  </div>
+
+  <!-- Window used to color nodes based on a specific property -->
+  <div id="colorScaleModal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-modal="colorScaleModal">&times;</span>
+      <h1>Color Nodes</h1>
+
+      <h3>Select expession value</h3>
+      Apply color to:
+      <select id="graphColorTo">
+      </select>
+      <br />
+      Apply color by:
+      <select id="graphColorBy">
+      </select>
+      <h3>Define color scale</h3>
+      <p>
+        <label for="amount">Threshold value:</label>
+        <input type="text" id="threshold" readonly style="border:0; color:#f6931f; font-weight:bold;">
+      </p>
+      Min: <input type="text" id="minRange" readonly style="border:0; color:#f6931f; font-weight:bold;" size="5">
+      <input id="colorRange" type="range">
+      Max: <input type="text" id="maxRange" readonly style="border:0; color:#f6931f; font-weight:bold;" size="5">
+      <span class="button" id="colorScale" data-modal="colorScaleModal">Apply</span>
+    </div>
+  </div>
+
+  <!-- Window used to filter the nodes being shown on screen -->
+  <div id="filterModal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-modal="filterModal">&times;</span>
+      <h1>Filter nodes</h1>
+      <ul id="filterList">
+        <!-- <li>Adele <span class="remove">&times;</span></li> -->
+      </ul>
+      <h3>Degree</h3>
+      Show nodes with at least: <input type="number" id="nodeDegree" min="0"> Edges
+      <span class="add" data-type="degFilter">+</span> <br />
+      <span class="button" id="filterNodes" data-modal="filterModal">Apply</span>
+    </div>
+  </div>
+
+  <!-- Window used to add a new node  -->
+  <div id="addNodeModal" class="modal">
+    <div class="modal-content">
+      <form>
+      <span class="close" data-modal="addNodeModal">&times;</span>
+      <h3>Add Node</h3>
+        <label for="nodeID">Node ID:</label>
+        <input type="text" name="nodeID" id="nodeID">  <br>
+        <label for="nodeSymbol">Node Symbol:</label>
+        <input type="text" name="nodeSymbol"><br>
+        Node
+        <span class="button" id="addNode" data-modal="addNodeModal">Create</span>
+      </form>
+    </div>
+  </div>
+
+
+
+</body>
+
+</html>

@@ -1,204 +1,100 @@
+"use strict";
+
+// var imported = document.createElement('script');
+// imported.setAttribute("type", "text/javascript");
+// imported.setAttribute("src", "./js/jquery-3.3.1.min.js");
+// imported.setAttribute("src", "toxygates/network-visualization/jquery-3.3.1.min.js");
+// document.head.appendChild(imported);
+
 /**
- * Convenience function used to load a file containing network data.<br>
- * The load of information should be later made mainly throught the Toxygates
- * platform.
- * @callback processFile once the file has been correctly loaded, the processFile
- * function is used to parse its contents and load the actual information
+ * If we consider that is is possible to get a linear interpolation that goes
+ * both between a minimum and maximum values, and a base and end color, then it
+ * is possible to find, given a value within the linear interpolant, a
+ * corresponding color value.
+ * To calculate the color, we simply
+ * @param {float} value the value I want to map to a specific color value
+ * @param {float} min the value associated to the base color
+ * @param {float} max the value associated to the end color
+ * @param threshold the value where white is located
+ * @param {RGB} baseColor a string representation of the RGB components of the
+ * base color
+ * @param {RGB} endColor a string representation (or array of values) of the RGB components of the
+ * end color
+ * @return a representation of the input value, as a color in RGB representation
  */
-function loadFile(){
-  var fileInput = document.getElementById("fileSelect");
-  if( fileInput.files.length != 0 ){
-    // create an url object to load the file
-    var url = URL.createObjectURL(fileInput.files[0]);
-    // define a new XML HTTP Request
-    var rqst = new XMLHttpRequest();
-    // request the file to be open
-    rqst.open("GET", url);
-    // process the request once its ready
-    rqst.onreadystatechange = function(){
-      if( rqst.readyState == 4 && rqst.status == 200 ){
-        // console.log('finished loading, now to process');
-        var fileType = document.getElementById("fileType").value;
-        // depending on the type of file we are loading, we call an ad-hoc
-        // processing callback function
-        switch(fileType){
-          case "Edge":
-            processEdgeFile(rqst.responseText);
-            break;
-          case "Node":
-            processNodeFile(rqst.responseText);
-            break;
-          case "Json":
-            processJsonFile(rqst.responseText);
-            break;
-          default:
-            window.alert("Something wrong happened, aborting file loading");
-        } // switch
-      } // if
-    } //rdy state change
-    rqst.send();
+function valueToColor(value, min, max, threshold, baseColor, endColor){
+  /* can't assign a color if there is no range */
+  if( min ===  max )
+    return null;
+  /* if both colors are equal, then all nodes should have the same color, as
+   * there is no real mapping */
+  if( baseColor === endColor )
+    return baseColor;
+
+  if( value <= threshold){
+    endColor = "#FFFFFF";
+    max = threshold;
   }
   else{
-    window.alert("No file to load");
-  }
-}
-
-/**
- * Interaction files contain information regarding the relationships that are
- * found between messengerRNA and microRNA components of the graphy.
- * @param {String} inputData a string that represents the contents of an input
- * file.
- */
-function processEdgeFile(inputData){
-  // clean the input string from unnecesary line jumps
-  inputData = inputData.trim().split(/\r|\n/);
-
-  // we need to decide whether or not to ignore the first line of the file, and
-  // we let the user decide
-  var trimFirst = window.confirm("Use first line of the data file?\n"+
-    inputData[0]
-  );
-
-  // if the user confirms the data type, we proceed with loading and visualization
-  var process = window.confirm("Parsing INTERACTIONS data");
-  if( process ){
-
-    // for each line in the file, we crate a new instance of the corresponding data
-    // type, and add or update the corresponding information in our network
-    var i;
-    for( i=(trimFirst)? 1 : 0; i<inputData.length; ++i ){
-      var line = inputData[i].split(/\t|\s/);
-      // console.log(inputData[i]);
-      // console.log(line);
-
-      var micro = new GraphicNode(line[0], 'microRNA', line[0]);
-      toxyNet.addNode(micro);
-
-      // add nodes that represent msgRNA nodes
-      var msg = new GraphicNode(line[1], 'msgRNA', line[1]);
-      // UNCOMMENT WHEN GENE ID BECOMES AVAILABLE ON MICRO_RNA DATASET
-      // var msn = new Node(line[???], 'msgRNA', line[1]);
-      // -------------------------------------------------------------
-      toxyNet.addNode(msg);
-
-      // add interactions between microRNA and msgRNA nodes
-      if( micro.id !== msg.id) {
-        var int = new Interaction(micro.id, msg.id);
-        toxyNet.addInteraction(int);
-      }
-    }
-  } // for i
-
-  // we visualize the loaded data
-  repaint();
-  // changeVisualizationLibrary();
-}
-
- /**
- * TO - DO
- * A file can contain two types of information:<br>
- * 1. Interaction Data - edges between messenger RNA and micro RNA components<br>
- * 2. Node Data - expression levels associated to messenger RNA components<br>
- * Each time a file is loaded, the corresponding information is parsed and added
- * to the network representation.<br>
- * For the parsing to work correctly, the user needs to select the type of
- * information he is intending to load. Confirmation windows are provided through
- * this process.
- * Once the information is loaded, the canvas is repainted.
- * @param {String} rnaData a String representing the content of the file uploaded by the
- * user
- */
-function processNodeFile(inputData){
-  // messengerRNA files include field names on the first line, we save each of
-  // these for later use
-  var fields = rnaData[0].split('\t');
-  // NODE-type files contain information only about msgRNA node expression
-  if( dataType === "Node" ){
-    // UNCOMMENT WHEN GENE ID BECOMES AVAILABLE ON MICRO_RNA DATASET
-    // var msn = new Node(line[0],'msgRNA', line[1]);
-    // -------------------------------------------------------------
-    var msg = new GraphicNode(line[1], 'msgRNA', line[1]);
-
-    // var colorBy = document.getElementById('colorBy');
-    // for(var i=2; i<fields.length; ++i){
-    //   colorBy.options[colorBy.options.length] = new Option(fields[i], fields[i]);
-    // }
-
-    for(var j=2; j<fields.length;++j){
-      msg.addWeight(fields[j],line[j]);
-    }
-
-    toxyNet.updateNode(msg);
-
-
+    baseColor = "#FFFFFF";
+    min = threshold;
   }
 
+  baseColor = baseColor.substring(1); // remove #
+  endColor = endColor.substring(1); // remove #
+  // RGB components of the base color
+  var rb = parseInt(baseColor.substring(0,2), 16);
+  var gb = parseInt(baseColor.substring(2,4), 16);
+  var bb = parseInt(baseColor.substring(4), 16);
+
+  // RGB components of the end color
+  var re = parseInt(endColor.substring(0,2), 16);
+  var ge = parseInt(endColor.substring(2,4), 16);
+  var be = parseInt(endColor.substring(4), 16);
+
+  var perc = (value - min) / (max - min);
+
+  var r = rb+(perc*(re-rb));
+  var g = gb+(perc*(ge-gb));
+  var b = bb+(perc*(be-bb));
+
+  r = Math.trunc(r);
+  r = ("00" + r.toString(16)).slice(-2);
+  g = Math.trunc(g);
+  g = ("00" + g.toString(16)).slice(-2);
+  b = Math.trunc(b);
+  b = ("00" + b.toString(16)).slice(-2);
+
+  return "#"+r+g+b;
 }
 
 /**
-* TO - DO
-* @param {String} rnaData a String representing the content of the file uploaded by the
-* user
-*/
-function processJsonFile(inputData){
-
-    var inputData = JSON.parse(inputData);
-
-    console.log(inputData["nodes"]);
-    toxyNet.title = inputData["title"];
-    toxyNet.nodes = inputData["nodes"];
-    toxyNet.interactions = inputData["interactions"];
-
-    repaint();
-}
-
-/**
- *
+ * @param {string} hex - a color expressed as an hex value with format <#RRGGBB>
+ * where each pair RR, GG, and BB are an hex number between 0 and FF (as used)
+ * by browsers
  */
-function exportJson(library=document.getElementById("library").value){
+function hex2v(hex){
+  hex = hex.substring(1);
+  var r = parseInt(hex.substring(0,2), 16);
+  var g = parseInt(hex.substring(2,4), 16);
+  var b = parseInt(hex.substring(4), 16);
 
-  if( vizNet !== null ){
-    // to store node positions we use ad-hoc functions for each visualization
-    // library
-    if( library === "Cyto" ){ // previous was vis.js
-      vizNet.nodes().forEach(function(ele){
-        this.updateNodePosition(ele.id(), ele.position().x, ele.position().y);
-      },toxyNet);
-    }
-    else{ // previous was cytoscape.js
-      var p = vizNet.getPositions();
-      for(var k in p){
-        // pos.push([k, p[k].x, p[k].y] );
-        toxyNet.updateNodePosition(k, p[k].x, p[k].y);
-      }
+  var cmax = Math.max(r, g, b);
+  var cmin = Math.min(r, g, b);
 
-    }
+  var d = cmax - cmin;
+  if( d === 0 )
+    return 0;
+
+  switch( cmax ){
+    case r:
+      return 60*( ((g-b)/d)%6 );
+    case g:
+      return 60*( ((b-r)/d)+2 );
+    case b:
+      return 60*( ((r-g)/d)+4 );
   }
 
-  var str = JSON.stringify(toxyNet);
-  console.log(str);
-  let dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(str);
-
-    let exportFileDefaultName = 'data.json';
-
-    let linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-}
-
-/**
- *
- */
-function enable(element){
-  element.disabled = false;
-}
-
-/**
- *
- */
-function disable(element){
-  element.disabled = true;
 }
 
 /**
@@ -262,5 +158,4 @@ function hsv2rgb(h, s, v){
     b = ("00" + b.toString(16)).slice(-2);
     var rgb = [r, g, b];
     return "#"+r+g+b;
-
   }

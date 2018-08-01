@@ -21,20 +21,17 @@ class Interaction{
     this.label = args[0];
     this.weight = args[1];
   }
-  
-  /** setters and getters **/
-  // get from(){ return this.from; }
-  // get to(){ return this.to; }
-  // get label(){ return this.label; }
-  // get weight(){ return this.weight; }
-  //
-  // set from(f){ this._from = f; }
-  // set to(t){ this._to = t; }
-  // set label(l){ this._label = l; }
-  // set weight(w){ this._weight = w; }
-}
 
-// Needed for now because I can't figure out how to access the Interaction class from within GWT.
-function makeInteraction(from, to, label, weight) {
-  return new Interaction(from, to, label, weight);
+} // class Interaction
+
+/**
+ * Convenience function used to access the Interaction class from within GWT
+ * @param {node} from: in a directed graph, the node of origin for the edge
+ * @param {node} to: in a directed graph, the ending node for the edge
+ * @param {string} label: a single string that identifies the edge being defined
+ * @param {string} weight: a singe string associated to a property of the edge 
+ * @return the newly created Node
+ */
+function makeInteraction(from, to, label, weight){
+  return new Interaction(from, to, label, weight)
 }

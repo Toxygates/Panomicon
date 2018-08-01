@@ -1,5 +1,17 @@
 "use strict";
 
+/** types of nodes that can be added to the visualization */
+const nodeType = Object.freeze({
+  MSG_RNA: "mRNA",
+  MICRO_RNA: "microRNA"
+});
+
+/** default colours for nodes in the graph */
+const nodeColor = Object.freeze({
+  MSG_RNA: "#007f7f",
+  MICRO_RNA: "#827f00"
+});
+
 /**
  * Class that defines a Network <br>
  * Based on Toxygates Class Model <br>
@@ -18,12 +30,10 @@ class Network{
    * parameter, our model also considers a name (string) for the network.
    * The constructor initializes all the required parameters, using default
    * values when neccesary.
-   * @constructor
    * @param {String} title - the name given to a network
-   * @default "empty"
-   * @param {Array} interactions - the array of interactions that exist
+   * @param {[Interaction]} interactions - the array of interactions that exist
    * between nodes
-   * @param {Array} nodes - the nodes that comprise the newtwork
+   * @param {[ToxyNode]} nodes - the nodes that comprise the newtwork
    */
   constructor(title="", interactions=[], nodes=[]){
     this.title = title;
@@ -33,11 +43,11 @@ class Network{
 
   /**
    * TO-DO
-   * @param {Node} n
+   * @param {Node} from
    * @return a list of all interactions in the network that start from the given
    * node N
    */
-  intearctionsFrom(from){
+  interactionsFrom(from){
 
   }
 
@@ -65,9 +75,6 @@ class Network{
       this.nodes.push(n);
       return true;
     }
-    // else{ // update the node's information
-    //   this.nodes[i].update(n);
-    // }
     return false;
   }
 
@@ -81,16 +88,17 @@ class Network{
    */
   updateNode(n){
     var i = this.nodes.findIndex(o => o.id === n.id);
-    if( i === -1 ){
-      return false;
+    if( i !== -1 ){
+      this.nodes[i].update(n);
+      return true;
     }
-    this.nodes[i].update(n);
-    // console.log("have to update: "+this.nodes[i].toString());
-    // console.log("with this: "+n.toString());
+    return false;
   }
 
-  /**
-  *
+ /**
+  * Given an id and an (x,y) coordinate pair, it searches the network for the
+  * corresponding node, and if found, it updates is position with the given
+  * coordinates
   * @param {String} id
   * @param {int} x the x coordinate of the node
   * @param {int} y the y coordinate of the node
@@ -98,13 +106,13 @@ class Network{
   * updated; false in any other case
   */
   updateNodePosition(id, x, y){
-
     var i = this.nodes.findIndex(o => o.id === id);
-    if( i === -1 ){
-      return false;
+    if( i !== -1 ){
+      this.nodes[i].x = x;
+      this.nodes[i].y = y;
+      return true;
     }
-    this.nodes[i].x = x;
-    this.nodes[i].y = y;
+    return false;
   }
 
   /**
@@ -125,23 +133,32 @@ class Network{
    * @return an array of elements, in the format required by cytoscape.js for
    * the display of a network graph
    */
-  getCytoscapeElements(){
+  getCytoElements(){
     var eles = [];
     // add node elements
     this.nodes.forEach(function(e){
-      var c = (e.type === 'microRNA')? '#827f00' : '#007f7f';
+      // define the node attributes
+      var label = (e.symbol.length > 0)? e.symbol[0] : e.id;
+      var color = (e.type === nodeType.MICRO_RNA )? nodeColor.MICRO_RNA : nodeColor.MSG_RNA ;
+      // create the node object
       var node = {
         group: 'nodes',
         classes: e.type,
         data:{
           id: e.id,
-          label: e.symbol,
-          color: c
-        }
+          label: label,
+          color: color,
+          type: e.type,
+          weight: e.weight,
+        },
+        style:{
+          shape: 'ellipse',
+        },
       };
       if( e.x !== null ){
         node["position"] = { x:e.x, y:e.y };
       }
+      // add the node to the list of elements
       eles.push( node );
     }); // node elements
 
@@ -161,51 +178,26 @@ class Network{
   } // getCytoscapeElements
 
   /**
-   * GetVisNodes()
-   */
-  getVisNodes(){
-    var eles = [];
-    this.nodes.forEach(function(e){
-      var s = (e.type === 'microRNA')? 'box':'circle';
-      eles.push({
-        id: e.id,
-        label: e.symbol,
-        type: e.type,
-        shape: s,
-        x: e.x,
-        y: e.y
-      });
-    });
-    return eles;
-  }
-
-  /**
-   * GetVisEdges()
-   */
-  getVisEdges(){
-    var eles = [];
-    this.interactions.forEach(function(e){
-      eles.push({
-        from: e.from,
-        to: e.to
-      });
-    });
-    return eles;
-  }
-
-  /**
-   * exportJSON
    * The idea behind this function is to be able to write the structure of a
    * graph to a JSON file, that can be also be loaded to the application, thus
    * providing persistance to the work done by a researcher
+   * @return a json structured string that represents the current network
    */
   exportJSON(){
     console.log("Network: "+JSON.stringify(this));
+    return JSON.stringify(this);
   }
-
 
 } // class Network
 
-function makeNetwork(title="", interactions=[], nodes=[]) {
+/**
+ * Convenience function used to access the Node class from within GWT
+ * @param {String} title - the name given to a network
+ * @param {[Interaction]} interactions - the array of interactions that exist
+ * between nodes
+ * @param {[ToxyNode]} nodes - the nodes that comprise the newtwork
+ @ return the newly created network object
+ */
+function makeNetwork(title="", interactions=[], nodes=[]){
   return new Network(title, interactions, nodes);
 }

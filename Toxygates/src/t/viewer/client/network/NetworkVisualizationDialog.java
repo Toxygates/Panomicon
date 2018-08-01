@@ -21,10 +21,14 @@ import t.viewer.client.dialog.InputDialog;
 import t.viewer.shared.network.Network;
 
 public class NetworkVisualizationDialog {
-  private static final String[] injectList = { "network-visualization/cytoscape-cose-bilkent.js",
-      "network-visualization/cytoscape.min.js", "network-visualization/graphicNode.js",
-      "network-visualization/interaction.js", "network-visualization/network.js", "network-visualization/node.js",
-      "network-visualization/utils.js", "network-visualization/vis.min.js",
+  private static final String[] injectList = {
+      "network-visualization/lib/jquery-3.3.1.min.js",
+      "network-visualization/lib/cytoscape.min.js",
+      "network-visualization/lib/cytoscape-context-menus.js",
+      "network-visualization/toxyNode.js",
+      "network-visualization/interaction.js", "network-visualization/network.js",
+      "network-visualization/utils.js",
+      "network-visualization/extensions.js",
       "network-visualization/application.js" };
 
   protected DialogBox mainDialog, networkNameDialog;
