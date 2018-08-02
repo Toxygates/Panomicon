@@ -1,11 +1,5 @@
 "use strict";
 
-// var imported = document.createElement('script');
-// imported.setAttribute("type", "text/javascript");
-// imported.setAttribute("src", "./js/jquery-3.3.1.min.js");
-// imported.setAttribute("src", "toxygates/network-visualization/jquery-3.3.1.min.js");
-// document.head.appendChild(imported);
-
 /**
  * If we consider that is is possible to get a linear interpolation that goes
  * both between a minimum and maximum values, and a base and end color, then it

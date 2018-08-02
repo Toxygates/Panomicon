@@ -3,13 +3,19 @@
 /** types of nodes that can be added to the visualization */
 const nodeType = Object.freeze({
   MSG_RNA: "mRNA",
-  MICRO_RNA: "microRNA"
+  MICRO_RNA: "microRNA",
 });
 
 /** default colours for nodes in the graph */
 const nodeColor = Object.freeze({
   MSG_RNA: "#007f7f",
-  MICRO_RNA: "#827f00"
+  MICRO_RNA: "#827f00",
+});
+
+/** list of shapes that can be used to draw a node */
+const nodeShape = Object.freeze({
+  MSG_RNA: "ellipse",
+  MICRO_RNA: "pentagon",
 });
 
 /**
@@ -140,6 +146,7 @@ class Network{
       // define the node attributes
       var label = (e.symbol.length > 0)? e.symbol[0] : e.id;
       var color = (e.type === nodeType.MICRO_RNA )? nodeColor.MICRO_RNA : nodeColor.MSG_RNA ;
+      var shape = (e.type === nodeType.MICRO_RNA )? nodeShape.MICRO_RNA : nodeShape.MSG_RNA ;
       // create the node object
       var node = {
         group: 'nodes',
@@ -152,7 +159,7 @@ class Network{
           weight: e.weight,
         },
         style:{
-          shape: 'ellipse',
+          shape: shape,
         },
       };
       if( e.x !== null ){

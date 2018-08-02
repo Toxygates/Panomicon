@@ -1,16 +1,11 @@
 "use strinct";
-
 // this is the Graph - a Cytoscape object
 var vizNet = null;
 
 // this is also the Graph - using Network structure
 var toxyNet = null;
 
-var filterID = 0; // need to find a better way to do this
-
-/** ------------------------------------------------------------------ **/
-/**                     Handlers for DOM elements                      **/
-/** ------------------------------------------------------------------ **/
+/** ----------------------- FORM HANDLERS ---------------------------- **/
 
 /**
  * Changes the layout of the nodes in the network according to the user's
@@ -23,6 +18,8 @@ $(document).on("click", "#layoutSelect", function (){
   // update the layout accordingly
   vizNet.updateLayout(opt);
 });
+
+/** ---------------------- UPDATE NODE MODAL ---------------------------- **/
 
 /**
  * Handle updates made on a node through the corresponding modal. Once the user
@@ -37,24 +34,43 @@ $(document).on("click", "#layoutSelect", function (){
    node.data("label", label);
 
    /* nodeType */
+   node.data("type", $("#nodeType").val());
 
    /* nodeWeights */
+   var selection = $("#nodeWeights").val();
+   if( selection !== null ){
+     var w = node.data("weight");
+     w[selection] = $("#weightValue").val();
+     node.data("weight", w);
+   }
 
    /* nodeColor */
    var color = $("#nodeColor").val();
-   console.log("color", color);
    node.data("color", color);
-   node.style('background-color', color);
+   node.style("background-color", color);
 
    /* nodeShape */
    var shape = $("#nodeShape").val();
-   node.style('shape', shape);
+   node.style("shape", shape);
 
    /* hide the modal */
    var modal = $(event.target).data().modal;
    $("#"+modal).hide();
-
  });
+
+ /**
+  * Before applying changes, whenever the user changes the current type of the
+  * node, the default properties for the selected type are shown in the
+  * corresponding fields
+  */
+$(document).on("change", "#nodeType", function(evt){
+  // get the text from the currently selected option
+  var type = $("#nodeType :selected").text();
+  // update default color for this type of node
+  $("#nodeColor").val(nodeColor[type]);
+  // update default shape for this type of node
+  $("#nodeShape").val(nodeShape[type]);
+});
 
  /**
   * When looking at a modal with node properties, this function handles the
@@ -64,17 +80,42 @@ $(document).on("click", "#layoutSelect", function (){
 $(document).on("change", "#nodeWeights", function(evt){
   var node = vizNet.nodes().getElementById($("#nodeID").val());
   var selection = $("#nodeWeights").val();
-  if( selection !== null ){
+  if( selection !== null )
     $("#weightValue").val(node.data()["weight"][selection]);
-    return;
-  }
-  $("#weightValue").val("");
+  else
+    $("#weightValue").val("");
 });
 
+/** ---------------------- UPDATE GRAPH COLORING ------------------------ **/
+
 /**
- *
+ * Apply the user defined color scale to the type of nodes selected by the user.
  */
-$(document).on("click", "#colorScale", function(evt){
+$(document).on("click", "#colorGraph", function(evt){
+  // type of node we should color, and weight used for the linear scaling
+  var type = $("#graphColorTo").val();
+  var w = $("#graphColorBy").val();
+  // we only apply a color scale if both values have been selected
+  if ( type !== null && w !== null ){
+    // get a collection of nodes to color
+    var trg = vizNet.nodes("[type = '"+type+"']");
+    // get min and max values for the color scale, together with the value
+    // associated with white
+    var min = Number($("#minRange").val());
+    var max = Number($("#maxRange").val());
+    var white = Number($("#whiteRange").val());
+    // apply the color change to all nodes within the collection
+    trg.forEach(function(ele){
+      var d = ele.data("weight");
+      ele.style('background-color', valueToColor(d[w], min, max, white,
+        $("#minColor").val(),
+        $("#maxColor").val()));
+    });
+  }
+
+  /* hide the modal after color has been applied to nodes */
+  var modal = $(event.target).data().modal;
+  $("#"+modal).hide();
 
 });
 
@@ -103,11 +144,11 @@ $(document).on("change", "#graphColorTo", function(evt){
  * appropriate selection can be made
  */
 $(document).on("change", "#graphColorBy", function(evt){
+  //  get a collection of nodes to which apply the color scale
   var type = $("#graphColorTo").val();
   var trg = vizNet.nodes("[type = '"+type+"']");
 
   var w = $("#graphColorBy").val();
-
   if( w !== null ){
     var min = trg.min(function(ele){
       var d = ele.data("weight");
@@ -117,40 +158,27 @@ $(document).on("change", "#graphColorBy", function(evt){
       var d = ele.data("weight");
       return d[w];
     });
-
+    // update minimum and maximim values
     $("#minRange").val(min.value.toFixed(2));
     $("#maxRange").val(max.value.toFixed(2));
     var threshold = ((max.value+min.value)/2);
     $("#colorRange").val(50);
-    $("#threshold").val(threshold .toFixed(2));
+    $("#whiteRange").val(threshold .toFixed(2));
   }
 });
 
 /**
- * Apply the user defined color scale to the nodes selected by the user
+ * Handle the interaction of the user with the slider that determines the
+ * position of the white level in the coloring scale.
  */
-$(document).on("click", "#colorScale", function(evt){
-
-  var type = $("#graphColorTo").val();
-  var w = $("#graphColorBy").val();
-
-  if ( type !== null && w !== null ){
-    var trg = vizNet.nodes("[type = '"+type+"']");
-    var min = Number($("#minRange").val());
-    var max = Number($("#maxRange").val());
-    var threshold = Number($("#threshold").val());
-    trg.forEach(function(ele){
-      var d = ele.data("weight");
-      // ele.data("temp", d[w]);
-      ele.style('background-color', valueToColor(d[w], min, max, threshold, "#FF0000", "#0000FF"));
-    });
-  }
-
-  /* onde all filters have beeb applied, hide the modal */
-  var modal = $(event.target).data().modal;
-  $("#"+modal).hide();
-
+$(document).on("change", "#colorRange", function(evt){
+  var min = Number($("#minRange").val());
+  var max = Number($("#maxRange").val());
+  console.log(Number($("#colorRange").val()), min, max);
+  $("#whiteRange").val( min + $("#colorRange").val()*(max-min)/100 );
 });
+
+/** ---------------------- UPDATE GRAPH COLORING ------------------------ **/
 
 /**
  * Invoqued when the user selects to apply filters to the visualization. Notice
@@ -239,16 +267,24 @@ function initDisplay(){
  * When the close option is selected, no other action apart from the hiding of
  * the modal is performed. All information already added by the user is lost.
  */
-$(document).on("click", ".close", function(event){
+$(document).on("click", ".modal-close", function(event){
   var modal = $(event.target).data().modal;
   $("#"+modal).hide();
 });//)
 
 /**
+ *
+ */
+$(document).on("change", "input[type=color]", function(evt){
+  console.log(evt);
+});
+
+
+/**
  * Handle the addition of filter rules to the corresponding list. Later, and
  * upon user selection, filters are applied to the network visualization
  */
-$(document).on("click", ".add", function(event){
+$(document).on("click", ".modal-add", function(event){
   /* list of filters currently defined */
   var list = $("#filterList")[0];
 
@@ -264,7 +300,7 @@ $(document).on("click", ".add", function(event){
     deg = deg >= 0 ? deg : 0;
     node.setAttribute("data-degree", deg);
     html += ("Degree at least "+deg);
-    html +=  "<span class='remove'>&times;</span>";
+    html +=  "<span class='modal-remove'>&times;</span>";
 
   }
   node.innerHTML = html;
@@ -276,7 +312,7 @@ $(document).on("click", ".add", function(event){
 /**
  * Handle the removal of a specific filter from the corresponding list.
  */
-$(document).on("click", ".remove", function(event){
+$(document).on("click", ".modal-remove", function(event){
   /* the list of filters */
   var list = $("#filterList")[0]
   /* removal of the element selected by the user */

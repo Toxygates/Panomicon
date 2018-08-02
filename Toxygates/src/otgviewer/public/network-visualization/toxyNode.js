@@ -33,6 +33,13 @@ class ToxyNode{
   }
 
   /**
+   *
+   */
+  setWeights(weights){
+    this.weight = weights;
+  }
+
+  /**
    * Search for a specific weight, within the node definition, and it updates
    * the corresponding value. If the key value is not found, then a new weight
    * is added to the list
@@ -42,10 +49,6 @@ class ToxyNode{
   addWeight(label, value){
      this.weight[label] = value;
    }
-  
-  setWeights(weights) {
-    this.weight = weights;
-  }
 
    /**
     * Given a dummy node object, it updates the current node's weight list with
@@ -83,5 +86,5 @@ class ToxyNode{
  * @return the newly created Node
  */
 function makeNode(id, type, symbols){
-  return new ToxyNode(id, type, symbols);
+  return new Node(id, type, symbols);
 }

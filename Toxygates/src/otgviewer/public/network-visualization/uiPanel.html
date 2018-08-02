@@ -20,9 +20,16 @@
     </fieldset>
   </form>
 
-  <!-- ***************************************************************  -->
-  <!--                      uiPanel - END                               -->
-  <!-- ***************************************************************  -->
+
+  <!-- Visualization canvas  -->
+  <div id="display" class="cy-panel" >
+  </div>
+
+  <!-- Information panel -->
+  <div id="info" class="info-panel">
+    <h3>Graph Details:</h3>
+  </div>
+
 
   <!-- ***************************************************************  -->
   <!-- Modal Components - only to be shown on user request -->
@@ -30,76 +37,114 @@
   <!-- Window used to update node properties -->
   <div id="updateNodeModal" class="modal">
     <div class="modal-content">
-      <span class="close" data-modal="updateNodeModal">&times;</span>
+      <span class="modal-close" data-modal="updateNodeModal">&times;</span>
       <h1>Node Properties</h1>
       <h3>Data</h3>
-      ID: <input type="text" id="nodeID" disabled><br />
-      Label: <input type="text" id="nodeLabel"><br />
-      Type: <select id="nodeType">
-      </select><br />
-      Weights: <select id="nodeWeights">
-      </select>
-      <input type="text" id=weightValue style="text-align: right" disabled><br />
+        <!-- id of the current node -->
+        <label for="nodeID">ID:</label>
+        <input id="nodeID" type="text" readonly>
+        <br />
+        <!-- label for the node used in the visualization -->
+        <label for="nodeLabel">Label:</label>
+        <input id="nodeLabel" type="text">
+        <br />
+        <!-- change the type of node -->
+        <label for="nodeType">Type:</label>
+        <select id="nodeType">
+        </select>
+        <br />
+        <!-- list the different properties associated with the node -->
+        <label for="nodeWeights">Weights:</label>
+        <select id="nodeWeights">
+        </select>
+        <input id="weightValue" type="number">
+        <br />
 
       <h3>Visualization</h3>
-      Color: <input type="color" id="nodeColor" ><br />
-      Shape: <select id="nodeShape">
-        <option value="ellipse">Ellipse</option>
-        <option value="triangle">Triangle</option>
-        <option value="rectangle">Rectangle</option>
-        <option value="barrel">Barrel</option>
-        <option value="rhomboid">Rhomboid</option>
-        <option value="diamond">Diamond</option>
-        <option value="pentagon">Pentagon</option>
-        <option value="hexagon">Hexagon</option>
-        <option value="heptagon">Heptagon</option>
-        <option value="octagon">Octagon</option>
-        <option value="star">Star</option>
-        <option value="tag">Tag</option>
-        <option value="vee">Vee</option>
-      </select><br />
-      <span class="button" id="updateNode" data-modal="updateNodeModal">Update</span>
+        <!-- the color used to represent the node -->
+        <label for="nodeColor">Color: </label>
+        <input type="color" id="nodeColor" >
+        <br />
+        <!-- the shape used for the node -->
+        <label for="nodeShape">Shape:</label>
+        <select id="nodeShape">
+          <option value="ellipse">Ellipse</option>
+          <option value="triangle">Triangle</option>
+          <option value="rectangle">Rectangle</option>
+          <option value="barrel">Barrel</option>
+          <option value="rhomboid">Rhomboid</option>
+          <option value="diamond">Diamond</option>
+          <option value="pentagon">Pentagon</option>
+          <option value="hexagon">Hexagon</option>
+          <option value="heptagon">Heptagon</option>
+          <option value="octagon">Octagon</option>
+          <option value="star">Star</option>
+          <option value="tag">Tag</option>
+          <option value="vee">Vee</option>
+        </select>
+        <br />
+      <!-- Button used to apply changes to the nodes -->
+      <span id="updateNode" class="modal-button" data-modal="updateNodeModal">Update</span>
     </div>
   </div>
 
   <!-- Window used to color nodes based on a specific property -->
-  <div id="colorScaleModal" class="modal">
+  <div id="graphColorModal" class="modal">
     <div class="modal-content">
-      <span class="close" data-modal="colorScaleModal">&times;</span>
+      <span class="modal-close" data-modal="graphColorModal">&times;</span>
       <h1>Color Nodes</h1>
 
-      <h3>Select expession value</h3>
-      Apply color to:
-      <select id="graphColorTo">
-      </select>
-      <br />
-      Apply color by:
-      <select id="graphColorBy">
-      </select>
+      <h3>Select expression value</h3>
+        <label for="graphColorTo">Apply color to:</label>
+        <select id="graphColorTo">
+        </select>
+        <br />
+        <label for="graphColorBy">Apply color by:</label>
+        <select id="graphColorBy">
+        </select>
+
       <h3>Define color scale</h3>
-      <p>
-        <label for="amount">Threshold value:</label>
-        <input type="text" id="threshold" readonly style="border:0; color:#f6931f; font-weight:bold;">
-      </p>
-      Min: <input type="text" id="minRange" readonly style="border:0; color:#f6931f; font-weight:bold;" size="5">
-      <input id="colorRange" type="range">
-      Max: <input type="text" id="maxRange" readonly style="border:0; color:#f6931f; font-weight:bold;" size="5">
-      <span class="button" id="colorScale" data-modal="colorScaleModal">Apply</span>
+        <p>A color scale that fades linearly to white from both ends (min and
+          max) will be used to color all nodes of a specific type.
+        </p>
+        <p>You can use the slider to select where, within the range of values,
+          white should be positioned. If either min or max values are selected,
+          the color scale will use a single color.
+        </p>
+        <!-- minimum end of the scale -->
+        <label for="minRange">Min:</label>
+        <input id="minRange" type="number">
+        <input id="minColor" type="color" value="#FF0000">
+        <!-- slider for white color positioning -->
+        <input id="colorRange" type="range">
+        <!-- maximum end of the scale -->
+        <label for="maxRange">Max:</label>
+        <input id="maxRange" type="number">
+        <input id="maxColor" type="color" value="#0000FF" >
+        <br />
+        <!-- display of white color information  -->
+        <label for="whiteRange">White at:</label>
+        <input id="whiteRange" type="number" readonly style="color:#f6931f;">
+
+      <!-- Button used to apply the color scale to the selected components of
+           the graph -->
+      <span id="colorGraph" class="modal-button" data-modal="graphColorModal">Apply</span>
     </div>
   </div>
 
   <!-- Window used to filter the nodes being shown on screen -->
   <div id="filterModal" class="modal">
     <div class="modal-content">
-      <span class="close" data-modal="filterModal">&times;</span>
+      <span class="modal-close" data-modal="filterModal">&times;</span>
       <h1>Filter nodes</h1>
       <ul id="filterList">
-        <!-- <li>Adele <span class="remove">&times;</span></li> -->
       </ul>
       <h3>Degree</h3>
-      Show nodes with at least: <input type="number" id="nodeDegree" min="0"> Edges
-      <span class="add" data-type="degFilter">+</span> <br />
-      <span class="button" id="filterNodes" data-modal="filterModal">Apply</span>
+        Show nodes with at least:
+        <input id="nodeDegree" type="number" min="0"> Edges
+        <span class="modal-add" data-type="degFilter">+</span> <br />
+
+      <span class="modal-button" id="filterNodes" data-modal="filterModal">Apply</span>
     </div>
   </div>
 
@@ -114,7 +159,12 @@
         <label for="nodeSymbol">Node Symbol:</label>
         <input type="text" name="nodeSymbol"><br>
         Node
-        <span class="button" id="addNode" data-modal="addNodeModal">Create</span>
+        <span class="modal-button" id="addNode" data-modal="addNodeModal">Create</span>
       </form>
     </div>
   </div>
+
+
+  <!-- ***************************************************************  -->
+  <!--                      uiPanel - END                               -->
+  <!-- ***************************************************************  -->
