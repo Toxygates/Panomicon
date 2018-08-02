@@ -1,139 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
-              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee">
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+  version="2.5"
+  xmlns="http://java.sun.com/xml/ns/javaee">
 
-	<context-param>
-		<param-name>repositoryURL</param-name>
-                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
-	</context-param>
-	<context-param>
-		<param-name>updateURL</param-name>
-                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest/statements</param-value>
-	</context-param>
-	<context-param>		
-		<param-name>instanceName</param-name>
-		<!-- The concrete parameter value will be filled in by
-		scripts like new_instance.public.sh -->
-		<param-value>##instanceName##</param-value>		
-	</context-param>
-	<context-param>
-		<param-name>repositoryUser</param-name>
-		<param-value>ttest</param-value>
-	</context-param>
-	<context-param>
-		<param-name>repositoryPassword</param-name>
-		<param-value>ttest</param-value>
-	</context-param>	
-	<context-param>
-		<param-name>dataDir</param-name>
-		<param-value>kcchunk:/opt/toxygates-chunk</param-value>
-	</context-param>
-	<context-param>
-		<param-name>matrixDbOptions</param-name>
-		<param-value>#pccap=1073741824#msiz=4294967296</param-value>
-	</context-param>
- 	<context-param>
-		<param-name>csvDir</param-name>
-		<param-value>/var/lib/tomcat/webapps/toxygates/csv/</param-value>
-	</context-param>
-	<context-param>
-		<param-name>csvUrlBase</param-name>
-		<param-value>http://toxygates.nibiohn.go.jp/toxygates/csv</param-value>
-	</context-param>	
-	<context-param>
-		<param-name>feedbackReceivers</param-name>
-		<param-value>jtnystrom@gmail.com,kenji@nibiohn.go.jp,y-igarashi@nibiohn.go.jp</param-value>
-	</context-param>
-	<context-param>
-		<param-name>feedbackFromAddress</param-name>
-		<param-value>root@nibiohn.go.jp</param-value>
-	</context-param>
-	
-		<context-param>
-		<!-- 256 MB -->
-		<param-name>maxSize</param-name>
-		<param-value>268435456</param-value>
-	</context-param>
-	<context-param>
-		<!-- 256 MB -->
-		<param-name>maxFileSize</param-name>
-		<param-value>268435456</param-value>
-	</context-param>
-	
+  <context-param>
+    <param-name>repositoryURL</param-name>
+    <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
+  </context-param>
+  <context-param>
+    <param-name>updateURL</param-name>
+    <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest/statements</param-value>
+  </context-param>
+  <context-param>		
+    <param-name>instanceName</param-name>
+    <!-- The concrete parameter value will be filled in by
+    scripts like new_instance.public.sh -->
+    <param-value>##instanceName##</param-value>		
+  </context-param>
+  <context-param>
+    <param-name>repositoryUser</param-name>
+    <param-value>ttest</param-value>
+  </context-param>
+  <context-param>
+    <param-name>repositoryPassword</param-name>
+    <param-value>ttest</param-value>
+  </context-param>	
+  <context-param>
+    <param-name>dataDir</param-name>
+    <param-value>kcchunk:/opt/toxygates-chunk</param-value>
+  </context-param>
+  <context-param>
+    <param-name>matrixDbOptions</param-name>
+    <param-value>#pccap=1073741824#msiz=4294967296</param-value>
+  </context-param>
+  <context-param>
+    <param-name>csvDir</param-name>
+    <param-value>/var/lib/tomcat/webapps/toxygates/csv/</param-value>
+  </context-param>
+  <context-param>
+    <param-name>csvUrlBase</param-name>
+    <param-value>http://toxygates.nibiohn.go.jp/toxygates/csv</param-value>
+  </context-param>	
+  <context-param>
+    <param-name>feedbackReceivers</param-name>
+    <param-value>jtnystrom@gmail.com,kenji@nibiohn.go.jp,y-igarashi@nibiohn.go.jp</param-value>
+  </context-param>
+  <context-param>
+    <param-name>feedbackFromAddress</param-name>
+    <param-value>root@nibiohn.go.jp</param-value>
+  </context-param>
+
+  <context-param>
+    <!-- 256 MB -->
+    <param-name>maxSize</param-name>
+    <param-value>268435456</param-value>
+  </context-param>
+  <context-param>
+    <!-- 256 MB -->
+    <param-name>maxFileSize</param-name>
+    <param-value>268435456</param-value>
+  </context-param>
+
   <!-- Servlets -->
-  
-	<servlet>
-		<servlet-name>uploadServlet</servlet-name>
-		<!-- This is the default servlet, it puts files in session -->
-		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>uploadServlet</servlet-name>
-		<url-pattern>*.gupld</url-pattern>
-	</servlet-mapping>	
-	
-	<servlet>
-		<servlet-name>sparqlServlet</servlet-name>
-		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
-	</servlet>
 
-	<servlet>
-		<servlet-name>seriesServlet</servlet-name>
-		<servlet-class>otgviewer.server.rpc.SeriesServiceImpl</servlet-class>
-	</servlet>
+  <servlet>
+    <servlet-name>uploadServlet</servlet-name>
+    <!-- This is the default servlet, it puts files in session -->
+    <servlet-class>gwtupload.server.UploadServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>uploadServlet</servlet-name>
+    <url-pattern>*.gupld</url-pattern>
+  </servlet-mapping>	
 
-	<servlet>
-		<servlet-name>matrixServlet</servlet-name>
-		<servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
-	</servlet>
+  <servlet>
+    <servlet-name>sparqlServlet</servlet-name>
+    <servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
+  </servlet>
 
-	<servlet-mapping>
-		<servlet-name>sparqlServlet</servlet-name>
-		<url-pattern>/toxygates/sparql</url-pattern>
-	</servlet-mapping>
+  <servlet>
+    <servlet-name>seriesServlet</servlet-name>
+    <servlet-class>otgviewer.server.rpc.SeriesServiceImpl</servlet-class>
+  </servlet>
 
-	<servlet-mapping>
-		<servlet-name>seriesServlet</servlet-name>
-		<url-pattern>/toxygates/series</url-pattern>
-	</servlet-mapping>
+  <servlet>
+    <servlet-name>matrixServlet</servlet-name>
+    <servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
+  </servlet>
 
-	<servlet-mapping>
-		<servlet-name>matrixServlet</servlet-name>
-    	<url-pattern>/toxygates/matrix</url-pattern>
-  	</servlet-mapping>
-  	
-  	<servlet>
-		<servlet-name>userDataServlet</servlet-name>
-		<servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>userDataServlet</servlet-name>
-		<url-pattern>/toxygates/userData</url-pattern>
-	</servlet-mapping>
-		
-  	<servlet>
-		<servlet-name>targetmineServlet</servlet-name>
-		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
-	</servlet>
-    <servlet-mapping>
-		<servlet-name>targetmineServlet</servlet-name>
-    	<url-pattern>/toxygates/targetmine</url-pattern>
-  	</servlet-mapping>
-		
-	  <servlet>
-          <servlet-name>networkServlet</servlet-name>
-          <servlet-class>otgviewer.server.rpc.NetworkServiceImpl</servlet-class>
-      </servlet>
-     <servlet-mapping>
-         <servlet-name>networkServlet</servlet-name>
-          <url-pattern>/toxygates/network</url-pattern>
-      </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>sparqlServlet</servlet-name>
+    <url-pattern>/toxygates/sparql</url-pattern>
+  </servlet-mapping>
 
-		
-	
+  <servlet-mapping>
+    <servlet-name>seriesServlet</servlet-name>
+    <url-pattern>/toxygates/series</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>matrixServlet</servlet-name>
+    <url-pattern>/toxygates/matrix</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>userDataServlet</servlet-name>
+    <servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>userDataServlet</servlet-name>
+    <url-pattern>/toxygates/userData</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>targetmineServlet</servlet-name>
+    <servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>targetmineServlet</servlet-name>
+    <url-pattern>/toxygates/targetmine</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>networkServlet</servlet-name>
+    <servlet-class>otgviewer.server.rpc.NetworkServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>networkServlet</servlet-name>
+    <url-pattern>/toxygates/network</url-pattern>
+  </servlet-mapping>
+
+
+
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>toxygates.html</welcome-file>
