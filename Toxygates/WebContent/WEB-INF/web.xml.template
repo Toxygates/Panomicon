@@ -123,6 +123,16 @@
     	<url-pattern>/toxygates/targetmine</url-pattern>
   	</servlet-mapping>
 		
+	  <servlet>
+          <servlet-name>networkServlet</servlet-name>
+          <servlet-class>otgviewer.server.rpc.NetworkServiceImpl</servlet-class>
+      </servlet>
+     <servlet-mapping>
+         <servlet-name>networkServlet</servlet-name>
+          <url-pattern>/toxygates/network</url-pattern>
+      </servlet-mapping>
+
+		
 	
   <!-- Default page to serve -->
   <welcome-file-list>
