@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
+import t.viewer.shared.ColumnSet;
 
 @SuppressWarnings("serial")
 public class Node implements Serializable {
@@ -17,17 +18,12 @@ public class Node implements Serializable {
   
   //GWT constructor
   Node() {}
-  
-  public interface ColumnNameProvider {
-    public String get(int index);
-  }
 
-  public static Node fromRow(ExpressionRow row, String type, ColumnNameProvider columnNames) {
+  public static Node fromRow(ExpressionRow row, String type, ColumnSet columnNames) {
     String[] geneSymbols = row.getGeneSyms();
     ExpressionValue[] values = row.getValues();
     Map<String, Double> weights = IntStream.range(0, values.length).boxed()
-        .collect(Collectors.toMap(i -> columnNames.get(i), i -> values[i].getValue()));
-    //        .collect(Collectors.toMap(i -> "Column " + (i + 1), i -> values[i].getValue()));
+        .collect(Collectors.toMap(i -> columnNames.columnName(i), i -> values[i].getValue()));
 
     return new Node(row.getProbe(), 
         Arrays.asList(geneSymbols), type, new HashMap<String, Double>(weights));

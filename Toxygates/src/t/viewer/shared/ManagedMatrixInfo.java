@@ -31,7 +31,7 @@ import t.common.shared.sample.Sample;
  * purpose is to track information about columns in a matrix.
  */
 @SuppressWarnings("serial")
-public class ManagedMatrixInfo implements Serializable {
+public class ManagedMatrixInfo implements Serializable, ColumnSet {
 
   private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 

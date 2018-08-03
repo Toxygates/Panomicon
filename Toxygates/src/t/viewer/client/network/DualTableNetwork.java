@@ -6,15 +6,15 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.view.client.SingleSelectionModel;
-
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.table.AssociationSummary;
+import t.viewer.client.table.*;
 import t.viewer.client.table.DualTableView.DualMode;
-import t.viewer.client.table.ExpressionTable;
+import t.viewer.shared.ColumnSet;
 import t.viewer.shared.network.Network;
 import t.viewer.shared.network.Node;
+
+import com.google.gwt.view.client.SingleSelectionModel;
 
 public class DualTableNetwork implements NetworkViewer {
   private final ExpressionTable mainTable, sideTable;
@@ -44,13 +44,13 @@ public class DualTableNetwork implements NetworkViewer {
   @Override
   public List<Node> getSourceNodes() {
     String type = (dualMode == DualMode.Forward) ? Network.mrnaType : Network.mirnaType; 
-    return buildNodes(type, mainTable.getDisplayedRows(), index -> mainTable.matrixInfo.columnName((index)));
+    return buildNodes(type, mainTable.getDisplayedRows(), mainTable.matrixInfo);
   }
   
   @Override
   public List<Node> getDestNodes() {
     String type = (dualMode == DualMode.Forward) ? Network.mirnaType : Network.mrnaType;
-    return buildNodes(type, sideTable.getDisplayedRows(), index -> sideTable.matrixInfo.columnName((index)));
+    return buildNodes(type, sideTable.getDisplayedRows(), sideTable.matrixInfo);
   }
   
   @Nullable 
@@ -149,7 +149,7 @@ public class DualTableNetwork implements NetworkViewer {
    * @param rows
    * @return
    */
-  static List<Node> buildNodes(String kind, List<ExpressionRow> rows, Node.ColumnNameProvider columnNames) {
+  static List<Node> buildNodes(String kind, List<ExpressionRow> rows, ColumnSet columnNames) {
     return rows.stream().map(r -> Node.fromRow(r, kind, columnNames)).collect(Collectors.toList());
   }
 }
