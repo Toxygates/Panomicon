@@ -292,7 +292,6 @@ $(document).on("click", ".remove", function(event){
  * scripts have been injected
  */
 function onReadyForVisualization(){
-
   /* convertedNetwork is an object I get straight from toxygates... it is
    * equivalente to the result of reading a json file... it gives me a JSON
    * style string to work with */
@@ -310,7 +309,7 @@ function onReadyForVisualization(){
  * interaction div
  */
 function uiHeight(){
-  return 235;
+  return 52;
 }
 
 /**
