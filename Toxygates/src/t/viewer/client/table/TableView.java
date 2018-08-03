@@ -147,7 +147,6 @@ public class TableView extends DataView {
       }
       }.menuItem());
     
-    
     addAnalysisMenuItem(new MenuItem("Select MiRNA sources...", () -> {      
       MirnaSource[] sources = appInfo.mirnaSources();        
       new MirnaSourceDialog(screen, manager.probeService(), sources, 

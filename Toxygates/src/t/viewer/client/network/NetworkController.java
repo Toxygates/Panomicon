@@ -15,6 +15,7 @@ abstract public class NetworkController {
    * Build the interaction network represented by the current view.
    * @return
    */
+  @Deprecated
   public Network buildNetwork(String title, boolean reversed) {
     List<Node> nodes = new ArrayList<Node>();
     nodes.addAll(viewer.getSourceNodes());    

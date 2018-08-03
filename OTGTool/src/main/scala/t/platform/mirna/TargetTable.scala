@@ -92,7 +92,7 @@ class TargetTable(val sources: Array[String],
     case Some(n) => data take n
     case None => data
   }
-  
+
   /**
    * Convenience method.
    * If not from MiRNA, then probes must have transcripts populated.
@@ -105,10 +105,10 @@ class TargetTable(val sources: Array[String],
     if (fromMirna) {
       makeMultiMap(
           limitSize(
-            targets(probes.map(p => MiRNA(p.identifier)), platform), 
+            targets(probes.map(p => MiRNA(p.identifier)), platform),
           sizeLimit).map(x =>
-            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some("miRDB 5.0")))            
-          ))    
+            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some("miRDB 5.0")))
+          ))
     } else {
       makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
         (x._1, DefaultBio(x._2.id, x._2.id, Some("miRDB 5.0")))))

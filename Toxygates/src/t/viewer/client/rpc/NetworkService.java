@@ -50,10 +50,12 @@ public interface NetworkService extends RemoteService {
    * follows the same rules as MatrixService.loadMatrix)
    * @param sideColumns Columns for the side table. Probes will be determined by 
    *    associations from the main table.
+   * @param Number of rows on the first page of the main table.
    * @return Information about the loaded network.
    */
   NetworkInfo loadNetwork(List<Group> mainColumns, String[] mainProbes,
-                          List<Group> sideColumns, ValueType typ);
+                          List<Group> sideColumns, ValueType typ,
+                          int mainPageSize);
   
 
   /**
