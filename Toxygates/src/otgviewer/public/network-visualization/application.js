@@ -302,6 +302,7 @@ function onReadyForVisualization(){
    * context. The conversion to proper format and all initialization is then
    * performed by initDisplay() */
   initDisplay();
+  $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
 }
 
 /**
