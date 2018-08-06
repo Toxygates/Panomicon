@@ -302,6 +302,8 @@ function onReadyForVisualization(){
    * context. The conversion to proper format and all initialization is then
    * performed by initDisplay() */
   initDisplay();
+  /* Move the Cytoscape context menu into the modal GWT network visualization 
+   * dialog, because otherwise input to it will be intercepted. */ 
   $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
 }
 
