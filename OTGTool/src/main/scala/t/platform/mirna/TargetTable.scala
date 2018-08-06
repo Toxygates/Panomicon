@@ -59,15 +59,15 @@ class TargetTable(val sources: Array[String],
    * Probes in the platform must have transcripts populated.
    * TODO this is not fast enough yet.
    */
-  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe)] = {
+  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double)] = {
     val allMicro = miRNAs.toSet
     val allTrn = for {
       (source, target, score) <- asTriples;
       if (allMicro.contains(source))
-    } yield (source, target)
+    } yield (source, target, score)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     allTrn.flatMap(x => probeLookup.get(x._2) match {
-      case Some(ps) => ps.map(x._1 -> _)
+      case Some(ps) => ps.map((x._1, _, x._3))
       case _ => Seq()
     })
   }
@@ -76,7 +76,7 @@ class TargetTable(val sources: Array[String],
    * Efficient mRNA to miRNA lookup.
    * Probes must have transcripts populated.
    */
-  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA)] = {
+  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA, Double)] = {
     val allTrns = mRNAs.flatMap(p => p.transcripts.map(tr => (tr, p)))
     val allTrLookup = allTrns.groupBy(_._1)
     val allTrKeys = allTrLookup.keySet
@@ -85,7 +85,7 @@ class TargetTable(val sources: Array[String],
         (source, target, score) <- asTriples;
         if allTrKeys contains target;
         (refSeq, probe) <- allTrLookup(target) }
-    yield (probe, source)
+    yield (probe, source, score)
   }
 
   final def limitSize[T](data: Iterable[T], limit: Option[Int]) = limit match {

@@ -19,6 +19,9 @@ class NetworkBuilder(targets: TargetTable,
   val nodes = sourceNodes ++ destNodes
   val nodeLookup = Map() ++ nodes.map(n => n.id() -> n)
 
+  final def lookup(p: Probe) = nodeLookup(p.identifier)
+  final def lookup(m: MiRNA) = nodeLookup(m.id)
+
    def getNodes(mat: ManagedMatrix, mtype: String, maxSize: Option[Int]): Seq[Node] = {
     val allRows = mat.current.asRows
     val useRows = maxSize match {
@@ -31,23 +34,21 @@ class NetworkBuilder(targets: TargetTable,
   def interactionsForMirna(mirna: Iterable[MiRNA],
       platform: Iterable[Probe]) = {
     val label = ""
-    val weight = 1d
-    targets.targets(mirna, platform).map { case (mirna, probe) =>
-      new Interaction(nodeLookup(mirna.id), nodeLookup(probe.identifier),
-          label, weight) }
+    targets.targets(mirna, platform).map { case (mirna, probe, score) =>
+      new Interaction(lookup(mirna), lookup(probe), label, score) }
   }
 
   def interactionsForMrna(mrna: Iterable[Probe]) = {
     val label = ""
-    val weight = 1d
-    targets.reverseTargets(mrna).map { case (probe, mirna) =>
-      new Interaction(nodeLookup(mirna.id), nodeLookup(probe.identifier),
-          label, weight) }
+    targets.reverseTargets(mrna).map { case (probe, mirna, score) =>
+      new Interaction(lookup(mirna), lookup(probe), label, score) }
   }
 
+  import java.util.{ArrayList => JList}
   def build: Network = {
     val probes = platforms.resolve(main.current.orderedRowKeys take Network.MAX_SIZE)
     val interactions = interactionsForMrna(probes).toSeq.sortBy(_.weight()) take Network.MAX_SIZE
-    new Network("Network", seqAsJavaList(nodes), interactions)
+    new Network("Network", new JList(seqAsJavaList(nodes)),
+        new JList(seqAsJavaList(interactions)))
   }
 }
