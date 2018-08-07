@@ -1,6 +1,7 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ import t.viewer.client.Analytics;
 import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
@@ -27,7 +29,7 @@ import t.viewer.shared.mirna.MirnaSource;
 /**
  * A DataView based on a single ExpressionTable.
  */
-public class TableView extends DataView {
+public class TableView extends DataView implements ExpressionTable.MatrixLoader {
 
   public static enum ViewType {
     Single, Dual;    
@@ -41,6 +43,7 @@ public class TableView extends DataView {
   protected UIFactory factory;
   private Map<String, TickMenuItem> tickMenuItems = new HashMap<String, TickMenuItem>();
   protected Logger logger;
+  protected MatrixServiceAsync matrixService;
   
   public TableView(ImportingScreen screen,
                    String mainTableTitle, 
@@ -48,6 +51,7 @@ public class TableView extends DataView {
     this.screen = screen;
     this.appInfo = screen.appInfo();
     this.manager = screen.manager();
+    this.matrixService = manager.matrixService();
     this.factory = manager.factory();
     this.logger = Logger.getLogger("tableView");
     this.expressionTable = makeExpressionTable(mainTableTitle, mainTableSelectable);
@@ -166,14 +170,19 @@ public class TableView extends DataView {
   
   protected static final String defaultMatrix = "DEFAULT";
   
+  protected String mainMatrixId() {
+    return defaultMatrix;
+  }
+  
   protected ExpressionTable makeExpressionTable(String mainTableTitle, 
                                                 boolean mainTableSelectable) {
-    TableFlags flags = new TableFlags(defaultMatrix,
+    TableFlags flags = new TableFlags(mainMatrixId(),
         true, true, NavigationTools.INIT_PAGE_SIZE,
         mainTableTitle, mainTableSelectable,
         false);
     
-    return new ExpressionTable(screen, flags, TableStyle.getStyle("default")) {
+    return new ExpressionTable(screen, flags, TableStyle.getStyle("default"),
+      this) {
       @Override
       protected void onGettingExpressionFailed() {
         super.onGettingExpressionFailed();
@@ -226,12 +235,29 @@ public class TableView extends DataView {
       expressionTable.setStyle(styleForColumns(chosenColumns));
       expressionTable.getExpressions();      
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
-      logger.info("Only refiltering is needed");
+      logger.info("Only refiltering needed");
       expressionTable.refilterData();
     }
 
     lastProbes = chosenProbes;
     lastColumns = chosenColumns;
+  }
+  
+  public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
+    matrixService.loadMatrix(defaultMatrix, chosenColumns, chosenProbes, 
+      valueType, initFilters, 
+      new AsyncCallback<ManagedMatrixInfo>() {
+        @Override
+        public void onFailure(Throwable caught) {
+          Window.alert("Unable to load dataset");
+          logger.log(Level.SEVERE, "Unable to load dataset", caught);
+        }
+
+        @Override
+        public void onSuccess(ManagedMatrixInfo result) {
+          expressionTable.setInitialMatrix(result);
+        }
+      });
   }
   
   protected TableStyle styleForColumns(List<Group> columns) {

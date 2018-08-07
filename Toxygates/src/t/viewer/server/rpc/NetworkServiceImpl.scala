@@ -127,21 +127,20 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       side: ManagedMatrix): Network =
     new NetworkBuilder(targets, platforms, main, side).build
 
-  private val mainId = "main"
-  private val sideId = "side"
-
-  /*
+  /**
    * The main network loading operation.
    * Needs to load two matrices and also set up count columns
    * and the mapping between the two.
    */
-  def loadNetwork(mainColumns: JList[Group], mainProbes: Array[String],
-                  sideColumns: JList[Group], typ: ValueType,
+  def loadNetwork(mainId: String, mainColumns: JList[Group], mainProbes: Array[String],
+                  sideId: String, sideColumns: JList[Group], typ: ValueType,
                   mainPageSize: Int): NetworkInfo = {
 
     //Orthologous mode is not supported for network loading
     val orthMappings = () => List()
 
+    //TODO store in matrixService instead of in networkService?
+    //let matrixService access this service's state?
     getState.controllers += (mainId ->
       MatrixController(context, orthMappings, mainColumns, mainProbes, typ, false))
     val mainMat = getState.matrix(mainId)

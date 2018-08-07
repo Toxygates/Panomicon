@@ -48,6 +48,7 @@ import t.common.shared.GroupUtils
 import t.model.sample.CoreParameter
 import otg.model.sample.OTGAttribute
 import t.platform.Species
+import t.viewer.client.rpc.NetworkService
 
 object MatrixServiceImpl {
 
@@ -123,44 +124,30 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
           groups, probes, typ, false))
     val mat = getState.matrix(id)
 
-    //Temporary location for this
-    if (id == "SECONDARY") {
-      import java.util.{HashMap => JHMap}
-      getOtherServiceState[NetworkState](NetworkState.stateKey) match {
-        case Some(netstate) =>
-          val platforms = t.viewer.server.Platforms(context.probes)
-          val gt = GroupUtils.groupType(groups(0)) //type of first side table group
-          val species = groupSpecies(groups(0))
-          //TODO perform filtering at initial load, store in netstate
-          val targets = netstate.targetTable.speciesFilter(species)
-          val fromMiRNA = gt == "mRNA"
-          val countMap = NetworkState.buildCountMap(getState.matrix("DEFAULT"),
-              netstate.targetTable, platforms,
-              fromMiRNA)
-          val pset = mat.initProbes.toSet
-          val filtered = countMap.filter(x => pset.contains(x._1))
-          mat.addSynthetic(
-              new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
-          new JHMap(mapAsJavaMap(filtered)), null))
-        case _ =>
-      }
-    }
-
     if (!initFilters.isEmpty) {
       mat.setFilters(initFilters)
     }
     mat.info
   }
 
+  protected def stateFor(id: String) = {
+    val r = if (id.startsWith(NetworkService.tablePrefix)) {
+      getOtherServiceState[NetworkState](NetworkState.stateKey)
+    } else {
+      Some(getState)
+    }
+    r.getOrElse(throw new NoDataLoadedException(s"No matrix state for id $id"))
+  }
+  
   @throws(classOf[NoDataLoadedException])
   def selectProbes(id: String, @Nullable probes: Array[String]): ManagedMatrixInfo = {
     val prs = Option(probes).getOrElse(Array()).toSeq
-    getState.controller(id).selectProbes(prs).info
+    stateFor(id).controller(id).selectProbes(prs).info
   }
 
   @throws(classOf[NoDataLoadedException])
   def setColumnFilter(id: String, column: Int, f: ColumnFilter): ManagedMatrixInfo = {
-    val mm = getState.matrix(id)
+    val mm = stateFor(id).matrix(id)
 
     println(s"Filter for column $column: $f")
     mm.setFilter(column, f)
@@ -170,7 +157,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   @throws(classOf[NoDataLoadedException])
   def matrixRows(id: String, offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = {
-    val cont = getState.controller(id)
+    val cont = stateFor(id).controller(id)
     if (cont.managedMatrix.current.rows == 0) {
       new ArrayList[ExpressionRow](Seq(
         new ExpressionRow("(No data)", "(No data)", Array(), Array(), Array())
@@ -203,10 +190,8 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   }
 
   private def insertAnnotations(controller: MatrixController,
-      rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val rl = controller.rowLabels(schema)
-    rl.insertAnnotations(rows)
-  }
+      rows: Seq[ExpressionRow]): Seq[ExpressionRow] = 
+    controller.insertAnnotations(schema, rows)
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
@@ -245,21 +230,21 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   @throws(classOf[NoDataLoadedException])
   def addSyntheticColumn(id: String, synth: Synthetic): ManagedMatrixInfo = {
-    val current = getState.matrix(id)
+    val current = stateFor(id).matrix(id)
     current.addSynthetic(synth)
     current.info
   }
 
   @throws(classOf[NoDataLoadedException])
   def removeSyntheticColumns(id: String): ManagedMatrixInfo = {
-    val current = getState.matrix(id)
+    val current = stateFor(id).matrix(id)
     current.removeSynthetics()
     current.info
   }
 
   @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(id: String, individualSamples: Boolean): String = {
-    val mm = getState.matrix(id)
+    val mm = stateFor(id).matrix(id)
     var mat = if (individualSamples &&
       mm.rawUngrouped != null && mm.current != null) {
       //Individual samples
@@ -313,7 +298,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   @throws(classOf[NoDataLoadedException])
   def getGenes(id: String, limit: Int): Array[String] = {
-    val mm = getState().matrix(id)
+    val mm = stateFor(id).matrix(id)
 
     var rowNames = mm.current.sortedRowMap.map(_._1)
     println(rowNames.take(10))
@@ -338,6 +323,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       config.feedbackFromAddress, context.config.appName)
   }
 
+  //Note, this is currently unsupported for NetworkService matrices
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(id: String, groups: JList[Group], chosenProbes: JList[String],
     algorithm: Algorithm, featureDecimalDigits: Int): String = {

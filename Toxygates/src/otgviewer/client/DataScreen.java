@@ -142,9 +142,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   
   protected boolean mainTableSelectable() { return false; }  
 
-  //TODO remove
-  protected void beforeGetAssociations() {}
-
   static final public int STANDARD_TOOL_HEIGHT = 43;
 
   protected Label infoLabel;
@@ -199,21 +196,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     switch(type) {
       case Dual:
         return new DualTableView(this, mainTableTitle());
-        //Needed?
-//      @Override
-//      protected void beforeGetAssociations() {
-//        super.beforeGetAssociations();
-//        DataScreen.this.beforeGetAssociations();
-//      }
       default:
       case Single:
         return new TableView(this, mainTableTitle(), mainTableSelectable()) {
-          @Override
-          protected void beforeGetAssociations() {
-            super.beforeGetAssociations();
-            DataScreen.this.beforeGetAssociations();
-          }
-
           @Override
           protected void onGettingExpressionFailed() {
             geneSetChanged(null);

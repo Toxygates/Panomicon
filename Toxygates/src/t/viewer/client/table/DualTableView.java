@@ -1,23 +1,25 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.NetworkMenu;
 import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
-import t.common.shared.AType;
-import t.common.shared.GroupUtils;
+import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.network.*;
+import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;
-import t.viewer.shared.Association;
-import t.viewer.shared.network.Format;
-import t.viewer.shared.network.Network;
+import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.network.*;
 
 /**
  * A DataView that displays an interaction network as two tables.
@@ -26,10 +28,14 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected ExpressionTable sideExpressionTable;
   private NetworkMenu networkMenu;
 
-  protected final static String sideMatrix = "SECONDARY";
+  protected final static String mainMatrix = NetworkService.tablePrefix + "MAIN";
+  protected final static String sideMatrix = NetworkService.tablePrefix + "SIDE";
+  
   final static int MAX_SECONDARY_ROWS = Network.MAX_SIZE;
   private List<Network> _networks; // Don't access directly; see explanation below
 
+  protected NetworkServiceAsync networkService;
+  
   public static enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
@@ -80,13 +86,14 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
    */
   DualMode mode = DualMode.Forward;
   
-  NetworkController controller;
+  NetworkInfo networkInfo;
   
   protected SplitLayoutPanel splitLayout;
   
   
   public DualTableView(ImportingScreen screen, String mainTableTitle) {
     super(screen, mainTableTitle, true);
+    networkService = screen.manager().networkService();
     expressionTable.selectionModel().addSelectionChangeHandler(e -> {      
       network.onSourceSelectionChanged();      
     });
@@ -110,7 +117,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     TableFlags flags =
         new TableFlags(sideMatrix, true, false, MAX_SECONDARY_ROWS, mode.sideType, true, true);
 
-    sideExpressionTable = new ExpressionTable(screen, flags, mode.sideStyle());
+    sideExpressionTable = new ExpressionTable(screen, flags, mode.sideStyle(),
+      this);
     sideExpressionTable.addStyleName("sideExpressionTable");
 
     splitLayout = new SplitLayoutPanel();    
@@ -123,12 +131,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected DualTableNetwork makeNetwork() {
     network = new DualTableNetwork(expressionTable, sideExpressionTable, 
         mode, MAX_SECONDARY_ROWS);
-    controller = new NetworkController(network) {
-      @Override
-      public Map<String, Collection<String>> linkingMap() {
-        return network.linkingMap();
-      }    
-    };
     return network;
   }
   
@@ -141,19 +143,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     columnsChanged(allColumns);
 
     reloadDataIfNeeded();
-  }
-  
-  @Override
-  protected void beforeGetAssociations() {
-    super.beforeGetAssociations();
-    sideExpressionTable.clearMatrix();
-  }
-  
-  //TODO refactor
-  @Override
-  protected void associationsUpdated(Association[] result) {
-    super.associationsUpdated(result);
-    network.extractSideTableProbes();
   }
   
   private Widget tools;
@@ -198,16 +187,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     return columnsOfType(from, mode.sideType);        
   }
   
-  //TODO refactor
-//  protected TableStyle mainTableStyle() {
-//    return super.styleForColumns(columnsForMainTable(chosenColumns));
-//  }
-
-  //TODO refactor
-//  protected TableStyle sideTableStyle() {
-//    return super.styleForColumns(columnsForSideTable(chosenColumns));    
-//  }
-  
 //  @Override
 //  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
 //    //TODO this is a state management hack to force the columns to be fully re-initialised
@@ -251,17 +230,45 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
   }
   
+  @Override
+  protected String mainMatrixId() {
+    return mainMatrix;
+  }
+  
+  @Override
+  public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
+    //TODO page size
+    //TODO init filters
+    final int pageSize = 100;
+    networkService.loadNetwork(mainMatrix, expressionTable.chosenColumns, chosenProbes, 
+      sideMatrix, sideExpressionTable.chosenColumns, valueType, pageSize, 
+      new AsyncCallback<NetworkInfo>() {
+        @Override
+        public void onFailure(Throwable caught) {
+          Window.alert("Unable to load network");
+          logger.log(Level.SEVERE, "Unable to load network", caught);
+        }
+
+        @Override
+        public void onSuccess(NetworkInfo result) {
+          expressionTable.setInitialMatrix(result.mainInfo());
+          sideExpressionTable.setInitialMatrix(result.sideInfo());
+          networkInfo = result;
+        }
+      });
+  }
+  
   // NetworkMenu.Delegate methods
   @Override
   public void visualizeNetwork() {
-    new NetworkVisualizationDialog(this, logger)
-        .initWindow(controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward));
+    new NetworkVisualizationDialog(this, logger).initWindow(networkInfo.network());
   }
 
   @Override
-  public void downloadNetwork(Format format) {
-    NetworkServiceAsync networkService = screen.manager().networkService();
-    Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
+  public void downloadNetwork(Format format) {    
+//    Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
+    //TODO take network directly from server side state
+    Network network = networkInfo.network();
     String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
         : sideExpressionTable.matrixInfo.columnName(0);
     String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)

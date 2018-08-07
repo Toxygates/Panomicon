@@ -33,8 +33,9 @@ public interface NetworkServiceAsync {
 
   void setMirnaSources(MirnaSource[] sources, AsyncCallback<Void> callback);
 
-  void loadNetwork(List<Group> mainColumns, String[] mainProbes, List<Group> sideColumns,
-      ValueType typ, int mainPageSize, AsyncCallback<NetworkInfo> callback);
+  void loadNetwork(String mainId, List<Group> mainColumns, String[] mainProbes, 
+                   String sideId, List<Group> sideColumns, ValueType typ, int mainPageSize,
+      AsyncCallback<NetworkInfo> callback);
 
   void prepareNetworkDownload(Network network, Format format, String messengerWeightColumn,
       String microWeightColumn, AsyncCallback<String> callback);

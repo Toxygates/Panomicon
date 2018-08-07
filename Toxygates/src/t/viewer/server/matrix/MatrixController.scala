@@ -36,6 +36,7 @@ import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.server.matrix._
 import t.viewer.server.Platforms
 import t.viewer.shared.SortKey
+import t.common.shared.sample.ExpressionRow
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
@@ -188,7 +189,14 @@ class MatrixController(context: Context,
     managedMatrix
   }
 
-  def rowLabels(schema: DataSchema): RowLabels = new RowLabels(context, schema)
+  protected def rowLabels(schema: DataSchema): RowLabels = new RowLabels(context, schema)
+  
+  def insertAnnotations(schema: DataSchema,
+      rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
+    val rl = rowLabels(schema)
+    rl.insertAnnotations(rows)
+  }
+
 }
 
 /**
@@ -219,5 +227,5 @@ class MergedMatrixController(context: Context,
     Some(new MatrixMapper(pm, vm))
   }
 
-  override def rowLabels(schema: DataSchema) = new MergedRowLabels(context, schema)
+  override protected def rowLabels(schema: DataSchema) = new MergedRowLabels(context, schema)
 }
