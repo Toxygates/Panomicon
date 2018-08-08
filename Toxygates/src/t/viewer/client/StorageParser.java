@@ -32,10 +32,9 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.network.NetworkConversion;
+import t.viewer.client.network.PackedNetwork;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
-import t.viewer.shared.network.Network;
 
 /**
  * Storage parsing/serialising code. Some is still spread out in other classes, 
@@ -232,13 +231,16 @@ public class StorageParser {
     return r;
   }
 
-  public List<Network> getNetworks() {
-    List<Network> networks = new ArrayList<Network>();
+  public List<PackedNetwork> getPackedNetworks() {
+    List<PackedNetwork> networks = new ArrayList<PackedNetwork>();
     String value = getItem("networks");
     if (value != null) {
       String[] splits = value.split("###");
-      for (String packedNetwork : splits) {
-        networks.add(NetworkConversion.unpackNetwork(packedNetwork));
+      for (String split : splits) {
+        String[] subsplits = split.split(":::");
+        if (subsplits.length == 2) {
+          networks.add(new PackedNetwork(subsplits[0], subsplits[1]));
+        }
       }
     }
     return networks;
@@ -281,10 +283,10 @@ public class StorageParser {
     setItem("lists", packItemLists(itemLists, "###"));
   }
 
-  public void storeNetworks(List<Network> networks) {
+  public void storePackedNetworks(List<PackedNetwork> networks) {
     List<String> networkStrings = new ArrayList<String>();
-    for (Network network : networks) {
-      networkStrings.add(NetworkConversion.packNetwork(network));
+    for (PackedNetwork network : networks) {
+      networkStrings.add(network.title() + ":::" + network.jsonString());
     }
     setItem("networks", packList(networkStrings, "###"));
   }
