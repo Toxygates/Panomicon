@@ -1,4 +1,5 @@
 "use strinct";
+var hola
 // this is the Graph - a Cytoscape object
 var vizNet = null;
 
@@ -186,6 +187,7 @@ $(document).on("change", "#colorRange", function(evt){
  * visualization.
  */
 $(document).on("click", "#filterNodes", function(evt){
+  console.log("#filterNodes", evt);
 
   /* since the application of filters could translate in several drawing
    * iterations, we batch them, as to optimize rendering */
@@ -268,6 +270,7 @@ function initDisplay(){
  * the modal is performed. All information already added by the user is lost.
  */
 $(document).on("click", ".modal-close", function(event){
+  console.log(".modal-close", event);
   var modal = $(event.target).data().modal;
   $("#"+modal).hide();
 });//)
@@ -339,6 +342,9 @@ function onReadyForVisualization(){
    * context. The conversion to proper format and all initialization is then
    * performed by initDisplay() */
   initDisplay();
+  /* Move the Cytoscape context menu into the modal GWT network visualiaztion
+   * dialog, because otherwise input to it will be intercepted */
+  $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
 }
 
 /**
@@ -346,7 +352,7 @@ function onReadyForVisualization(){
  * interaction div
  */
 function uiHeight(){
-  return 235;
+  return 52;
 }
 
 /**

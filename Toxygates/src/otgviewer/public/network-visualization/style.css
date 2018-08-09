@@ -11,7 +11,7 @@
 	display: inline-block;
 }
 
-#netvizdiv div.cy-panel{
+#display.visualization{
 	border-style: dashed;
 	display: inline-block;
 	color: #84c754;
@@ -111,7 +111,7 @@
  * CSS for context menus - as implemented on the library
  * ----------------------------------------------------------------- */
 
-#netvizdiv .cy-context-menus-cxt-menu {
+.cy-context-menus-cxt-menu {
     display:none;
     z-index:1000;
     position:absolute;
@@ -121,7 +121,7 @@
     width:auto;
 }
 
-#netvizdiv .cy-context-menus-cxt-menuitem {
+.cy-context-menus-cxt-menuitem {
     display:block;
     z-index:1000;
     width: 100%;
@@ -136,15 +136,15 @@
     text-align: left;
 }
 
-#netvizdiv .cy-context-menus-cxt-menuitem:enabled {
+.cy-context-menus-cxt-menuitem:enabled {
     color: #000000;
 }
 
-#netvizdiv .cy-context-menus-ctx-operation:focus {
+.cy-context-menus-ctx-operation:focus {
   outline: none;
 }
 
-#netvizdiv .cy-context-menus-cxt-menuitem:hover {
+.cy-context-menus-cxt-menuitem:hover {
     color: #ffffff;
     text-decoration: none;
     background-color: #0B9BCD;
@@ -152,10 +152,10 @@
     cursor: pointer;
 }
 
-#netvizdiv .cy-context-menus-cxt-menuitem[content]:before {
+.cy-context-menus-cxt-menuitem[content]:before {
     content:attr(content);
 }
 
-#netvizdiv .cy-context-menus-divider {
+.cy-context-menus-divider {
   border-bottom:1px solid #A0A0A0;
 }
