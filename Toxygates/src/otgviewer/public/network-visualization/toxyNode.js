@@ -86,5 +86,5 @@ class ToxyNode{
  * @return the newly created Node
  */
 function makeNode(id, type, symbols){
-  return new Node(id, type, symbols);
+  return new ToxyNode(id, type, symbols);
 }
