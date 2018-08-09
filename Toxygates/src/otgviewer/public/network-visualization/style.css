@@ -1,43 +1,115 @@
-#netvizdiv h1{
-	color: #84c754;
-}
-
+/* -------------------------------------------
+ * CSS for general elements
+ * ------------------------------------------- */
+#netvizdiv h1,
 #netvizdiv h3{
 	color: #84c754;
 }
 
 #netvizdiv div{
-	/* border: 2px solid blue; */
 	width: 20%;
 	display: inline-block;
+}
+
+#display.visualization{
+	border-style: dashed;
+	display: inline-block;
+	color: #84c754;
+	width: 1000px;
+	height: 1000px;
+	float: left;
+}
+
+#netvizdiv div.info-panel{
+	border-style: dashed;
+	display: inline-block;
+	width: 30%;
+	height: 100%;
 }
 
 #netvizdiv select{
-	/* border: 2px solid green; */
-	width: 20%;
+	width: 15%;
 	display: inline-block;
 }
 
-#netvizdiv .container {
-	padding-right:50px;
-	padding-left:50px;
-	margin-right:auto;
-	margin-left:auto
-}
-
-#netvizdiv .visualization {
-  border-style: dashed;
+#netvizdiv label{
+	width: 120px;
+	font-weight: bold;
 	display: inline-block;
-  color: #84c754;
-  width: 1000px;
-  height: 1000px;
+
 }
 
-#netvizdiv .vizNotes{
-	display: inline-block;
-	vertical-align: top;
+#netvizdiv input[type=text],
+#netvizdiv input[type=number]{
+	border: 1px;
+	border-color: #b2c7ea;
+	border-style: solid;
+	font-weight: bold;
+	text-align: right;
+	display: inline;
+	width: 100px;
+
 }
 
+/* ----------------------------------------------------------
+ * CSS for modal elements - based on the w3schools example
+ * ---------------------------------------------------------- */
+#netvizdiv div.modal{
+	display: none; /* hidden by default */
+	position: fixed; /* dont move */
+	z-index: 1; /* on top of the page */
+	padding-top: 100px;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgb(0,0,0);
+	background-color: rgba(0,0,0,0.4);
+}
+
+#netvizdiv div.modal-content{
+	background-color: #fefefe;
+	margin: 0;
+	padding: 0px 20px;
+	width: 80%;
+}
+
+#netvizdiv span.modal-close{
+	color: #aaaaaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+#netvizdiv span.modal-close:hover,
+#netvizdiv span.modal-close:focus{
+	color: #000;
+	text-decoration: none;
+}
+
+#netvizdiv span.modal-add,
+#netvizdiv span.modal-remove{
+	color: #aaaaaa;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+#netvizdiv span.modal-button{
+	background-color: green;
+	font-size: 1em;
+	border: none;
+	color: white;
+	padding: 10px 10px;
+	cursor: pointer;
+	float: right;
+}
+
+/* -----------------------------------------------------------------
+ * CSS for context menus - as implemented on the library
+ * ----------------------------------------------------------------- */
 
 .cy-context-menus-cxt-menu {
     display:none;
@@ -86,74 +158,4 @@
 
 .cy-context-menus-divider {
   border-bottom:1px solid #A0A0A0;
-}
-
-/** CSS for the modal container (background) - from the w3schools example */
-#netvizdiv .modal{
-	display: none; /* hidden by default */
-	position: fixed; /* dont move */
-	z-index: 1; /* on top of the page */
-	padding-top: 100px;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	overflow: auto;
-	background-color: rgb(0,0,0);
-	background-color: rgba(0,0,0,0.4);
-}
-
-#netvizdiv .modal-content{
-	background-color: #fefefe;
-	margin: 0;
-	padding: 0px 20px;
-	/* border: 1px solid #888; */
-	width: 80%;
-}
-
-#netvizdiv .close{
-	color: #aaaaaa;
-	float: right;
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-#netvizdiv .remove,
-#netvizdiv .add{
-	color: #aaaaaa;
-	/* float: right; */
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-#netvizdiv .close.hover,
-#netvizdiv .close:focus{
-	color: #000;
-	text-decoration: none;
-	/* cursor: pointer; */
-}
-
-#netvizdiv .button{
-	background-color: green;
-	font-size: 1em;
-	border: none;
-	color: white;
-	padding: 10px 10px;
-	cursor: pointer;
-	float: right;
-}
-
-#netvizdiv .scale{
-	position: fixed; /* dont move */
-	z-index: 1; /* on top of the page */
-	padding-top: 100px;
-	left: 0;
-	top: 0;
-	width: 10%;
-	height: 10%;
-	overflow: auto;
-	background-color: rgba(0,0,0, 0.5);
-
 }

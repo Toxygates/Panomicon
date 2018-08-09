@@ -8,15 +8,8 @@ function initStyle(){
     .style({
       "label": "data(label)",
       "text-valign": "center",
-      "text-halign": "center"
-    })
-    .selector(".mRNA")
-    .style({
-      'background-color': "data(color)" //#007f7f" // default msgRNA color
-    })
-    .selector(".microRNA")
-    .style({
-      'background-color': "data(color)" //"#827f00"
+      "text-halign": "center",
+      'background-color': "data(color)",
     })
     .update();
 }
@@ -93,10 +86,15 @@ function initContextMenu(){
  * menu is clicked
  */
 function onAddEdge(event){
+  // the initial node for the new interaction
   var source = event.target || event.cyTarget;
+  // change cursor type to cue the user on the need to select a target node
   document.body.style.cursor = "crosshair";
+  // handle the next click of the mouse
   event.cy.promiseOn("click").then(function(evt){
     var to = evt.target;
+    // a new interaction is only added if the user clicks on a node different
+    // from the one used as source for the interaction
     if( to !== self && to.isNode() ){
       event.cy.add({
         group: "edges",
@@ -110,12 +108,14 @@ function onAddEdge(event){
     else{
       window.alert("Edge not added");
     }
+    // return cursor to its default value, regardless of the previous result
     document.body.style.cursor = "default";
   });
 }
 
 /**
- *
+ * Configure and display the modal used to update the properties of a single
+ * node within the graph
  * @param {}event the event triggered when the corresponding item in the context
  * menu is pressed
  */
@@ -124,18 +124,18 @@ function onUpdateNode(event){
   /* container for the current node's data */
   var trg = event.target.data();
   // the current node's ID
-  $(".modal-content #nodeID").val(trg["id"]);
+  $("#nodeID").val(trg["id"]);
 
   // the node's label - text shown on screen
-  $(".modal-content #nodeLabel").val(trg["label"]);
+  $("#nodeLabel").val(trg["label"]);
 
-  // the node's type - currently limitated to msgRNA and microRNA
-  var types = Object.values(nodeType);
+  // the node's type - provide options for user to change, based on available
+  // types
+  var types = Object.keys(nodeType);
   $("#nodeType").empty();
-  $("#nodetype").append(new Option("Select...", null));
   for(var i=0; i<types.length; ++i)
-    $("#nodeType").append(new Option(types[i], types[i]));
-  $(".modal-content #nodeType").val(trg["type"]);
+    $("#nodeType").append(new Option(types[i], nodeType[types[i]])); // (text, value)
+  $("#nodeType").val(trg["type"]);
 
   // set the available options for weights and add them to a list for display
   $(".modal-content #weightValue").val("");
@@ -155,36 +155,31 @@ function onUpdateNode(event){
 }
 
 /**
- * Once the user selects the option to color the whole graph, we need to define
- * how the colouring will be made and what the colours will be
+ * Define the initial set-up and options for selection of coloring application
+ * to entire sections of the graph.
+ * @param {}event the event triggered when the corresponding item in the context
+ * menu is pressed
  */
 function onColorScale(event){
   /* display the corresponding color interface */
-  $("#colorScaleModal").show();
+  $("#graphColorModal").show();
 
   /* add option to select where to apply color */
-  var types = Object.values(nodeType);
+  var types = Object.keys(nodeType);
   $("#graphColorTo").empty();
   $("#graphColorTo").append(new Option("Select...", null));
   for(var i=0; i<types.length; ++i)
-    $("#graphColorTo").append(new Option(types[i], types[i]));
+    $("#graphColorTo").append(new Option(types[i], nodeType[types[i]]));
 
   /* initialize an empty color by select component */
   $("#graphColorBy").empty();
   $("#graphColorBy").append(new Option("Select...", null));
 
-
-  var slider = $("#colorRange")[0];
-  slider.setAttribute("min", 0);
-    //   max: 500,
-    //   values: [ 75, 300 ],
-    //   slide: function( event, ui ) {
-    //     $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
-    //   }
-    // });
-    // $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
-    //   " - $" + $( "#slider-range" ).slider( "values", 1 ) );
-
+  /* initialize color scale values */
+  $("#minRange").val("");
+  $("#maxRange").val("");
+  $("#colorRange").val(50);
+  $("#whiteRange").val("");
 }
 
 /**
