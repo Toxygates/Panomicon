@@ -212,8 +212,15 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader 
         super.setMatrix(matrix);
         displayInfo("Successfully loaded " + matrix.numRows() + " probes");
       }
+      
+      @Override
+      protected void afterGetRows() {
+        TableView.this.afterGetRows();
+      }
     };
   }  
+  
+  protected void afterGetRows() { }
   
   //TODO hook to be overridden - try to remove this
   protected void onGettingExpressionFailed() { }

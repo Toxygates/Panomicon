@@ -90,7 +90,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   protected SplitLayoutPanel splitLayout;
   
-  
   public DualTableView(ImportingScreen screen, String mainTableTitle) {
     super(screen, mainTableTitle, true);
     networkService = screen.manager().networkService();
@@ -228,6 +227,13 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     sideExpressionTable.clearMatrix();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
+  }
+  
+
+  @Override
+  protected void afterGetRows() {
+    super.afterGetRows();
+    sideExpressionTable.refetchRows();
   }
   
   @Override

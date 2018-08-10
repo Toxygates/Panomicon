@@ -678,6 +678,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               toArray(String[]::new);          
           highlightedRow = -1;
           getAssociations();
+          afterGetRows();
         } 
       }
     };
@@ -694,6 +695,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     }
   }
+  
+  protected void afterGetRows() { }
   
   public List<ExpressionRow> getDisplayedRows() {
     return grid.getVisibleItems();
@@ -778,6 +781,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     setEnabled(true);
   }
 
+  /**
+   * Refetch rows as they are currently represented on the server side.
+   * TODO: this should respect page size changes
+   */
+  public void refetchRows() {
+    int initSize = NavigationTools.INIT_PAGE_SIZE;
+    grid.setVisibleRangeAndClearData(new Range(0, initSize), true);
+  }
+  
   /**
    * Called when data is successfully loaded for the first time
    */
