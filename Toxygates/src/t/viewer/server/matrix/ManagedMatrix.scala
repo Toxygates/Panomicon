@@ -33,6 +33,7 @@ import otg.model.sample.OTGAttribute
 import t.common.shared.sample.{Sample => SSample}
 import t.common.shared.sample.{Unit => TUnit}
 import t.common.shared.GroupUtils
+import t.common.shared.sample.ExpressionRow
 
 object ManagedMatrix {
  type RowData = Seq[ExprValue]
@@ -50,7 +51,7 @@ object ManagedMatrix {
 
 /**
  * Load parameters for a CoreMatrix.
- * 
+ *
  * @param rawUngroupedMat ungrouped matrix.
  * Mainly used for computing T- and U-tests. Sorting is irrelevant.
  *
@@ -63,7 +64,7 @@ case class LoadParams(val initProbes: Seq[String],
     var rawGrouped: ExprMatrix,
     val baseColumnMap: Map[Int, Seq[Int]],
     val log2Transform: Boolean = false) {
-  
+
   def typ = GroupUtils.groupType(currentInfo.columnGroup(0))
   def species = groupSpecies(currentInfo.columnGroup(0))
 }
@@ -75,22 +76,28 @@ case class LoadParams(val initProbes: Seq[String],
  * A managed matrix is constructed on the basis of some number of
  * "request columns" but may insert additional columns with extra information.
  * The info object should be used to query what columns have actually been
- * constructed. 
+ * constructed.
  */
 class CoreMatrix(val params: LoadParams) {
 
   import ManagedMatrix._
 
   var current: ExprMatrix = params.rawGrouped
-  def currentInfo = params.currentInfo 
+  def currentInfo = params.currentInfo
   def initProbes = params.initProbes
   def rawGrouped = params.rawGrouped
   def rawUngrouped = params.rawUngrouped
-  
+
   protected var _sortColumn: Option[Int] = None
   protected var _sortAscending: Boolean = false
 
   protected var requestProbes: Seq[String] = initProbes
+
+  /**
+   * Integer offsets of rows in the current page, if any.
+   * Offset and size.
+   */
+  protected var currentPageRows: Option[(Int, Int)] = None
 
   updateRowInfo()
 
@@ -111,13 +118,23 @@ class CoreMatrix(val params: LoadParams) {
   def sortAscending: Boolean = _sortAscending
 
   /**
+   * Efficiently obtain a page as ExpressionRow objects.
+   */
+  def page(offset: Int, length: Int): Seq[ExpressionRow] = {
+    val selectedRows = offset until (offset + length)
+    currentPageRows = Some((offset, length))
+    currentViewChanged()
+    current.selectRows(selectedRows).asRows
+  }
+
+  /**
    * Set the filtering threshold for a column with separate filtering.
    */
   def setFilter(col: Int, f: ColumnFilter): Unit = {
     currentInfo.setColumnFilter(col, f)
     resetSortAndFilter()
     filterAndSort()
-    currentRowsChanged()
+    currentViewChanged()
   }
 
   /**
@@ -129,7 +146,7 @@ class CoreMatrix(val params: LoadParams) {
     }
     resetSortAndFilter()
     filterAndSort()
-    currentRowsChanged()
+    currentViewChanged()
   }
 
   /**
@@ -139,15 +156,15 @@ class CoreMatrix(val params: LoadParams) {
     requestProbes = probes
     resetSortAndFilter()
     filterAndSort()
-    currentRowsChanged()
+    currentViewChanged()
   }
-  
+
   /**
    * Called when the order or selection of rows in the current matrix changes.
    * May be overridden to add behaviour.
    * TODO review the sites calling this
    */
-  protected def currentRowsChanged() { }
+  protected def currentViewChanged() { }
 
   protected def filterAndSort(): Unit = {
     def f(r: RowData): Boolean = {
@@ -168,7 +185,7 @@ class CoreMatrix(val params: LoadParams) {
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
 
     //TODO avoid selecting here
-    current = current.selectNamedRows(requestProbes).filterRows(f)    
+    current = current.selectNamedRows(requestProbes).filterRows(f)
     _sortColumn match {
       case Some(sc) => sort(sc, _sortAscending)
       case _ => //not sorting
@@ -198,7 +215,7 @@ class CoreMatrix(val params: LoadParams) {
     _sortAscending = ascending
     current = current.sortRows(sortRows(col, ascending))
     updateRowInfo()
-    currentRowsChanged()
+    currentViewChanged()
   }
 
   /**
@@ -323,4 +340,4 @@ trait Synthetics extends CoreMatrix {
   }
 }
 
-class ManagedMatrix(params: LoadParams) extends CoreMatrix(params) with Synthetics    
+class ManagedMatrix(params: LoadParams) extends CoreMatrix(params) with Synthetics

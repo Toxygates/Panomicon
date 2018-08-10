@@ -30,7 +30,7 @@ import t.viewer.shared.Synthetic
 import scala.collection.JavaConversions._
 import t.platform.mirna._
 import java.lang.{ Double => JDouble }
-import java.util.{HashMap => JHMap, List => JList}
+import java.util.{ HashMap => JHMap, List => JList }
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.NetworkInfo
 import t.common.shared.sample.Group
@@ -48,6 +48,8 @@ import t.viewer.server.Platforms
 import t.viewer.shared.network.Node
 import t.viewer.shared.network.Interaction
 import t.viewer.server.network.NetworkBuilder
+import t.viewer.server.network.NetworkController
+import t.viewer.server.network.NetworkController
 
 object NetworkState {
   val stateKey = "network"
@@ -101,18 +103,17 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
 
   def buildNetwork(sourceMatrixId: String) {
     val matState = getOtherServiceState[MatrixState](MatrixState.stateKey).getOrElse(
-        throw new NoDataLoadedException("No MatrixState available"))
+      throw new NoDataLoadedException("No MatrixState available"))
     val mat = matState.matrix(sourceMatrixId)
     val fromMiRNA = false
     val countMap = NetworkState.buildCountMap(mat, getState.targetTable, platforms,
-        fromMiRNA)
+      fromMiRNA)
     val countColumn = new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
-        new JHMap(mapAsJavaMap(countMap)), null)
+      new JHMap(mapAsJavaMap(countMap)), null)
   }
 
-
   private def makeNetwork(targets: TargetTable, main: ManagedMatrix,
-      side: ManagedMatrix): Network =
+    side: ManagedMatrix): Network =
     new NetworkBuilder(targets, platforms, main, side).build
 
   /**
@@ -121,16 +122,15 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
    * and the mapping between the two.
    */
   def loadNetwork(mainId: String, mainColumns: JList[Group], mainProbes: Array[String],
-                  sideId: String, sideColumns: JList[Group], typ: ValueType,
-                  mainPageSize: Int): NetworkInfo = {
+    sideId: String, sideColumns: JList[Group], typ: ValueType,
+    mainPageSize: Int): NetworkInfo = {
 
     //Orthologous mode is not supported for network loading
     val orthMappings = () => List()
 
-    //TODO construct managed network instead of managed matrix
-    getState.controllers += (mainId ->
-      MatrixController(context, orthMappings, mainColumns, mainProbes, typ, false))
-    val mainMat = getState.matrix(mainId)
+    getState.controllers += (sideId ->
+      MatrixController(context, orthMappings, sideColumns, Seq(), typ, false))
+    val sideMat = getState.matrix(sideId)
 
     val gt = GroupUtils.groupType(sideColumns(0))
     val species = groupSpecies(sideColumns(0))
@@ -139,10 +139,14 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
-    getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, sideColumns, Seq(), typ, false))
+    //The network controller (actually the managed network) will ensure that
+    //the side matrix stays updated when the main matrix changes
+    getState.controllers += (mainId ->
+      new NetworkController(context, mainColumns, mainProbes, typ, false,
+        sideMat, targets, platforms, mainPageSize))
 
-    val sideMat = getState.matrix(sideId)
+    //This will be a ManagedNetwork
+    val mainMat = getState.matrix(mainId)
 
     val fromMiRNA = gt == Network.mrnaType;
     val countMap = NetworkState.buildCountMap(mainMat, targets, platforms,

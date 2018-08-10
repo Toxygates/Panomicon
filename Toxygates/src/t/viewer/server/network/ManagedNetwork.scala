@@ -12,10 +12,10 @@ import t.viewer.shared.network.Network
 import t.viewer.server.Platforms
 
 /**
- * Extended version of ManagedMatrix to preserve 
+ * Extended version of ManagedMatrix to preserve
  * the relationship between the main and the side matrices in a network,
  * when sorting, filtering, etc. happens to the former.
- * 
+ *
  * For best performance, the target table should be pre-filtered for the species.
  */
 class ManagedNetwork(mainParams: LoadParams,
@@ -23,16 +23,19 @@ class ManagedNetwork(mainParams: LoadParams,
     var targets: TargetTable,
     platforms: Platforms,
     var currentPageSize: Int) extends ManagedMatrix(mainParams) {
-  
-  override protected def currentRowsChanged() { 
-    super.currentRowsChanged()   
+
+  //TODO check if this is called in the correct places
+  override protected def currentViewChanged() {
+    super.currentViewChanged()
     updateSideMatrix()
   }
-  
+
   def updateSideMatrix() {
+    val offset = currentPageRows.map(_._1).getOrElse(0)
+    val length = currentPageRows.map(_._2).getOrElse(currentPageSize)
     val sideProbes = NetworkBuilder.extractSideProbes(targets, platforms,
-        this, 0, currentPageSize)
-    println(s"Managed network: selecting ${sideProbes.size} probes for side matrix")       
+        this, offset, length)
+    println(s"Managed network: selecting ${sideProbes.size} probes for side matrix")
     sideMatrix.selectProbes(sideProbes)
   }
 }

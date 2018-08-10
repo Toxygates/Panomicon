@@ -138,7 +138,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     }
     r.getOrElse(throw new NoDataLoadedException(s"No matrix state for id $id"))
   }
-  
+
   @throws(classOf[NoDataLoadedException])
   def selectProbes(id: String, @Nullable probes: Array[String]): ManagedMatrixInfo = {
     val prs = Option(probes).getOrElse(Array()).toSeq
@@ -166,7 +166,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       val mm =
         cont.applySorting(sortKey, ascending)
 
-      val grouped = mm.current.asRows.drop(offset).take(size)
+      val grouped = mm.page(offset, size)
 
       val rowNames = grouped.map(_.getProbe)
       val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data
@@ -190,7 +190,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   }
 
   private def insertAnnotations(controller: MatrixController,
-      rows: Seq[ExpressionRow]): Seq[ExpressionRow] = 
+      rows: Seq[ExpressionRow]): Seq[ExpressionRow] =
     controller.insertAnnotations(schema, rows)
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
