@@ -117,11 +117,13 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
       (i -> sampleIdxs)
     })
 
-    new ManagedMatrix(sortedProbes, info,
-      ungrouped.copyWithAnnotations(annotations),
-      grouped.copyWithAnnotations(annotations),
-      baseColumns,
-      log2transform)
+    new ManagedMatrix(
+      LoadParams(sortedProbes, info,
+        ungrouped.copyWithAnnotations(annotations),
+        grouped.copyWithAnnotations(annotations),
+        baseColumns,
+        log2transform)
+      )
   }
 
   protected def log2transform: Boolean = false

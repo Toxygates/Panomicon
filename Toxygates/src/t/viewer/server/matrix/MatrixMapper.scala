@@ -109,7 +109,9 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val rks = (0 until ungr.rows).map(ungr.rowAt)
 
     //Note, we re-fix initProbes for the new matrix
-    new ManagedMatrix(rks, convert(from.currentInfo, rks), ungr, gr, bm, false)
+    new ManagedMatrix(
+      LoadParams(rks, convert(from.currentInfo, rks), ungr, gr, bm, false)
+      )
   }
 
   /**

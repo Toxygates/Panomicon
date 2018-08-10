@@ -9,6 +9,23 @@ import t.viewer.shared.network.Network
 import scala.collection.JavaConversions._
 import t.viewer.server.Platforms
 
+object NetworkBuilder {
+  
+  /**
+   * Uses the current target table to compute side table probes.
+   * @param mainOffset defines the start of the current page in the main matrix.
+   * @param mainSize defines the size of the current page in the main matrix.
+   */
+  def extractSideProbes(targets: TargetTable,
+                        platforms: Platforms,
+      main: ManagedMatrix,
+      mainOffset: Int, mainSize: Int): Seq[String] = {
+    val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
+    val range = targets.reverseTargets(platforms.resolve(domain))
+    range.map(_._2.id).toSeq.distinct
+  }
+}
+
 class NetworkBuilder(targets: TargetTable,
     platforms: Platforms,
     main: ManagedMatrix, side: ManagedMatrix) {

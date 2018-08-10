@@ -110,18 +110,6 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
         new JHMap(mapAsJavaMap(countMap)), null)
   }
 
-  /**
-   * Uses the current target table to compute side table probes.
-   * @param mainOffset defines the start of the current page in the main matrix.
-   * @param mainSize defines the size of the current page in the main matrix.
-   */
-  private def extractSideProbes(targets: TargetTable,
-      main: ManagedMatrix,
-      mainOffset: Int, mainSize: Int): Seq[String] = {
-    val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
-    val range = targets.reverseTargets(platforms.resolve(domain))
-    range.map(_._2.id).toSeq.distinct
-  }
 
   private def makeNetwork(targets: TargetTable, main: ManagedMatrix,
       side: ManagedMatrix): Network =
@@ -139,8 +127,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     //Orthologous mode is not supported for network loading
     val orthMappings = () => List()
 
-    //TODO store in matrixService instead of in networkService?
-    //let matrixService access this service's state?
+    //TODO construct managed network instead of managed matrix
     getState.controllers += (mainId ->
       MatrixController(context, orthMappings, mainColumns, mainProbes, typ, false))
     val mainMat = getState.matrix(mainId)
@@ -152,10 +139,8 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
-    val sideProbes = extractSideProbes(targets,
-        mainMat, 0, mainPageSize)
     getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, sideColumns, sideProbes, typ, false))
+      MatrixController(context, orthMappings, sideColumns, Seq(), typ, false))
 
     val sideMat = getState.matrix(sideId)
 
@@ -165,7 +150,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val pset = sideMat.initProbes.toSet
     val filtered = countMap.filter(x => pset.contains(x._1))
     sideMat.addSynthetic(
-      new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
+      new Synthetic.Precomputed("Count", s"Number of times each ($gt) appeared",
         new JHMap(mapAsJavaMap(filtered)), null))
 
     //To do: init filters...

@@ -146,7 +146,9 @@ class MatrixController(context: Context,
       makeMatrix(filteredProbes.toSeq, typ, fullLoad)
     } else {
       val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
-      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
+      new ManagedMatrix(
+        LoadParams(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
+        )
     }
 
     pt.mark("MakeMatrix")

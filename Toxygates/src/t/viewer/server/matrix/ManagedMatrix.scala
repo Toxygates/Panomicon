@@ -32,6 +32,7 @@ import t.viewer.shared.Synthetic
 import otg.model.sample.OTGAttribute
 import t.common.shared.sample.{Sample => SSample}
 import t.common.shared.sample.{Unit => TUnit}
+import t.common.shared.GroupUtils
 
 object ManagedMatrix {
  type RowData = Seq[ExprValue]
@@ -48,32 +49,44 @@ object ManagedMatrix {
 }
 
 /**
- * A server-side ExprMatrix and support logic for
- * sorting, filtering, data loading etc.
- *
- * A managed matrix is constructed on the basis of some number of
- * "request columns" but may insert additional columns with extra information.
- * The info object should be used to query what columns have actually been
- * constructed.
- *
+ * Load parameters for a CoreMatrix.
+ * 
  * @param rawUngroupedMat ungrouped matrix.
  * Mainly used for computing T- and U-tests. Sorting is irrelevant.
  *
  * @param rawGroupedMat unfiltered matrix.
  *  The final view is obtained by filtering this (if requested).
  */
-
-class CoreMatrix(val initProbes: Seq[String],
+case class LoadParams(val initProbes: Seq[String],
     val currentInfo: ManagedMatrixInfo,
     val rawUngrouped: ExprMatrix,
     var rawGrouped: ExprMatrix,
     val baseColumnMap: Map[Int, Seq[Int]],
     val log2Transform: Boolean = false) {
+  
+  def typ = GroupUtils.groupType(currentInfo.columnGroup(0))
+  def species = groupSpecies(currentInfo.columnGroup(0))
+}
+
+/**
+ * A server-side ExprMatrix and support logic for
+ * sorting, filtering, data loading etc.
+ *
+ * A managed matrix is constructed on the basis of some number of
+ * "request columns" but may insert additional columns with extra information.
+ * The info object should be used to query what columns have actually been
+ * constructed. 
+ */
+class CoreMatrix(val params: LoadParams) {
 
   import ManagedMatrix._
 
-  var current: ExprMatrix = rawGrouped
-
+  var current: ExprMatrix = params.rawGrouped
+  def currentInfo = params.currentInfo 
+  def initProbes = params.initProbes
+  def rawGrouped = params.rawGrouped
+  def rawUngrouped = params.rawUngrouped
+  
   protected var _sortColumn: Option[Int] = None
   protected var _sortAscending: Boolean = false
 
@@ -85,7 +98,7 @@ class CoreMatrix(val initProbes: Seq[String],
    * For the given column in the grouped matrix,
    * which columns in the ungrouped matrix are its basis?
    */
-  def baseColumns(col: Int): Seq[Int] = baseColumnMap.get(col).getOrElse(List())
+  def baseColumns(col: Int): Seq[Int] = params.baseColumnMap.get(col).getOrElse(List())
 
   /**
    * What is the current sort column?
@@ -104,6 +117,7 @@ class CoreMatrix(val initProbes: Seq[String],
     currentInfo.setColumnFilter(col, f)
     resetSortAndFilter()
     filterAndSort()
+    currentRowsChanged()
   }
 
   /**
@@ -115,6 +129,7 @@ class CoreMatrix(val initProbes: Seq[String],
     }
     resetSortAndFilter()
     filterAndSort()
+    currentRowsChanged()
   }
 
   /**
@@ -124,7 +139,15 @@ class CoreMatrix(val initProbes: Seq[String],
     requestProbes = probes
     resetSortAndFilter()
     filterAndSort()
+    currentRowsChanged()
   }
+  
+  /**
+   * Called when the order or selection of rows in the current matrix changes.
+   * May be overridden to add behaviour.
+   * TODO review the sites calling this
+   */
+  protected def currentRowsChanged() { }
 
   protected def filterAndSort(): Unit = {
     def f(r: RowData): Boolean = {
@@ -145,7 +168,7 @@ class CoreMatrix(val initProbes: Seq[String],
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
 
     //TODO avoid selecting here
-    current = current.selectNamedRows(requestProbes).filterRows(f)
+    current = current.selectNamedRows(requestProbes).filterRows(f)    
     _sortColumn match {
       case Some(sc) => sort(sc, _sortAscending)
       case _ => //not sorting
@@ -175,6 +198,7 @@ class CoreMatrix(val initProbes: Seq[String],
     _sortAscending = ascending
     current = current.sortRows(sortRows(col, ascending))
     updateRowInfo()
+    currentRowsChanged()
   }
 
   /**
@@ -200,7 +224,7 @@ class CoreMatrix(val initProbes: Seq[String],
    * potentially applied.
    */
   private[server] def finalTransform(m: ExprMatrix): ExprMatrix = {
-    if (log2Transform) {
+    if (params.log2Transform) {
       m.map(e => ManagedMatrix.log2(e))
     } else {
       m
@@ -223,7 +247,7 @@ trait Synthetics extends CoreMatrix {
     _synthetics = Vector()
     val dataColumns = 0 until currentInfo.numDataColumns()
     current = current.selectColumns(dataColumns)
-    rawGrouped = rawGrouped.selectColumns(dataColumns)
+    params.rawGrouped = params.rawGrouped.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
   }
 
@@ -299,11 +323,4 @@ trait Synthetics extends CoreMatrix {
   }
 }
 
-class ManagedMatrix(initProbes: Seq[String],
-    currentInfo: ManagedMatrixInfo,
-    rawUngrouped: ExprMatrix,
-    rawGrouped: ExprMatrix,
-    baseColumnMap: Map[Int, Seq[Int]],
-    log2Transform: Boolean = false)
-    extends CoreMatrix(initProbes, currentInfo, rawUngrouped,
-                       rawGrouped, baseColumnMap, log2Transform) with Synthetics
+class ManagedMatrix(params: LoadParams) extends CoreMatrix(params) with Synthetics    
