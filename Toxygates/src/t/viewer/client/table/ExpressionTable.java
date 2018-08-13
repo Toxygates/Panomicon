@@ -731,6 +731,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     chartBarcodes = null;
     loadedData = false;
     lastColumnFilters.clear();
+    grid.getColumnSortList().clear();
+    
     logMatrixInfo("Columns changed (" + columns.size() + ")");
   }
 

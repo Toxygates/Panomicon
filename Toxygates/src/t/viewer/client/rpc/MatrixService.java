@@ -89,8 +89,7 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @param id ID of the matrix
    * @param offset
    * @param size
-   * @param sortColumn data column to sort by (starting at 0) If this parameter is -1, the
-   *        previously applied sorting is used.
+   * @param sortKey data column to sort by.
    * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
    * @return
    */
