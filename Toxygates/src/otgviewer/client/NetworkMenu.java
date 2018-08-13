@@ -5,8 +5,8 @@ import java.util.List;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.MenuItemCaptionSeparator;
+import t.viewer.client.network.PackedNetwork;
 import t.viewer.shared.network.Format;
-import t.viewer.shared.network.Network;
 
 public class NetworkMenu {
   private MenuBar root;
@@ -16,13 +16,13 @@ public class NetworkMenu {
   public interface Delegate {
     void visualizeNetwork();
 
-    void deleteNetwork(Network network);
+    void deleteNetwork(PackedNetwork network);
 
-    void visualizeNetwork(Network network);
+    void visualizeNetwork(PackedNetwork network);
 
     void downloadNetwork(Format format);
 
-    List<Network> networks();
+    List<PackedNetwork> networks();
   }
 
   public NetworkMenu(Delegate delegate) {
@@ -41,7 +41,7 @@ public class NetworkMenu {
     root.addItem(new MenuItem("Visualize network", () -> delegate.visualizeNetwork()));
     root.addSeparator(new MenuItemCaptionSeparator("Stored networks"));
 
-    for (final Network network : delegate.networks()) {
+    for (final PackedNetwork network : delegate.networks()) {
       MenuBar item = new MenuBar(true);
 
       item.addItem(new MenuItem("Visualize", false, () -> delegate.visualizeNetwork(network)));

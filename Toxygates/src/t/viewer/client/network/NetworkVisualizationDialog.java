@@ -43,7 +43,7 @@ public class NetworkVisualizationDialog {
   private static Boolean injected = false;
 
   public interface Delegate {
-    void saveNetwork(Network network);
+    void saveNetwork(PackedNetwork network);
     //List<Network> networks();
   }
 
@@ -177,9 +177,9 @@ public class NetworkVisualizationDialog {
    * Handles the logic for actually saving a network from the visualization dialog
    */
   public native void saveNetwork(JavaScriptObject network) /*-{
-    var javaNetwork = @t.viewer.client.network.NetworkConversion::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
     var delegate = this.@t.viewer.client.network.NetworkVisualizationDialog::delegate;
-    delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::saveNetwork(Lt/viewer/shared/network/Network;)(javaNetwork);
+    var packedNetwork = @t.viewer.client.network.PackedNetwork::new(Ljava/lang/String;Ljava/lang/String;)(network.title, JSON.stringify(network));
+    delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::saveNetwork(Lt/viewer/client/network/PackedNetwork;)(packedNetwork);
   }-*/;
 
   public static native String currentNetworkName() /*-{

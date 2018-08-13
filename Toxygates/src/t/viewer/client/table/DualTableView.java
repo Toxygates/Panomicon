@@ -32,7 +32,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected final static String sideMatrix = NetworkService.tablePrefix + "SIDE";
   
   final static int MAX_SECONDARY_ROWS = Network.MAX_SIZE;
-  private List<Network> _networks; // Don't access directly; see explanation below
+  private List<PackedNetwork> _networks; // Don't access directly; see explanation below
 
   protected NetworkServiceAsync networkService;
   
@@ -294,32 +294,33 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
    * DualTableView's constructor code is executed.  
    */
   @Override
-  public List<Network> networks() {
+  public List<PackedNetwork> networks() {
     if (_networks == null) {
-      _networks = screen.getParser().getNetworks();
+      _networks = screen.getParser().getPackedNetworks();
     }
     return _networks;
   }
 
-  // NetworkVisualizationDialog.Delegate methods
-  @Override
-  public void saveNetwork(Network network) {
-    networks().add(network);
-    screen.getParser().storeNetworks(networks());
-    networkMenu.networksChanged();
-  }
 
   @Override
-  public void deleteNetwork(Network network) {
+  public void deleteNetwork(PackedNetwork network) {
     if (!networks().remove(network)) {
 
     }
-    screen.getParser().storeNetworks(networks());
+    screen.getParser().storePackedNetworks(networks());
     networkMenu.networksChanged();
   }
 
   @Override
-  public void visualizeNetwork(Network network) {
-    new NetworkVisualizationDialog(this, logger).initWindow(network);
+  public void visualizeNetwork(PackedNetwork network) {
+    new NetworkVisualizationDialog(this, logger).initWindow(network.unpack());
+  }
+
+  // NetworkVisualizationDialog.Delegate methods
+  @Override
+  public void saveNetwork(PackedNetwork network) {
+    networks().add(network);
+    screen.getParser().storePackedNetworks(networks());
+    networkMenu.networksChanged();
   }
 }
