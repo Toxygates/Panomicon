@@ -158,7 +158,7 @@ abstract class AllocatedDataMatrix[Self <: AllocatedDataMatrix[Self, T, V, Row, 
   /**
    * NB this allows for permutation as well as selection
    */
-  def selectNamedRows(rows: Seq[Row]): Self = selectRows(rows.map(rowMap(_)))
+  def selectNamedRows(rows: Seq[Row]): Self = selectRows(rows.flatMap(rowMap.get(_)))
 
   override def selectColumns(columns: Seq[Int]): Self =
     super.selectColumns(columns).copyWithColAlloc(selectedColumnAlloc(columns))
@@ -166,7 +166,7 @@ abstract class AllocatedDataMatrix[Self <: AllocatedDataMatrix[Self, T, V, Row, 
   /**
    * NB this allows for permutation as well as selection
    */
-  def selectNamedColumns(columns: Seq[Column]): Self = selectColumns(columns.map(columnMap(_)))
+  def selectNamedColumns(columns: Seq[Column]): Self = selectColumns(columns.flatMap(columnMap.get(_)))
 
   /**
    * Append a column, also registering it by its key

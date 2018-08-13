@@ -20,9 +20,22 @@ object NetworkBuilder {
                         platforms: Platforms,
       main: ManagedMatrix,
       mainOffset: Int, mainSize: Int): Seq[String] = {
-    val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
-    val range = targets.reverseTargets(platforms.resolve(domain))
-    range.map(_._2.id).toSeq.distinct
+    val mainType = main.params.typ
+    val mainSpecies = main.params.species
+    val expPlatform = mainSpecies.expectedPlatform
+    
+    mainType match {
+      case Network.mrnaType =>
+        val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
+        val range = targets.reverseTargets(platforms.resolve(domain))
+        range.map(_._2.id).toSeq.distinct
+      case Network.mirnaType =>
+        val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
+        val allProbes = platforms.data(expPlatform).toSeq
+        val range = targets.targets(domain.map(new MiRNA(_)), allProbes)
+        range.map(_._2.identifier).toSeq.distinct
+      case _ => throw new Exception(s"Unable to extract side probes: unexpected column type $mainType for main table")
+    }
   }
 }
 
