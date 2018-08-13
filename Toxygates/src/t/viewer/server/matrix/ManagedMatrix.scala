@@ -117,12 +117,16 @@ class CoreMatrix(val params: LoadParams) {
    */
   def sortAscending: Boolean = _sortAscending
 
+  
+  final def min(a: Int, b: Int) = if (a < b) a else b
+  
   /**
    * Efficiently obtain a page as ExpressionRow objects.
    */
   def page(offset: Int, length: Int): Seq[ExpressionRow] = {
-    val selectedRows = offset until (offset + length)
-    currentPageRows = Some((offset, length))
+    val max = current.rows - 1
+    val selectedRows = offset until min((offset + length), max)
+    currentPageRows = Some((offset, selectedRows.size))
     currentViewChanged()
     current.selectRows(selectedRows).asRows
   }
