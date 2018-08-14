@@ -33,6 +33,9 @@ class ManagedNetwork(mainParams: LoadParams,
   def updateSideMatrix() {    
     val offset = currentPageRows.map(_._1).getOrElse(0)
     val length = currentPageRows.map(_._2).getOrElse(currentPageSize)
+    if (targets.size == 0) {
+      println("Warning: targets table is empty. No side table can be constructed.")
+    }
     val sideProbes = NetworkBuilder.extractSideProbes(targets, platforms,
         this, offset, length)
     println(s"Managed network: selecting ${sideProbes.size} probes for side matrix")

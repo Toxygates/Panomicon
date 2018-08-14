@@ -77,9 +77,13 @@ object NetworkState {
   }
 }
 
-class NetworkState extends MatrixState {
-  var mirnaSources: Array[MirnaSource] = Array()
-  var targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
+class NetworkState extends MatrixState {  
+  var mirnaSources: Array[MirnaSource] = Array()    
+  
+  //Code that writes this variable should synchronize on the NetworkState object.
+  //TODO: clean up
+  var _targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
+  def targetTable = synchronized { _targetTable }
 }
 
 abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
@@ -97,8 +101,8 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   }
 
   @throws[TimeoutException]
-  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    getState().mirnaSources = sources
+  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {    
+    getState().mirnaSources = sources    
   }
 
   def buildNetwork(sourceMatrixId: String) {
