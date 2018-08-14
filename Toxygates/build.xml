@@ -4,16 +4,18 @@
   <!-- mostly from: http://www.scala-lang.org/node/98 -->
 
   <property name="sources.dir" value="src" />
+  <property name="lib.dir" value="lib" />
   <property name="otgtool.root" value="../OTGTool" />
 
   <property name="test.dir" value="test" />
   <property name="build.dir" value="war/WEB-INF/classes" />
 
+  <property environment="env" />
+  
   <!-- Configure path to GWT SDK -->
-  <property name="gwt.sdk" location="/path/to/gwt-2.8.2" />
+  <property name="gwt.sdk" value="${env.GWT_SDK}" />
 
   <!-- set scala.home -->
-  <property environment="env" />
   <property name="scala.home" value="${env.SCALA_HOME}" />
 
   <target name="init">
