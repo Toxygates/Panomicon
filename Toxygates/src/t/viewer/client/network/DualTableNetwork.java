@@ -21,8 +21,6 @@ public class DualTableNetwork implements NetworkViewer {
   
   private final DualMode dualMode;
   
-  private final int maxSideRows;
-  
   private Logger logger = SharedUtils.getLogger("dualTableNetwork");
   
   /**
@@ -38,7 +36,6 @@ public class DualTableNetwork implements NetworkViewer {
     this.mainTable = mainTable;
     this.sideTable = sideTable;
     this.dualMode = dualMode;
-    this.maxSideRows = maxSideRows;
   }
   
   @Override
@@ -113,35 +110,6 @@ public class DualTableNetwork implements NetworkViewer {
     return mappingSummary.getFullMap();
   }
 
-  /**
-   * To be called each time the main table rows have changed, thus triggering updates.
-   * Future: this class could install a listener in the mainTable by itself?
-   */
-  public void extractSideTableProbes() {
-    mappingSummary = mainTable.associationSummary(dualMode.linkingType);
-    if (sideTable.chosenColumns().isEmpty()) {
-      return;
-    }
-    
-    if (mappingSummary == null) {
-      logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");
-      return;  
-    }    
-    String[] ids = mappingSummary.getIDs(maxSideRows);
-    if (ids.length < 2) {
-      logger.info("No secondary probes found in summary - not updating side table probes");
-      return;
-    }
-    
-    changeSideTableProbes(ids);
-  }
-  
-  protected void changeSideTableProbes(String[] probes) {
-    sideTable.probesChanged(probes);
-    if (probes.length > 0) {
-      sideTable.getExpressions(true);
-    }
-  }
   
   /**
    * Build Nodes by using expression values from the first column in the rows.

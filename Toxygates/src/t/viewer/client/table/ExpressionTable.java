@@ -113,6 +113,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected ValueType chosenValueType;
   private String matrixId;
 
+  interface MatrixLoader {
+    /**
+     * Perform an initial matrix load.
+     * The method should load data and then call setInitialMatrix.
+     * @param valueType
+     * @param initFilters
+     */
+    void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters);
+  }
+  
   protected class HeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
     AbstractCellTable.Style style;
 
@@ -179,15 +189,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
   
   protected final int initPageSize;
+  protected MatrixLoader loader;
   
   public ExpressionTable(Screen _screen, TableFlags flags,
-      TableStyle style) {
+      TableStyle style,
+      MatrixLoader loader) {
     super(_screen, style, flags);
     this.withPValueOption = flags.withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.manager().resources();
     this.matrixId = flags.matrixId;
     this.initPageSize = flags.initPageSize;
+    this.loader = loader;
     screen = _screen;
 
     grid.setHeaderBuilder(new HeaderBuilder(grid));
@@ -220,10 +233,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private void logMatrixInfo(String msg) {
     logger.info("Matrix " + matrixId + ":" + msg);
   }
-  
-  // private void logMatrix(Level level, String msg) {
-  // logger.log(level, "Matrix " + matrixId + ":" + msg);
-  // }
   
   private void logMatrix(Level level, String msg, Throwable throwable) {
     logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
@@ -669,6 +678,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               toArray(String[]::new);          
           highlightedRow = -1;
           getAssociations();
+          afterGetRows();
         } 
       }
     };
@@ -685,6 +695,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     }
   }
+  
+  protected void afterGetRows() { }
   
   public List<ExpressionRow> getDisplayedRows() {
     return grid.getVisibleItems();
@@ -719,6 +731,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     chartBarcodes = null;
     loadedData = false;
     lastColumnFilters.clear();
+    grid.getColumnSortList().clear();
+    
     logMatrixInfo("Columns changed (" + columns.size() + ")");
   }
 
@@ -770,6 +784,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   /**
+   * Refetch rows as they are currently represented on the server side.
+   * TODO: this should respect page size changes
+   */
+  public void refetchRows() {
+    int initSize = NavigationTools.INIT_PAGE_SIZE;
+    grid.setVisibleRangeAndClearData(new Range(0, initSize), true);
+  }
+  
+  /**
    * Called when data is successfully loaded for the first time
    */
   private void onFirstLoad() {
@@ -819,41 +842,37 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     logMatrixInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
-    matrixService.loadMatrix(matrixId, chosenColumns, chosenProbes, chosenValueType,
-        initFilters, 
-        new AsyncCallback<ManagedMatrixInfo>() {
-          @Override
-          public void onFailure(Throwable caught) {
-            Window.alert("Unable to load dataset");
-            logMatrix(Level.SEVERE, "Unable to load dataset", caught);
-          }
+    loader.loadInitialMatrix(chosenValueType, initFilters);    
+  }
+  
+  /**
+   * To be called when a new matrix is set (as opposed to partial refinement or
+   * modification of a previously loaded matrix).
+   * @param matrix
+   */
+  void setInitialMatrix(ManagedMatrixInfo matrix) {
+    if (matrix.numRows() > 0) {
+      matrixInfo = matrix;
+      if (!loadedData) {
+        loadedData = true;
+        onFirstLoad();
+      }
+      setupColumns();
+      setMatrix(matrix);
 
-          @Override
-          public void onSuccess(ManagedMatrixInfo result) {
-            if (result.numRows() > 0) {
-              matrixInfo = result;
-              if (!loadedData) {
-                loadedData = true;
-                onFirstLoad();
-              }
-              setupColumns();
-              setMatrix(result);
+      if (firstMatrixLoad) {
+        firstMatrixLoad = false;
+      } else {
+        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
+      }
 
-              if (firstMatrixLoad) {
-                firstMatrixLoad = false;
-              } else {
-                Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
-              }
-
-              logMatrixInfo("Data successfully loaded");
-            } else {
-              Window
-                  .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
-                      "\nThe view will switch to default selection. (Wrong species?)");
-              onGettingExpressionFailed();
-            }
-          }
-        });
+      logMatrixInfo("Data successfully loaded");
+    } else {
+      Window
+          .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
+              "\nThe view will switch to default selection. (Wrong species?)");
+      onGettingExpressionFailed();
+    }  
   }
   
   protected void onGettingExpressionFailed() {}

@@ -99,7 +99,7 @@ class TargetTable(val sources: Array[String],
    * If from MiRNA, then the platform must have transcripts populated.
    */
   def associationLookup(probes: Seq[Probe],
-                     fromMirna: Boolean,
+                     fromMirna: Boolean, 
                      platform: Iterable[Probe],
                      sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
     if (fromMirna) {

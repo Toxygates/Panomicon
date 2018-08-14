@@ -14,7 +14,7 @@ public class Network implements Serializable {
   /**
    * In a network with two node types, the maximum number of nodes of either of the two types.
    */
-  public static final int MAX_SIZE = 200;
+  public static final int MAX_SIZE = 500;
   
   public static final String mrnaType = "mRNA";
   public static final String mirnaType = "miRNA";

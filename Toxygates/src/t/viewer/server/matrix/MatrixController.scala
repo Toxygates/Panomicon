@@ -36,6 +36,7 @@ import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.server.matrix._
 import t.viewer.server.Platforms
 import t.viewer.shared.SortKey
+import t.common.shared.sample.ExpressionRow
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
@@ -73,7 +74,6 @@ class MatrixController(context: Context,
   protected val platforms = Platforms(probes)
 
   private implicit val mcontext = context.matrix
-  private var sortAssoc: AType = _
 
   def groupSpecies = groups.headOption.map(g => asSpecies(g.getSamples()(0).sampleClass()))
 
@@ -107,7 +107,7 @@ class MatrixController(context: Context,
         //TODO modify TransformingWrapper API to be able to check for type argument at runtime
         //or stop trying to match the type argument
         case wrapped: TransformingWrapper[PExprValue @unchecked] =>
-          new ExtFoldBuilder(enhancedCols, wrapped, probes)        
+          new ExtFoldBuilder(enhancedCols, wrapped, probes)
         case db: ExtMatrixDB =>
           if (typ == ValueType.Absolute) {
             new NormalizedBuilder(enhancedCols, db, probes)
@@ -142,10 +142,12 @@ class MatrixController(context: Context,
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
-      makeMatrix(filteredProbes.toSeq, typ, fullLoad)
+      finish(makeMatrix(filteredProbes.toSeq, typ, fullLoad))
     } else {
       val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
-      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
+      finish(new ManagedMatrix(
+        LoadParams(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
+        ))
     }
 
     pt.mark("MakeMatrix")
@@ -156,6 +158,8 @@ class MatrixController(context: Context,
     pt.finish
     mm2
   }
+
+  protected def finish(mm: ManagedMatrix): ManagedMatrix = mm
 
   /**
    * Select probes and update the current managed matrix
@@ -188,7 +192,14 @@ class MatrixController(context: Context,
     managedMatrix
   }
 
-  def rowLabels(schema: DataSchema): RowLabels = new RowLabels(context, schema)
+  protected def rowLabels(schema: DataSchema): RowLabels = new RowLabels(context, schema)
+
+  def insertAnnotations(schema: DataSchema,
+      rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
+    val rl = rowLabels(schema)
+    rl.insertAnnotations(rows)
+  }
+
 }
 
 /**
@@ -219,5 +230,5 @@ class MergedMatrixController(context: Context,
     Some(new MatrixMapper(pm, vm))
   }
 
-  override def rowLabels(schema: DataSchema) = new MergedRowLabels(context, schema)
+  override protected def rowLabels(schema: DataSchema) = new MergedRowLabels(context, schema)
 }

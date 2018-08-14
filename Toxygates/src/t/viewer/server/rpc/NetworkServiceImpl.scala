@@ -30,7 +30,7 @@ import t.viewer.shared.Synthetic
 import scala.collection.JavaConversions._
 import t.platform.mirna._
 import java.lang.{ Double => JDouble }
-import java.util.{HashMap => JHMap, List => JList}
+import java.util.{ HashMap => JHMap, List => JList }
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.NetworkInfo
 import t.common.shared.sample.Group
@@ -48,6 +48,8 @@ import t.viewer.server.Platforms
 import t.viewer.shared.network.Node
 import t.viewer.shared.network.Interaction
 import t.viewer.server.network.NetworkBuilder
+import t.viewer.server.network.NetworkController
+import t.viewer.server.network.NetworkController
 
 object NetworkState {
   val stateKey = "network"
@@ -75,9 +77,13 @@ object NetworkState {
   }
 }
 
-class NetworkState extends MatrixState {
-  var mirnaSources: Array[MirnaSource] = Array()
-  var targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
+class NetworkState extends MatrixState {  
+  var mirnaSources: Array[MirnaSource] = Array()    
+  
+  //Code that writes this variable should synchronize on the NetworkState object.
+  //TODO: clean up
+  var _targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
+  def targetTable = synchronized { _targetTable }
 }
 
 abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
@@ -95,56 +101,40 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   }
 
   @throws[TimeoutException]
-  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    getState().mirnaSources = sources
+  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {    
+    getState().mirnaSources = sources    
   }
 
   def buildNetwork(sourceMatrixId: String) {
     val matState = getOtherServiceState[MatrixState](MatrixState.stateKey).getOrElse(
-        throw new NoDataLoadedException("No MatrixState available"))
+      throw new NoDataLoadedException("No MatrixState available"))
     val mat = matState.matrix(sourceMatrixId)
     val fromMiRNA = false
     val countMap = NetworkState.buildCountMap(mat, getState.targetTable, platforms,
-        fromMiRNA)
+      fromMiRNA)
     val countColumn = new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
-        new JHMap(mapAsJavaMap(countMap)), null)
-  }
-
-  /**
-   * Uses the current target table to compute side table probes.
-   * @param mainOffset defines the start of the current page in the main matrix.
-   * @param mainSize defines the size of the current page in the main matrix.
-   */
-  private def extractSideProbes(targets: TargetTable,
-      main: ManagedMatrix,
-      mainOffset: Int, mainSize: Int): Seq[String] = {
-    val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
-    val range = targets.reverseTargets(platforms.resolve(domain))
-    range.map(_._2.id).toSeq.distinct
+      new JHMap(mapAsJavaMap(countMap)), null)
   }
 
   private def makeNetwork(targets: TargetTable, main: ManagedMatrix,
-      side: ManagedMatrix): Network =
+    side: ManagedMatrix): Network =
     new NetworkBuilder(targets, platforms, main, side).build
 
-  private val mainId = "main"
-  private val sideId = "side"
-
-  /*
+  /**
    * The main network loading operation.
    * Needs to load two matrices and also set up count columns
    * and the mapping between the two.
    */
-  def loadNetwork(mainColumns: JList[Group], mainProbes: Array[String],
-                  sideColumns: JList[Group], typ: ValueType,
-                  mainPageSize: Int): NetworkInfo = {
+  def loadNetwork(mainId: String, mainColumns: JList[Group], mainProbes: Array[String],
+    sideId: String, sideColumns: JList[Group], typ: ValueType,
+    mainPageSize: Int): NetworkInfo = {
 
     //Orthologous mode is not supported for network loading
     val orthMappings = () => List()
 
-    getState.controllers += (mainId ->
-      MatrixController(context, orthMappings, mainColumns, mainProbes, typ, false))
-    val mainMat = getState.matrix(mainId)
+    getState.controllers += (sideId ->
+      MatrixController(context, orthMappings, sideColumns, Seq(), typ, false))
+    val sideMat = getState.matrix(sideId)
 
     val gt = GroupUtils.groupType(sideColumns(0))
     val species = groupSpecies(sideColumns(0))
@@ -153,12 +143,14 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
-    val sideProbes = extractSideProbes(targets,
-        mainMat, 0, mainPageSize)
-    getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, sideColumns, sideProbes, typ, false))
+    //The network controller (actually the managed network) will ensure that
+    //the side matrix stays updated when the main matrix changes
+    getState.controllers += (mainId ->
+      new NetworkController(context, mainColumns, mainProbes, typ, false,
+        sideMat, targets, platforms, mainPageSize))
 
-    val sideMat = getState.matrix(sideId)
+    //This will be a ManagedNetwork
+    val mainMat = getState.matrix(mainId)
 
     val fromMiRNA = gt == Network.mrnaType;
     val countMap = NetworkState.buildCountMap(mainMat, targets, platforms,
@@ -166,7 +158,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val pset = sideMat.initProbes.toSet
     val filtered = countMap.filter(x => pset.contains(x._1))
     sideMat.addSynthetic(
-      new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
+      new Synthetic.Precomputed("Count", s"Number of times each ($gt) appeared",
         new JHMap(mapAsJavaMap(filtered)), null))
 
     //To do: init filters...

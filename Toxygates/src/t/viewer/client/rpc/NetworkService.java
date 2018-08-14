@@ -33,6 +33,11 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("network")
 public interface NetworkService extends RemoteService {
+
+  /**
+   * Prefix for matrix IDs in network state. To be prepended by client.
+   */
+  final static String tablePrefix = "network.";
   
   /**
    * Set the desired miRNA association sources. In the objects passed in,
@@ -45,17 +50,22 @@ public interface NetworkService extends RemoteService {
   
   /**
    * Load a network.
+   * @param mainId ID of the main table. Will be persisted and accessible via the
+   * MatrixService.
    * @param mainColumns Columns for the main table
    * @param mainProbes Probes to load in the main table (or empty for default set,
    * follows the same rules as MatrixService.loadMatrix)
+   * @param sideId ID of the side table. Will be persisted and accessible via the
+   * MatrixService.  
    * @param sideColumns Columns for the side table. Probes will be determined by 
    *    associations from the main table.
    * @param Number of rows on the first page of the main table.
    * @return Information about the loaded network.
    */
-  NetworkInfo loadNetwork(List<Group> mainColumns, String[] mainProbes,
-                          List<Group> sideColumns, ValueType typ,
-                          int mainPageSize);
+  NetworkInfo loadNetwork(String mainId, List<Group> mainColumns, 
+                          String[] mainProbes,
+                          String sideId, List<Group> sideColumns, 
+                          ValueType typ, int mainPageSize);
   
 
   /**

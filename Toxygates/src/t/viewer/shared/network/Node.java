@@ -25,6 +25,10 @@ public class Node implements Serializable {
     Map<String, Double> weights = IntStream.range(0, values.length).boxed()
         .collect(Collectors.toMap(i -> columnNames.columnName(i), i -> values[i].getValue()));
 
+    if (geneSymbols == null) {
+      //TODO! Define handling of this
+      geneSymbols = new String[0];
+    }
     return new Node(row.getProbe(), 
         Arrays.asList(geneSymbols), type, new HashMap<String, Double>(weights));
   }
