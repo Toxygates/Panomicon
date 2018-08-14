@@ -166,7 +166,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       val mm =
         cont.applySorting(sortKey, ascending)
 
-      val grouped = mm.page(offset, size)
+      val grouped = mm.getPageView(offset, size)
 
       val rowNames = grouped.map(_.getProbe)
       val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data

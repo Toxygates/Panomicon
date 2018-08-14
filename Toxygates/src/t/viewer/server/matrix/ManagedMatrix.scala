@@ -122,8 +122,9 @@ class CoreMatrix(val params: LoadParams) {
   
   /**
    * Efficiently obtain a page as ExpressionRow objects.
+   * Downstream state changes may also occur as a result of the current view changing.
    */
-  def page(offset: Int, length: Int): Seq[ExpressionRow] = {
+  def getPageView(offset: Int, length: Int): Seq[ExpressionRow] = {
     val max = current.rows - 1
     val selectedRows = offset until min((offset + length), max)
     currentPageRows = Some((offset, selectedRows.size))
@@ -138,7 +139,6 @@ class CoreMatrix(val params: LoadParams) {
     currentInfo.setColumnFilter(col, f)
     resetSortAndFilter()
     filterAndSort()
-    currentViewChanged()
   }
 
   /**
@@ -150,7 +150,6 @@ class CoreMatrix(val params: LoadParams) {
     }
     resetSortAndFilter()
     filterAndSort()
-    currentViewChanged()
   }
 
   /**
@@ -160,7 +159,6 @@ class CoreMatrix(val params: LoadParams) {
     requestProbes = probes
     resetSortAndFilter()
     filterAndSort()
-    currentViewChanged()
   }
 
   /**
@@ -219,7 +217,6 @@ class CoreMatrix(val params: LoadParams) {
     _sortAscending = ascending
     current = current.sortRows(sortRows(col, ascending))
     updateRowInfo()
-    currentViewChanged()
   }
 
   /**
