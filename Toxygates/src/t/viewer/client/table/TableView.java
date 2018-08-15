@@ -29,7 +29,7 @@ import t.viewer.shared.mirna.MirnaSource;
 /**
  * A DataView based on a single ExpressionTable.
  */
-public class TableView extends DataView implements ExpressionTable.MatrixLoader {
+public class TableView extends DataView implements ExpressionTable.MatrixLoader, MirnaSourceDialog.Delegate {
 
   public static enum ViewType {
     Single, Dual;    
@@ -153,8 +153,8 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader 
     
     addAnalysisMenuItem(new MenuItem("Select MiRNA sources...", () -> {      
       MirnaSource[] sources = appInfo.mirnaSources();        
-      new MirnaSourceDialog(screen, manager.probeService(), sources, 
-        mirnaState).
+      new MirnaSourceDialog(screen, this, manager.probeService(), sources, mirnaState.getValue())
+          .
         display("Choose miRNA sources", DialogPosition.Center);
     }));
 
@@ -250,6 +250,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader 
     lastColumns = chosenColumns;
   }
   
+  @Override
   public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
     matrixService.loadMatrix(defaultMatrix, chosenColumns, chosenProbes, 
       valueType, initFilters, 
@@ -308,24 +309,31 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader 
       return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).
           filter(ms -> ms != null).toArray(MirnaSource[]::new);
     }
-
-    @Override
-    public void onValueChange(MirnaSource[] state) {
-      if (state != null) {        
-        manager.networkService().setMirnaSources(state, new AsyncCallback<Void>() {
-          @Override
-          public void onFailure(Throwable caught) {
-            Window.alert("Unable to set miRNA sources.");
-          }
-
-          @Override
-          public void onSuccess(Void result) {
-            expressionTable.getAssociations();
-          }
-        });
-      }
-    }
   };
+  
+  // MirnaSourceDialog.Delegate method
+  @Override
+  public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
+    mirnaState.changeAndPersist(screen, mirnaSources);
+    fetchAssociations();
+  }
+
+  public void fetchAssociations() {
+    MirnaSource[] mirnaSources = mirnaState.getValue();
+    if (mirnaSources != null) {
+      manager.networkService().setMirnaSources(mirnaSources, new AsyncCallback<Void>() {
+        @Override
+        public void onFailure(Throwable caught) {
+          Window.alert("Unable to set miRNA sources.");
+        }
+
+        @Override
+        public void onSuccess(Void result) {
+          expressionTable.getAssociations();
+        }
+      });
+    }
+  }
   
   
   @Override
@@ -339,6 +347,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader 
   @Override
   public void loadPersistedState() {
     super.loadPersistedState();
+    fetchAssociations();
     for (String title: tickMenuItems.keySet()) {
       TickMenuItem mi = tickMenuItems.get(title);
       boolean state = expressionTable.persistedVisibility(title, mi.getState());

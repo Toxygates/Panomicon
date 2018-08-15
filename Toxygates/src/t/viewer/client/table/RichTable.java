@@ -24,16 +24,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.model.SampleClass;
-import t.viewer.client.PersistedState;
-
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -42,6 +36,13 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.model.SampleClass;
+import t.viewer.client.PersistedState;
 
 
 /**
@@ -522,11 +523,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     protected Set<String> doUnpack(String state) {
       return new HashSet<String>(Arrays.asList(state.split(":::")));
     }
-
-    @Override
-    protected void onValueChange(Set<String> state) {
-//      setupColumns();
-    }   
   };
   
   public List<PersistedState<?>> getPersistedItems() {

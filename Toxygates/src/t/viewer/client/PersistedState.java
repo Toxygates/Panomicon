@@ -72,7 +72,6 @@ abstract public class PersistedState<T> {
   public void loadAndApply(StorageParser parser) {
     T state = unpack(parser.getItem(storageKey));
     value = state;
-    onValueChange(state);
   }
   
   public void store(StorageParser parser, @Nullable T state) {
@@ -83,12 +82,7 @@ abstract public class PersistedState<T> {
       parser.clearItem(storageKey);
     }
   }
-  
-  /**
-   * Optionally override this method to get callbacks when the value changes
-   */
-  protected void onValueChange(@Nullable T state) { }
-  
+
   /**
    * Convenience method
    * @param screen
@@ -107,7 +101,6 @@ abstract public class PersistedState<T> {
     logger.info("Changed");
     value = newState;
     store(parser, newState);
-    onValueChange(newState);
   }  
 }
 

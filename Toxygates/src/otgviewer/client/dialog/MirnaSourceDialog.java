@@ -1,32 +1,32 @@
 package otgviewer.client.dialog;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.Screen;
-import t.viewer.client.PersistedState;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.mirna.MirnaSource;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
-
 public class MirnaSourceDialog extends InteractionDialog {
   MirnaSourceSelector selector;
   ProbeServiceAsync probeService;
-  PersistedState<MirnaSource[]> state;
-  Screen screen;
   VerticalPanel vp;
+  Delegate delegate;
   
-  public MirnaSourceDialog(Screen parent, 
+  public interface Delegate {
+    void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources);
+  }
+
+  public MirnaSourceDialog(Screen parent, Delegate delegate,
                            ProbeServiceAsync probeService,
                            MirnaSource[] availableSources,
-                           PersistedState<MirnaSource[]> state) {
+                           MirnaSource[] value) {
     super(parent);
-    
-    this.selector = new MirnaSourceSelector(availableSources, state.getValue());
-    this.state = state;
-    this.screen = parent;
+    this.delegate = delegate;
+    this.selector = new MirnaSourceSelector(availableSources, value);
     this.probeService = probeService;
     vp = Utils.mkVerticalPanel(true);
     vp.add(selector);
@@ -56,8 +56,7 @@ public class MirnaSourceDialog extends InteractionDialog {
   
   @Override
   protected void userProceed() {
-    state.changeAndPersist(screen, 
-      selector.getSelection().toArray(new MirnaSource[0]));
+    delegate.mirnaSourceDialogMirnaSourcesChanged(selector.getSelection().toArray(new MirnaSource[0]));
     MirnaSourceDialog.super.userProceed();    
   }
 }
