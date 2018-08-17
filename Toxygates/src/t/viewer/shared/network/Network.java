@@ -50,6 +50,14 @@ public class Network implements Serializable {
     return interactions.stream().filter(i -> i.to.equals(to)).collect(Collectors.toList());
   }
   
+  public List<Interaction> interactionsFrom(String fromId) {
+    return interactionsFrom(new Node(fromId, null, null, null));
+  }
+  
+  public List<Interaction> interactionsTo(String toId) {
+    return interactionsTo(new Node(toId, null, null, null));
+  }
+  
   public String title() { return title; }
   
   public List<Node> nodes() { return nodes; }

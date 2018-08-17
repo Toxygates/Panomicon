@@ -19,6 +19,7 @@ import t.viewer.client.network.*;
 import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;
 import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.mirna.MirnaSource;
 import t.viewer.shared.network.*;
 
 /**
@@ -216,6 +217,15 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }  
   
   @Override
+  public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
+    super.mirnaSourceDialogMirnaSourcesChanged(mirnaSources);
+    //The server-side network will have changed, so we force the side expression table
+    //to reflect this.
+    
+    sideExpressionTable.refetchRows();
+  }
+  
+  @Override
   public void reloadDataIfNeeded() {       
     expressionTable.setAssociationAutoRefresh(false);
     mode.setVisibleColumns(expressionTable);      
@@ -257,9 +267,14 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         public void onSuccess(NetworkInfo result) {
           expressionTable.setInitialMatrix(result.mainInfo());
           sideExpressionTable.setInitialMatrix(result.sideInfo());
-          networkInfo = result;
+          setNetwork(result);
         }
       });
+  }
+  
+  protected void setNetwork(NetworkInfo ni) {
+    networkInfo = ni;
+    network.setNetwork(networkInfo.network());
   }
   
   // NetworkMenu.Delegate methods

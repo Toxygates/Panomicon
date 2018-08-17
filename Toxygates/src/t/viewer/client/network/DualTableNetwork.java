@@ -23,6 +23,8 @@ public class DualTableNetwork implements NetworkViewer {
   
   private Logger logger = SharedUtils.getLogger("dualTableNetwork");
   
+  private @Nullable Network network;
+  
   /**
    * An interaction network displayed in two ExpressionTables.
    * 
@@ -36,6 +38,10 @@ public class DualTableNetwork implements NetworkViewer {
     this.mainTable = mainTable;
     this.sideTable = sideTable;
     this.dualMode = dualMode;
+  }
+  
+  public void setNetwork(Network network) {
+    this.network = network;
   }
   
   @Override
@@ -87,29 +93,36 @@ public class DualTableNetwork implements NetworkViewer {
     setHighlightedSourceNodes(getIndicatedRows(getSelectedDestNode(), false));    
   }
   
-  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {
-    Map<String, Collection<String>> lookup = fromMain ? linkingMap() : mappingSummary.getReverseMap();    
-    if (selected != null) {   
-      if (lookup != null && lookup.containsKey(selected)) {          
-        return new HashSet<String>(lookup.get(selected));        
+  protected Set<String> getIndicatedRows(@Nullable String selected, 
+      boolean selectionFromMainTable) {    
+    if (selected != null) {
+      if ((dualMode == DualMode.Forward && !selectionFromMainTable) || 
+          (dualMode == DualMode.Reverse && selectionFromMainTable)) {
+        return new HashSet<String>(interactionsFrom(selected));
       } else {
-        logger.warning("No association indications for " + selected);
+        return new HashSet<String>(interactionsTo(selected));
       }
-    }                
-    return new HashSet<String>();
-  }
-  
-//Maps main table to side table via a column.
-  protected AssociationSummary<ExpressionRow> mappingSummary;
-  
-  /**
-   * Maps mRNA-miRNA in forward mode, miRNA-mRNA in reverse mode
-   * @return
-   */
-  public Map<String, Collection<String>> linkingMap() {    
-    return mappingSummary.getFullMap();
+    } else {
+      return new HashSet<String>();
+    }
   }
 
+  protected List<String> interactionsTo(String node) {
+    if (network == null) {
+      return new ArrayList<String>();
+    }
+    List r = network.interactionsTo(node).stream().map(x -> x.from().id()).collect(Collectors.toList());
+    logger.info("Interactions to " + node + ": " + r.size());
+    return r;
+  }
+  
+  protected List<String> interactionsFrom(String node) {
+    if (network == null) {
+      return new ArrayList<String>();
+    }
+    return network.interactionsFrom(node).stream().map(x -> x.to().id()).collect(Collectors.toList());
+  }
+  
   
   /**
    * Build Nodes by using expression values from the first column in the rows.
