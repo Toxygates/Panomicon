@@ -46,16 +46,25 @@ object MatrixController {
 
   def apply(context: Context, orthologs: () => Iterable[OrthologMapping],
     groups: Seq[Group], initProbes: Seq[String], typ: ValueType,
-    fullLoad: Boolean): MatrixController = {
+    fullLoad: Boolean): MatrixController[ManagedMatrix] = {
     val pfs = groupPlatforms(context, groups)
     if (pfs.size > 1) {
       new MergedMatrixController(context, orthologs, groups, initProbes,
           pfs, typ, fullLoad)
     } else {
-      new MatrixController(context, groups, initProbes,
+      new DefaultMatrixController(context, groups, initProbes,
         pfs, typ, fullLoad)
     }
   }
+}
+
+class DefaultMatrixController(context: Context,
+  groups: Seq[Group], initProbes: Seq[String],
+  groupPlatforms: Iterable[String], typ: ValueType,
+  fullLoad: Boolean) extends MatrixController[ManagedMatrix](context, groups,
+    initProbes, groupPlatforms, typ, fullLoad) {
+
+  protected def finish(mm: ManagedMatrix) = mm
 }
 
 /**
@@ -63,7 +72,7 @@ object MatrixController {
  * The matrix is loaded automatically when a MatrixController
  * instance is created.
  */
-class MatrixController(context: Context,
+abstract class MatrixController[+Matrix <: ManagedMatrix](context: Context,
     val groups: Seq[Group],
     val initProbes: Seq[String],
     val groupPlatforms: Iterable[String],
@@ -138,16 +147,16 @@ class MatrixController(context: Context,
     }
   }
 
-  val managedMatrix: ManagedMatrix = {
+  val managedMatrix: Matrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
-      finish(makeMatrix(filteredProbes.toSeq, typ, fullLoad))
+      makeMatrix(filteredProbes.toSeq, typ, fullLoad)
     } else {
       val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
-      finish(new ManagedMatrix(
+      new ManagedMatrix(
         LoadParams(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
-        ))
+        )
     }
 
     pt.mark("MakeMatrix")
@@ -156,15 +165,18 @@ class MatrixController(context: Context,
     val mm2 = applyMapper(mm, mapper)
     pt.mark("ApplyMapper")
     pt.finish
-    mm2
+    finish(mm2)
   }
 
-  protected def finish(mm: ManagedMatrix): ManagedMatrix = mm
+  /**
+   * Construct the expected matrix type from a ManagedMatrix.
+   */
+  protected def finish(mm: ManagedMatrix): Matrix
 
   /**
    * Select probes and update the current managed matrix
    */
-  def selectProbes(probes: Seq[String]): ManagedMatrix = {
+  def selectProbes(probes: Seq[String]): Matrix = {
     val useProbes = (if (!probes.isEmpty) {
       println("Refilter probes: " + probes.length)
       probes
@@ -179,7 +191,7 @@ class MatrixController(context: Context,
   /**
    * Sort rows
    */
-  def applySorting(sortKey: SortKey, ascending: Boolean): ManagedMatrix = {
+  def applySorting(sortKey: SortKey, ascending: Boolean): Matrix = {
     sortKey match {
       case mc: SortKey.MatrixColumn =>
         if (Some(mc.matrixIndex) != managedMatrix.sortColumn ||
@@ -209,7 +221,7 @@ class MergedMatrixController(context: Context,
     orthologs: () => Iterable[OrthologMapping], groups: Seq[Group], initProbes: Seq[String],
     groupPlatforms: Iterable[String],
     typ: ValueType, fullLoad: Boolean)
-    extends MatrixController(context, groups, initProbes, groupPlatforms, typ, fullLoad) {
+    extends MatrixController[ManagedMatrix](context, groups, initProbes, groupPlatforms, typ, fullLoad) {
 
   override protected def enhancedCols = false
 
@@ -231,4 +243,6 @@ class MergedMatrixController(context: Context,
   }
 
   override protected def rowLabels(schema: DataSchema) = new MergedRowLabels(context, schema)
+
+  def finish(mm: ManagedMatrix) = mm
 }

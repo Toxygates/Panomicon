@@ -18,7 +18,7 @@ class NetworkController(context: Context,
     fullLoad: Boolean,
     sideMatrix: ManagedMatrix, targets: TargetTable,
     platforms: Platforms,
-    initMainPageSize: Int) extends MatrixController(context, groups, initProbes,
+    initMainPageSize: Int) extends MatrixController[ManagedNetwork](context, groups, initProbes,
         MatrixController.groupPlatforms(context, groups), typ, fullLoad) {
 
   override def finish(mm: ManagedMatrix) = {

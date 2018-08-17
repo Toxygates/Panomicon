@@ -79,10 +79,24 @@ object NetworkState {
 class NetworkState extends MatrixState {
   var mirnaSources: Array[MirnaSource] = Array()
 
-  //Code that writes this variable should synchronize on the NetworkState object.
-  //TODO: clean up
   var _targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
+
   def targetTable = synchronized { _targetTable }
+  def targetTable_=(tt: TargetTable) = synchronized {
+    _targetTable = tt
+
+    for {
+      net <- networks.values; network = net.managedMatrix
+    } {
+      network.targets = tt
+      network.updateSideMatrix()
+    }
+  }
+
+  /**
+   * Networks will be stored here and also in the MatrixState's controllers.
+   */
+  var networks = Map[String, NetworkController]()
 }
 
 abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
@@ -102,17 +116,6 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     getState().mirnaSources = sources
-  }
-
-  def buildNetwork(sourceMatrixId: String) {
-    val matState = getOtherServiceState[MatrixState](MatrixState.stateKey).getOrElse(
-      throw new NoDataLoadedException("No MatrixState available"))
-    val mat = matState.matrix(sourceMatrixId)
-    val fromMiRNA = false
-    val countMap = NetworkState.buildCountMap(mat, getState.targetTable, platforms,
-      fromMiRNA)
-    val countColumn = new Synthetic.Precomputed("Count", "Number of times each (type) appeared",
-      new JHMap(mapAsJavaMap(countMap)), null)
   }
 
   private def makeNetwork(targets: TargetTable, main: ManagedMatrix,
@@ -144,12 +147,12 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
 
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-    getState.controllers += (mainId ->
-      new NetworkController(context, mainColumns, mainProbes, typ, false,
-        sideMat, targets, platforms, mainPageSize))
+    val net = new NetworkController(context, mainColumns, mainProbes, typ, false,
+        sideMat, targets, platforms, mainPageSize)
+    getState.controllers += mainId -> net
+    getState.networks += mainId -> net
 
-    //This will be a ManagedNetwork
-    val mainMat = getState.matrix(mainId)
+    val mainMat = net.managedMatrix
 
     val fromMiRNA = gt == Network.mrnaType;
     val countMap = NetworkState.buildCountMap(mainMat, targets, platforms,

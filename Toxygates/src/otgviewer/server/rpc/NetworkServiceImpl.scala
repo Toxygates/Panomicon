@@ -29,7 +29,7 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
         case Some(tab) =>
           if (sources.size > 0) {
             val limit = sources(0).limit()
-            getState()._targetTable = tab.scoreFilter(limit)
+            getState().targetTable = tab.scoreFilter(limit)
             println(s"Session targetTable filtered to size ${getState().targetTable.size}")
           }
         case _ =>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,8 +28,9 @@ import t.common.shared.ValueType
 import t.platform.Probe
 import t.sparql.Probes
 import t.viewer.server.matrix.MatrixController
+import t.viewer.server.matrix.ManagedMatrix
 
-class ClusteringData(controller: MatrixController,
+class ClusteringData(controller: MatrixController[_ <: ManagedMatrix],
                      probeStore: Probes,
                      rows: Seq[String],
                      valueType: ValueType) extends t.clustering.server.ClusteringData {

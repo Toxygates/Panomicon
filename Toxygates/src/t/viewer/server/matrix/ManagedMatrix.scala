@@ -117,9 +117,8 @@ class CoreMatrix(val params: LoadParams) {
    */
   def sortAscending: Boolean = _sortAscending
 
-  
   final def min(a: Int, b: Int) = if (a < b) a else b
-  
+
   /**
    * Efficiently obtain a page as ExpressionRow objects.
    * Downstream state changes may also occur as a result of the current view changing.

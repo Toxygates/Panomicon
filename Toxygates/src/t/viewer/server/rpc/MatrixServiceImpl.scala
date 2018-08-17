@@ -28,7 +28,6 @@ import javax.annotation.Nullable
 import t.Context
 import t.clustering.server.RClustering
 import t.clustering.shared.Algorithm
-import t.common.server.ScalaUtils
 import t.common.shared.ValueType
 import t.common.shared.sample.ExpressionRow
 import t.common.shared.sample.Group
@@ -37,18 +36,11 @@ import t.platform.OrthologMapping
 import t.platform.Probe
 import t.sparql.makeRich
 import t.viewer.client.rpc.MatrixService
-import t.viewer.server._
-import t.viewer.shared._
-
-import t.viewer.server.matrix._
-import t.viewer.shared.network.Network
-import t.viewer.shared.network.Format
-import t.viewer.server.network.Serializer
-import t.common.shared.GroupUtils
-import t.model.sample.CoreParameter
-import otg.model.sample.OTGAttribute
-import t.platform.Species
 import t.viewer.client.rpc.NetworkService
+import t.viewer.server._
+import t.viewer.server.matrix._
+import t.viewer.shared._
+import t.common.server.ScalaUtils
 
 object MatrixServiceImpl {
 
@@ -68,7 +60,7 @@ object MatrixState {
 }
 
 class MatrixState {
-  var controllers: Map[String, MatrixController] = Map()
+  var controllers: Map[String, MatrixController[ManagedMatrix]] = Map()
 
   def controller(id: String) =
     controllers.getOrElse(id, throw new NoDataLoadedException)
@@ -189,7 +181,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     }
   }
 
-  private def insertAnnotations(controller: MatrixController,
+  private def insertAnnotations(controller: MatrixController[_],
       rows: Seq[ExpressionRow]): Seq[ExpressionRow] =
     controller.insertAnnotations(schema, rows)
 
