@@ -18,12 +18,8 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
-import t.viewer.client.PersistedState;
 
 public class OTGViewer extends TApplication {
 
@@ -81,11 +77,4 @@ public class OTGViewer extends TApplication {
   public UIFactory factory() {    
     return factory;
   }
-
-  @Override
-  protected List<PersistedState<?>> getPersistedItems() {
-    List<PersistedState<?>> r = new ArrayList<PersistedState<?>>();
-    r.addAll(super.getPersistedItems());
-    return r;
-  }  
 }

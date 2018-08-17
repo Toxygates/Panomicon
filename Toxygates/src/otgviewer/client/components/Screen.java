@@ -72,8 +72,6 @@ public interface Screen {
 
   void loadState(AttributeSet attributes);
 
-  void loadPersistedState();
-
   /**
    * The screen can potentially rebuild itself prior to being shown, by overriding this method.
    * This allows menus and the main content to change in response to saved state.

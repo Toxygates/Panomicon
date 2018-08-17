@@ -49,7 +49,6 @@ import t.viewer.shared.network.Node
 import t.viewer.shared.network.Interaction
 import t.viewer.server.network.NetworkBuilder
 import t.viewer.server.network.NetworkController
-import t.viewer.server.network.NetworkController
 
 object NetworkState {
   val stateKey = "network"
@@ -77,9 +76,9 @@ object NetworkState {
   }
 }
 
-class NetworkState extends MatrixState {  
-  var mirnaSources: Array[MirnaSource] = Array()    
-  
+class NetworkState extends MatrixState {
+  var mirnaSources: Array[MirnaSource] = Array()
+
   //Code that writes this variable should synchronize on the NetworkState object.
   //TODO: clean up
   var _targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
@@ -101,8 +100,8 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   }
 
   @throws[TimeoutException]
-  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {    
-    getState().mirnaSources = sources    
+  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
+    getState().mirnaSources = sources
   }
 
   def buildNetwork(sourceMatrixId: String) {

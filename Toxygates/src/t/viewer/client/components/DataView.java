@@ -4,14 +4,13 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.*;
+
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
-import t.viewer.client.PersistedState;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.shared.Association;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A composite that displays information from a set of columns and a 
@@ -85,12 +84,6 @@ public abstract class DataView extends Composite {
    * Top level menus to be installed.
    */
   public Collection<MenuItem> topLevelMenus() { return topLevelMenus; }
- 
-  public List<PersistedState<?>> getPersistedItems() {
-    return new ArrayList<PersistedState<?>>();
-  }
-  
-  public void loadPersistedState() { }
   
   abstract public String[] displayedAtomicProbes();
   

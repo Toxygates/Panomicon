@@ -163,7 +163,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       public void onSuccess(AppInfo result) {
         setupUIBase();
         prepareScreens();        
-        loadPersistedState();
       }
 
       @Override
@@ -566,22 +565,5 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   @Override
   public NetworkServiceAsync networkService() {
     return networkService;
-  }
-
-  /**
-   * Persisted items that are to be applied at application startup,
-   * when all screens have been initialised.
-   */
-  protected List<PersistedState<?>> getPersistedItems() {
-    return new ArrayList<>();
-  }
-
-  protected void loadPersistedState() {
-    for (PersistedState<?> ps: getPersistedItems()) {
-      ps.loadAndApply(getParser());
-    }
-    for (Screen s : screens) {
-      s.loadPersistedState();
-    }
   }
 }

@@ -35,7 +35,6 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.PersistedState;
 import t.viewer.client.Utils;
 
 public abstract class MinimalScreen implements Screen {
@@ -453,20 +452,6 @@ public abstract class MinimalScreen implements Screen {
      } 
    }
    */
-
-  /**
-   * Persisted items that are to be applied once at application startup.
-   */
-  public List<PersistedState<?>> getPersistedItems() {
-    return new ArrayList<>();
-  }
-
-  @Override
-  public void loadPersistedState() {
-    for (PersistedState<?> ps : getPersistedItems()) {
-      ps.loadAndApply(getParser());
-    }
-  }
 
   /**
    * Display the sample detail screen and show information about the given barcode. TODO: this

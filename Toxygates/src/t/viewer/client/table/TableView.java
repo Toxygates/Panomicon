@@ -59,6 +59,15 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     initWidget(content());   
     setupMenus();
     
+    mirnaState.load(screen.getParser());
+    fetchAssociations();
+
+    for (String title : tickMenuItems.keySet()) {
+      TickMenuItem mi = tickMenuItems.get(title);
+      boolean state = expressionTable.persistedVisibility(title, mi.getState());
+      mi.setState(state);
+    }
+
     addToolbar(expressionTable.analysisTools());
   }
   
@@ -332,26 +341,6 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
           expressionTable.getAssociations();
         }
       });
-    }
-  }
-  
-  
-  @Override
-  public List<PersistedState<?>> getPersistedItems() {
-    List<PersistedState<?>> r = super.getPersistedItems();
-    r.addAll(expressionTable.getPersistedItems());
-    r.add(mirnaState);
-    return r;
-  }
-  
-  @Override
-  public void loadPersistedState() {
-    super.loadPersistedState();
-    fetchAssociations();
-    for (String title: tickMenuItems.keySet()) {
-      TickMenuItem mi = tickMenuItems.get(title);
-      boolean state = expressionTable.persistedVisibility(title, mi.getState());
-      mi.setState(state);
     }
   }
   

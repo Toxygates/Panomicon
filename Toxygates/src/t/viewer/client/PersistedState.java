@@ -69,7 +69,7 @@ abstract public class PersistedState<T> {
   
   abstract protected @Nullable T doUnpack(String state); 
   
-  public void loadAndApply(StorageParser parser) {
+  public void load(StorageParser parser) {
     T state = unpack(parser.getItem(storageKey));
     value = state;
   }

@@ -29,7 +29,8 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.*;
+import t.viewer.client.StorageParser;
+import t.viewer.client.Utils;
 import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
 import t.viewer.client.table.TableView.ViewType;
@@ -314,11 +315,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   public String[] displayedAtomicProbes() {
     return dataView.displayedAtomicProbes();    
-  }
-
-  @Override
-  public List<PersistedState<?>> getPersistedItems() {
-    return dataView.getPersistedItems();    
   }
 
   @Override

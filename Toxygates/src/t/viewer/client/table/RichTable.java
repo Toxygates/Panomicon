@@ -130,6 +130,8 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     grid.setRowStyles(new RowHighlighter());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
     grid.addColumnSortHandler(colSortHandler);
+
+    columnState.load(screen.getParser());
   }
   
   public void setTitleHeader(String title) {
@@ -524,10 +526,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
       return new HashSet<String>(Arrays.asList(state.split(":::")));
     }
   };
-  
-  public List<PersistedState<?>> getPersistedItems() {
-    return Arrays.asList(columnState);    
-  }
 
   public void columnsChanged(List<Group> columns) {
     chosenColumns = columns;
