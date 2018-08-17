@@ -37,7 +37,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected NetworkServiceAsync networkService;
   
   public static enum DualMode {
-    Forward("mRNA", "miRNA", AType.MiRNA) {
+    Forward("mRNA", "miRNA") {
       @Override
       void setVisibleColumns(ExpressionTable table) {
         table.setVisible(AType.MiRNA, true);
@@ -45,7 +45,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
       }
     },
     
-    Reverse("miRNA", "mRNA", AType.MRNA) {
+    Reverse("miRNA", "mRNA") {
       @Override
       void setVisibleColumns(ExpressionTable table) {
         table.setVisible(AType.MiRNA, false);
@@ -54,12 +54,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     };
     
     public final String mainType, sideType;
-    public final AType linkingType;
 
-    DualMode(String mainType, String sideType, AType linkingType) {
+    DualMode(String mainType, String sideType) {
       this.mainType = mainType;
-      this.sideType = sideType;
-      this.linkingType = linkingType;      
+      this.sideType = sideType;      
     }
     
     int sideTableWidth() { 
