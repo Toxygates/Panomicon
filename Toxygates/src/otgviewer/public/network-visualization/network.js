@@ -145,8 +145,14 @@ class Network{
     this.nodes.forEach(function(e){
       // define the node attributes
       var label = (e.symbol.length > 0)? e.symbol[0] : e.id;
-      var color = (e.type === nodeType.MICRO_RNA )? nodeColor.MICRO_RNA : nodeColor.MSG_RNA ;
-      var shape = (e.type === nodeType.MICRO_RNA )? nodeShape.MICRO_RNA : nodeShape.MSG_RNA ;
+      var color = e.color;
+      if( color === undefined ){
+       color = (e.type === nodeType.MICRO_RNA )? nodeColor.MICRO_RNA : nodeColor.MSG_RNA ;
+     }
+      var shape = e.shape;
+      if( shape === undefined ){
+        (e.type === nodeType.MICRO_RNA )? nodeShape.MICRO_RNA : nodeShape.MSG_RNA ;
+      }
       // create the node object
       var node = {
         group: 'nodes',

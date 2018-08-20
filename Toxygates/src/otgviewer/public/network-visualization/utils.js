@@ -25,11 +25,19 @@ function valueToColor(value, min, max, threshold, baseColor, endColor){
   if( baseColor === endColor )
     return baseColor;
 
+  /* if the value is to the left of white, then the assigned color will be
+   * interpolated linearly between [base - white] */
   if( value <= threshold){
+    if( value <= min )
+      return baseColor;
     endColor = "#FFFFFF";
     max = threshold;
   }
+  /* if the value is to the right of white, then the assigned color will be
+   * interpolated linearly between [white - end] */
   else{
+    if( value >= max )
+      return endColor;
     baseColor = "#FFFFFF";
     min = threshold;
   }

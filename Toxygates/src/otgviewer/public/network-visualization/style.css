@@ -98,7 +98,7 @@
 #netvizdiv span.modal-button{
 	background-color: green;
 	font-size: 1em;
-	border: none;
+	margin: 5px;
 	color: white;
 	padding: 10px 10px;
 	cursor: pointer;

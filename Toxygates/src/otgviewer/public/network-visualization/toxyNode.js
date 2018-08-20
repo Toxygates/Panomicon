@@ -18,22 +18,39 @@ class ToxyNode{
 
   /**
    * Constructor
+   * STRUCTURAL PROPERTIES
    * @param {string} id: unique identifier for this node - non empty
    * @param {nodeType} type: type of node, currently limited to messengerRNA and
    * microRNA
    * @param {[string]} symbol: list of gene symbols used to identify a node
    * @param {{string: float}}weight: set of numerical attributes associated to
    * a node
+   * VISUAL PROPERTIES
+   * @param {int} x the x coordinate (in pixels) that represents the point in
+   * the display where the center of the node is located
+   * @param {int} y the y coordinate (in pixels) that represents the point in
+   * the display where the center of the node is located
+   * @param {string} shape indicates the shape (within the list of possibilities
+   * given by cytoscape) used to display the node
+   * @param {string} color a string, in RGB Hex format, used to store the
+   * background color that should be used to draw the node
    */
-  constructor(id, type, symbol){
+  constructor(id, type, symbol){//}, x=undefined, y=undefined, shape=undefined, color=undefined){
     this.id = id;
     this.type = type;
     this.symbol = symbol;
     this.weight = {};
+
+    // visual properties of a node
+    this.x = undefined;  // x coordinate (in pixels) - the location of the node
+    this.y = undefined; // y coordinate (in pixels) - the location of the node
+    this.shape = undefined; // the shape used to draw the node
+    this.color = undefined; // background color of the node
   }
 
   /**
-   *
+   * Update the current list of weights associated with the node for the one
+   * provided as parameter
    */
   setWeights(weights){
     this.weight = weights;
