@@ -19,36 +19,34 @@
  */
 
 package t.viewer.server.rpc
-import t.viewer.client.rpc.NetworkService
-import t.viewer.shared.mirna.MirnaSource
-import t.viewer.shared.TimeoutException
-import t.platform.mirna.MiRDBConverter
-import t.platform.mirna.TargetTable
-import t.viewer.shared.NoDataLoadedException
-import t.sparql.Probes
-import t.viewer.shared.Synthetic
-import scala.collection.JavaConversions._
-import t.platform.mirna._
 import java.lang.{ Double => JDouble }
-import java.util.{ HashMap => JHMap, List => JList }
-import t.viewer.server.matrix.ManagedMatrix
-import t.viewer.shared.network.NetworkInfo
-import t.common.shared.sample.Group
-import t.viewer.server.CSVHelper
-import t.viewer.shared.network.Network
-import t.viewer.server.network.Serializer
-import t.viewer.shared.network.Format
-import t.viewer.server.Configuration
-import t.viewer.server.matrix.MatrixController
-import t.common.shared.ValueType
+import java.util.{ HashMap => JHMap }
+import java.util.{ List => JList }
+
+import scala.collection.JavaConversions._
+
 import t.common.shared.GroupUtils
+import t.common.shared.ValueType
+import t.common.shared.sample.Group
+import t.platform.mirna._
+import t.platform.mirna.TargetTable
+import t.sparql.Probes
+import t.viewer.client.rpc.NetworkService
+import t.viewer.server.CSVHelper
+import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
-import t.platform.Probe
-import t.viewer.server.Platforms
-import t.viewer.shared.network.Node
-import t.viewer.shared.network.Interaction
+import t.viewer.server.matrix.ControllerParams
+import t.viewer.server.matrix.ManagedMatrix
+import t.viewer.server.matrix.MatrixController
 import t.viewer.server.network.NetworkBuilder
 import t.viewer.server.network.NetworkController
+import t.viewer.server.network.Serializer
+import t.viewer.shared.Synthetic
+import t.viewer.shared.TimeoutException
+import t.viewer.shared.mirna.MirnaSource
+import t.viewer.shared.network.Format
+import t.viewer.shared.network.Network
+import t.viewer.shared.network.NetworkInfo
 
 object NetworkState {
   val stateKey = "network"
@@ -145,10 +143,13 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
+    val params = ControllerParams(context, mainColumns, mainProbes, 
+      MatrixController.groupPlatforms(context, mainColumns), typ, false)
+      
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-    val net = new NetworkController(context, mainColumns, mainProbes, typ, false,
-        sideMat, targets, platforms, mainPageSize)
+
+    val net = new NetworkController(params, sideMat, targets, platforms, mainPageSize)
     getState.controllers += mainId -> net
     getState.networks += mainId -> net
 

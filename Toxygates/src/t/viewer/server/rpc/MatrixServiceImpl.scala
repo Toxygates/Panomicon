@@ -52,7 +52,7 @@ object MatrixServiceImpl {
       orthologs = Some(probes.orthologMappings)
     }
     orthologs.get
-  }
+  }  
 }
 
 object MatrixState {
@@ -60,15 +60,16 @@ object MatrixState {
 }
 
 class MatrixState {
-  var controllers: Map[String, MatrixController[ManagedMatrix]] = Map()
+  var controllers: Map[String, MatrixController] = Map()
 
   def controller(id: String) =
     controllers.getOrElse(id, throw new NoDataLoadedException)
 
-  def matrix(id: String): ManagedMatrix =
+  def matrix(id: String): MatrixController#Mat =
     controller(id).managedMatrix
 
-  def matrixOption(id: String) = controllers.get(id).map(_.managedMatrix)
+  def matrixOption(id: String): Option[MatrixController#Mat] =
+    controllers.get(id).map(_.managedMatrix)
 
   def needsReload(id: String, groups: Iterable[Group], typ: ValueType): Boolean = {
     if (id == null) {
@@ -181,7 +182,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     }
   }
 
-  private def insertAnnotations(controller: MatrixController[_],
+  private def insertAnnotations(controller: MatrixController,
       rows: Seq[ExpressionRow]): Seq[ExpressionRow] =
     controller.insertAnnotations(schema, rows)
 

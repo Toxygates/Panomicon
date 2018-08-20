@@ -30,7 +30,8 @@ import t.sparql.Probes
 import t.viewer.server.matrix.MatrixController
 import t.viewer.server.matrix.ManagedMatrix
 
-class ClusteringData(controller: MatrixController[_ <: ManagedMatrix],
+
+class ClusteringData(val controller: MatrixController,
                      probeStore: Probes,
                      rows: Seq[String],
                      valueType: ValueType) extends t.clustering.server.ClusteringData {
