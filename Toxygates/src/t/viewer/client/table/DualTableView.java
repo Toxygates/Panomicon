@@ -1,12 +1,9 @@
 package t.viewer.client.table;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.NetworkMenu;
@@ -269,15 +266,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     final int pageSize = 100;
     networkService.loadNetwork(mainMatrix, expressionTable.chosenColumns, chosenProbes, 
       sideMatrix, sideExpressionTable.chosenColumns, valueType, pageSize, 
-      new AsyncCallback<NetworkInfo>() {
+      new PendingAsyncCallback<NetworkInfo>(this.screen, "Unable to load network") {
+        
         @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("Unable to load network");
-          logger.log(Level.SEVERE, "Unable to load network", caught);
-        }
-
-        @Override
-        public void onSuccess(NetworkInfo result) {
+        public void handleSuccess(NetworkInfo result) {
           expressionTable.setInitialMatrix(result.mainInfo());
           sideExpressionTable.setInitialMatrix(result.sideInfo());
           setNetwork(result);
@@ -292,19 +284,24 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   // NetworkMenu.Delegate methods
   @Override
   public void visualizeNetwork() {
-    new NetworkVisualizationDialog(this, logger).initWindow(networkInfo.network());
+    networkService.currentView(mainMatrix, new PendingAsyncCallback<Network>(this.screen, 
+        "Unable to load network view") {
+
+      @Override
+      public void handleSuccess(Network result) {
+        new NetworkVisualizationDialog(DualTableView.this, logger).initWindow(result);       
+      }      
+    });
   }
 
   @Override
-  public void downloadNetwork(Format format) {    
-//    Network network = controller.buildNetwork("miRNA-mRNA interactions", mode != DualMode.Forward);
-    //TODO take network directly from server side state
-    Network network = networkInfo.network();
+  public void downloadNetwork(Format format) {       
     String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
         : sideExpressionTable.matrixInfo.columnName(0);
     String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)
         : sideExpressionTable.matrixInfo.columnName(0);
-    networkService.prepareNetworkDownload(network, format, messengerFirstColumn, microFirstColumn,
+    networkService.prepareNetworkDownload(mainMatrix, format, 
+      messengerFirstColumn, microFirstColumn,
         new PendingAsyncCallback<String>(screen) {
       @Override
       public void handleSuccess(String url) {

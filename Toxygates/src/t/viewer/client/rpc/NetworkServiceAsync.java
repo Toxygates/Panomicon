@@ -40,4 +40,9 @@ public interface NetworkServiceAsync {
   void prepareNetworkDownload(Network network, Format format, String messengerWeightColumn,
       String microWeightColumn, AsyncCallback<String> callback);
 
+  void currentView(String mainId, AsyncCallback<Network> callback);
+
+  void prepareNetworkDownload(String mainTableId, Format format, String messengerWeightColumn,
+      String microWeightColumn, AsyncCallback<String> callback);
+
 }

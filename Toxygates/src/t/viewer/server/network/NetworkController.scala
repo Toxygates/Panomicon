@@ -8,6 +8,7 @@ import t.viewer.server.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable
 import t.viewer.server.Platforms
 import t.viewer.server.matrix.ControllerParams
+import t.viewer.shared.network.Network
 
 /**
  * A MatrixController that turns the main matrix into a ManagedNetwork
@@ -23,4 +24,11 @@ class NetworkController(params: ControllerParams,
   override def finish(mm: ManagedMatrix): Mat = {
     new ManagedNetwork(mm.params, sideMatrix, targets, platforms, initMainPageSize)
   }
+
+  /**
+   * Produce a network object that reflects the current view.
+   */
+  def makeNetwork: Network =
+    new NetworkBuilder(targets, platforms, managedMatrix, sideMatrix).build
+
 }

@@ -37,8 +37,10 @@ public class NetworkInfo implements Serializable {
   public ManagedMatrixInfo sideInfo() { return sideInfo; }
   
   private Network network;
+  
   /**
-   * The interaction network
+   * The interaction network. The initial view is provided for convenience.
+   * Currently, after sorting or filtering, this view will no longer be accurate.
    * @return
    */
   public Network network() { return network; }

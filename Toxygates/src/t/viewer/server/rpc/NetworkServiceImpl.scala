@@ -116,10 +116,6 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     getState().mirnaSources = sources
   }
 
-  private def makeNetwork(targets: TargetTable, main: ManagedMatrix,
-    side: ManagedMatrix): Network =
-    new NetworkBuilder(targets, platforms, main, side).build
-
   /**
    * The main network loading operation.
    * Needs to load two matrices and also set up count columns
@@ -139,7 +135,6 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val gt = GroupUtils.groupType(sideColumns(0))
     val species = groupSpecies(sideColumns(0))
 
-    //TODO perform filtering at initial load, store in state
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
@@ -165,10 +160,19 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
         new JHMap(mapAsJavaMap(filtered)), null))
 
     //To do: init filters...
-    new NetworkInfo(mainMat.info, sideMat.info, makeNetwork(targets, mainMat, sideMat))
+    new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)
   }
 
-  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, microWeightColumn: String): String = {
+  def currentView(mainTableId: String): Network = 
+    getState.networks(mainTableId).makeNetwork   
+  
+  def prepareNetworkDownload(mainTableId: String, format: Format, 
+                             messengerWeightColumn: String, microWeightColumn: String): String = {
+    prepareNetworkDownload(currentView(mainTableId), format, messengerWeightColumn, microWeightColumn)
+  }
+  
+  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, 
+                             microWeightColumn: String): String = {
     val s = new Serializer(network, messengerWeightColumn, microWeightColumn)
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)
