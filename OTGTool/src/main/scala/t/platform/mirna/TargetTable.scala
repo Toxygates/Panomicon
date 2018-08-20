@@ -4,6 +4,7 @@ import t.sparql._
 import t.platform._
 import t.db._
 import t.platform.Species.Species
+import scala.collection.immutable.DefaultMap
 
 /**
  * Memory-efficient table for transcription factor targets.
@@ -14,13 +15,11 @@ import t.platform.Species.Species
  */
 class TargetTable(val sources: Array[String],
     val targets: Array[String],
-    val scores: Array[Double]) {
+    val scores: Array[Double]) extends IndexedSeq[(MiRNA, RefSeq, Double)] {
 
-  def size: Int = sources.length
-
-  def asTriples: Iterable[(MiRNA, RefSeq, Double)] =
-    (0 until size).map(i =>
-      (MiRNA(sources(i)), RefSeq(targets(i)), scores(i)))
+  override val length: Int = sources.length
+  
+  def apply(i: Int) = (MiRNA(sources(i)), RefSeq(targets(i)), scores(i))
 
   def filterWith(test: Int => Boolean): TargetTable = {
     val builder = new TargetTableBuilder
@@ -62,7 +61,7 @@ class TargetTable(val sources: Array[String],
   def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double)] = {
     val allMicro = miRNAs.toSet
     val allTrn = for {
-      (source, target, score) <- asTriples;
+      (source, target, score) <- this;
       if (allMicro.contains(source))
     } yield (source, target, score)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
@@ -82,7 +81,7 @@ class TargetTable(val sources: Array[String],
     val allTrKeys = allTrLookup.keySet
     println(s"Size ${allTrKeys.size} transcript key set")
     for {
-        (source, target, score) <- asTriples;
+        (source, target, score) <- this;
         if allTrKeys contains target;
         (refSeq, probe) <- allTrLookup(target) }
     yield (probe, source, score)
