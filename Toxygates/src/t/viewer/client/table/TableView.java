@@ -56,6 +56,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     this.logger = Logger.getLogger("tableView");
     this.expressionTable = makeExpressionTable(mainTableTitle, mainTableSelectable);
     expressionTable.setDisplayPColumns(false);
+    expressionTable.loadColumnVisibility();
     initWidget(content());   
     setupMenus();
     
@@ -132,6 +133,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
         @Override
         public void stateChange(boolean newState) {
           expressionTable.setVisible(c, newState);
+          expressionTable.persistColumnState();
           expressionTable.getAssociations();
           if (newState) {
               Analytics.trackEvent(Analytics.CATEGORY_TABLE, 

@@ -130,8 +130,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     grid.setRowStyles(new RowHighlighter());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
     grid.addColumnSortHandler(colSortHandler);
-
-    columnState.load(screen.getParser());
   }
   
   public void setTitleHeader(String title) {
@@ -184,23 +182,27 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
     setupHideableColumns();
   }
-
-  protected void setupHideableColumns() {
-    boolean first = true;
-    
+  
+  public void loadColumnVisibility() {
+    columnState.load(screen.getParser());
     Set<String> preferredColumns = columnState.getValue();
     if (preferredColumns != null) {
       for (HideableColumn<T, ?> c : hideableColumns) {
         //TODO: we ignore persisted state for standard columns - for now this is to
         //play nicely with dual data screen
-        if (c.col == null) {  
+        if (c.col == null) {
           ColumnInfo info = c.columnInfo();
           boolean visible = preferredColumns.contains(info.title());
           c.setVisibility(visible);
         }
       }
     }
-    
+
+  }
+
+  protected void setupHideableColumns() {
+    boolean first = true;
+
     for (HideableColumn<T, ?> column : hideableColumns) {
       if (grid.getColumnIndex(column) >= 0) {
         removeColumn(column);
@@ -408,7 +410,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
    */
   public void setVisible(HideableColumn<T, ?> hc, boolean newState) {
     hc.setVisibility(newState);
-    updateColumnState(hideableColumns);
 
     // We need to set up all the columns each time in order to style borders correctly
     setupHideableColumns();
@@ -500,8 +501,8 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     grid.onResize();
   }
   
-  protected void updateColumnState(Collection<HideableColumn<T, ?>> columns) {
-    Set<String> vs = columns.stream().filter(c -> c.visible()).
+  public void persistColumnState() {
+    Set<String> vs = hideableColumns.stream().filter(c -> c.visible()).
         map(c -> c.columnInfo().title()).collect(Collectors.toSet());
     columnState.changeAndPersist(screen.manager().getParser(), vs);
   }
