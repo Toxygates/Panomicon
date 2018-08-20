@@ -23,8 +23,6 @@ public class DualTableNetwork implements NetworkViewer {
   
   private Logger logger = SharedUtils.getLogger("dualTableNetwork");
   
-  private @Nullable Network network;
-  
   /**
    * An interaction network displayed in two ExpressionTables.
    * 
@@ -38,10 +36,6 @@ public class DualTableNetwork implements NetworkViewer {
     this.mainTable = mainTable;
     this.sideTable = sideTable;
     this.dualMode = dualMode;
-  }
-  
-  public void setNetwork(Network network) {
-    this.network = network;
   }
   
   @Override
@@ -93,36 +87,49 @@ public class DualTableNetwork implements NetworkViewer {
     setHighlightedSourceNodes(getIndicatedRows(getSelectedDestNode(), false));    
   }
   
-  protected Set<String> getIndicatedRows(@Nullable String selected, 
-      boolean selectionFromMainTable) {    
-    if (selected != null) {
-      if ((dualMode == DualMode.Forward && !selectionFromMainTable) || 
-          (dualMode == DualMode.Reverse && selectionFromMainTable)) {
-        return new HashSet<String>(interactionsFrom(selected));
+  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {
+    Map<String, Collection<String>> lookup = fromMain ? linkingMap() : mappingSummary.getReverseMap();    
+    if (selected != null) {   
+      if (lookup != null && lookup.containsKey(selected)) {          
+        return new HashSet<String>(lookup.get(selected));        
       } else {
-        return new HashSet<String>(interactionsTo(selected));
+        logger.warning("No association indications for " + selected);
       }
-    } else {
-      return new HashSet<String>();
-    }
+    }                
+    return new HashSet<String>();
+  }
+  
+//Maps main table to side table via a column.
+  protected AssociationSummary<ExpressionRow> mappingSummary;
+  
+  /**
+   * Maps mRNA-miRNA in forward mode, miRNA-mRNA in reverse mode
+   * @return
+   */
+  public Map<String, Collection<String>> linkingMap() {    
+    return mappingSummary.getFullMap();
   }
 
-  protected List<String> interactionsTo(String node) {
-    if (network == null) {
-      return new ArrayList<String>();
+  /**
+   * To be called each time the main table rows have changed.
+   */
+  public void updateLinkingMap() {
+    mappingSummary = mainTable.associationSummary(dualMode.linkingType);
+    if (sideTable.chosenColumns().isEmpty()) {
+      return;
     }
-    List r = network.interactionsTo(node).stream().map(x -> x.from().id()).collect(Collectors.toList());
-    logger.info("Interactions to " + node + ": " + r.size());
-    return r;
+    
+    if (mappingSummary == null) {
+      logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");     
+    }          
   }
   
-  protected List<String> interactionsFrom(String node) {
-    if (network == null) {
-      return new ArrayList<String>();
+  protected void changeSideTableProbes(String[] probes) {
+    sideTable.probesChanged(probes);
+    if (probes.length > 0) {
+      sideTable.getExpressions(true);
     }
-    return network.interactionsFrom(node).stream().map(x -> x.to().id()).collect(Collectors.toList());
   }
-  
   
   /**
    * Build Nodes by using expression values from the first column in the rows.

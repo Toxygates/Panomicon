@@ -18,6 +18,7 @@ import t.viewer.client.Utils;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;
+import t.viewer.shared.Association;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.mirna.MirnaSource;
 import t.viewer.shared.network.*;
@@ -38,7 +39,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected NetworkServiceAsync networkService;
   
   public static enum DualMode {
-    Forward("mRNA", "miRNA") {
+    Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
         table.setVisible(AType.MiRNA, true);
@@ -46,7 +47,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
       }
     },
     
-    Reverse("miRNA", "mRNA") {
+    Reverse("miRNA", "mRNA", AType.MRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
         table.setVisible(AType.MiRNA, false);
@@ -55,10 +56,12 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     };
     
     public final String mainType, sideType;
+    public final AType linkingType;
 
-    DualMode(String mainType, String sideType) {
+    DualMode(String mainType, String sideType, AType linkingType) {
       this.mainType = mainType;
-      this.sideType = sideType;      
+      this.sideType = sideType;
+      this.linkingType = linkingType;      
     }
     
     int sideTableWidth() { 
@@ -141,6 +144,16 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     columnsChanged(allColumns);
 
     reloadDataIfNeeded();
+  }
+    
+  @Override
+  protected void associationsUpdated(Association[] result) {
+    super.associationsUpdated(result);
+    /**
+     * This mechanism is temporary and may eventually be replaced by a linking map
+     * provided by the server.
+     */
+    network.updateLinkingMap();
   }
   
   private Widget tools;
@@ -274,7 +287,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   protected void setNetwork(NetworkInfo ni) {
     networkInfo = ni;
-    network.setNetwork(networkInfo.network());
   }
   
   // NetworkMenu.Delegate methods
