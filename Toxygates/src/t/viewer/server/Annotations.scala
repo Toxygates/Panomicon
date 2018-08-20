@@ -22,7 +22,7 @@ package t.viewer.server
 
 import java.lang.{ Double => JDouble }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
 import t.BaseConfig
@@ -93,7 +93,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
 
     val (cg, keys) = if (importantOnly) {
       (None,
-        baseConfig.attributes.getPreviewDisplay.toSeq)
+        baseConfig.attributes.getPreviewDisplay.asScala.toSeq)
     } else {
       val mp = schema.mediumParameter()
       val controls = samples.filter(s => schema.isControlValue(s.get(mp)))
@@ -163,7 +163,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
       bpv = bioParamValue(bp, p._2)
     ) yield bpv
 
-    new Annotation(sample.id, new java.util.ArrayList(params))
+    new Annotation(sample.id, new java.util.ArrayList(params.asJava))
   }
 
   //TODO use ControlGroup to calculate bounds here too

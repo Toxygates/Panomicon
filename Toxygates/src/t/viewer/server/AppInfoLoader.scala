@@ -24,7 +24,7 @@ import t.sparql.Probes
 import t.viewer.shared.clustering.ProbeClustering
 import t.viewer.shared.StringList
 import t.viewer.shared.AppInfo
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import t.common.shared.Platform
 import t.BaseConfig
 import t.sparql._
@@ -47,7 +47,7 @@ class AppInfoLoader(probeStore: Probes,
     new AppInfo(configuration.instanceName, Array(),
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
-      probeClusterings(probeLists), appName,
+      probeClusterings(probeLists.asScala), appName,
       makeUserKey(), getAnnotationInfo,
       baseConfig.attributes,
       getMirnaSourceInfo)

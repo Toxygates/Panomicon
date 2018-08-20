@@ -20,7 +20,7 @@
 
 package t.common.server.sample.search
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.Seq
 
 import otgviewer.shared.OTGSchema
@@ -55,8 +55,8 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
       sampleFilter: SampleFilter, sampleStore: Samples, schema: DataSchema,
       attributes: AttributeSet): Seq[Sample] = {
 
-    sampleStore.sampleAttributeQuery(condition.neededParameters() ++
-        attributes.getUnitLevel() ++ Seq(CoreParameter.ControlGroup),
+    sampleStore.sampleAttributeQuery(condition.neededParameters().asScala ++
+        attributes.getUnitLevel().asScala ++ Seq(CoreParameter.ControlGroup),
         SampleClassFilter(sampleClass))(sampleFilter)().map(asJavaSample)
   }
 
@@ -132,9 +132,9 @@ abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
     condition match {
       //TODO optimise and-evaluation by not evaluating unnecessary conditions?
       case and: AndMatch =>
-        and.subConditions.map(results _).reduce(_ intersect _)
+        and.subConditions.asScala.map(results _).reduce(_ intersect _)
       case or: OrMatch =>
-        or.subConditions.map(results _).reduce(_ union _)
+        or.subConditions.asScala.map(results _).reduce(_ union _)
       case at: AtomicMatch =>
         results(at)
     }
