@@ -61,7 +61,6 @@ public class NetworkVisualizationDialog {
 
   public void initWindow(@Nullable Network network) {
     createPanel();
-    exportSaveNetwork();
 
     Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
       @Override
@@ -187,19 +186,9 @@ public class NetworkVisualizationDialog {
   }-*/;
 
   public native void saveCurrentNetwork(String title) /*-{
+    $wnd.updateToxyNet();
     $wnd.toxyNet.title = title;
     this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet);
-  }-*/;
-
-  /**
-   * Exports the saveNetwork method to the window so that it can be called from hand-written
-   * JavaScript.
-   */
-  public native void exportSaveNetwork() /*-{
-    var that = this;
-    $wnd.saveNetworkToToxygates = $entry(function(network, jsonString) {
-      that.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
-    });
   }-*/;
 
   /**

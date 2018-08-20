@@ -419,14 +419,12 @@ function uiHeight(){
 }
 
 /**
- * Test method for save functionality
+ * Updates toxyNet with the changes made to vizNet 
  */
-function saveStuff(){
+function updateToxyNet(){
   var title = toxyNet["title"];
   var nodes = vizNet.getToxyNodes();
   var edges = vizNet.getToxyInteractions();
 
   toxyNet = new Network(title, edges, nodes);
-
-  window.saveNetworkToToxygates(toxyNet);
 }
