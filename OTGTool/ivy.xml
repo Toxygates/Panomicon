@@ -58,7 +58,8 @@
  <dependency org="org.scalatest" name="scalatest_2.12" rev="3.0.5" conf="test->*">
     <!-- Assumed to already be available from elsewhere -->
  	<exclude module="scala-library" />
- 	<exclude module="scala-reflect" />
+        <exclude module="scala-reflect" />
+        <exclude module="scala-compiler" />
  </dependency>
 
  <!-- intermine is not published on maven central, but the POM is at the URL below. -->
