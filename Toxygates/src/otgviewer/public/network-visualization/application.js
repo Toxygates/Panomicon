@@ -425,7 +425,4 @@ function updateToxyNet(){
   var edges = vizNet.getToxyInteractions();
 
   toxyNet = new Network(title, edges, nodes);
-  console.log(JSON.stringify(toxyNet));
-
-  window.saveNetworkToToxygates(toxyNet);
 }
