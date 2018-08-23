@@ -329,6 +329,10 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     fetchAssociations();
   }
 
+  public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
+    expressionTable.getAssociations();
+  };
+  
   public void fetchAssociations() {
     MirnaSource[] mirnaSources = mirnaState.getValue();
     if (mirnaSources != null) {
@@ -340,7 +344,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
 
         @Override
         public void onSuccess(Void result) {
-          expressionTable.getAssociations();
+          afterMirnaSourcesUpdated(mirnaSources);
         }
       });
     }

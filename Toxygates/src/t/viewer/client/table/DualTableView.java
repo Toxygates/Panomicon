@@ -227,8 +227,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }  
   
   @Override
-  public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
-    super.mirnaSourceDialogMirnaSourcesChanged(mirnaSources);
+  public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
+    super.afterMirnaSourcesUpdated(mirnaSources);
     //The server-side network will have changed, so we force the side expression table
     //to reflect this.
     
