@@ -18,7 +18,7 @@ class TargetTable(val sources: Array[String],
     val scores: Array[Double]) extends IndexedSeq[(MiRNA, RefSeq, Double)] {
 
   override val length: Int = sources.length
-  
+
   def apply(i: Int) = (MiRNA(sources(i)), RefSeq(targets(i)), scores(i))
 
   def filterWith(test: Int => Boolean): TargetTable = {
@@ -43,8 +43,7 @@ class TargetTable(val sources: Array[String],
    * Find probes in the platform that match the given transcripts.
    * TODO: this could be a static lookup map?
    */
-  def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]):
-    Iterable[(RefSeq, Iterable[Probe])] = {
+  def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]): Iterable[(RefSeq, Iterable[Probe])] = {
     val allTrn = transcripts.toSet
     val r = for {
       p <- platform.toSeq;
@@ -55,8 +54,7 @@ class TargetTable(val sources: Array[String],
 
   /**
    * Efficient miRNA to mRNA lookup.
-   * Probes in the platform must have transcripts populated.
-   * TODO this is not fast enough yet.
+   * mRNA probes in the platform must have transcripts populated.
    */
   def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double)] = {
     val allMicro = miRNAs.toSet
@@ -67,7 +65,7 @@ class TargetTable(val sources: Array[String],
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     allTrn.flatMap(x => probeLookup.get(x._2) match {
       case Some(ps) => ps.map((x._1, _, x._3))
-      case _ => Seq()
+      case _        => Seq()
     })
   }
 
@@ -81,15 +79,15 @@ class TargetTable(val sources: Array[String],
     val allTrKeys = allTrLookup.keySet
     println(s"Size ${allTrKeys.size} transcript key set")
     for {
-        (source, target, score) <- this;
-        if allTrKeys contains target;
-        (refSeq, probe) <- allTrLookup(target) }
-    yield (probe, source, score)
+      (source, target, score) <- this;
+      if allTrKeys contains target;
+      (refSeq, probe) <- allTrLookup(target)
+    } yield (probe, source, score)
   }
 
   final def limitSize[T](data: Iterable[T], limit: Option[Int]) = limit match {
     case Some(n) => data take n
-    case None => data
+    case None    => data
   }
 
   /**
@@ -98,16 +96,15 @@ class TargetTable(val sources: Array[String],
    * If from MiRNA, then the platform must have transcripts populated.
    */
   def associationLookup(probes: Seq[Probe],
-                     fromMirna: Boolean, 
-                     platform: Iterable[Probe],
-                     sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
+    fromMirna: Boolean,
+    platform: Iterable[Probe],
+    sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
     if (fromMirna) {
       makeMultiMap(
-          limitSize(
-            targets(probes.map(p => MiRNA(p.identifier)), platform),
+        limitSize(
+          targets(probes.map(p => MiRNA(p.identifier)), platform),
           sizeLimit).map(x =>
-            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some("miRDB 5.0")))
-          ))
+            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some("miRDB 5.0")))))
     } else {
       makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
         (x._1, DefaultBio(x._2.id, x._2.id, Some("miRDB 5.0")))))

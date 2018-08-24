@@ -138,9 +138,9 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
-    val params = ControllerParams(context, mainColumns, mainProbes, 
+    val params = ControllerParams(context, mainColumns, mainProbes,
       MatrixController.groupPlatforms(context, mainColumns), typ, false)
-      
+
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
 
@@ -156,23 +156,23 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val pset = sideMat.initProbes.toSet
     val filtered = countMap.filter(x => pset.contains(x._1))
     sideMat.addSynthetic(
-      new Synthetic.Precomputed("Count", s"Number of times each ($gt) appeared",
+      new Synthetic.Precomputed("Count", s"Number of times each $gt appeared",
         new JHMap(mapAsJavaMap(filtered)), null))
 
     //To do: init filters...
     new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)
   }
 
-  def currentView(mainTableId: String): Network = 
-    getState.networks(mainTableId).makeNetwork   
-  
-  def prepareNetworkDownload(mainTableId: String, format: Format, 
-                             messengerWeightColumn: String, microWeightColumn: String): String = {
+  def currentView(mainTableId: String): Network =
+    getState.networks(mainTableId).makeNetwork
+
+  def prepareNetworkDownload(mainTableId: String, format: Format,
+    messengerWeightColumn: String, microWeightColumn: String): String = {
     prepareNetworkDownload(currentView(mainTableId), format, messengerWeightColumn, microWeightColumn)
   }
-  
-  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String, 
-                             microWeightColumn: String): String = {
+
+  def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String,
+    microWeightColumn: String): String = {
     val s = new Serializer(network, messengerWeightColumn, microWeightColumn)
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)
