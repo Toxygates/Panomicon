@@ -4,13 +4,12 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.ui.*;
-
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
-import t.viewer.client.table.ExpressionTable;
 import t.viewer.shared.Association;
+
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A composite that displays information from a set of columns and a 
@@ -61,9 +60,6 @@ public abstract class DataView extends Composite {
    * Reload data if necessary, when probes or columns have changed
    */
   abstract public void reloadDataIfNeeded();
-  
-  //TODO remove
-  abstract public ExpressionTable expressionTable();
   
   protected MenuBar analysisMenu, fileMenu;
   

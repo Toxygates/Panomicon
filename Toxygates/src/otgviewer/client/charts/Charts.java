@@ -195,7 +195,10 @@ public class Charts {
             @Override
             public void onSuccess(final Sample[] barcodes) {
               finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
-              // TODO is this needed/well designed?
+              /*
+               * Note: the acceptor.acceptBarcodes control flow may not be the best
+               * way to structure this 
+               */
               acceptor.acceptBarcodes(barcodes);
             }
           });

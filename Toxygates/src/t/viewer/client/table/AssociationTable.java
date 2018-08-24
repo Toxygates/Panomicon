@@ -159,8 +159,10 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
     
     final int MAX_ITEMS = 10;
     
-    // TODO might move this method down or parameterise AssociationValue,
-    // use an interface etc
+    /*
+     * Note: might move this method down or parameterise AssociationValue,
+     * use an interface etc
+     */
     protected List<String> makeLinks(Collection<AssociationValue> values) {
       List<String> r = new ArrayList<String>();
       int i = 0;
