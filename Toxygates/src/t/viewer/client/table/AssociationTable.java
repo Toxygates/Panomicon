@@ -28,19 +28,21 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
-import t.common.shared.*;
+import t.common.shared.AType;
+import t.common.shared.DataSchema;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.shared.*;
+import t.viewer.shared.Association;
 
 /**
  * A RichTable that can display association columns.
  *
  */
-abstract public class AssociationTable<T extends ExpressionRow> extends RichTable<T> {
+abstract public class AssociationTable<T extends ExpressionRow> 
+    extends RichTable<T> implements AssociationColumn.Delegate<T> {
   protected final ProbeServiceAsync probeService;
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
-  protected Map<AType, AssociationColumn> assocColumns;
+  protected Map<AType, AssociationColumn<T>> assocColumns;
   
   private boolean waitingForAssociations = true;
   
@@ -51,27 +53,27 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
     probeService = screen.manager().probeService();
   }
 
+  @Override
   protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema) {
     SafeHtmlCell shc = new SafeHtmlCell();
     List<HideableColumn<T, ?>> r = new ArrayList<HideableColumn<T, ?>>();
-    assocColumns = new HashMap<AType, AssociationColumn>();
+    assocColumns = new HashMap<AType, AssociationColumn<T>>();
 
     for (AType at : schema.associations()) {
       // TODO fill in matrixColumn for sortable associations
-      AssociationColumn ac = new AssociationColumn(shc, at);
+      AssociationColumn<T> ac = new AssociationColumn<T>(shc, at, this);
       r.add(ac);
       assocColumns.put(at, ac);
     }
     return r;
   }
 
-  
   protected AType[] visibleAssociations() {
     List<AType> r = new ArrayList<AType>();
     for (HideableColumn<T, ?> ac : hideableColumns) {
-      if (ac instanceof AssociationTable.AssociationColumn) {
+      if (ac instanceof AssociationColumn) {
         if (ac.visible()) {
-          r.add(((AssociationTable<?>.AssociationColumn) ac).assoc);
+          r.add(((AssociationColumn<?>) ac).assoc);
         }       
       }
     }
@@ -88,20 +90,23 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
    * @param newState
    */
   public void setVisible(AType associationType, boolean newState) {
-    AssociationColumn aColumn = assocColumns.get(associationType);
+    AssociationColumn<T> aColumn = assocColumns.get(associationType);
     setVisible(aColumn, newState);
   }
 
+  @Override
   public void getAssociations() {
     waitingForAssociations = true;
     AType[] assocs = visibleAssociations();
     String[] dispAtomic = displayedAtomicProbes();
     if (assocs.length > 0 && dispAtomic.length > 0) {
       AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
+        @Override
         public void onFailure(Throwable caught) {
           Window.alert("Unable to get associations: " + caught.getMessage());
         }
 
+        @Override
         public void onSuccess(Association[] result) {
           associations.clear();
           waitingForAssociations = false;
@@ -143,134 +148,16 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
 
   abstract protected String probeForRow(T row);
 
-  abstract protected String[] atomicProbesForRow(T row);
+  @Override
+  abstract public String[] atomicProbesForRow(T row);
 
-  abstract protected String[] geneIdsForRow(T row);
-
-  public static abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {    
-    public LinkingColumn(SafeHtmlCell c, String name, boolean initState, String width,
-        @Nullable StandardColumns col) {
-      super(c, name, initState, width, col);
-    }
-
-    public LinkingColumn(SafeHtmlCell c, String name, StandardColumns col, TableStyle style) {
-      this(c, name, style.initVisibility(col), style.initWidth(col), col);
-    }
-    
-    final int MAX_ITEMS = 10;
-    
-    // TODO might move this method down or parameterise AssociationValue,
-    // use an interface etc
-    protected List<String> makeLinks(Collection<AssociationValue> values) {
-      List<String> r = new ArrayList<String>();
-      int i = 0;
-      for (AssociationValue v : values) {
-        i += 1;
-        if (i <= MAX_ITEMS) {
-          String l = formLink(v.formalIdentifier());
-          if (l != null) {
-            r.add("<div class=\"associationValue\" title=\"" + v.tooltip()
-                + "\"><a target=\"_TGassoc\" href=\"" + l + "\">" + v.title() + "</a></div>");
-          } else {
-            r.add("<div class=\"associationValue\" title=\"" + v.tooltip() + "\">" + v.title()
-                + "</div>"); // no link
-          }
-        }
-        if (i == MAX_ITEMS + 1) {
-          r.add("<div> ... (" + values.size() + " items)");
-        }
-      }
-      return r;
-    }
-
-    @Override
-    protected String getHtml(T er) {
-      return SharedUtils.mkString(makeLinks(getLinkableValues(er)), "");
-    }
-
-    protected Collection<AssociationValue> getLinkableValues(T er) {
-      return new ArrayList<AssociationValue>();
-    }
-
-    protected abstract String formLink(String value);
-
-  }
-
-  public class AssociationColumn extends LinkingColumn<T> implements MatrixSortable {
-    private AType assoc;
-
-    /**
-     * @param tc
-     * @param association
-     * @param matrixIndex Underlying data index for a corresponding hidden sorting column. Only
-     *        meaningful if this association is sortable.
-     */
-    public AssociationColumn(SafeHtmlCell tc, AType association) {
-      super(tc, association.title(), false, "15em", null);
-      this.assoc = association;
-      this._columnInfo = new ColumnInfo(_name, _width, association.canSort(), true, true, false);
-    }
-
-    public AType getAssociation() {
-      return assoc;
-    }
-
-    public SortKey sortKey() {
-      return new SortKey.Association(assoc);
-    }
-
-    @Override
-
-    
-    public void setVisibility(boolean v) {
-
-      super.setVisibility(v);
-      if (v && refreshEnabled) {
-        getAssociations();
-      }
-    }
-
-    protected String formLink(String value) {
-      return assoc.formLink(value);
-    }
-
-    protected Collection<AssociationValue> getLinkableValues(T expressionRow) {
-      Association a = associations.get(assoc);
-      Set<AssociationValue> all = new HashSet<AssociationValue>();
-      if (a == null) {
-        return all;
-      }
-
-      for (String at : atomicProbesForRow(expressionRow)) {
-        Set<AssociationValue> result = a.data().get(at);
-        if (result != null) {
-          all.addAll(result);            
-        }
-      }
-      for (String gi : geneIdsForRow(expressionRow)) {
-        Set<AssociationValue> result = a.data().get(gi);        
-        if (result != null) {      
-          all.addAll(result);
-        }
-      }
-      return all;
-    }
-
-    @Override
-    protected String getHtml(T er) {
-      if (waitingForAssociations) {
-        return ("(Waiting for data...)");
-      } else if (associations.containsKey(assoc)) {
-        return super.getHtml(er);
-      }
-      return ("(Data unavailable)");
-    }
-  }
+  @Override
+  abstract public String[] geneIdsForRow(T row);
   
   /**
    * Display a summary of a column.
    */
-  public void displayColumnSummary(AssociationColumn col) {
+  public void displayColumnSummary(AssociationColumn<T> col) {
     AssociationSummary<T> summary = associationSummary(col);
     StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
       500, 500);
@@ -278,7 +165,7 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
 
   @Nullable 
   public AssociationSummary<T> associationSummary(AType atype) {
-    AssociationColumn col = assocColumns.get(atype);
+    AssociationColumn<T> col = assocColumns.get(atype);
     if (col == null) {
       logger.warning("No association summary available for atype " + atype);
       return null;
@@ -286,8 +173,23 @@ abstract public class AssociationTable<T extends ExpressionRow> extends RichTabl
     return associationSummary(col);
   }
   
-  AssociationSummary<T> associationSummary(AssociationColumn col) {
+  AssociationSummary<T> associationSummary(AssociationColumn<T> col) {
     return new AssociationSummary<T>(col, grid.getVisibleItems());
   }
-  
+
+  // AssociationColumn.Delegate methods
+  @Override
+  public boolean refreshEnabled() {
+    return refreshEnabled;
+  }
+
+  @Override
+  public boolean waitingForAssociations() {
+    return waitingForAssociations;
+  }
+
+  @Override
+  public Map<AType, Association> associations() {
+    return associations;
+  }
 }

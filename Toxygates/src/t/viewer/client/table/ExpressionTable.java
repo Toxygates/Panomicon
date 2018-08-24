@@ -403,9 +403,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       if (clickedCol instanceof ExpressionColumn) {
         ExpressionColumn ec = (ExpressionColumn) clickedCol;
         editColumnFilter(ec.matrixColumn());
-      } else if (clickedCol instanceof AssociationTable.AssociationColumn) {
+      } else if (clickedCol instanceof AssociationColumn) {
         @SuppressWarnings("unchecked")
-        AssociationColumn ac = (AssociationColumn) clickedCol;
+        AssociationColumn<ExpressionRow> ac = (AssociationColumn<ExpressionRow>) clickedCol;
         displayColumnSummary(ac);
       }
     }
@@ -551,12 +551,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
   }
 
   @Override
-  protected String[] atomicProbesForRow(ExpressionRow row) {
+  public String[] atomicProbesForRow(ExpressionRow row) {
     return row.getAtomicProbes();
   }
 
   @Override
-  protected String[] geneIdsForRow(ExpressionRow row) {
+  public String[] geneIdsForRow(ExpressionRow row) {
     return row.getGeneIds();
   }
 
