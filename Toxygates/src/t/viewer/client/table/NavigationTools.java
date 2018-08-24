@@ -48,9 +48,13 @@ public class NavigationTools extends Composite {
   private CheckBox pValueCheck;
 
   private HorizontalPanel tools;
+
+  public interface Delegate {
+    void setPValueDisplay(boolean newState);
+  }
   
   NavigationTools(ExpressionTable table, DataGrid<ExpressionRow> grid,
-    boolean withPValueOption) {    
+      boolean withPValueOption, Delegate delegate) {
     tools = Utils.mkHorizontalPanel();
     initWidget(tools);
     
@@ -112,7 +116,7 @@ public class NavigationTools extends Composite {
       horizontalPanel.add(pValueCheck);
       pValueCheck.setValue(false);      
       pValueCheck.addClickHandler(e ->        
-          onPValueChange(pValueCheck.getValue()));                  
+      delegate.setPValueDisplay(pValueCheck.getValue()));
     }
     grid.setPageSize(INIT_PAGE_SIZE);
 
@@ -121,10 +125,6 @@ public class NavigationTools extends Composite {
   
   void setPValueState(boolean newState) {
     pValueCheck.setValue(newState);
-  }
-  
-  void onPValueChange(boolean newState) {
-    
   }
   
   ValueType getValueType() {

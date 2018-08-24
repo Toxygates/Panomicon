@@ -67,7 +67,7 @@ import t.viewer.shared.*;
  *
  */
 public class ExpressionTable extends AssociationTable<ExpressionRow>
-    implements ETHeaderBuilder.Delegate {
+    implements ETHeaderBuilder.Delegate, NavigationTools.Delegate {
 
   private final String COLUMN_WIDTH = "10em";
 
@@ -156,7 +156,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     asyncProvider.addDataDisplay(grid);
 
-    tools = makeTools(flags.withPager);
+    // TODO use flags.withPager
+    tools = new NavigationTools(this, grid, withPValueOption, this);
+    chosenValueType = tools.getValueType();
+
     analysisTools = new AnalysisTools(this);
 
     setEnabled(false);
@@ -205,31 +208,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
   private void setEnabled(boolean enabled) {
     tools.setEnabled(enabled);
     analysisTools.setEnabled(chosenValueType, enabled);     
-  }
-
-  /**
-   * The main (navigation) tool panel
-   */
-  private NavigationTools makeTools(boolean withPager) {
-    //TODO use withPager
-    NavigationTools r = new NavigationTools(this, grid, withPValueOption) {
-      @Override
-      void onPValueChange(boolean newState) {
-        if (newState && ! hasPValueColumns()) {
-          Window.alert("Precomputed p-values are only available for sample groups "
-              + " in fold-change mode, consisting of a single time and dose.\n"
-              + "If you wish to compare two columns, use "
-              + "\"Compare two sample groups\" in the tools menu.");
-          
-          setDisplayPColumns(false);                        
-        } else {
-          setDisplayPColumns(newState);
-          setupColumns();
-        }
-      }        
-    };
-    chosenValueType = r.getValueType();
-    return r;
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
@@ -872,5 +850,20 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
   @Override
   public ManagedMatrixInfo matrixInfo() {
     return matrixInfo;
+  }
+
+  // NavigationTools delegate method
+  @Override
+  public void setPValueDisplay(boolean newState) {
+    if (newState && !hasPValueColumns()) {
+      Window.alert("Precomputed p-values are only available for sample groups "
+          + " in fold-change mode, consisting of a single time and dose.\n"
+          + "If you wish to compare two columns, use "
+          + "\"Compare two sample groups\" in the tools menu.");
+      setDisplayPColumns(false);
+    } else {
+      setDisplayPColumns(newState);
+      setupColumns();
+    }
   }
 }
