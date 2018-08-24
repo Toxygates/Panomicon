@@ -231,8 +231,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   protected def updateDataset(d: Dataset): Unit = {
-    //TODO security check
-
+    /*
+     * This method has no security check since it is not public.
+     * Public user-facing methods that can reach this are responsible for
+     * security checking.
+     */
     val ds = new Datasets(baseConfig.triplestore)
     ds.setComment(d.getTitle, TRDF.escape(d.getComment))
     ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))

@@ -10,7 +10,7 @@ import scala.collection.JavaConversions._
 import t.viewer.server.Platforms
 
 object NetworkBuilder {
-  
+
   /**
    * Uses the current target table to compute side table probes.
    * @param mainOffset defines the start of the current page in the main matrix.
@@ -23,7 +23,7 @@ object NetworkBuilder {
     val mainType = main.params.typ
     val mainSpecies = main.params.species
     val expPlatform = mainSpecies.expectedPlatform
-    
+
     mainType match {
       case Network.mrnaType =>
         val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
@@ -42,6 +42,8 @@ object NetworkBuilder {
 class NetworkBuilder(targets: TargetTable,
     platforms: Platforms,
     main: ManagedMatrix, side: ManagedMatrix) {
+
+    lazy val mainType = main.params.typ
 
   //TODO do not hardcode types of nodes here
   //TODO handling of max size and informing user of cutoff
@@ -70,7 +72,7 @@ class NetworkBuilder(targets: TargetTable,
       (mirna, probe, score) <- targets.targets(mirna, platform);
       miLookup <- lookup(mirna); pLookup <- lookup(probe);
       int = new Interaction(miLookup, pLookup, label, score)
-    } yield int    
+    } yield int
   }
 
   def interactionsForMrna(mrna: Iterable[Probe]) = {
@@ -80,13 +82,23 @@ class NetworkBuilder(targets: TargetTable,
       (probe, mirna, score) <- targets.reverseTargets(mrna);
       miLookup <- lookup(mirna); pLookup <- lookup(probe);
       int = new Interaction(miLookup, pLookup, label, score)
-    } yield int    
+    } yield int
   }
 
   import java.util.{ArrayList => JList}
   def build: Network = {
+    if (main.info.numColumns() == 0) {
+      return new Network("Network", new JList(), new JList())
+    }
+
     val probes = platforms.resolve(main.current.orderedRowKeys take Network.MAX_SIZE)
-    val interactions = interactionsForMrna(probes).toSeq.sortBy(_.weight()) take Network.MAX_SIZE
+    val rawInt = mainType match {
+      case Network.mrnaType => interactionsForMrna(probes)
+      case Network.mirnaType =>
+        val pf = platforms.data.toSeq.flatMap(_._2)
+        interactionsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
+    }
+    val interactions = rawInt.toSeq.sortBy(_.weight()) take Network.MAX_SIZE
     new Network("Network", new JList(seqAsJavaList(nodes)),
         new JList(seqAsJavaList(interactions)))
   }

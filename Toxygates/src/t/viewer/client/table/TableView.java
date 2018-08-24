@@ -303,7 +303,6 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     return "miRNA".equals(GroupUtils.groupType(g));
   }
   
-  @Override
   public ExpressionTable expressionTable() { return expressionTable; }
 
   protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
