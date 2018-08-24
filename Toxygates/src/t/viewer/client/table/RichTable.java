@@ -22,15 +22,13 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
@@ -43,7 +41,6 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.PersistedState;
-
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -415,67 +412,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     setupHideableColumns();
   }
 
-  public abstract static class HideableColumn<T, C> extends Column<T, C> {
-    public HideableColumn(Cell<C> cell, boolean initState, @Nullable StandardColumns col) {
-      super(cell);      
-      _visible = initState;
-      this.col = col;
-    }
 
-    protected boolean _visible;
-    protected ColumnInfo _columnInfo;
-    final @Nullable StandardColumns col;
-
-    public ColumnInfo columnInfo() {
-      return _columnInfo;
-    }
-
-    public boolean visible() {
-      return _visible;
-    }
-
-    void setVisibility(boolean v) {
-      _visible = v;
-    }    
-  }
-
-  /**
-   * A hideable column that displays SafeHtml
-   */
-  protected abstract static class HTMLHideableColumn<T> extends HideableColumn<T, SafeHtml> {
-
-    protected String _width;
-    protected String _name;
-    protected SafeHtmlCell _c;
-    
-    /**
-     * The standard column represented here, if any
-     */
-    protected @Nullable StandardColumns col;
-
-    public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width,
-        @Nullable StandardColumns col) {
-      super(c, initState, col);
-      this._c = c;
-      _name = name;
-      _width = width;
-      _columnInfo = new ColumnInfo(name, width, false);
-    }
-    
-    public HTMLHideableColumn(SafeHtmlCell c, String name, 
-        StandardColumns col, TableStyle style) {
-      this(c, name, style.initVisibility(col), style.initWidth(col), col);
-    }
-
-    @Override
-    public SafeHtml getValue(T er) {
-      SafeHtmlBuilder build = new SafeHtmlBuilder();
-      build.appendHtmlConstant(getHtml(er));
-      return build.toSafeHtml();
-    }
-
-    protected abstract String getHtml(T er);    
-  }
 
   protected class RowHighlighter implements RowStyles<T> {
     public RowHighlighter() {}

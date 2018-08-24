@@ -22,7 +22,6 @@ import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 
