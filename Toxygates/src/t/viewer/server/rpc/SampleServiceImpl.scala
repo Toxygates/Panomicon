@@ -84,15 +84,14 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
-    
+
     //TODO: we shouldn't have to do this more than once
     val platforms = new t.sparql.Platforms(baseConfig)
     platforms.populateAttributes(baseConfig.attributes)
 
-    //TODO if staticInit does not read platformsAndProbes, some sparql queries
-    //fail on startup in Toxygates (probably due to a race condition).
-    //Figure out why.
-
+    /* Note: if staticInit does not read platformsAndProbes, some sparql queries
+     * fail on startup (probably due to a race condition). Reasons unclear at the moment.
+     */
     staticInit(context)
     this.configuration = conf
     this.instanceURI = conf.instanceURI

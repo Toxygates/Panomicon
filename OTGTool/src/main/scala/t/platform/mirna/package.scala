@@ -7,4 +7,6 @@ package object mirna {
   case class MiRNA(id: String) extends AnyVal {
     def asProbe = Probe(id)
   }
+
+  type Interaction = (MiRNA, RefSeq, Double, String)  
 }

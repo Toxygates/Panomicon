@@ -64,26 +64,25 @@ class NetworkBuilder(targets: TargetTable,
     useRows.map(r => Node.fromRow(r, mtype, mat.info))
   }
 
-  def interactionsForMirna(mirna: Iterable[MiRNA],
-      platform: Iterable[Probe]) = {
-    //TODO labels
-    val label = ""
+  def interactions(ints: Iterable[(MiRNA, Probe, Double, String)]) = {
+    /* Future: construct label more intelligently, taking data source name
+     * into account
+     */
     for {
-      (mirna, probe, score) <- targets.targets(mirna, platform);
+      iact <- ints;
+      (mirna, probe, score, db) = iact;
       miLookup <- lookup(mirna); pLookup <- lookup(probe);
+      label = TargetTable.interactionLabel(iact);
       int = new Interaction(miLookup, pLookup, label, score)
     } yield int
   }
 
-  def interactionsForMrna(mrna: Iterable[Probe]) = {
-    //TODO labels
-    val label = ""
-    for {
-      (probe, mirna, score) <- targets.reverseTargets(mrna);
-      miLookup <- lookup(mirna); pLookup <- lookup(probe);
-      int = new Interaction(miLookup, pLookup, label, score)
-    } yield int
-  }
+  def interactionsForMirna(mirna: Iterable[MiRNA],
+      platform: Iterable[Probe]) =
+        interactions(targets.targets(mirna, platform))
+
+  def interactionsForMrna(mrna: Iterable[Probe]) =
+    interactions(targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4)))
 
   import java.util.{ArrayList => JList}
   def build: Network = {

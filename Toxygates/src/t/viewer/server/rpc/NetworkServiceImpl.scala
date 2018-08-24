@@ -77,7 +77,7 @@ object NetworkState {
 class NetworkState extends MatrixState {
   var mirnaSources: Array[MirnaSource] = Array()
 
-  var _targetTable: TargetTable = new TargetTable(Array(), Array(), Array())
+  var _targetTable: TargetTable = new TargetTable(Array(), Array(), Array(), Array())
 
   def targetTable = synchronized { _targetTable }
   def targetTable_=(tt: TargetTable) = synchronized {
