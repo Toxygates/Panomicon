@@ -28,7 +28,8 @@ import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.shared.RankRule;
-import t.common.shared.*;
+import t.common.shared.DataSchema;
+import t.common.shared.SeriesType;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
@@ -74,7 +75,6 @@ abstract public class CompoundRanker extends Composite {
   }
 
   /**
-   * 
    * @param selector the selector that this CompoundRanker will communicate with.
    */
   public CompoundRanker(Screen _screen) {
@@ -190,8 +190,6 @@ abstract public class CompoundRanker extends Composite {
 
   /**
    * Map the current ranking rules to a list of probes and return the result.
-   * 
-   * @return
    */
   private List<String> getProbeList() {
     List<String> r = new ArrayList<String>();
@@ -206,8 +204,6 @@ abstract public class CompoundRanker extends Composite {
 
   /**
    * Replace the current ranking rules with new rules generated from a list of probes.
-   * 
-   * @param probes
    */
   private void setProbeList(List<String> probes) {
     while (inputHelpers.size() > probes.size()) {

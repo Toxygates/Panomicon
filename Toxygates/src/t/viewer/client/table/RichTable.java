@@ -194,7 +194,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
         }
       }
     }
-
   }
 
   protected void setupHideableColumns() {
@@ -218,9 +217,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   /**
    * Obtain the index of the column at the given x-position. Only works if there is at least one row
    * in the table. (!!)
-   * 
-   * @param x
-   * @return
    */
   protected int columnAt(int x) {
     int prev = 0;
@@ -243,12 +239,9 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   private final static int COL_TITLE_MAX_LEN = 8;
 
   /**
-   * Configure a column
-   * 
-   * @param c
-   * @param info
+   * Sets a Column's properties according to a ColumnInfo
    */
-  private void setup(Column<T, ?> c, ColumnInfo info) {
+  private void setupColumn(Column<T, ?> c, ColumnInfo info) {
     grid.setColumnWidth(c, info.width());
     if (info.cellStyleNames() != null) {
       c.setCellStyleNames(info.cellStyleNames());
@@ -275,18 +268,18 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
   private int nextColumnIndex(String section) {
     ensureSection(section);
-    int c = 0;
+    int index = 0;
     for (String s : columnSections) {
-      c += sectionColumnCount.get(s);
+      index += sectionColumnCount.get(s);
       if (s.equals(section)) {
-        return c;
+        return index;
       }
     }
     // Should not get here but...
-    return c;
+    return index;
   }
 
-  private void decreaseSectionCount(int at) {
+  private void decreaseSectionColumnCount(int at) {
     int c = 0;
     for (String s : columnSections) {
       c += sectionColumnCount.get(s);
@@ -349,7 +342,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     int at = nextColumnIndex(section);
     increaseSectionColumnCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
-    setup(col, info);
+    setupColumn(col, info);
     columnInfos.add(at, info);
     computeTableWidth();
   }
@@ -359,7 +352,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     if (idx == -1) {
       return;
     }
-    decreaseSectionCount(idx);
+    decreaseSectionColumnCount(idx);
     ColumnInfo info = columnInfos.get(idx);
 
     if (info.sortable()) {
@@ -411,8 +404,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     // We need to set up all the columns each time in order to style borders correctly
     setupHideableColumns();
   }
-
-
 
   protected class RowHighlighter implements RowStyles<T> {
     public RowHighlighter() {}

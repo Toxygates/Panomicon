@@ -360,7 +360,5 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
   @Override
   public Widget tools() {
     return expressionTable.tools();
-  }  
-  
-  
+  }
 }

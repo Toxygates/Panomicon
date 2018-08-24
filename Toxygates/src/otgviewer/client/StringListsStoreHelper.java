@@ -44,8 +44,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   /**
    * Save simple string list to local storage. An input box which asks the list's title will be
    * shown.
-   * 
-   * @param list
    */
   public void save(Collection<String> list) {
     saveAction(list, "Name entry", "Please enter a name for the list.");
@@ -104,7 +102,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
    * Given a mixed collection, extract both clusters and normal lists
    * into a unified StringList format.
    * @param parent
-   * @return
    */
   public static List<StringList> compileLists(Collection<ItemList> ils) {    
     List<StringList> r = new ArrayList<StringList>();
@@ -124,9 +121,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   
   /**
    * Compile item lists and clustering list into a StringList format.
-   * 
-   * @param parent
-   * @return
    */
   public static List<StringList> compileLists(List<ItemList> itemLists, List<ItemList> clusteringList) {
     List<ItemList> r = new ArrayList<ItemList>();
@@ -158,8 +152,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
    * Given a collection of StringLists, group them into ClusteringList
    * and StringList. This is approximately the inverse operation of 
    * compileLists (algorithm details etc for ClusteringList are not preserved)
-   * @param items
-   * @return
    */
   public static List<ItemList> rebuildLists(Logger log,
       Collection<StringList> items) {

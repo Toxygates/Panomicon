@@ -36,8 +36,6 @@ import t.viewer.shared.StringList;
  * their own lists.
  * 
  * In the future, this class might implement SetEditor.
- * 
- *
  */
 public class ListChooser extends Composite {
 
@@ -278,15 +276,11 @@ public class ListChooser extends Composite {
 
   /**
    * To be overridden by subclasses/users. Called when the user has saved or deleted a list.
-   * 
-   * @param lists
    */
   protected void listsChanged(List<ItemList> lists) {}
 
   /**
    * To be called by users when the current list has been edited externally.
-   * 
-   * @param items
    */
   public void setItems(List<String> items) {
     currentItems = items;
@@ -294,8 +288,6 @@ public class ListChooser extends Composite {
 
   /**
    * Returns all ItemLists, including the ones of a type not managed by this chooser.
-   * 
-   * @return
    */
   public List<ItemList> getLists() {
     List<ItemList> r = new ArrayList<ItemList>();
@@ -313,8 +305,6 @@ public class ListChooser extends Composite {
   /**
    * Set all ItemLists. This chooser will identify the ones that have the correct type and display
    * those only.
-   * 
-   * @param itemLists
    */
   public void setLists(List<? extends ItemList> itemLists) {
     lists.clear();
@@ -335,7 +325,6 @@ public class ListChooser extends Composite {
   /**
    * Try to select an item that matches given title in list box.
    * 
-   * @param title
    * @return index of the item, or <tt>-1</tt> if there was no item matching given title.
    */
   public int trySelect(String title) {

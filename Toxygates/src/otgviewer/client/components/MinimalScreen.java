@@ -72,14 +72,6 @@ public abstract class MinimalScreen implements Screen {
     Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), groups));
   }
 
-  /*
-   * Copy-pasted (and lightly modified) DLWScreen follows below.
-   * 
-   * Major changes so far: 
-   * * Not doing status panel 
-   * * Not overriding Widget.OnResize (probably problematic)
-   */
-
   protected DockLayoutPanel screenPanel;
 
   /**
@@ -171,8 +163,6 @@ public abstract class MinimalScreen implements Screen {
 
   /**
    * Is this screen ready for use?
-   * 
-   * @return
    */
   @Override
   public boolean enabled() {
@@ -181,8 +171,6 @@ public abstract class MinimalScreen implements Screen {
 
   /**
    * Has the user finished configuring this screen?
-   * 
-   * @return
    */
   public boolean configured() {
     return configured;
@@ -332,8 +320,6 @@ public abstract class MinimalScreen implements Screen {
   /**
    * Show the given toolbar (which must previously have been added with addToolbar or addLeftbar at
    * the right time).
-   * 
-   * @param toolbar
    */
   @Override
   public void showToolbar(Widget toolbar) {
@@ -343,9 +329,6 @@ public abstract class MinimalScreen implements Screen {
   /**
    * Show the given toolbar (which must previously have been added with addToolbar or addLeftbar at
    * the right time).
-   * 
-   * @param toolbar
-   * @param size
    */
   public void showToolbar(Widget toolbar, int size) {
     toolbar.setVisible(true);
@@ -434,8 +417,6 @@ public abstract class MinimalScreen implements Screen {
 
   /**
    * The text that is displayed to first-time users on each screen to assist them.
-   * 
-   * @return
    */
   protected String getGuideText() {
     return "Use Instructions on the Help menu to get more information.";
@@ -456,8 +437,6 @@ public abstract class MinimalScreen implements Screen {
   /**
    * Display the sample detail screen and show information about the given barcode. TODO: this
    * method should probably be somewhere else.
-   * 
-   * @param b
    */
   public void displaySampleDetail(Sample b) {
     ScreenUtils.displaySampleDetail(this, b);

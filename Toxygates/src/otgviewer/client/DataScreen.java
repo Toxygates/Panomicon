@@ -56,7 +56,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   private MenuItem heatMapMenu;
   protected GeneSetsMenu geneSetsMenu;
   
-
   protected String[] chosenProbes = new String[0];
   protected List<Group> chosenColumns = new ArrayList<Group>();
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();

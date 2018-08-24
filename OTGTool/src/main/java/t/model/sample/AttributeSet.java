@@ -77,7 +77,6 @@ abstract public class AttributeSet implements Serializable {
   
   /**
    * Get all attributes that are required to be present in new batches.
-   * @return
    */
   public Collection<Attribute> getRequired() {
     return required;
@@ -86,7 +85,6 @@ abstract public class AttributeSet implements Serializable {
   /**
    * Get all attributes that are suitable for a preview display (a brief overview of a 
    * set of samples).
-   * @return
    */
   public Collection<Attribute> getPreviewDisplay() {
     return required;
@@ -94,14 +92,11 @@ abstract public class AttributeSet implements Serializable {
   
   /**
    * Get all attributes that are suitable for a high level grouping of samples.
-   * @return
    */
   abstract public Collection<Attribute> getHighLevel();
   
   /**
    * Get all attributes that are sufficient for distinguishing units within the high-level grouping
-   * 
-   * @return
    */
   abstract public Collection<Attribute> getUnitLevel();
   
@@ -122,10 +117,6 @@ abstract public class AttributeSet implements Serializable {
   /**
    * Find the attribute with the given id or create it (and add it to this set) if it
    * doesn't exist.
-   * @param id
-   * @param title
-   * @param kind
-   * @return
    */
   public Attribute findOrCreate(String id, @Nullable String title,
                                 @Nullable String kind) {
@@ -136,11 +127,6 @@ abstract public class AttributeSet implements Serializable {
   /**
    * Find the attribute with the given id or create it (and add it to this set) if it
    * doesn't exist.
-   * @param id
-   * @param title
-   * @param kind
-   * @param section
-   * @return
    */
   synchronized public Attribute findOrCreate(String id, @Nullable String title,
       @Nullable String kind, @Nullable String section) {

@@ -117,8 +117,6 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   public static interface UnitListener {
     /**
      * Indicates that the selection has changed.
-     * 
-     * @param units
      */
     void unitsChanged(List<Unit> units);
 
@@ -309,9 +307,6 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   /**
    * Get the final version of the unit, which is installed after sample loading.
-   * 
-   * @param key
-   * @return
    */
   private Unit getFinalUnit(Unit key) {
     for (Unit b : unitUis.keySet()) {

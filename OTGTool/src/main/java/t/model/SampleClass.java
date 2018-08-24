@@ -21,7 +21,8 @@ package t.model;
 import java.io.Serializable;
 import java.util.*;
 
-import t.model.sample.*;
+import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 
 
 /**
@@ -108,7 +109,6 @@ public class SampleClass implements Serializable, SampleLike {
 
   /**
    * Returns a copy of this sample class' constraint map.
-   * @return
    */
   public Map<Attribute, String> getMap() {
     return new HashMap<Attribute, String>(data);
@@ -117,9 +117,6 @@ public class SampleClass implements Serializable, SampleLike {
   /**
    * Is this SampleClass compatible with the other one? True iff shared keys have the same values.
    * Commutative.
-   * 
-   * @param other
-   * @return
    */
   public boolean compatible(SampleClass other) {
     for (Attribute k : data.keySet()) {
@@ -133,9 +130,6 @@ public class SampleClass implements Serializable, SampleLike {
   /**
    * Returns true iff the tested sample class contains all the keys of this one and they have the
    * same values. Non-commutative.
-   * 
-   * @param other
-   * @return
    */
   public boolean strictCompatible(SampleClass other) {
     for (Attribute k : data.keySet()) {
@@ -160,9 +154,6 @@ public class SampleClass implements Serializable, SampleLike {
   /**
    * Produce a new SampleClass that contains only those keys that were shared between the two
    * classes and had the same values.
-   * 
-   * @param other
-   * @return
    */
   public SampleClass intersection(SampleClass other) {
     Set<Attribute> k1 = other.getMap().keySet();

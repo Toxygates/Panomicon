@@ -320,8 +320,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * TODO: this information is also available via AppInfo and we should move towards using only
    * that. Except we now only use it in storageParserPrefix, which is needed for getting AppInfo in
    * the first place...
-   * 
-   * @return
    */
   @Deprecated
   protected String instanceName() {
@@ -380,8 +378,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * This method sets up the navigation links that allow the user to jump between screens. The
    * enabled() method of each screen is used to test whether that screen is currently available for
    * use or not.
-   * 
-   * @param current
    */
   void addWorkflowLinks(Screen current) {
     navPanel.clear();
@@ -416,8 +412,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   /**
    * Display the screen that corresponds to a given history token.
-   * 
-   * @param token
    */
   private void showScreenForToken(String token, boolean firstLoad) {
     Screen screen;
@@ -432,8 +426,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   /**
    * Switch screens.
-   * 
-   * @param s
    */
   protected void showScreen(Screen s) {
     if (currentScreen != null) {
@@ -493,8 +485,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   /**
    * Helper method for initialising screens
-   * 
-   * @param s
    */
   protected void addScreenSeq(Screen s) {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());

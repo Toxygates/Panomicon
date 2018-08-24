@@ -202,8 +202,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
 
   /**
    * Enable or disable the GUI
-   * 
-   * @param enabled
    */
   private void setEnabled(boolean enabled) {
     tools.setEnabled(enabled);
@@ -473,9 +471,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
   @Override
   protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
     SafeHtmlCell htmlCell = new SafeHtmlCell();
-    List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
+    List<HideableColumn<ExpressionRow, ?>> columns = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 
-    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
+    columns.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
         StandardColumns.GeneID, style) {        
       @Override
       protected String formLink(String value) {
@@ -494,7 +492,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       }
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
+    columns.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
         StandardColumns.GeneSym, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
@@ -503,7 +501,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
 
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
+    columns.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
         StandardColumns.ProbeTitle, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
@@ -511,7 +509,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       }
     });
 
-    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
+    columns.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
         StandardColumns.Probe, style) {        
 
       @Override
@@ -532,9 +530,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
 
     // We want gene sym, probe title etc. to be before the association
     // columns going left to right
-    r.addAll(super.initHideableColumns(schema));
+    columns.addAll(super.initHideableColumns(schema));
 
-    return r;
+    return columns;
   }
 
   /**

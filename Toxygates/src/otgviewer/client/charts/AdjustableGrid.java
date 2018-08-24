@@ -287,9 +287,6 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   /**
    * Find a dose or time that is present in the user-defined sample groups and that can be displayed
    * in these charts.
-   * 
-   * @param isMed
-   * @return
    */
   private String findPreferredItem(boolean isMed) {
     final Attribute medParam = schema.mediumParameter();
