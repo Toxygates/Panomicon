@@ -25,8 +25,6 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import com.google.gwt.cell.client.*;
-import com.google.gwt.dom.builder.shared.SpanBuilder;
-import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
@@ -68,7 +66,8 @@ import t.viewer.shared.*;
  * @author johan
  *
  */
-public class ExpressionTable extends AssociationTable<ExpressionRow> {
+public class ExpressionTable extends AssociationTable<ExpressionRow>
+    implements ETHeaderBuilder.Delegate, NavigationTools.Delegate {
 
   private final String COLUMN_WIDTH = "10em";
 
@@ -122,69 +121,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
      */
     void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters);
   }
-  
-  protected class HeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
-    AbstractCellTable.Style style;
-
-    public HeaderBuilder(AbstractCellTable<ExpressionRow> table) {
-      super(table, false);
-      style = getTable().getResources().style();
-    }
-
-    private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount,
-        String styleNames) {
-      SpanBuilder spanBuilder = rowBuilder.startTH().colSpan(columnCount)
-          .className(style.header() + " majorHeader " + styleNames).startSpan();
-      DataSchema schema = screen.manager().schema();
-      spanBuilder.title(group.tooltipText(schema)).text(group.getName()).endSpan();
-      rowBuilder.endTH();
-    }
-
-    private void buildBlankHeader(TableRowBuilder rowBuilder, int columnCount) {
-      rowBuilder.startTH().colSpan(columnCount).endTH();
-    }
-
-    @Override
-    protected boolean buildHeaderOrFooterImpl() {
-      if (columnSections.size() > 0) {
-        TableRowBuilder rowBuilder = startRow();
-        for (int i = 0; i < columnSections.size(); i++) {
-          String sectionName = columnSections.get(i);
-          int numSectionColumns = sectionColumnCount.get(sectionName);
-          if (numSectionColumns > 0 && matrixInfo != null) {
-            if (sectionName == "data") {
-              int groupColumnCount = 1;
-              Group group = matrixInfo.columnGroup(0);
-              // Iterate through data columns, and build a group header whenever
-              // we switch groups, and also at the end of the iteration.
-              boolean first = true;
-              for (int j = 1; j < matrixInfo.numDataColumns(); j++) {
-                if (displayPColumns || !matrixInfo.isPValueColumn(j)) {
-                  Group nextGroup = matrixInfo.columnGroup(j);
-                  if (group != nextGroup) {
-                    String borderStyle = first ? "darkBorderLeft" : "whiteBorderLeft";
-                    String groupStyle = group.getStyleName() + "-background";
-                    buildGroupHeader(rowBuilder, group, groupColumnCount,
-                        borderStyle + " " + groupStyle);
-                    first = false;
-                    groupColumnCount = 0;
-                  }
-                  groupColumnCount++;
-                  group = nextGroup;
-                }
-              }
-              String groupStyle = group.getStyleName() + "-background";
-              buildGroupHeader(rowBuilder, group, groupColumnCount,
-                  "whiteBorderLeft " + groupStyle);
-            } else {
-              buildBlankHeader(rowBuilder, numSectionColumns);
-            }
-          }
-        }
-      }
-      return super.buildHeaderOrFooterImpl();
-    }
-  }
 
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
   
@@ -203,7 +139,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     this.loader = loader;
     screen = _screen;
 
-    grid.setHeaderBuilder(new HeaderBuilder(grid));
+    grid.setHeaderBuilder(new ETHeaderBuilder(grid, this, schema));
     grid.addStyleName("exprGrid");
 
     if (!flags.allowHighlight) {
@@ -220,7 +156,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     asyncProvider.addDataDisplay(grid);
 
-    tools = makeTools(flags.withPager);
+    // TODO use flags.withPager
+    tools = new NavigationTools(this, grid, withPValueOption, this);
+    chosenValueType = tools.getValueType();
+
     analysisTools = new AnalysisTools(this);
 
     setEnabled(false);
@@ -263,37 +202,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   /**
    * Enable or disable the GUI
-   * 
-   * @param enabled
    */
   private void setEnabled(boolean enabled) {
     tools.setEnabled(enabled);
     analysisTools.setEnabled(chosenValueType, enabled);     
-  }
-
-  /**
-   * The main (navigation) tool panel
-   */
-  private NavigationTools makeTools(boolean withPager) {
-    //TODO use withPager
-    NavigationTools r = new NavigationTools(this, grid, withPValueOption) {
-      @Override
-      void onPValueChange(boolean newState) {
-        if (newState && ! hasPValueColumns()) {
-          Window.alert("Precomputed p-values are only available for sample groups "
-              + " in fold-change mode, consisting of a single time and dose.\n"
-              + "If you wish to compare two columns, use "
-              + "\"Compare two sample groups\" in the tools menu.");
-          
-          setDisplayPColumns(false);                        
-        } else {
-          setDisplayPColumns(newState);
-          setupColumns();
-        }
-      }        
-    };
-    chosenValueType = r.getValueType();
-    return r;
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
@@ -489,9 +401,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       if (clickedCol instanceof ExpressionColumn) {
         ExpressionColumn ec = (ExpressionColumn) clickedCol;
         editColumnFilter(ec.matrixColumn());
-      } else if (clickedCol instanceof AssociationTable.AssociationColumn) {
+      } else if (clickedCol instanceof AssociationColumn) {
         @SuppressWarnings("unchecked")
-        AssociationColumn ac = (AssociationColumn) clickedCol;
+        AssociationColumn<ExpressionRow> ac = (AssociationColumn<ExpressionRow>) clickedCol;
         displayColumnSummary(ac);
       }
     }
@@ -559,9 +471,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   @Override
   protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
     SafeHtmlCell htmlCell = new SafeHtmlCell();
-    List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
+    List<HideableColumn<ExpressionRow, ?>> columns = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 
-    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
+    columns.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
         StandardColumns.GeneID, style) {        
       @Override
       protected String formLink(String value) {
@@ -580,7 +492,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
+    columns.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
         StandardColumns.GeneSym, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
@@ -589,7 +501,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
+    columns.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
         StandardColumns.ProbeTitle, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
@@ -597,7 +509,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
+    columns.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
         StandardColumns.Probe, style) {        
 
       @Override
@@ -618,9 +530,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     // We want gene sym, probe title etc. to be before the association
     // columns going left to right
-    r.addAll(super.initHideableColumns(schema));
+    columns.addAll(super.initHideableColumns(schema));
 
-    return r;
+    return columns;
   }
 
   /**
@@ -637,12 +549,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   @Override
-  protected String[] atomicProbesForRow(ExpressionRow row) {
+  public String[] atomicProbesForRow(ExpressionRow row) {
     return row.getAtomicProbes();
   }
 
   @Override
-  protected String[] geneIdsForRow(ExpressionRow row) {
+  public String[] geneIdsForRow(ExpressionRow row) {
     return row.getGeneIds();
   }
 
@@ -914,6 +826,42 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
           displayCharts();
         }
       });
+    }
+  }
+
+  // ETHeaderBuilder.Delegate methods
+  @Override
+  public List<String> columnSections() {
+    return columnSections;
+  }
+
+  @Override
+  public int columnCountForSection(String sectionName) {
+    return sectionColumnCount.get(sectionName);
+  }
+
+  @Override
+  public boolean displayPColumns() {
+    return displayPColumns;
+  }
+
+  @Override
+  public ManagedMatrixInfo matrixInfo() {
+    return matrixInfo;
+  }
+
+  // NavigationTools delegate method
+  @Override
+  public void setPValueDisplay(boolean newState) {
+    if (newState && !hasPValueColumns()) {
+      Window.alert("Precomputed p-values are only available for sample groups "
+          + " in fold-change mode, consisting of a single time and dose.\n"
+          + "If you wish to compare two columns, use "
+          + "\"Compare two sample groups\" in the tools menu.");
+      setDisplayPColumns(false);
+    } else {
+      setDisplayPColumns(newState);
+      setupColumns();
     }
   }
 }

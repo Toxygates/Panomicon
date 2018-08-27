@@ -22,15 +22,11 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
@@ -38,12 +34,12 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.Screen;
+import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.PersistedState;
-
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -96,17 +92,12 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     grid = new DataGrid<T>(50, resources) {
       @Override
       protected void onBrowserEvent2(Event event) {
-        if ("click".equals(event.getType())) {
-          EventTarget et = event.getEventTarget();          
-          if (Element.is(et)) {
-            Element e = et.cast();            
-            String targetId = e.getParentElement().getId();            
-            if (interceptGridClick(targetId, event.getClientX(), event.getClientY())) {
-              return;
-            }
-          }
-          super.onBrowserEvent2(event);
+        String eventId = Utils.clickParentId(event);
+        if (eventId != null &&
+          interceptGridClick(eventId, event.getClientX(), event.getClientY())) {
+            return;
         }
+        super.onBrowserEvent2(event);        
       }
     };
 
@@ -197,7 +188,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
         }
       }
     }
-
   }
 
   protected void setupHideableColumns() {
@@ -221,9 +211,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   /**
    * Obtain the index of the column at the given x-position. Only works if there is at least one row
    * in the table. (!!)
-   * 
-   * @param x
-   * @return
    */
   protected int columnAt(int x) {
     int prev = 0;
@@ -246,12 +233,9 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   private final static int COL_TITLE_MAX_LEN = 8;
 
   /**
-   * Configure a column
-   * 
-   * @param c
-   * @param info
+   * Sets a Column's properties according to a ColumnInfo
    */
-  private void setup(Column<T, ?> c, ColumnInfo info) {
+  private void setupColumn(Column<T, ?> c, ColumnInfo info) {
     grid.setColumnWidth(c, info.width());
     if (info.cellStyleNames() != null) {
       c.setCellStyleNames(info.cellStyleNames());
@@ -278,18 +262,18 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
   private int nextColumnIndex(String section) {
     ensureSection(section);
-    int c = 0;
+    int index = 0;
     for (String s : columnSections) {
-      c += sectionColumnCount.get(s);
+      index += sectionColumnCount.get(s);
       if (s.equals(section)) {
-        return c;
+        return index;
       }
     }
     // Should not get here but...
-    return c;
+    return index;
   }
 
-  private void decreaseSectionCount(int at) {
+  private void decreaseSectionColumnCount(int at) {
     int c = 0;
     for (String s : columnSections) {
       c += sectionColumnCount.get(s);
@@ -352,7 +336,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     int at = nextColumnIndex(section);
     increaseSectionColumnCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
-    setup(col, info);
+    setupColumn(col, info);
     columnInfos.add(at, info);
     computeTableWidth();
   }
@@ -362,7 +346,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     if (idx == -1) {
       return;
     }
-    decreaseSectionCount(idx);
+    decreaseSectionColumnCount(idx);
     ColumnInfo info = columnInfos.get(idx);
 
     if (info.sortable()) {
@@ -413,68 +397,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
     // We need to set up all the columns each time in order to style borders correctly
     setupHideableColumns();
-  }
-
-  public abstract static class HideableColumn<T, C> extends Column<T, C> {
-    public HideableColumn(Cell<C> cell, boolean initState, @Nullable StandardColumns col) {
-      super(cell);      
-      _visible = initState;
-      this.col = col;
-    }
-
-    protected boolean _visible;
-    protected ColumnInfo _columnInfo;
-    final @Nullable StandardColumns col;
-
-    public ColumnInfo columnInfo() {
-      return _columnInfo;
-    }
-
-    public boolean visible() {
-      return _visible;
-    }
-
-    void setVisibility(boolean v) {
-      _visible = v;
-    }    
-  }
-
-  /**
-   * A hideable column that displays SafeHtml
-   */
-  protected abstract static class HTMLHideableColumn<T> extends HideableColumn<T, SafeHtml> {
-
-    protected String _width;
-    protected String _name;
-    protected SafeHtmlCell _c;
-    
-    /**
-     * The standard column represented here, if any
-     */
-    protected @Nullable StandardColumns col;
-
-    public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width,
-        @Nullable StandardColumns col) {
-      super(c, initState, col);
-      this._c = c;
-      _name = name;
-      _width = width;
-      _columnInfo = new ColumnInfo(name, width, false);
-    }
-    
-    public HTMLHideableColumn(SafeHtmlCell c, String name, 
-        StandardColumns col, TableStyle style) {
-      this(c, name, style.initVisibility(col), style.initWidth(col), col);
-    }
-
-    @Override
-    public SafeHtml getValue(T er) {
-      SafeHtmlBuilder build = new SafeHtmlBuilder();
-      build.appendHtmlConstant(getHtml(er));
-      return build.toSafeHtml();
-    }
-
-    protected abstract String getHtml(T er);    
   }
 
   protected class RowHighlighter implements RowStyles<T> {

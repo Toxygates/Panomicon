@@ -30,7 +30,7 @@ public class AssociationSummary<T extends ExpressionRow> {
       new HashMap<String, Collection<String>>();
   private Map<String, Collection<String>> reverseMap;
   
-  AssociationSummary(AssociationTable<T>.AssociationColumn col, 
+  AssociationSummary(AssociationColumn<T> col,
     Collection<T> rows) {
     for (T row: rows) {
       Collection<AssociationValue> values = col.getLinkableValues(row);

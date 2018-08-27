@@ -7,7 +7,7 @@ import t.platform._
 /**
  * Tool for ingesting filtered mirDB data.
  */
-class MiRDBConverter(inputFile: String) {
+class MiRDBConverter(inputFile: String, dbName: String) {
   def size =  Source.fromFile(inputFile).getLines.size
 
   /*
@@ -22,7 +22,7 @@ class MiRDBConverter(inputFile: String) {
 
     for (l <- lines) {
       val spl = l.split("\\s+")
-      builder.add(MiRNA(spl(0)), RefSeq(spl(1)), spl(2).toDouble)
+      builder.add(MiRNA(spl(0)), RefSeq(spl(1)), spl(2).toDouble, dbName)
     }
     builder.build
   }
@@ -52,6 +52,6 @@ class MiRDBConverter(inputFile: String) {
 
 object MiRDBConverter {
   def main(args: Array[String]) {
-    new MiRDBConverter(args(0)).makeTrig(args(1))
+    new MiRDBConverter(args(0), "MiRDB 5.0").makeTrig(args(1))
   }
 }

@@ -33,10 +33,6 @@ public class GroupMaker {
    * Generate suitable groups, one per "major" value, from the given units. This algorithm simply
    * finds the dose/time combination with the largest number of majors available, and then creates
    * groups with 1 unit each.
-   * 
-   * @param schema
-   * @param units
-   * @return
    */
   public static List<Group> autoGroups(GroupInspector gi, DataSchema schema,
       List<Pair<Unit, Unit>> units) {

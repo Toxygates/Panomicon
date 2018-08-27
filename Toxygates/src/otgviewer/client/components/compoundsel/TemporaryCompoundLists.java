@@ -31,7 +31,6 @@ public class TemporaryCompoundLists {
 
 	/*
 	 * TODO Temporary hardcoded lists for testing. Will eventually be stored as RDF.
-	 * @return
 	 */
 	static List<StringList> predefinedLists() {
 		List<StringList> r = new ArrayList<StringList>();

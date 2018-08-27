@@ -22,7 +22,6 @@ import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 
@@ -304,7 +303,6 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     return "miRNA".equals(GroupUtils.groupType(g));
   }
   
-  @Override
   public ExpressionTable expressionTable() { return expressionTable; }
 
   protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
@@ -329,6 +327,10 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     fetchAssociations();
   }
 
+  public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
+    expressionTable.getAssociations();
+  };
+  
   public void fetchAssociations() {
     MirnaSource[] mirnaSources = mirnaState.getValue();
     if (mirnaSources != null) {
@@ -340,7 +342,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
 
         @Override
         public void onSuccess(Void result) {
-          expressionTable.getAssociations();
+          afterMirnaSourcesUpdated(mirnaSources);
         }
       });
     }
@@ -358,7 +360,5 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
   @Override
   public Widget tools() {
     return expressionTable.tools();
-  }  
-  
-  
+  }
 }

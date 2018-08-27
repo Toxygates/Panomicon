@@ -66,7 +66,14 @@ public interface NetworkService extends RemoteService {
                           String[] mainProbes,
                           String sideId, List<Group> sideColumns, 
                           ValueType typ, int mainPageSize);
-  
+
+  /**
+   * Obtain a view of the current network, identified by the id of the main table matrix,
+   * that respects sorting and filtering. A size cutoff may be applied.
+   * @param mainId
+   * @return
+   */
+  Network currentView(String mainId);
 
   /**
    * Serialize an interaction network to a downloadable file. 
@@ -75,6 +82,15 @@ public interface NetworkService extends RemoteService {
    * @return a downloadable URL.
    */
   String prepareNetworkDownload(Network network, Format format, 
+      String messengerWeightColumn, String microWeightColumn);
+
+  /**
+   * Serialize an interaction network to a downloadable file. 
+   * @param mainTableId the ID of the main table that contains the network.
+   * @param format the format to use for serialization.
+   * @return a downloadable URL.
+   */
+  String prepareNetworkDownload(String mainTableId, Format format, 
       String messengerWeightColumn, String microWeightColumn);
   
   

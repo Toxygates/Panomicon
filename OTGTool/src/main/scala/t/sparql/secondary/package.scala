@@ -27,7 +27,10 @@ package t.sparql
 package object secondary extends QueryUtils {
   import Triplestore._
 
-  //TODO: local is due for retirement
+  /*
+   * Note: local: should be retired as a prefix.
+   * It is currently used only in pathology data (otg.sparql.{OTGSamples, PathologySparql})
+   */
    val commonPrefixes = s"""$tPrefixes
     |PREFIX local:<http://127.0.0.1:3333/>
     |PREFIX bio2rdf:<http://bio2rdf.org/ns/bio2rdf#>""".stripMargin.replace('\n', ' ')

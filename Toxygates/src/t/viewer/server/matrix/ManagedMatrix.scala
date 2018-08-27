@@ -124,7 +124,7 @@ class CoreMatrix(val params: LoadParams) {
    * Downstream state changes may also occur as a result of the current view changing.
    */
   def getPageView(offset: Int, length: Int): Seq[ExpressionRow] = {
-    val max = current.rows - 1
+    val max = current.rows
     val selectedRows = offset until min((offset + length), max)
     currentPageRows = Some((offset, selectedRows.size))
     currentViewChanged()

@@ -63,8 +63,6 @@ abstract public class TimeDoseGrid extends Composite {
 
   /**
    * To be overridden by subclasses
-   * 
-   * @param toolPanel
    */
   protected void initTools(HorizontalPanel toolPanel) {}
 
@@ -129,8 +127,6 @@ abstract public class TimeDoseGrid extends Composite {
 
   /**
    * Change the message that is to be displayed when no major values have been selected.
-   * 
-   * @param message
    */
   public void setEmptyMessage(String message) {
     this.emptyMessage = message;
@@ -245,20 +241,11 @@ abstract public class TimeDoseGrid extends Composite {
 
   /**
    * Obtain the widget to display for a compound/dose/time combination.
-   * 
-   * @param compound
-   * @param dose
-   * @param time
-   * @return
    */
   abstract protected Widget guiForUnit(Unit unit);
 
   /**
    * An optional extra widget on the right hand side of a compound/dose combination.
-   * 
-   * @param compound
-   * @param dose
-   * @return
    */
   protected Widget guiForCompoundDose(int compound, int dose) {
     return null;
@@ -266,10 +253,6 @@ abstract public class TimeDoseGrid extends Composite {
 
   /**
    * An optional extra widget above all compounds for a given time/dose combination.
-   * 
-   * @param compound
-   * @param time
-   * @return
    */
   protected Widget guiForDoseTime(int dose, int time) {
     return null;
@@ -322,5 +305,4 @@ abstract public class TimeDoseGrid extends Composite {
       availableUnits = allUnits;
     }
   }
-
 }

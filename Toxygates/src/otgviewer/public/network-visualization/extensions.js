@@ -52,7 +52,7 @@ function getToxyNodes(){
     var data = node.data();
     // for each node, we create a new instance of ToxyNodes and initialize it
     // with the corresponding values
-    var tn = new ToxyNode(data["id"], data["type"], data["label"]);
+    var tn = new ToxyNode(data["id"], data["type"], [data["label"]]);
     tn.setWeights(data["weight"]);
 
     var position = node.position();
@@ -81,9 +81,7 @@ function getToxyInteractions(){
 
   this.edges().forEach(function(edge){
     var data = edge.data();
-
     var te = new Interaction(data["source"], data["target"]);
-
     toxyInter.push(te);
   });
 

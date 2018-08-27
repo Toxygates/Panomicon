@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,18 +21,48 @@
 package otg.sparql
 
 import otg.Pathology
+import t.sparql.Triplestore
 
-// Methods to generate SPARQL constraints corresponding to the parameters
-// in this filter. However, we are not currently filtering by pathology anywhere.
-class PathologySparql(filter: Pathology) {
-  def constrainAll: String = findingFilter + topographyFilter + gradeFilter
+/**
+ * SPARQL queries and filters for pathology data.
+ */
+object PathologySparql {
+  val prefixes = s""" |${t.sparql.Triplestore.tPrefixes}
+                      |PREFIX local:<http://127.0.0.1:3333/>""".stripMargin
 
-  def findingFilter = filter.finding.map("?p local:find_id ?f . ?f local:label \"" + _ + "\". ").
-    getOrElse("")
+  def constrainAll(filter: Pathology): String =
+    findingFilter(filter: Pathology) + topographyFilter(filter: Pathology) + gradeFilter(filter: Pathology)
 
-  def topographyFilter = filter.topography.map("?p local:topo_id ?f . ?f local:label \"" + _ + "\". ").
-    getOrElse("")
+  def findingFilter(filter: Pathology) =
+    filter.finding.map("?p local:find_id ?f . ?f local:label \"" + _ + "\". ").
+      getOrElse("")
 
-  def gradeFilter = filter.grade.map("?p local:grade_id ?f . ?f local:label \"" + _ + "\". ").
-    getOrElse("")
+  def topographyFilter(filter: Pathology) =
+    filter.topography.map("?p local:topo_id ?f . ?f local:label \"" + _ + "\". ").
+      getOrElse("")
+
+  def gradeFilter(filter: Pathology) =
+    filter.grade.map("?p local:grade_id ?f . ?f local:label \"" + _ + "\". ").
+      getOrElse("")
+
+  def pathologyQuery(ts: Triplestore, constraints: String): Vector[Pathology] = {
+
+    val r = ts.mapQuery(s"""$prefixes
+      |SELECT DISTINCT ?spontaneous ?grade ?topography ?finding ?image WHERE {
+      |  GRAPH ?gr1 { $constraints }
+      |  GRAPH ?gr2 { ?x t:pathology ?p . OPTIONAL { ?x t:pathology_digital_image ?image . } }
+      |  GRAPH ?gr3 { ?p local:find_id ?f; local:topo_id ?t;
+      |    local:grade_id ?g; local:spontaneous_flag ?spontaneous . }
+      |  GRAPH ?gr4 { ?f local:label ?finding . }
+      |  GRAPH ?gr5 { OPTIONAL { ?g local:label ?grade . } }
+      |  GRAPH ?gr6 { OPTIONAL { ?t local:label ?topography . } }
+      |}""".stripMargin)
+
+    /*
+     * We should remove the need to check for suffixes like 1> etc. (Legacy)
+     */
+    r.map(x =>
+      Pathology(x.get("finding"), x.get("topography"),
+        x.get("grade"), x("spontaneous").endsWith("1>"), "", x.getOrElse("image", null)))
+  }
 }

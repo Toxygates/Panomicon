@@ -31,8 +31,6 @@ import t.model.SampleClass;
 /**
  * A Dataset can construct Data objects based on SampleClass filters. Each Data object can support
  * one chart.
- *
- * @param <D>
  */
 abstract public class Dataset<D extends Data> {
 
@@ -67,8 +65,6 @@ abstract public class Dataset<D extends Data> {
 
   /**
    * Minimum value across the whole sample space.
-   * 
-   * @return
    */
   public double getMin() {
     return min;
@@ -76,8 +72,6 @@ abstract public class Dataset<D extends Data> {
 
   /**
    * Maximum value across the whole sample space.
-   * 
-   * @return
    */
   public double getMax() {
     return max;
@@ -85,10 +79,6 @@ abstract public class Dataset<D extends Data> {
 
   /**
    * Get the sample corresponding to a particular row and column. May be null.
-   * 
-   * @param row
-   * @param column
-   * @return
    */
   Sample getSample(int row, int column) {
     return null;

@@ -30,9 +30,6 @@ import t.viewer.shared.TimeoutException;
 public interface SampleService extends t.viewer.client.rpc.SampleService {
   /**
    * Obtain pathologies for a set of samples
-   * 
-   * @param column
-   * @return
    */
   Pathology[] pathologies(SampleColumn column) throws TimeoutException;
 }

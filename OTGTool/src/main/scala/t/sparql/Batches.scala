@@ -81,10 +81,9 @@ abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config
         |}""".stripMargin)
 }
 
-/**
- * TODO inheriting BatchGroups (for instance membership management)
- * and forwarding methods makes the
- * public interface really big.
+/*
+ * Note: inheriting BatchGroups (to manage instance membership)
+ * makes the public interface of this class large. We may want to use composition instead.
  */
 class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   import Triplestore._

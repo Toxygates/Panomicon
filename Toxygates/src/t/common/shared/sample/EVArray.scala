@@ -66,8 +66,11 @@ object EVArray {
     (new EVABuilder ++= evs).result
 }
 
-//TODO For scalability, think about avoiding the tooltips
-//since they are not shared, and not primitives
+/**
+ * Scalable collection for ExpressionValue.
+ * To be even more scalable, this class might  avoid
+ * storing the tooltips.
+ */
 class EVArray(values: Array[Double],
     calls: Array[Char],
     tooltips: Array[String]) extends Seq[ExpressionValue] {

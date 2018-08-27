@@ -33,7 +33,8 @@ import otgviewer.client.*;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
-import t.common.shared.*;
+import t.common.shared.SharedUtils;
+import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
@@ -98,8 +99,6 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
   /**
    * Construct a gene set editor in a DataScreen and set up listeners
    * appropriately.
-   * @param screen
-   * @return
    */
   public static GeneSetEditor make(final DataScreen screen) {
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
@@ -471,9 +470,6 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
 
   /**
    * Display probes with gene symbols. Probes must be unique.
-   * 
-   * @param probes
-   * @param syms
    */
   private void deferredAddProbes(String[] probes, String[][] syms) {
     probesList.clear();
@@ -522,7 +518,6 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
     vpi.add(l);
 
     HorizontalPanel hp = Utils.mkHorizontalPanel(true);
-    // TODO use Enum to reduce if-sentence
     if (hasChembl()) {
       chembl = new RadioButton("Target", "CHEMBL");
       hp.add(chembl);

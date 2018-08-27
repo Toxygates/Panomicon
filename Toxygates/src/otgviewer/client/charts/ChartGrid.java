@@ -54,14 +54,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   final int totalWidth;
 
   /**
-   * 
-   * @param screen
-   * @param dataset
    * @param rowFilters major parameter values or gene symbols.
    * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
-   * @param minsOrMeds
-   * @param columnsAreMins
-   * @param totalWidth
    */
   public ChartGrid(Factory<D, ?> factory, Screen screen, Dataset<D> dataset,
       final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
@@ -139,9 +133,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   }
 
   /**
-   * Obtain the largest number of data columns used in any of our backing tables.
-   * 
-   * @return
+   * Obtain the largest number of data columns used in any of our backing tables.@return
    */
   public int getMaxColumnCount() {
     int max = 0;
@@ -172,11 +164,6 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   /**
    * We normalise the column count of each data table when displaying it in order to force the
    * charts to have equally wide bars. (To the greatest extent possible)
-   * 
-   * @param row
-   * @param column
-   * @param width
-   * @param columnCount
    */
   private void displayAt(final ChartStyle style, final int row, final int column, final double minVal,
       final double maxVal, final int columnCount, String label) {

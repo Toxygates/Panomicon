@@ -337,16 +337,14 @@ $(document).on("click", ".modal-remove", function(event){
 function initDisplay(){
   // container for the visualization
   var display = $("#display");
-  // initialize the network, using the appropriate container, and with the list
-  // of objects obtained from the toxyNet graph representation
+  // initialize an empty network
   vizNet = cytoscape({
     container: display,
-    elements: toxyNet.getCytoElements(),
   });
-
   // default style for network elements
   vizNet.initStyle();
-
+  // add elements to the network based on the information read from file/toxygates
+  vizNet.add(toxyNet.getCytoElements());
   // context menu, where most user interaction options are provided
   vizNet.initContextMenu();
 
@@ -419,7 +417,7 @@ function uiHeight(){
 }
 
 /**
- * Updates toxyNet with the changes made to vizNet 
+ * Updates toxyNet with the changes made to vizNet
  */
 function updateToxyNet(){
   var title = toxyNet["title"];

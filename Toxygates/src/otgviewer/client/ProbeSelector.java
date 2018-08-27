@@ -146,8 +146,6 @@ abstract public class ProbeSelector extends Composite implements
   /**
    * This method should obtain the probes that correspond to the exactly named high level object.
    * (Will be invoked after the user selects one)
-   * 
-   * @param item
    */
   abstract protected void getProbes(Term term);
 
@@ -160,8 +158,6 @@ abstract public class ProbeSelector extends Composite implements
 
   /**
    * This callback should be supplied to the RPC methd that retrieves probes for a selection.
-   * 
-   * @return
    */
   public AsyncCallback<String[]> retrieveProbesCallback() {
     return new PendingAsyncCallback<String[]>(screen) {
@@ -202,9 +198,6 @@ abstract public class ProbeSelector extends Composite implements
 
   /**
    * Display probes with gene symbols. Probes must be unique.
-   * 
-   * @param probes
-   * @param syms
    */
   private void deferredAddProbes(String[] probes, String[][] syms) {
     itemList.clear();

@@ -13,7 +13,7 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
 
   lazy val dataTable = try {
     val file = s"$mirnaDir/mirdb_filter.txt"
-    val t = new MiRDBConverter(file).makeTable
+    val t = new MiRDBConverter(file, "MiRDB 5.0").makeTable
     println(s"Read ${t.size} miRNA targets from $file")
     Some(t)
   } catch {
