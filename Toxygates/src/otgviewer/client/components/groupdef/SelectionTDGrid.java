@@ -40,12 +40,13 @@ import t.viewer.client.dialog.DialogPosition;
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for
  * particular compounds.
- * 
- * TODO: move to t.viewer 
- * TODO: abstract out treated/control handling more generally
  */
 abstract public class SelectionTDGrid extends TimeDoseGrid {
 
+  /*
+   * Note: like many other classes in otgviewer, this is probably too general 
+   * to be in otgviewer and could be moved to t.viewer
+   */
   private CheckBox[] cmpDoseCheckboxes; // selecting all samples for a cmp/dose combo
   private CheckBox[] doseTimeCheckboxes; // selecting all samples for a dose/time combo
   private Unit[] preSelection;
