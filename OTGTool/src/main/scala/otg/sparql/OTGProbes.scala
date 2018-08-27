@@ -108,10 +108,9 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
 
   /**
    * Based on a set of gene symbols, return the corresponding probes.
-   * probes.
-   * TODO: constrain by platform
    */
   def forGeneSyms(symbols: Iterable[String], precise: Boolean): MMap[String, Probe] = {
+    //Future: we might want to constrain the results by platform.
     val query = s"""$prefixes
       |SELECT DISTINCT ?p ?gene WHERE {
       |  GRAPH ?g {

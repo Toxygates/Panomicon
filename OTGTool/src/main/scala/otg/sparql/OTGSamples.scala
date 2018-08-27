@@ -90,25 +90,10 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =
     sampleAttributeQuery(Compound).constrain(filter)()
 
-  def pathologyQuery(constraints: String): Vector[Pathology] = {
-    val r = triplestore.mapQuery(s"""$prefixes
-      |SELECT DISTINCT ?spontaneous ?grade ?topography ?finding ?image WHERE {
-      |  GRAPH ?gr1 { $constraints }
-      |  GRAPH ?gr2 { ?x t:pathology ?p . OPTIONAL { ?x t:pathology_digital_image ?image . } }
-      |  GRAPH ?gr3 { ?p local:find_id ?f; local:topo_id ?t;
-      |    local:grade_id ?g; local:spontaneous_flag ?spontaneous . }
-      |  GRAPH ?gr4 { ?f local:label ?finding . }
-      |  GRAPH ?gr5 { OPTIONAL { ?g local:label ?grade . } }
-      |  GRAPH ?gr6 { OPTIONAL { ?t local:label ?topography . } }
-      |}""".stripMargin)
+  def pathologyQuery(constraints: String): Vector[Pathology] = 
+    PathologySparql.pathologyQuery(triplestore, constraints)    
 
-      //TODO clean up the 1> etc
-    r.map(x =>
-      Pathology(x.get("finding"), x.get("topography"),
-        x.get("grade"), x("spontaneous").endsWith("1>"), "", x.getOrElse("image", null)))
-  }
-
-  def pathologies(barcode: String): Vector[Pathology] = {
+  def pathologies(barcode: String): Vector[Pathology] = {    
     val r = pathologyQuery("?x rdfs:label \"" + barcode + "\". ")
     r.map(_.copy(barcode = barcode))
   }
