@@ -8,10 +8,13 @@
     />
 
   <configurations>
-    <conf name="test" visibility="public" extends="compile" />
-    <conf name="compile" visibility="public" />
+    <conf name="compile"  description="Required to compile application"/>
+    <conf name="runtime"  description="Additional run-time dependencies" extends="compile"/>
+    <conf name="test"     description="Required for test only" extends="runtime"/>
+    <conf name="provided" description="Needed for compile, but will be present on the target platform."/>
   </configurations>
 
+  <!-- Dependencies go into the 'compile' configuration by default. -->
   <dependencies>
 
     <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
@@ -28,7 +31,7 @@
 
     <!-- for intermine.  -->
     <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
-    (causes parse errors). 20090211 is known to work. -->
+       (causes parse errors). 20090211 is known to work. -->
   <dependency org="org.json" name="json" rev="20090211"/>
 
   <!-- intermine-client-2.0 needs the old commons-httpclient module
@@ -39,27 +42,24 @@
  <dependency org="org.slf4j" name="slf4j-simple" rev="1.7.25" />
 
  <!-- for intermine. -->  
- <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2">
-   <!-- This dependency can't be found on maven and doesn't appear to be necessary -->
-   <exclude module="log4j-api-java9" />  	
- </dependency>
- <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2">
-   <!-- This causes problems for Intermine (via XMLOutputFactory) if it is on the classpath. -->
-   <exclude module="woodstox-core" />
-   <!-- This dependency can't be found on maven and doesn't appear to be necessary -->  
-   <exclude module="log4j-core-java9" />
- </dependency>
+ <!-- provided->master indicates that the maven scope 'master' is mapped to the ivy configuration 'provided'.
+  This means that we pull in the top level jar, but not its dependencies. We guarantee that a functional
+  log4j will be provided in the runtime environment. 
+  See https://stackoverflow.com/questions/37840659/ivy-dependency-as-provided
+  -->
+ <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2" conf="provided->master" />
+ <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" conf="provided->master" />
  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
 
  <dependency org="org.antlr" name="antlr" rev="latest.integration" />
 
  <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
 
- <dependency org="org.scalatest" name="scalatest_2.12" rev="3.0.5" conf="test->*">
-    <!-- Assumed to already be available from elsewhere -->
- 	<exclude module="scala-library" />
-        <exclude module="scala-reflect" />
-        <exclude module="scala-compiler" />
+ <!-- mapping maven scope'default' into the ivy configuration 'test' pulls in all 
+ the dependencies, not just the top level module. -->
+ <dependency org="org.scalatest" name="scalatest_2.12" rev="3.0.4" conf="test->default">
+   <exclude module="scala-library" />
+   <exclude module="scala-reflect" />
  </dependency>
 
  <!-- intermine is not published on maven central, but the POM is at the URL below. -->

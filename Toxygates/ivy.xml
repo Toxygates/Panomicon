@@ -1,31 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0" 
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:noNamespaceSchemaLocation=
-                   "http://ant.apache.org/ivy/schemas/ivy.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation=
+  "http://ant.apache.org/ivy/schemas/ivy.xsd">
   <info organisation="level-five" module="toxygates" />
-        
+
+  <configurations>
+    <conf name="compile"  description="Required to compile application"/>
+    <conf name="runtime"  description="Additional run-time dependencies" extends="compile"/>
+    <conf name="test"     description="Required for test only" extends="runtime"/>
+    <conf name="provided" description="Needed for compile, but will be present on the target platform."/>
+  </configurations>
+
   <dependencies>
-  
-  <!-- for GWT 2.8 -->
-  <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" />
-  
-  <!-- Force same version as OTGTool -->
-  <dependency org="commons-logging" name="commons-logging" rev="1.2">
-	<exclude module="servlet-api"/>
-	<exclude module="log4j"/>
-  </dependency>
-  
-  <!-- for GWT upload -->
-  <!-- This fails to resolve some of its dependencies as of 15/1/27.
+
+    <!-- for GWT 2.8 -->
+    <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" />
+
+    <!-- Force same version as OTGTool -->
+    <dependency org="commons-logging" name="commons-logging" rev="1.2">
+      <exclude module="servlet-api"/>
+      <exclude module="log4j"/>
+    </dependency>
+
+    <!-- for GWT upload -->
+    <!-- This fails to resolve some of its dependencies as of 15/1/27.
   In addition, pulls in all of GWT -->
   <!-- r 1.0.3 is compatible with GWT 2.7 -->
   <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->
-    
+
   <dependency org="commons-fileupload" name="commons-fileupload" rev="latest.integration">
-  	<exclude module="servlet-api"/>
+    <exclude module="servlet-api"/>
   </dependency>
-  
+
   <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
   <dependency org="javax.mail" name="mail" rev="latest.integration"/>
 
@@ -36,6 +43,6 @@
   <!-- for R -->
   <!-- r 1.8.1 is known to work -->  
   <dependency org="org.rosuda.REngine" name="Rserve" rev="latest.integration"/>
-  
-  </dependencies>
+
+</dependencies>
 </ivy-module>
