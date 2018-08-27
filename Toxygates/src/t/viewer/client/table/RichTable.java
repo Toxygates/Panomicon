@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
@@ -36,6 +34,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.Screen;
+import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
@@ -93,17 +92,12 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     grid = new DataGrid<T>(50, resources) {
       @Override
       protected void onBrowserEvent2(Event event) {
-        if ("click".equals(event.getType())) {
-          EventTarget et = event.getEventTarget();          
-          if (Element.is(et)) {
-            Element e = et.cast();            
-            String targetId = e.getParentElement().getId();            
-            if (interceptGridClick(targetId, event.getClientX(), event.getClientY())) {
-              return;
-            }
-          }
-          super.onBrowserEvent2(event);
+        String eventId = Utils.clickParentId(event);
+        if (eventId != null &&
+          interceptGridClick(eventId, event.getClientX(), event.getClientY())) {
+            return;
         }
+        super.onBrowserEvent2(event);        
       }
     };
 

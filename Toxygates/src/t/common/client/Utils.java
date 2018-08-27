@@ -22,6 +22,9 @@ import static t.model.sample.CoreParameter.Type;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
+import com.google.gwt.dom.client.*;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -133,5 +136,21 @@ public class Utils {
     }
     
     return new SampleClass(d);
+  }
+  
+  public static boolean shouldHandleClickEvent(NativeEvent ev, String expectedParentId) {
+    String id = clickParentId(ev);
+    return (id != null && id.equals(expectedParentId));
+  }
+  
+  public static @Nullable String clickParentId(NativeEvent ev) {
+    if ("click".equals(ev.getType())) {
+      EventTarget et = ev.getEventTarget();          
+      if (Element.is(et)) {
+        Element e = et.cast();            
+        return e.getParentElement().getId();
+      }
+    }
+    return null;
   }
 }

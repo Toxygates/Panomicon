@@ -518,7 +518,6 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
     vpi.add(l);
 
     HorizontalPanel hp = Utils.mkHorizontalPanel(true);
-    // TODO use Enum to reduce if-sentence
     if (hasChembl()) {
       chembl = new RadioButton("Target", "CHEMBL");
       hp.add(chembl);

@@ -54,20 +54,10 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
   @Override
   public void onBrowserEvent(Context context, Element parent, T value, NativeEvent event,
       ValueUpdater<T> valueUpdater) {
-    if ("click".equals(event.getType())) {
-      EventTarget et = event.getEventTarget();
-      if (Element.is(et)) {
-        Element e = et.cast();
-        String target = e.getString();
-
-        // TODO this is a bit hacky - is there a better way?
-        boolean targetWasImage = (target.startsWith("<img") | target.startsWith("<IMG"));
-        if (targetWasImage) {
-          onClick(value);
-          return;
-        }
-      }
-    }
+    if (Utils.shouldHandleClickEvent(event, clickIdString)) {
+      onClick(value);
+      return;
+    }    
     super.onBrowserEvent(context, parent, value, event, valueUpdater);
   }
 
