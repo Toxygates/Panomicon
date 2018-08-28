@@ -151,7 +151,7 @@ class Network{
      }
       var shape = e.shape;
       if( shape === undefined ){
-        (e.type === nodeType.MICRO_RNA )? nodeShape.MICRO_RNA : nodeShape.MSG_RNA ;
+        shape = (e.type === nodeType.MICRO_RNA )? nodeShape.MICRO_RNA : nodeShape.MSG_RNA ;
       }
       // create the node object
       var node = {

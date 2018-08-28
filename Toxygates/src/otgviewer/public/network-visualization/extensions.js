@@ -20,7 +20,7 @@ function initStyle(){
  * @param {string} type the type of layout to use for the placement of the nodes
  * within the display area
  */
-function updateLayout(type){
+function updateLayout(type="null"){
   this.layout({
     name: type,
     fit: true, // whether to fit to viewport
