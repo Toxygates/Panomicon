@@ -20,13 +20,13 @@
 
 package t.model.sample
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object Helpers { 
 
   implicit class AttributeSetHelper(attr: AttributeSet) {
     
-    lazy val byIdLowercase = Map() ++ attr.byId.map(a => a._1.toLowerCase() -> a._2)
+    lazy val byIdLowercase = Map() ++ attr.byId.asScala.map(a => a._1.toLowerCase() -> a._2)
     
     def getById(id: String): Option[Attribute] = 
       Option(attr.byId(id))

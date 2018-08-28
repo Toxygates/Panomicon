@@ -20,7 +20,7 @@
 
 package t.common.server.maintenance
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import javax.annotation.Nullable
 import t.BatchManager
@@ -140,7 +140,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   implicit def batch2bmBatch(b: Batch): BatchManager.Batch =
-    BatchManager.Batch(b.getTitle, b.getComment, Some(b.getEnabledInstances.toSeq),
+    BatchManager.Batch(b.getTitle, b.getComment, Some(b.getEnabledInstances.asScala.toSeq),
         Some(b.getDataset))
 
   protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
@@ -184,7 +184,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   protected def overviewParameters: Seq[Attribute] =
-    context.config.attributes.getRequired.toSeq
+    context.config.attributes.getRequired.asScala.toSeq
 
   def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.samples

@@ -21,7 +21,7 @@
 package t
 
 import scala.Vector
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
 import t.db._
@@ -102,7 +102,8 @@ object BatchManager extends ManagerTool {
           val sampleFilter = new SampleFilter(None, Some(Batches.packURI(title)))
           val metadata =
             factory.cachingTriplestoreMetadata(context.samples, config.attributes,
-                config.attributes.getHighLevel ++ config.attributes.getUnitLevel ++
+                config.attributes.getHighLevel.asScala ++ 
+                config.attributes.getUnitLevel.asScala ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup,
                   CoreParameter.Batch))(sampleFilter)
           startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
@@ -242,8 +243,8 @@ class BatchManager(context: Context) {
       }
     }
 
-  val requiredParameters = config.attributes.getRequired.map(_.id)
-  val hlParameters = config.attributes.getHighLevel.map(_.id)
+  val requiredParameters = config.attributes.getRequired.asScala.map(_.id)
+  val hlParameters = config.attributes.getHighLevel.asScala.map(_.id)
 
   def add[S <: Series[S]](batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
@@ -454,7 +455,8 @@ class BatchManager(context: Context) {
         throw new Exception(msg)
       }
 
-      val notInMetadata = batchSampleIds.filter(x => !(foundInBatch contains x))
+      val inBatchSet = foundInBatch.toSet
+      val notInMetadata = batchSampleIds.filter(x => !(inBatchSet contains x))
       if (notInMetadata.size > 0 && !force) {
         val msg = "New metadata file is missing the following batch samples: " +
           (notInMetadata mkString " ")

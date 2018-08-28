@@ -20,7 +20,7 @@
 
 package t
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent._
 
 import friedrich.util.CmdLineOptions
@@ -49,7 +49,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
   def getBaseConfig(): B = {
-    val env = mapAsScalaMap(System.getenv())
+    val env = System.getenv().asScala
     val ts = getTSConfig(env)
     val d = getDataConfig(env)
     makeBaseConfig(ts, d)
