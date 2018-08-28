@@ -75,7 +75,7 @@ object SeriesRanking {
   }
 
   object Sum extends RankType {
-    // TODO: numbers like 50 are ad hoc to guarantee a positive result
+    // Note: numbers like 50 are ad hoc to 'guarantee' a positive result
     def scoreSeries[S <: Series[S]](s: S): Double =
       (50 + safeMean(s.presentValues)) / 50
   }

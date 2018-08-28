@@ -292,12 +292,12 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     triplestore.simpleQuery(query).map(Probe.unpack)
   }
 
+  def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {    
   /*
-   * TODO: consider avoiding the special treatment that attributes like swissprot
-   * gets. Such attributes and related sparql queries should be centralised in one
-   * column definition.
+   * While title and platform seem sufficiently general, it's open-ended whether attributes like
+   * swissprot (UniProt proteins) should get this kind of special treatment.
    */
-  def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
+    
     def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
 
     val q = s"""$tPrefixes
@@ -313,14 +313,10 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     r.groupBy(_("pr")).map(_._2).map(g => {
       val p = Probe(g(0)("l"))
 
-      //TODO: When there's an end-of-life plan for tritigate, this might be removed
-      val tritiTitle = (g.map(_.get("gene")) ++
-        g.map(_.get("protid"))).flatten.toSet.mkString(", ")
-
       p.copy(
         proteins = g.map(p => Protein(obtain(p, "prot"))).toSeq.distinct,
         titles = g.map(obtain(_, "title")).toSeq.distinct, //NB not used
-        name = obtain(g.head, "title") + tritiTitle,
+        name = obtain(g.head, "title"),
         platform = obtain(g.head, "plat"))
     })
 
