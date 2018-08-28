@@ -37,8 +37,6 @@ import otgviewer.client.components.Screen;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.model.SampleClass;
 import t.viewer.client.PersistedState;
 
 /**
@@ -47,25 +45,25 @@ import t.viewer.client.PersistedState;
  * to each other.
  */
 abstract public class RichTable<T> extends Composite implements RequiresResize {
+  protected Screen screen;
   protected DataGrid<T> grid;
-  protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
-  protected int highlightedRow = -1;
-  protected boolean shouldComputeTableWidth = true;
-  protected final boolean keepSortOnReload;
+  protected Label titleLabel = new Label();
 
   protected final DataSchema schema;
   protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
+  protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
+  protected TableStyle style;
 
   // Track the order of sections
   protected List<String> columnSections = new ArrayList<String>();
   // Track the number of columns in each section
   protected Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
 
-  Logger logger;
+  protected int highlightedRow = -1;
+  protected boolean shouldComputeTableWidth = true;
+  protected final boolean keepSortOnReload;
 
-  protected SampleClass chosenSampleClass;
-  protected String[] chosenProbes = new String[0];
-  protected List<Group> chosenColumns = new ArrayList<Group>();
+  Logger logger;
 
   public interface Resources extends DataGrid.Resources {
     @Override
@@ -73,11 +71,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     DataGrid.Style dataGridStyle();
   }
 
-  protected TableStyle style;
-
-  protected Screen screen;
-  protected Label titleLabel = new Label();
- 
   public RichTable(Screen screen, TableStyle style, TableFlags flags) {
     this.screen = screen;
     this.schema = screen.manager().schema();
@@ -87,7 +80,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     String title = flags.title;
     logger = screen.getLogger();
 
-    hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
     grid = new DataGrid<T>(50, resources) {
       @Override
@@ -365,7 +357,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     computeTableWidth();
   }
 
-  abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
+  abstract protected List<HideableColumn<T, ?>> createHideableColumns(DataSchema schema);
 
   public void setStyleAndApply(TableStyle style) {
     this.style = style;
@@ -450,19 +442,11 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     }
   };
 
-  public void columnsChanged(List<Group> columns) {
-    chosenColumns = columns;
-  }
-  
-  public List<Group> chosenColumns() {
-    return chosenColumns;
+  public void redrawGrid() {
+    grid.redraw();
   }
 
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
-  }
-
-  public void probesChanged(String[] probes) {
-    chosenProbes = probes;
+  public List<T> visibleItems() {
+    return grid.getVisibleItems();
   }
 }

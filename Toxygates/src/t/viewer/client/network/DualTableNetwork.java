@@ -6,15 +6,16 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.view.client.SingleSelectionModel;
+
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.table.*;
+import t.viewer.client.table.AssociationSummary;
 import t.viewer.client.table.DualTableView.DualMode;
+import t.viewer.client.table.ExpressionTable;
 import t.viewer.shared.ColumnSet;
 import t.viewer.shared.network.Network;
 import t.viewer.shared.network.Node;
-
-import com.google.gwt.view.client.SingleSelectionModel;
 
 public class DualTableNetwork implements NetworkViewer {
   private final ExpressionTable mainTable, sideTable;
@@ -114,7 +115,7 @@ public class DualTableNetwork implements NetworkViewer {
    * To be called each time the main table rows have changed.
    */
   public void updateLinkingMap() {
-    mappingSummary = mainTable.associationSummary(dualMode.linkingType);
+    mappingSummary = mainTable.associations().associationSummary(dualMode.linkingType);
     if (sideTable.chosenColumns().isEmpty()) {
       return;
     }

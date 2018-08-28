@@ -4,12 +4,12 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.*;
+
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.shared.Association;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A composite that displays information from a set of columns and a 
@@ -42,7 +42,7 @@ public abstract class DataView extends Composite {
    */
   protected void displayInfo(String message) {}
   
-  protected void beforeGetAssociations() {}
+  //  protected void beforeGetAssociations() {}
   
   protected void associationsUpdated(Association[] result) {
     Optional<Association> overLimit = 

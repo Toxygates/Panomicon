@@ -61,34 +61,46 @@ import t.viewer.shared.*;
  * adding and removing t-tests and u-tests, which can be hidden and displayed on demand.
  * 
  * Hideable columns and clickable icons are handled by the RichTable superclass. Dynamic
- * (association) columns are handled by the AssociationTable superclass.
+ * (association) columns are handled by the AssociationManager helper class.
  * 
  * @author johan
  *
  */
-public class ExpressionTable extends AssociationTable<ExpressionRow>
-    implements ETHeaderBuilder.Delegate, NavigationTools.Delegate {
+public class ExpressionTable extends RichTable<ExpressionRow>
+    implements ETHeaderBuilder.Delegate, NavigationTools.Delegate, 
+    AssociationManager.TableDelegate<ExpressionRow> {
 
   private final String COLUMN_WIDTH = "10em";
 
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-  
-  private NavigationTools tools;
-  private AnalysisTools analysisTools;
+  private AssociationManager<ExpressionRow> associations;
+  private Delegate delegate;
+  protected MatrixLoader loader;
 
   private final MatrixServiceAsync matrixService;
   private final t.common.client.Resources resources;
+  protected final int initPageSize;
+  private final Logger logger = SharedUtils.getLogger("expressionTable");
+  
+  private NavigationTools tools;
+  private AnalysisTools analysisTools;
+  private DialogBox filterDialog = null;
+
+  private String matrixId;
+  public ManagedMatrixInfo matrixInfo = null;
 
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
   protected boolean sortAsc;
-
   private boolean withPValueOption;
-
   // For Analytics: we count every matrix load other than the first as a gene set change
   private boolean firstMatrixLoad = true;
+  private boolean loadedData = false;
 
+  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected SampleClass chosenSampleClass;
+  protected String[] chosenProbes = new String[0];
 
   /**
    * Names of the probes currently displayed
@@ -99,45 +111,37 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
    */
   private String[] displayedProbes = new String[0];
 
-  private boolean loadedData = false;
-  public ManagedMatrixInfo matrixInfo = null;
-  private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
-  
-  private Sample[] chartBarcodes = null;
-
-  private DialogBox filterDialog = null;
-
-  private final Logger logger = SharedUtils.getLogger("expressionTable");
-
   protected ValueType chosenValueType;
-  private String matrixId;
+  private Sample[] chartBarcodes = null;
+  private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
+  protected AbstractSelectionModel<ExpressionRow> selectionModel;
 
   interface MatrixLoader {
     /**
      * Perform an initial matrix load.
      * The method should load data and then call setInitialMatrix.
-     * @param valueType
-     * @param initFilters
      */
     void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters);
   }
 
-  protected AbstractSelectionModel<ExpressionRow> selectionModel;
-  
-  protected final int initPageSize;
-  protected MatrixLoader loader;
-  
-  public ExpressionTable(Screen _screen, TableFlags flags,
-      TableStyle style,
-      MatrixLoader loader) {
+  public interface Delegate {
+    void onGettingExpressionFailed(ExpressionTable table);
+    void afterGetRows(ExpressionTable table);
+  }
+
+  public ExpressionTable(Screen _screen, TableFlags flags, TableStyle style, MatrixLoader loader, 
+      Delegate delegate, AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
     super(_screen, style, flags);
+    screen = _screen;
+    this.associations = new AssociationManager<ExpressionRow>(screen, this, this, viewDelegate);
+    this.delegate = delegate;
     this.withPValueOption = flags.withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.manager().resources();
     this.matrixId = flags.matrixId;
     this.initPageSize = flags.initPageSize;
     this.loader = loader;
-    screen = _screen;
+
 
     grid.setHeaderBuilder(new ETHeaderBuilder(grid, this, schema));
     grid.addStyleName("exprGrid");
@@ -161,6 +165,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
     chosenValueType = tools.getValueType();
 
     analysisTools = new AnalysisTools(this);
+
+    hideableColumns = createHideableColumns(schema);
 
     setEnabled(false);
   }
@@ -404,28 +410,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       } else if (clickedCol instanceof AssociationColumn) {
         @SuppressWarnings("unchecked")
         AssociationColumn<ExpressionRow> ac = (AssociationColumn<ExpressionRow>) clickedCol;
-        displayColumnSummary(ac);
+        associations.displayColumnSummary(ac);
       }
     }
     // If we return true, the click will not be passed on to the other widgets
     return shouldFilterClick;
   }
   
-  // /**
-  // * Display a summary of a column.
-  // */
-  // private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
-  // AssociationSummary<ExpressionRow> summary =
-  // new AssociationSummary<ExpressionRow>(col, grid.getVisibleItems());
-  // StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
-  // 500, 500);
-  // }
-  
   protected void editColumnFilter(int column) {
     ColumnFilter filt = matrixInfo.columnFilter(column);    
     FilterEditor fe =
         new FilterEditor(matrixInfo.columnName(column), column, filt) {
-
           @Override
           protected void onChange(ColumnFilter newVal) {
             applyColumnFilter(editColumn, newVal);
@@ -469,7 +464,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
   }
 
   @Override
-  protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
+  protected List<HideableColumn<ExpressionRow, ?>> createHideableColumns(DataSchema schema) {
     SafeHtmlCell htmlCell = new SafeHtmlCell();
     List<HideableColumn<ExpressionRow, ?>> columns = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 
@@ -530,32 +525,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
 
     // We want gene sym, probe title etc. to be before the association
     // columns going left to right
-    columns.addAll(super.initHideableColumns(schema));
+    columns.addAll(associations.createHideableColumns(schema));
 
     return columns;
-  }
-
-  /**
-   * The list of atomic probes currently on screen.
-   */
-  @Override
-  public String[] displayedAtomicProbes() {
-    return displayedAtomicProbes;
-  }
-
-  @Override
-  protected String probeForRow(ExpressionRow row) {
-    return row.getProbe();
-  }
-
-  @Override
-  public String[] atomicProbesForRow(ExpressionRow row) {
-    return row.getAtomicProbes();
-  }
-
-  @Override
-  public String[] geneIdsForRow(ExpressionRow row) {
-    return row.getGeneIds();
   }
 
   /**
@@ -589,8 +561,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
           displayedProbes = result.stream().map(r -> r.getProbe()).
               toArray(String[]::new);          
           highlightedRow = -1;
-          getAssociations();
-          afterGetRows();
+          associations.getAssociations();
+          delegate.afterGetRows(ExpressionTable.this);
         } 
       }
     };
@@ -608,14 +580,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
     }
   }
   
-  protected void afterGetRows() { }
-  
   public List<ExpressionRow> getDisplayedRows() {
     return grid.getVisibleItems();
   }
   
 
-  @Override
   public void columnsChanged(List<Group> columns) {
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
     HashSet<Group> newColumns = new HashSet<Group>(columns);
@@ -624,7 +593,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       return;
     }
 
-    super.columnsChanged(columns);
+    chosenColumns = columns;
 
     // we set chosenSampleClass to the intersection of all the samples
     // in the groups here. Needed later for e.g. the associations() call.
@@ -760,7 +729,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
   /**
    * To be called when a new matrix is set (as opposed to partial refinement or
    * modification of a previously loaded matrix).
-   * @param matrix
    */
   void setInitialMatrix(ManagedMatrixInfo matrix) {
     if (matrix.numRows() > 0) {
@@ -783,11 +751,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       Window
           .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
               "\nThe view will switch to default selection. (Wrong species?)");
-      onGettingExpressionFailed();
+      delegate.onGettingExpressionFailed(this);
     }  
   }
-  
-  protected void onGettingExpressionFailed() {}
 
   private void displayCharts() {
     final Charts cgf = new Charts(screen, chosenColumns);
@@ -818,8 +784,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
 
     @Override
     public void onClick(final String value) {
+      int oldHighlightedRow = highlightedRow;
       highlightedRow = SharedUtils.indexOf(displayedProbes, value);
-      grid.redraw();
+      grid.redrawRow(oldHighlightedRow);
+      grid.redrawRow(highlightedRow);
       Utils.ensureVisualisationAndThen(new Runnable() {
         @Override
         public void run() {
@@ -827,6 +795,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
         }
       });
     }
+  }
+
+  public AssociationManager<ExpressionRow> associations() {
+    return associations;
   }
 
   // ETHeaderBuilder.Delegate methods
@@ -850,6 +822,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
     return matrixInfo;
   }
 
+  public List<Group> chosenColumns() {
+    return chosenColumns;
+  }
+
+  public void sampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
+  }
+
+  public void probesChanged(String[] probes) {
+    chosenProbes = probes;
+  }
+
   // NavigationTools delegate method
   @Override
   public void setPValueDisplay(boolean newState) {
@@ -863,5 +847,26 @@ public class ExpressionTable extends AssociationTable<ExpressionRow>
       setDisplayPColumns(newState);
       setupColumns();
     }
+  }
+
+  // AssociationManager.TableDelegate methods
+  @Override
+  public SampleClass chosenSampleClass() {
+    return chosenSampleClass;
+  }
+
+  @Override
+  public String[] displayedAtomicProbes() {
+    return displayedAtomicProbes;
+  }
+
+  @Override
+  public String[] atomicProbesForRow(ExpressionRow row) {
+    return row.getAtomicProbes();
+  }
+
+  @Override
+  public String[] geneIdsForRow(ExpressionRow row) {
+    return row.getGeneIds();
   }
 }
