@@ -240,7 +240,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
 
         @Override
         public void onSuccess(ManagedMatrixInfo result) {
-          expressionTable.setInitialMatrix(result);
+            expressionTable.matrix().setInitialMatrix(result);
         }
       });
   }
@@ -317,11 +317,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   
   @Override
   public String[] displayedAtomicProbes() {
-    String[] r = expressionTable.currentMatrixInfo().getAtomicProbes();
-    if (r.length < expressionTable.currentMatrixInfo().numRows()) {
-      Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
-    }
-    return r;
+    return expressionTable.matrix().displayedAtomicProbes();
   }
 
   @Override

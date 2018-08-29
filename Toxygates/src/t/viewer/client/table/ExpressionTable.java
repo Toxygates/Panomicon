@@ -19,7 +19,6 @@
 package t.viewer.client.table;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -31,7 +30,6 @@ import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
@@ -39,7 +37,6 @@ import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.client.ImageClickCell;
 import t.common.shared.*;
@@ -48,8 +45,6 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.FilterEditor;
-import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
 
 /**
@@ -67,7 +62,7 @@ import t.viewer.shared.*;
  *
  */
 public class ExpressionTable extends RichTable<ExpressionRow>
-    implements ETHeaderBuilder.Delegate, NavigationTools.Delegate, 
+    implements ETMatrixManager.Delegate, ETHeaderBuilder.Delegate, NavigationTools.Delegate,
     AssociationManager.TableDelegate<ExpressionRow> {
 
   private final String COLUMN_WIDTH = "10em";
@@ -75,28 +70,23 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   private AssociationManager<ExpressionRow> associations;
+  private ETMatrixManager matrix;
   private Delegate delegate;
+
   protected MatrixLoader loader;
 
-  private final MatrixServiceAsync matrixService;
   private final t.common.client.Resources resources;
   protected final int initPageSize;
   private final Logger logger = SharedUtils.getLogger("expressionTable");
   
   private NavigationTools tools;
   private AnalysisTools analysisTools;
-  private DialogBox filterDialog = null;
 
-  private String matrixId;
-  public ManagedMatrixInfo matrixInfo = null;
-
+  private boolean matrixDirty = false;
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
   protected boolean sortAsc;
   private boolean withPValueOption;
-  // For Analytics: we count every matrix load other than the first as a gene set change
-  private boolean firstMatrixLoad = true;
-  private boolean loadedData = false;
 
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected SampleClass chosenSampleClass;
@@ -136,9 +126,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     this.associations = new AssociationManager<ExpressionRow>(screen, this, this, viewDelegate);
     this.delegate = delegate;
     this.withPValueOption = flags.withPValueOption;
-    this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.manager().resources();
-    this.matrixId = flags.matrixId;
     this.initPageSize = flags.initPageSize;
     this.loader = loader;
 
@@ -171,18 +159,14 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     setEnabled(false);
   }
   
+  private boolean matrixReady() {
+    return !matrixDirty && matrix.loadedData();
+  }
+
   public AbstractSelectionModel<ExpressionRow> selectionModel() {
     return selectionModel;
   }
 
-  private void logMatrixInfo(String msg) {
-    logger.info("Matrix " + matrixId + ":" + msg);
-  }
-  
-  private void logMatrix(Level level, String msg, Throwable throwable) {
-    logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
-  }
-  
   public void setStyle(TableStyle style) {
     this.style = style;    
   }
@@ -202,14 +186,11 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return this.tools;
   }
   
-  public ManagedMatrixInfo currentMatrixInfo() {
-    return matrixInfo;
-  }
-
   /**
    * Enable or disable the GUI
    */
-  private void setEnabled(boolean enabled) {
+  @Override
+  public void setEnabled(boolean enabled) {
     tools.setEnabled(enabled);
     analysisTools.setEnabled(chosenValueType, enabled);     
   }
@@ -225,68 +206,24 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return analysisTools;
   }
 
-  void removeTests() {    
-    matrixService.removeSyntheticColumns(matrixId, new PendingAsyncCallback<ManagedMatrixInfo>(screen, 
-        "There was an error removing the test columns.") {
-
-      @Override
-      public void handleSuccess(ManagedMatrixInfo result) {
-        matrixInfo = result; // no need to do the full setMatrix
-        setupColumns();
-      }
-    });    
-  }
-
-  void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
-    final Group g1 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup1()).get();
-    final Group g2 = GroupUtils.findGroup(chosenColumns, analysisTools.selectedGroup2()).get();
-    synth.setGroups(g1, g2);
-
-    matrixService.addSyntheticColumn(matrixId, synth,
-        new PendingAsyncCallback<ManagedMatrixInfo>(screen, "Adding test column failed") {
-          @Override
-          public void handleSuccess(ManagedMatrixInfo r) {
-            setMatrix(r);
-            setupColumns();
-          }
-        });
-  }
-
   public void downloadCSV(boolean individualSamples) {
     if (individualSamples && isMergeMode()) {
       Window.alert("Individual samples cannot be downloaded in orthologous mode.\n" +
           "Please inspect one group at a time.");
-      return;
+    } else {
+      matrix.downloadCSV(individualSamples);
     }
-    
-    matrixService.prepareCSVDownload(matrixId, individualSamples, 
-        new PendingAsyncCallback<String>(screen,
-        "Unable to prepare the requested data for download.") {
-
-      @Override
-      public void handleSuccess(String url) {
-        Utils.displayURL("Your download is ready.", "Download", url);
-      }
-    });
   }
   
-  protected boolean hasPValueColumns() {
-    for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
-      if (matrixInfo.isPValueColumn(i)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   @Override
-  protected void setupColumns() {
+  public void setupColumns() {
     super.setupColumns();
     TextCell tc = new TextCell();
 
     int oldSortIndex = (oldSortInfo != null ? 
         ((ExpressionColumn) oldSortInfo.getColumn()).matrixColumn() : -1);
 
+    ManagedMatrixInfo matrixInfo = matrix.info();
     ColumnSortInfo newSort = null;
     Group previousGroup = null;
     for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
@@ -400,13 +337,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
      */
     logger.info("Click target: " + target);
     boolean shouldFilterClick = target.equals(FilterCell.CLICK_ID);
-    if (shouldFilterClick && matrixInfo != null && matrixInfo.numRows() > 0) {
+    if (shouldFilterClick && matrix.info() != null && matrix.info().numRows() > 0) {
       // Identify the column that was filtered.
       int col = columnAt(x);
       Column<ExpressionRow, ?> clickedCol = grid.getColumn(col);
       if (clickedCol instanceof ExpressionColumn) {
         ExpressionColumn ec = (ExpressionColumn) clickedCol;
-        editColumnFilter(ec.matrixColumn());
+        matrix.editColumnFilter(ec.matrixColumn());
       } else if (clickedCol instanceof AssociationColumn) {
         @SuppressWarnings("unchecked")
         AssociationColumn<ExpressionRow> ac = (AssociationColumn<ExpressionRow>) clickedCol;
@@ -415,44 +352,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     }
     // If we return true, the click will not be passed on to the other widgets
     return shouldFilterClick;
-  }
-  
-  protected void editColumnFilter(int column) {
-    ColumnFilter filt = matrixInfo.columnFilter(column);    
-    FilterEditor fe =
-        new FilterEditor(matrixInfo.columnName(column), column, filt) {
-          @Override
-          protected void onChange(ColumnFilter newVal) {
-            applyColumnFilter(editColumn, newVal);
-          }
-        };
-    filterDialog = Utils.displayInPopup("Edit filter", fe, DialogPosition.Center);
-  }
-
-  protected void applyColumnFilter(final int column, 
-      final @Nullable ColumnFilter filter) {
-    setEnabled(false);
-    matrixService.setColumnFilter(matrixId,
-        column, filter, new AsyncCallback<ManagedMatrixInfo>() {
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("An error occurred when the column filter was changed.");
-        filterDialog.setVisible(false);
-        setEnabled(true);
-      }
-
-      @Override
-      public void onSuccess(ManagedMatrixInfo result) {
-        if (result.numRows() == 0 && filter.active()) {
-          Window.alert("No rows match the selected filter. The filter will be reset.");
-          applyColumnFilter(column, filter.asInactive());
-        } else {
-          setMatrix(result);
-          setupColumns();
-          filterDialog.setVisible(false);
-        }
-      }
-    });
   }
 
   protected @Nullable String probeLink(String identifier) {
@@ -547,7 +446,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       }
       @Override
       public void onFailure(Throwable caught) {        
-        loadedData = false;
+        matrixDirty = true;
         Window.alert(errMsg());
       }
 
@@ -569,11 +468,11 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
     @Override
     protected void onRangeChanged(HasData<ExpressionRow> display) {
-      if (loadedData) {
+      if (matrixReady()) {
         range = display.getVisibleRange();
         computeSortParams();
         if (range.getLength() > 0) {
-          matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), 
+          matrixService.matrixRows(matrix.id(), range.getStart(), range.getLength(), 
               sortKey, sortAsc, rowCallback);
         }
       }
@@ -589,7 +488,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
     HashSet<Group> newColumns = new HashSet<Group>(columns);
     if (newColumns.equals(oldColumns) && newColumns.size() > 0) {
-      logMatrixInfo("Ignoring column change signal");
+      matrix.logInfo("Ignoring column change signal");
       return;
     }
 
@@ -610,56 +509,38 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     analysisTools.columnsChanged(columns);
     
     chartBarcodes = null;
-    loadedData = false;
+    matrixDirty = true;
     lastColumnFilters.clear();
     grid.getColumnSortList().clear();
     
-    logMatrixInfo("Columns changed (" + columns.size() + ")");
+    matrix.logInfo("Columns changed (" + columns.size() + ")");
   }
 
   /**
    * Filter data that has already been loaded
    */
   public void refilterData() {
-    if (!loadedData) {
-      logMatrixInfo("Request to refilter but data was not loaded");
+    if (!matrixReady()) {
+      matrix.logInfo("Request to refilter but data was not loaded");
       return;
     }
-    setEnabled(false);
     asyncProvider.updateRowCount(0, false);
-    // grid.setRowCount(0, false);
-    logMatrixInfo("Refilter for " + chosenProbes.length + " probes");
-    matrixService.selectProbes(matrixId, chosenProbes, dataUpdateCallback());
-  }
-
-  private AsyncCallback<ManagedMatrixInfo> dataUpdateCallback() {
-    return new AsyncCallback<ManagedMatrixInfo>() {
-      @Override
-      public void onFailure(Throwable caught) {
-        logMatrix(Level.WARNING, "Exception in data update callback", caught);
-        getExpressions(); // the user probably let the session
-        // expire
-      }
-
-      @Override
-      public void onSuccess(ManagedMatrixInfo result) {
-        setMatrix(result);        
-      }
-    };
+    setEnabled(false);
+    matrix.refilterData(chosenProbes);
   }
   
   public void clearMatrix() {
-    matrixInfo = null;    
+    matrix.clear();
     asyncProvider.updateRowCount(0, true);
     setEnabled(false);
   }
 
-  protected void setMatrix(ManagedMatrixInfo matrix) {
-    matrixInfo = matrix;
-    lastColumnFilters = matrixInfo.columnFilters();
-    asyncProvider.updateRowCount(matrix.numRows(), true);
+  @Override
+  public void setRows(int numRows) {
+    lastColumnFilters = matrix.columnFilters();
+    asyncProvider.updateRowCount(numRows, true);
     int initSize = NavigationTools.INIT_PAGE_SIZE;
-    int displayRows = (matrix.numRows() > initSize) ? initSize : matrix.numRows();
+    int displayRows = (numRows > initSize) ? initSize : numRows;
     grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
     setEnabled(true);
   }
@@ -671,15 +552,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public void refetchRows() {
     int initSize = NavigationTools.INIT_PAGE_SIZE;
     grid.setVisibleRangeAndClearData(new Range(0, initSize), true);
-  }
-  
-  /**
-   * Called when data is successfully loaded for the first time
-   */
-  private void onFirstLoad() {
-    if (matrixInfo.isOrthologous()) {
-      Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA);
-    }
   }
   
   protected Set<String> indicatedRows = new HashSet<String>();
@@ -720,39 +592,16 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       new ArrayList<ColumnFilter>();    
     asyncProvider.updateRowCount(0, false);
 
-    logMatrixInfo("Begin loading data for " + chosenColumns.size() + " columns and "
+    matrix.logInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
-    // load data
     loader.loadInitialMatrix(chosenValueType, initFilters);    
   }
   
-  /**
-   * To be called when a new matrix is set (as opposed to partial refinement or
-   * modification of a previously loaded matrix).
-   */
-  void setInitialMatrix(ManagedMatrixInfo matrix) {
-    if (matrix.numRows() > 0) {
-      matrixInfo = matrix;
-      if (!loadedData) {
-        loadedData = true;
-        onFirstLoad();
-      }
-      setupColumns();
-      setMatrix(matrix);
-
-      if (firstMatrixLoad) {
-        firstMatrixLoad = false;
-      } else {
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
-      }
-
-      logMatrixInfo("Data successfully loaded");
-    } else {
-      Window
-          .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
-              "\nThe view will switch to default selection. (Wrong species?)");
-      delegate.onGettingExpressionFailed(this);
-    }  
+  @Override
+  public void onGettingExpressionFailed() {
+    Window.alert("No data was available for the saved gene set (" + chosenProbes.length
+        + " probes).\nThe view will switch to default selection. (Wrong species?)");
+    delegate.onGettingExpressionFailed(this);
   }
 
   private void displayCharts() {
@@ -801,6 +650,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return associations;
   }
 
+  @Override
   public List<Group> chosenColumns() {
     return chosenColumns;
   }
@@ -811,6 +661,10 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   public void probesChanged(String[] probes) {
     chosenProbes = probes;
+  }
+
+  public ETMatrixManager matrix() {
+    return matrix;
   }
 
   // ETHeaderBuilder.Delegate methods
@@ -831,13 +685,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   @Override
   public ManagedMatrixInfo matrixInfo() {
-    return matrixInfo;
+    return matrix.matrixInfo;
   }
 
   // NavigationTools delegate method
   @Override
   public void setPValueDisplay(boolean newState) {
-    if (newState && !hasPValueColumns()) {
+    if (newState && !matrix.hasPValueColumns()) {
       Window.alert("Precomputed p-values are only available for sample groups "
           + " in fold-change mode, consisting of a single time and dose.\n"
           + "If you wish to compare two columns, use "

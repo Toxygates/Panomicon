@@ -42,13 +42,13 @@ public class DualTableNetwork implements NetworkViewer {
   @Override
   public List<Node> getSourceNodes() {
     String type = (dualMode == DualMode.Forward) ? Network.mrnaType : Network.mirnaType; 
-    return buildNodes(type, mainTable.getDisplayedRows(), mainTable.matrixInfo);
+    return buildNodes(type, mainTable.getDisplayedRows(), mainTable.matrix().info());
   }
   
   @Override
   public List<Node> getDestNodes() {
     String type = (dualMode == DualMode.Forward) ? Network.mirnaType : Network.mrnaType;
-    return buildNodes(type, sideTable.getDisplayedRows(), sideTable.matrixInfo);
+    return buildNodes(type, sideTable.getDisplayedRows(), sideTable.matrix().info());
   }
   
   @Nullable 

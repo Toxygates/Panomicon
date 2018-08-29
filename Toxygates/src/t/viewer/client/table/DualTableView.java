@@ -271,8 +271,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         
         @Override
         public void handleSuccess(NetworkInfo result) {
-          expressionTable.setInitialMatrix(result.mainInfo());
-          sideExpressionTable.setInitialMatrix(result.sideInfo());
+            expressionTable.matrix().setInitialMatrix(result.mainInfo());
+            sideExpressionTable.matrix().setInitialMatrix(result.sideInfo());
           setNetwork(result);
         }
       });
@@ -297,10 +297,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void downloadNetwork(Format format) {       
-    String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
-        : sideExpressionTable.matrixInfo.columnName(0);
-    String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)
-        : sideExpressionTable.matrixInfo.columnName(0);
+    String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrix().info().columnName(0)
+        : sideExpressionTable.matrix().info().columnName(0);
+    String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrix().info().columnName(0)
+        : sideExpressionTable.matrix().info().columnName(0);
     networkService.prepareNetworkDownload(mainMatrix, format, 
       messengerFirstColumn, microFirstColumn,
         new PendingAsyncCallback<String>(screen) {

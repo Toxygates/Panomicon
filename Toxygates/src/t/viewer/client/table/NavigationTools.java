@@ -68,7 +68,7 @@ public class NavigationTools extends Composite {
     initTableList();
     
     tableList.addChangeHandler(e -> {      
-        table.removeTests();
+        table.matrix().removeTests();
         table.chosenValueType = getValueType();
         table.getExpressions();
       });    
