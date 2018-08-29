@@ -52,6 +52,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   protected Screen screen;
   protected D[][] tables;
   final int totalWidth;
+  final static String NO_ORGANISM = "";
 
   /**
    * @param rowFilters major parameter values or gene symbols.
@@ -74,7 +75,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     probeService = screen.manager().probeService();
 
     if (organisms.size() == 0) {
-      organisms.add(""); // TODO this feels like a hack
+      organisms.add(NO_ORGANISM);
     }
 
     final int osize = organisms.size();
@@ -90,7 +91,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
       g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));
       for (int r = 0; r < rfsize; ++r) {
         for (int o = 0; o < osize; ++o) {
-          String org = organisms.get(0).equals("") ? null : organisms.get(o);
+          String org = organisms.get(o).equals(NO_ORGANISM) ? null : organisms.get(o);
           SampleClass sc = new SampleClass();
           String probe = null;
           if (rowsAreMajors) {
