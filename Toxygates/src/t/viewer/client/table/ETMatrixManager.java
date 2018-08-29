@@ -1,19 +1,21 @@
 package t.viewer.client.table;
 
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.view.client.*;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import t.common.shared.GroupUtils;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
+import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
@@ -30,34 +32,57 @@ public class ETMatrixManager {
   private Screen screen;
   private final MatrixServiceAsync matrixService;
   private String matrixId;
-  public ManagedMatrixInfo matrixInfo = null;
+  private ManagedMatrixInfo matrixInfo = null;
+  private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   // For Analytics: we count every matrix load other than the first as a gene set change
   private boolean firstMatrixLoad = true;
-
   private boolean loadedData = false;
+
+  protected Loader loader;
 
   private final Logger logger = SharedUtils.getLogger("matrixManager");
   private Delegate delegate;
+
+  /**
+   * Names of the probes currently displayed
+   */
+  private String[] displayedAtomicProbes = new String[0];
+  /**
+   * Names of the (potentially merged) probes being displayed
+   */
+  private String[] displayedProbes = new String[0];
+
+  private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
 
   private DialogBox filterDialog = null;
 
   public interface Delegate {
     void setupColumns();
-    void setRows(int numRows);
-
     void onGettingExpressionFailed();
-
     void setEnabled(boolean enabled);
-
     List<Group> chosenColumns();
-
     void getExpressions();
+    SortOrder computeSortParams();
+    void onGetRows();
+    void onSetRowCount(int numRows);
   }
 
-  public ETMatrixManager(Screen screen, TableFlags flags) {
+  interface Loader {
+    /**
+     * Perform an initial matrix load. The method should load data and then call
+     * setInitialMatrix.
+     */
+    void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters);
+  }
+
+  public ETMatrixManager(Screen screen, TableFlags flags, Delegate delegate, Loader loader,
+      DataGrid<ExpressionRow> grid) {
     this.screen = screen;
+    this.loader = loader;
+    this.delegate = delegate;
     this.matrixService = screen.manager().matrixService();
     this.matrixId = flags.matrixId;
+    asyncProvider.addDataDisplay(grid);
   }
 
   public ManagedMatrixInfo info() {
@@ -72,21 +97,20 @@ public class ETMatrixManager {
     return loadedData;
   }
 
-  public void clear() {
-    matrixInfo = null;
-    loadedData = false;
-  }
-
   public List<ColumnFilter> columnFilters() {
     return matrixInfo.columnFilters();
   }
 
+  public List<ColumnFilter> lastColumnFilters() {
+    return lastColumnFilters;
+  }
+
+  public String[] displayedProbes() {
+    return displayedProbes;
+  }
+
   public String[] displayedAtomicProbes() {
-    String[] r = matrixInfo.getAtomicProbes();
-    if (r.length < matrixInfo.numRows()) {
-      Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
-    }
-    return r;
+    return displayedAtomicProbes;
   }
 
   protected boolean hasPValueColumns() {
@@ -98,12 +122,23 @@ public class ETMatrixManager {
     return false;
   }
 
+  protected boolean isMergeMode() {
+    if (displayedProbes == null || displayedAtomicProbes == null) {
+      return false;
+    }
+    return displayedProbes.length != displayedAtomicProbes.length;
+  }
+
   public void logInfo(String msg) {
     logger.info("Matrix " + matrixId + ":" + msg);
   }
 
   public void log(Level level, String msg, Throwable throwable) {
     logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
+  }
+
+  public void setDirty() {
+    loadedData = false;
   }
 
   /**
@@ -118,7 +153,7 @@ public class ETMatrixManager {
       }
       delegate.setupColumns();
       matrixInfo = matrix;
-      delegate.setRows(matrix.numRows());
+      setRows(matrix.numRows());
 
       if (firstMatrixLoad) {
         firstMatrixLoad = false;
@@ -164,7 +199,7 @@ public class ETMatrixManager {
           @Override
           public void handleSuccess(ManagedMatrixInfo r) {
             matrixInfo = r;
-            delegate.setRows(r.numRows());
+            setRows(r.numRows());
             delegate.setupColumns();
           }
         });
@@ -209,7 +244,7 @@ public class ETMatrixManager {
           applyColumnFilter(column, filter.asInactive());
         } else {
           matrixInfo = result;
-          delegate.setRows(matrixInfo.numRows());
+          setRows(matrixInfo.numRows());
           delegate.setupColumns();
           filterDialog.setVisible(false);
         }
@@ -217,7 +252,16 @@ public class ETMatrixManager {
     });
   }
 
+  /**
+   * Filter data that has already been loaded
+   */
   public void refilterData(String[] chosenProbes) {
+    if (!loadedData) {
+      logInfo("Request to refilter but data was not loaded");
+      return;
+    }
+    asyncProvider.updateRowCount(0, false);
+    delegate.setEnabled(false);
     logInfo("Refilter for " + chosenProbes.length + " probes");
     matrixService.selectProbes(matrixId, chosenProbes, new AsyncCallback<ManagedMatrixInfo>() {
       @Override
@@ -229,8 +273,83 @@ public class ETMatrixManager {
       @Override
       public void onSuccess(ManagedMatrixInfo result) {
         matrixInfo = result;
-        delegate.setRows(matrixInfo.numRows());
+        setRows(matrixInfo.numRows());
       }
     });
+  }
+
+  public static class SortOrder {
+    public SortKey key;
+    public boolean asc;
+
+    public SortOrder(SortKey key, boolean ascending) {
+      this.key = key;
+      this.asc = ascending;
+    }
+  }
+
+  public void clear() {
+    matrixInfo = null;
+    loadedData = false;
+    asyncProvider.updateRowCount(0, true);
+    delegate.setEnabled(false);
+  }
+
+  public void setRows(int numRows) {
+    lastColumnFilters = matrixInfo.columnFilters();
+    asyncProvider.updateRowCount(numRows, true);
+    int initSize = NavigationTools.INIT_PAGE_SIZE;
+    int displayRows = (numRows > initSize) ? initSize : numRows;
+    delegate.onSetRowCount(displayRows);
+    delegate.setEnabled(true);
+  }
+
+  /**
+   * Load data (when there is nothing stored in our server side session)
+   */
+  public void getExpressions(boolean preserveFilters, ValueType chosenValueType) {
+    delegate.setEnabled(false);
+    List<ColumnFilter> initFilters = preserveFilters ? lastColumnFilters : new ArrayList<ColumnFilter>();
+    asyncProvider.updateRowCount(0, false);
+    loader.loadInitialMatrix(chosenValueType, initFilters);
+  }
+
+  class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
+    private Range range;
+    AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
+
+      private String errMsg() {
+        String appName = screen.appInfo().applicationName();
+        return "Unable to obtain data. If you have not used " + appName + " in a while, try reloading the page.";
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+        loadedData = false;
+        Window.alert(errMsg());
+      }
+
+      @Override
+      public void onSuccess(List<ExpressionRow> result) {
+        if (result.size() > 0) {
+          updateRowData(range.getStart(), result);
+          displayedAtomicProbes = result.stream().flatMap(r -> Arrays.stream(r.getAtomicProbes()))
+              .toArray(String[]::new);
+          displayedProbes = result.stream().map(r -> r.getProbe()).toArray(String[]::new);
+          delegate.onGetRows();
+        }
+      }
+    };
+
+    @Override
+    protected void onRangeChanged(HasData<ExpressionRow> display) {
+      if (loadedData) {
+        range = display.getVisibleRange();
+        SortOrder order = delegate.computeSortParams();
+        if (range.getLength() > 0) {
+          matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key, order.asc, rowCallback);
+        }
+      }
+    }
   }
 }

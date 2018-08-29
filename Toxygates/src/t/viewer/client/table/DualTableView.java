@@ -243,7 +243,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     expressionTable.associations().setAssociationAutoRefresh(true);
 
     super.reloadDataIfNeeded();
-    sideExpressionTable.clearMatrix();
+    sideExpressionTable.matrix().clear();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
   }

@@ -29,7 +29,7 @@ import t.viewer.shared.mirna.MirnaSource;
  * A DataView based on a single ExpressionTable.
  */
 public class TableView extends DataView implements ExpressionTable.Delegate,
-    ExpressionTable.MatrixLoader, AssociationManager.ViewDelegate<ExpressionRow>, 
+    ETMatrixManager.Loader, AssociationManager.ViewDelegate<ExpressionRow>, 
     MirnaSourceDialog.Delegate {
 
   public static enum ViewType {
@@ -220,7 +220,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
       expressionTable.getExpressions();      
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
       logger.info("Only refiltering needed");
-      expressionTable.refilterData();
+      expressionTable.matrix().refilterData(chosenProbes);
     }
 
     lastProbes = chosenProbes;
@@ -315,9 +315,16 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     }
   }
   
+  /**
+   * The probes currently contained in the current matrix, up to a limit.
+   */
   @Override
   public String[] displayedAtomicProbes() {
-    return expressionTable.matrix().displayedAtomicProbes();
+    String[] r = expressionTable.matrixInfo().getAtomicProbes();
+    if (r.length < expressionTable.matrixInfo().numRows()) {
+      Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
+    }
+    return r;
   }
 
   @Override

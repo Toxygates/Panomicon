@@ -29,7 +29,6 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
@@ -48,18 +47,21 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.shared.*;
 
 /**
- * The main data display table. This class has many different functionalities. (too many, should be
- * refactored into something like an MVC architecture, almost certainly)
+ * The main data display table. This class has many different functionalities.
+ * (maybe still too many)
  * 
- * It requests microarray expression data dynamically, displays it, as well as displaying additional
- * dynamic data. It also provides functionality for chart popups. It also has an interface for
- * adding and removing t-tests and u-tests, which can be hidden and displayed on demand.
+ * It requests microarray expression data dynamically, displays it, as well as
+ * displaying additional dynamic data. It also provides functionality for chart
+ * popups. It also has an interface for adding and removing t-tests and u-tests,
+ * which can be hidden and displayed on demand.
  * 
- * Hideable columns and clickable icons are handled by the RichTable superclass. Dynamic
- * (association) columns are handled by the AssociationManager helper class.
+ * Data is managed by an ETMatrixManager, which also includes an
+ * AsyncDataProvider for the table, providing data for whatever rows the user
+ * navigates to.
  * 
- * @author johan
- *
+ * Hideable columns and clickable icons are handled by the RichTable superclass.
+ * Dynamic (association) columns are handled by the AssociationManager helper
+ * class.
  */
 public class ExpressionTable extends RichTable<ExpressionRow>
     implements ETMatrixManager.Delegate, ETHeaderBuilder.Delegate, NavigationTools.Delegate,
@@ -68,21 +70,17 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   private final String COLUMN_WIDTH = "10em";
 
   private Screen screen;
-  private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   private AssociationManager<ExpressionRow> associations;
   private ETMatrixManager matrix;
   private Delegate delegate;
-
-  protected MatrixLoader loader;
 
   private final t.common.client.Resources resources;
   protected final int initPageSize;
   private final Logger logger = SharedUtils.getLogger("expressionTable");
   
-  private NavigationTools tools;
+  private NavigationTools navigationTools;
   private AnalysisTools analysisTools;
 
-  private boolean matrixDirty = false;
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
   protected boolean sortAsc;
@@ -92,44 +90,25 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected SampleClass chosenSampleClass;
   protected String[] chosenProbes = new String[0];
 
-  /**
-   * Names of the probes currently displayed
-   */
-  private String[] displayedAtomicProbes = new String[0];
-  /**
-   * Names of the (potentially merged) probes being displayed
-   */
-  private String[] displayedProbes = new String[0];
-
   protected ValueType chosenValueType;
   private Sample[] chartBarcodes = null;
-  private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
-
-  interface MatrixLoader {
-    /**
-     * Perform an initial matrix load.
-     * The method should load data and then call setInitialMatrix.
-     */
-    void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters);
-  }
 
   public interface Delegate {
     void onGettingExpressionFailed(ExpressionTable table);
     void afterGetRows(ExpressionTable table);
   }
 
-  public ExpressionTable(Screen _screen, TableFlags flags, TableStyle style, MatrixLoader loader, 
+  public ExpressionTable(Screen _screen, TableFlags flags, TableStyle style, ETMatrixManager.Loader loader,
       Delegate delegate, AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
     super(_screen, style, flags);
     screen = _screen;
+    this.matrix = new ETMatrixManager(_screen, flags, this, loader, grid);
     this.associations = new AssociationManager<ExpressionRow>(screen, this, this, viewDelegate);
     this.delegate = delegate;
     this.withPValueOption = flags.withPValueOption;
     this.resources = _screen.manager().resources();
     this.initPageSize = flags.initPageSize;
-    this.loader = loader;
-
 
     grid.setHeaderBuilder(new ETHeaderBuilder(grid, this, schema));
     grid.addStyleName("exprGrid");
@@ -146,11 +125,10 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 //        setIndicatedProbes(new String[] {}));     
     }
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-    asyncProvider.addDataDisplay(grid);
 
     // TODO use flags.withPager
-    tools = new NavigationTools(this, grid, withPValueOption, this);
-    chosenValueType = tools.getValueType();
+    navigationTools = new NavigationTools(this, grid, withPValueOption, this);
+    chosenValueType = navigationTools.getValueType();
 
     analysisTools = new AnalysisTools(this);
 
@@ -159,10 +137,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     setEnabled(false);
   }
   
-  private boolean matrixReady() {
-    return !matrixDirty && matrix.loadedData();
-  }
-
   public AbstractSelectionModel<ExpressionRow> selectionModel() {
     return selectionModel;
   }
@@ -170,35 +144,19 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public void setStyle(TableStyle style) {
     this.style = style;    
   }
-
-  protected boolean isMergeMode() {
-    if (displayedProbes == null || displayedAtomicProbes == null) {
-      return false;
-    }
-    return displayedProbes.length != displayedAtomicProbes.length;
-  }
   
   public ValueType getValueType() {
-    return tools.getValueType();    
+    return navigationTools.getValueType();
   }
 
   public Widget tools() {
-    return this.tools;
+    return this.navigationTools;
   }
   
-  /**
-   * Enable or disable the GUI
-   */
-  @Override
-  public void setEnabled(boolean enabled) {
-    tools.setEnabled(enabled);
-    analysisTools.setEnabled(chosenValueType, enabled);     
-  }
-
   public void setDisplayPColumns(boolean displayPColumns) {
     if (withPValueOption) {
       this.displayPColumns = displayPColumns;
-      tools.setPValueState(displayPColumns);      
+      navigationTools.setPValueState(displayPColumns);
     }    
   }
 
@@ -207,7 +165,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   public void downloadCSV(boolean individualSamples) {
-    if (individualSamples && isMergeMode()) {
+    if (individualSamples && matrix.isMergeMode()) {
       Window.alert("Individual samples cannot be downloaded in orthologous mode.\n" +
           "Please inspect one group at a time.");
     } else {
@@ -312,25 +270,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     }
   }
 
-  private void computeSortParams() {
-    ColumnSortList csl = grid.getColumnSortList();
-    sortAsc = false;
-    sortKey = new SortKey.MatrixColumn(0);
-    if (csl.size() > 0) {
-      Column<?, ?> col = csl.get(0).getColumn();
-      if (col instanceof MatrixSortable) {
-        MatrixSortable ec = (MatrixSortable) csl.get(0).getColumn();
-        sortKey = ec.sortKey();
-        sortAsc = csl.get(0).isAscending();
-      } else {
-        Window.alert("Sorting for this column is not implemented yet.");
-      }
-    }
-  }
-
   @Override
   protected boolean interceptGridClick(String target, int x, int y) {
-    /**
+    /*
      * To prevent unwanted interactions between the sorting system and the filtering system, we have
      * to intercept click events at this high level and choose whether to pass them on (non-filter
      * clicks) or not (filter clicks).
@@ -428,56 +370,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
     return columns;
   }
-
-  /**
-   * This class fetches data on demand when the user requests a different page. Data must first be
-   * loaded with getExpressions.
-   * 
-   * @author johan
-   *
-   */
-  class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
-    private Range range;    
-    AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
-      
-      private String errMsg() {
-        String appName = screen.appInfo().applicationName();
-        return "Unable to obtain data. If you have not used " + appName + " in a while, try reloading the page.";
-      }
-      @Override
-      public void onFailure(Throwable caught) {        
-        matrixDirty = true;
-        Window.alert(errMsg());
-      }
-
-      @Override
-      public void onSuccess(List<ExpressionRow> result) {
-        if (result.size() > 0) {
-          updateRowData(range.getStart(), result);
-          displayedAtomicProbes = result.stream().
-              flatMap(r -> Arrays.stream(r.getAtomicProbes())).
-              toArray(String[]::new);
-          displayedProbes = result.stream().map(r -> r.getProbe()).
-              toArray(String[]::new);          
-          highlightedRow = -1;
-          associations.getAssociations();
-          delegate.afterGetRows(ExpressionTable.this);
-        } 
-      }
-    };
-
-    @Override
-    protected void onRangeChanged(HasData<ExpressionRow> display) {
-      if (matrixReady()) {
-        range = display.getVisibleRange();
-        computeSortParams();
-        if (range.getLength() > 0) {
-          matrixService.matrixRows(matrix.id(), range.getStart(), range.getLength(), 
-              sortKey, sortAsc, rowCallback);
-        }
-      }
-    }
-  }
   
   public List<ExpressionRow> getDisplayedRows() {
     return grid.getVisibleItems();
@@ -509,40 +401,11 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     analysisTools.columnsChanged(columns);
     
     chartBarcodes = null;
-    matrixDirty = true;
-    lastColumnFilters.clear();
+    matrix.setDirty();
+    matrix.lastColumnFilters().clear();
     grid.getColumnSortList().clear();
     
     matrix.logInfo("Columns changed (" + columns.size() + ")");
-  }
-
-  /**
-   * Filter data that has already been loaded
-   */
-  public void refilterData() {
-    if (!matrixReady()) {
-      matrix.logInfo("Request to refilter but data was not loaded");
-      return;
-    }
-    asyncProvider.updateRowCount(0, false);
-    setEnabled(false);
-    matrix.refilterData(chosenProbes);
-  }
-  
-  public void clearMatrix() {
-    matrix.clear();
-    asyncProvider.updateRowCount(0, true);
-    setEnabled(false);
-  }
-
-  @Override
-  public void setRows(int numRows) {
-    lastColumnFilters = matrix.columnFilters();
-    asyncProvider.updateRowCount(numRows, true);
-    int initSize = NavigationTools.INIT_PAGE_SIZE;
-    int displayRows = (numRows > initSize) ? initSize : numRows;
-    grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
-    setEnabled(true);
   }
 
   /**
@@ -555,16 +418,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
   
   protected Set<String> indicatedRows = new HashSet<String>();
-  
-  public void onSelectionChanged(String selectedProbe) {
-    
-  }
-  
+
   public void setIndicatedProbes(Set<String> highlighted, boolean redraw) {
     logger.info(highlighted.size() + " rows are indicated");
     Set<String> oldIndicated = indicatedRows;
     indicatedRows = highlighted;
     
+    String[] displayedProbes = matrix.displayedProbes();
     if (redraw) {
       for (int i = 0; i < displayedProbes.length; ++i) {
         if (highlighted.contains(displayedProbes[i]) || oldIndicated.contains(displayedProbes[i])) {
@@ -579,29 +439,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return indicatedRows.contains(row.getProbe());
   }
 
-  public void getExpressions() {
-    getExpressions(false);
-  }
-  
   /**
    * Load data (when there is nothing stored in our server side session)
    */
   public void getExpressions(boolean preserveFilters) {
-    setEnabled(false);
-    List<ColumnFilter> initFilters = preserveFilters ? lastColumnFilters : 
-      new ArrayList<ColumnFilter>();    
-    asyncProvider.updateRowCount(0, false);
-
     matrix.logInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
-    loader.loadInitialMatrix(chosenValueType, initFilters);    
-  }
-  
-  @Override
-  public void onGettingExpressionFailed() {
-    Window.alert("No data was available for the saved gene set (" + chosenProbes.length
-        + " probes).\nThe view will switch to default selection. (Wrong species?)");
-    delegate.onGettingExpressionFailed(this);
+    matrix.getExpressions(preserveFilters, chosenValueType);
   }
 
   private void displayCharts() {
@@ -634,7 +478,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     @Override
     public void onClick(final String value) {
       int oldHighlightedRow = highlightedRow;
-      highlightedRow = SharedUtils.indexOf(displayedProbes, value);
+      highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), value);
       grid.redrawRow(oldHighlightedRow);
       grid.redrawRow(highlightedRow);
       Utils.ensureVisualisationAndThen(new Runnable() {
@@ -650,11 +494,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return associations;
   }
 
-  @Override
-  public List<Group> chosenColumns() {
-    return chosenColumns;
-  }
-
   public void sampleClassChanged(SampleClass sc) {
     chosenSampleClass = sc;
   }
@@ -665,6 +504,62 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   public ETMatrixManager matrix() {
     return matrix;
+  }
+
+  // ETMatrixManager.Delegate methods
+  @Override
+  public void onGettingExpressionFailed() {
+    Window.alert("No data was available for the saved gene set (" + chosenProbes.length
+        + " probes).\nThe view will switch to default selection. (Wrong species?)");
+    delegate.onGettingExpressionFailed(this);
+  }
+
+  @Override
+  public List<Group> chosenColumns() {
+    return chosenColumns;
+  }
+
+  /**
+   * Enable or disable the GUI
+   */
+  @Override
+  public void setEnabled(boolean enabled) {
+    navigationTools.setEnabled(enabled);
+    analysisTools.setEnabled(chosenValueType, enabled);
+  }
+
+  @Override
+  public void getExpressions() {
+    getExpressions(false);
+  }
+
+  @Override
+  public ETMatrixManager.SortOrder computeSortParams() {
+    ColumnSortList csl = grid.getColumnSortList();
+    sortAsc = false;
+    sortKey = new SortKey.MatrixColumn(0);
+    if (csl.size() > 0) {
+      Column<?, ?> col = csl.get(0).getColumn();
+      if (col instanceof MatrixSortable) {
+        MatrixSortable ec = (MatrixSortable) csl.get(0).getColumn();
+        return new ETMatrixManager.SortOrder(ec.sortKey(), csl.get(0).isAscending());
+      } else {
+        Window.alert("Sorting for this column is not implemented yet.");
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void onGetRows() {
+    highlightedRow = -1;
+    associations.getAssociations();
+    delegate.afterGetRows(ExpressionTable.this);
+  }
+
+  @Override
+  public void onSetRowCount(int numRows) {
+    grid.setVisibleRangeAndClearData(new Range(0, numRows), true);
   }
 
   // ETHeaderBuilder.Delegate methods
@@ -685,7 +580,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   @Override
   public ManagedMatrixInfo matrixInfo() {
-    return matrix.matrixInfo;
+    return matrix.info();
   }
 
   // NavigationTools delegate method
@@ -711,7 +606,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   @Override
   public String[] displayedAtomicProbes() {
-    return displayedAtomicProbes;
+    return matrix.displayedAtomicProbes();
   }
 
   @Override
