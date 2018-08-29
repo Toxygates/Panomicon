@@ -18,11 +18,11 @@
 
 package t.viewer.client.intermine;
 
-import t.viewer.shared.StringList;
-import t.viewer.shared.intermine.*;
-
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
+import t.viewer.shared.StringList;
+import t.viewer.shared.intermine.*;
 
 @RemoteServiceRelativePath("intermine")
 public interface IntermineService extends RemoteService {
@@ -41,12 +41,6 @@ public interface IntermineService extends RemoteService {
 
   /**
    * Export gene lists to an intermine user account
-   * @param instance
-   * @param user
-   * @param pass
-   * @param lists
-   * @param replace
-   * @throws IntermineException
    */
   public void exportLists(IntermineInstance instance,
       String user, String pass, StringList[] lists, boolean replace)

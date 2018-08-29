@@ -134,9 +134,6 @@ public class DualTableNetwork implements NetworkViewer {
   
   /**
    * Build Nodes by using expression values from the first column in the rows.
-   * @param type
-   * @param rows
-   * @return
    */
   static List<Node> buildNodes(String kind, List<ExpressionRow> rows, ColumnSet columnNames) {
     return rows.stream().map(r -> Node.fromRow(r, kind, columnNames)).collect(Collectors.toList());

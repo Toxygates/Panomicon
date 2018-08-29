@@ -801,6 +801,18 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return associations;
   }
 
+  public List<Group> chosenColumns() {
+    return chosenColumns;
+  }
+
+  public void sampleClassChanged(SampleClass sc) {
+    chosenSampleClass = sc;
+  }
+
+  public void probesChanged(String[] probes) {
+    chosenProbes = probes;
+  }
+
   // ETHeaderBuilder.Delegate methods
   @Override
   public List<String> columnSections() {
@@ -820,18 +832,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public ManagedMatrixInfo matrixInfo() {
     return matrixInfo;
-  }
-
-  public List<Group> chosenColumns() {
-    return chosenColumns;
-  }
-
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
-  }
-
-  public void probesChanged(String[] probes) {
-    chosenProbes = probes;
   }
 
   // NavigationTools delegate method

@@ -46,8 +46,6 @@ public interface ScreenManager extends ProvidesResize {
 
   /**
    * Try to proceed to a new screen, displaying it instead of the current one.
-   * 
-   * @param to
    */
   void attemptProceed(String to);
 

@@ -127,10 +127,6 @@ public class Utils {
 
   /**
    * Open an URL 
-   * 
-   * @param message
-   * @param buttonText
-   * @param url
    */
   public static void displayURL(String message, String linkText, final String url) {
     final DialogBox dialogBox = new DialogBox(false, true);

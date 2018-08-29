@@ -47,8 +47,6 @@ public interface BatchOperations extends MaintenanceOperations {
   /**
    * Get attribute summaries for samples in a batch.
    * The result is a row-major table. The first row will be column headers.
-   * @param b
-   * @return
    */
   String[][] batchAttributeSummary(Batch b) throws MaintenanceException;
 

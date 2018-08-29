@@ -33,8 +33,6 @@ public class ExpressionValue implements Serializable {
 
   /**
    * Construct a present ExpressionValue.
-   * 
-   * @param value
    */
   public ExpressionValue(double value) {
     this(value, 'P');
@@ -46,10 +44,6 @@ public class ExpressionValue implements Serializable {
 
   /**
    * Construct an ExpressionValue with a given call and tooltip.
-   * 
-   * @param value
-   * @param call
-   * @param tooltip
    */
   public ExpressionValue(double value, char call, String tooltip) {
     _value = value;

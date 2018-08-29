@@ -302,8 +302,6 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    * storing the sample's ID as well as all specified attributes. Samples
    * missing any of the specified attributes, however, will not be fetched.
    * Does not support specification of batch graph in the SampleClassFilter.
-   * @param attributes
-   * @param sampleClassFilter
    */
   def sampleAttributeQuery(attributes: Iterable[Attribute], sampleClassFilter: SampleClassFilter =
     SampleClassFilter())

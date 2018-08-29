@@ -18,14 +18,14 @@
 
 package t.admin.client;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.admin.shared.PlatformType;
 import t.common.client.rpc.BatchOperations;
 import t.common.shared.*;
 import t.common.shared.maintenance.Instance;
 import t.common.shared.maintenance.MaintenanceException;
-
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("maintenance")
 public interface MaintenanceService extends BatchOperations, RemoteService {
@@ -50,7 +50,6 @@ public interface MaintenanceService extends BatchOperations, RemoteService {
 
   /**
    * Synchronously delete an item (except for platform and batch)
-   * @param i
    * @throws MaintenanceException
    */
   void delete(ManagedItem i) throws MaintenanceException;

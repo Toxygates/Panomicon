@@ -23,10 +23,10 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.SetEditor;
-
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+
+import t.common.client.components.SetEditor;
 
 
 /**
@@ -47,6 +47,7 @@ public abstract class SelectionMethod<T> extends ResizeComposite implements SetE
     /**
      * Get the human-readable title of this selection method.
      */
+    @Override
     public abstract String getTitle();
     
     /**
@@ -61,7 +62,6 @@ public abstract class SelectionMethod<T> extends ResizeComposite implements SetE
      * Set the currently selected items, reflecting the selection in the GUI.
      * This should not cause changeSelection() to be called.
      * The items should already have been validated.
-     * @param items
      */    
     @Override
     public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromEditor) {
@@ -84,6 +84,7 @@ public abstract class SelectionMethod<T> extends ResizeComposite implements SetE
       return new LinkedList<T>();
     }
     
+    @Override
     public List<Suggestion> getSuggestions(String request) {
       if (parentSelector != null) {
         return parentSelector.getSuggestions(request);
@@ -91,10 +92,12 @@ public abstract class SelectionMethod<T> extends ResizeComposite implements SetE
       return new LinkedList<Suggestion>();
     }
     
+    @Override
     public Set<T> getSelection() {
       return currentSelection;
     }
     
+    @Override
     public void setSelection(Collection<T> items) {
       currentSelection.clear();
       currentSelection.addAll(items);

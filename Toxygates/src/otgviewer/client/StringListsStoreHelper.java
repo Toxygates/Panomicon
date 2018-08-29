@@ -101,7 +101,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   /**
    * Given a mixed collection, extract both clusters and normal lists
    * into a unified StringList format.
-   * @param parent
    */
   public static List<StringList> compileLists(Collection<ItemList> ils) {    
     List<StringList> r = new ArrayList<StringList>();

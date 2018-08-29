@@ -29,18 +29,11 @@ import t.model.sample.CoreParameter;
 
 /**
  * Data manipulation utility methods.
- * 
- * @author johan
- *
  */
 public class GroupUtils {
 
   /**
    * In the list of groups, find the one that has the given title.
-   * 
-   * @param groups
-   * @param title
-   * @return
    */
   public static <T extends Sample, G extends SampleGroup<T>> 
   Optional<G> findGroup(List<G> groups,
@@ -50,10 +43,6 @@ public class GroupUtils {
 
   /**
    * In the list of groups, find those that contain the given sample.
-   * 
-   * @param columns
-   * @param barcode
-   * @return
    */
   public static <T extends Sample, G extends SampleGroup<T>> 
     Stream<G> groupsFor(List<G> columns,
@@ -67,10 +56,6 @@ public class GroupUtils {
 
   /**
    * Extract the sample that has the given id from the list of groups.
-   * 
-   * @param columns
-   * @param sample
-   * @return
    */
   public static <T extends Sample> T sampleFor(List<? extends SampleGroup<T>> columns, String id) {
     for (SampleGroup<T> c : columns) {

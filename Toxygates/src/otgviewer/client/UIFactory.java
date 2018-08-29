@@ -55,15 +55,12 @@ public interface UIFactory {
 
   /**
    * Enrichment for a gene set
-   * @param screen
    */
   void enrichment(ImportingScreen screen, StringList list,
       @Nullable IntermineInstance preferredInstance);
 
   /**
    * Enrichment for multiple gene sets
-   * @param screen
-   * @param lists
    */
   void multiEnrichment(ImportingScreen screen, StringList[] lists,
       @Nullable IntermineInstance preferredInstance);
@@ -73,7 +70,6 @@ public interface UIFactory {
   /**
    * Return a summary of samples for display on the start screen, if appropriate.
    * The value will never be produced if no table should be displayed.
-   * @param screen
    */
   default void sampleSummaryTable(Screen screen, 
                                   ValueAcceptor<StringArrayTable> acceptor) {    

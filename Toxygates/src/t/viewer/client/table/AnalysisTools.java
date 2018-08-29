@@ -121,7 +121,6 @@ class AnalysisTools extends Composite {
   
   /**
    * Re-initialise this UI when the available columns changed.
-   * @param columns
    */
   void columnsChanged(List<Group> columns) {
     groupsel1.clear();

@@ -20,11 +20,6 @@ package t.common.shared;
 
 /**
  * A Pair whose equality and hashCode only depend on the first member.
- * 
- * @author johan
- *
- * @param <T>
- * @param <U>
  */
 @SuppressWarnings("serial")
 public class FirstKeyedPair<T, U> extends Pair<T, U> {

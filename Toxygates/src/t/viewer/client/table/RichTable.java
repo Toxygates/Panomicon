@@ -381,8 +381,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
   /**
    * External users should use this to set a column's visibility.
-   * 
-   * @param hc
    */
   public void setVisible(HideableColumn<T, ?> hc, boolean newState) {
     hc.setVisibility(newState);

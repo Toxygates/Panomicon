@@ -38,7 +38,6 @@ public abstract class DataView extends Composite {
   
   /**
    * May be overridden to display status messages about data loading
-   * @param message
    */
   protected void displayInfo(String message) {}
   

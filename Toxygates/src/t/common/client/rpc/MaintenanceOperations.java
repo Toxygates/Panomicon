@@ -36,23 +36,17 @@ public interface MaintenanceOperations {
 
   /**
    * Modify the item, altering fields such as visibility and comment.
-   * 
-   * @param b
    */
   void update(ManagedItem i) throws MaintenanceException;
 
 
   /**
    * The results of the last completed asynchronous operation.
-   * 
-   * @return
    */
   OperationResults getOperationResults() throws MaintenanceException;
   
   /**
    * Get the status of the current task.
-   * 
-   * @return
    */
   Progress getProgress();
 }

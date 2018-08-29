@@ -103,8 +103,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
   
   /**
    * Display or hide an association column by its AType.
-   * @param associationType
-   * @param newState
    */
   public void setVisible(AType associationType, boolean newState) {
     AssociationColumn<T> aColumn = assocColumns.get(associationType);
@@ -148,7 +146,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
   /**
    * If this flag is true (which is the default), 
    * associations are auto-refreshed when they are initially displayed.
-   * @param autoRefresh
    */
   public void setAssociationAutoRefresh(boolean autoRefresh) {
     this.refreshEnabled = autoRefresh;

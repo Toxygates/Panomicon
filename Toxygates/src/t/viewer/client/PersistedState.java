@@ -85,8 +85,6 @@ abstract public class PersistedState<T> {
 
   /**
    * Convenience method
-   * @param screen
-   * @param newState
    */
   public void changeAndPersist(Screen screen, @Nullable T newState) {
     changeAndPersist(screen.manager().getParser(), newState);
@@ -95,7 +93,6 @@ abstract public class PersistedState<T> {
   /**
    * Change the value of this state as a result of e.g. 
    * a user action, persisting and then applying it.
-   * @param newState
    */  
   public void changeAndPersist(StorageParser parser, @Nullable T newState) {
     logger.info("Changed");
