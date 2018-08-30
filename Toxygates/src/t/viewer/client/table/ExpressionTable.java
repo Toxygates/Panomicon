@@ -452,7 +452,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public void onToolCellClickedForProbe(String probe) {
     int oldHighlightedRow = highlightedRow;
     highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), probe);
-    grid.redrawRow(oldHighlightedRow);
+    if (oldHighlightedRow > 0) {
+      grid.redrawRow(oldHighlightedRow);
+    }
     grid.redrawRow(highlightedRow);
     Utils.ensureVisualisationAndThen(new Runnable() {
       @Override
