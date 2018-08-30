@@ -166,12 +166,16 @@ object KCDBRegistry {
       val newCount = readCount(rp) - 1
       readCount += (rp -> newCount)
       if (newCount == 0) {
-        if (openDBs(rp).close()) {
-          println(s"Closed $rp")
+        if (!inWriting.contains(rp)) {
+          if (openDBs(rp).close()) {
+            println(s"Closed $rp")
+          } else {
+            System.err.println(s"Error: failed to close $rp")
+          }
+          openDBs -= rp
         } else {
-          System.err.println(s"Error: failed to close $rp")
+          System.out.println(s"Not closing $rp - still open for writing")
         }
-        openDBs -= rp
         readCount -= rp
       }
     } else {      
