@@ -20,13 +20,13 @@ package otgviewer.client.components.ranking;
 
 import java.util.List;
 
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.common.client.components.ItemSelector;
 import t.model.SampleClass;
-
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * Data and widgets that help the user input a rule but do not need to be sent to the server when
@@ -39,6 +39,7 @@ abstract class RuleInputHelper {
 
   final CheckBox enabled = new CheckBox();
   final ItemSelector<RuleType> rankType = new ItemSelector<RuleType>() {
+    @Override
     protected RuleType[] values() {
       return ruleTypes();
     }
@@ -76,7 +77,6 @@ abstract class RuleInputHelper {
 
   /**
    * Copy all parameters except probe
-   * @param other
    * @throws RankRuleException
    */
   void copyFrom(RuleInputHelper other) throws RankRuleException {

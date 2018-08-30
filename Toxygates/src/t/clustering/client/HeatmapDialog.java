@@ -454,7 +454,6 @@ abstract public class HeatmapDialog<C, R> {
 
   /**
    * Hook for enabling/disabling buttons and controls while the clustering is in progress
-   * @param enabled
    */
   protected void guiStateChanged(boolean enabled) { }
 

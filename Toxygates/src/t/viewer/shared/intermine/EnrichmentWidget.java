@@ -70,8 +70,6 @@ public enum EnrichmentWidget {
   /**
    * Get appropriate widgets for the instance.
    * In the future, we may obtain these using API lookups from the instance directly.
-   * @param instance
-   * @return
    */
   public static EnrichmentWidget[] widgetsFor(IntermineInstance instance) {
     String title = instance.title();

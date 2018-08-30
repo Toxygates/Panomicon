@@ -252,8 +252,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   /**
    * Callback from SelectionTDGrid
-   * 
-   * @param selectedUnits
    */
   @Override
   public void unitsChanged(List<Unit> selectedUnits) {
@@ -291,8 +289,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   /**
    * Toggle edit mode
-   * 
-   * @param editing
    */
   private void setEditing(boolean editing) {
     boolean val = editing && (chosenCompounds.size() > 0);
@@ -500,8 +496,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   /**
    * Get here if save button is clicked
-   * 
-   * @param name
    */
   private void makeGroup(String name) {
     if (name.trim().equals("")) {

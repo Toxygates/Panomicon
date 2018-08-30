@@ -39,8 +39,6 @@ public class AttributeSet extends t.model.sample.AttributeSet {
   
   /**
    * Internal constructor. Users should not access this constructor directly.
-   * @param attributes
-   * @param required
    */
   AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
     super(attributes, required);

@@ -28,7 +28,9 @@ import t.viewer.shared.mirna.MirnaSource;
 /**
  * A DataView based on a single ExpressionTable.
  */
-public class TableView extends DataView implements ExpressionTable.MatrixLoader, MirnaSourceDialog.Delegate {
+public class TableView extends DataView implements ExpressionTable.Delegate,
+    ETMatrixManager.Loader, AssociationManager.ViewDelegate<ExpressionRow>, 
+    MirnaSourceDialog.Delegate {
 
   public static enum ViewType {
     Single, Dual;    
@@ -133,7 +135,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
         public void stateChange(boolean newState) {
           expressionTable.setVisible(c, newState);
           expressionTable.persistColumnState();
-          expressionTable.getAssociations();
+          expressionTable.associations().getAssociations();
           if (newState) {
               Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
                       Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
@@ -144,7 +146,6 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
 
     MenuItem mColumns = new MenuItem("View", false, menuBar);
     addTopLevelMenu(mColumns);
-
     
     // TODO: this is effectively a tick menu item without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
@@ -192,41 +193,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
         false);
     
     return new ExpressionTable(screen, flags, TableStyle.getStyle("default"),
-      this) {
-      @Override
-      protected void onGettingExpressionFailed() {
-        super.onGettingExpressionFailed();
-        // If a non-loadable gene list was specified, we try with the blank list
-        // (all probes for the species)
-        if (chosenProbes.length > 0) {
-          TableView.this.probesChanged(new String[0]);
-          TableView.this.onGettingExpressionFailed();
-          reloadDataIfNeeded();
-        }
-        displayInfo("Data loading failed.");
-      }
-      
-      @Override
-      protected void associationsUpdated(Association[] result) {
-        TableView.this.associationsUpdated(result);
-      }
-      
-      @Override
-      public void getAssociations() {
-        beforeGetAssociations();
-        super.getAssociations();        
-      }
-      
-      @Override
-      protected void setMatrix(ManagedMatrixInfo matrix) {
-        super.setMatrix(matrix);
-        displayInfo("Successfully loaded " + matrix.numRows() + " probes");
-      }
-      
-      @Override
-      protected void afterGetRows() {
-        TableView.this.afterGetRows();
-      }
+        this, this, this) {
     };
   }  
   
@@ -253,7 +220,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
       expressionTable.getExpressions();      
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
       logger.info("Only refiltering needed");
-      expressionTable.refilterData();
+      expressionTable.matrix().refilterData(chosenProbes);
     }
 
     lastProbes = chosenProbes;
@@ -273,7 +240,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
 
         @Override
         public void onSuccess(ManagedMatrixInfo result) {
-          expressionTable.setInitialMatrix(result);
+            expressionTable.matrix().setInitialMatrix(result);
         }
       });
   }
@@ -328,7 +295,7 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
   }
 
   public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
-    expressionTable.getAssociations();
+    expressionTable.associations().getAssociations();
   };
   
   public void fetchAssociations() {
@@ -348,10 +315,13 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
     }
   }
   
+  /**
+   * The probes currently contained in the current matrix, up to a limit.
+   */
   @Override
   public String[] displayedAtomicProbes() {
-    String[] r = expressionTable.currentMatrixInfo().getAtomicProbes();
-    if (r.length < expressionTable.currentMatrixInfo().numRows()) {
+    String[] r = expressionTable.matrixInfo().getAtomicProbes();
+    if (r.length < expressionTable.matrixInfo().numRows()) {
       Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
     }
     return r;
@@ -361,4 +331,33 @@ public class TableView extends DataView implements ExpressionTable.MatrixLoader,
   public Widget tools() {
     return expressionTable.tools();
   }
+
+  // ExpressionTable.Delegate methods
+  @Override
+  public void onGettingExpressionFailed(ExpressionTable table) {
+    // If a non-loadable gene list was specified, we try with the blank list
+    // (all probes for the species)
+    if (chosenProbes.length > 0) {
+      TableView.this.probesChanged(new String[0]);
+      TableView.this.onGettingExpressionFailed();
+      reloadDataIfNeeded();
+    }
+    displayInfo("Data loading failed.");
+  }
+
+  @Override
+  public void afterGetRows(ExpressionTable table) {
+    afterGetRows();
+  }
+
+  // AssociationManager.ViewDelegate methods
+  @Override
+  public void associationsUpdated(AssociationManager<ExpressionRow> associations, Association[] result) {
+    TableView.this.associationsUpdated(result);
+  }
+
+//  @Override
+//  public void beforeGetAssociations(AssociationManager<ExpressionRow> associations) {
+//    beforeGetAssociations();
+//  }
 }

@@ -32,7 +32,7 @@ import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
 import t.clustering.shared.ClusteringList;
 import t.common.client.components.StringArrayTable;
-import t.common.shared.*;
+import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.dialog.*;
 import t.viewer.shared.ItemList;
@@ -61,8 +61,6 @@ public class InterMineData {
 
   /**
    * PreferredInstance must not be null
-   * 
-   * @param asProbes
    */
   public void importLists(final boolean asProbes) {
     InteractionDialog ui =
@@ -98,8 +96,6 @@ public class InterMineData {
 
   /**
    * PreferredInstance must not be null
-   * 
-   * @param asProbes
    */
   public void exportLists() {
     final ImportingScreen importingParent = parent;

@@ -29,8 +29,6 @@ import com.google.gwt.user.client.ui.ListBox;
  * A convenience widget for selecting among some values of type T.
  * Values of T must be uniquely mapped to strings.
  * By default, toString is used to establish this mapping.
- * 
- * @param <T>
  */
 public abstract class ItemSelector<T> extends Composite {
 
@@ -79,8 +77,6 @@ public abstract class ItemSelector<T> extends Composite {
 
   /**
    * T to String mapping
-   * @param t
-   * @return
    */
   protected String titleForValue(T t) {
     return t.toString();
@@ -90,8 +86,6 @@ public abstract class ItemSelector<T> extends Composite {
    * String to T mapping - must be the reverse of the above.
    * By default all the forward mappings are searched (suitable only
    * for a smaller number of values)
-   * @param title
-   * @return
    */
   protected @Nullable T valueForTitle(String title) {
     for (T t : values()) {

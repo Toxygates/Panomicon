@@ -19,6 +19,7 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -31,30 +32,48 @@ import t.common.client.components.StringArrayTable;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.ExpressionRow;
+import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.Association;
 
 /**
- * A RichTable that can display association columns.
- *
+ * Manages Associations for a RichTable
  */
-abstract public class AssociationTable<T extends ExpressionRow> 
-    extends RichTable<T> implements AssociationColumn.Delegate<T> {
+public class AssociationManager<T extends ExpressionRow> implements AssociationColumn.Delegate<T> {
   protected final ProbeServiceAsync probeService;
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
   protected Map<AType, AssociationColumn<T>> assocColumns;
   
   private boolean waitingForAssociations = true;
-  
   private boolean refreshEnabled = true;
 
-  public AssociationTable(Screen screen, TableStyle style, TableFlags flags) {
-    super(screen, style, flags);
-    probeService = screen.manager().probeService();
+  private Logger logger;
+  private TableDelegate<T> tableDelegate;
+  private ViewDelegate<T> viewDelegate;
+  private RichTable<T> table;
+
+  public interface TableDelegate<T> {
+    SampleClass chosenSampleClass();
+    String[] displayedAtomicProbes();
+    String[] atomicProbesForRow(T row);
+    String[] geneIdsForRow(T row);
   }
 
-  @Override
-  protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema) {
+  public interface ViewDelegate<T extends ExpressionRow> {
+    void associationsUpdated(AssociationManager<T> associations, Association[] result);
+    //    void beforeGetAssociations(AssociationManager<T> associations);
+  }
+
+  public AssociationManager(Screen screen, RichTable<T> table, TableDelegate<T> tableDelegate,
+      ViewDelegate<T> viewDelegate) {
+    probeService = screen.manager().probeService();
+    logger = screen.getLogger();
+    this.table = table;
+    this.tableDelegate = tableDelegate;
+    this.viewDelegate = viewDelegate;
+  }
+
+  protected List<HideableColumn<T, ?>> createHideableColumns(DataSchema schema) {
     SafeHtmlCell shc = new SafeHtmlCell();
     List<HideableColumn<T, ?>> r = new ArrayList<HideableColumn<T, ?>>();
     assocColumns = new HashMap<AType, AssociationColumn<T>>();
@@ -70,11 +89,9 @@ abstract public class AssociationTable<T extends ExpressionRow>
 
   protected AType[] visibleAssociations() {
     List<AType> r = new ArrayList<AType>();
-    for (HideableColumn<T, ?> ac : hideableColumns) {
-      if (ac instanceof AssociationColumn) {
-        if (ac.visible()) {
-          r.add(((AssociationColumn<?>) ac).assoc);
-        }       
+    for (AssociationColumn<T> ac : assocColumns.values()) {
+      if (ac.visible()) {
+        r.add(((AssociationColumn<?>) ac).assoc);
       }
     }
     return r.toArray(new AType[0]);
@@ -86,19 +103,18 @@ abstract public class AssociationTable<T extends ExpressionRow>
   
   /**
    * Display or hide an association column by its AType.
-   * @param associationType
-   * @param newState
    */
   public void setVisible(AType associationType, boolean newState) {
     AssociationColumn<T> aColumn = assocColumns.get(associationType);
-    setVisible(aColumn, newState);
+    table.setVisible(aColumn, newState);
   }
 
   @Override
   public void getAssociations() {
+    //    viewDelegate.beforeGetAssociations(this);
     waitingForAssociations = true;
     AType[] assocs = visibleAssociations();
-    String[] dispAtomic = displayedAtomicProbes();
+    String[] dispAtomic = tableDelegate.displayedAtomicProbes();
     if (assocs.length > 0 && dispAtomic.length > 0) {
       AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
         @Override
@@ -113,13 +129,15 @@ abstract public class AssociationTable<T extends ExpressionRow>
           for (Association a : result) {
             associations.put(a.type(), a);
           };
-          associationsUpdated(result);
-          grid.redraw();
+          viewDelegate.associationsUpdated(AssociationManager.this, result);
+          table.redrawGrid();
         }
       };
 
-      logger.info("Get associations for " + dispAtomic.length + " probes in " + chosenSampleClass.toString());
-      probeService.associations(chosenSampleClass, assocs, dispAtomic, assocCallback);
+      logger
+          .info("Get associations for " + dispAtomic.length + " probes in "
+              + tableDelegate.chosenSampleClass().toString());
+      probeService.associations(tableDelegate.chosenSampleClass(), assocs, dispAtomic, assocCallback);
     } else {
       logger.info("No associations to fetch");
     }
@@ -128,31 +146,10 @@ abstract public class AssociationTable<T extends ExpressionRow>
   /**
    * If this flag is true (which is the default), 
    * associations are auto-refreshed when they are initially displayed.
-   * @param autoRefresh
    */
   public void setAssociationAutoRefresh(boolean autoRefresh) {
     this.refreshEnabled = autoRefresh;
   }
-  
-  /**
-   * Called when associations have been updated.
-   */
-  protected void associationsUpdated(Association[] result) {}
-
-  /**
-   * Get the atomic probes currently being displayed (keys for associations)
-   * 
-   * @return
-   */
-  abstract protected String[] displayedAtomicProbes();
-
-  abstract protected String probeForRow(T row);
-
-  @Override
-  abstract public String[] atomicProbesForRow(T row);
-
-  @Override
-  abstract public String[] geneIdsForRow(T row);
   
   /**
    * Display a summary of a column.
@@ -174,7 +171,7 @@ abstract public class AssociationTable<T extends ExpressionRow>
   }
   
   AssociationSummary<T> associationSummary(AssociationColumn<T> col) {
-    return new AssociationSummary<T>(col, grid.getVisibleItems());
+    return new AssociationSummary<T>(col, table.visibleItems());
   }
 
   // AssociationColumn.Delegate methods
@@ -191,5 +188,15 @@ abstract public class AssociationTable<T extends ExpressionRow>
   @Override
   public Map<AType, Association> associations() {
     return associations;
+  }
+
+  @Override
+  public String[] atomicProbesForRow(T row) {
+    return tableDelegate.atomicProbesForRow(row);
+  }
+
+  @Override
+  public String[] geneIdsForRow(T row) {
+    return tableDelegate.geneIdsForRow(row);
   }
 }

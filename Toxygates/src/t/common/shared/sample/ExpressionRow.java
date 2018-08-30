@@ -44,12 +44,6 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
    * Single probe constructor
    * 
    * TODO should accept multiple gene titles
-   * 
-   * @param _probe
-   * @param _title
-   * @param _geneId
-   * @param _geneSym
-   * @param _val
    */
   public ExpressionRow(String _probe, String _title, String[] _geneId, String[] _geneSym,
       ExpressionValue[] _val) {
@@ -58,13 +52,6 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 
   /**
    * Merged probe constructor
-   * 
-   * @param _probe
-   * @param _atomicProbes
-   * @param _title
-   * @param _geneId
-   * @param _geneSym
-   * @param _val
    */
   public ExpressionRow(String _probe, String[] _atomicProbes, String[] _titles, String[] _geneId,
       String[] _geneSym, ExpressionValue[] _val) {
@@ -77,6 +64,7 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
     geneSyms = _geneSym;
   }
 
+  @Override
   public boolean equals(Object o) {
     if (o instanceof ExpressionRow) {
       return (probe == ((ExpressionRow) o).probe && Arrays.equals(val, ((ExpressionRow) o).val));
@@ -149,6 +137,7 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
     return geneSyms;
   }
 
+  @Override
   public int compareTo(ExpressionRow o) {
     if (o == null) {
       return -1;

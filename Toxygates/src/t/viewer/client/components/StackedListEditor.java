@@ -37,7 +37,7 @@ import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.ResizableTextArea;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
-import t.common.shared.*;
+import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
@@ -442,9 +442,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
   /**
    * Set the available items.
-   * 
-   * @param items
-   * @return
    */
   public void setItems(List<String> items, boolean clearSelection, boolean alreadySorted) {
     caseCorrectItems.clear();
@@ -497,16 +494,10 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   
   /**
    * Outgoing signal. Called when the selection has changed.
-   * 
-   * @param items
    */
   protected void selectionChanged(Set<String> items) {}
 
-  /**
-   * Ditto
-   * 
-   * @param itemLists
-   */
+  // Ditto
   protected void listsChanged(List<ItemList> itemLists) {}
 
   public void clearSelection() {

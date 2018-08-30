@@ -88,14 +88,15 @@ abstract class Triplestore extends Closeable {
 
   /**
    * Perform a SPARQL query.
-   *
-   * TODO: might be better to return a future rather than wait for the future
+   */
+  @throws(classOf[TimeoutException])
+  private def evaluate(query: String, timeoutMillis: Int = 10000) = {
+  /* Note: it might be better to return a future rather than wait for the future
    * to complete here, so that queries become composable
    * (although at the moment, almost all RPC calls we do
    * need one query result only and they need to wait for it)
    */
-  @throws(classOf[TimeoutException])
-  private def evaluate(query: String, timeoutMillis: Int = 10000) = {
+    
     if (PRINT_QUERIES) println
     printHash("printing query:", query)
     if (PRINT_QUERIES) println(query)

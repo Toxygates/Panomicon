@@ -137,9 +137,6 @@ public abstract class DataSchema implements Serializable {
 
   /**
    * Is the value a control value for the medium parameter?
-   * 
-   * @param value
-   * @return
    */
   public boolean isControlValue(String value) {
     return false;

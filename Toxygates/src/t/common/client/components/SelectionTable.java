@@ -199,9 +199,6 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 
   /**
    * TODO: retire this method
-   * 
-   * @param data
-   * @param clearSelection
    */
   @Override
   public void setItems(List<T> data, boolean clearSelection) {

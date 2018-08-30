@@ -422,8 +422,6 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
   /**
    * Obtain the gene symbols of the requested probes, then add them and display them. Probes must be
    * unique.
-   * 
-   * @param probes
    */
   protected void addProbes(String[] probes) {
     for (String p : probes) {

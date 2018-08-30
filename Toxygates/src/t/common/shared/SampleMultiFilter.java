@@ -26,8 +26,6 @@ import t.model.sample.Attribute;
 /**
  * A SampleMultiFilter is a filter for SampleClass and HasClass. For each key, several permitted
  * values may be specified.
- * 
- * @author johan
  */
 public class SampleMultiFilter {
 
@@ -62,9 +60,6 @@ public class SampleMultiFilter {
   /**
    * Returns true if and only if the SampleClass contains one of the permitted values for all keys
    * specified in this multi filter.
-   * 
-   * @param sc
-   * @return
    */
   public boolean accepts(SampleClass sc) {
     for (Attribute k : constraints.keySet()) {

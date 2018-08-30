@@ -85,7 +85,7 @@ case class Compound(override val name: String, identifier: String = "") extends 
   }
 }
 
-//TODO consider moving out of secondary
+//We might move this out of 'secondary'
 case class GOTerm(identifier: String, override val name: String) extends StoredBioObject[GOTerm] {
   override def equals(other: Any): Boolean = other match {
     case GOTerm(id, _) => id == identifier

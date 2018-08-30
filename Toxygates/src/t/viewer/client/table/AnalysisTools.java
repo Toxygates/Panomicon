@@ -60,7 +60,8 @@ class AnalysisTools extends Composite {
 
     analysisTools.add(new Button("Add T-test", (ClickHandler) e -> {
       if (twoGroupCheck("T-test")) {
-        table.addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
+        table.matrix().addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test",
+            selectedGroup1(), selectedGroup2());
         Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
             Analytics.LABEL_T_TEST);
       }
@@ -68,7 +69,8 @@ class AnalysisTools extends Composite {
 
     analysisTools.add(new Button("Add U-test", (ClickHandler) e -> {
       if (twoGroupCheck("U-test")) {
-        table.addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
+        table.matrix().addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test",
+            selectedGroup1(), selectedGroup2());
         Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
             Analytics.LABEL_U_TEST);
       }
@@ -76,14 +78,15 @@ class AnalysisTools extends Composite {
 
     foldChangeBtn = new Button("Add fold-change difference");
     foldChangeBtn.addClickHandler(e -> {
-      table.addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
+      table.matrix().addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference",
+          selectedGroup1(), selectedGroup2());
       Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
           Analytics.LABEL_FOLD_CHANGE_DIFFERENCE);
     });
     analysisTools.add(foldChangeBtn);
 
     analysisTools.add(new Button("Remove tests", (ClickHandler) e -> {
-      table.removeTests();
+      table.matrix().removeTests();
     }));
     analysisTools.setVisible(false); // initially hidden
   }
@@ -121,7 +124,6 @@ class AnalysisTools extends Composite {
   
   /**
    * Re-initialise this UI when the available columns changed.
-   * @param columns
    */
   void columnsChanged(List<Group> columns) {
     groupsel1.clear();

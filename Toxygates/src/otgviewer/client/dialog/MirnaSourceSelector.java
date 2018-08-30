@@ -6,13 +6,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.SelectionTable;
-import t.viewer.shared.mirna.MirnaSource;
-
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
+
+import t.common.client.components.SelectionTable;
+import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * A dialog for selecting among a set of available miRNA sources and,
@@ -22,7 +22,6 @@ public class MirnaSourceSelector extends SelectionTable<MirnaSource> {
   MirnaSource[] availableSources;
   
   /**
-   * @param availableSources
    * @param preferredSources Sources that are already selected. Only IDs and
    * cutoff values will be respected.
    */

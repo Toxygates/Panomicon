@@ -53,8 +53,6 @@ public class Batch extends ManagedItem {
 
   /**
    * Get the list of instance IDs for which this batch is visible.
-   * 
-   * @return
    */
   public Set<String> getEnabledInstances() {
     return enabledInstances;
@@ -62,8 +60,6 @@ public class Batch extends ManagedItem {
 
   /**
    * Set the list of instance IDs for which this batch is visible.
-   * 
-   * @param enabled
    */
   public void setEnabledInstanceTitles(Set<String> enabled) {
     this.enabledInstances = enabled;

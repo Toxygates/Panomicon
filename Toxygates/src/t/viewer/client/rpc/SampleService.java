@@ -24,6 +24,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
@@ -31,9 +34,6 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
-
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A service that provides information about samples, datasets, and 
@@ -79,17 +79,11 @@ public interface SampleService extends RemoteService {
   
   /**
    * Obtain samples for a given sample class.
-   * 
-   * @param sc
-   * @return
    */
   Sample[] samples(SampleClass sc) throws TimeoutException;
 
   /**
    * Obtain samples with a filter on one parameter.
-   * 
-   * @param sc
-   * @return
    */
   Sample[] samples(SampleClass sc, String param, String[] paramValues)
       throws TimeoutException;
@@ -116,9 +110,6 @@ public interface SampleService extends RemoteService {
   /**
    * Annotations are experiment-associated information such as dose, time, biochemical data etc.
    * This method obtains them for a single sample.
-   * 
-   * @param barcode
-   * @return
    */
   Annotation annotations(Sample barcode) throws TimeoutException;
 

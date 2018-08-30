@@ -97,7 +97,6 @@ public class SampleClass implements Serializable, SampleLike {
 
   /**
    * Merge only keys that are not already present
-   * @param from
    */
   public void mergeDeferred(SampleClass from) {
     for (Attribute k : from.getMap().keySet()) {

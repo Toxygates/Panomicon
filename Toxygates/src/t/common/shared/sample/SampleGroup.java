@@ -29,8 +29,6 @@ import t.model.sample.Attribute;
 
 /**
  * A way of grouping microarray samples. Unique colors for each group can be generated.
- * 
- * @param <S>
  */
 @SuppressWarnings("serial")
 public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable,

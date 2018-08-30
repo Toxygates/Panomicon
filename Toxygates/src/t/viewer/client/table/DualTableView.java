@@ -10,6 +10,7 @@ import otgviewer.client.NetworkMenu;
 import otgviewer.client.components.ImportingScreen;
 import otgviewer.client.components.PendingAsyncCallback;
 import t.common.shared.*;
+import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.network.*;
@@ -39,16 +40,16 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
-        table.setVisible(AType.MiRNA, true);
-        table.setVisible(AType.MRNA, false);
+        table.associations().setVisible(AType.MiRNA, true);
+        table.associations().setVisible(AType.MRNA, false);
       }
     },
     
     Reverse("miRNA", "mRNA", AType.MRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {
-        table.setVisible(AType.MiRNA, false);
-        table.setVisible(AType.MRNA, true);
+        table.associations().setVisible(AType.MiRNA, false);
+        table.associations().setVisible(AType.MRNA, true);
       }
     };
     
@@ -116,7 +117,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         new TableFlags(sideMatrix, true, false, MAX_SECONDARY_ROWS, mode.sideType, true, true);
 
     sideExpressionTable = new ExpressionTable(screen, flags, mode.sideStyle(),
-      this);
+        this, this, this);
     sideExpressionTable.addStyleName("sideExpressionTable");
 
     splitLayout = new SplitLayoutPanel();    
@@ -237,12 +238,12 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   @Override
   public void reloadDataIfNeeded() {       
-    expressionTable.setAssociationAutoRefresh(false);
+    expressionTable.associations().setAssociationAutoRefresh(false);
     mode.setVisibleColumns(expressionTable);      
-    expressionTable.setAssociationAutoRefresh(true);
+    expressionTable.associations().setAssociationAutoRefresh(true);
 
     super.reloadDataIfNeeded();
-    sideExpressionTable.clearMatrix();
+    sideExpressionTable.matrix().clear();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
   }
@@ -270,8 +271,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         
         @Override
         public void handleSuccess(NetworkInfo result) {
-          expressionTable.setInitialMatrix(result.mainInfo());
-          sideExpressionTable.setInitialMatrix(result.sideInfo());
+            expressionTable.matrix().setInitialMatrix(result.mainInfo());
+            sideExpressionTable.matrix().setInitialMatrix(result.sideInfo());
           setNetwork(result);
         }
       });
@@ -296,10 +297,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void downloadNetwork(Format format) {       
-    String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrixInfo.columnName(0)
-        : sideExpressionTable.matrixInfo.columnName(0);
-    String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrixInfo.columnName(0)
-        : sideExpressionTable.matrixInfo.columnName(0);
+    String messengerFirstColumn = (mode == DualMode.Forward) ? expressionTable.matrix().info().columnName(0)
+        : sideExpressionTable.matrix().info().columnName(0);
+    String microFirstColumn = (mode == DualMode.Reverse) ? expressionTable.matrix().info().columnName(0)
+        : sideExpressionTable.matrix().info().columnName(0);
     networkService.prepareNetworkDownload(mainMatrix, format, 
       messengerFirstColumn, microFirstColumn,
         new PendingAsyncCallback<String>(screen) {
@@ -344,5 +345,28 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     networks().add(network);
     screen.getParser().storePackedNetworks(networks());
     networkMenu.networksChanged();
+  }
+
+  // ExpressionTable.Delegate methods
+  @Override
+  public void onGettingExpressionFailed(ExpressionTable table) {
+    if (table == expressionTable) {
+      super.onGettingExpressionFailed(table);
+    }
+  }
+
+  @Override
+  public void afterGetRows(ExpressionTable table) {
+    if (table == expressionTable) {
+      super.afterGetRows(table);
+    }
+  }
+
+  // AssociationManager.ViewDelegate methods
+  @Override
+  public void associationsUpdated(AssociationManager<ExpressionRow> associations, Association[] result) {
+    if (associations == expressionTable.associations()) {
+      super.associationsUpdated(associations, result);
+    }
   }
 }

@@ -24,14 +24,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.common.shared.AType;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.*;
-
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A service that provides information about probes and related objects
@@ -53,9 +53,6 @@ public interface ProbeService extends RemoteService {
   /**
    * Obtain gene symbols for the given probes. The resulting array will contain gene symbol arrays
    * in the same order as and corresponding to the probes in the input array.
-   * 
-   * @param probes
-   * @return
    */
   String[][] geneSyms(String[] probes) throws TimeoutException;
 
@@ -63,7 +60,6 @@ public interface ProbeService extends RemoteService {
    * Obtain gene suggestions from a partial gene symbol
    * 
    * @param partialName
-   * 
    * @return An array of pairs, where the first item is the precise gene symbol and the second is
    * the full gene name.
    */
@@ -85,17 +81,11 @@ public interface ProbeService extends RemoteService {
 
   /**
    * Filter probes by given samples
-   * 
-   * @param probes
-   * @param samples
-   * @return
    */
   String[] filterProbesByGroup(String[] probes, List<Sample> samples);
 
   /**
    * Obtain suggestions from a partial gene symbol
-   * 
-   * @param partialName
    * 
    * @return An array of pairs, where the first item is the precise gene symbol and the second is
    *         the full gene name.
@@ -104,9 +94,6 @@ public interface ProbeService extends RemoteService {
   
   /**
    * Obtain pathway names matching the pattern (partial name)
-   * 
-   * @param pattern
-   * @return
    */
   String[] pathways(String pattern) throws TimeoutException;
 
@@ -122,25 +109,16 @@ public interface ProbeService extends RemoteService {
 
   /**
    * Obtain GO terms matching the given pattern (partial name)
-   * 
-   * @param pattern
-   * @return
    */
   String[] goTerms(String pattern) throws TimeoutException;
 
   /**
    * Obtain probes for a given GO term (fully named)
-   * 
-   * @param goTerm
-   * @return
    */
   String[] probesForGoTerm(String goTerm) throws TimeoutException;
 
   /**
    * Obtain filtered probes for a given GO term (fully named)
-   * 
-   * @param goTerm
-   * @return
    */
   String[] probesForGoTerm(String goTerm, @Nullable List<Sample> samples)
       throws TimeoutException;
