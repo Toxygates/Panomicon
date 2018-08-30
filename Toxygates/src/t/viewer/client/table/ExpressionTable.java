@@ -21,9 +21,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.logging.Logger;
 
-import javax.annotation.Nullable;
-
-import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
@@ -37,14 +36,14 @@ import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.Screen;
-import t.common.client.ImageClickCell;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.shared.*;
+import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.SortKey;
 
 /**
  * The main data display table. This class has many different functionalities.
@@ -64,17 +63,17 @@ import t.viewer.shared.*;
  * class.
  */
 public class ExpressionTable extends RichTable<ExpressionRow>
-    implements ETMatrixManager.Delegate, ETHeaderBuilder.Delegate, NavigationTools.Delegate,
-    AssociationManager.TableDelegate<ExpressionRow> {
+    implements ETMatrixManager.Delegate, ETColumns.Delegate, ETHeaderBuilder.Delegate, 
+    NavigationTools.Delegate, AssociationManager.TableDelegate<ExpressionRow> {
 
   private final String COLUMN_WIDTH = "10em";
 
   private Screen screen;
   private AssociationManager<ExpressionRow> associations;
   private ETMatrixManager matrix;
+  private ETColumns columns;
   private Delegate delegate;
 
-  private final t.common.client.Resources resources;
   protected final int initPageSize;
   private final Logger logger = SharedUtils.getLogger("expressionTable");
   
@@ -105,9 +104,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     screen = _screen;
     this.matrix = new ETMatrixManager(_screen, flags, this, loader, grid);
     this.associations = new AssociationManager<ExpressionRow>(screen, this, this, viewDelegate);
+    this.columns = new ETColumns(this, _screen.manager().resources(), COLUMN_WIDTH);
     this.delegate = delegate;
     this.withPValueOption = flags.withPValueOption;
-    this.resources = _screen.manager().resources();
     this.initPageSize = flags.initPageSize;
 
     grid.setHeaderBuilder(new ETHeaderBuilder(grid, this, schema));
@@ -212,7 +211,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
       String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
       first = false;
-      ExpressionColumn synCol = addSynthColumn(matrixInfo, i, borderStyle);
+      ExpressionColumn synCol = columns.addSynthColumn(matrixInfo, i, borderStyle);
       if (i == oldSortIndex) {
         newSort = new ColumnSortInfo(synCol, oldSortInfo.isAscending());
       }
@@ -224,50 +223,21 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     
   }
 
+  // TODO: modify RichTable to directly call these methods from an interface to be 
+  // implemented by ETColumns so we can get rid of this boilerplate
   @Override
   protected Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
-    return new Column<ExpressionRow, String>(cell) {
-      @Override
-      public String getValue(ExpressionRow er) {
-        if (er != null) {
-          return er.getProbe();
-        } else {
-          return "";
-        }
-      }
-    };
+    return columns.toolColumn(cell);
   }
 
   @Override
   protected Cell<String> toolCell() {
-    return new ToolCell();
-  }
-
-  private ExpressionColumn addSynthColumn(ManagedMatrixInfo matrixInfo, int column, String borderStyle) {
-    TextCell tc = new TextCell();    
-    ExpressionColumn synCol = new ExpressionColumn(tc, column);
-    
-    ColumnInfo info = new ColumnInfo(matrixInfo.shortColumnName(column), 
-      matrixInfo.columnHint(column), 
-      true, false, COLUMN_WIDTH,
-        "extraColumn " + borderStyle, false, true, 
-        matrixInfo.columnFilter(column).active());
-    info.setHeaderStyleNames(borderStyle);
-    info.setDefaultSortAsc(true);
-    addColumn(synCol, "synthetic", info);
-    return synCol;
+    return columns.toolCell();
   }
 
   @Override
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
-    Header<SafeHtml> superHeader = super.getColumnHeader(info);
-    if (info.filterable()) {
-      FilteringHeader header = new FilteringHeader(superHeader.getValue(), info.filterActive());
-      header.setHeaderStyleNames(info.headerStyleNames());
-      return header;
-    } else {
-      return superHeader;
-    }
+    return columns.getColumnHeader(info);
   }
 
   @Override
@@ -296,79 +266,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return shouldFilterClick;
   }
 
-  protected @Nullable String probeLink(String identifier) {
-    return null;
-  }
-
-  private String mkAssociationList(String[] values) {
-    return SharedUtils.mkString("<div class=\"associationValue\">", values, "</div> ");
-  }
-
   @Override
   protected List<HideableColumn<ExpressionRow, ?>> createHideableColumns(DataSchema schema) {
-    SafeHtmlCell htmlCell = new SafeHtmlCell();
-    List<HideableColumn<ExpressionRow, ?>> columns = new ArrayList<HideableColumn<ExpressionRow, ?>>();
-
-    columns.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
-        StandardColumns.GeneID, style) {        
-      @Override
-      protected String formLink(String value) {
-        return AType.formGeneLink(value);
-      }
-
-      @Override
-      protected Collection<AssociationValue> getLinkableValues(ExpressionRow er) {
-        String[] geneIds = er.getGeneIds(); // basis for the URL
-        String[] labels = er.getGeneIdLabels();
-        List<AssociationValue> r = new ArrayList<AssociationValue>();
-        for (int i = 0; i < geneIds.length; i++) {
-          r.add(new AssociationValue(labels[i], geneIds[i], null));
-        }
-        return r;
-      }
-    });
-
-    columns.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
-        StandardColumns.GeneSym, style) {        
-      @Override
-      protected String getHtml(ExpressionRow er) {
-        return mkAssociationList(er.getGeneSyms());
-      }
-
-    });
-
-    columns.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
-        StandardColumns.ProbeTitle, style) {        
-      @Override
-      protected String getHtml(ExpressionRow er) {
-        return mkAssociationList(er.getAtomicProbeTitles());
-      }
-    });
-
-    columns.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
-        StandardColumns.Probe, style) {        
-
-      @Override
-      protected String formLink(String value) {
-        return probeLink(value);
-      }
-
-      @Override
-      protected Collection<AssociationValue> getLinkableValues(ExpressionRow er) {
-        List<AssociationValue> r = new LinkedList<AssociationValue>();
-        for (String probe: er.getAtomicProbes()) {
-          r.add(new AssociationValue(probe, probe, null));
-        }        
-        return r;
-      }
-
-    });
-
+    List<HideableColumn<ExpressionRow, ?>> hideableColumns = columns.createHideableColumns(schema);
     // We want gene sym, probe title etc. to be before the association
     // columns going left to right
-    columns.addAll(associations.createHideableColumns(schema));
-
-    return columns;
+    hideableColumns.addAll(associations.createHideableColumns(schema));
+    return hideableColumns;
   }
   
   public List<ExpressionRow> getDisplayedRows() {
@@ -466,30 +370,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
   
-  /**
-   * This cell displays an image that can be clicked to display charts.
-   */
-  class ToolCell extends ImageClickCell.StringImageClickCell {
-
-    public ToolCell() {
-      super(resources.chart(), "charts", false);
-    }
-
-    @Override
-    public void onClick(final String value) {
-      int oldHighlightedRow = highlightedRow;
-      highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), value);
-      grid.redrawRow(oldHighlightedRow);
-      grid.redrawRow(highlightedRow);
-      Utils.ensureVisualisationAndThen(new Runnable() {
-        @Override
-        public void run() {
-          displayCharts();
-        }
-      });
-    }
-  }
-
   public AssociationManager<ExpressionRow> associations() {
     return associations;
   }
@@ -560,6 +440,26 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public void onSetRowCount(int numRows) {
     grid.setVisibleRangeAndClearData(new Range(0, numRows), true);
+  }
+
+  // ETColumns.Delegate methods
+  @Override
+  public TableStyle style() {
+    return style;
+  }
+
+  @Override
+  public void onToolCellClickedForProbe(String probe) {
+    int oldHighlightedRow = highlightedRow;
+    highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), probe);
+    grid.redrawRow(oldHighlightedRow);
+    grid.redrawRow(highlightedRow);
+    Utils.ensureVisualisationAndThen(new Runnable() {
+      @Override
+      public void run() {
+        displayCharts();
+      }
+    });
   }
 
   // ETHeaderBuilder.Delegate methods

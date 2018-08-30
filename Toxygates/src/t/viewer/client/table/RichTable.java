@@ -222,7 +222,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
   abstract protected Column<T, String> toolColumn(Cell<String> cell);
 
-  private final static int COL_TITLE_MAX_LEN = 8;
+  public final static int COL_TITLE_MAX_LEN = 8;
 
   /**
    * Sets a Column's properties according to a ColumnInfo
@@ -324,7 +324,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     }
   }
 
-  protected void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
+  public void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
     int at = nextColumnIndex(section);
     increaseSectionColumnCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
