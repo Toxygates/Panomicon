@@ -22,7 +22,8 @@ package t.viewer.server.rpc
 
 import java.util.{ List => JList }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import t.common.server.GWTUtils._
 
 import otgviewer.shared.Pathology
 import t.common.server.ScalaUtils
@@ -138,8 +139,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
     getState.sampleFilter = sampleFilterFor(ds, Some(getState.sampleFilter))
 
-    sampleStore.sampleClasses.map(x =>
-      new SampleClass(new java.util.HashMap(x))).toArray
+    sampleStore.sampleClasses.map(x => new SampleClass(x.asGWT)).toArray
   }
 
   @throws[TimeoutException]
@@ -170,7 +170,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
-    new java.util.ArrayList(ids.map(samplesById(_)))
+    ids.asScala.map(samplesById(_)).asGWT
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {

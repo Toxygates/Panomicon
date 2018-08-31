@@ -21,7 +21,7 @@
 package t.viewer.server.intermine
 
 import scala.Vector
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.intermine.webservice.client.core.ContentType
 import org.intermine.webservice.client.core.ServiceFactory
@@ -166,8 +166,8 @@ class IntermineConnector(instance: IntermineInstance,
       case Some(useName) =>
         val ci = new ls.ListCreationInfo("Gene", useName)
         //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
-        ci.setContent(seqAsJavaList(getGenes().toSeq))
-        ci.addTags(seqAsJavaList(tags))
+        ci.setContent(getGenes().toSeq.asJava)
+        ci.addTags(tags.asJava)
         println(s"Exporting list '$useName'")
         Some(ls.createList(ci))
       case None =>

@@ -20,7 +20,6 @@
 
 package t.viewer.server.rpc
 
-import java.util.ArrayList
 import java.util.{ List => JList }
 import java.util.logging.Logger
 
@@ -52,7 +51,7 @@ object MatrixServiceImpl {
       orthologs = Some(probes.orthologMappings)
     }
     orthologs.get
-  }  
+  }
 }
 
 object MatrixState {
@@ -86,8 +85,9 @@ class MatrixState {
  * This servlet is responsible for obtaining and manipulating microarray data.
  */
 abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService {
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
   import t.viewer.server.Conversions._
+  import t.common.server.GWTUtils._
   import ScalaUtils._
   import MatrixServiceImpl._
 
@@ -114,11 +114,11 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
     getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
-          groups, probes, typ, false))
+          groups.asScala, probes, typ, false))
     val mat = getState.matrix(id)
 
     if (!initFilters.isEmpty) {
-      mat.setFilters(initFilters)
+      mat.setFilters(initFilters.asScala)
     }
     mat.info
   }
@@ -152,9 +152,9 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     ascending: Boolean): JList[ExpressionRow] = {
     val cont = stateFor(id).controller(id)
     if (cont.managedMatrix.current.rows == 0) {
-      new ArrayList[ExpressionRow](Seq(
+      Seq(
         new ExpressionRow("(No data)", "(No data)", Array(), Array(), Array())
-       ))
+       ).asGWT
     } else {
       val mm =
         cont.applySorting(sortKey, ascending)
@@ -178,7 +178,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
         gv.setTooltip(tooltip)
       }
 
-      new ArrayList[ExpressionRow](insertAnnotations(cont, grouped))
+      insertAnnotations(cont, grouped).asGWT
     }
   }
 
@@ -188,9 +188,9 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
-    val sgs = Vector() ++ gs
+    val sgs = Vector() ++ gs.asScala
     val controller = MatrixController(context, () => getOrthologs(context),
-        gs, rprobes, typ, true)
+        sgs, rprobes, typ, true)
     val mm = controller.managedMatrix
 
     val raw = if (sgs.size == 1) {
@@ -218,7 +218,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
           or.getGeneSyms, or.getValues)
       })
     }
-    new FullMatrix(mm.info, new ArrayList[ExpressionRow](rows))
+    new FullMatrix(mm.info, rows.asGWT)
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -327,17 +327,18 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(id: String, groups: JList[Group], chosenProbes: JList[String],
     valueType: ValueType, algorithm: Algorithm, featureDecimalDigits: Int): String = {
+    val probesScala = chosenProbes.asScala
 
     //Reload data in a temporary controller if groups do not correspond to
     //the ones in the current session
-    val cont = if (getState.needsReload(id, groups, valueType)) {
+    val cont = if (getState.needsReload(id, groups.asScala, valueType)) {
       MatrixController(context, () => getOrthologs(context),
-          groups, chosenProbes, valueType, false)
+          groups.asScala, probesScala, valueType, false)
     } else {
       getState.controller(id)
     }
 
-    val data = new ClusteringData(cont, probes, chosenProbes, valueType)
+    val data = new ClusteringData(cont, probes, probesScala, valueType)
 
     val clust = new RClustering(codeDir)
     clust.clustering(data.data.flatten, rowNamesForHeatmap(data.rowNames),
