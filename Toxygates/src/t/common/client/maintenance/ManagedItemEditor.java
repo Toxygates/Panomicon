@@ -54,7 +54,7 @@ public abstract class ManagedItemEditor extends Composite {
     
     commentArea = addTextArea("Private comments");
     if (i != null) {
-      idText.setValue(i.getTitle());
+      idText.setValue(i.getId());
       commentArea.setValue(i.getComment());
     }
   }

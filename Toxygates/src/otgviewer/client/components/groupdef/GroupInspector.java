@@ -385,7 +385,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   protected void disableGroupsIfNeeded(Dataset[] ds) {
     Set<String> availDs = new HashSet<String>();
     for (Dataset d : ds) {
-      availDs.add(d.getTitle());
+      availDs.add(d.getId());
     }
     int disableCount = 0;
 
@@ -412,7 +412,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     Dataset[] allDatasets = screen.appInfo().datasets();
     Set<String> enabled = new HashSet<String>();
     for (Dataset d : chosenDatasets) {
-      enabled.add(d.getTitle());
+      enabled.add(d.getId());
     }
     logger.info("Enabled: " + SharedUtils.mkString(enabled, ", "));
     if (!enabled.containsAll(neededDatasets)) {
@@ -421,7 +421,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
       List<Dataset> newEnabled = new ArrayList<Dataset>();
       for (Dataset d : allDatasets) {
-        if (enabled.contains(d.getTitle()) || neededDatasets.contains(d.getTitle())) {
+        if (enabled.contains(d.getId()) || neededDatasets.contains(d.getId())) {
           newEnabled.add(d);
         }
       }

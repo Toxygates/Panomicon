@@ -31,16 +31,16 @@ public class Batch extends ManagedItem {
 
   public Batch() {}
 
-  public Batch(String title, int numSamples, String comment, Date date,
+  public Batch(String id, int numSamples, String comment, Date date,
       Set<String> enabledInstances, String dataset) {
-    super(title, comment, date);
+    super(id, comment, date);
     this.numSamples = numSamples;
     this.enabledInstances = enabledInstances;
     this.dataset = dataset;
   }
 
-  public Batch(String title, String comment) {
-    this(title, 0, comment, new Date(), new HashSet<String>(), "");
+  public Batch(String id, String comment) {
+    this(id, 0, comment, new Date(), new HashSet<String>(), "");
   }
 
   public String getDataset() {
@@ -61,16 +61,16 @@ public class Batch extends ManagedItem {
   /**
    * Set the list of instance IDs for which this batch is visible.
    */
-  public void setEnabledInstanceTitles(Set<String> enabled) {
+  public void setEnabledInstanceIds(Set<String> enabled) {
     this.enabledInstances = enabled;
   }
 
   public void setEnabledInstances(Set<Instance> enabled) {
-    Set<String> titles = new HashSet<String>();
+    Set<String> ids = new HashSet<String>();
     for (Instance i : enabled) {
-      titles.add(i.getTitle());
+      ids.add(i.getId());
     }
-    setEnabledInstanceTitles(titles);
+    setEnabledInstanceIds(ids);
   }
 
   public void setDataset(String dataset) {

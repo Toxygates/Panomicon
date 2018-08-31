@@ -211,8 +211,8 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void deleteBatch(final Batch object) {
-    String title = object.getTitle();
-    if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
+    String id = object.getId();
+    if (!Window.confirm("Are you sure you want to delete the batch " + id + "?")) {
       return;
     }
     maintenanceService.deleteBatchAsync(object, 
@@ -225,11 +225,11 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void deletePlatform(final Platform object) {
-    String title = object.getTitle();
-    if (!Window.confirm("Are you sure you want to delete the platform " + title + "?")) {
+    String id = object.getId();
+    if (!Window.confirm("Are you sure you want to delete the platform " + id + "?")) {
       return;
     }
-    maintenanceService.deletePlatformAsync(object.getTitle(), 
+    maintenanceService.deletePlatformAsync(object.getId(), 
         new TaskCallback(logger, "Delete platform", maintenanceService) {
       @Override
       protected void onCompletion() {
@@ -239,15 +239,15 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void deleteInstance(final Instance object) {
-    String title = object.getTitle();
-    deleteManagedItem(object, "Are you sure you want to delete the instance " + title + "?",
+    String id = object.getId();
+    deleteManagedItem(object, "Are you sure you want to delete the instance " + id + "?",
       "instance", () -> refreshInstances());    
   }
 
   private void deleteDataset(final Dataset object) {
-    String title = object.getTitle();
+    String id = object.getId();
     deleteManagedItem(object, "Are you sure you want to delete the dataset " + 
-        title + "? Batches will not be deleted.",
+        id + "? Batches will not be deleted.",
         "dataset", () -> refreshDatasets());
   }
 

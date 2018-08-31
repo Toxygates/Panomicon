@@ -31,7 +31,7 @@ public interface DataRecord {
 
   public String getComment();
 
-  public String getTitle();
+  public String getId();
 
   /**
    * User-readable title string

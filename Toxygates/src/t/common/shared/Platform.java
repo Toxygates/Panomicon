@@ -28,8 +28,8 @@ public class Platform extends ManagedItem {
 
   public Platform() {}
 
-  public Platform(String title, int numProbes, String comment, Date date, String publicComment) {
-    super(title, comment, date);
+  public Platform(String id, int numProbes, String comment, Date date, String publicComment) {
+    super(id, comment, date);
     this.numProbes = numProbes;
     this.publicComment = publicComment;
   }

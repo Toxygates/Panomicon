@@ -24,20 +24,19 @@ import java.util.Date;
 @SuppressWarnings("serial")
 public abstract class ManagedItem implements Serializable, DataRecord {
 
-  protected String title, comment;
+  protected String id, comment;
   protected Date date;
 
   public ManagedItem() {}
 
-  public ManagedItem(String title, String comment, Date date) {
-    this.title = title;
+  public ManagedItem(String id, String comment, Date date) {
+    this.id = id;
     this.comment = comment;
     this.date = date;
   }
 
-  // TODO rename
-  public String getTitle() {
-    return title;
+  public String getId() {
+    return id;
   }
 
   public String getComment() {
@@ -52,26 +51,25 @@ public abstract class ManagedItem implements Serializable, DataRecord {
     return date;
   }
 
-  // TODO rename
   public String getUserTitle() {
-    return title;
+    return id;
   }
 
   @Override
   public String toString() {
-    return getClass().toString() + ":" + title;
+    return getClass().toString() + ":" + id;
   }
 
   @Override
   public int hashCode() {
-    return title.hashCode();
+    return id.hashCode();
   }
 
   @Override
   public boolean equals(Object other) {
     if (other instanceof ManagedItem) {
       ManagedItem mi = (ManagedItem) other;
-      return mi.getTitle().equals(title);
+      return mi.getId().equals(id);
     }
     return false;
   }
