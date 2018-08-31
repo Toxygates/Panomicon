@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,12 +20,14 @@
 
 package t.platform
 
+import t.model.shared.SampleClassHelper._
 import t.TTestSuite
 import otg.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import otg.model.sample.OTGAttribute._
+import t.model.sample.Attribute
 
 @RunWith(classOf[JUnitRunner])
 class ControlGroupTest extends TTestSuite {
@@ -39,13 +41,13 @@ class ControlGroupTest extends TTestSuite {
       val cg = TestData.controlGroups(s)
       cg.samples.size should equal(3)
 
-      val remove = Set(DoseLevel, Individual, LiverWeight, KidneyWeight)
+      val remove = Set[Attribute](DoseLevel, Individual, LiverWeight, KidneyWeight)
 
       //Except for the removed keys, the sample classes of each sample in the control
       //group should be equal to the sample class of s.
       for (cs <- cg.samples) {
-        cs.sampleClass.getMap.filter(c => ! remove.contains(c._1)) should
-          equal(s.sampleClass.getMap.filter(c => ! remove.contains(c._1)))
+        cs.sampleClass.asScalaMap.filter(c => ! remove.contains(c._1)) should
+          equal(s.sampleClass.asScalaMap.filter(c => ! remove.contains(c._1)))
       }
     }
   }
