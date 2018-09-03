@@ -220,7 +220,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     if (newSort != null && keepSortOnReload) {
       grid.getColumnSortList().push(newSort);
     }
-    
   }
 
   // TODO: modify RichTable to directly call these methods from an interface to be 

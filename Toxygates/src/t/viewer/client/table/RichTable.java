@@ -173,7 +173,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
       for (HideableColumn<T, ?> c : hideableColumns) {
         //TODO: we ignore persisted state for standard columns - for now this is to
         //play nicely with dual data screen
-        if (c.col == null) {
+        if (c.standard == null) {
           ColumnInfo info = c.columnInfo();
           boolean visible = preferredColumns.contains(info.title());
           c.setVisibility(visible);
@@ -368,10 +368,10 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   
   //Only toggles visibility flag in the column.
   protected void reapplyStyle(TableStyle style, HideableColumn<T, ?> col) {
-    StandardColumns c = col.col;
-    if (c != null) {
-      grid.setColumnWidth(col, style.initWidth(c));
-      col.setVisibility(style.initVisibility(c));
+    StandardColumns standard = col.standard;
+    if (standard != null) {
+      grid.setColumnWidth(col, style.initWidth(standard));
+      col.setVisibility(style.initVisibility(standard));
     }    
   }
   

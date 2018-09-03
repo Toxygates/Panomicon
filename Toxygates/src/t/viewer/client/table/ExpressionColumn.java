@@ -18,18 +18,16 @@
 
 package t.viewer.client.table;
 
+import com.google.gwt.cell.client.TextCell;
+
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.Utils;
 import t.viewer.shared.SortKey;
-
-import com.google.gwt.cell.client.TextCell;
-
 
 public class ExpressionColumn extends TooltipColumn<ExpressionRow> implements MatrixSortable {
   final int i;
 
   /**
-   * @param tc
    * @param matColumn column index in the underlying data matrix (e.g. in ManagedMatrixInfo)
    */
   public ExpressionColumn(TextCell tc, int matColumn) {
@@ -41,10 +39,12 @@ public class ExpressionColumn extends TooltipColumn<ExpressionRow> implements Ma
     return i;
   }
 
+  @Override
   public SortKey sortKey() {
     return new SortKey.MatrixColumn(i);
   }
 
+  @Override
   public String getValue(ExpressionRow er) {
     if (er != null) {
       if (!er.getValue(i).getPresent()) {

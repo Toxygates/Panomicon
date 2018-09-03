@@ -6,15 +6,16 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.Column;
 
 public abstract class HideableColumn<T, C> extends Column<T, C> {
-  public HideableColumn(Cell<C> cell, boolean initState, @Nullable StandardColumns col) {
+  public HideableColumn(Cell<C> cell, boolean initState,
+      @Nullable StandardColumns standard) {
     super(cell);      
     _visible = initState;
-    this.col = col;
+    this.standard = standard;
   }
 
   protected boolean _visible;
   protected ColumnInfo _columnInfo;
-  final @Nullable StandardColumns col;
+  final @Nullable StandardColumns standard;
 
   public ColumnInfo columnInfo() {
     return _columnInfo;

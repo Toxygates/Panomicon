@@ -45,11 +45,6 @@ public class ColumnInfo {
     this.filterActive = filterActive;
   }
 
-  public ColumnInfo(ColumnInfo ci) {
-    this(ci.title(), ci.tooltip(), ci.sortable(), ci.hideable(), ci.width(), ci.cellStyleNames(),
-        ci.defaultSortAsc(), ci.filterable(), ci.filterActive());
-  }
-
   public ColumnInfo(String title, String tooltip, boolean sortable, boolean hideable,
       boolean filterable, boolean filterActive) {
     this(title, tooltip, sortable, hideable, DEFAULT_COL_WIDTH, null, false, filterable,
@@ -67,9 +62,6 @@ public class ColumnInfo {
 
   /**
    * Adjust title and tooltip so that title fits inside the maximum length.
-   * 
-   * @param maxLength
-   * @return
    */
   public ColumnInfo trimTitle(int maxLength) {
     String ntitle = title;
