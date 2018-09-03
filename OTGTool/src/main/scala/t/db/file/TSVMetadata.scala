@@ -20,13 +20,13 @@
 
 package t.db.file
 
+import scala.collection.JavaConverters._
+
 import friedrich.util.formats.TSVFile
-import t.db.ParameterSet
-import t.db._
 import t.Factory
+import t.db._
 import t.model.sample._
 import t.model.sample.Helpers._
-import scala.collection.JavaConversions._
 
 /**
  * Metadata that is read from a TSV file.
@@ -47,7 +47,7 @@ object TSVMetadata {
       } yield attribute.id -> trimmed)
     }
 
-    val required = attributes.getRequired().map(_.id).map(_.toLowerCase)
+    val required = attributes.getRequired().asScala.map(_.id).map(_.toLowerCase)
     val missingColumns = required.filter(!metadata.keySet.contains(_))
     if (!missingColumns.isEmpty) {
       warningHandler(s"The following columns are missing in $file: $missingColumns")
@@ -72,7 +72,7 @@ object TSVMetadata {
 class MapMetadata(val metadata: Map[String, Seq[String]],
     val attributeSet: AttributeSet) extends Metadata {
 
-  val requiredColumns = attributeSet.getRequired.map(_.id.toLowerCase)
+  val requiredColumns = attributeSet.getRequired.asScala.map(_.id.toLowerCase)
 
   def samples: Iterable[Sample] = {
     val ids = metadata("sample_id")

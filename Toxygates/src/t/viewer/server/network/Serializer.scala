@@ -2,7 +2,7 @@ package t.viewer.server.network
 
 import t.viewer.shared.network._
 import java.io.PrintWriter
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import t.util.SafeMath
 
 sealed trait NetworkStyle
@@ -37,12 +37,12 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
     val w = new PrintWriter(file)
     try {
       w.println("[nodes]")
-      for (n <- network.nodes) {
+      for (n <- network.nodes.asScala) {
         w.println(s""" ${n.id} ${n.`type`} ${nodeWeight(n)} """)
       }
 
       w.println("[edges]")
-      for (i <- network.interactions) {
+      for (i <- network.interactions.asScala) {
         w.println(s""" ${i.from.id} ${i.to.id} ${i.label()} ${i.weight()} """)
       }
     } finally {
@@ -56,7 +56,7 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
   def writeSIF(file: String) {
     val w = new PrintWriter(file)
     try {
-      for (i <- network.interactions) {
+      for (i <- network.interactions.asScala) {
         w.println(s"""${nodeLabel(i.from)}\tpp\t${nodeLabel(i.to)}""")
       }
     } finally{
@@ -75,11 +75,11 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
         |  nodesep=2;
         |  ranksep=1;""".stripMargin)
 
-      for (n <- network.nodes) {
+      for (n <- network.nodes.asScala) {
         w.println(s"""  "${n.id}" [label="${nodeLabel(n)}", ${attributes(n)}]; """)
       }
 
-      for (i <- network.interactions) {
+      for (i <- network.interactions.asScala) {
         w.println(s"""  "${i.from.id}" -> "${i.to.id}"; """)
       }
 
@@ -100,8 +100,8 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
         n.id
   }
 
-  val maxWeight = SafeMath.safeMax(network.nodes.map(nodeWeight(_)))
-  val minWeight = SafeMath.safeMin(network.nodes.map(nodeWeight(_)))
+  val maxWeight = SafeMath.safeMax(network.nodes.asScala.map(nodeWeight(_)))
+  val minWeight = SafeMath.safeMin(network.nodes.asScala.map(nodeWeight(_)))
 
   def color(n: Node) = {
     if (java.lang.Double.isNaN(nodeWeight(n)) ||

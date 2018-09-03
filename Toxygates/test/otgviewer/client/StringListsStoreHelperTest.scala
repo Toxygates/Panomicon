@@ -21,15 +21,13 @@
 package otgviewer.client
 
 import java.util.logging.Logger
-
-import scala.collection.JavaConversions._
-
+import scala.collection.JavaConverters._
 import org.junit.runner.RunWith
-
 import t.TTestSuite
 import t.clustering.shared.ClusteringList
-import org.scalatest.junit.JUnitRunner
+import t.viewer.shared.ItemList
 import t.viewer.shared.StringList
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends TTestSuite {
@@ -53,10 +51,10 @@ class StringListsStoreHelperTest extends TTestSuite {
       "testClusters", null, stringLists.toArray)
 
     val compiled = StringListsStoreHelper.compileLists(
-        Seq(clustering))
+        Seq[ItemList](clustering).asJava)
     println(compiled)
 
-    val rebuild = StringListsStoreHelper.rebuildLists(logger, compiled)
+    val rebuild = StringListsStoreHelper.rebuildLists(logger, compiled).asScala
     println(rebuild)
 
     var lists1 = rebuild(0).asInstanceOf[ClusteringList].asStringLists
@@ -67,9 +65,10 @@ class StringListsStoreHelperTest extends TTestSuite {
 
     assert(lists1 === lists2)
 
+    val scCompiled = compiled.asScala
     //shuffle the order
-    val shuffled = compiled.drop(1) :+ compiled.head
-    val rebuild2 = StringListsStoreHelper.rebuildLists(logger, shuffled)
+    val shuffled = scCompiled.drop(1) :+ scCompiled.head
+    val rebuild2 = StringListsStoreHelper.rebuildLists(logger, shuffled.asJava).asScala
 
     lists1 = rebuild2(0).asInstanceOf[ClusteringList].asStringLists
     assert(lists1 === lists2)

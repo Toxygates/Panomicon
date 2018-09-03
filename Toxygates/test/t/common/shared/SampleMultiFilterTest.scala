@@ -20,15 +20,13 @@
 
 package t.common.shared
 
-import scala.collection.JavaConversions.mapAsJavaMap
-
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import scala.collection.JavaConversions._
-import t.model.SampleClass
 
 import t.TTestSuite
+import t.common.server.GWTUtils._
+import t.model.SampleClass
 import t.model.sample.BasicAttribute
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SampleMultiFilterTest extends TTestSuite {
@@ -40,7 +38,7 @@ class SampleMultiFilterTest extends TTestSuite {
   }
 
   def jmap[T,U](x: Map[T, U]): java.util.Map[T, U] =
-    new java.util.HashMap(mapAsJavaMap(x))
+    x.asGWT
 
   val x = new BasicAttribute("x", "x", false, null)
   val y = new BasicAttribute("y", "y", false, null)

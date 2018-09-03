@@ -20,18 +20,16 @@
 
 package otg.testing
 
-import scala.collection.JavaConversions._
-
+import otg.DoseSeries
 import otg.OTGSeries
+import otg.TimeSeries
 import otg.db.Metadata
 import otg.model.sample.OTGAttribute._
 import t.Factory
 import t.db._
-import t.db.testing.TestData.enumMaps
 import t.model.sample.Attribute
+import t.model.shared.SampleClassHelper._
 import t.platform._
-import otg.TimeSeries
-import otg.DoseSeries
 
 object TestData {
   import t.db.testing.TestData._
@@ -43,19 +41,19 @@ object TestData {
 
   val absentTime = "9 hr"
   val absentDose = "Middle"
-  
+
   val usedTimePoints = enumMaps(ExposureTime.id).filter(_._1 != absentTime)
-  val usedDosePoints = DoseSeries.allDoses.filter(_ != absentDose).map(p => 
+  val usedDosePoints = DoseSeries.allDoses.filter(_ != absentDose).map(p =>
     (p, enumMaps(DoseLevel.id)(p)))
-  
-  def mkPointsTime(pr: String): Seq[SeriesPoint] = {    
+
+  def mkPointsTime(pr: String): Seq[SeriesPoint] = {
     usedTimePoints.map(t => mkPoint(pr, t._2)).toSeq
   }
 
-  def mkPointsDose(pr: String): Seq[SeriesPoint] = {    
+  def mkPointsDose(pr: String): Seq[SeriesPoint] = {
     usedDosePoints.map(t => mkPoint(pr, t._2)).toSeq
   }
-  
+
   lazy val series = for (compound <- enumValues(Compound.id).toSeq;
     doseLevel <- usedDosePoints.map(_._1);
     repeat <- enumValues(Repeat.id);
@@ -80,7 +78,7 @@ object TestData {
 
   private def controlGroup(s: Sample) = ???
 
-  import t.model.sample.CoreParameter.{ControlGroup => CGParam}
+  import t.model.sample.CoreParameter.{ ControlGroup => CGParam }
 
   lazy val controlGroups: Map[Sample, SSVarianceSet] = {
     val gr = samples.groupBy(_(CGParam))
@@ -122,7 +120,7 @@ object TestData {
     def attributeSet = otg.model.sample.AttributeSet.getDefault
 
     def sampleAttributes(s: Sample): Seq[(Attribute, String)] = {
-      samples.find(_ == s).get.sampleClass.getMap.toSeq ++ Seq(
+      samples.find(_ == s).get.sampleClass.asScalaMap.toSeq ++ Seq(
           (LiverWeight, "" + liverWeight(s)),
           (KidneyWeight, "" + kidneyWeight(s))
           )

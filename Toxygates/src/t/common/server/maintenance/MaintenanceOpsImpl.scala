@@ -20,12 +20,14 @@
 
 package t.common.server.maintenance
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.apache.commons.fileupload.FileItem
 
 import gwtupload.server.UploadServlet
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession
+import t.Task
 import t.TaskRunner
 import t.common.shared.maintenance.MaintenanceException
 import t.common.shared.maintenance.OperationResults
@@ -33,8 +35,6 @@ import t.common.shared.maintenance.Progress
 import t.global.KCDBRegistry
 import t.util.TempFiles
 import t.viewer.server.rpc.TServiceServlet
-import javax.servlet.http.HttpSession
-import t.Task
 
 /**
  * Servlet routines for uploading files and running tasks.
@@ -190,7 +190,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
     // We are currently relying on getSessionFileItems being sorted in ascending
     // order of upload time, which is undocumented behavior.
-    val tagItems = sessionItems.filter(_.getFieldName().startsWith(tag)).reverse
+    val tagItems = sessionItems.asScala.filter(_.getFieldName().startsWith(tag)).reverse
     // Session files get deleted when their corresponding FileItems are garbage
     // collected, so it's enough to remove them from the session file list
     tagItems.foreach(sessionItems.remove(_))
@@ -201,7 +201,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     println("Session file items:")
     val items = UploadServlet.getSessionFileItems(request)
     if (items != null) {
-      for (fi <- items) {
+      for (fi <- items.asScala) {
         println(s"${fi.getName}  size ${fi.getSize}  field: ${fi.getFieldName}")
       }
     }

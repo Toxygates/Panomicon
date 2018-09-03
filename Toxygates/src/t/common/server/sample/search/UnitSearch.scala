@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,21 +20,16 @@
 
 package t.common.server.sample.search
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import otg.model.sample.OTGAttribute._
-import t.common.shared.DataSchema
+import t.common.shared.sample.Sample
 import t.common.shared.sample.Unit
 import t.common.shared.sample.search.MatchCondition
-import t.db.SimpleVarianceSet
 import t.db.VarianceSet
-import t.model.SampleClass
 import t.model.sample.AttributeSet
 import t.model.sample.CoreParameter
-import t.sparql.SampleFilter
-import t.sparql.Samples
 import t.viewer.server.UnitsHelper
-import t.common.shared.sample.Sample
 
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
@@ -45,7 +40,7 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
     val units = controlUnitsAndVarianceSets.map(_._1)
     units.map(_.concatenateAttribute(CoreParameter.SampleId))
-    units.map(u => condition.neededParameters.map(u.averageAttribute(_)))
+    units.map(u => condition.neededParameters.asScala.map(u.averageAttribute(_)))
 
     val controlUnitsAndVarianceSetsbyID = Map() ++
         controlUnitsAndVarianceSets.map { case (unit, stuff) =>

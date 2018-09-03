@@ -43,6 +43,8 @@ object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
 	  Species.withName(sc.get(OTGAttribute.Organism))
 
+	  //Note: it might become necessary to rebuild the sampleClass here if the map type
+	  //is not serializable
 	def asJavaSample(s: t.db.Sample): Sample =
     new Sample(s.sampleId, s.sampleClass)
 

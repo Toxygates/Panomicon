@@ -25,7 +25,7 @@ import t.TriplestoreConfig
 import t.db.Sample
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.Attribute
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import t.model.sample.CoreParameter._
 import t.model.SampleClass
 import t.model.sample.AttributeSet
@@ -77,8 +77,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def itemClass: String = Samples.itemClass
   def defaultPrefix = Samples.defaultPrefix
 
-  val standardAttributes = bc.attributes.getRequired.toSeq
-  val hlAttributes = bc.attributes.getHighLevel.toSeq
+  val standardAttributes = bc.attributes.getRequired.asScala.toSeq
+  val hlAttributes = bc.attributes.getHighLevel.asScala.toSeq
   val tsCon: TriplestoreConfig = bc.triplestore
 
   val hasRelation = "t:hasSample"
@@ -182,7 +182,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     queryAttribs: Iterable[Attribute] = Seq()): Map[String, Seq[(Attribute, Option[String])]] = {
 
     val queryParams = (if (queryAttribs.isEmpty) {
-      bc.attributes.getAll.toSeq
+      bc.attributes.getAll.asScala.toSeq
     } else {
       queryAttribs
     }).toSeq.filter(a => isPredicateAttribute(a))
@@ -218,7 +218,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     //val attrs = otg.model.sample.AttributeSet.getDefault
     val queryParams = (if (querySet.isEmpty) {
-      bc.attributes.getAll.toSeq
+      bc.attributes.getAll.asScala.toSeq
     } else {
       querySet
     }).toSeq.filter(a => isPredicateAttribute(a))
@@ -275,7 +275,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    */
   def sampleCountQuery(attributes: Iterable[Attribute])(implicit sf: SampleFilter):
     Query[Seq[Map[String, String]]] = {
-    val pattr = attributes.filter(isPredicateAttribute)
+    val pattr = attributes.filter(isPredicateAttribute).toSeq
     val queryVars = pattr.map(a => s"?${a.id}").mkString(" ")
 
     //For adjuvant compounds, e.g. ADDA.ID and ADDA.IP, this gives us the name
@@ -323,8 +323,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
         s"""} ${sampleFilter.standardSampleFilters} $sampleClassFilterString
            |  }""".stripMargin,
         triplestore.mapQuery(_, 20000).map(s => {
-          val sampleClass = new SampleClass(convertMapToAttributes(s, bc.attributes)
-              ++ sampleClassFilter.constraints)
+          val sampleClass = new SampleClass((convertMapToAttributes(s, bc.attributes)
+              ++ sampleClassFilter.constraints).asJava)
           Sample(s(SampleId.id), sampleClass)
           }
     ))

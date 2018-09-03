@@ -20,7 +20,7 @@
 
 package t
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import t.db._
 import t.sparql.Batches
@@ -76,7 +76,7 @@ object MatrixManager extends ManagerTool {
           val todir = require(stringOption(args, "-toDir"),
             "Please specify a destination directory with -toDir")
           val tsconfig = config.triplestore
-          val dataParams = (Map() ++ mapAsScalaMap(System.getenv())) + ("T_DATA_DIR" -> todir)
+          val dataParams = System.getenv().asScala + ("T_DATA_DIR" -> todir)
           val toDConfig = m.getDataConfig(dataParams)
           val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
           //If the batch is specified, only that batch will be copied.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,18 +20,17 @@
 
 package t.viewer.server.intermine;
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.intermine.pathquery.Constraints
 import org.intermine.pathquery.PathQuery
 
 import t.db.DefaultBio
+import t.intermine.Query
 import t.sparql._
-
 //TODO remove sparql dependency by refactoring that package
 import t.sparql.secondary.Gene
 import t.viewer.server.Platforms
-import t.intermine.Query
 
 object TargetmineColumns {
   def connector(mines: Intermines,
@@ -61,7 +60,6 @@ class IntermineColumn(connector: IntermineConnector,
 //  private val ls = connector.getListService(None, None)
 //  ls.setAuthentication(token)
 
-
   private def makeQuery(): PathQuery = {
     val pq = new PathQuery(model)
     pq.addViews(geneIdView, idView)
@@ -88,7 +86,7 @@ class IntermineColumn(connector: IntermineConnector,
 
     println(s"${queryService.getCount(pq)} results")
     makeMultiMap(
-      queryService.getRowListIterator(pq).toSeq.map(row => {
+      queryService.getRowListIterator(pq).asScala.toSeq.map(row => {
         val id = row.get(2).toString
         //TODO might retrieve and insert the score of the association as well
         val tooltip = Some(s"$id (miRTarBase via TargetMine) experimental: true")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,10 +20,9 @@
 
 package t.viewer.server
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
 import otg.model.sample.OTGAttribute._
 import otg.testing.TestData
@@ -38,6 +37,7 @@ import t.common.shared.sample.search.MatchType
 import t.common.shared.sample.search.OrMatch
 import t.model.sample.Attribute
 import t.viewer.server.Conversions._
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
@@ -48,10 +48,10 @@ class SampleSearchTest extends TTestSuite {
     new AtomicMatch(attribute, mt, param)
 
   def or(mc1: MatchCondition, mc2: MatchCondition) =
-    new OrMatch(Seq(mc1, mc2))
+    new OrMatch(Seq(mc1, mc2).asJava)
 
   def and(mc1: MatchCondition, mc2: MatchCondition) =
-    new AndMatch(Seq(mc1, mc2))
+    new AndMatch(Seq(mc1, mc2).asJava)
 
   val schema = new OTGSchema
   val samples = t.db.testing.TestData.samples.toSeq.map(asJavaSample)
