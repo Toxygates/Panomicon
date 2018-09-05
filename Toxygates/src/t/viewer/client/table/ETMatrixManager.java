@@ -25,7 +25,9 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
 
 /**
- * Manages a ManagedMatrixInfo,
+ * Helper class for ExpressionTable, encapsulating operations involving a
+ * ManagedMatrixInfo, often involving communication with the server through a
+ * MatrixServiceAsync.
  */
 public class ETMatrixManager {
 
@@ -34,14 +36,36 @@ public class ETMatrixManager {
   private String matrixId;
   private ManagedMatrixInfo matrixInfo = null;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-  // For Analytics: we count every matrix load other than the first as a gene set change
-  private boolean firstMatrixLoad = true;
-  private boolean loadedData = false;
-
-  protected Loader loader;
-
+  private DialogBox filterDialog = null;
   private final Logger logger = SharedUtils.getLogger("matrixManager");
   private Delegate delegate;
+  private Loader loader;
+
+  /**
+   * Whether we are loading a matrix for the first time. Necessary for analytics
+   * tracking, where we log all matrix loads after the first as a "Change gene
+   * set" event.
+   * 
+   * This is definitely not correct now; see setInitialMatrix.
+   */
+  private boolean firstMatrixLoad = true;
+  /**
+   * TODO: Everything this variable touches needs to be thoroughly reconsidered. 
+   * 
+   * First, this variable seems to represent two, possibly distinct things: 
+   * - pathological state when the KCAsyncProvider fails 
+   * - states when our data is considered lacking in some way (because we don't have 
+   * data, or because we've changed columns, or cleared a table. Not clear if even 
+   * this part is a conceptually unified category.) 
+   * 
+   * The variable is used for a number of things, and it's not clear that the
+   * conditions under which these things should happen are identical: 
+   * - disabling table refiltering or allowing table row changes (i.e. paging and stuff) 
+   * - identifying when we should log (in analytics) that orthologous data was
+   * viewed. (This is probably not correct now, because we set loadedData = false
+   * every time the dual table is flipped).
+   */
+  private boolean loadedData = false;
 
   /**
    * Names of the probes currently displayed
@@ -53,8 +77,6 @@ public class ETMatrixManager {
   private String[] displayedProbes = new String[0];
 
   private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
-
-  private DialogBox filterDialog = null;
 
   public interface Delegate {
     void setupColumns();
@@ -133,6 +155,7 @@ public class ETMatrixManager {
     logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
   }
 
+  // TODO: 
   public void setDirty() {
     loadedData = false;
   }
@@ -154,6 +177,10 @@ public class ETMatrixManager {
       if (firstMatrixLoad) {
         firstMatrixLoad = false;
       } else {
+        /* TODO: This is definitely not correct anymore, because setInitialMatrix can happen as a result
+         * of flipping the dual table (which will count an event for both tables), or switching between
+         * absolute/folds mode. 
+         */
         Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
       }
 
