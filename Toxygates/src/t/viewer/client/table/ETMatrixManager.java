@@ -93,10 +93,6 @@ public class ETMatrixManager {
     return matrixId;
   }
 
-  public boolean loadedData() {
-    return loadedData;
-  }
-
   public List<ColumnFilter> columnFilters() {
     return matrixInfo.columnFilters();
   }
