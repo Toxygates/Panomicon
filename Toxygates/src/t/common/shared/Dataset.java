@@ -30,9 +30,9 @@ public class Dataset extends ManagedItem {
   private String publicComment;
   private int numBatches;
 
-  public Dataset(String title, String description, String comment, Date date, 
+  public Dataset(String id, String description, String comment, Date date, 
       String publicComment, int numBatches) {
-    super(title, comment, date);
+    super(id, comment, date);
     this.description = description;
     this.publicComment = publicComment;
     this.numBatches = numBatches;
@@ -65,7 +65,7 @@ public class Dataset extends ManagedItem {
     List<Dataset> r = new ArrayList<Dataset>();
     List<Dataset> shared = new ArrayList<Dataset>();
     for (Dataset d : from) {
-      if (isSharedDataset(d.getTitle())) {
+      if (isSharedDataset(d.getId())) {
         shared.add(d);        
       } else {
         r.add(d);
@@ -86,11 +86,11 @@ public class Dataset extends ManagedItem {
     return r;
   }
 
-  public static String userDatasetTitle(String userKey) {
+  public static String userDatasetId(String userKey) {
     return "user-" + userKey;
   }
 
-  public static String userSharedDatasetTitle(String userKey) {
+  public static String userSharedDatasetId(String userKey) {
     return "user-shared-" + userKey;
   }
   
@@ -100,20 +100,20 @@ public class Dataset extends ManagedItem {
 
   public static Dataset[] defaultSelection(Dataset[] from) {
     return Arrays.stream(from).
-        filter(x -> isInDefaultSelection(x.getTitle())).toArray(Dataset[]::new);
+        filter(x -> isInDefaultSelection(x.getId())).toArray(Dataset[]::new);
   }
   
-  public static boolean isSharedDataset(String title) {
-    return title.startsWith("user-shared-");
+  public static boolean isSharedDataset(String id) {
+    return id.startsWith("user-shared-");
   }
   
   //TODO this also matches user shared datasets.
-  public static boolean isUserDataset(String title) {
-    return title.startsWith("user-");
+  public static boolean isUserDataset(String id) {
+    return id.startsWith("user-");
   }
 
-  public static boolean isDataVisible(String datasetTitle, String userKey) {
-    return datasetTitle.equals(userDatasetTitle(userKey)) || isSharedDataset(datasetTitle)
-        || !datasetTitle.startsWith("user-");
+  public static boolean isDataVisible(String datasetId, String userKey) {
+    return datasetId.equals(userDatasetId(userKey)) || isSharedDataset(datasetId)
+        || !datasetId.startsWith("user-");
   }
 }

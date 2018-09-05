@@ -31,8 +31,8 @@ public class Instance extends ManagedItem {
 
   public Instance() {}
 
-  public Instance(String title, String comment, Date date) {
-    super(title, comment, date);
+  public Instance(String id, String comment, Date date) {
+    super(id, comment, date);
   }
 
   public void setAccessPolicy(AccessPolicy p, String parameter) {

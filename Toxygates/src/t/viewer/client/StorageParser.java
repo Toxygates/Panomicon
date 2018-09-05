@@ -185,7 +185,7 @@ public class StorageParser {
   public static String packDatasets(Dataset[] datasets) {
     List<String> r = new ArrayList<String>();
     for (Dataset d : datasets) {
-      r.add(d.getTitle());
+      r.add(d.getId());
     }
     return packList(r, "###");
   }

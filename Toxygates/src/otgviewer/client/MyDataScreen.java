@@ -203,8 +203,8 @@ public class MyDataScreen extends MinimalScreen {
   private void setUserKey(String key) {
     getParser().setItem("userDataKey", key);    
     userKey = key;
-    userDataset = Dataset.userDatasetTitle(key);
-    userSharedDataset = Dataset.userSharedDatasetTitle(key);        
+    userDataset = Dataset.userDatasetId(key);
+    userSharedDataset = Dataset.userSharedDatasetId(key);        
     logger.info("The unique user key is: " + key);
     if (keyLabel != null) {
       keyLabel.setText("Your access key is: " + userKey);

@@ -32,8 +32,7 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import t.common.client.Resources;
 import t.common.client.maintenance.*;
-import t.common.shared.Dataset;
-import t.common.shared.Platform;
+import t.common.shared.*;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 
@@ -212,8 +211,8 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void deleteBatch(final Batch object) {
-    String title = object.getTitle();
-    if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
+    String id = object.getId();
+    if (!Window.confirm("Are you sure you want to delete the batch " + id + "?")) {
       return;
     }
     maintenanceService.deleteBatchAsync(object, 
@@ -226,11 +225,11 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void deletePlatform(final Platform object) {
-    String title = object.getTitle();
-    if (!Window.confirm("Are you sure you want to delete the platform " + title + "?")) {
+    String id = object.getId();
+    if (!Window.confirm("Are you sure you want to delete the platform " + id + "?")) {
       return;
     }
-    maintenanceService.deletePlatformAsync(object.getTitle(), 
+    maintenanceService.deletePlatformAsync(object.getId(), 
         new TaskCallback(logger, "Delete platform", maintenanceService) {
       @Override
       protected void onCompletion() {
@@ -240,43 +239,35 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void deleteInstance(final Instance object) {
-    String title = object.getTitle();
-    if (!Window.confirm("Are you sure you want to delete the instance " + title + "?")) {
-      return;
-    }
-    maintenanceService.delete(object, new AsyncCallback<Void>() {
-
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Unable to delete instance: " + caught.getMessage());
-      }
-
-      @Override
-      public void onSuccess(Void result) {
-        refreshInstances();
-      }
-    });
+    String id = object.getId();
+    deleteManagedItem(object, "Are you sure you want to delete the instance " + id + "?",
+      "instance", () -> refreshInstances());    
   }
 
-  // TODO reduce duplicated code
   private void deleteDataset(final Dataset object) {
-    String title = object.getTitle();
-    if (!Window.confirm("Are you sure you want to delete the dataset " + title
-        + "? Batches will not be deleted.")) {
+    String id = object.getId();
+    deleteManagedItem(object, "Are you sure you want to delete the dataset " + 
+        id + "? Batches will not be deleted.",
+        "dataset", () -> refreshDatasets());
+  }
+
+  private void deleteManagedItem(final ManagedItem object, String confirmationMessage,
+                                 String itemType,
+                                 Runnable refreshOnSuccess) {
+    if (!Window.confirm(confirmationMessage)) {
       return;
     }
     maintenanceService.delete(object, new AsyncCallback<Void>() {
-
       @Override
       public void onFailure(Throwable caught) {
-        Window.alert("Unable to delete dataset: " + caught.getMessage());
+        Window.alert("Unable to delete " + itemType + ": " + caught.getMessage());
       }
 
       @Override
       public void onSuccess(Void result) {
-        refreshDatasets();
-      }
-    });
+        refreshOnSuccess.run();        
+      }      
+    });    
   }
 
   private void refreshBatches() {
@@ -291,7 +282,6 @@ public class AdminConsole implements EntryPoint {
     maintenanceService.getPlatforms(new ListDataCallback<Platform>(platformData, "platform list"));
   }
 
-  // TODO reduce duplicated code
   private void refreshDatasets() {
     maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "dataset list"));
   }

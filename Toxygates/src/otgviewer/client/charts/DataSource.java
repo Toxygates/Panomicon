@@ -85,32 +85,23 @@ abstract public class DataSource {
     }
   }
 
-  private void applyPolicy(ColorPolicy policy, List<ChartSample> samples) {
-    for (ChartSample s : samples) {
-      s.color = policy.colorFor(s);
-    }
-  }
-
   /**
    * Obtain samples, making an asynchronous call if necessary, and pass them on to the sample
    * acceptor when they are available.
    */
   void getSamples(ValueType vt, SampleMultiFilter smf, 
       ColorPolicy policy, SampleAcceptor acceptor) {
-    if (!smf.contains(schema.majorParameter())) {
-      // TODO why is this needed?
-      applyPolicy(policy, chartSamples);
-      acceptor.accept(chartSamples);
-    } else {
-      // We may be getting the same samples several times
-      List<ChartSample> r = chartSamples.stream().filter(s -> smf.accepts(s)).distinct().
+    List<ChartSample> useSamples;
+    if (smf.contains(schema.majorParameter())) {
+      useSamples = chartSamples.stream().filter(s -> smf.accepts(s)).distinct().
           collect(Collectors.toList());
-      
-      for (ChartSample s: r) {
-        s.color = policy.colorFor(s);
-      }
-      acceptor.accept(r);
+    } else {
+      useSamples = chartSamples;
+    }    
+    for (ChartSample s : useSamples) {
+      s.color = policy.colorFor(s);
     }
+    acceptor.accept(useSamples);    
   }
 
   static class SeriesSource extends DataSource {

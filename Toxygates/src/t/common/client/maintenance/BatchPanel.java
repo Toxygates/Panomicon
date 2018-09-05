@@ -59,7 +59,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
   protected Batch batchForTitle(String title) {
     List<Batch> batches = table().getVisibleItems();    
     for (Batch b: batches) {
-      if (b.getTitle().equals(title)) {
+      if (b.getId().equals(title)) {
         return b;
       }
     }
@@ -111,7 +111,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
       
       @Override
       public String getValue(Batch b) {
-          return b.getTitle();         
+          return b.getId();         
       }
     }
     InspectColumn ic = new InspectColumn();

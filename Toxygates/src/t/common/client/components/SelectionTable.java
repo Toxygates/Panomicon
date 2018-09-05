@@ -197,9 +197,6 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     setItems(data, true);
   }
 
-  /**
-   * TODO: retire this method
-   */
   @Override
   public void setItems(List<T> data, boolean clearSelection) {
     logger.info("Set items " + data.size() + " clear: " + clearSelection);
