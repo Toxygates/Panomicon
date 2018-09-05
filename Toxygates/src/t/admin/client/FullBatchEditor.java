@@ -52,8 +52,8 @@ public class FullBatchEditor extends BatchEditor {
     }
     
     for (Dataset d : datasets) {
-      if (b == null || !d.getTitle().equals(b.getDataset())) {
-        datasetBox.addItem(d.getTitle());
+      if (b == null || !d.getId().equals(b.getDataset())) {
+        datasetBox.addItem(d.getId());
       }
     }
     vp.add(datasetBox);
@@ -73,7 +73,7 @@ public class FullBatchEditor extends BatchEditor {
   protected Set<String> instancesForBatch() {
     Set<String> instances = new HashSet<String>();
     for (Instance i : visibility.getSelection()) {
-      instances.add(i.getTitle());
+      instances.add(i.getId());
     }
     return instances;    
   }

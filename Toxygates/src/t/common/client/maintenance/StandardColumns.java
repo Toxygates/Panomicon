@@ -63,7 +63,7 @@ abstract public class StandardColumns<T extends DataRecord> {
     TextColumn<T> textColumn = new TextColumn<T>() {
       @Override
       public String getValue(T object) {
-        return object.getTitle();
+        return object.getId();
       }
     };
     table.addColumn(textColumn, "ID");

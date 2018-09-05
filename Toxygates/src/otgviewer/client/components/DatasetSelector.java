@@ -44,11 +44,11 @@ public class DatasetSelector extends Composite {
      */
     Set<String> selectedIds = new HashSet<String>();
     for (Dataset d: Dataset.groupUserShared(USERDATA, selectedItems)) {
-      selectedIds.add(d.getTitle());
+      selectedIds.add(d.getId());
     }
     List<Dataset> selectedGrouped = new ArrayList<Dataset>();
     for (Dataset d: gi) {
-      if (selectedIds.contains(d.getTitle())) {
+      if (selectedIds.contains(d.getId())) {
         selectedGrouped.add(d);
       }
     }

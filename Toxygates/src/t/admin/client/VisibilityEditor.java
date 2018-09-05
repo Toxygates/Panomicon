@@ -36,7 +36,7 @@ public class VisibilityEditor extends DataRecordSelector<Instance> {
 
     Set<Instance> initSel = new HashSet<Instance>();
     for (Instance i : instances) {
-      if (batch != null && batch.getEnabledInstances().contains(i.getTitle())) {
+      if (batch != null && batch.getEnabledInstances().contains(i.getId())) {
         initSel.add(i);
       }
     }

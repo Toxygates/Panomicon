@@ -30,7 +30,7 @@ public class MetadataInfo extends Composite {
     String[] comments = new String[platforms.length];
 
     for (int i = 0; i < platforms.length; ++i) {
-      titles[i] = platforms[i].getTitle();
+      titles[i] = platforms[i].getId();
       comments[i] = platforms[i].getPublicComment();
     }
 
