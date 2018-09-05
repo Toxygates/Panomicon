@@ -107,7 +107,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   protected def newState = {
     //Initialise the selected datasets by selecting all, except shared user data.
     val defaultVisible = appInfo.datasets.filter(ds =>
-      Dataset.isInDefaultSelection(ds.getTitle))
+      Dataset.isInDefaultSelection(ds.getId))
 
     val s = new SampleState(instanceURI)
     s.sampleFilter = sampleFilterFor(defaultVisible, None)
@@ -126,8 +126,8 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   private def sampleFilterFor(ds: Array[Dataset], base: Option[SampleFilter]) = {
-     val dsTitles = ds.toList.map(_.getTitle)
-     val URIs = dsTitles.map(Datasets.packURI(_))
+     val ids = ds.toList.map(_.getId)
+     val URIs = ids.map(Datasets.packURI(_))
      base match {
        case Some(b) => b.copy(datasetURIs = URIs)
        case None => SampleFilter(datasetURIs = URIs)
@@ -135,7 +135,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = {
-    println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
+    println("Choose datasets: " + ds.map(_.getId).mkString(" "))
     getState.sampleFilter = sampleFilterFor(ds, Some(getState.sampleFilter))
 
     sampleStore.sampleClasses.map(x =>

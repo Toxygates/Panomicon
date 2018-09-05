@@ -78,7 +78,7 @@ with BatchOpsImpl with MaintenanceService {
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
 
-      val id = p.getTitle
+      val id = p.getId
       val comment = p.getComment
 
       if (!TRDF.isValidIdentifier(id)) {
@@ -107,7 +107,7 @@ with BatchOpsImpl with MaintenanceService {
   private def addInstance(i: Instance): Unit = {
     val im = new Instances(baseConfig.triplestore)
 
-    val id = i.getTitle()
+    val id = i.getId()
     if (!TRDF.isValidIdentifier(id)) {
       throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -148,8 +148,8 @@ with BatchOpsImpl with MaintenanceService {
   def delete(i: ManagedItem): Unit = {
     ensureNotMaintenance()
     i match {
-      case i: Instance => deleteInstance(i.getTitle)
-      case d: Dataset => deleteDataset(d.getTitle)
+      case i: Instance => deleteInstance(i.getId)
+      case d: Dataset => deleteDataset(d.getId)
       case _ => throw new MaintenanceException("Illegal API usage")
     }
   }
@@ -203,13 +203,13 @@ with BatchOpsImpl with MaintenanceService {
 
   private def updatePlatform(p: Platform): Unit = {
     val pfs = new Platforms(baseConfig)
-    pfs.setComment(p.getTitle, p.getComment)
-    pfs.setPublicComment(p.getTitle, p.getPublicComment)
+    pfs.setComment(p.getId, p.getComment)
+    pfs.setPublicComment(p.getId, p.getPublicComment)
   }
 
   private def updateInstance(i: Instance): Unit = {
     val is = new Instances(baseConfig.triplestore)
-    is.setComment(i.getTitle, TRDF.escape(i.getComment))
+    is.setComment(i.getId, TRDF.escape(i.getComment))
   }
 
   override def update(i: ManagedItem): Unit = {
