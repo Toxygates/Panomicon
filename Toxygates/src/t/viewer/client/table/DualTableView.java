@@ -196,14 +196,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     return columnsOfType(from, mode.sideType);        
   }
   
-//  @Override
-//  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
-//    //TODO this is a state management hack to force the columns to be fully re-initialised
-//    //every time we show the screen.
-//    chosenColumns = new ArrayList<Group>();
-//    super.loadState(p, schema, attributes);
-//  }
-  
   @Override
   public void columnsChanged(List<Group> columns) {
     logger.info("Dual mode pick for " + columns.size() + " columns");
@@ -237,17 +229,21 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }
   
   @Override
-  public void reloadDataIfNeeded() {       
+  public void reloadDataIfNeeded() {
+    // TODO: doesn't make sense to set visible columns every time we reload data 
     expressionTable.associations().setAssociationAutoRefresh(false);
-    mode.setVisibleColumns(expressionTable);      
+    mode.setVisibleColumns(expressionTable);
     expressionTable.associations().setAssociationAutoRefresh(true);
 
     super.reloadDataIfNeeded();
-    sideExpressionTable.matrix().clear();
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
-    expressionTable.setIndicatedProbes(new HashSet<String>(), false);    
+    expressionTable.setIndicatedProbes(new HashSet<String>(), false);
   }
   
+  @Override
+  protected void onReloadData() {
+    sideExpressionTable.matrix().clear();
+  }
 
   @Override
   protected void afterGetRows() {

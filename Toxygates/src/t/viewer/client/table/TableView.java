@@ -217,16 +217,25 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");
       expressionTable.setStyle(styleForColumns(chosenColumns));
-      expressionTable.getExpressions();      
+      expressionTable.getExpressions();
+      onReloadData();
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
       logger.info("Only refiltering needed");
       expressionTable.matrix().refilterData(chosenProbes);
+      onReloadData();
     }
 
     lastProbes = chosenProbes;
     lastColumns = chosenColumns;
   }
   
+  /**
+   * Called when a reload or refilter of the main table happens. To be overridden
+   * by subclasses that need to react in that case.
+   */
+  protected void onReloadData() {
+  }
+
   @Override
   public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
     matrixService.loadMatrix(defaultMatrix, chosenColumns, chosenProbes, 
