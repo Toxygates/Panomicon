@@ -49,23 +49,6 @@ public class ETMatrixManager {
    * This is definitely not correct now; see setInitialMatrix.
    */
   private boolean firstMatrixLoad = true;
-  /**
-   * TODO: Everything this variable touches needs to be thoroughly reconsidered. 
-   * 
-   * First, this variable seems to represent two, possibly distinct things: 
-   * - pathological state when the KCAsyncProvider fails 
-   * - states when our data is considered lacking in some way (because we don't have 
-   * data, or because we've changed columns, or cleared a table. Not clear if even 
-   * this part is a conceptually unified category.) 
-   * 
-   * The variable is used for a number of things, and it's not clear that the
-   * conditions under which these things should happen are identical: 
-   * - disabling table refiltering or allowing table row changes (i.e. paging and stuff) 
-   * - identifying when we should log (in analytics) that orthologous data was
-   * viewed. (This is probably not correct now, because we set loadedData = false
-   * every time the dual table is flipped).
-   */
-  private boolean loadedData = false;
 
   /**
    * Names of the probes currently displayed
@@ -155,11 +138,6 @@ public class ETMatrixManager {
     logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
   }
 
-  // TODO: 
-  public void setDirty() {
-    loadedData = false;
-  }
-
   /**
    * To be called when a new matrix is set (as opposed to partial refinement or
    * modification of a previously loaded matrix).
@@ -167,15 +145,19 @@ public class ETMatrixManager {
   void setInitialMatrix(ManagedMatrixInfo matrix) {
     if (matrix.numRows() > 0) {
       matrixInfo = matrix;
-      if (!loadedData) {
-        onFirstLoad();
-      }
-      delegate.setupColumns();
+      
+      //TODO: this event will now also be tracked as a result of dual table flipping -
+      //try to remedy
+      String event = matrixInfo.isOrthologous() ? 
+          Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA : Analytics.ACTION_VIEW_DATA;
+      Analytics.trackEvent(Analytics.CATEGORY_TABLE, event);
+      
       matrixInfo = matrix;
+      delegate.setupColumns();      
       setRows(matrix.numRows());
 
-      if (firstMatrixLoad) {
-        firstMatrixLoad = false;
+      if (firstMatrixLoad) {        
+        firstMatrixLoad = false;               
       } else {
         /* TODO: This is definitely not correct anymore, because setInitialMatrix can happen as a result
          * of flipping the dual table (which will count an event for both tables), or switching between
@@ -187,16 +169,7 @@ public class ETMatrixManager {
       logInfo("Data successfully loaded");
     } else {
       delegate.onGettingExpressionFailed();
-    }
-  }
-
-  /**
-   * Called when data is successfully loaded for the first time
-   */
-  private void onFirstLoad() {
-    loadedData = true;
-    if (matrixInfo.isOrthologous()) {
-      Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA);
+      matrixInfo = null;
     }
   }
 
@@ -279,7 +252,7 @@ public class ETMatrixManager {
    * Filter data that has already been loaded
    */
   public void refilterData(String[] chosenProbes) {
-    if (!loadedData) {
+    if (matrixInfo == null) {
       logInfo("Request to refilter but data was not loaded");
       return;
     }
@@ -290,6 +263,7 @@ public class ETMatrixManager {
       @Override
       public void onFailure(Throwable caught) {
         log(Level.WARNING, "Exception in data update callback", caught);
+        matrixInfo = null;
         delegate.getExpressions(); // the user probably let the session expire
       }
 
@@ -312,8 +286,7 @@ public class ETMatrixManager {
   }
 
   public void clear() {
-    matrixInfo = null;
-    loadedData = false;
+    matrixInfo = null;    
     asyncProvider.updateRowCount(0, true);
     delegate.setEnabled(false);
   }
@@ -348,7 +321,6 @@ public class ETMatrixManager {
 
       @Override
       public void onFailure(Throwable caught) {
-        loadedData = false;
         Window.alert(errMsg());
       }
 
@@ -366,7 +338,7 @@ public class ETMatrixManager {
 
     @Override
     protected void onRangeChanged(HasData<ExpressionRow> display) {
-      if (loadedData) {
+      if (matrixInfo != null) {
         range = display.getVisibleRange();
         SortOrder order = delegate.computeSortParams();
         if (range.getLength() > 0) {

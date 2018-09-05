@@ -305,7 +305,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     analysisTools.columnsChanged(columns);
     
     chartBarcodes = null;
-    matrix.setDirty();
+    matrix.clear();
     matrix.lastColumnFilters().clear();
     grid.getColumnSortList().clear();
     
