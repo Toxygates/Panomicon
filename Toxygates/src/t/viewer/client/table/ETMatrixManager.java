@@ -25,7 +25,9 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
 
 /**
- * Manages a ManagedMatrixInfo,
+ * Helper class for ExpressionTable, encapsulating operations involving a
+ * ManagedMatrixInfo, often involving communication with the server through a
+ * MatrixServiceAsync.
  */
 public class ETMatrixManager {
 
@@ -34,14 +36,19 @@ public class ETMatrixManager {
   private String matrixId;
   private ManagedMatrixInfo matrixInfo = null;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-  // For Analytics: we count every matrix load other than the first as a gene set change
-  private boolean firstMatrixLoad = true;
-  private boolean loadedData = false;
-
-  protected Loader loader;
-
+  private DialogBox filterDialog = null;
   private final Logger logger = SharedUtils.getLogger("matrixManager");
   private Delegate delegate;
+  private Loader loader;
+
+  /**
+   * Whether we are loading a matrix for the first time. Necessary for analytics
+   * tracking, where we log all matrix loads after the first as a "Change gene
+   * set" event.
+   * 
+   * This is definitely not correct now; see setInitialMatrix.
+   */
+  private boolean firstMatrixLoad = true;
 
   /**
    * Names of the probes currently displayed
@@ -53,8 +60,6 @@ public class ETMatrixManager {
   private String[] displayedProbes = new String[0];
 
   private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
-
-  private DialogBox filterDialog = null;
 
   public interface Delegate {
     void setupColumns();
@@ -91,10 +96,6 @@ public class ETMatrixManager {
 
   public String id() {
     return matrixId;
-  }
-
-  public boolean loadedData() {
-    return loadedData;
   }
 
   public List<ColumnFilter> columnFilters() {
@@ -137,10 +138,6 @@ public class ETMatrixManager {
     logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
   }
 
-  public void setDirty() {
-    loadedData = false;
-  }
-
   /**
    * To be called when a new matrix is set (as opposed to partial refinement or
    * modification of a previously loaded matrix).
@@ -148,32 +145,31 @@ public class ETMatrixManager {
   void setInitialMatrix(ManagedMatrixInfo matrix) {
     if (matrix.numRows() > 0) {
       matrixInfo = matrix;
-      if (!loadedData) {
-        onFirstLoad();
-      }
-      delegate.setupColumns();
+      
+      //TODO: this event will now also be tracked as a result of dual table flipping -
+      //try to remedy
+      String event = matrixInfo.isOrthologous() ? 
+          Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA : Analytics.ACTION_VIEW_DATA;
+      Analytics.trackEvent(Analytics.CATEGORY_TABLE, event);
+      
       matrixInfo = matrix;
+      delegate.setupColumns();      
       setRows(matrix.numRows());
 
-      if (firstMatrixLoad) {
-        firstMatrixLoad = false;
+      if (firstMatrixLoad) {        
+        firstMatrixLoad = false;               
       } else {
+        /* TODO: This is definitely not correct anymore, because setInitialMatrix can happen as a result
+         * of flipping the dual table (which will count an event for both tables), or switching between
+         * absolute/folds mode. 
+         */
         Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
       }
 
       logInfo("Data successfully loaded");
     } else {
       delegate.onGettingExpressionFailed();
-    }
-  }
-
-  /**
-   * Called when data is successfully loaded for the first time
-   */
-  private void onFirstLoad() {
-    loadedData = true;
-    if (matrixInfo.isOrthologous()) {
-      Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA);
+      matrixInfo = null;
     }
   }
 
@@ -256,7 +252,7 @@ public class ETMatrixManager {
    * Filter data that has already been loaded
    */
   public void refilterData(String[] chosenProbes) {
-    if (!loadedData) {
+    if (matrixInfo == null) {
       logInfo("Request to refilter but data was not loaded");
       return;
     }
@@ -267,6 +263,7 @@ public class ETMatrixManager {
       @Override
       public void onFailure(Throwable caught) {
         log(Level.WARNING, "Exception in data update callback", caught);
+        matrixInfo = null;
         delegate.getExpressions(); // the user probably let the session expire
       }
 
@@ -289,8 +286,7 @@ public class ETMatrixManager {
   }
 
   public void clear() {
-    matrixInfo = null;
-    loadedData = false;
+    matrixInfo = null;    
     asyncProvider.updateRowCount(0, true);
     delegate.setEnabled(false);
   }
@@ -325,7 +321,6 @@ public class ETMatrixManager {
 
       @Override
       public void onFailure(Throwable caught) {
-        loadedData = false;
         Window.alert(errMsg());
       }
 
@@ -343,7 +338,7 @@ public class ETMatrixManager {
 
     @Override
     protected void onRangeChanged(HasData<ExpressionRow> display) {
-      if (loadedData) {
+      if (matrixInfo != null) {
         range = display.getVisibleRange();
         SortOrder order = delegate.computeSortParams();
         if (range.getLength() > 0) {

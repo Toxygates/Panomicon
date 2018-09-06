@@ -111,7 +111,7 @@ with ProbeService {
       case None => datasets.sharedList
     })
 
-    r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
+    r = r.filter(ds => Dataset.isDataVisible(ds.getId, userKey))
     r.toArray
   }
 

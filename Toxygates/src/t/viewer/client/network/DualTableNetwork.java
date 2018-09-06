@@ -125,13 +125,6 @@ public class DualTableNetwork implements NetworkViewer {
     }          
   }
   
-  protected void changeSideTableProbes(String[] probes) {
-    sideTable.probesChanged(probes);
-    if (probes.length > 0) {
-      sideTable.getExpressions(true);
-    }
-  }
-  
   /**
    * Build Nodes by using expression values from the first column in the rows.
    */

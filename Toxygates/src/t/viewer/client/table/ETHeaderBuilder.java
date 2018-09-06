@@ -13,7 +13,13 @@ import t.common.shared.sample.Group;
 import t.viewer.shared.ManagedMatrixInfo;
 
 /**
- * Header builder for ExpressionTable
+ * Implementation of HeaderBuilder for ExpressionTable, subclassed in order to
+ * build group headers: column headers that sit above the individual columns
+ * headers, spanning all columns belonging to a sample group.
+ * 
+ * This serves to visually represent the grouping of these columns. Also, the
+ * name of the sample group can be put in the group header, leaving more room in
+ * individual column headers for other information.
  */
 public class ETHeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
   AbstractCellTable.Style style;
@@ -35,6 +41,10 @@ public class ETHeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow>
     style = getTable().getResources().style();
   }
 
+  /**
+   * Builds a group header for a number of columns related to a given sample
+   * group.
+   */
   private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount,
       String styleNames) {
     SpanBuilder spanBuilder = rowBuilder.startTH().colSpan(columnCount)
@@ -43,6 +53,11 @@ public class ETHeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow>
     rowBuilder.endTH();
   }
 
+  /**
+   * Creates an empty group header for some number of columns. These invisible
+   * headers are used to pad the space above columns that should not have group
+   * headers.
+   */
   private void buildBlankHeader(TableRowBuilder rowBuilder, int columnCount) {
     rowBuilder.startTH().colSpan(columnCount).endTH();
   }

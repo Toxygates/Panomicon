@@ -76,9 +76,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       setLastTask("Add batch")
 
       val existingBatches = new Batches(context.config.triplestore).list
-      if (existingBatches.contains(batch.getTitle) && !mayAppendBatch) {
+      if (existingBatches.contains(batch.getId) && !mayAppendBatch) {
         throw BatchUploadException.badID(
-            s"The batch ${batch.getTitle} already exists and appending is not allowed. " +
+            s"The batch ${batch.getId} already exists and appending is not allowed. " +
             "Please choose a different name.")
       }
 
@@ -140,7 +140,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   implicit def batch2bmBatch(b: Batch): BatchManager.Batch =
-    BatchManager.Batch(b.getTitle, b.getComment, Some(b.getEnabledInstances.asScala.toSeq),
+    BatchManager.Batch(b.getId, b.getComment, Some(b.getEnabledInstances.asScala.toSeq),
         Some(b.getDataset))
 
   protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
@@ -175,7 +175,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val bm = new BatchManager(context)
     maintenance {
       setLastTask("Delete batch")
-      runTasks(bm.delete(b.getTitle, false))
+      runTasks(bm.delete(b.getId, false))
     }
   }
 
@@ -189,7 +189,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.samples
     val params = overviewParameters
-    val batchURI = Batches.packURI(batch.getTitle)
+    val batchURI = Batches.packURI(batch.getId)
     val sf = SampleFilter(None, Some(batchURI))
     val data = samples.sampleAttributeValueQuery(params)(sf)()
     val titles = params.map(_.title).toArray
@@ -212,7 +212,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def addDataset(d: Dataset, mustNotExist: Boolean): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
 
-    val id = d.getTitle()
+    val id = d.getId()
     if (!TRDF.isValidIdentifier(id)) {
       throw BatchUploadException.badID(
         s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -237,22 +237,22 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
      * security checking.
      */
     val ds = new Datasets(baseConfig.triplestore)
-    ds.setComment(d.getTitle, TRDF.escape(d.getComment))
-    ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
-    ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
+    ds.setComment(d.getId, TRDF.escape(d.getComment))
+    ds.setDescription(d.getId, TRDF.escape(d.getDescription))
+    ds.setPublicComment(d.getId, TRDF.escape(d.getPublicComment))
   }
 
   def datasetSampleSummary(dataset: Dataset,
                            rowAttributes: Array[Attribute],
                            columnAttributes: Array[Attribute],
                            cellAttribute: Attribute): Array[Array[String]] = {
-    val batches = getBatches(Array(dataset.getTitle))
+    val batches = getBatches(Array(dataset.getId))
 
     val samples = context.samples
     val allAttribs = rowAttributes ++ columnAttributes ++ Option(cellAttribute)
 
     val adata = batches.toSeq.flatMap(b => {
-      val batchURI = Batches.packURI(b.getTitle)
+      val batchURI = Batches.packURI(b.getId)
       val sf = SampleFilter(None, Some(batchURI))
       samples.sampleCountQuery(allAttribs)(sf)()
     }).filter(_.keySet.size > 1) //For empty batches, the only key will be 'count'

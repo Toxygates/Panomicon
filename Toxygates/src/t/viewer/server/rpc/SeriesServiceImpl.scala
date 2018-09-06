@@ -70,9 +70,9 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   }
 
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
-    val dsTitles = ds.map(_.getTitle).distinct.toList
+    val ids = ds.map(_.getId).distinct.toList
     implicit val sf = SampleFilter(instanceURI = config.instanceURI,
-        datasetURIs = dsTitles.map(Datasets.packURI(_)))
+        datasetURIs = ids.map(Datasets.packURI(_)))
 
     val majAttr = schema.majorParameter()
 

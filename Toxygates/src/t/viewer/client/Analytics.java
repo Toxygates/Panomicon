@@ -42,7 +42,8 @@ public class Analytics {
   public static final String ACTION_PAGE_CHANGE = "Page forward/backward";
   public static final String ACTION_DISPLAY_OPTIONAL_COLUMN = "Display optional column";
   public static final String ACTION_FILTER_COLUMN = "Enable/modify column filter";
-  public static final String ACTION_VIEW_ORTHOLOGOUS_DATA = "View orthologous data";
+  public static final String ACTION_VIEW_DATA = "View data";
+  public static final String ACTION_VIEW_ORTHOLOGOUS_DATA = "View orthologous data";  
   public static final String ACTION_CHANGE_GENE_SET = "Change gene set";
 
   public static final String CATEGORY_VISUALIZATION = "Visualization";
