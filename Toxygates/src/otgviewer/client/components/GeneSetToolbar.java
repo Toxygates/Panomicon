@@ -18,8 +18,6 @@
 
 package otgviewer.client.components;
 
-import java.util.List;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
@@ -93,13 +91,7 @@ public class GeneSetToolbar extends Composite {
     return selector;
   }
 
-  /**
-   * To be overridden by subclasses/users. Called when the user has triggered a change.
-   */
-  public void itemsChanged(List<String> items) {};
-
   public void geneSetChanged(ItemList geneSet) {
-
     btnEdit.setEnabled(false);
 
     if (geneSet == null) {
@@ -123,7 +115,5 @@ public class GeneSetToolbar extends Composite {
       path = geneSet.name();
     }
     lblSelected.setText(path);
-
   }
-
 }

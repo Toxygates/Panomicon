@@ -128,12 +128,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   protected GeneSetToolbar makeGeneSetSelector() {
-    return new GeneSetToolbar(this) {
-      @Override
-      public void itemsChanged(List<String> items) {
-        reloadDataIfNeeded();
-      }
-    };
+    return new GeneSetToolbar(this);
   }
   
   protected static final String defaultMatrix = "DEFAULT";
