@@ -29,8 +29,7 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.StorageParser;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
 import t.viewer.client.table.TableView.ViewType;
@@ -282,10 +281,14 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     dataView.probesChanged(probes);
   }
 
+  /**
+   * Changes the gene set. Note: tracks a "Change Gene Set" event with Google Analytics.
+   */
   public void geneSetChanged(ItemList geneSet) {
     chosenGeneSet = geneSet;
     getParser().storeGeneSet(geneSet);
     geneSetToolbar.geneSetChanged(geneSet);
+    Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
   }
 
   public void columnsChanged(List<Group> columns) {
