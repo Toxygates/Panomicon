@@ -20,15 +20,15 @@
 
 package t.sparql
 
-import scala.collection.JavaConversions.mapAsScalaMap
 import scala.collection.{ Map => CMap }
 
 import t.db.SampleClassLike
 import t.model.sample.Attribute
+import t.model.shared.SampleClassHelper._
 
 object SampleClassFilter {
   def apply(cl: t.model.SampleClass): SampleClassFilter =
-    SampleClassFilter(cl.getMap())
+    SampleClassFilter(cl.asScalaMap)
 }
 
 /**

@@ -23,8 +23,7 @@ package t.sparql
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeoutException
 
-import scala.Vector
-import scala.collection.JavaConversions.iterableAsScalaIterable
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.language.implicitConversions
 
@@ -96,7 +95,7 @@ abstract class Triplestore extends Closeable {
    * (although at the moment, almost all RPC calls we do
    * need one query result only and they need to wait for it)
    */
-    
+
     if (PRINT_QUERIES) println
     printHash("printing query:", query)
     if (PRINT_QUERIES) println(query)
@@ -158,7 +157,7 @@ abstract class Triplestore extends Closeable {
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
-      v <- tuple;
+      v <- tuple.asScala;
       s = v.getValue.stringValue()
     ) yield s
     rs.close
@@ -176,7 +175,7 @@ abstract class Triplestore extends Closeable {
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
-      rec = tuple.map(n => n.getValue.stringValue)
+      rec = tuple.asScala.map(_.getValue.stringValue)
     ) yield rec.toVector
     rs.close
     logQueryStats(recs, start, query)
@@ -191,7 +190,7 @@ abstract class Triplestore extends Closeable {
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
-      rec = Map() ++ tuple.map(n => n.getName -> n.getValue.stringValue())
+      rec = Map() ++ tuple.asScala.map(n => n.getName -> n.getValue.stringValue())
     ) yield rec
     rs.close
     logQueryStats(recs, start, query)

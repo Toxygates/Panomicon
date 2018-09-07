@@ -24,8 +24,9 @@ import java.util.ArrayList
 import java.util.{List => JList}
 
 import scala.Array.canBuildFrom
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.language.implicitConversions
+import t.common.server.GWTUtils._
 
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.MatchResult
@@ -177,7 +178,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
     println(s"Read ${preFilter.size} series, filtered to ${filtered.size}")
     val jss = filtered.map(asShared)
-    new ArrayList[SSeries](asJavaCollection(jss))
+    jss.asGWT
   }
 
 }

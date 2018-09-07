@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,11 +20,15 @@
 
 package t.model.shared
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import t.model.SampleClass;
 import t.model.sample.Attribute
 
 object SampleClassHelper {
   def apply(constraints: Map[Attribute, String] = Map()): SampleClass =
-    new SampleClass(constraints)
+    new SampleClass(constraints.asJava)
+
+  implicit class SampleClassHelper(sc: SampleClass) {
+    def asScalaMap = sc.getMap.asScala
+  }
 }

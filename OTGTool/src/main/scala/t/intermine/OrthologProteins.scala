@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,7 +23,7 @@ package t.intermine
 import t.platform.Species._
 import org.intermine.pathquery.PathQuery
 import org.intermine.pathquery.Constraints
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import t.sparql.secondary.Gene
 
 /**
@@ -40,16 +40,16 @@ class OrthologProteins(
     pq.addConstraint(Constraints.eq("Gene.organism.shortName", s1.shortName))
     pq.addConstraint(Constraints.eq("Gene.proteins.orthologProteins.genes.organism.shortName",
       s2.shortName))
-      
+
     println(s"Intermine query: ${pq.toXml()}")
     pq
   }
-  
+
   /**
    * In the results, the first gene will be from species s1, and the second from species s2.
    */
   def results: Iterable[(Gene, Gene)] = {
-    queryService.getRowListIterator(makeQuery).toSeq.map(row => {
+    queryService.getRowListIterator(makeQuery).asScala.toSeq.map(row => {
       ((Gene(row.get(0).toString), Gene(row.get(1).toString)))
     })
   }

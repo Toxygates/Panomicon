@@ -24,7 +24,6 @@ import java.util.*;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 
-
 /**
  * A sample class identifies a group of samples.
  * 

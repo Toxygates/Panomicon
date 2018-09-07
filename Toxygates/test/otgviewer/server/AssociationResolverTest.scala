@@ -20,7 +20,7 @@
 
 package otgviewer.server
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -43,7 +43,7 @@ object AssociationResolverTest {
     OTGAttribute.Organ -> "Liver",
     OTGAttribute.TestType -> "in vivo")
 
-  def testSampleClass = new SampleClass(testClass)
+  def testSampleClass = new SampleClass(testClass.asJava)
 }
 
 @RunWith(classOf[JUnitRunner])

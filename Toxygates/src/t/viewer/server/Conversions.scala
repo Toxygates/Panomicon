@@ -23,7 +23,8 @@ package t.viewer.server
 import java.util.{ HashMap => JHMap }
 import java.util.{ HashSet => JHSet }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import t.common.server.GWTUtils._
 import scala.collection.{ Map => CMap }
 import scala.collection.{ Set => CSet }
 import scala.language.implicitConversions
@@ -42,6 +43,8 @@ object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
 	  Species.withName(sc.get(OTGAttribute.Organism))
 
+	  //Note: it might become necessary to rebuild the sampleClass here if the map type
+	  //is not serializable
 	def asJavaSample(s: t.db.Sample): Sample =
     new Sample(s.sampleId, s.sampleClass)
 
@@ -76,9 +79,9 @@ object Conversions {
   def addJMultiMap[K, V](to: JHMap[K, JHSet[V]], from: CMap[K, CSet[V]]) {
     for ((k, v) <- from) {
       if (to.containsKey(k)) {
-        to(k).addAll(v)
+        to.get(k).addAll(v.asGWT)
       } else {
-        to.put(k, new JHSet(v))
+        to.put(k, new JHSet(v.asGWT))
       }
     }
   }

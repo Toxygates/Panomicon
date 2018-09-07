@@ -20,16 +20,16 @@
 
 package t.viewer.server.intermine
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.intermine.webservice.client.results.TabTableResult
 
-import t.viewer.shared.StringList
 import t.sparql.Probes
 import t.viewer.client.intermine.IntermineService
 import t.viewer.server.Configuration
 import t.viewer.server.Platforms
 import t.viewer.server.rpc.TServiceServlet
+import t.viewer.shared.StringList
 import t.viewer.shared.intermine._
 
 abstract class IntermineServiceImpl extends TServiceServlet with IntermineService {
@@ -60,11 +60,11 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
 
       println("Accessible lists: ")
 
-      for (iml <- imLists) {
+      for (iml <- imLists.asScala) {
         println(s"${iml.getName} ${iml.getType} ${iml.getSize}")
       }
 
-      val tglists = for (iml <- imLists;
+      val tglists = for (iml <- imLists.asScala;
         if iml.getType == "Gene";
         tglist = conn.asTGList(iml, affyProbes, platforms.filterProbesAllPlatforms)
         ) yield tglist
@@ -143,7 +143,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
         val res = new TabTableResult(con)
         ls.deleteList(tl)
         val headers = Array("ID", "Description", "p-value", "Matches")
-        headers +: res.getIterator.toArray.map(adjustEnrichResult(_).toArray)
+        headers +: res.getIterator.asScala.toArray.map(r => adjustEnrichResult(r.asScala).toArray)
 
       case None => throw new IntermineException("Unable to create temporary list for enrichment")
     }

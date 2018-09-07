@@ -1,58 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0" 
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:noNamespaceSchemaLocation=
-                   "http://ant.apache.org/ivy/schemas/ivy.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation=
+  "http://ant.apache.org/ivy/schemas/ivy.xsd">
   <info organisation="level-five"
-        module="otgtool"
-        />
-        
+    module="otgtool"
+    />
+
+  <configurations>
+    <conf name="compile"  description="Required to compile application"/>
+    <conf name="runtime"  description="Additional run-time dependencies" extends="compile"/>
+    <conf name="test"     description="Required for test only" extends="runtime"/>
+    <conf name="provided" description="Needed for compile, but will be present on the target platform."/>
+  </configurations>
+
+  <!-- Dependencies go into the 'compile' configuration by default. -->
   <dependencies>
-  
-  <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
-  <dependency org="commons-io" name="commons-io" rev="latest.integration"/>
-  <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
 
-  <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>
-  <dependency org="org.eclipse.rdf4j" name="rdf4j-rio-turtle" rev="latest.integration"/>
-  
-  <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
+    <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
+    <dependency org="commons-io" name="commons-io" rev="latest.integration"/>
+    <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
 
-  <!-- for javax.annotation.Nullable -->
-  <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
-  
-  <!-- for intermine.  -->
-  <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
-    (causes parse errors). 20090211 is known to work. -->
+    <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>
+    <dependency org="org.eclipse.rdf4j" name="rdf4j-rio-turtle" rev="latest.integration"/>
+
+    <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
+
+    <!-- for javax.annotation.Nullable -->
+    <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
+
+    <!-- for intermine.  -->
+    <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
+       (causes parse errors). 20090211 is known to work. -->
   <dependency org="org.json" name="json" rev="20090211"/>
-  
+
   <!-- intermine-client-2.0 needs the old commons-httpclient module
      (org.apache.httpcomponents will not work) -->
  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
-  <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
-  
-  <dependency org="org.slf4j" name="slf4j-simple" rev="1.7.25" />
-  
-  <!-- for intermine. -->  
-  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2">
-    <!-- This dependency can't be found on maven and doesn't appear to be necessary -->
-  	<exclude module="log4j-api-java9" />  	
-  </dependency>
-  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2">
-    <!-- This causes problems for Intermine (via XMLOutputFactory) if it is on the classpath. -->
-	<exclude module="woodstox-core" />
-	<!-- This dependency can't be found on maven and doesn't appear to be necessary -->  
-	<exclude module="log4j-core-java9" />
-  </dependency>
-  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
-  
-  <dependency org="org.antlr" name="antlr" rev="latest.integration" />
-  
-  <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
-  
-    <!-- intermine is not published on maven central, but the POM is at the URL below. -->
-  <!-- https://github.com/alexkalderimis/intermine-ws-client.java/blob/master/pom.xml -->  
-  <!-- <dependency org="org.intermine.webservice.client" name="intermine-webservice-client" rev="latest.integration"/> -->
-  
+ <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
+
+ <dependency org="org.slf4j" name="slf4j-simple" rev="1.7.25" />
+
+ <!-- for intermine. -->  
+ <!-- provided->master indicates that the maven scope 'master' is mapped to the ivy configuration 'provided'.
+  This means that we pull in the top level jar, but not its dependencies. We guarantee that a functional
+  log4j will be provided in the runtime environment. 
+  See https://stackoverflow.com/questions/37840659/ivy-dependency-as-provided
+  -->
+ <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2" conf="provided->master" />
+ <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" conf="provided->master" />
+ <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
+
+ <dependency org="org.antlr" name="antlr" rev="latest.integration" />
+
+ <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
+
+ <!-- mapping maven scope'default' into the ivy configuration 'test' pulls in all 
+ the dependencies, not just the top level module. -->
+ <dependency org="org.scalatest" name="scalatest_2.12" rev="3.0.4" conf="test->default">
+   <exclude module="scala-library" />
+   <exclude module="scala-reflect" />
+ </dependency>
+
+ <!-- intermine is not published on maven central, but the POM is at the URL below. -->
+ <!-- https://github.com/alexkalderimis/intermine-ws-client.java/blob/master/pom.xml -->  
+ <!-- <dependency org="org.intermine.webservice.client" name="intermine-webservice-client" rev="latest.integration"/> -->
+
   </dependencies>
 </ivy-module>

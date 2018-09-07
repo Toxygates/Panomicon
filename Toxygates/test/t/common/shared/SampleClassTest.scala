@@ -20,13 +20,15 @@
 
 package t.common.shared
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+
 import org.junit.runner.RunWith
+
 import t.TTestSuite
-import org.scalatest.junit.JUnitRunner
 import t.model.SampleClass
-import t.model.sample.BasicAttribute
 import t.model.sample.Attribute
+import t.model.sample.BasicAttribute
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SampleClassTest extends TTestSuite {
@@ -42,7 +44,7 @@ class SampleClassTest extends TTestSuite {
       z -> "z")
 
   def scWith(m: Map[Attribute, String]) =
-    new SampleClass(mapAsJavaMap(m))
+    new SampleClass(m.asJava)
 
   val testSc = scWith(testMap)
   val small = scWith(Map(x -> "x"))
@@ -69,8 +71,8 @@ class SampleClassTest extends TTestSuite {
   }
 
   test("collect") {
-    assert(SampleClass.collect(seqAsJavaList(List(testSc, incomp)),
-      new BasicAttribute("x", "whatever", false, null)).toSet
+    assert(SampleClass.collect((List(testSc, incomp).asJava),
+      new BasicAttribute("x", "whatever", false, null)).asScala
         == Set("x", "y"))
   }
 }

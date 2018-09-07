@@ -22,7 +22,7 @@ package t.viewer.server.rpc
 
 import java.util.{ List => JList }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import javax.annotation.Nullable
 import otg.model.sample.OTGAttribute
@@ -248,12 +248,12 @@ with ProbeService {
 
   private def filterByGroup(result: Iterable[String], samples: JList[Sample]) =
     Option(samples) match {
-      case Some(ss) => filterProbesByGroupInner(result, ss).toArray
+      case Some(ss) => filterProbesByGroupInner(result, ss.asScala).toArray
       case None     => result.toArray
     }
 
   def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
-    filterProbesByGroupInner(probes, samples).toArray
+    filterProbesByGroupInner(probes, samples.asScala).toArray
   }
 
    @throws[TimeoutException]

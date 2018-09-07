@@ -42,7 +42,7 @@
     <!--
     <ivy:configure file="ivysettings.xml" />
     -->
-    <ivy:resolve file="ivy.xml" />
+    <ivy:resolve file="ivy.xml" conf="compile" />
   </target>
 
   <path id="full.classpath">
@@ -61,7 +61,8 @@
     <scalac srcdir="${sources.dir}"
       destdir="${build.dir}"
       classpathref="full.classpath"
-      deprecation="on">
+      deprecation="on"
+      optimise="on">
       <include name="${scala-source.dir}/**/*.scala" />
       <include name="${java-source.dir}/**/*.java" />
       <exclude name="${scala-test.dir}/**/*.scala" />

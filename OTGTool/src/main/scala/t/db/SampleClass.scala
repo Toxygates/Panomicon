@@ -22,7 +22,7 @@ package t.db
 
 import scala.collection.{ Map => CMap }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import t.model.sample.Attribute
 
 trait SampleClassLike {
@@ -33,5 +33,5 @@ trait SampleClassLike {
   def get(key: Attribute): Option[String] = constraints.get(key)
 
   def ++(other: SampleClassLike) =
-    new t.model.SampleClass(constraints ++ other.constraints)
+    new t.model.SampleClass((constraints ++ other.constraints).asJava)
 }

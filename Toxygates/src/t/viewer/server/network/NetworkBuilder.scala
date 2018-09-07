@@ -1,13 +1,13 @@
 package t.viewer.server.network
 
-import t.platform.mirna._
+import t.common.server.GWTUtils._
 import t.platform.Probe
-import t.viewer.shared.network.Interaction
-import t.viewer.server.matrix.ManagedMatrix
-import t.viewer.shared.network.Node
-import t.viewer.shared.network.Network
-import scala.collection.JavaConversions._
+import t.platform.mirna._
 import t.viewer.server.Platforms
+import t.viewer.server.matrix.ManagedMatrix
+import t.viewer.shared.network.Interaction
+import t.viewer.shared.network.Network
+import t.viewer.shared.network.Node
 
 object NetworkBuilder {
 
@@ -84,7 +84,7 @@ class NetworkBuilder(targets: TargetTable,
   def interactionsForMrna(mrna: Iterable[Probe]) =
     interactions(targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4)))
 
-  import java.util.{ArrayList => JList}
+  import java.util.{ ArrayList => JList }
   def build: Network = {
     if (main.info.numColumns() == 0) {
       return new Network("Network", new JList(), new JList())
@@ -98,7 +98,6 @@ class NetworkBuilder(targets: TargetTable,
         interactionsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
     }
     val interactions = rawInt.toSeq.sortBy(_.weight()) take Network.MAX_SIZE
-    new Network("Network", new JList(seqAsJavaList(nodes)),
-        new JList(seqAsJavaList(interactions)))
+    new Network("Network", nodes.asGWT, interactions.asGWT)
   }
 }

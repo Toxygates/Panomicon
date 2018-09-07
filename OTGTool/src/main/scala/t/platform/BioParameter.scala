@@ -31,7 +31,7 @@ import t.sample.SampleSet
 import t.model.sample.Attribute
 import t.model.sample.BasicAttribute
 import otg.model.sample.OTGAttribute._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
  * Construct a BioParameter object.
@@ -125,7 +125,7 @@ object BioParameter {
          m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
        })
        val rawValues = samples.map(s => data.sampleAttributes(s))
-       for (attr <- attrs.getAll; if attr.isNumerical()) {
+       for (attr <- attrs.getAll.asScala; if attr.isNumerical()) {
          if (!out.contains(attr)) {
            out += attr -> Seq()
          }

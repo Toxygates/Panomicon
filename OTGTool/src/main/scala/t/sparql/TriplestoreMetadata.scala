@@ -20,7 +20,7 @@
 
 package t.sparql
 
-import scala.collection.JavaConversions.asScalaSet
+import scala.collection.JavaConverters._
 
 import t.db._
 import t.Factory
@@ -70,7 +70,7 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
 
   lazy val data =
     rawData.mapValues(sample => {
-      Map() ++ sample.sampleClass.getKeys().toSeq.
+      Map() ++ sample.sampleClass.getKeys().asScala.toSeq.
           map(key => key ->  sample.get(key).get)
     })
 

@@ -20,22 +20,18 @@
 
 package otg
 
-import t.db._
-import t.db.kyotocabinet._
-import org.scalatest.junit.JUnitRunner
-import t.platform.Species._
-import t.testing.TestConfig
-import t.db.testing.TestData
-import t.TTestSuite
 import org.junit.runner.RunWith
-import otg.model.sample.OTGAttribute.ExposureTime
 
-import scala.collection.JavaConversions._
+import t.TTestSuite
+import t.db._
+import t.db.testing.TestData
+import t.model.shared.SampleClassHelper._
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
 
-  import otg.testing.{TestData => OData}
+  import otg.testing.{ TestData => OData }
   implicit val context = new otg.testing.FakeContext()
   val cmap = context.enumMaps("compound_name")
 
@@ -56,7 +52,7 @@ class SeriesTest extends TTestSuite {
     val builderType = OTGTimeSeriesBuilder
     val attributeValue = OData.absentTime
 
-    val inputSeries = OData.series    
+    val inputSeries = OData.series
   }
 
   object doseSeriesTest extends seriesTestType {
@@ -64,10 +60,10 @@ class SeriesTest extends TTestSuite {
     val seriesType = DoseSeries
     val builderType = OTGDoseSeriesBuilder
     val attributeValue = OData.absentDose
-    
+
     val inputSeries = OData.doseSeries
   }
-  
+
   val testTypes = List(timeSeriesTest, doseSeriesTest)
 
   for (tt <- testTypes) {
@@ -85,7 +81,6 @@ class SeriesTest extends TTestSuite {
       context.populate()
       val meta = OData.metadata
       val indepVarMap = tt.seriesType.independentVariableMap
-      
 
       val ss = tt.builderType.makeNew(context.foldsDBReader, meta)
       val data = context.testData
@@ -93,7 +88,8 @@ class SeriesTest extends TTestSuite {
         s <- ss;
         const = s.constraints.filter(_._2 != null).toSet;
         pr = context.probeMap.unpack(s.probe);
-        relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.getMap.toSet))
+        relSamples = meta.samples.filter(x =>
+          const.subsetOf(x.sampleClass.asScalaMap.toSet))
       ) {
 
         val points = for (
@@ -101,9 +97,9 @@ class SeriesTest extends TTestSuite {
           ev <- data.asExtValues(s).get(pr)
         ) yield s
 
-        val expectedPointCodes = points.flatMap(x => 
+        val expectedPointCodes = points.flatMap(x =>
           meta.sampleAttribute(x, tt.seriesType.independentVariable))
-        
+
         s.points.map(_.code) should contain theSameElementsAs (
           expectedPointCodes.map(indepVarMap(_)))
       }

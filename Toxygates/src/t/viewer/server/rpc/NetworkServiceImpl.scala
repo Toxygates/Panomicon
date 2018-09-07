@@ -23,7 +23,7 @@ import java.lang.{ Double => JDouble }
 import java.util.{ HashMap => JHMap }
 import java.util.{ List => JList }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import t.common.shared.GroupUtils
 import t.common.shared.ValueType
@@ -38,7 +38,6 @@ import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.server.matrix.MatrixController
-import t.viewer.server.network.NetworkBuilder
 import t.viewer.server.network.NetworkController
 import t.viewer.server.network.Serializer
 import t.viewer.shared.Synthetic
@@ -125,25 +124,26 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     sideId: String, sideColumns: JList[Group], typ: ValueType,
     mainPageSize: Int): NetworkInfo = {
 
+    val scSideColumns = sideColumns.asScala
     //Orthologous mode is not supported for network loading
     val orthMappings = () => List()
 
     getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, sideColumns, Seq(), typ, false))
+      MatrixController(context, orthMappings, scSideColumns, Seq(), typ, false))
     val sideMat = getState.matrix(sideId)
 
-    val gt = GroupUtils.groupType(sideColumns(0))
-    val species = groupSpecies(sideColumns(0))
+    val gt = GroupUtils.groupType(scSideColumns(0))
+    val species = groupSpecies(scSideColumns(0))
 
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
 
-    val params = ControllerParams(context, mainColumns, mainProbes,
-      MatrixController.groupPlatforms(context, mainColumns), typ, false)
+    val scMainColumns = mainColumns.asScala
+    val params = ControllerParams(context, scMainColumns, mainProbes,
+      MatrixController.groupPlatforms(context, scMainColumns), typ, false)
 
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-
     val net = new NetworkController(params, sideMat, targets, platforms, mainPageSize)
     getState.controllers += mainId -> net
     getState.networks += mainId -> net
