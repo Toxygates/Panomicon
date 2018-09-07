@@ -50,6 +50,7 @@ public class ETMatrixManager {
    */
   private String[] displayedProbes = new String[0];
 
+  private List<Group> lastColumnGroups = null;
   private List<ColumnFilter> lastColumnFilters = new ArrayList<ColumnFilter>();
 
   public interface Delegate {
@@ -137,14 +138,16 @@ public class ETMatrixManager {
     if (matrix.numRows() > 0) {
       matrixInfo = matrix;
       
-      /*
-       * TODO: this event will now also be tracked as a result of dual table flipping (for both
-       * tables) and switching between absolute/folds mode. Try to remedy.
-       */
-      String event = matrixInfo.isOrthologous() ? 
-          Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA : Analytics.ACTION_VIEW_DATA;
-      Analytics.trackEvent(Analytics.CATEGORY_TABLE, event);
+      if (lastColumnGroups == null ||
+          lastColumnGroups.size() != matrix.columnGroups().size() ||
+          !lastColumnGroups.containsAll(matrix.columnGroups())) {
+        if (matrixInfo.isOrthologous()) {
+          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA);
+        }
+      }
       
+      lastColumnGroups = matrix.columnGroups();
+
       matrixInfo = matrix;
       delegate.setupColumns();      
       setRows(matrix.numRows());
@@ -152,7 +155,6 @@ public class ETMatrixManager {
       logInfo("Data successfully loaded");
     } else {
       delegate.onGettingExpressionFailed();
-      matrixInfo = null;
     }
   }
 
@@ -235,10 +237,6 @@ public class ETMatrixManager {
    * Filter data that has already been loaded
    */
   public void refilterData(String[] chosenProbes) {
-    if (matrixInfo == null) {
-      logInfo("Request to refilter but data was not loaded");
-      return;
-    }
     asyncProvider.updateRowCount(0, false);
     delegate.setEnabled(false);
     logInfo("Refilter for " + chosenProbes.length + " probes");
@@ -246,7 +244,6 @@ public class ETMatrixManager {
       @Override
       public void onFailure(Throwable caught) {
         log(Level.WARNING, "Exception in data update callback", caught);
-        matrixInfo = null;
         delegate.getExpressions(); // the user probably let the session expire
       }
 
@@ -269,9 +266,7 @@ public class ETMatrixManager {
   }
 
   public void clear() {
-    matrixInfo = null;    
     asyncProvider.updateRowCount(0, true);
-    delegate.setEnabled(false);
   }
 
   public void setRows(int numRows) {
@@ -283,9 +278,6 @@ public class ETMatrixManager {
     delegate.setEnabled(true);
   }
 
-  /**
-   * Load data (when there is nothing stored in our server side session)
-   */
   public void getExpressions(boolean preserveFilters, ValueType chosenValueType) {
     delegate.setEnabled(false);
     List<ColumnFilter> initFilters = preserveFilters ? lastColumnFilters : new ArrayList<ColumnFilter>();
@@ -321,12 +313,12 @@ public class ETMatrixManager {
 
     @Override
     protected void onRangeChanged(HasData<ExpressionRow> display) {
-      if (matrixInfo != null) {
-        range = display.getVisibleRange();
-        SortOrder order = delegate.computeSortParams();
-        if (range.getLength() > 0) {
-          matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key, order.asc, rowCallback);
-        }
+      range = display.getVisibleRange();
+      SortOrder order = delegate.computeSortParams();
+      // The null check on order prevents a NPE on startup
+      if (order != null && range.getLength() > 0) {
+        matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key,
+            order.asc, rowCallback);
       }
     }
   }

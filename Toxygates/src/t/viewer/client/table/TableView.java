@@ -216,6 +216,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");
+      Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_DATA);
       expressionTable.setStyle(styleForColumns(chosenColumns));
       expressionTable.getExpressions();
       onReloadData();
