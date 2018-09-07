@@ -42,15 +42,6 @@ public class ETMatrixManager {
   private Loader loader;
 
   /**
-   * Whether we are loading a matrix for the first time. Necessary for analytics
-   * tracking, where we log all matrix loads after the first as a "Change gene
-   * set" event.
-   * 
-   * This is definitely not correct now; see setInitialMatrix.
-   */
-  private boolean firstMatrixLoad = true;
-
-  /**
    * Names of the probes currently displayed
    */
   private String[] displayedAtomicProbes = new String[0];
@@ -146,8 +137,10 @@ public class ETMatrixManager {
     if (matrix.numRows() > 0) {
       matrixInfo = matrix;
       
-      //TODO: this event will now also be tracked as a result of dual table flipping -
-      //try to remedy
+      /*
+       * TODO: this event will now also be tracked as a result of dual table flipping (for both
+       * tables) and switching between absolute/folds mode. Try to remedy.
+       */
       String event = matrixInfo.isOrthologous() ? 
           Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA : Analytics.ACTION_VIEW_DATA;
       Analytics.trackEvent(Analytics.CATEGORY_TABLE, event);
@@ -155,16 +148,6 @@ public class ETMatrixManager {
       matrixInfo = matrix;
       delegate.setupColumns();      
       setRows(matrix.numRows());
-
-      if (firstMatrixLoad) {        
-        firstMatrixLoad = false;               
-      } else {
-        /* TODO: This is definitely not correct anymore, because setInitialMatrix can happen as a result
-         * of flipping the dual table (which will count an event for both tables), or switching between
-         * absolute/folds mode. 
-         */
-        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
-      }
 
       logInfo("Data successfully loaded");
     } else {
