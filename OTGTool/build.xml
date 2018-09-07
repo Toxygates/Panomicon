@@ -1,0 +1,83 @@
+<project name="OTGTool" default="compile" basedir="."
+  xmlns:ivy="antlib:org.apache.ivy.ant">
+
+  <!-- mostly from: http://www.scala-lang.org/node/98 -->
+
+  <property name="sources.dir" value="src" />
+  <property name="lib.dir" value="lib" />
+  <property name="scala-source.dir" value="main/scala" />
+  <property name="java-source.dir" value="main/java" />
+  <property name="scala-test.dir" value="main/test" />
+  <property name="build.dir" value="classes" />
+
+  <!-- set scala.home -->
+  <property environment="env" />
+  <property name="scala.home" value="${env.SCALA_HOME}" />
+
+  <target name="init">
+    <property name="scala-library.jar" 
+      value="${scala.home}/lib/scala-library.jar" />
+    <property name="scala-compiler.jar" 
+      value="${scala.home}/lib/scala-compiler.jar" /> 
+    <property name="scala.reflect" 
+      value="${scala.home}/lib/scala-reflect.jar"/>
+    <path id="build.classpath">
+      <pathelement location="${scala-library.jar}" />
+      <pathelement location="${build.dir}" />
+      <fileset dir="mlib">
+        <include name="**/*.jar" />
+      </fileset>
+    </path>
+    <taskdef resource="scala/tools/ant/antlib.xml">
+      <classpath>
+        <pathelement location="${scala-compiler.jar}" />
+        <pathelement location="${scala-library.jar}" />
+        <pathelement location="${scala.reflect}"/>
+      </classpath>
+    </taskdef>
+  </target>
+
+  <target name="resolve">
+    <ivy:settings />
+    <!--
+    <ivy:configure file="ivysettings.xml" />
+    -->
+    <ivy:resolve file="ivy.xml" conf="compile" />
+  </target>
+
+  <path id="full.classpath">
+    <path refid="build.classpath" />
+    <path refid="ivy.classpath" />
+  </path>
+
+  <target name="compile" depends="init">
+    <ivy:cachepath pathid="ivy.classpath" />
+
+    <!-- Needed for bundling/packaging of front-end. Deletes obsolete artifacts. -->
+    <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+      sync="true" type="bundle,jar" />
+
+    <mkdir dir="${build.dir}" />
+    <scalac srcdir="${sources.dir}"
+      destdir="${build.dir}"
+      classpathref="full.classpath"
+      deprecation="on"
+      optimise="on">
+      <include name="${scala-source.dir}/**/*.scala" />
+      <include name="${java-source.dir}/**/*.java" />
+      <exclude name="${scala-test.dir}/**/*.scala" />
+    </scalac>
+    <javac srcdir="${sources.dir}"
+      destdir="${build.dir}"
+      classpathref="full.classpath">
+      <include name="${java-source.dir}/**/*.java" />
+    </javac>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}" failonerror="false" />
+  </target>
+
+
+</project>
+

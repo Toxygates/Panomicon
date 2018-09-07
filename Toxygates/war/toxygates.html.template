@@ -41,17 +41,6 @@
     <!-- be added before this line.                -->
     <!--                                           -->
     
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript">      
-      google.load("prototype", "1.6");
-    </script>
-    
-    <!-- Enable this when the heatmap is needed. -->
-    <!-- <script type="text/javascript" src="http://systemsbiology-visualizations.googlecode.com/svn/trunk/src/main/js/load.js"></script> 
-    <script type="text/javascript">
-        systemsbiology.load("visualization", "1.0", {packages:["bioheatmap"]});
-    </script> -->
-    
     <script type="text/javascript" language="javascript" src="toxygates/toxygates.nocache.js"></script>
     
   </head>

@@ -1,0 +1,131 @@
+<project name="Toxygates" default="compile" basedir="."
+  xmlns:ivy="antlib:org.apache.ivy.ant">
+
+  <!-- mostly from: http://www.scala-lang.org/node/98 -->
+
+  <property name="sources.dir" value="src" />
+  <property name="lib.dir" value="lib" />
+  <property name="otgtool.root" value="../OTGTool" />
+
+  <property name="test.dir" value="test" />
+  <property name="build.dir" value="war/WEB-INF/classes" />
+
+  <property environment="env" />
+  
+  <!-- Configure path to GWT SDK -->
+  <property name="gwt.sdk" location="/Users/johan/Downloads/gwt-2.8.2" />
+
+  <!-- set scala.home -->
+  <property name="scala.home" value="${env.SCALA_HOME}" />
+
+  <target name="init">
+    <property name="scala-library.jar" 
+      value="${scala.home}/lib/scala-library.jar" />
+    <property name="scala-compiler.jar" 
+      value="${scala.home}/lib/scala-compiler.jar" /> 
+    <property name="scala.reflect" 
+      value="${scala.home}/lib/scala-reflect.jar"/>
+    <path id="build.classpath">
+      <pathelement location="${scala-library.jar}" />
+      <pathelement location="${build.dir}" />
+      <pathelement location="${otgtool.root}/classes" />
+      <fileset dir="mlib">
+        <include name="**/*.jar" />
+      </fileset>
+      <fileset dir="${otgtool.root}/mlib">
+        <include name="**/*.jar" />
+      </fileset>
+      <fileset dir="${otgtool.root}/lib/jar">
+        <include name="**/*.jar" />
+      </fileset>
+      <fileset dir="${otgtool.root}/lib/bundle">
+        <include name="**/*.jar" />
+      </fileset>
+
+      <!-- for t.model.Model gwt.xml -->
+      <pathelement location="${otgtool.root}/src/main/java" />
+    </path>
+    <taskdef resource="scala/tools/ant/antlib.xml">
+      <classpath>
+        <pathelement location="${scala-compiler.jar}" />
+        <pathelement location="${scala-library.jar}" />
+        <pathelement location="${scala.reflect}"/>
+      </classpath>
+    </taskdef>
+  </target>
+
+  <target name="resolve">
+    <ivy:settings />
+    <!--
+    <ivy:configure file="ivysettings.xml" />
+    -->
+    <ivy:resolve file="ivy.xml" />
+  </target>
+
+  <path id="full.classpath">
+    <path refid="build.classpath" />
+    <path refid="ivy.classpath" />
+    <path refid="gwtpath" />
+  </path>
+
+  <target name="classfiles" depends="init,resolve">
+    <ivy:cachepath pathid="ivy.classpath" />
+    <mkdir dir="${build.dir}" />
+    <scalac srcdir="${sources.dir}"
+      destdir="${build.dir}"
+      classpathref="full.classpath"
+      deprecation="on"
+      optimise="on">
+      <include name="**/*.scala" />
+      <include name="**/*.java" />
+    </scalac>
+    <javac srcdir="${sources.dir}"
+      destdir="${build.dir}"
+      classpathref="full.classpath">
+      <include name="**/*.java" />
+    </javac>
+
+  </target>
+
+  <path id="gwtpath">
+    <pathelement location="${gwt.sdk}/gwt-user.jar"/>
+    <pathelement location="${gwt.sdk}/gwt-dev.jar"/>
+    <pathelement location="${gwt.sdk}/validation-api-1.0.0.GA.jar"/>
+    <pathelement location="${gwt.sdk}/validation-api-1.0.0.GA-sources.jar"/>
+    <!-- Add any additional non-server libs (such as JUnit) here -->
+  </path>
+
+  <!-- Arguments to gwtc and devmode targets -->
+  <property name="gwt.args" value="-style PRETTY -strict" />
+
+  <target name="gwtc" depends="classfiles">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" maxmemory="1g">
+      <classpath>
+        <pathelement location="src"/>
+        <path refid="full.classpath"/>
+      </classpath>
+      <arg line="-war"/>
+      <arg value="war"/>
+      <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+      <arg line="${gwt.args}"/>
+      <arg value="otgviewer.toxygates"/>
+      <arg value="otgviewer.admin.OTGAdmin"/>
+    </java>
+
+  </target>
+
+  <target name="build" depends="gwtc">
+  <!-- Deletes obsolete artifacts. -->
+      <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+        sync="true" type="bundle,jar" />
+  </target>
+
+  <target name="compile" depends="build" />
+
+  <target name="clean">
+    <delete dir="${build.dir}" failonerror="false" />
+  </target>
+
+
+</project>
+
