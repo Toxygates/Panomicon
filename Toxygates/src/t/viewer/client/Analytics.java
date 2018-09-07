@@ -70,7 +70,7 @@ public class Analytics {
   public static final String ACTION_EXPORT_GENE_SETS = "Export gene sets";
   public static final String ACTION_BEGIN_DATA_UPLOAD = "Begin data upload";
 
-  /*
+  /**
    * Tracks a pageview with Google Analytics if the google analytics script has been loaded.
    * 
    * @param url the url to be tracked
@@ -83,24 +83,24 @@ public class Analytics {
     ;
   }-*/;
 
-  /*
+  /**
    * Tracks an event with Google Analytics.
-   * 
-   * @param eventCategory
-   * 
-   * @param eventAction
-   * 
-   * @param eventLabel
    */
   public static native void trackEvent(String eventCategory, String eventAction,
       String eventLabel) /*-{
+    console.log("Tracking " + eventCategory + "/" + eventAction + "/"
+        + eventLabel);
     if ($wnd.ga) {
       $wnd.ga('send', 'event', eventCategory, eventAction, eventLabel)
     }
     ;
   }-*/;
 
+  /**
+   * Tracks an event with Google Analytics.
+   */
   public static native void trackEvent(String eventCategory, String eventAction) /*-{
+    console.log("Tracking " + eventCategory + "/" + eventAction);
     if ($wnd.ga) {
       $wnd.ga('send', 'event', eventCategory, eventAction)
     }
