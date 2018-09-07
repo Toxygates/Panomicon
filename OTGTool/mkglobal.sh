@@ -1,4 +1,6 @@
 #!/bin/bash
 
-cd bin
-jar cf ../tglobal.jar t/global/*.class
+OUT=../tglobal.jar
+cd classes
+rm -i $OUT
+jar cf $OUT t/global/*.class
