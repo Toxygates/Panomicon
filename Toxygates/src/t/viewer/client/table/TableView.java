@@ -163,10 +163,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
       }.menuItem());
     
     addAnalysisMenuItem(new MenuItem("Select MiRNA sources...", () -> {      
-      MirnaSource[] sources = appInfo.mirnaSources();        
-      new MirnaSourceDialog(screen, this, manager.probeService(), sources, mirnaState.getValue())
-          .
-        display("Choose miRNA sources", DialogPosition.Center);
+      showMirnaSourceDialog();
     }));
 
     if (factory.hasHeatMapMenu()) {
@@ -175,6 +172,12 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     }
   }
   
+  protected void showMirnaSourceDialog() {
+    MirnaSource[] sources = appInfo.mirnaSources();
+    new MirnaSourceDialog(screen, this, manager.probeService(), sources, mirnaState.getValue())
+        .display("Choose miRNA sources", DialogPosition.Center);
+  }
+
   protected void makeHeatMap() {
     HeatmapViewer.show(screen, this, expressionTable.getValueType());
   }

@@ -44,7 +44,7 @@ public class NetworkVisualizationDialog {
 
   public interface Delegate {
     void saveNetwork(PackedNetwork network);
-    //List<Network> networks();
+    void showMirnaSourceDialog();
   }
 
   public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
@@ -115,24 +115,33 @@ public class NetworkVisualizationDialog {
   private void setupDockPanel() {
     FlowPanel buttonGroup = new FlowPanel();
 
-    Button btnClose = new Button("Close");
-    btnClose.addClickHandler(new ClickHandler() {
+    Button closeButton = new Button("Close");
+    closeButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         mainDialog.hide();
         resizeHandler.removeHandler();
       }
     });
-    buttonGroup.add(btnClose);
+    buttonGroup.add(closeButton);
 
-    Button btnSave = new Button("Save and close");
-    btnSave.addClickHandler(new ClickHandler() {
+    Button saveButton = new Button("Save and close");
+    saveButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         showNetworkNameDialog(currentNetworkName());
       }
     });
-    buttonGroup.add(btnSave);
+    buttonGroup.add(saveButton);
+
+    Button mirnaButton = new Button("Change miRNA sources");
+    mirnaButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        delegate.showMirnaSourceDialog();
+      }
+    });
+    buttonGroup.add(mirnaButton);
 
     dockPanel.addNorth(uiDiv, getUiHeight());
     dockPanel.addSouth(buttonGroup, 27);

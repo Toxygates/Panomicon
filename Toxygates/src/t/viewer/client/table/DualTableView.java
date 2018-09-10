@@ -343,6 +343,11 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     networkMenu.networksChanged();
   }
 
+  @Override
+  public void showMirnaSourceDialog() {
+    super.showMirnaSourceDialog();
+  }
+
   // ExpressionTable.Delegate methods
   @Override
   public void onGettingExpressionFailed(ExpressionTable table) {
