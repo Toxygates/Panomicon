@@ -142,13 +142,13 @@ function initContextMenu(){
        * filter the display of nodes to those that fullfill a certain criteria.
        * The filtering is selected by the user.
        */
-       {
-        id: "node-filter",
-        content: "Filter Nodes",
-        tooltipText: "Nodes thata do not fill the criteria will not be displayed",
-        coreAsWell: true,
-        onClickFunction: onNodeFiltering,
-       },
+       // {
+       //  id: "node-filter",
+       //  content: "Filter Nodes",
+       //  tooltipText: "Nodes that do not fill the criteria will not be displayed",
+       //  coreAsWell: true,
+       //  onClickFunction: onNodeFiltering,
+       // },
     ] // menuItems
   });
 }

@@ -1,4 +1,4 @@
-"use strinct";
+"use strict";
 
 // this is the Graph - a Cytoscape object
 var vizNet = null;
@@ -16,6 +16,29 @@ $(document).on("click", "#layoutSelect", function (){
   var opt = $("#layoutSelect").find(":selected").val();
   // update the layout accordingly
   vizNet.updateLayout(opt);
+});
+
+/**
+ * When selected, it hides from the visualiation all nodes that are unconnected,
+ * that is, that are not linked to any other node within the network.
+ */
+$(document).on("change", "#hideNodesCheckbox", function(){
+  // nothing to do if there is not network
+  if( vizNet === null ) return;
+
+  if ( $("#hideNodesCheckbox").is(":checked") ){
+    var hide = vizNet.nodes().filter(function(ele){
+      return ele.degree(false) === 0;
+    });
+
+    // by setting their display to "none", we effectively prevent nodes to be
+    // show, without permanently removing them from the graph
+    hide.style('display', 'none');
+    return;
+  }
+
+  vizNet.nodes().style('display', 'element');
+
 });
 
 /** ---------------------- UPDATE NODE MODAL ---------------------------- **/
@@ -413,7 +436,7 @@ function onReadyForVisualization(){
  * interaction div
  */
 function uiHeight(){
-  return 52;
+  return 62;
 }
 
 /**
