@@ -36,6 +36,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   protected NetworkServiceAsync networkService;
   
+  private NetworkVisualizationDialog netvizDialog;
+
   public static enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
@@ -283,10 +285,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   public void visualizeNetwork() {
     networkService.currentView(mainMatrix, new PendingAsyncCallback<Network>(this.screen, 
         "Unable to load network view") {
-
       @Override
       public void handleSuccess(Network result) {
-        new NetworkVisualizationDialog(DualTableView.this, logger).initWindow(result);       
+        netvizDialog = new NetworkVisualizationDialog(DualTableView.this, logger);
+        netvizDialog.initWindow(result);
       }      
     });
   }
@@ -332,7 +334,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void visualizeNetwork(PackedNetwork network) {
-    new NetworkVisualizationDialog(this, logger).initWindow(network.unpack());
+    netvizDialog = new NetworkVisualizationDialog(DualTableView.this, logger);
+    netvizDialog.initWindow(network.unpack());
   }
 
   // NetworkVisualizationDialog.Delegate methods
@@ -348,6 +351,11 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     super.showMirnaSourceDialog();
   }
 
+  @Override
+  public void onNetworkVisualizationDialogClose() {
+    netvizDialog = null;
+  }
+
   // ExpressionTable.Delegate methods
   @Override
   public void onGettingExpressionFailed(ExpressionTable table) {
@@ -360,6 +368,16 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   public void afterGetRows(ExpressionTable table) {
     if (table == expressionTable) {
       super.afterGetRows(table);
+    } else if (table == sideExpressionTable) {
+      if (netvizDialog != null) {
+        networkService.currentView(mainMatrix,
+            new PendingAsyncCallback<Network>(this.screen, "Unable to load network view") {
+              @Override
+              public void handleSuccess(Network result) {
+                netvizDialog.loadNetwork(result);
+              }
+            });
+      }
     }
   }
 

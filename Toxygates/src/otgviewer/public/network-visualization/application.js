@@ -432,6 +432,15 @@ function onReadyForVisualization(){
 }
 
 /**
+ * Called by Toxygates on an already running network visualization dialog when
+ * it wants to switch to a different network, which has been placed in 
+ * window.toxyNet.
+ */
+function changeNetwork() {
+  onReadyForVisualization();
+}
+
+/**
  * Called by Toxygates to get the desired height, in pixels, of the user
  * interaction div
  */

@@ -45,6 +45,7 @@ public class NetworkVisualizationDialog {
   public interface Delegate {
     void saveNetwork(PackedNetwork network);
     void showMirnaSourceDialog();
+    void onNetworkVisualizationDialogClose();
   }
 
   public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
@@ -75,6 +76,11 @@ public class NetworkVisualizationDialog {
     });
 
     mainDialog.show();
+  }
+
+  public void loadNetwork(Network network) {
+    convertAndStoreNetwork(network);
+    changeNetwork();
   }
 
   private void injectOnce(final Runnable callback) {
@@ -121,6 +127,7 @@ public class NetworkVisualizationDialog {
       public void onClick(ClickEvent event) {
         mainDialog.hide();
         resizeHandler.removeHandler();
+        delegate.onNetworkVisualizationDialogClose();
       }
     });
     buttonGroup.add(closeButton);
@@ -158,10 +165,11 @@ public class NetworkVisualizationDialog {
       protected void onChange(String value) {
         if (value != "") { // Empty string means OK button with blank text input
           networkNameDialog.hide();
-          if (value != null) { // Cancel button
+          if (value != null) { // value == null means cancel button
             saveCurrentNetwork(value);
             mainDialog.hide();
             resizeHandler.removeHandler();
+            delegate.onNetworkVisualizationDialogClose();
           }
         }
       }
@@ -207,6 +215,14 @@ public class NetworkVisualizationDialog {
    */
   private native void startVisualization() /*-{
     $wnd.onReadyForVisualization();
+  }-*/;
+
+  /**
+   * Informs the network visualization that a new network has been placed in
+   * $wnd.toxyNet, and that it should be loaded and visualized.
+   */
+  private native void changeNetwork() /*-{
+    $wnd.changeNetwork();
   }-*/;
 
   /**
