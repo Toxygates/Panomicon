@@ -184,8 +184,10 @@ public class OTGSchema extends DataSchema {
   }
 
   /**
-   * TODO: this is brittle, given that platform names may change externally - think about a better
-   * way of doing this long term
+   * Resolve the organism for a given platform name.
+   * 
+   * Note: this is brittle, given that platform names may change externally. This information
+   * should probably be encoded in the triplestore instead.
    */
   public String platformOrganism(String platform) {
     if (platform.startsWith("HG")) {
@@ -199,7 +201,10 @@ public class OTGSchema extends DataSchema {
     }
   }
 
-  // TODO as above.
+  /**
+   * Resolve the main platform for a given organism.
+   * Also see the comment on platformOrganism above.
+   */
   @Override
   public String organismPlatform(String organism) {
     if (organism.equals("Human")) {
@@ -214,8 +219,10 @@ public class OTGSchema extends DataSchema {
   }
 
   /**
-   * TODO this is brittle
-   */
+   * The "expected" standard number of data points in a time/dose series.
+   * This is highly specific to Open TG-GATEs, and it's not obvious that it should be
+   * here in the long term.
+   */  
   @Override
   public int numDataPointsInSeries(SampleClass sc, SeriesType st) {
     switch (st) {

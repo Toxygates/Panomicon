@@ -115,7 +115,6 @@ public class Charts {
       final List<Series> series, final String[] indepPoints,
       final String highlightFixed, final ChartAcceptor acceptor,
       final Screen screen) {
-    // TODO get from schema or data
     try {
       final String[] fixedVals = series.stream().
           map(s -> s.get(seriesType.fixedAttribute())).distinct().

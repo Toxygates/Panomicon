@@ -33,8 +33,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.MinimalScreen;
-import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.*;
 import otgviewer.client.rpc.SampleServiceAsync;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
@@ -237,7 +236,8 @@ public class PathologyScreen extends MinimalScreen {
 
     @Override
     public void onClick(String value) {
-      displaySampleDetail(GroupUtils.sampleFor(chosenColumns, value));
+      ScreenUtils.displaySampleDetail(PathologyScreen.this,
+        GroupUtils.sampleFor(chosenColumns, value));
     }
   }
 

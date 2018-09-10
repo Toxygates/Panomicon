@@ -55,7 +55,7 @@ class KCIndexDBTest extends TTestSuite {
   }
 
   test("named enum") {
-    //TODO implement tests
+    //Should add tests here...
   }
 
 }

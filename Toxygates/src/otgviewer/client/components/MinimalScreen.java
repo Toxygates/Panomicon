@@ -434,14 +434,6 @@ public abstract class MinimalScreen implements Screen {
    }
    */
 
-  /**
-   * Display the sample detail screen and show information about the given barcode. TODO: this
-   * method should probably be somewhere else.
-   */
-  public void displaySampleDetail(Sample b) {
-    ScreenUtils.displaySampleDetail(this, b);
-  }
-
   private int numPendingRequests = 0;
 
   private DialogBox waitDialog;

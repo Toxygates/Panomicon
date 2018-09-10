@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
@@ -37,6 +37,7 @@ import t.viewer.client.rpc.ProbeServiceAsync;
 public class GeneOracle extends SuggestOracle {
 
   private SampleClass sampleClass;
+  private Screen screen;
 
   public void setFilter(SampleClass sc) {
     this.sampleClass = sc;
@@ -65,6 +66,7 @@ public class GeneOracle extends SuggestOracle {
 
   public GeneOracle(Screen screen) {
     probeService = screen.manager().probeService();
+    this.screen = screen;
   }
 
   private final ProbeServiceAsync probeService;
@@ -84,22 +86,16 @@ public class GeneOracle extends SuggestOracle {
   }
 
   private void getSuggestions(final Request request, final Callback callback) {
-    probeService.geneSuggestions(sampleClass, request.getQuery(), new AsyncCallback<String[]>() {
-
+    probeService.geneSuggestions(sampleClass, request.getQuery(), 
+      new PendingAsyncCallback<String[]>(screen) {
       @Override
-      public void onSuccess(String[] result) {
+      public void handleSuccess(String[] result) {
         List<Suggestion> ss = new ArrayList<Suggestion>();
         for (String sug : result) {
           ss.add(new GeneSuggestion(sug));
         }
         Response r = new Response(ss);
         callback.onSuggestionsReady(request, r);
-      }
-
-      @Override
-      public void onFailure(Throwable caught) {
-        // TODO Auto-generated method stub
-
       }
     });
   }
