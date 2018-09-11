@@ -99,9 +99,7 @@ public class FilterTools extends Composite {
   }
   
   protected void proceedShowSelector(AppInfo info) {    
-    final DialogBox db = new DialogBox(false, true);
-    
-    // TODO set init. selection
+    final DialogBox db = new DialogBox(false, true);    
     DatasetSelector dsel =
         new DatasetSelector(Arrays.asList(info.datasets()),
             Arrays.asList(chosenDatasets)) {

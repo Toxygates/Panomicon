@@ -120,9 +120,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
 
   /**
-   * TODO clean this mechanism up as much as possible
-   * 
-   * @param target
+   * Should we intercept a grid click at the given coordinates?
    * @return true if the click event should be intercepted and not propagated further.
    */
   protected boolean interceptGridClick(String target, int x, int y) {

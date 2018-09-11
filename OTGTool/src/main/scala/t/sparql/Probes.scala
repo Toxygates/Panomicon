@@ -250,7 +250,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    */
   def forGenes(genes: Iterable[Gene]): Iterable[Probe] =
     emptyCheck(genes) {
-      //TODO: grouped(100) necessary?
       genes.grouped(100).flatMap(g => {
         probeQuery(g.map("\"" + _.identifier + "\""), "t:entrez")()
       }).map(Probe.unpack).toSeq

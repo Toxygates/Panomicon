@@ -431,8 +431,6 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
     final String[] probesInOrder = listedProbes.toArray(new String[0]);
 
     if (probes.length > 0) {
-      // TODO reduce the number of ajax calls done by this screen by
-      // collapsing them
       probeService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
         @Override
         public void onSuccess(String[][] syms) {

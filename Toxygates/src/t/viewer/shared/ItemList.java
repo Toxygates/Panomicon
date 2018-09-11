@@ -81,8 +81,9 @@ abstract public class ItemList implements Packable, Serializable, Comparable<Ite
     String name = spl[1];
     String[] items = spl[2].split("\\^\\^\\^");
 
-    // TODO would be good to avoid having this kind of central registry
-    // of list types here.
+    // Note: it would be good to avoid having this kind of central registry
+    // of list types here. An alternative approach would be that different types
+    // register themselves when the corresponding class is loaded/initialized.
     if (type.equals(StringList.PROBES_LIST_TYPE) ||
         type.equals(StringList.COMPOUND_LIST_TYPE) ||
         type.equals(ProbeClustering.PROBE_CLUSTERING_TYPE)) {

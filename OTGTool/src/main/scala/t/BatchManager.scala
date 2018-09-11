@@ -529,8 +529,6 @@ class BatchManager(context: Context) {
         val summaries = config.timeSeriesBuilder.enums.map(e => AttribValueSummary(context.samples, e))
 
         try {
-          //TODO check existence of samples
-
           val total = metadata.samples.size
           val grs = metadata.samples.grouped(250)
           var percentComplete = 0d

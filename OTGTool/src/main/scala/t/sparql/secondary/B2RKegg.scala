@@ -24,6 +24,7 @@ import t.platform.Species._
 import t.sparql._
 import t.db._
 import org.eclipse.rdf4j.repository.RepositoryConnection
+import t.platform.Species
 
 /**
  * The identifier is a URI
@@ -40,16 +41,11 @@ case class Pathway(val identifier: String,
   }
 }
 
-object B2RKegg {
-  //OTG only. TODO: this is temporary, too hardcoded
-  def platformTaxon(plat: String): String = {
-    plat match {
-      case "Rat230_2"       => "RNO"
-      case "Mouse430_2"     => "MMU"
-      case "HG-U133_Plus_2" => "HSA"
-      case _                => plat
-    }
-  }
+object B2RKegg {  
+  def platformTaxon(plat: String): String = 
+    Species.forStandardPlatform(plat).map(_.shortCode.toUpperCase).
+      getOrElse(plat)    
+  
 }
 
 class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Pathway] { //RemoteRDF

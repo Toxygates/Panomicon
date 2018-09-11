@@ -18,8 +18,6 @@
 
 package t.common.shared.sample;
 
-
-// TODO unify with DataColumn
 public interface SampleColumn extends DataColumn<Sample> {
-
+  
 }

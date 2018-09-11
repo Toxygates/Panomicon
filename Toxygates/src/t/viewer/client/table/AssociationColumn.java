@@ -20,12 +20,6 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
     Map<AType, Association> associations();
   }
 
-  /**
-   * @param tc
-   * @param association
-   * @param matrixIndex Underlying data index for a corresponding hidden sorting column. Only
-   *        meaningful if this association is sortable.
-   */
   public AssociationColumn(SafeHtmlCell tc, AType association, Delegate<T> delegate) {
     super(tc, association.title(), false, "15em", null);
     this.delegate = delegate;

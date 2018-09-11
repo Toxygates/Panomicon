@@ -39,7 +39,7 @@ class ManagedMatrixTest extends TTestSuite {
 
   val schema = t.common.testing.TestData.dataSchema
 
-  //TODO absoluteDBReader will be null
+  //Note: the FakeContext used for testing doesn't define an absoluteDBReader currently
   def normBuilder = new NormalizedBuilder(false, context.absoluteDBReader,
       probes.map(probeMap.unpack))
 

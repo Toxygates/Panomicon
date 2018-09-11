@@ -64,7 +64,6 @@ public class IntermineInstance implements Serializable {
   }
   
   public String serviceURL() {
-    //TODO is this correct?
     return userURL + "/" + appName + "/service";
   }
   

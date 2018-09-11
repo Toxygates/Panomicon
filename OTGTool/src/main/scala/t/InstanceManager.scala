@@ -36,7 +36,7 @@ object InstanceManager extends ManagerTool {
       args(0) match {
         case "add" =>
           expectArgs(args, 2)
-          //TODO move verification into the instances API
+          //Note: might want to move verification into the instances API
           if (!instances.list.contains(args(1))) {
             instances.add(args(1))
           } else {

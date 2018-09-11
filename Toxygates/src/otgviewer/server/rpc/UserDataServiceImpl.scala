@@ -31,7 +31,7 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
   with OTGServiceServlet {
 
   //See MaintenanceServiceServlet
-  //TODO: factor out
+  //Note: might want to factor this out
   override protected def overviewParameters: Seq[Attribute] = {
     Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel, ExposureTime,
       Platform, ControlGroup)

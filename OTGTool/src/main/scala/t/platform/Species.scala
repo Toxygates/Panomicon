@@ -20,6 +20,10 @@
 
 package t.platform
 
+/*
+ * Note: Some of this code might be moved to Java enums, and then 
+ * shared with the front-end, e.g. in OTGSchema/DataSchema.
+ */
 object Species extends Enumeration(0) {
   type Species = Value
   val Human, Rat, Mouse = Value
@@ -47,10 +51,17 @@ object Species extends Enumeration(0) {
     }
     def expectedPlatform = s match {
       case Human => "HG-U133_Plus_2"
-      case Rat => "Rat230_2"
+      case Rat   => "Rat230_2"
       case Mouse => "Mouse430_2"
     }
   }
 
   val supportedSpecies = List(Rat, Human, Mouse)
+
+  def forStandardPlatform(plat: String) = plat match {
+    case "HG-U133_Plus_2" => Some(Human)
+    case "Rat230_2"       => Some(Rat)
+    case "Mouse430_2"     => Some(Mouse)
+    case _                => None
+  }
 }

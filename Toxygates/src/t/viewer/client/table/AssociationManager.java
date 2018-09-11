@@ -79,7 +79,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
     assocColumns = new HashMap<AType, AssociationColumn<T>>();
 
     for (AType at : schema.associations()) {
-      // TODO fill in matrixColumn for sortable associations
       AssociationColumn<T> ac = new AssociationColumn<T>(shc, at, this);
       r.add(ac);
       assocColumns.put(at, ac);

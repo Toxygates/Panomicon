@@ -32,8 +32,6 @@ import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * Container for various client side application parameters.
- * 
- * TODO some of this is OTG-specific
  */
 @SuppressWarnings("serial")
 public class AppInfo implements Serializable {

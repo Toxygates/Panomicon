@@ -289,10 +289,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
     chosenColumns = columns;
 
-    // we set chosenSampleClass to the intersection of all the samples
+    // We set chosenSampleClass to the intersection of all the samples
     // in the groups here. Needed later for e.g. the associations() call.
-    // TODO: this may need to be moved.
-    // TODO: efficiency of this operation for 100's of samples
+    // Note: we might want to move/factor out this
     List<SampleClass> allCs = new LinkedList<SampleClass>();
     for (Group g : columns) {
       allCs.addAll(SampleClassUtils.classes(Arrays.asList(g.getSamples())));
