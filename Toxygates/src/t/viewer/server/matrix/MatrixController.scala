@@ -169,7 +169,7 @@ abstract class MatrixController(params: ControllerParams) {
       println("Refilter probes: " + probes.length)
       probes
     } else {
-      //all probes
+      println("Select all probes")
       platforms.filterProbes(List(), groupPlatforms, groupSpecies)
     })
     managedMatrix.selectProbes(useProbes.toSeq)

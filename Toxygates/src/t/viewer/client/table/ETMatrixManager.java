@@ -321,12 +321,11 @@ public class ETMatrixManager {
 
     @Override
     protected void onRangeChanged(HasData<ExpressionRow> display) {
-      if (matrixInfo != null) {
-        range = display.getVisibleRange();
-        SortOrder order = delegate.computeSortParams();
-        if (range.getLength() > 0) {
-          matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key, order.asc, rowCallback);
-        }
+      range = display.getVisibleRange();
+      SortOrder order = delegate.computeSortParams();
+      if (range.getLength() > 0 && order != null) {
+        matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key,
+            order.asc, rowCallback);
       }
     }
   }

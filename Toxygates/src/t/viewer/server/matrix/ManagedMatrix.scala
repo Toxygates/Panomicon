@@ -185,7 +185,7 @@ class CoreMatrix(val params: LoadParams) {
 
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
 
-    //TODO avoid selecting here
+    println(s"Select ${requestProbes.size} probes out of ${current.rows} from current")
     current = current.selectNamedRows(requestProbes).filterRows(f)
     _sortColumn match {
       case Some(sc) => sort(sc, _sortAscending)

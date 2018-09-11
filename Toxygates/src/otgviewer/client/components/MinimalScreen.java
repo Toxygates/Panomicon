@@ -33,7 +33,6 @@ import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 
