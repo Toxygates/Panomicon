@@ -54,11 +54,15 @@ object NetworkState {
   def buildCountMap(mat: ManagedMatrix,
     targetTable: TargetTable,
     platforms: t.viewer.server.Platforms,
-    fromMiRNA: Boolean) = {
+    fromMiRNA: Boolean): Map[String, JDouble] = {
     val lookup = mat.current.rowKeys.toSeq
 
     //TODO filter by species etc
     if (fromMiRNA) {
+      if (mat.currentInfo.numColumns() < 1) {
+        Console.err.println("Cannot construct count map - no columns available!")
+        return Map()
+      }
       val gr = mat.currentInfo.columnGroup(0)
       val sp = t.viewer.server.Conversions.groupSpecies(gr)
 

@@ -142,6 +142,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     List<Group> allColumns = new ArrayList<Group>(chosenColumns);
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
+    probesChanged(new String[0]);
 
     reloadDataIfNeeded();
   }
