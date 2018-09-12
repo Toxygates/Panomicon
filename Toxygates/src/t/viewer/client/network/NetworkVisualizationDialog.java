@@ -119,8 +119,6 @@ public class NetworkVisualizationDialog {
    * be fetched from injected JavaScript.
    */
   private void setupDockPanel() {
-    FlowPanel buttonGroup = new FlowPanel();
-
     Button closeButton = new Button("Close");
     closeButton.addClickHandler(new ClickHandler() {
       @Override
@@ -130,7 +128,6 @@ public class NetworkVisualizationDialog {
         delegate.onNetworkVisualizationDialogClose();
       }
     });
-    buttonGroup.add(closeButton);
 
     Button saveButton = new Button("Save and close");
     saveButton.addClickHandler(new ClickHandler() {
@@ -139,7 +136,6 @@ public class NetworkVisualizationDialog {
         showNetworkNameDialog(currentNetworkName());
       }
     });
-    buttonGroup.add(saveButton);
 
     Button mirnaButton = new Button("Change miRNA sources");
     mirnaButton.addClickHandler(new ClickHandler() {
@@ -148,10 +144,11 @@ public class NetworkVisualizationDialog {
         delegate.showMirnaSourceDialog();
       }
     });
-    buttonGroup.add(mirnaButton);
+
+    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton);
 
     dockPanel.addNorth(uiDiv, getUiHeight());
-    dockPanel.addSouth(buttonGroup, 27);
+    dockPanel.addSouth(buttonPanel, 35);
 
     SimplePanel displayPanel = new SimplePanel();
     displayPanel.setStyleName("visualization");
