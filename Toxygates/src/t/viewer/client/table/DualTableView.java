@@ -362,6 +362,16 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     netvizDialog = null;
   }
 
+  @Override
+  public void addPendingRequest() {
+    screen.addPendingRequest();
+  }
+
+  @Override
+  public void removePendingRequest() {
+    screen.removePendingRequest();
+  }
+
   // ExpressionTable.Delegate methods
   @Override
   public void onGettingExpressionFailed(ExpressionTable table) {

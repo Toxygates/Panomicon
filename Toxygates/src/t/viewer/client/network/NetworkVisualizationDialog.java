@@ -42,9 +42,10 @@ public class NetworkVisualizationDialog {
   public interface Delegate {
     void saveNetwork(PackedNetwork network);
     void showMirnaSourceDialog();
-
     FilterEditPanel filterEditPanel();
     void onNetworkVisualizationDialogClose();
+    void addPendingRequest();
+    void removePendingRequest();
   }
 
   public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
@@ -61,6 +62,7 @@ public class NetworkVisualizationDialog {
 
   public void initWindow(@Nullable Network network) {
     createPanel();
+    exportPendingRequsetHandling();
 
     Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
       @Override
@@ -203,6 +205,21 @@ public class NetworkVisualizationDialog {
     $wnd.updateToxyNet();
     $wnd.toxyNet.title = title;
     this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet);
+  }-*/;
+
+  /**
+   * Exports globally available JavaScript methods,
+   * window.add/removePendingRequests, that control the display of Toxygates's
+   * universal "Please wait..." modal dialog.
+   */
+  private native void exportPendingRequsetHandling() /*-{
+    var delegate = this.@t.viewer.client.network.NetworkVisualizationDialog::delegate;
+    $wnd.addPendingRequest = $entry(function() {
+      delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::addPendingRequest()();
+    });
+    $wnd.removePendingRequest = $entry(function() {
+      delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::removePendingRequest()();
+    });
   }-*/;
 
   /**
