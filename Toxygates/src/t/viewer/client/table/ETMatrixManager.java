@@ -197,7 +197,7 @@ public class ETMatrixManager {
         });
   }
 
-  protected void editColumnFilter(int column) {
+  public void editColumnFilter(int column) {
     ColumnFilter filt = matrixInfo.columnFilter(column);
     FilterEditor fe = new FilterEditor(matrixInfo.columnName(column), column, filt) {
       @Override

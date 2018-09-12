@@ -45,6 +45,7 @@ public class NetworkVisualizationDialog {
   public interface Delegate {
     void saveNetwork(PackedNetwork network);
     void showMirnaSourceDialog();
+    void showFilterEditDialog();
     void onNetworkVisualizationDialogClose();
   }
 
@@ -145,7 +146,15 @@ public class NetworkVisualizationDialog {
       }
     });
 
-    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton);
+    Button filterButton = new Button("Edit column filters");
+    filterButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        delegate.showFilterEditDialog();
+      }
+    });
+
+    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton, filterButton);
 
     dockPanel.addNorth(uiDiv, getUiHeight());
     dockPanel.addSouth(buttonPanel, 35);
