@@ -388,6 +388,13 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     }
   }
 
+  @Override
+  public void onApplyColumnFilter() {
+    if (netvizDialog != null) {
+      screen.addPendingRequest();
+    }
+  }
+
   // AssociationManager.ViewDelegate methods
   @Override
   public void associationsUpdated(AssociationManager<ExpressionRow> associations, Association[] result) {

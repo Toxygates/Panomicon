@@ -95,6 +95,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   public interface Delegate {
     void onGettingExpressionFailed(ExpressionTable table);
+    void onApplyColumnFilter();
     void afterGetRows(ExpressionTable table);
   }
 
@@ -435,6 +436,11 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public void onSetRowCount(int numRows) {
     grid.setVisibleRangeAndClearData(new Range(0, numRows), true);
+  }
+
+  @Override
+  public void onApplyColumnFilter() {
+    delegate.onApplyColumnFilter();
   }
 
   // ETColumns.Delegate methods

@@ -60,6 +60,7 @@ public class ETMatrixManager {
     List<Group> chosenColumns();
     void getExpressions();
     SortOrder computeSortParams();
+    void onApplyColumnFilter();
     void onGetRows();
     void onSetRowCount(int numRows);
   }
@@ -189,7 +190,6 @@ public class ETMatrixManager {
   public void downloadCSV(boolean individualSamples) {
     matrixService.prepareCSVDownload(matrixId, individualSamples,
         new PendingAsyncCallback<String>(screen, "Unable to prepare the requested data for download.") {
-
           @Override
           public void handleSuccess(String url) {
             Utils.displayURL("Your download is ready.", "Download", url);
@@ -202,6 +202,7 @@ public class ETMatrixManager {
     FilterEditor fe = new FilterEditor(matrixInfo.columnName(column), column, filt) {
       @Override
       protected void onChange(ColumnFilter newVal) {
+        delegate.onApplyColumnFilter();
         applyColumnFilter(editColumn, newVal);
       }
     };

@@ -363,6 +363,10 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     afterGetRows();
   }
 
+  @Override
+  public void onApplyColumnFilter() {
+  }
+
   // AssociationManager.ViewDelegate methods
   @Override
   public void associationsUpdated(AssociationManager<ExpressionRow> associations, Association[] result) {
