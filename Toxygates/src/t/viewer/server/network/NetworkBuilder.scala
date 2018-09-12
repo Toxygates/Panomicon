@@ -43,14 +43,14 @@ class NetworkBuilder(targets: TargetTable,
     platforms: Platforms,
     main: ManagedMatrix, side: ManagedMatrix) {
 
-    lazy val mainType = main.params.typ
+  lazy val mainType = main.params.typ
+  lazy val sideType = side.params.typ
 
-  //TODO do not hardcode types of nodes here
   //TODO handling of max size and informing user of cutoff
-  val sourceNodes = getNodes(side, Network.mirnaType, Some(Network.MAX_SIZE))
-  val destNodes = getNodes(main, Network.mrnaType, Some(Network.MAX_SIZE))
-  val nodes = sourceNodes ++ destNodes
-  val nodeLookup = Map() ++ nodes.map(n => n.id() -> n)
+  lazy val sourceNodes = getNodes(side, sideType, Some(Network.MAX_SIZE))
+  lazy val destNodes = getNodes(main, mainType, Some(Network.MAX_SIZE))
+  lazy val nodes = sourceNodes ++ destNodes
+  lazy val nodeLookup = Map() ++ nodes.map(n => n.id() -> n)
 
   final def lookup(p: Probe) = nodeLookup.get(p.identifier)
   final def lookup(m: MiRNA) = nodeLookup.get(m.id)
@@ -65,9 +65,6 @@ class NetworkBuilder(targets: TargetTable,
   }
 
   def interactions(ints: Iterable[(MiRNA, Probe, Double, String)]) = {
-    /* Future: construct label more intelligently, taking data source name
-     * into account
-     */
     for {
       iact <- ints;
       (mirna, probe, score, db) = iact;
