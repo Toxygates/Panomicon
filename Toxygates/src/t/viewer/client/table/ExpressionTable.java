@@ -341,9 +341,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return indicatedRows.contains(row.getProbe());
   }
 
-  /**
-   * Load data (when there is nothing stored in our server side session)
-   */
   public void getExpressions(boolean preserveFilters) {
     matrix.logInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");

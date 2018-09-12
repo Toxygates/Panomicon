@@ -3,7 +3,9 @@ Set-Variable -Name "TOOLCP" -Value "../OTGTool/classes"
 
 Set-Variable -Name "WARLIB" -Value "war/WEB-INF/lib"
 
-Remove-Item ($WARLIB + "/*jar")
+Move-Item -Path $WARLIB lib-backup
+New-Item -ItemType directory $WARLIB
+
 Copy-Item "lib/jar/*.jar" $WARLIB
 Copy-Item "lib/bundle/*.jar" $WARLIB
 Copy-Item "mlib/*.jar" $WARLIB
@@ -88,5 +90,7 @@ foreach ($sublist in (Chunk-Array $Files)) {
 Set-Location ..
 
 Move-Item -Force war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
+Remove-Item -Recurse $WARLIB 
+Move-Item -Path lib-backup $WARLIB
 
 jar cf gwtTomcatFilter.jar -C $TGCP t/tomcat

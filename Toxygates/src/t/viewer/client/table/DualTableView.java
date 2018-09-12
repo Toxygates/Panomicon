@@ -375,6 +375,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
               @Override
               public void handleSuccess(Network result) {
                 netvizDialog.loadNetwork(result);
+                screen.removePendingRequest();
               }
             });
       }
@@ -387,5 +388,14 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     if (associations == expressionTable.associations()) {
       super.associationsUpdated(associations, result);
     }
+  }
+
+  //MirnaSourceDialog.Delegate method
+  @Override
+  public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
+    if (netvizDialog != null) {
+      screen.addPendingRequest();
+    }
+    super.mirnaSourceDialogMirnaSourcesChanged(mirnaSources);
   }
 }
