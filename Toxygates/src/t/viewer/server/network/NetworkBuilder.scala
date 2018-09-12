@@ -47,9 +47,11 @@ class NetworkBuilder(targets: TargetTable,
   lazy val sideType = side.params.typ
 
   //TODO handling of max size and informing user of cutoff
-  lazy val sourceNodes = getNodes(side, sideType, Some(Network.MAX_SIZE))
-  lazy val destNodes = getNodes(main, mainType, Some(Network.MAX_SIZE))
-  lazy val nodes = sourceNodes ++ destNodes
+
+  //This respects sorting and filtering. All side nodes should have at least one interaction.
+  lazy val sideNodes = getNodes(side, sideType, Some(Network.MAX_NODES)).toSet
+  lazy val mainNodes = getNodes(main, mainType, Some(Network.MAX_NODES)).toSet
+  lazy val nodes = (sideNodes ++ mainNodes).toSeq
   lazy val nodeLookup = Map() ++ nodes.map(n => n.id() -> n)
 
   final def lookup(p: Probe) = nodeLookup.get(p.identifier)
@@ -87,14 +89,22 @@ class NetworkBuilder(targets: TargetTable,
       return new Network("Network", new JList(), new JList())
     }
 
-    val probes = platforms.resolve(main.current.orderedRowKeys take Network.MAX_SIZE)
+    val probes = platforms.resolve(main.current.orderedRowKeys take Network.MAX_NODES)
+    
     val rawInt = mainType match {
-      case Network.mrnaType => interactionsForMrna(probes)
+      case Network.mrnaType => 
+        val ints = interactionsForMrna(probes).filter(i => sideNodes.contains(i.from))
+        ints            
       case Network.mirnaType =>
         val pf = platforms.data.toSeq.flatMap(_._2)
-        interactionsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
+        val ints = interactionsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
+          .filter(i => sideNodes.contains(i.to))
+        ints
     }
-    val interactions = rawInt.toSeq.sortBy(_.weight()) take Network.MAX_SIZE
+    
+    //In case there are too many interactions (highly likely), 
+    //we prioritise by weight here and limit the number
+    val interactions = rawInt //.toSeq.sortBy(_.weight()) take Network.MAX_EDGES
     new Network("Network", nodes.asGWT, interactions.asGWT)
   }
 }
