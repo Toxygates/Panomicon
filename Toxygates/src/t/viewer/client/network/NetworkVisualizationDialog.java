@@ -24,13 +24,10 @@ import t.viewer.shared.network.Network;
 
 public class NetworkVisualizationDialog {
   private static final String[] injectList = {
-      "network-visualization/lib/jquery-3.3.1.min.js",
-      "network-visualization/lib/cytoscape.min.js",
-      "network-visualization/lib/cytoscape-context-menus.js",
-      "network-visualization/toxyNode.js",
+      "network-visualization/lib/jquery-3.3.1.min.js", "network-visualization/lib/cytoscape.min.js",
+      "network-visualization/lib/cytoscape-context-menus.js", "network-visualization/toxyNode.js",
       "network-visualization/interaction.js", "network-visualization/network.js",
-      "network-visualization/utils.js",
-      "network-visualization/extensions.js",
+      "network-visualization/utils.js", "network-visualization/extensions.js",
       "network-visualization/application.js" };
 
   protected DialogBox mainDialog, networkNameDialog;
@@ -45,7 +42,8 @@ public class NetworkVisualizationDialog {
   public interface Delegate {
     void saveNetwork(PackedNetwork network);
     void showMirnaSourceDialog();
-    void showFilterEditDialog();
+
+    FilterEditPanel filterEditPanel();
     void onNetworkVisualizationDialogClose();
   }
 
@@ -146,15 +144,8 @@ public class NetworkVisualizationDialog {
       }
     });
 
-    Button filterButton = new Button("Edit column filters");
-    filterButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        delegate.showFilterEditDialog();
-      }
-    });
-
-    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton, filterButton);
+    FilterEditPanel filterEditPanel = delegate.filterEditPanel();
+    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton, filterEditPanel.content());
 
     dockPanel.addNorth(uiDiv, getUiHeight());
     dockPanel.addSouth(buttonPanel, 35);

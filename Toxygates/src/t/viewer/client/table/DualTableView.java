@@ -13,7 +13,6 @@ import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;
@@ -354,9 +353,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }
 
   @Override
-  public void showFilterEditDialog() {
-    new FilterEditDialog(expressionTable.grid, expressionTable.matrix(), screen).
-        display("Edit column filters", DialogPosition.Center);
+  public FilterEditPanel filterEditPanel() {
+    return new FilterEditPanel(expressionTable.grid, expressionTable.matrix());
   }
 
   @Override
