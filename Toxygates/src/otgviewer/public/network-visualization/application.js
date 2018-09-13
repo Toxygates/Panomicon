@@ -11,11 +11,13 @@ var toxyNet = null;
  * selection. Interface to already implemented algorithms for node positioning
  * included with Cytoscape
  */
-$(document).on("click", "#layoutSelect", function (){
+$(document).on("change", "#layoutSelect", function (){
   // get the option selected by the user
   var opt = $("#layoutSelect").find(":selected").val();
   // update the layout accordingly
-  vizNet.updateLayout(opt);
+  if( vizNet !== null )
+    vizNet.updateLayout(opt);
+
 });
 
 /**
@@ -25,19 +27,20 @@ $(document).on("click", "#layoutSelect", function (){
 $(document).on("change", "#hideNodesCheckbox", function(){
   // nothing to do if there is not network
   if( vizNet === null ) return;
-
-  if ( $("#hideNodesCheckbox").is(":checked") ){
-    var hide = vizNet.nodes().filter(function(ele){
-      return ele.degree(false) === 0;
-    });
-
-    // by setting their display to "none", we effectively prevent nodes to be
-    // show, without permanently removing them from the graph
-    hide.style('display', 'none');
-    return;
-  }
-
-  vizNet.nodes().style('display', 'element');
+  // else, we simply call the corresponding function to hide/show nodes
+  vizNet.hideUnconnected( $("#hideNodesCheckbox").is(":checked") );
+  // if ( $("#hideNodesCheckbox").is(":checked") ){
+  //   var hide = vizNet.nodes().filter(function(ele){
+  //     return ele.degree(false) === 0;
+  //   });
+  //
+  //   // by setting their display to "none", we effectively prevent nodes to be
+  //   // show, without permanently removing them from the graph
+  //   hide.style('display', 'none');
+  //   return;
+  // }
+  //
+  // vizNet.nodes().style('display', 'element');
 
 });
 
@@ -371,6 +374,15 @@ function initDisplay(){
   // context menu, where most user interaction options are provided
   vizNet.initContextMenu();
 
+  // if a layout has been selected by the user, apply it... otherwise use a
+  // default option
+  var layout = $("#layoutSelect").val();
+  if( layout !== "null")
+    vizNet.updateLayout(layout);
+
+  // we hide/show unconnected nodes based on user selection
+  vizNet.hideUnconnected($("#hideNodesCheckbox").is(":checked"));
+
   // visually show selected nodes, by drawing them with a border
   vizNet.on("select", "node", function(evt){
     var source = evt.target;
@@ -385,6 +397,7 @@ function initDisplay(){
     var source = evt.target;
     source.style("border-width", "0px"  );
   });
+
 }
 
 /**
@@ -433,7 +446,7 @@ function onReadyForVisualization(){
 
 /**
  * Called by Toxygates on an already running network visualization dialog when
- * it wants to switch to a different network, which has been placed in 
+ * it wants to switch to a different network, which has been placed in
  * window.toxyNet.
  */
 function changeNetwork() {
@@ -445,7 +458,7 @@ function changeNetwork() {
  * interaction div
  */
 function uiHeight(){
-  return 62;
+  return 72;
 }
 
 /**

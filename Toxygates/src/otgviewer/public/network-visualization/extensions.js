@@ -34,7 +34,40 @@ function updateLayout(type="null"){
     stop: undefined, // callback on layoutstop
     transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
   })
-  .run();
+    .on("layoutstart", function(evt){
+      console.log("Layout Start:", evt.target.options.name);
+      // console.log("window.addPendingRequest()");
+      // window.addPendingRequest();
+    })
+    .on("layoutstop", function(evt){
+      console.log("Layout Stop:", evt.target.options.name);
+      // console.log("window.removePendingRequest()");
+      // window.removePendingRequest();
+    })
+    .run();
+}
+
+/**
+ * Hide/Show nodes in the network that have no edges connecting them to other
+ * node
+ * @param {boolean} hide whether the nodes should be hidden or not from the
+ * display
+ */
+function hideUnconnected(hide=true){
+  if( hide ){
+    var select = vizNet.nodes().filter(function(ele){
+      return ele.degree(false) === 0;
+    });
+
+    // by setting their display to "none", we effectively prevent nodes to be
+    // show, without permanently removing them from the graph
+    select.style('display', 'none');
+    console.log("acabo de esconder cosas");
+    return;
+  }
+
+  // else, we need to show everything
+  this.nodes().style('display', 'element');
 }
 
 /**
@@ -270,5 +303,6 @@ function onNodeFiltering(event){
 cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "updateLayout", updateLayout);
+cytoscape("core", "hideUnconnected", hideUnconnected);
 cytoscape("core", "getToxyNodes", getToxyNodes);
 cytoscape("core", "getToxyInteractions", getToxyInteractions);
