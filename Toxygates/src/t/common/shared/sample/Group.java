@@ -120,11 +120,20 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     return SampleClassUtils.label(sc, schema) + ":\n" + getTriples(schema, -1, ", ");
   }
 
-  // See SampleGroup for the packing method
-  // TODO lift up the unpacking code to have
-  // the mirror images in the same class, if possible
+  @Override
+  public String pack() {
+    StringBuilder s = new StringBuilder();
+    s.append("Group:::");
+    s.append(name + ":::"); // !!
+    s.append(color + ":::");
+    for (Sample sample : _samples) {
+      s.append(sample.pack());
+      s.append("^^^");
+    }
+    return s.toString();
+  }
+
   public static Group unpack(DataSchema schema, String s, AttributeSet attributeSet) {
-    // Window.alert(s + " as group");
     String[] s1 = s.split(":::"); // !!
     String name = s1[1];
     String color = "";

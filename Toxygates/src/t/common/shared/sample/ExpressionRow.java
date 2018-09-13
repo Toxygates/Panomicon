@@ -42,12 +42,10 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 
   /**
    * Single probe constructor
-   * 
-   * TODO should accept multiple gene titles
    */
-  public ExpressionRow(String _probe, String _title, String[] _geneId, String[] _geneSym,
+  public ExpressionRow(String _probe, String[] _titles, String[] _geneId, String[] _geneSym,
       ExpressionValue[] _val) {
-    this(_probe, new String[] {_probe}, new String[] {_title}, _geneId, _geneSym, _val);
+    this(_probe, new String[] {_probe}, _titles, _geneId, _geneSym, _val);
   }
 
   /**

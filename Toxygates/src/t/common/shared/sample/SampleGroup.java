@@ -31,7 +31,7 @@ import t.model.sample.Attribute;
  * A way of grouping microarray samples. Unique colors for each group can be generated.
  */
 @SuppressWarnings("serial")
-public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable,
+abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable,
     Comparable<SampleGroup<?>> {
 
   public static String[] groupColors;
@@ -114,20 +114,6 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   private int getColorIndex() {
     return colorIndexOf(color);
   }
-
-  @Override
-  public String pack() {
-    StringBuilder s = new StringBuilder();
-    s.append("Group:::");
-    s.append(name + ":::"); // !!
-    s.append(color + ":::");
-    for (S b : _samples) {
-      s.append(b.pack());
-      s.append("^^^");
-    }
-    return s.toString();
-  }
-
 
   @Override
   public int compareTo(SampleGroup<?> other) {

@@ -153,7 +153,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     val cont = stateFor(id).controller(id)
     if (cont.managedMatrix.current.rows == 0) {
       Seq(
-        new ExpressionRow("(No data)", "(No data)", Array(), Array(), Array())
+        new ExpressionRow("(No data)", Array("(No data)"), Array(), Array(), Array())
        ).asGWT
     } else {
       val mm =

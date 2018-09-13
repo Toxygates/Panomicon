@@ -122,8 +122,8 @@ class AssociationResolver(probeStore: OTGProbes,
 
           //TODO handle reverse lookup case here
           case AppInfoLoader.TARGETMINE_SOURCE =>
-          toBioMap(probes, (_: Probe).genes) combine
-          mirnaResolver.forGenes(probes.flatMap(_.genes))
+            toBioMap(probes, (_: Probe).genes) combine
+            mirnaResolver.forGenes(probes.flatMap(_.genes))
 
           case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
         }

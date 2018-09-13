@@ -50,7 +50,7 @@ class RowLabels(context: Context, schema: DataSchema) {
     val pr = pm.get(p)
     new ExpressionRow(p,
         //TODO make sure to pass all titles into ExpressionRow
-      pr.toSeq.flatMap(_.titles).headOption.getOrElse(""),
+      pr.toArray.flatMap(_.titles),
       pr.toArray.flatMap(_.genes.map(_.identifier)),
       pr.toArray.flatMap(_.symbols.map(_.symbol)),
       r.getValues)
