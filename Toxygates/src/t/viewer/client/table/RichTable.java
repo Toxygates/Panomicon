@@ -225,16 +225,16 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   /**
    * Sets a Column's properties according to a ColumnInfo
    */
-  private void setupColumn(Column<T, ?> c, ColumnInfo info) {
-    grid.setColumnWidth(c, info.width());
+  private void setupColumn(Column<T, ?> column, ColumnInfo info) {
+    grid.setColumnWidth(column, info.width());
     if (info.cellStyleNames() != null) {
-      c.setCellStyleNames(info.cellStyleNames());
+      column.setCellStyleNames(info.cellStyleNames());
     }
-    c.setSortable(info.sortable());
-    c.setDefaultSortAscending(info.defaultSortAsc());
+    column.setSortable(info.sortable());
+    column.setDefaultSortAscending(info.defaultSortAsc());
 
     if (info.sortable() && grid.getColumnSortList().size() == 0) {
-      grid.getColumnSortList().push(c); // initial sort
+      grid.getColumnSortList().push(column); // initial sort
     }
   }
 
@@ -322,36 +322,36 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     }
   }
 
-  public void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
-    int at = nextColumnIndex(section);
+  public void addColumn(Column<T, ?> column, String section, ColumnInfo info) {
+    int index = nextColumnIndex(section);
     increaseSectionColumnCount(section);
-    grid.insertColumn(at, col, getColumnHeader(info));
-    setupColumn(col, info);
-    columnInfos.add(at, info);
+    grid.insertColumn(index, column, getColumnHeader(info));
+    setupColumn(column, info);
+    columnInfos.add(index, info);
     computeTableWidth();
   }
 
-  protected void removeColumn(Column<T, ?> col) {
-    int idx = grid.getColumnIndex(col);
-    if (idx == -1) {
+  protected void removeColumn(Column<T, ?> column) {
+    int index = grid.getColumnIndex(column);
+    if (index == -1) {
       return;
     }
-    decreaseSectionColumnCount(idx);
-    ColumnInfo info = columnInfos.get(idx);
+    decreaseSectionColumnCount(index);
+    ColumnInfo info = columnInfos.get(index);
 
     if (info.sortable()) {
       // Try to keep the original sort order
-      ColumnSortList csl = grid.getColumnSortList();
-      for (int i = 0; i < csl.size(); ++i) {
-        ColumnSortInfo csi = grid.getColumnSortList().get(i);
-        if (csi.getColumn() == col) {
-          csl.remove(csi);
+      ColumnSortList columnSortList = grid.getColumnSortList();
+      for (int i = 0; i < columnSortList.size(); ++i) {
+        ColumnSortInfo columnSortInfo = grid.getColumnSortList().get(i);
+        if (columnSortInfo.getColumn() == column) {
+          columnSortList.remove(columnSortInfo);
           break;
         }
       }
     }
-    columnInfos.remove(idx);
-    grid.removeColumn(col);
+    columnInfos.remove(index);
+    grid.removeColumn(column);
     computeTableWidth();
   }
 
@@ -359,17 +359,17 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
   public void setStyleAndApply(TableStyle style) {
     this.style = style;
-    for (HideableColumn<T, ?> col: hideableColumns) {
-      reapplyStyle(style, col);
+    for (HideableColumn<T, ?> column : hideableColumns) {
+      reapplyStyle(style, column);
     }
   }
   
   //Only toggles visibility flag in the column.
-  protected void reapplyStyle(TableStyle style, HideableColumn<T, ?> col) {
-    StandardColumns standard = col.standard;
+  protected void reapplyStyle(TableStyle style, HideableColumn<T, ?> column) {
+    StandardColumns standard = column.standard;
     if (standard != null) {
-      grid.setColumnWidth(col, style.initWidth(standard));
-      col.setVisibility(style.initVisibility(standard));
+      grid.setColumnWidth(column, style.initWidth(standard));
+      column.setVisibility(style.initVisibility(standard));
     }    
   }
   
@@ -380,8 +380,8 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   /**
    * External users should use this to set a column's visibility.
    */
-  public void setVisible(HideableColumn<T, ?> hc, boolean newState) {
-    hc.setVisibility(newState);
+  public void setVisible(HideableColumn<T, ?> column, boolean newState) {
+    column.setVisibility(newState);
 
     // We need to set up all the columns each time in order to style borders correctly
     setupHideableColumns();

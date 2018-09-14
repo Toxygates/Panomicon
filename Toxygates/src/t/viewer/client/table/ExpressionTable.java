@@ -197,13 +197,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
         logger.info(matrixInfo.shortColumnName(i) + " " + 
             matrixInfo.columnFilter(i).threshold + " " + matrixInfo.columnFilter(i).active());
-        ColumnInfo ci =
+        ColumnInfo columnInfo =
             new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
                 COLUMN_WIDTH, style, false, true, matrixInfo.columnFilter(i).active());
-        ci.setHeaderStyleNames(style);
+        columnInfo.setHeaderStyleNames(style);
 
         previousGroup = group;
-        addColumn(valueCol, "data", ci);
+        addColumn(valueCol, "data", columnInfo);
       }
     }
     
@@ -349,10 +349,10 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   private void displayCharts() {
-    final Charts cgf = new Charts(screen, chosenColumns);
+    final Charts charts = new Charts(screen, chosenColumns);
     ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
     final String[] probes = dispRow.getAtomicProbes();
-    cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
+    charts.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
       @Override
       public void acceptCharts(final AdjustableGrid<?, ?> cg) {
         Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
