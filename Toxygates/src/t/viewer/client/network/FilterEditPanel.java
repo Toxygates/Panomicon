@@ -17,11 +17,34 @@ import t.viewer.client.table.ExpressionColumn;
 public class FilterEditPanel {
   private HorizontalPanel horizontalPanel;
   private ListBox columnSelector;
-  private Map<String, Integer> columnIndexMap;
+  private Map<String, Integer> mainColumnIndexMap;
+  private Map<String, Integer> sideColumnIndexMap;
 
-  public FilterEditPanel(AbstractCellTable<ExpressionRow> grid, ETMatrixManager matrix) {
-    columnIndexMap = new HashMap<String, Integer>();
+  public FilterEditPanel(AbstractCellTable<ExpressionRow> mainGrid, ETMatrixManager mainMatrix,
+      AbstractCellTable<ExpressionRow> sideGrid, ETMatrixManager sideMatrix) {
     columnSelector = new ListBox();
+
+    mainColumnIndexMap = columnIndexMap(mainGrid, mainMatrix);
+    sideColumnIndexMap = columnIndexMap(sideGrid, sideMatrix);
+
+    Button editButton = new Button("Edit");
+    editButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        String selectedItemText = columnSelector.getSelectedItemText();
+        if (mainColumnIndexMap.containsKey(selectedItemText)) {
+          mainMatrix.editColumnFilter(mainColumnIndexMap.get(selectedItemText));
+        } else {
+          sideMatrix.editColumnFilter(sideColumnIndexMap.get(selectedItemText));
+        }
+      }
+    });
+    horizontalPanel = Utils.mkHorizontalPanel(true, new Label("Column filters:"), columnSelector, editButton);
+  }
+
+  private Map<String, Integer> columnIndexMap(AbstractCellTable<ExpressionRow> grid,
+      ETMatrixManager matrix) {
+    HashMap<String, Integer> columnIndexMap = new HashMap<String, Integer>();
     for (int i = 0; i < grid.getColumnCount(); i++) {
       Column<ExpressionRow, ?> column = grid.getColumn(i);
       if (column instanceof ExpressionColumn) {
@@ -32,14 +55,7 @@ public class FilterEditPanel {
         columnIndexMap.put(columnTitle, matrixIndex);
       }
     }
-    Button editButton = new Button("Edit");
-    editButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        matrix.editColumnFilter(columnIndexMap.get(columnSelector.getSelectedItemText()));
-      }
-    });
-    horizontalPanel = Utils.mkHorizontalPanel(true, new Label("Column filters:"), columnSelector, editButton);
+    return columnIndexMap;
   }
 
   protected Widget content() {

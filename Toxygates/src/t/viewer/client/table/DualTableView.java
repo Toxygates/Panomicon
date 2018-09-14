@@ -354,7 +354,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public FilterEditPanel filterEditPanel() {
-    return new FilterEditPanel(expressionTable.grid, expressionTable.matrix());
+    return new FilterEditPanel(expressionTable.grid, expressionTable.matrix(),
+        sideExpressionTable.grid, sideExpressionTable.matrix());
   }
 
   @Override
