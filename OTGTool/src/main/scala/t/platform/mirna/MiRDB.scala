@@ -28,9 +28,10 @@ class MiRDBConverter(inputFile: String, dbName: String) {
   }
 
   def makeTrig(output: String) {
+    import MiRDBConverter._
     val w = new PrintWriter(output)
     try {
-      val graph = "<http://level-five.jp/t/mapping/mirdb>"
+      val graph = s"<$mirdbGraph>"
       val label = "miRDB 5.0"
       w.println(s"""|@prefix t:<http://level-five.jp/t/>.
                     |@prefix tp:<http://level-five.jp/t/probe/>.
@@ -51,6 +52,8 @@ class MiRDBConverter(inputFile: String, dbName: String) {
 }
 
 object MiRDBConverter {
+  val mirdbGraph = "http://level-five.jp/t/mapping/mirdb"
+
   def main(args: Array[String]) {
     new MiRDBConverter(args(0), "MiRDB 5.0").makeTrig(args(1))
   }

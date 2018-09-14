@@ -9,6 +9,8 @@ import scala.collection.immutable.DefaultMap
 object TargetTable {
   def interactionLabel(intn: (Any, Any, Double, String)) =
     s"${intn._4} (score: ${"%.3f".format(intn._3)})"
+
+  def empty = (new TargetTableBuilder).build
 }
 
 /**

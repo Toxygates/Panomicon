@@ -35,6 +35,7 @@ import t.viewer.server.Conversions._
 import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.TargetmineColumns
 import t.viewer.shared.mirna.MirnaSource
+import t.platform.mirna.MiRDBConverter
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
@@ -50,7 +51,7 @@ class AssociationResolver(probeStore: OTGProbes,
     targetmine: Option[IntermineConnector],
     //TODO stop passing this in when all miRNA sources are unified in the TargetTable
     mirnaSources: Seq[MirnaSource],
-    mirnaTable: Option[TargetTable],
+    mirnaTable: TargetTable,
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String])(implicit sf: SampleFilter) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, mirnaSources, sc, types, _probes) {
@@ -97,28 +98,26 @@ class AssociationResolver(probeStore: OTGProbes,
                      fromMirna: Boolean): MMap[Probe, DefaultBio] = {
       val species = asSpecies(sc)
       val sizeLimit = Some(1000)
-      
+
       try {
         source.id match {
-          case "http://level-five.jp/t/mapping/mirdb" =>
-          mirnaTable match {
-            case None =>
-            println("Warning: no mirnaTable available, lookups will fail")
-            emptyMMap()
-            case Some(t) =>
-            //TODO should perform this filtering once and store in matrix state
-            val filtTable = t.speciesFilter(species)
+          case MiRDBConverter.mirdbGraph =>
+            if (mirnaTable.size == 0) {
+              Console.err.println("Warning: no mirnaTable available, association lookups will fail")
+            }
+            //Note: we might perform this filtering once and store it in the matrix state
+            val filtTable = mirnaTable.speciesFilter(species)
             println(s"Lookup from miRNA table of size ${filtTable.size}")
-            //TODO unify this lookup with the "aprobes" mechanism
+
+            //Note: we might unify this lookup with the "aprobes" mechanism
             val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
-            //TODO filter the platforms properly, select the right one
-            val data = t.associationLookup(lookedUp, fromMirna,
-              probeStore.platformsAndProbes.flatMap(_._2), sizeLimit)
-            if (Some(data.size) == sizeLimit) {
+
+            val data = filtTable.associationLookup(lookedUp, fromMirna,
+              probeStore.platformsAndProbes(species.expectedPlatform), sizeLimit)
+            if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
               sizeLimitExceeded = true
             }
             data
-          }
 
           //TODO handle reverse lookup case here
           case AppInfoLoader.TARGETMINE_SOURCE =>
