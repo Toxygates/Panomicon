@@ -455,6 +455,8 @@ public abstract class MinimalScreen implements Screen {
     numPendingRequests -= 1;
     if (numPendingRequests == 0) {
       waitDialog.hide();
+    } else if (numPendingRequests < 0) {
+      throw new RuntimeException("Removed pending request while numPendingRequests <= 0");
     }
   }
   
