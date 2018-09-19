@@ -138,6 +138,12 @@ class TargetTableBuilder() {
     dbIn ::= db
   }
 
+  def addAll(other: TargetTable) {
+    for ((s, t, sc, db) <- other) {
+      add(s, t, sc, db)
+    }
+  }
+
   def build =
     new TargetTable(soIn.toArray, taIn.toArray, scoIn.toArray, dbIn.toArray)
 }

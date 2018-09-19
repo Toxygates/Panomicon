@@ -7,11 +7,13 @@ import t.viewer.server.Configuration
 import t.viewer.shared.NoDataLoadedException
 import t.viewer.server.rpc.MatrixState
 import t.sparql.Probes
+import t.platform.mirna.TargetTableBuilder
+import otgviewer.server.AppInfoLoader
 
 class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
   with OTGServiceServlet {
 
-  lazy val dataTable = try {
+  lazy val mirdbTable = try {
     val file = s"$mirnaDir/mirdb_filter.txt"
     val t = new MiRDBConverter(file, "MiRDB 5.0").makeTable
     println(s"Read ${t.size} miRNA targets from $file")
@@ -22,18 +24,18 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       None
   }
 
-  override def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    super.setMirnaSources(sources)
-    getState.synchronized {
-      dataTable match {
-        case Some(tab) =>
-          if (sources.size > 0) {
-            val limit = sources(0).limit()
-            getState().targetTable = tab.scoreFilter(limit)
-            println(s"Session targetTable filtered to size ${getState().targetTable.size}")
-          }
-        case _ =>
-      }
-    }
+  def loadMirnaTargetTable(source: MirnaSource, into: TargetTableBuilder) {
+     source.id match {
+       case MiRDBConverter.mirdbGraph =>
+         mirdbTable match {
+           case Some(t) =>
+             into.addAll(t.scoreFilter(source.limit))
+           case None =>
+             Console.err.println("mirDB table unavailable")
+         }
+       case AppInfoLoader.TARGETMINE_SOURCE =>
+         Console.err.println("I don't know how to load TargetMine data yet.")
+       case _ =>
+     }
   }
 }
