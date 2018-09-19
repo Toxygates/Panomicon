@@ -21,30 +21,24 @@ function initStyle(){
  * within the display area
  */
 function updateLayout(type="null"){
-  this.layout({
+  // this.layout({
+  console.log("this",this.size());
+  var layout = {
     name: type,
     fit: true, // whether to fit to viewport
     padding: 0, // fit padding
-    boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-    animate: false, // whether to transition the node positions
+    // boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+    animate: true, // whether to transition the node positions
     animationDuration: 500, // duration of animation in ms if enabled
     animationEasing: undefined, // easing of animation if enabled
     animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
     ready: undefined, // callback on layoutready
     stop: undefined, // callback on layoutstop
     transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
-  })
-    .on("layoutstart", function(evt){
-      console.log("Layout Start:", evt.target.options.name);
-      // console.log("window.addPendingRequest()");
-      // window.addPendingRequest();
-    })
-    .on("layoutstop", function(evt){
-      console.log("Layout Stop:", evt.target.options.name);
-      // console.log("window.removePendingRequest()");
-      // window.removePendingRequest();
-    })
-    .run();
+  // })
+  // .run();
+  }
+  return layout;
 }
 
 /**
@@ -200,9 +194,10 @@ function onAddEdge(event){
   // handle the next click of the mouse
   event.cy.promiseOn("click").then(function(evt){
     var to = evt.target;
+    console.log(to);
     // a new interaction is only added if the user clicks on a node different
     // from the one used as source for the interaction
-    if( to !== self && to.isNode() ){
+    if( to !== self && typeof to.isNode === 'function' && to.isNode() ){
       event.cy.add({
         group: "edges",
         data: {

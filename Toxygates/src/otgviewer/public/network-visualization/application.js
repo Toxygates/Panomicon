@@ -4,6 +4,9 @@
 var vizNet = null;
 // this is also the Graph - using Network structure
 var toxyNet = null;
+// global layout being applied to the graph
+var vizLayout = null;
+
 /** ------------------------- FORM HANDLERS ------------------------------ **/
 
 /**
@@ -15,10 +18,27 @@ $(document).on("change", "#layoutSelect", function (){
   // get the option selected by the user
   var opt = $("#layoutSelect").find(":selected").val();
   // update the layout accordingly
-  if( vizNet !== null )
-    vizNet.updateLayout(opt);
+  if( vizNet !== null ){
+    my_show();
 
+    vizLayout = vizNet.makeLayout(vizNet.updateLayout(opt));
+    console.log("update", vizLayout, vizNet);
+    setTimeout(function(){
+      vizLayout.run();
+      my_hide();
+    });
+  }
 });
+
+function my_show(){
+  console.log("showing");
+  $("#waitModal").attr("style", "display:block");
+}
+
+function my_hide(){
+  console.log("hiding");
+  $("#waitModal").attr("style", "display:none");;
+}
 
 /**
  * When selected, it hides from the visualiation all nodes that are unconnected,
@@ -29,18 +49,6 @@ $(document).on("change", "#hideNodesCheckbox", function(){
   if( vizNet === null ) return;
   // else, we simply call the corresponding function to hide/show nodes
   vizNet.hideUnconnected( $("#hideNodesCheckbox").is(":checked") );
-  // if ( $("#hideNodesCheckbox").is(":checked") ){
-  //   var hide = vizNet.nodes().filter(function(ele){
-  //     return ele.degree(false) === 0;
-  //   });
-  //
-  //   // by setting their display to "none", we effectively prevent nodes to be
-  //   // show, without permanently removing them from the graph
-  //   hide.style('display', 'none');
-  //   return;
-  // }
-  //
-  // vizNet.nodes().style('display', 'element');
 
 });
 
@@ -273,7 +281,6 @@ $(document).on("change", "#graphColorModal #maxRange", function(evt){
 });
 
 /** ---------------------------- FILTER GRAPH ---------------------------- **/
-
 /**
  * Handle the application of filters to the visualization.
  * All filters currently active (listed) will be applied to the visualization.
@@ -366,7 +373,9 @@ function initDisplay(){
   // initialize an empty network
   vizNet = cytoscape({
     container: display,
+    styleEnabled: true,
   });
+
   // default style for network elements
   vizNet.initStyle();
   // add elements to the network based on the information read from file/toxygates
@@ -376,9 +385,12 @@ function initDisplay(){
 
   // if a layout has been selected by the user, apply it... otherwise use a
   // default option
+  console.log("vizNet", vizNet);
   var layout = $("#layoutSelect").val();
-  if( layout !== "null")
-    vizNet.updateLayout(layout);
+  if( layout !== "null"){
+    vizLayout = vizNet.makeLayout(vizNet.updateLayout(layout));
+    vizLayout.run();
+  }
 
   // we hide/show unconnected nodes based on user selection
   vizNet.hideUnconnected($("#hideNodesCheckbox").is(":checked"));
