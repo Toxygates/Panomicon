@@ -9,10 +9,14 @@ import t.viewer.server.rpc.MatrixState
 import t.sparql.Probes
 import t.platform.mirna.TargetTableBuilder
 import otgviewer.server.AppInfoLoader
+import t.intermine.Connector
+import t.intermine.MiRNATargets
 
 class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
   with OTGServiceServlet {
 
+  def targetmineConn: Connector = ???
+  
   lazy val mirdbTable = try {
     val file = s"$mirnaDir/mirdb_filter.txt"
     val t = new MiRDBConverter(file, "MiRDB 5.0").makeTable
@@ -24,6 +28,15 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       None
   }
 
+  lazy val targetmineTable = try {
+    val targets = new MiRNATargets(targetmineConn)
+    None
+  } catch {
+    case e: Exception =>
+      e.printStackTrace()
+      None
+  }
+  
   def loadMirnaTargetTable(source: MirnaSource, into: TargetTableBuilder) {
      source.id match {
        case MiRDBConverter.mirdbGraph =>

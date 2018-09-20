@@ -50,7 +50,18 @@ class AppInfoLoader(probeStore: OTGProbes,
   }
 
   override protected def staticMirnaSources: Seq[MirnaSource] = {
-    val size = 0 //TODO
+    /*
+     * Size obtained via the following TargetMine query:
+     * 
+     * <query name="" model="genomic" view="MiRNA.primaryIdentifier MiRNA.secondaryIdentifier 
+     * MiRNA.organism.name MiRNA.miRNAInteractions.supportType 
+     * MiRNA.miRNAInteractions.targetGene.synonyms.value" longDescription="" 
+     * sortOrder="MiRNA.primaryIdentifier asc" constraintLogic="A">
+     *  <constraint path="MiRNA.miRNAInteractions.targetGene.synonyms.value" 
+     *    code="A" op="CONTAINS" value="NM"/>
+     * </query>
+     */
+    val size = 2390806
     Seq(
       new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, true, 0.5, size))
   }
