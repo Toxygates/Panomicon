@@ -135,7 +135,8 @@ class AssociationResolver(probeStore: OTGProbes,
     }
 
   def resolveMiRNA(probes: Iterable[Probe], fromMirna: Boolean): BBMap = {
-    val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
+    import t.platform.mirna._
+    val (isMirna, isNotMirna) = probes.partition(isMiRNAProbe)
 
     if (!fromMirna) {
       val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)

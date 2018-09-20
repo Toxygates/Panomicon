@@ -51,9 +51,9 @@ class TargetTable(val origins: Array[String],
 
   /**
    * Find probes in the platform that match the given transcripts.
-   * TODO: this could be a static lookup map?
-   */
+   */  
   def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]): Iterable[(RefSeq, Iterable[Probe])] = {
+    // Note: this function could be a static lookup map?
     val allTrn = transcripts.toSet
     val r = for {
       p <- platform.toSeq;

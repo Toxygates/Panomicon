@@ -403,7 +403,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       instanceURI.map(u =>
         s"?g a ${ProbeLists.itemClass}; ${Instances.memberRelation} <$u>. ").getOrElse("") +
       s"?g ${ProbeLists.memberRelation} ?probeLabel; rdfs:label ?list. } " +
-      //TODO: think about this. Handling of RDF1.0/1.1 strings (untyped/typed)
+      //Note: string matching, such as in the following fragment, is impacted by 
+      //the handling of RDF1.0/1.1 strings (untyped/typed)
       // "?probe a t:probe; rdfs:label ?probeLabel. " + //filter out invalid probeLabels
       "}"
 
@@ -414,7 +415,10 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Look up the auxiliary sort map for a given association, identified by
-   * a string. TODO: is this the best place for this?
+   * a string. 
+   * 
+   * This mechanism is not currently used. If we revive it, then it might possibly
+   * be moved to a different location.
    */
   def auxSortMap(probes: Iterable[String], key: String): Map[String, Double] = {
     Map() ++ probes.map(x => x -> 0.0) //default map does nothing

@@ -31,6 +31,7 @@ import t.sparql._
 import t.testing.TestConfig
 import otg.model.sample.OTGAttribute._
 import otg.TimeSeries
+import otg.DoseSeries
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
@@ -72,8 +73,8 @@ class OTGSamplesTest extends TTestSuite {
     val ds = samples.sampleAttributeQuery(DoseLevel).
       constrain(sf)()
 
-    //TODO use the unified DataSchema instead
-    assert(ds.toSet === Set("Low", "Middle", "High", "Control"))
+    //Constants like these should probably be moved to Attribute/AttributeSet
+    assert(ds.toSet === Set("Control") ++ DoseSeries.allDoses)
   }
 
   test("times") {
@@ -82,7 +83,6 @@ class OTGSamplesTest extends TTestSuite {
     val ts = samples.sampleAttributeQuery(ExposureTime).
       constrain(sf)()
 
-    //TODO use the unified DataSchema instead
     assert(TimeSeries.singleVivoExpected.toSet subsetOf ts.toSet)
   }
 }

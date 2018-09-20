@@ -52,10 +52,4 @@ case class Probe(val identifier: String, override val name: String = "",
   }
 
   def pack = Probes.defaultPrefix + "/" + identifier
-
-  //TODO consider best location of this
-  def isMiRna: Boolean = {
-    identifier.contains("-miR-") ||
-      identifier.contains("-let-")
-  }
 }

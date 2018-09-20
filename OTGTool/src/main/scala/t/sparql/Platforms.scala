@@ -134,8 +134,7 @@ class Platforms(baseConfig: BaseConfig) extends
       |    OPTIONAL { ?probe t:section ?sec. }
       |   }
       |}""".stripMargin, timeout)
-
-      //TODO
+     
     val attribSet = otg.model.sample.AttributeSet.getDefault
 
     val bpcons = bps.map(x => BioParameter(
