@@ -232,10 +232,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     }
     column.setSortable(info.sortable());
     column.setDefaultSortAscending(info.defaultSortAsc());
-
-    if (info.sortable() && grid.getColumnSortList().size() == 0) {
-      grid.getColumnSortList().push(column); // initial sort
-    }
   }
 
   protected void ensureSection(String section) {
@@ -444,5 +440,21 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
   public List<T> visibleItems() {
     return grid.getVisibleItems();
+  }
+
+  public Column<T, ?> sectionColumnAtIndex(String desiredSection, int sectionIndex) {
+    int totalIndex = 0;
+    for (String section : columnSections) {
+      if (section == desiredSection) {
+        if (sectionIndex < sectionColumnCount.get(section)) {
+          return grid.getColumn(totalIndex + sectionIndex);
+        } else {
+          return null;
+        }
+      } else {
+        totalIndex += sectionColumnCount.get(section);
+      }
+    }
+    return null;
   }
 }

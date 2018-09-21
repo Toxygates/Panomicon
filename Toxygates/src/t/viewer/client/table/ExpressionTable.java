@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
@@ -105,7 +104,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     screen = _screen;
     this.matrix = new ETMatrixManager(_screen, flags, this, loader, grid);
     this.associations = new AssociationManager<ExpressionRow>(screen, this, this, viewDelegate);
-    this.columns = new ETColumns(this, _screen.manager().resources(), COLUMN_WIDTH);
+    this.columns = new ETColumns(this, _screen.manager().resources(), COLUMN_WIDTH, logger);
     this.delegate = delegate;
     this.withPValueOption = flags.withPValueOption;
     this.initPageSize = flags.initPageSize;
@@ -176,50 +175,22 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public void setupColumns() {
     super.setupColumns();
-    TextCell tc = new TextCell();
-
-    int oldSortIndex = (oldSortInfo != null ? 
-        ((ExpressionColumn) oldSortInfo.getColumn()).matrixColumn() : -1);
-
     ManagedMatrixInfo matrixInfo = matrix.info();
-    ColumnSortInfo newSort = null;
-    Group previousGroup = null;
-    for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
-      if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
-        Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
-        if (i == oldSortIndex) {
-          newSort = new ColumnSortInfo(valueCol, oldSortInfo.isAscending());
-        }
-        Group group = matrixInfo.columnGroup(i);
-        String groupStyle = group == null ? "dataColumn" : group.getStyleName();
-        String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
-        String style = groupStyle + " " + borderStyle;
-
-        logger.info(matrixInfo.shortColumnName(i) + " " + 
-            matrixInfo.columnFilter(i).threshold + " " + matrixInfo.columnFilter(i).active());
-        ColumnInfo columnInfo =
-            new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
-                COLUMN_WIDTH, style, false, true, matrixInfo.columnFilter(i).active());
-        columnInfo.setHeaderStyleNames(style);
-
-        previousGroup = group;
-        addColumn(valueCol, "data", columnInfo);
-      }
-    }
-    
+    columns.addDataColumns(matrixInfo, displayPColumns);
     ensureSection("synthetic");
-    boolean first = true;
-    for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
-      String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
-      first = false;
-      ExpressionColumn synCol = columns.addSynthColumn(matrixInfo, i, borderStyle);
-      if (i == oldSortIndex) {
-        newSort = new ColumnSortInfo(synCol, oldSortInfo.isAscending());
+    columns.addSynthColumns(matrixInfo);
+    boolean sorted = false;
+    if (keepSortOnReload) {
+      ColumnSortInfo recoveredSortInfo = columns.recoverSortColumn(matrix.info(), oldSortInfo);
+      if (recoveredSortInfo != null) {
+        //grid.getColumnSortList().clear();
+        grid.getColumnSortList().push(recoveredSortInfo);
+        sorted = true;
       }
     }
-
-    if (newSort != null && keepSortOnReload) {
-      grid.getColumnSortList().push(newSort);
+    if (!sorted) {
+      Column<ExpressionRow, ?> sortColumn = sectionColumnAtIndex("data", 0);
+      grid.getColumnSortList().push(new ColumnSortInfo(sortColumn, false));
     }
   }
 
@@ -417,7 +388,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     if (csl.size() > 0) {
       Column<?, ?> col = csl.get(0).getColumn();
       if (col instanceof MatrixSortable) {
-        MatrixSortable ec = (MatrixSortable) csl.get(0).getColumn();
+        MatrixSortable ec = (MatrixSortable) col;
         return new ETMatrixManager.SortOrder(ec.sortKey(), csl.get(0).isAscending());
       } else {
         Window.alert("Sorting for this column is not implemented yet.");
