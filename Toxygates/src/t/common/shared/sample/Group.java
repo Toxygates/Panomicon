@@ -166,4 +166,17 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     }
     return list;
   }
+
+  public boolean hasSameUnits(Group otherGroup) {
+    if (_units.length == otherGroup._units.length) {
+      Set<Unit> units = new HashSet<Unit>(Arrays.asList(_units));
+      for (Unit unit : otherGroup._units) {
+        if (!units.contains(unit)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
 }

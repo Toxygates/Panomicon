@@ -172,6 +172,26 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     }
   }
   
+  private String oldSortColumnHint = null;
+  private Group oldSortColumnGroup = null;
+  private boolean oldSortAscending = false;
+
+  public void storeSortInfo() {
+    ColumnSortList csl = grid.getColumnSortList();
+    if (csl.size() > 0) {
+      Column<?, ?> column = csl.get(0).getColumn();
+      if (column instanceof ExpressionColumn) {
+        int index = ((ExpressionColumn) column).matrixColumn();
+        oldSortColumnHint = matrix.info().columnHint(index);
+        oldSortColumnGroup = matrix.info().columnGroup(index);
+        oldSortAscending = csl.get(0).isAscending();
+      }
+    } else {
+      oldSortColumnHint = null;
+      oldSortColumnGroup = null;
+    }
+  }
+
   @Override
   public void setupColumns() {
     super.setupColumns();
@@ -179,16 +199,15 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     columns.addDataColumns(matrixInfo, displayPColumns);
     ensureSection("synthetic");
     columns.addSynthColumns(matrixInfo);
-    boolean sorted = false;
-    if (keepSortOnReload) {
-      ColumnSortInfo recoveredSortInfo = columns.recoverSortColumn(matrix.info(), oldSortInfo);
-      if (recoveredSortInfo != null) {
-        //grid.getColumnSortList().clear();
-        grid.getColumnSortList().push(recoveredSortInfo);
-        sorted = true;
-      }
-    }
-    if (!sorted) {
+    restoreSort();
+  }
+
+  private void restoreSort() {
+    ColumnSortInfo recreatedSortInfo = columns.recreateSortInfo(matrix.info(), grid,
+        oldSortColumnHint, oldSortColumnGroup, oldSortAscending);
+    if (recreatedSortInfo != null) {
+      grid.getColumnSortList().push(recreatedSortInfo);
+    } else {
       Column<ExpressionRow, ?> sortColumn = sectionColumnAtIndex("data", 0);
       grid.getColumnSortList().push(new ColumnSortInfo(sortColumn, false));
     }
@@ -402,6 +421,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     highlightedRow = -1;
     associations.getAssociations();
     delegate.afterGetRows(ExpressionTable.this);
+    storeSortInfo();
   }
 
   @Override

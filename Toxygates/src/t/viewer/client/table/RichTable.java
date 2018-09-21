@@ -126,21 +126,12 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   protected boolean interceptGridClick(String target, int x, int y) {
     return false;
   }
-
-  protected ColumnSortInfo oldSortInfo;
   
   protected void setupColumns() {
     int count = grid.getColumnCount();
     for (int i = 0; i < count; ++i) {
       grid.removeColumn(0);
     }
-    
-    ColumnSortList csl = grid.getColumnSortList();
-    if (csl.size() > 0) {
-      oldSortInfo = csl.get(0);
-    } else {
-      oldSortInfo = null;
-    }    
     grid.getColumnSortList().clear();
     
     columnInfos = new ArrayList<ColumnInfo>();

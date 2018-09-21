@@ -33,9 +33,7 @@ public class ETColumns {
     TableStyle style();
     void addColumn(Column<ExpressionRow, ?> col, String section, ColumnInfo info);
     void onToolCellClickedForProbe(String probe);
-
     Column<ExpressionRow, ?> sectionColumnAtIndex(String desiredSection, int sectionIndex);
-
     int columnCountForSection(String section);
   }
 
@@ -70,19 +68,17 @@ public class ETColumns {
     }
   }
 
-  public ColumnSortInfo recoverSortColumn(ManagedMatrixInfo matrixInfo, ColumnSortInfo oldSortInfo) {
-    Column<ExpressionRow, ?> sortColumn = null;
-    if (oldSortInfo != null) {
-      int oldSortIndex = ((ExpressionColumn) oldSortInfo.getColumn()).matrixColumn();
-
-      if (oldSortIndex < matrixInfo.numDataColumns()) {
-        sortColumn = delegate.sectionColumnAtIndex("data", oldSortIndex);
-      } else if (oldSortIndex < matrixInfo.numColumns()) {
-        sortColumn = delegate.sectionColumnAtIndex("synthetic", oldSortIndex - delegate.columnCountForSection("data"));
-      }
-
-      if (sortColumn != null) {
-        return new ColumnSortInfo(sortColumn, oldSortInfo.isAscending());
+  public ColumnSortInfo recreateSortInfo(ManagedMatrixInfo matrixInfo,
+      AbstractCellTable<?> grid,
+      String oldSortColumnHint, Group oldSortColumnGroup, boolean ascending) {
+    int matrixIndex = matrixInfo.findColumn(oldSortColumnHint, oldSortColumnGroup);
+    if (matrixIndex > 0) {
+      for (int i = 0; i < grid.getColumnCount(); i++) {
+        Column<?, ?> column = grid.getColumn(i);
+        if (column instanceof ExpressionColumn &&
+            ((ExpressionColumn) column).matrixColumn() == matrixIndex) {
+          return new ColumnSortInfo(column, ascending);
+        }
       }
     }
     return null;

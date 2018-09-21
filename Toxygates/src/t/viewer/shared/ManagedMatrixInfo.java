@@ -260,4 +260,17 @@ public class ManagedMatrixInfo implements Serializable, ColumnSet {
   public String[] getAtomicProbes() {
     return atomicProbes;
   }
+
+  /**
+   * Searches for a column based on a hint string and group and returns its index
+   */
+  public int findColumn(String hint, Group group) {
+    for (int i = 0; i < columnHints.size(); i++) {
+      if (columnHints.get(i) == hint &&
+          group.hasSameUnits(columnGroups.get(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
 }
