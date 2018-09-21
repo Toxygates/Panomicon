@@ -1,54 +1,47 @@
 package otgviewer.server.rpc
 
-import t.viewer.shared.mirna.MirnaSource
-import t.viewer.shared.TimeoutException
-import t.platform.mirna.MiRDBConverter
-import t.viewer.server.Configuration
-import t.viewer.shared.NoDataLoadedException
-import t.viewer.server.rpc.MatrixState
-import t.sparql.Probes
-import t.platform.mirna.TargetTableBuilder
 import otgviewer.server.AppInfoLoader
-import t.intermine.Connector
 import t.intermine.MiRNATargets
+import t.platform.mirna.MiRDBConverter
+import t.platform.mirna.TargetTable
+import t.platform.mirna.TargetTableBuilder
+import t.viewer.shared.mirna.MirnaSource
 
 class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
   with OTGServiceServlet {
 
-  def targetmineConn: Connector = ???
-  
-  lazy val mirdbTable = try {
-    val file = s"$mirnaDir/mirdb_filter.txt"
-    val t = new MiRDBConverter(file, "MiRDB 5.0").makeTable
-    println(s"Read ${t.size} miRNA targets from $file")
-    Some(t)
-  } catch {
-    case e: Exception =>
-      e.printStackTrace()
-      None
-  }
+  protected def tryReadTargetTable(file: String, doRead: String => TargetTable) =
+    try {
+      val t = doRead(file)
+      println(s"Read ${t.size} miRNA targets from $file")
+      Some(t)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        None
+    }
 
-  lazy val targetmineTable = try {
-    val targets = new MiRNATargets(targetmineConn)
-    None
-  } catch {
-    case e: Exception =>
-      e.printStackTrace()
-      None
-  }
-  
+  lazy val mirdbTable =
+    tryReadTargetTable(
+      s"$mirnaDir/mirdb_filter.txt",
+      new MiRDBConverter(_, "MiRDB 5.0").makeTable)
+
+  lazy val targetmineTable =
+    tryReadTargetTable(
+      s"$mirnaDir/tm_mirtarbase.txt",
+      MiRNATargets.tableFromFile(_))
+
   def loadMirnaTargetTable(source: MirnaSource, into: TargetTableBuilder) {
-     source.id match {
-       case MiRDBConverter.mirdbGraph =>
-         mirdbTable match {
-           case Some(t) =>
-             into.addAll(t.scoreFilter(source.limit))
-           case None =>
-             Console.err.println("mirDB table unavailable")
-         }
-       case AppInfoLoader.TARGETMINE_SOURCE =>
-         Console.err.println("I don't know how to load TargetMine data yet.")
-       case _ =>
-     }
+    val table = source.id match {
+      case MiRDBConverter.mirdbGraph       => mirdbTable
+      case AppInfoLoader.TARGETMINE_SOURCE => targetmineTable
+      case _                               => throw new Exception("Unexpected MiRNA source")
+    }
+    table match {
+      case Some(t) =>
+        into.addAll(t.scoreFilter(source.limit))
+      case None =>
+        Console.err.println("mirDB table unavailable")
+    }
   }
 }

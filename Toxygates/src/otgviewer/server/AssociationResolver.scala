@@ -48,13 +48,10 @@ class AssociationResolver(probeStore: OTGProbes,
     uniprot: Uniprot,
     chembl: ChEMBL,
     drugBank: DrugBank,
-    targetmine: Option[IntermineConnector],
-    //TODO stop passing this in when all miRNA sources are unified in the TargetTable
-    mirnaSources: Seq[MirnaSource],
     mirnaTable: TargetTable,
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String])(implicit sf: SampleFilter) extends
-     t.viewer.server.AssociationResolver(probeStore, b2rKegg, mirnaSources, sc, types, _probes) {
+     t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
 
       //    val sp = asSpecies(sc)
     //orthologous proteins if needed
@@ -91,48 +88,39 @@ class AssociationResolver(probeStore: OTGProbes,
       })
     }
 
-    /**
-     * Look up miRNA-mRNA associations (by default from mRNA)
-     */
-    def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe],
-                     fromMirna: Boolean): MMap[Probe, DefaultBio] = {
-      val species = asSpecies(sc)
-      val sizeLimit = Some(1000)
+  /**
+   * Look up miRNA-mRNA associations (by default from mRNA)
+   */
+  def resolveMiRNAInner(probes: Iterable[Probe],
+    fromMirna: Boolean): MMap[Probe, DefaultBio] = {
+    val species = asSpecies(sc)
+    val sizeLimit = Some(1000)
 
-      try {
-        source.id match {
-          case MiRDBConverter.mirdbGraph =>
-            if (mirnaTable.size == 0) {
-              Console.err.println("Warning: no mirnaTable available, association lookups will fail")
-            }
-            //Note: we might perform this filtering once and store it in the matrix state
-            val filtTable = mirnaTable.speciesFilter(species)
-            println(s"Lookup from miRNA table of size ${filtTable.size}")
+    try {
+      if (mirnaTable.size == 0) {
+        Console.err.println("Warning: no mirnaTable available, association lookups will fail")
+      }
+      //Note: we might perform this filtering once and store it in the matrix state
+      val filtTable = mirnaTable.speciesFilter(species)
+      println(s"Lookup from miRNA table of size ${filtTable.size}, species: $species")
 
-            //Note: we might unify this lookup with the "aprobes" mechanism
-            val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
+      //Note: we might unify this lookup with the "aprobes" mechanism
+      val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
 
-            val data = filtTable.associationLookup(lookedUp, fromMirna,
-              probeStore.platformsAndProbes(species.expectedPlatform), sizeLimit)
-            if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
-              sizeLimitExceeded = true
-            }
-            data
+      val data = filtTable.associationLookup(lookedUp, fromMirna,
+        probeStore.platformsAndProbes(species.expectedPlatform), sizeLimit)
 
-          //TODO handle reverse lookup case here
-          case AppInfoLoader.TARGETMINE_SOURCE =>
-            toBioMap(probes, (_: Probe).genes) combine
-            mirnaResolver.forGenes(probes.flatMap(_.genes))
+      if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
+        sizeLimitExceeded = true
+      }
+      data
 
-          case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
-        }
-
-      } catch {
-        case e: Exception =>
+    } catch {
+      case e: Exception =>
         e.printStackTrace()
         emptyMMap()
-      }
     }
+  }
 
   def resolveMiRNA(probes: Iterable[Probe], fromMirna: Boolean): BBMap = {
     import t.platform.mirna._
@@ -140,20 +128,12 @@ class AssociationResolver(probeStore: OTGProbes,
 
     if (!fromMirna) {
       val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)
-
-      val empty = emptyMMap[Probe, DefaultBio]()
-      val resolved = mirnaSources.par.map(s =>
-        resolveMiRNA(s, isNotMirna, fromMirna)).seq.foldLeft(empty)(_ union _)
-
+      val resolved = resolveMiRNAInner(isNotMirna, false)
       immediateLookup ++ resolved
     } else {
-      val empty = emptyMMap[Probe, DefaultBio]()
-      mirnaSources.par.map(s =>
-        resolveMiRNA(s, isMirna, fromMirna)).seq.foldLeft(empty)(_ union _)
+      resolveMiRNAInner(isMirna, true)
     }
   }
-
-    lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
 
   override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
     import t.common.shared.AType._

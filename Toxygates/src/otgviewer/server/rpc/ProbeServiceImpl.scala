@@ -82,7 +82,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val pbs = if (homologous) {
       val oproteins = uniprot.orthologsFor(proteins, sp).values.flatten.toSet
       probeStore.forUniprots(oproteins ++ proteins)
-      //      OTGOwlim.probesForEntrezGenes(genes)
+      //      OTGProbes.probesForEntrezGenes(genes)
     } else {
       probeStore.forUniprots(proteins)
     }
@@ -95,13 +95,14 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     implicit val sf = getState.sampleFilter
 
     val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
-    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
-    val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
+    //    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
+    val targetTable = netState.synchronized {
+       netState.map(_.targetTable).getOrElse(TargetTable.empty)
+    }
 
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         platformsCache,
         b2rKegg, uniprot, chembl, drugBank,
-        targetmine, mirnaSources,
         targetTable,
         sc, types, _probes).resolve
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -47,7 +47,6 @@ import t.viewer.shared.mirna.MirnaSource
  */
 class AssociationResolver(probeStore: Probes,
     b2rKegg: B2RKegg,
-    mirnaSources: Seq[MirnaSource],
     sc: SampleClass, types: Array[AType],
     _probes: Iterable[String])(implicit sf: SampleFilter) {
 

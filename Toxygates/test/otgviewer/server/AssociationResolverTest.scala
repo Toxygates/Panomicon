@@ -72,7 +72,7 @@ class AssociationResolverTest extends TTestSuite {
       sampleStore,
       new t.viewer.server.Platforms(Map()),
       b2rKegg, uniprot, chembl, drugBank,
-      None, Seq(), TargetTable.empty,
+      TargetTable.empty,
       sc, types, probes
       )(SampleFilter())
 

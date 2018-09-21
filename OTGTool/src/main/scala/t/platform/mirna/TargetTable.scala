@@ -22,10 +22,11 @@ object TargetTable {
  *
  * The database array identifies the source of a particular origin-target pair.
  */
-class TargetTable(val origins: Array[String],
-    val targets: Array[String],
-    val scores: Array[Double],
-    val database: Array[String]) extends IndexedSeq[Interaction] {
+class TargetTable(
+  val origins: Array[String],
+  val targets: Array[String],
+  val scores: Array[Double],
+  val database: Array[String]) extends IndexedSeq[Interaction] {
 
   override val length: Int = origins.length
 
@@ -51,7 +52,7 @@ class TargetTable(val origins: Array[String],
 
   /**
    * Find probes in the platform that match the given transcripts.
-   */  
+   */
   def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]): Iterable[(RefSeq, Iterable[Probe])] = {
     // Note: this function could be a static lookup map?
     val allTrn = transcripts.toSet
@@ -107,7 +108,8 @@ class TargetTable(val origins: Array[String],
    * If not from MiRNA, then probes must have transcripts populated.
    * If from MiRNA, then the platform must have transcripts populated.
    */
-  def associationLookup(probes: Seq[Probe],
+  def associationLookup(
+    probes: Seq[Probe],
     fromMirna: Boolean,
     platform: Iterable[Probe],
     sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
@@ -131,7 +133,7 @@ class TargetTableBuilder() {
   var dbIn = List[String]()
 
   def add(source: MiRNA, target: RefSeq, score: Double,
-      db: String) {
+    db: String) {
     soIn ::= source.id
     taIn ::= target.id
     scoIn ::= score
