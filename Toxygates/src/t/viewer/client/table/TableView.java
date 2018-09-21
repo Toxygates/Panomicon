@@ -16,7 +16,6 @@ import t.common.shared.GroupUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
@@ -81,12 +80,6 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   public void columnsChanged(List<Group> columns) {
     super.columnsChanged(columns);
     expressionTable.columnsChanged(columns);
-  }
-
-  @Override
-  public void sampleClassChanged(SampleClass sc) {
-    super.sampleClassChanged(sc);
-    expressionTable.sampleClassChanged(sc);
   }
 
   @Override

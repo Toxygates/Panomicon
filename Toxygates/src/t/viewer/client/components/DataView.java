@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
-import t.model.SampleClass;
 import t.viewer.shared.Association;
 
 /**
@@ -20,7 +19,6 @@ public abstract class DataView extends Composite {
   protected String[] lastProbes;
   protected List<Group> lastColumns;
   
-  protected SampleClass chosenSampleClass;
   protected String[] chosenProbes = new String[0];
   protected List<Group> chosenColumns = new ArrayList<Group>();
   
@@ -99,10 +97,6 @@ public abstract class DataView extends Composite {
 
   public List<Group> chosenColumns() {
     return chosenColumns;
-  }
-  
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
   }
 
   public void probesChanged(String[] probes) {
