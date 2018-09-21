@@ -42,26 +42,36 @@ function updateLayout(type="null"){
 }
 
 /**
- * Hide/Show nodes in the network that have no edges connecting them to other
+ * Hide nodes in the network that have no edges connecting them to other
  * node
- * @param {boolean} hide whether the nodes should be hidden or not from the
- * display
+ * @return a collection of nodes that are unconnected to the remainder of the
+ * network
  */
-function hideUnconnected(hide=true){
-  if( hide ){
-    var select = vizNet.nodes().filter(function(ele){
-      return ele.degree(false) === 0;
-    });
+function hideUnconnected(){
+  var select = vizNet.nodes().filter(function(ele){
+    return ele.degree(false) === 0;
+  });
 
     // by setting their display to "none", we effectively prevent nodes to be
     // show, without permanently removing them from the graph
-    select.style('display', 'none');
-    console.log("acabo de esconder cosas");
-    return;
-  }
+    // select.style('display', 'none');
+  return select.remove();
+  
+}
 
-  // else, we need to show everything
-  this.nodes().style('display', 'element');
+/**
+ * Restore unconnected nodes, in a way that
+ * @return true if an insertion was performed, regardless of the redundance
+ * produced when elements are already part of the graph, false in any other case
+ */
+function showUnconnected(eles){
+  if( eles != null ){
+    // we need to show everything
+    eles.restore();
+    // this.nodes().style('display', 'element');
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -299,5 +309,6 @@ cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "updateLayout", updateLayout);
 cytoscape("core", "hideUnconnected", hideUnconnected);
+cytoscape("core", "showUnconnected", showUnconnected);
 cytoscape("core", "getToxyNodes", getToxyNodes);
 cytoscape("core", "getToxyInteractions", getToxyInteractions);

@@ -4,6 +4,8 @@
 var vizNet = null;
 // this is also the Graph - using Network structure
 var toxyNet = null;
+// collection of nodes that are unconnected (are part of no edges)
+var unconnected = null;
 // global layout being applied to the graph
 var vizLayout = null;
 
@@ -22,7 +24,6 @@ $(document).on("change", "#layoutSelect", function (){
     my_show();
 
     vizLayout = vizNet.makeLayout(vizNet.updateLayout(opt));
-    console.log("update", vizLayout, vizNet);
     setTimeout(function(){
       vizLayout.run();
       my_hide();
@@ -48,8 +49,20 @@ $(document).on("change", "#hideNodesCheckbox", function(){
   // nothing to do if there is not network
   if( vizNet === null ) return;
   // else, we simply call the corresponding function to hide/show nodes
-  vizNet.hideUnconnected( $("#hideNodesCheckbox").is(":checked") );
-
+  if( $("#hideNodesCheckbox").is(":checked") ){
+    console.log("hiding nodes");
+    unconnected = vizNet.hideUnconnected();
+  }
+  else{
+    console.log("showing nodes");
+    vizNet.showUnconnected(unconnected);
+    unconnected = null;
+  }
+  // TO-DO - find a better way to deal with the positioning of elements, as we
+  // probably do not want to move the nodes that were already being displayed
+  var opt = $("#layoutSelect").find(":selected").val();
+  vizLayout = vizNet.makeLayout(vizNet.updateLayout(opt));
+  vizLayout.run();
 });
 
 /** ---------------------- UPDATE NODE MODAL ---------------------------- **/
@@ -393,7 +406,9 @@ function initDisplay(){
   }
 
   // we hide/show unconnected nodes based on user selection
-  vizNet.hideUnconnected($("#hideNodesCheckbox").is(":checked"));
+  if( $("#hideNodesCheckbox").is(":checked") ){
+    unconnected = vizNet.hideUnconnected();
+  }
 
   // visually show selected nodes, by drawing them with a border
   vizNet.on("select", "node", function(evt){
