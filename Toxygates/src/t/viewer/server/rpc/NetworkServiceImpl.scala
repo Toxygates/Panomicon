@@ -113,17 +113,31 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   override def localInit(c: Configuration) {
     config = c
   }
-  protected def loadMirnaTargetTable(source: MirnaSource, into: TargetTableBuilder)
-
+  
+  protected def mirnaTargetTable(source: MirnaSource): Option[TargetTable]
+  
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    var r = new TargetTableBuilder
-    for (s <- sources) {
-      loadMirnaTargetTable(s, r)
-    }
-    getState.synchronized {
-      getState().mirnaSources = sources
-      getState().targetTable = r.build
+    if (sources.length == 1) {
+      //This special case is not strictly needed, but 
+      //reduces peak memory usage
+      for {
+        t <- mirnaTargetTable(sources(0))
+      } {
+        getState.synchronized {
+          getState().mirnaSources = sources
+          getState().targetTable = t
+        }
+      }
+    } else {
+      var r = new TargetTableBuilder
+      for (s <- sources; t <- mirnaTargetTable(s)) {
+        r.addAll(t)
+      }
+      getState.synchronized {
+        getState().mirnaSources = sources
+        getState().targetTable = r.build
+      }
     }
     println(s"Session targetTable filtered to size ${getState().targetTable.size}")
   }

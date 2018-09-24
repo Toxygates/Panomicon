@@ -127,25 +127,25 @@ class TargetTable(
 }
 
 class TargetTableBuilder() {
-  var soIn = List[String]()
-  var taIn = List[String]()
-  var scoIn = List[Double]()
-  var dbIn = List[String]()
+  var origins = List[String]()
+  var targets = List[String]()
+  var scores = List[Double]()
+  var dbs = List[String]()
 
-  def add(source: MiRNA, target: RefSeq, score: Double,
+  def add(origin: MiRNA, target: RefSeq, score: Double,
     db: String) {
-    soIn ::= source.id
-    taIn ::= target.id
-    scoIn ::= score
-    dbIn ::= db
+    origins ::= origin.id
+    targets ::= target.id
+    scores ::= score
+    dbs ::= db
   }
 
-  def addAll(other: TargetTable) {
-    for ((s, t, sc, db) <- other) {
-      add(s, t, sc, db)
+  def addAll(other: TargetTable) {    
+    for ((o, t, sc, db) <- other) {
+      add(o, t, sc, db)
     }
   }
 
   def build =
-    new TargetTable(soIn.toArray, taIn.toArray, scoIn.toArray, dbIn.toArray)
+    new TargetTable(origins.toArray, targets.toArray, scores.toArray, dbs.toArray)
 }

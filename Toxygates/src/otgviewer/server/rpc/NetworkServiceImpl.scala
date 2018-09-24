@@ -31,7 +31,7 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       s"$mirnaDir/tm_mirtarbase.txt",
       MiRNATargets.tableFromFile(_))
 
-  def loadMirnaTargetTable(source: MirnaSource, into: TargetTableBuilder) {
+  protected def mirnaTargetTable(source: MirnaSource) = {
     val table = source.id match {
       case MiRDBConverter.mirdbGraph       => mirdbTable
       case AppInfoLoader.TARGETMINE_SOURCE => targetmineTable
@@ -39,9 +39,10 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
     }
     table match {
       case Some(t) =>
-        into.addAll(t.scoreFilter(source.limit))
+        Some(t.scoreFilter(source.limit))
       case None =>
-        Console.err.println("mirDB table unavailable")
+        Console.err.println(s"MirnaSource target table unavailable for ${source.id}")
+        None
     }
-  }
+  } 
 }
