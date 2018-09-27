@@ -211,11 +211,11 @@ public class ETMatrixManager {
 
   protected void applyColumnFilter(final int column, final @Nullable ColumnFilter filter) {
     delegate.setEnabled(false);
+    filterDialog.setVisible(false);
     matrixService.setColumnFilter(matrixId, column, filter, new AsyncCallback<ManagedMatrixInfo>() {
       @Override
       public void onFailure(Throwable caught) {
         Window.alert("An error occurred when the column filter was changed.");
-        filterDialog.setVisible(false);
         delegate.setEnabled(true);
       }
 
@@ -228,7 +228,6 @@ public class ETMatrixManager {
           matrixInfo = result;
           setRows(matrixInfo.numRows());
           delegate.setupColumns();
-          filterDialog.setVisible(false);
         }
       }
     });
