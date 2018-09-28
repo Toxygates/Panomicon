@@ -2,7 +2,6 @@
  * Initialize style for network components,
  */
 function initStyle(){
-  console.log("initSize", this.size());
   this.resize();
   // define the style to use for the depiction of the network elements
   this.style()
@@ -13,6 +12,10 @@ function initStyle(){
       "text-halign": "center",
       'background-color': "data(color)",
     })
+    .selector("node:selected")
+    .style({
+      "border-width": "5px",
+    })
     .update();
 }
 
@@ -22,8 +25,6 @@ function initStyle(){
  * within the display area
  */
 function updateLayout(type="null"){
-  // this.layout({
-  console.log("this",this.size());
   var layout = {
     name: type,
     fit: true, // whether to fit to viewport
@@ -36,8 +37,6 @@ function updateLayout(type="null"){
     ready: undefined, // callback on layoutready
     stop: undefined, // callback on layoutstop
     transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
-  // })
-  // .run();
   }
   return layout;
 }
@@ -49,24 +48,24 @@ function updateLayout(type="null"){
  * network
  */
 function hideUnconnected(){
+  // first we find all nodes whose degree (number of edges) is zero
   var select = this.nodes().filter(function(ele){
     return ele.degree(false) === 0;
   });
-
-    // by setting their display to "none", we effectively prevent nodes to be
-    // show, without permanently removing them from the graph
-    // select.style('display', 'none');
+  // we remove the unconnected nodes from the network, and return the collection
   return select.remove();
-
 }
 
 /**
- * Restore unconnected nodes, in a way that
+ * Restore unconnected nodes to the original network, so as to include them in
+ * the display and all network related calculations (such as layout)
+ * @param {}eles the collection of elements to restore to the network
+ * (previously removed unconnected nodes)
  * @return true if an insertion was performed, regardless of the redundance
  * produced when elements are already part of the graph, false in any other case
  */
 function showUnconnected(eles){
-  if( eles != null ){
+  if( eles !== null ){
     // we need to show everything
     eles.restore();
     // this.nodes().style('display', 'element');

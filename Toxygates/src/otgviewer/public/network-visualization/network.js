@@ -45,6 +45,9 @@ class Network{
     this.title = title;
     this.interactions = interactions;
     this.nodes = nodes;
+
+    this.unconnected = null;
+    this.layout = "null";
   }
 
   /**

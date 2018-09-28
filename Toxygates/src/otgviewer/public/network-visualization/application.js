@@ -1,5 +1,5 @@
 "use strict";
-
+/* identifiers for cystoscape display panels */
 const MAIN_ID = 0;
 const SIDE_ID = 1;
 
@@ -9,6 +9,22 @@ var vizNet = [null, null];
 var toxyNet = [null, null];
 
 /** ------------------------- FORM HANDLERS ------------------------------ **/
+/**
+ * Adjust interface controls whenever the user changes the active visualization
+ * panel
+ */
+$(document).on("change", "#panelSelect", function(){
+  // Determine the selected active panel
+  var id = $("#panelSelect").val();
+  // Display the appropriate layout
+  if( toxyNet[id].layout !== "null" )
+    $("#layoutSelect").val(toxyNet[id].layout.options.name);
+  else
+    $("#layoutSelect").val("null");
+  // Display the correct value for hiding of unconnected nodes
+  $("#hideNodesCheckbox").prop("checked", toxyNet[id].unconnected !== null);
+});
+
 /**
  * Changes the layout of the nodes in the network according to the user's
  * selection.
@@ -29,28 +45,29 @@ $(document).on("change", "#layoutSelect", function (){
 });
 
 /**
- * When selected, it hides from the visualiation all nodes that are unconnected,
- * that is, that are not linked to any other node within the network.
- * Only applies to the graph on the main display.
+ * Hide (or not) from the visualiation all nodes that are unconnected, that is,
+ * nodes that are not linked to any other node within the network.
  */
 $(document).on("change", "#hideNodesCheckbox", function(){
-  // nothing to do if there is no network
-  if( vizNet[MAIN_ID] === null ) return;
-  // else, we simply call the corresponding function to hide/show nodes
+  // Determine on which panel the changes should be applied
+  var id = $("#panelSelect").val();
+  // If no network is on display, we can safely return
+  if( vizNet[id] === null ) return;
+  // When checked, we hide the un-connected nodes of the network
   if( $("#hideNodesCheckbox").is(":checked") ){
-    toxyNet[MAIN_ID].unconnected = vizNet[MAIN_ID].hideUnconnected();
+    toxyNet[id].unconnected = vizNet[id].hideUnconnected();
   }
   else{
-    vizNet[MAIN_ID].showUnconnected(toxyNet[MAIN_ID].unconnected);
-    toxyNet[MAIN_ID].unconnected = null;
+    vizNet[id].showUnconnected(toxyNet[id].unconnected); // show unconnected
+    toxyNet[id].unconnected = null; // clear the list of hidden nodes
   }
 
   // Since the network has been modified, the corresponding layout needs to be
   // re-run in order to account for these changes
   var opt = $("#layoutSelect").find(":selected").val();
-  if( toxyNet[MAIN_ID].layout !== "preset" ){
-    toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].makeLayout(vizNet[MAIN_ID].updateLayout(opt));
-    toxyNet[MAIN_ID].layout.run();
+  if( toxyNet[id].layout !== "preset" ){
+    toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
+    toxyNet[id].layout.run();
   }
 });
 
@@ -424,22 +441,6 @@ function onReadyForVisualization(){
       changeNetwork(SIDE_ID);
     });
 
-
-  // visually show selected nodes, by drawing them with a border
-  vizNet[MAIN_ID].on("select", "node", function(evt){
-    var source = evt.target;
-    if( source.isNode() )
-    source.style({
-      "border-width": "5px"
-    });
-  });
-
-  // remove border when elements are unselected
-  vizNet[MAIN_ID].on("unselect", "node", function(evt){
-    var source = evt.target;
-    source.style("border-width", "0px"  );
-  });
-  
   /* Move the Cytoscape context menu into the modal GWT network visualiaztion
    * dialog, because otherwise input to it will be intercepted */
   $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
@@ -467,8 +468,13 @@ function changeNetwork(id=MAIN_ID){
 
   /* add the loaded network to the corresponding display and do the necesary
    * transformations to fit the graph to the current display size */
+  vizNet[id].elements().remove(); // remove all previous elements
   vizNet[id].add(toxyNet[id].getCytoElements());
-  vizNet[id].fit();
+  
+  // we hide/show unconnected nodes based on user selection
+  if( $("#hideNodesCheckbox").is(":checked") ){
+    toxyNet[id].unconnected = vizNet[id].hideUnconnected();
+  }
 
   /* if the nodes had no position, and the user has previously selected a layout
    * option, apply it tho the recently loaded network */
@@ -477,11 +483,8 @@ function changeNetwork(id=MAIN_ID){
     toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(layout));
     toxyNet[id].layout.run();
   }
+  vizNet[id].fit();
 
-  // we hide/show unconnected nodes based on user selection
-  if( $("#hideNodesCheckbox").is(":checked") ){
-    toxyNet[id].unconnected = vizNet[id].hideUnconnected();
-  }
 }
 
 /**
