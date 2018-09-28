@@ -2,6 +2,7 @@
  * Initialize style for network components,
  */
 function initStyle(){
+  console.log("initSize", this.size());
   this.resize();
   // define the style to use for the depiction of the network elements
   this.style()
@@ -48,7 +49,7 @@ function updateLayout(type="null"){
  * network
  */
 function hideUnconnected(){
-  var select = vizNet.nodes().filter(function(ele){
+  var select = this.nodes().filter(function(ele){
     return ele.degree(false) === 0;
   });
 
@@ -56,7 +57,7 @@ function hideUnconnected(){
     // show, without permanently removing them from the graph
     // select.style('display', 'none');
   return select.remove();
-  
+
 }
 
 /**
