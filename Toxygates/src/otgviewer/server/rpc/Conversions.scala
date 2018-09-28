@@ -94,7 +94,7 @@ object Conversions {
       case MonotonicDown     => SeriesRanking.MonotonicDecreasing
       case MaximalFold       => SeriesRanking.MaxFold
       case MinimalFold       => SeriesRanking.MinFold
-      case ReferenceCompound => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
+      case ReferenceCompound => new SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
     }
   }
 }

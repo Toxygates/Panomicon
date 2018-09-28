@@ -34,12 +34,18 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
   def withProbe(newProbe: Int) = new SeriesRanking(db, key.copy(probe = newProbe))
   def withProbe(newProbe: String) = new SeriesRanking(db, key.copy(probe = packProbe(newProbe)))
 
+  def loadRefCurves(key: OTGSeries) = {
+      val refCurves = db.read(key)
+      println("Initialised " + refCurves.size + " reference curves")
+      refCurves
+    }
+
   override protected def getScores(mt: RankType): Iterable[(OTGSeries, Double)] = {
     mt match {
-      //TODO modify ReferenceCompound API to be able to check for type argument at runtime
-      //or stop trying to match the type argument
-      case r: ReferenceCompound[OTGSeries @unchecked] => {
-        r.init(db, key.copy(compound = r.compound, doseOrTime = r.doseOrTime)) //init this once and reuse it across all the compounds
+      case r: ReferenceCompound => {
+        //Init this once and reuse across all the compounds
+        r.refCurves = loadRefCurves(key.copy(compound = r.compound,
+            doseOrTime = r.doseOrTime))
       }
       case _ => {}
     }
@@ -61,19 +67,19 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
     //or fixed times (for dose series) independently
 
     val products = (for (
-      dt <- dosesOrTimes; c <- compounds;      
+      dt <- dosesOrTimes; c <- compounds;
       allCorresponding = allScores.map(_.find(series =>
         series._1.doseOrTime == dt && series._1.compound == c));
       scores = allCorresponding.map(_.map(_._2).getOrElse(Double.NaN));
       product = safeProduct(scores);
       result = (c, dt, product)
     ) yield result)
-    
+
     val byCompound = products.groupBy(_._1)
-    byCompound.map(x => {      
+    byCompound.map(x => {
       //highest scoring dose or time for each compound
       //NaN values must be handled properly
-      x._2.sortWith((a, b) => safeIsGreater(a._3, b._3)).head     
+      x._2.sortWith((a, b) => safeIsGreater(a._3, b._3)).head
     })
   }
 }

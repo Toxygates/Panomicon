@@ -33,13 +33,13 @@ abstract class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(im
    * This method is currently the only entry point used by the web application.
    * Returns (compound, dose, score)
    */
-  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)] 
+  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)]
 
 }
 
 /*
  * Note: some of the rules might not be deterministic (in the case where only a
- * partial ordering is imposed by the scoring function). 
+ * partial ordering is imposed by the scoring function).
  */
 object SeriesRanking {
   import Statistics._
@@ -119,11 +119,11 @@ object SeriesRanking {
           score -= 1
         }
       }
-      
+
       /*
        * We penalise missing data heavily. This may be worth reconsidering.
        */
-      //score -= (4 - s.values.size) 
+      //score -= (4 - s.values.size)
       score
     }
   }
@@ -154,16 +154,15 @@ object SeriesRanking {
     def scoreSeries[S <: Series[S]](s: S): Double = 20 + safeMax(s.presentValues)
   }
 
-  case class ReferenceCompound[S <: Series[S]](compound: String, doseOrTime: String) extends RankType {
-    var refCurves: Iterable[S] = Iterable.empty
-    def init(db: SeriesDB[S], key: S) {
-      refCurves = db.read(key)
-      println("Initialised " + refCurves.size + " reference curves")
-      println(refCurves.mkString)
-    }
+  class ReferenceCompound(val compound: String, val doseOrTime: String,
+      var refCurves: Iterable[Series[_]] = Seq()) extends RankType {
 
-    def scoreSeries[T <: Series[T]](s: T): Double =
+    def scoreSeries[T <: Series[T]](s: T): Double = {
+      if (refCurves.isEmpty) {
+        Console.err.println("Warning: no reference curves available")
+      }
       safeMax(refCurves.map(rc => safePCorrelation(rc, s) + 1))
+    }
   }
 
   def safePCorrelation(s1: Vector[Double], s2: Vector[Double]): Double = {
