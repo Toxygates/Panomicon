@@ -396,34 +396,34 @@ $(document).on("click", ".modal-cancel", function(event){
 function onReadyForVisualization(){
   // mainDisplay initialization - the one currently being used by the user to
   // work, and currently linked with the background options of toxygates
-  var display = $("#display");
-  display.data("idx", MAIN_ID);
+  $("#display")
+    .append('<div id="leftDisplay" class="sub-viz"></div>')
+    .append('<div id="rightDisplay" class="sub-viz"></div>')
+    .ready(function(){
+      var left = $("#leftDisplay");
+      left.data("idx", MAIN_ID);
 
-  vizNet[MAIN_ID] = cytoscape({
-    container: display,
-    styleEnabled: true,
-  });
+      vizNet[MAIN_ID] = cytoscape({
+        container: left,
+        styleEnabled: true,
+      });
+      vizNet[MAIN_ID].initStyle();        // default style for network elements
+      vizNet[MAIN_ID].initContextMenu();  // default context menu
+      changeNetwork(MAIN_ID);
 
-  // display.height(display.find("canvas")[0].height);
+      var right = $("#rightDisplay");
+      right.data("idx", SIDE_ID);
 
+      vizNet[SIDE_ID] = cytoscape({
+        container: right,
+        styleEnabled: true,
+      });
+      vizNet[SIDE_ID].initStyle();        // default style for network elements
+      vizNet[SIDE_ID].initContextMenu();  // default context menu
 
-  vizNet[MAIN_ID].initStyle();        // default style for network elements
-  vizNet[MAIN_ID].initContextMenu();  // default context menu
+      changeNetwork(SIDE_ID);
+    });
 
-  display.parent().append('<div class="sub-viz" id="rightDisplay"></div>');
-
-
-  // sideDisplay initialization - used as contrast information for the user,
-  // typically loaded from a preoviously worked graph
-  display = $("#rightDisplay");
-  display.data("idx", SIDE_ID);
-
-  vizNet[SIDE_ID] = cytoscape({
-    container: display,
-    styleEnabled: true,
-  });
-  vizNet[SIDE_ID].initStyle();
-  vizNet[SIDE_ID].initContextMenu();
 
   // visually show selected nodes, by drawing them with a border
   vizNet[MAIN_ID].on("select", "node", function(evt){
@@ -439,15 +439,12 @@ function onReadyForVisualization(){
     var source = evt.target;
     source.style("border-width", "0px"  );
   });
-
+  
   /* Move the Cytoscape context menu into the modal GWT network visualiaztion
    * dialog, because otherwise input to it will be intercepted */
   $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
   $(".cy-context-menus-cxt-menu").hide();
 
-  /** TODO REMOVE AFTER PROPER FUNCTIONALITY HAS BEEN ADDED IN TEST ENV. */
-  changeNetwork(MAIN_ID);
-  changeNetwork(SIDE_ID);
 }
 
 /**
