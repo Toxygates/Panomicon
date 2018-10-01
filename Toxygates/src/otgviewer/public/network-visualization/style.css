@@ -12,10 +12,25 @@
 }
 
 #display.visualization{
-	border-style: dashed;
-	display: inline-block;
+  border-style: dashed;
+  position: relative;
+  overflow: hidden;
+	display: flex;
+  flex-direction: row;
 	color: #84c754;
-	float: left;
+}
+
+#leftDisplay.sub-viz{
+	border-style: dashed;
+  color: navajowhite;
+  width: 50%;
+  height: 100%;
+}
+#rightDisplay.sub-viz{
+  border-style: dashed;
+  color: sandybrown;
+  width: 50%;
+  height: 100%;
 }
 
 #netvizdiv div.info-panel{

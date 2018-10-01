@@ -12,6 +12,10 @@ function initStyle(){
       "text-halign": "center",
       'background-color': "data(color)",
     })
+    .selector("node:selected")
+    .style({
+      "border-width": "5px",
+    })
     .update();
 }
 
@@ -21,20 +25,53 @@ function initStyle(){
  * within the display area
  */
 function updateLayout(type="null"){
-  this.layout({
+  var layout = {
     name: type,
     fit: true, // whether to fit to viewport
     padding: 0, // fit padding
-    boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-    animate: false, // whether to transition the node positions
+    // boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+    animate: true, // whether to transition the node positions
     animationDuration: 500, // duration of animation in ms if enabled
     animationEasing: undefined, // easing of animation if enabled
     animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
     ready: undefined, // callback on layoutready
     stop: undefined, // callback on layoutstop
     transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
-  })
-  .run();
+  }
+  return layout;
+}
+
+/**
+ * Hide nodes in the network that have no edges connecting them to other
+ * node
+ * @return a collection of nodes that are unconnected to the remainder of the
+ * network
+ */
+function hideUnconnected(){
+  // first we find all nodes whose degree (number of edges) is zero
+  var select = this.nodes().filter(function(ele){
+    return ele.degree(false) === 0;
+  });
+  // we remove the unconnected nodes from the network, and return the collection
+  return select.remove();
+}
+
+/**
+ * Restore unconnected nodes to the original network, so as to include them in
+ * the display and all network related calculations (such as layout)
+ * @param {}eles the collection of elements to restore to the network
+ * (previously removed unconnected nodes)
+ * @return true if an insertion was performed, regardless of the redundance
+ * produced when elements are already part of the graph, false in any other case
+ */
+function showUnconnected(eles){
+  if( eles !== null ){
+    // we need to show everything
+    eles.restore();
+    // this.nodes().style('display', 'element');
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -167,9 +204,10 @@ function onAddEdge(event){
   // handle the next click of the mouse
   event.cy.promiseOn("click").then(function(evt){
     var to = evt.target;
+    console.log(to);
     // a new interaction is only added if the user clicks on a node different
     // from the one used as source for the interaction
-    if( to !== self && to.isNode() ){
+    if( to !== self && typeof to.isNode === 'function' && to.isNode() ){
       event.cy.add({
         group: "edges",
         data: {
@@ -270,5 +308,7 @@ function onNodeFiltering(event){
 cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "updateLayout", updateLayout);
+cytoscape("core", "hideUnconnected", hideUnconnected);
+cytoscape("core", "showUnconnected", showUnconnected);
 cytoscape("core", "getToxyNodes", getToxyNodes);
 cytoscape("core", "getToxyInteractions", getToxyInteractions);
