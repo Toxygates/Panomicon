@@ -55,7 +55,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   final static String NO_ORGANISM = "";
 
   /**
-   * @param rowFilters major parameter values or gene symbols.
+   * @param rowFilters major parameter values or gene symbols, depending on the chart type.
    * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
    */
   public ChartGrid(Factory<D, ?> factory, Screen screen, Dataset<D> dataset,
@@ -63,11 +63,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
       String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
     super();
     this.factory = factory;
-
-    // TODO use something like SampleClass or MultiFilter instead if possible
-    this.rowFilters = rowFilters;
-    // TODO defer organism handling to schema, if it's needed
     this.organisms = organisms;
+    this.rowFilters = rowFilters;
     this.minsOrMeds = minsOrMeds;
     this.dataset = dataset;
     this.totalWidth = totalWidth;

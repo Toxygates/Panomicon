@@ -63,7 +63,10 @@ public class Charts {
   private SampleClass[] sampleClasses;
   private List<Group> groups;
   final private DataSchema schema;
-  // TODO where to instantiate this?
+
+  /*
+   * Note: ideally this should be instantiated/chosen by some dependency injection system
+   */
   private GVizFactory factory = new GVizFactory();
 
   private Charts(Screen screen) {

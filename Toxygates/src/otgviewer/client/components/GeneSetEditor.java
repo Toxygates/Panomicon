@@ -483,7 +483,10 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
     if (compoundList.getSelectedIndex() != -1) {
       String compound = compoundList.getItemText(compoundList.getSelectedIndex());
 
-      // Used for organism - TODO fix this for multi-organism cases
+      /*
+       * Used to select an organism for the target lookup, in the homologous case. Note: more work
+       * is needed to make this work correctly for multi-species lookup
+       */
       SampleClass sc = screen.chosenColumns().get(0).samples()[0].sampleClass();
       logger.info("Target lookup for: " + sc.toString());
 

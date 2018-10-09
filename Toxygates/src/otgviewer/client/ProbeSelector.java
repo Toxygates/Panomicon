@@ -184,8 +184,6 @@ abstract public class ProbeSelector extends Composite implements
   protected void probesLoaded(final String[] probes) {
     if (probes.length > 0) {
       Arrays.sort(probes);
-      // TODO reduce the number of ajax calls done by this screen by
-      // collapsing them
       probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(screen,
           "Unable to get gene symbols for probes") {
         @Override

@@ -337,10 +337,9 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     String prefItem;
     if (chartCombo.getSelectedIndex() == 0) {
       prefItem = findPreferredItem(true);
-      logger.info("Preferred medium: " + prefItem);
+      logger.info("Preferred medium parameter: " + prefItem);
       for (String mv : source.mediumVals()) {
         if (!schema.isControlValue(mv)) {
-          // TODO for NI values in OTG
           chartSubtypeCombo.addItem(mv);
           chartSubtypes.add(mv);
         }
@@ -348,7 +347,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       }
     } else {
       prefItem = findPreferredItem(false);
-      logger.info("Preferred minor: " + prefItem);
+      logger.info("Preferred minor parameter: " + prefItem);
       for (String minv : source.minorVals()) {
         chartSubtypeCombo.addItem(minv);
         chartSubtypes.add(minv);

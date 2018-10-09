@@ -55,6 +55,11 @@ public class OTGViewer extends TApplication {
 
   private void initFactory() {
     UIFactory f;
+    /*
+     * Note: ideally we should not hardcode various instance names here, but instead associate them
+     * with factories on a different level, for example set the factory class name as a parameter in
+     * web.xml, or use some kind of dependency injection?
+     */
     //TODO hardcoding these instance names here may be controversial
     // - think of a better way of handling this
     switch (appInfo().instanceName()) {

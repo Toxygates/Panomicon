@@ -73,7 +73,9 @@ abstract public class DataSource {
 
       Set<String> medVals = new HashSet<String>();
       for (HasClass f : from) {
-        // TODO generalise control-check better
+        /*
+         * Note: this control-check could be further generalised
+         */
         if (controlMedVals || !schema.isControlValue(schema.getMedium(f))) {
           medVals.add(schema.getMedium(f));
         }

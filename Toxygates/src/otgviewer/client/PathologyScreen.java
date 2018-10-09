@@ -73,8 +73,6 @@ public class PathologyScreen extends MinimalScreen {
 
   @Override
   public boolean enabled() {
-    // TODO check the groups for vivo samples instead
-    // CellType ct = CellType.valueOf(chosenSampleClass.get("test_type"));
     List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes());
     return chosenColumns != null && chosenColumns.size() > 0;
   }

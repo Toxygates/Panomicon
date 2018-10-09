@@ -49,10 +49,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
-  // TODO: factor out heat map management logic + state
-  // together with UIFactory.hasHeatMapMenu
-  @Nullable
-  private MenuItem heatMapMenu;
   protected GeneSetsMenu geneSetsMenu;
   
   protected String[] chosenProbes = new String[0];
