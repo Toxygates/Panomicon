@@ -60,8 +60,6 @@ public class OTGViewer extends TApplication {
      * with factories on a different level, for example set the factory class name as a parameter in
      * web.xml, or use some kind of dependency injection?
      */
-    //TODO hardcoding these instance names here may be controversial
-    // - think of a better way of handling this
     switch (appInfo().instanceName()) {
       case "toxygates":
       case "tg-update":
