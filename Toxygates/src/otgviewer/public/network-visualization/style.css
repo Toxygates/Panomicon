@@ -23,14 +23,19 @@
 #leftDisplay.sub-viz{
 	border-style: dashed;
   color: navajowhite;
-  width: 50%;
+  width: 100%;
   height: 100%;
 }
+
+#leftDisplay.sub-viz.with-side{
+  width: 50%;
+}
+
 #rightDisplay.sub-viz{
   border-style: dashed;
   color: sandybrown;
   width: 50%;
-  height: 100%;
+  height: 100%; */
 }
 
 #netvizdiv div.info-panel{
