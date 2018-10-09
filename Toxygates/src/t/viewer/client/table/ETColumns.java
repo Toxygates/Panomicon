@@ -22,7 +22,7 @@ import t.viewer.shared.ManagedMatrixInfo;
  * Next steps: refactor ExpressionTable.setupColumns and related functions, and
  * move some of the logic here.
  */
-public class ETColumns {
+public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
   private final Resources resources;
   private Delegate delegate;
   private Logger logger;
@@ -84,7 +84,8 @@ public class ETColumns {
     return null;
   }
 
-  protected Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
+  @Override
+  public Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
     return new Column<ExpressionRow, String>(cell) {
       @Override
       public String getValue(ExpressionRow er) {
@@ -97,6 +98,7 @@ public class ETColumns {
     };
   }
 
+  @Override
   public ToolCell toolCell() {
     return new ToolCell();
   }
@@ -133,7 +135,8 @@ public class ETColumns {
     return synCol;
   }
 
-  protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
+  @Override
+  public Header<SafeHtml> getColumnHeader(ColumnInfo info) {
     ColumnInfo i = info.trimTitle(RichTable.COL_TITLE_MAX_LEN);
     SafeHtmlHeader superHeader = new SafeHtmlHeader(i.headerHtml());
 

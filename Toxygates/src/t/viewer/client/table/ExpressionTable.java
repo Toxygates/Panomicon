@@ -21,9 +21,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.logging.Logger;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
@@ -136,6 +135,12 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     setEnabled(false);
   }
   
+  @Override
+  protected ETColumns makeColumnHelper(Screen screen) {
+    this.columns = new ETColumns(this, screen.manager().resources(), COLUMN_WIDTH, logger);
+    return columns;
+  }
+
   public AbstractSelectionModel<ExpressionRow> selectionModel() {
     return selectionModel;
   }
@@ -211,23 +216,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       Column<ExpressionRow, ?> sortColumn = sectionColumnAtIndex("data", 0);
       grid.getColumnSortList().push(new ColumnSortInfo(sortColumn, false));
     }
-  }
-
-  // TODO: modify RichTable to directly call these methods from an interface to be 
-  // implemented by ETColumns so we can get rid of this boilerplate
-  @Override
-  protected Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
-    return columns.toolColumn(cell);
-  }
-
-  @Override
-  protected Cell<String> toolCell() {
-    return columns.toolCell();
-  }
-
-  @Override
-  protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
-    return columns.getColumnHeader(info);
   }
 
   @Override

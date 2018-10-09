@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -47,6 +46,7 @@ import t.viewer.client.PersistedState;
 abstract public class RichTable<T> extends Composite implements RequiresResize {
   protected Screen screen;
   protected DataGrid<T> grid;
+  protected ColumnHelper<T> columnHelper;
   protected Label titleLabel = new Label();
 
   protected final DataSchema schema;
@@ -64,6 +64,13 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   protected final boolean keepSortOnReload;
 
   Logger logger;
+  
+  public interface ColumnHelper<T> {
+    Column<T, String> toolColumn(Cell<String> cell);
+
+    Cell<String> toolCell();    
+    Header<SafeHtml> getColumnHeader(ColumnInfo info);
+  }
 
   public interface Resources extends DataGrid.Resources {
     @Override
@@ -75,6 +82,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     this.screen = screen;
     this.schema = screen.manager().schema();
     this.style = style;
+    this.columnHelper = makeColumnHelper(screen);
     this.keepSortOnReload = flags.keepSortOnReload;
     
     String title = flags.title;
@@ -115,6 +123,14 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     grid.addColumnSortHandler(colSortHandler);
   }
   
+  /*
+   * We use an abstract method to get a ColumnHelper, rather than make it a
+   * constructor argument, because constructing a ColumnHelper might need some
+   * logic from a subclass (of RichTable).
+   *   
+   */
+  protected abstract ColumnHelper<T> makeColumnHelper(Screen screen);
+
   public void setTitleHeader(String title) {
     titleLabel.setText(title);
   }
@@ -206,10 +222,12 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
 
   protected Cell<String> toolCell() {
-    return new TextCell();
+    return columnHelper.toolCell();
   }
 
-  abstract protected Column<T, String> toolColumn(Cell<String> cell);
+  protected Column<T, String> toolColumn(Cell<String> cell) {
+    return columnHelper.toolColumn(cell);
+  }
 
   public final static int COL_TITLE_MAX_LEN = 8;
 
@@ -267,10 +285,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
 
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
-    ColumnInfo i = info.trimTitle(COL_TITLE_MAX_LEN);
-    SafeHtmlHeader header = new SafeHtmlHeader(i.headerHtml());
-    header.setHeaderStyleNames(info.headerStyleNames());
-    return header;
+    return columnHelper.getColumnHeader(info);
   }
 
   /**
