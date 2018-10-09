@@ -34,45 +34,45 @@ public class NetworkConversion {
     }
 
     var jsNodes = mapJavaList(
-        network.@t.viewer.shared.network.Network::nodes()(),
-        function(node) {
-          var id = node.@t.viewer.shared.network.Node::id()();
-          var symbols = mapJavaList(
-              node.@t.viewer.shared.network.Node::symbols()(),
-              function(symbol) {
-                return symbol;
-              });
-          var type = node.@t.viewer.shared.network.Node::type()();
-          if (type == 'miRNA') {
-            type = 'microRNA';
-          }
+      network.@t.viewer.shared.network.Network::nodes()(),
+      function(node) {
+        var id = node.@t.viewer.shared.network.Node::id()();
+        var symbols = mapJavaList(
+          node.@t.viewer.shared.network.Node::symbols()(),
+          function(symbol) {
+            return symbol;
+          });
+        var type = node.@t.viewer.shared.network.Node::type()();
+        if (type == 'miRNA') {
+          type = 'microRNA';
+        }
 
-          var jsWeights = {};
-          var weights = node.@t.viewer.shared.network.Node::weights()();
-          var weightKeySet = weights.@java.util.HashMap::keySet()();
-          var weightKeyIterator = weightKeySet.@java.util.Set::iterator()();
-          while (weightKeyIterator.@java.util.Iterator::hasNext()()) {
-            var key = weightKeyIterator.@java.util.Iterator::next()();
-            var weight = weights.@java.util.HashMap::get(Ljava/lang/Object;)(key);
-            jsWeights[key] = weight;
-          }
+        var jsWeights = {};
+        var weights = node.@t.viewer.shared.network.Node::weights()();
+        var weightKeySet = weights.@java.util.HashMap::keySet()();
+        var weightKeyIterator = weightKeySet.@java.util.Set::iterator()();
+        while (weightKeyIterator.@java.util.Iterator::hasNext()()) {
+          var key = weightKeyIterator.@java.util.Iterator::next()();
+          var weight = weights.@java.util.HashMap::get(Ljava/lang/Object;)(key);
+          jsWeights[key] = weight;
+        }
 
-          var newNode = $wnd.makeNode(id, type, symbols);
-          newNode.setWeights(jsWeights);
-          return newNode;
-        });
+        var newNode = $wnd.makeNode(id, type, symbols);
+        newNode.setWeights(jsWeights);
+        return newNode;
+    });
 
     var jsInteractions = mapJavaList(
-        network.@t.viewer.shared.network.Network::interactions()(),
-        function(interaction) {
-          var label = interaction.@t.viewer.shared.network.Interaction::label()();
-          var weight = interaction.@t.viewer.shared.network.Interaction::weight()();
-          var from = interaction.@t.viewer.shared.network.Interaction::from()();
-          var fromId = from.@t.viewer.shared.network.Node::id()();
-          var to = interaction.@t.viewer.shared.network.Interaction::to()();
-          var toId = to.@t.viewer.shared.network.Node::id()();
-          return $wnd.makeInteraction(fromId, toId, label, weight);
-        });
+      network.@t.viewer.shared.network.Network::interactions()(),
+      function(interaction) {
+        var label = interaction.@t.viewer.shared.network.Interaction::label()();
+        var weight = interaction.@t.viewer.shared.network.Interaction::weight()();
+        var from = interaction.@t.viewer.shared.network.Interaction::from()();
+        var fromId = from.@t.viewer.shared.network.Node::id()();
+        var to = interaction.@t.viewer.shared.network.Interaction::to()();
+        var toId = to.@t.viewer.shared.network.Node::id()();
+        return $wnd.makeInteraction(fromId, toId, label, weight);
+    });
 
     return $wnd.makeNetwork(networkName, jsInteractions, jsNodes);
   }-*/;
@@ -95,35 +95,35 @@ public class NetworkConversion {
    * Converts a JavaScript network to a Java network.
    */
   private static native Network convertNetworkToJava(JavaScriptObject network) /*-{
-  var javaNodes = @java.util.ArrayList::new(I)(network.nodes.length);
-  var nodeDictionary = {};
-  network.nodes.forEach(function(node) {
-    var javaWeights = @java.util.HashMap::new(I)(Object.keys(node.weight).length);
-    Object.keys(node.weight).forEach(function(key) {
-      //javaWeights.@java.util.HashMap::put(Ljava/lang/String;Ljava/lang/Double;)(key, node.weight[key]);
-      javaWeights.@java.util.HashMap::put(Ljava/lang/Object;Ljava/lang/Object;)(key, node.weight[key]);
+    var javaNodes = @java.util.ArrayList::new(I)(network.nodes.length);
+    var nodeDictionary = {};
+    network.nodes.forEach(function(node) {
+      var javaWeights = @java.util.HashMap::new(I)(Object.keys(node.weight).length);
+      Object.keys(node.weight).forEach(function(key) {
+        //javaWeights.@java.util.HashMap::put(Ljava/lang/String;Ljava/lang/Double;)(key, node.weight[key]);
+        javaWeights.@java.util.HashMap::put(Ljava/lang/Object;Ljava/lang/Object;)(key, node.weight[key]);
+      });
+      var javaSymbols = @java.util.ArrayList::new(I)(node.symbol.length);
+      node.symbol.forEach(function(symbol) {
+        javaSymbols.@java.util.ArrayList::add(Ljava/lang/Object;)(symbol);
+      });
+      var javaNode = @t.viewer.shared.network.Node::new(Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/HashMap;)(node.id, javaSymbols, node.type, javaWeights);
+      javaNodes.@java.util.ArrayList::add(Ljava/lang/Object;)(javaNode);
+      nodeDictionary[node.id] = javaNode;
     });
-    var javaSymbols = @java.util.ArrayList::new(I)(node.symbol.length);
-    node.symbol.forEach(function(symbol) {
-      javaSymbols.@java.util.ArrayList::add(Ljava/lang/Object;)(symbol);
+    
+    var javaInteractions = @java.util.ArrayList::new(I)(network.interactions.length);
+    network.interactions.forEach(function(interaction) {
+      var from = nodeDictionary[interaction.from];
+      var to =  nodeDictionary[interaction.to];
+      var javaInteraction = @t.viewer.shared.network.Interaction::new(Lt/viewer/shared/network/Node;Lt/viewer/shared/network/Node;Ljava/lang/String;Ljava/lang/Double;)(from, to, interaction.label, interaction.weight);
+      javaInteractions.@java.util.ArrayList::add(Ljava/lang/Object;)(javaInteraction);
     });
-    var javaNode = @t.viewer.shared.network.Node::new(Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/HashMap;)(node.id, javaSymbols, node.type, javaWeights);
-    javaNodes.@java.util.ArrayList::add(Ljava/lang/Object;)(javaNode);
-    nodeDictionary[node.id] = javaNode;
-  });
-  
-  var javaInteractions = @java.util.ArrayList::new(I)(network.interactions.length);
-  network.interactions.forEach(function(interaction) {
-    var from = nodeDictionary[interaction.from];
-    var to =  nodeDictionary[interaction.to];
-    var javaInteraction = @t.viewer.shared.network.Interaction::new(Lt/viewer/shared/network/Node;Lt/viewer/shared/network/Node;Ljava/lang/String;Ljava/lang/Double;)(from, to, interaction.label, interaction.weight);
-    javaInteractions.@java.util.ArrayList::add(Ljava/lang/Object;)(javaInteraction);
-  });
-  
-  var jsonString = JSON.stringify(network);
-  
-  return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)(network.title, javaNodes, javaInteractions, jsonString);
-}-*/;
+    
+    var jsonString = JSON.stringify(network);
+    
+    return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)(network.title, javaNodes, javaInteractions, jsonString);
+  }-*/;
 
   public static native Network unpackNetwork(String packedString) /*-{
     var network = JSON.parse(packedString);
