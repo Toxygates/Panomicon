@@ -212,7 +212,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         oldSortColumnHint, oldSortColumnGroup, oldSortAscending);
     if (recreatedSortInfo != null) {
       grid.getColumnSortList().push(recreatedSortInfo);
-    } else {
+    } else if (grid.getColumnSortList().size() == 0) {
       Column<ExpressionRow, ?> sortColumn = sectionColumnAtIndex("data", 0);
       grid.getColumnSortList().push(new ColumnSortInfo(sortColumn, false));
     }

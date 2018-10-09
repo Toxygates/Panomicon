@@ -28,7 +28,6 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
-import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
@@ -50,7 +49,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   protected Label titleLabel = new Label();
 
   protected final DataSchema schema;
-  protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
   protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
   protected TableStyle style;
 
@@ -150,7 +148,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     }
     grid.getColumnSortList().clear();
     
-    columnInfos = new ArrayList<ColumnInfo>();
     columnSections = new ArrayList<String>();
     sectionColumnCount = new HashMap<String, Integer>();
 
@@ -162,8 +159,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
 
     grid.addColumn(tcl, "");
     increaseSectionColumnCount("default");
-    // This object will never be used - mainly to keep indexes consistent
-    columnInfos.add(new ColumnInfo("", "", false, false, false, false));
 
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "2.5em");
@@ -329,7 +324,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     increaseSectionColumnCount(section);
     grid.insertColumn(index, column, getColumnHeader(info));
     setupColumn(column, info);
-    columnInfos.add(index, info);
     computeTableWidth();
   }
 
@@ -339,20 +333,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
       return;
     }
     decreaseSectionColumnCount(index);
-    ColumnInfo info = columnInfos.get(index);
-
-    if (info.sortable()) {
-      // Try to keep the original sort order
-      ColumnSortList columnSortList = grid.getColumnSortList();
-      for (int i = 0; i < columnSortList.size(); ++i) {
-        ColumnSortInfo columnSortInfo = grid.getColumnSortList().get(i);
-        if (columnSortInfo.getColumn() == column) {
-          columnSortList.remove(columnSortInfo);
-          break;
-        }
-      }
-    }
-    columnInfos.remove(index);
     grid.removeColumn(column);
     computeTableWidth();
   }
