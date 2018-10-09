@@ -9,7 +9,7 @@ var convertedNetwork;
  */
 function loadFile(){
 
-  $("#display").width(1000);
+  $("#display").width(2000);
   $("#display").height(1000);
 
   var file = document.getElementById("fileSelect").files[0];

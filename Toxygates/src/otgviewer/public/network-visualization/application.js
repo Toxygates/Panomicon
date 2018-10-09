@@ -71,6 +71,52 @@ $(document).on("change", "#hideNodesCheckbox", function(){
   }
 });
 
+/**
+ * Show (or not) a Right-side panel for additional network visualization. The
+ * user typically works only on the visualization of a single network structure,
+ * but by using an extra panel it is possible to load a previously saved
+ * network to work with.
+ * TODO this type of interaction should be made available through the selection
+ * of the network to be displayed and not only with a checkbox
+ */
+$(document).on("change", "#showRightCheckbox", function(){
+  if( $("#showRightCheckbox").is(":checked") ){
+    $("#leftDisplay")
+      .addClass("with-side");
+
+    $("#display")
+      .append('<div id="rightDisplay" class="sub-viz"></div>')
+      .ready(function(){
+        var right = $("#rightDisplay");
+        right.data("idx", SIDE_ID);
+        vizNet[SIDE_ID] = cytoscape({
+          container: right,
+          styleEnabled: true,
+        });
+        vizNet[SIDE_ID].initStyle();        // default style for network elements
+        vizNet[SIDE_ID].initContextMenu();  // default context menu
+        changeNetwork(SIDE_ID);
+
+        vizNet[MAIN_ID].resize();
+        vizNet[MAIN_ID].fit();
+      });
+
+
+  }
+  else{
+
+    $("#rightDisplay").remove();
+    vizNet[SIDE_ID] = null;
+    toxyNet[SIDE_ID] = null;
+
+    $("#leftDisplay").removeClass("with-side");
+    vizNet[MAIN_ID].resize();
+    vizNet[MAIN_ID].fit();
+
+  }
+});
+
+
 /** ---------------------- UPDATE NODE MODAL ---------------------------- **/
 /**
  * Handle updates made on a node through the corresponding modal. Once the user
@@ -415,7 +461,6 @@ function onReadyForVisualization(){
   // work, and currently linked with the background options of toxygates
   $("#display")
     .append('<div id="leftDisplay" class="sub-viz"></div>')
-    .append('<div id="rightDisplay" class="sub-viz"></div>')
     .ready(function(){
       var left = $("#leftDisplay");
       left.data("idx", MAIN_ID);
@@ -427,18 +472,6 @@ function onReadyForVisualization(){
       vizNet[MAIN_ID].initStyle();        // default style for network elements
       vizNet[MAIN_ID].initContextMenu();  // default context menu
       changeNetwork(MAIN_ID);
-
-      var right = $("#rightDisplay");
-      right.data("idx", SIDE_ID);
-
-      vizNet[SIDE_ID] = cytoscape({
-        container: right,
-        styleEnabled: true,
-      });
-      vizNet[SIDE_ID].initStyle();        // default style for network elements
-      vizNet[SIDE_ID].initContextMenu();  // default context menu
-
-      changeNetwork(SIDE_ID);
     });
 
   /* Move the Cytoscape context menu into the modal GWT network visualiaztion
@@ -470,7 +503,7 @@ function changeNetwork(id=MAIN_ID){
    * transformations to fit the graph to the current display size */
   vizNet[id].elements().remove(); // remove all previous elements
   vizNet[id].add(toxyNet[id].getCytoElements());
-  
+
   // we hide/show unconnected nodes based on user selection
   if( $("#hideNodesCheckbox").is(":checked") ){
     toxyNet[id].unconnected = vizNet[id].hideUnconnected();
