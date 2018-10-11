@@ -47,7 +47,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private List<String> organisms;
   private List<Group> groups;
   private VerticalPanel vp;
-  private VerticalPanel ivp;
+  private VerticalPanel chartsVerticalPanel;
   private Screen screen;
   private Factory<D, DS> factory;
   private int computedWidth;
@@ -60,11 +60,11 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
   private final DataSchema schema;
 
-  public AdjustableGrid(Factory<D, DS> factory, Screen screen, DataSource source,
-      List<Group> groups, ValueType vt) {
+  public AdjustableGrid(Factory<D, DS> factory, ChartParameters params,
+      DataSource source) {
     this.source = source;
-    this.groups = groups;
-    this.screen = screen;
+    this.groups = params.groups;
+    this.screen = params.screen;
     this.factory = factory;
     schema = screen.manager().schema();
 
@@ -96,7 +96,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
         return ValueType.values();    
       }      
     };        
-    valueTypeSel.setSelected(vt);
+    valueTypeSel.setSelected(params.vt);
     valueTypeSel.listBox().addChangeHandler(e -> {
       computedWidth = 0;
       redraw(false);
@@ -129,8 +129,10 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
         updateSeriesSubtypes();
       });    
 
-    ivp = Utils.mkVerticalPanel();
-    vp.add(ivp);
+    vp.add(Utils.mkEmphLabel(params.title));
+
+    chartsVerticalPanel = Utils.mkVerticalPanel();
+    vp.add(chartsVerticalPanel);
     redraw(false);
   }
 
@@ -257,7 +259,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
         setSubtype(lastSubtype != null ? lastSubtype : findPreferredItem(medVsMin));
       }
 
-      ivp.clear();
+      chartsVerticalPanel.clear();
       final String subtype = chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex());
 
       final String[] columns = (subtype.equals(SELECTION_ALL) ? null : new String[] {subtype});
@@ -271,13 +273,13 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
         String[] majorsA = groups.stream().flatMap(g -> SampleClassUtils.getMajors(schema, g)).
             distinct().toArray(String[]::new);        
         SimplePanel sp = makeGridPanel(majorsA);
-        ivp.add(sp);
+        chartsVerticalPanel.add(sp);
         expectedGrids += 1;
         gridFor(vsTime, columns, majorsA, grids, sp);
       } else {
         // TODO when is this case used? fuse with above?
         SimplePanel sp = makeGridPanel(majorVals.toArray(new String[0]));
-        ivp.add(sp);
+        chartsVerticalPanel.add(sp);
         expectedGrids += 1;
         gridFor(vsTime, columns, null, grids, sp);
       }

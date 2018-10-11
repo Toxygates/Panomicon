@@ -22,8 +22,6 @@ import java.util.List;
 
 import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
 
 public class GVizFactory extends Factory<GDTData, GDTDataset> {
 
@@ -46,9 +44,9 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
         timesOrDoses, columnsAreTimes, totalWidth);
   }
 
-  public AdjustableGrid<GDTData, GDTDataset> adjustableGrid(Screen screen, DataSource source,
-      List<Group> groups, ValueType vt) {
-    return new AdjustableGrid<GDTData, GDTDataset>(this, screen, source, groups, vt);
+  public AdjustableGrid<GDTData, GDTDataset> adjustableGrid(ChartParameters params,
+      DataSource source) {
+    return new AdjustableGrid<GDTData, GDTDataset>(this, params, source);
   }
 
   @Override

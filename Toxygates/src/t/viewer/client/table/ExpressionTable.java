@@ -30,8 +30,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
-import otgviewer.client.charts.AdjustableGrid;
-import otgviewer.client.charts.Charts;
+import otgviewer.client.charts.*;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
@@ -330,10 +329,14 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     final Charts charts = new Charts(screen, chosenColumns);
     ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
     final String[] probes = dispRow.getAtomicProbes();
-    charts.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
+    final String title =
+        SharedUtils.mkString(probes, "/") + ":" + SharedUtils.mkString(dispRow.getGeneSyms(), "/");
+    ChartParameters params = charts.parameters(chosenValueType, title);
+    charts.makeRowCharts(params, chartBarcodes, probes,
+        new AChartAcceptor() {
       @Override
-      public void acceptCharts(final AdjustableGrid<?, ?> cg) {
-        Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
+          public void acceptCharts(final AdjustableGrid<?, ?> ag) {
+            Utils.displayInPopup("Charts", ag, true, DialogPosition.Side);
       }
 
       @Override

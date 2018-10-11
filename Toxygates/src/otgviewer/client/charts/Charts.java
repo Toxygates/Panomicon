@@ -68,9 +68,11 @@ public class Charts {
    * Note: ideally this should be instantiated/chosen by some dependency injection system
    */
   private GVizFactory factory = new GVizFactory();
+  private Screen screen;
 
   private Charts(Screen screen) {
     this.schema = screen.manager().schema();
+    this.screen = screen;
     this.sampleService = screen.manager().sampleService();
     this.seriesService = screen.manager().seriesService();
   }
@@ -98,6 +100,10 @@ public class Charts {
     this(screen);
     this.sampleClasses = sampleClasses;
     groups = new ArrayList<Group>();
+  }
+
+  public ChartParameters parameters(ValueType vt, String title) {
+    return new ChartParameters(screen, groups, vt, title);
   }
 
   public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
@@ -160,7 +166,10 @@ public class Charts {
     }
   }
 
-  public void makeRowCharts(final Screen screen, final Sample[] barcodes, final ValueType vt,
+  /**
+   * Make charts based on expression rows.
+   */
+  public void makeRowCharts(final ChartParameters params, final Sample[] barcodes,
       final String[] probes, final AChartAcceptor acceptor) {
     String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
@@ -180,7 +189,7 @@ public class Charts {
 
             @Override
             public void onSuccess(Pair<Unit, Unit>[] result) {
-              finishRowCharts(screen, probes, vt, groups, result, acceptor);
+              finishRowCharts(params, probes, result, acceptor);
             }
           });
     } else if (barcodes == null) {
@@ -196,7 +205,7 @@ public class Charts {
 
             @Override
             public void onSuccess(final Sample[] barcodes) {
-              finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
+              finishRowCharts(params, probes, barcodes, acceptor);
               /*
                * Note: the acceptor.acceptBarcodes control flow may not be the best
                * way to structure this 
@@ -207,30 +216,31 @@ public class Charts {
     } else {
       logger.info("Already had samples for chart");
       // We already have the necessary samples, can finish immediately
-      finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
+      finishRowCharts(params, probes, barcodes, acceptor);
     }
   }
 
-  private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
-      Sample[] barcodes, AChartAcceptor acceptor) {
+  private void finishRowCharts(ChartParameters params, String[] probes, Sample[] barcodes,
+      AChartAcceptor acceptor) {
     DataSource dataSource =
-        new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, screen);
+        new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, params.screen);
     logger.info("Finish charts with " + dataSource);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
+    AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.acceptCharts(acg);
   }
 
-  private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,      
-                               Pair<Unit, Unit>[] units, AChartAcceptor acceptor) {
+  private void finishRowCharts(ChartParameters params, String[] probes, Pair<Unit, Unit>[] units,
+      AChartAcceptor acceptor) {
     Set<Unit> treated = new HashSet<Unit>();
     for (Pair<Unit, Unit> u : units) {
       treated.add(u.first());
     }
 
     DataSource dataSource =
-        new DataSource.DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]), screen);
+        new DataSource.DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]),
+            params.screen);
     logger.info("Finish charts with " + dataSource);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
+    AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.acceptCharts(acg);
   }
 }
