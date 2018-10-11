@@ -232,7 +232,6 @@ public class InterMineData {
                 for (String[][] clust : result) {
                   int n = lists[i - 1].size();
                   if (clust.length < 2) {
-                    // TODO don't hardcode length here
                     String[] res = new String[] {"Cluster " + i, "" + n, "(No result)", "", "", ""};
                     best.add(res);
                   } else {

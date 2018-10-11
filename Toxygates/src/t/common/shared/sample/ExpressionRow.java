@@ -26,7 +26,9 @@ import java.util.Arrays;
  * Expression data for a particular set of columns for a single probe. May also contain associated
  * information such as gene IDs and gene symbols.
  * 
- * TODO this class is due for an overhaul.
+ * The special treatment of gene IDs, gene labels and gene symbols is somewhat arbitrary. Another
+ * design choice would be to treat them as associations. Both associations and fields in this class
+ * can be used to back hideable columns.
  */
 @SuppressWarnings("serial")
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {

@@ -122,7 +122,6 @@ public class InterMineEnrichDialog extends InterMineSyncDialog {
     }
   }
 
-  //TODO check format
   public double getCutoff() { return Double.parseDouble(pValueCutoff.getValue()); }
   
   public EnrichmentWidget getWidget() { return widgetSel.value(); }

@@ -31,8 +31,6 @@ import t.model.sample.Attribute;
 
 /**
  * Information about the data schema in a particular T application.
- * 
- * TODO: move to t.common when the dependency on Unit has been resolved
  */
 @SuppressWarnings("serial")
 public abstract class DataSchema implements Serializable {
@@ -54,13 +52,11 @@ public abstract class DataSchema implements Serializable {
    * Ordered values for a sortable parameter, which should be displayed to the user in the context
    * of a given list of sample classes.
    */
-  // TODO move ValueType or avoid depending on here
   public String[] sortedValuesForDisplay(@Nullable ValueType vt, Attribute parameter)
       throws Exception {
     return filterValuesForDisplay(vt, parameter, sortedValues(parameter));
   }
 
-  // TODO move ValueType or avoid depending on here
   public String[] filterValuesForDisplay(@Nullable ValueType vt, Attribute parameter,
       String[] from) {
     return from;

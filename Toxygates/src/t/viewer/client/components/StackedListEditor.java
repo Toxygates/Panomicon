@@ -337,7 +337,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   }
 
   /**
-   * Obtain the inner string selection table, if it exists. May be null. TODO: improve architecture
+   * Obtain the inner string selection table, if it exists. May be null.
    */
   @Nullable
   public StringSelectionTable selTable() {

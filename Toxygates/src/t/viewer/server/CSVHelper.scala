@@ -142,7 +142,6 @@ object CSVHelper {
     val cal = Calendar.getInstance
     val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
 
-    //TODO pass the file prefix in from outside
     s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.$suffix"
   }
 }
