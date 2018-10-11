@@ -45,7 +45,7 @@ public class NavigationTools extends Composite {
 
   protected ListBox tableList = new ListBox();
   
-  private CheckBox pValueCheck;
+  public CheckBox pValueCheck;
 
   private HorizontalPanel tools;
 

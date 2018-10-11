@@ -478,8 +478,37 @@ public class ExpressionTable extends RichTable<ExpressionRow>
           + "\"Compare two sample groups\" in the tools menu.");
       setDisplayPColumns(false);
     } else {
-      setDisplayPColumns(newState);
-      setupColumns();
+      boolean proceed = true;
+      // Before disabling p-value columns we need to check whether we are filtering on
+      // any of them, and if so, act accordingly.
+      if (!newState) {
+        List<ExpressionColumn> pValueSortedColumns = new ArrayList<ExpressionColumn>();
+        for (int i = 0; i < grid.getColumnCount(); i++) {
+          Column<ExpressionRow, ?> column = grid.getColumn(i);
+          if (column instanceof ExpressionColumn) {
+            ExpressionColumn eColumn = (ExpressionColumn) column;
+            if (matrixInfo().isPValueColumn(eColumn.matrixColumn()) &&
+                eColumn.columnInfo().filterActive()) {
+              pValueSortedColumns.add(eColumn);
+            }
+          }
+        }
+        if (pValueSortedColumns.size() > 0) {
+          Window.alert("Cannot hide p-value columns while filtering on p-value columns.");
+          proceed = false;
+          navigationTools.pValueCheck.setValue(true);
+          // TBD: switch to a confirmation dialog which, if accepted, results in all
+          // p-value-based filters being deactivated before hiding p-value columns.
+          // if (Window.confirm("Hiding p-value columns will undo all filtering "
+          // + "based on p-value columns.")) {
+          // }
+        }
+      }
+
+      if (proceed) {
+        setDisplayPColumns(newState);
+        setupColumns();
+      }
     }
   }
 
