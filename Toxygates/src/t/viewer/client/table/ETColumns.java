@@ -49,8 +49,6 @@ public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
     Group previousGroup = null;
     for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
-        Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
-
         Group group = matrixInfo.columnGroup(i);
         String groupStyle = group == null ? "dataColumn" : group.getStyleName();
         String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
@@ -60,6 +58,7 @@ public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
             + matrixInfo.columnFilter(i).active());
         ColumnInfo columnInfo = new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
             columnWidth, style, false, true, matrixInfo.columnFilter(i).active());
+        Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i, columnInfo);
         columnInfo.setHeaderStyleNames(style);
 
         previousGroup = group;
@@ -125,12 +124,13 @@ public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
 
   public ExpressionColumn addSynthColumn(ManagedMatrixInfo matrixInfo, int column, String borderStyle) {
     TextCell tc = new TextCell();
-    ExpressionColumn synCol = new ExpressionColumn(tc, column);
+
 
     ColumnInfo info = new ColumnInfo(matrixInfo.shortColumnName(column), matrixInfo.columnHint(column), true, false,
         columnWidth, "extraColumn " + borderStyle, false, true, matrixInfo.columnFilter(column).active());
     info.setHeaderStyleNames(borderStyle);
     info.setDefaultSortAsc(true);
+    ExpressionColumn synCol = new ExpressionColumn(tc, column, info);
     delegate.addColumn(synCol, "synthetic", info);
     return synCol;
   }

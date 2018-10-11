@@ -26,13 +26,19 @@ import t.viewer.shared.SortKey;
 
 public class ExpressionColumn extends TooltipColumn<ExpressionRow> implements MatrixSortable {
   final int i;
+  protected ColumnInfo columnInfo;
 
   /**
    * @param matColumn column index in the underlying data matrix (e.g. in ManagedMatrixInfo)
    */
-  public ExpressionColumn(TextCell tc, int matColumn) {
+  public ExpressionColumn(TextCell tc, int matColumn, ColumnInfo columnInfo) {
     super(tc);
+    this.columnInfo = columnInfo;
     this.i = matColumn;
+  }
+
+  public ColumnInfo columnInfo() {
+    return columnInfo;
   }
 
   public int matrixColumn() {
