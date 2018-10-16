@@ -35,12 +35,16 @@ $(document).on("change", "#layoutSelect", function (){
   if( vizNet[id] === null ) return;
   // get the option selected by the user
   var opt = $("#layoutSelect").find(":selected").val();
+
   // update the layout accordingly
-  $("#waitModal").attr("style", "display:block");
+  // $("#waitModal").attr("style", "display:block");
+  window.addPendingRequest();
   toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
   setTimeout(function(){
     toxyNet[id].layout.run();
-    $("#waitModal").attr("style", "display:none");;
+    // $("#waitModal").attr("style", "display:none");
+    window.removePendingRequest();
+
   });
 });
 
@@ -80,10 +84,12 @@ $(document).on("change", "#hideNodesCheckbox", function(){
  * of the network to be displayed and not only with a checkbox
  */
 $(document).on("change", "#showRightCheckbox", function(){
+  // See if the checkbox is checked (enable display)
   if( $("#showRightCheckbox").is(":checked") ){
-    $("#leftDisplay")
-      .addClass("with-side");
-
+    // Have the left-panel reduce its size to half of the available display
+    $("#leftDisplay").addClass("with-side");
+    // Define the new right-side panel, together with its elements, and add it
+    // to the DOM
     $("#display")
       .append('<div id="rightDisplay" class="sub-viz"></div>')
       .ready(function(){
@@ -95,6 +101,8 @@ $(document).on("change", "#showRightCheckbox", function(){
         });
         vizNet[SIDE_ID].initStyle();        // default style for network elements
         vizNet[SIDE_ID].initContextMenu();  // default context menu
+        // Here I add elements to the network display... based on the network
+        // currently stored in convertedNetwork
         changeNetwork(SIDE_ID);
 
         vizNet[MAIN_ID].resize();
@@ -103,13 +111,20 @@ $(document).on("change", "#showRightCheckbox", function(){
 
 
   }
+  // When the checkbox is not checked (disabled display of right-side panel)
   else{
-
+    // we remove the panel from the DOM
     $("#rightDisplay").remove();
+    // remove the information from the corresponding variables
+    /* As this should be linked to the loading of a previosly saved graph, it
+     doesn't make sense to keep the previous elements, even if the proper
+     functionality is not yet implemented */
     vizNet[SIDE_ID] = null;
     toxyNet[SIDE_ID] = null;
 
+    // modify the left-display, so that it takes all available display space
     $("#leftDisplay").removeClass("with-side");
+    // re-layout the elements within the visualization panel
     vizNet[MAIN_ID].resize();
     vizNet[MAIN_ID].fit();
 
@@ -471,6 +486,8 @@ function onReadyForVisualization(){
       });
       vizNet[MAIN_ID].initStyle();        // default style for network elements
       vizNet[MAIN_ID].initContextMenu();  // default context menu
+
+      // vizNet[MAIN_ID].on("select", "node", onNodeSelection(MAIN_ID));
       changeNetwork(MAIN_ID);
     });
 
@@ -480,6 +497,21 @@ function onReadyForVisualization(){
   $(".cy-context-menus-cxt-menu").hide();
 
 }
+
+/**
+ *
+ */
+// function onNodeSelection(id){
+//   return function(evt){
+//     console.log("entered on selection");
+//     var n = evt.target;
+//     var otherID = (id+1)%2;
+//     if( vizNet[otherID] !== null ){
+//       console.log("trying to select: "+n.id()+" on "+otherID);
+//       vizNet[otherID].$([id=n.id()]).selected();
+//     }
+//   }
+// }
 
 /**
  * Called by Toxygates on an already running network visualization dialog when
