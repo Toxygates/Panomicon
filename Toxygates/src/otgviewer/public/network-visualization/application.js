@@ -43,8 +43,6 @@ $(document).on("change", "#layoutSelect", function (){
   setTimeout(function(){
     toxyNet[id].layout.run();
     // $("#waitModal").attr("style", "display:none");
-    window.removePendingRequest();
-
   });
 });
 
