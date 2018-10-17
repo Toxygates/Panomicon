@@ -233,6 +233,25 @@ public class ETMatrixManager {
     });
   }
 
+  protected void clearColumnFilters(final int[] columns) {
+    delegate.setEnabled(false);
+    filterDialog.setVisible(false);
+    matrixService.clearColumnFilters(matrixId, columns, new AsyncCallback<ManagedMatrixInfo>() {
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("An error occurred when column filters were cleared.");
+        delegate.setEnabled(true);
+      }
+
+      @Override
+      public void onSuccess(ManagedMatrixInfo result) {
+        matrixInfo = result;
+        setRows(matrixInfo.numRows());
+        delegate.setupColumns();
+      }
+    });
+  }
+
   /**
    * Filter data that has already been loaded
    */

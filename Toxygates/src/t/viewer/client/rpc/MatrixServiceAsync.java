@@ -20,14 +20,14 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import t.clustering.client.ClusteringServiceAsync;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.shared.*;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
@@ -41,6 +41,8 @@ public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String>
 
   void setColumnFilter(String id, int column, ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
+
+  void clearColumnFilters(String id, int[] columns, AsyncCallback<ManagedMatrixInfo> callback);
 
   void getFullData(List<Group> g, String[] probes, boolean withSymbols,
       ValueType typ, AsyncCallback<FullMatrix> callback);

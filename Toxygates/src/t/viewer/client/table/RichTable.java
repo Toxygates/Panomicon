@@ -125,7 +125,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
    * We use an abstract method to get a ColumnHelper, rather than make it a
    * constructor argument, because constructing a ColumnHelper might need some
    * logic from a subclass (of RichTable).
-   *   
    */
   protected abstract ColumnHelper<T> makeColumnHelper(Screen screen);
 

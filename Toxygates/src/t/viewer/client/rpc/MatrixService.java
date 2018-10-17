@@ -23,15 +23,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.clustering.client.ClusteringService;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.shared.*;
-
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * This service obtains expression data from the underlying data store.
@@ -63,6 +63,14 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @return
    */
   ManagedMatrixInfo setColumnFilter(String id, int column, @Nullable ColumnFilter filter);
+  
+  /**
+   * Clear the filters for a number of columns.
+   * 
+   * @param id ID of the matrix
+   * @param column
+   */
+  ManagedMatrixInfo clearColumnFilters(String id, int[] columns);
 
   /**
    * Add a T-test/U-test/fold change difference/etc. column. Requires that loadDataset was first used to

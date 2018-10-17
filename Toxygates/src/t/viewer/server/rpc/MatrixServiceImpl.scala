@@ -148,6 +148,15 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   }
 
   @throws(classOf[NoDataLoadedException])
+  def clearColumnFilters(id: String, columns: Array[Int]): ManagedMatrixInfo = {
+    val mm = stateFor(id).matrix(id)
+
+    println(s"Clear filter for columns $columns")
+    columns.foreach(mm.setFilter(_, ColumnFilter.emptyLT));
+    mm.info
+  }
+
+  @throws(classOf[NoDataLoadedException])
   def matrixRows(id: String, offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = {
     val cont = stateFor(id).controller(id)
