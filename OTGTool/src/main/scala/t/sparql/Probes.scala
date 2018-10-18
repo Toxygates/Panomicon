@@ -117,19 +117,22 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |    OPTIONAL {
        |      ?p t:entrez ?ent.
        |      ?p t:refseqTrn ?trn.
+       |      ?p t:symbol ?sym.
        |    }
        |   } . ?g rdfs:label ?gl .
        |}""".stripMargin
 
     val r = triplestore.mapQuery(query, 30000).map(x => 
-      (x("gl"), x("pl"), x.get("ent"), x.get("trn")))
+      (x("gl"), x("pl"), x.get("ent"), x.get("trn"), x.get("sym")))
 
     //Note that probes might have multiple entrez and refseq annotations.
     val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
       (probeId, probes) <- probes.groupBy(_._2);
       entrez = Seq() ++ probes.flatMap(_._3).map(Gene(_));
       transcripts = probes.flatMap(_._4.map(RefSeq(_)));
-      pr = Probe(probeId, genes = entrez, platform = pf, transcripts = transcripts))
+      symbols = probes.flatMap(_._5);
+      pr = Probe(probeId, genes = entrez, platform = pf, transcripts = transcripts,
+          symbols = symbols))
       yield (pf, pr)
 
     Map() ++ all.groupBy(_._1).mapValues(_.map(_._2))

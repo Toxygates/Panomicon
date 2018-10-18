@@ -86,7 +86,7 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
         genes = obtainMany(g, entrezRel).map(x =>
           Gene(x,
             keggShortCode = B2RKegg.platformTaxon(platform))),
-        symbols = obtainMany(g, symbolRel).map(x => Gene(x, symbol = x)),
+        symbols = obtainMany(g, symbolRel),
         titles = obtainMany(g, titleRel), //NB not used
         name = obtainMany(g, titleRel).headOption.getOrElse(""),
         platform = platform)

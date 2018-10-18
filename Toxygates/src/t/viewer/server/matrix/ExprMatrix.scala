@@ -59,6 +59,9 @@ sealed trait RowAnnotation {
   def atomics: Iterable[String]
 }
 
+/*
+ * Note: it's not clear that we benefit from having multiple varieties of RowAnnotation
+ */
 case class FullAnnotation(probe: String, atomics: Iterable[String]) extends RowAnnotation
 case class SimpleAnnotation(probe: String) extends RowAnnotation {
   def atomics = List(probe)

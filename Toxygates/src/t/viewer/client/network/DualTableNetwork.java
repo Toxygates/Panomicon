@@ -1,8 +1,10 @@
 package t.viewer.client.network;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -13,9 +15,6 @@ import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.table.AssociationSummary;
 import t.viewer.client.table.DualTableView.DualMode;
 import t.viewer.client.table.ExpressionTable;
-import t.viewer.shared.ColumnSet;
-import t.viewer.shared.network.Network;
-import t.viewer.shared.network.Node;
 
 public class DualTableNetwork implements NetworkViewer {
   private final ExpressionTable mainTable, sideTable;
@@ -38,19 +37,7 @@ public class DualTableNetwork implements NetworkViewer {
     this.sideTable = sideTable;
     this.dualMode = dualMode;
   }
-  
-  @Override
-  public List<Node> getSourceNodes() {
-    String type = (dualMode == DualMode.Forward) ? Network.mrnaType : Network.mirnaType; 
-    return buildNodes(type, mainTable.getDisplayedRows(), mainTable.matrix().info());
-  }
-  
-  @Override
-  public List<Node> getDestNodes() {
-    String type = (dualMode == DualMode.Forward) ? Network.mirnaType : Network.mrnaType;
-    return buildNodes(type, sideTable.getDisplayedRows(), sideTable.matrix().info());
-  }
-  
+    
   @Nullable 
   private String getSelectedNode(ExpressionTable table) {
     ExpressionRow r =
@@ -123,12 +110,5 @@ public class DualTableNetwork implements NetworkViewer {
     if (mappingSummary == null) {
       logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");     
     }          
-  }
-  
-  /**
-   * Build Nodes by using expression values from the first column in the rows.
-   */
-  static List<Node> buildNodes(String kind, List<ExpressionRow> rows, ColumnSet columnNames) {
-    return rows.stream().map(r -> Node.fromRow(r, kind, columnNames)).collect(Collectors.toList());
   }
 }

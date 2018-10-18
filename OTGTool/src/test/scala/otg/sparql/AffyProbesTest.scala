@@ -51,8 +51,8 @@ class AffyProbesTest extends TTestSuite {
     println(syms(pr2))
     val g1 = Gene("a", symbol = "Cdc37")
     val g2 = Gene("b", symbol = "Ube2d3")
-    assert(Set(g1).map(_.symbol) subsetOf syms(pr1).map(_.symbol))
-    assert(Set(g2).map(_.symbol) subsetOf syms(pr2).map(_.symbol))
+    assert(Set(g1).map(_.symbol) subsetOf syms(pr1))
+    assert(Set(g2).map(_.symbol) subsetOf syms(pr2))
   }
 
   test("probe geneIds") {
