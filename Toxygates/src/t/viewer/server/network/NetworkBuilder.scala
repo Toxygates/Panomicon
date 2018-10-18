@@ -65,7 +65,7 @@ class NetworkBuilder(targets: TargetTable,
     }
     useRows.map(r => {
       val probe = r.getProbe
-      val symbols = platforms.identifierLookup(probe).symbols.toArray
+      val symbols = platforms.identifierLookup(probe).symbols.asGWT
       Node.fromRow(r, symbols, mtype, mat.info)
     })
   }
