@@ -30,15 +30,6 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
  */
 public interface SetEditor<T> {
 
-  /**
-   * Optionally set the available items. This clears the selection. May not be useful for all
-   * selection methods. The available items are already validated. Some edit methods may display the
-   * items in the order given, but they should all be unique.
-   * 
-   * @param items
-   */
-  public void setItems(List<T> items, boolean clearSelection);
-
   public void setSelection(Collection<T> items);
 
   public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector);
