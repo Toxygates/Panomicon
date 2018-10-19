@@ -266,6 +266,7 @@ trait Synthetics extends CoreMatrix {
     current = current.selectColumns(dataColumns)
     params.rawGrouped = params.rawGrouped.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
+    filterAndSort()
   }
 
   def addSynthetic(s: Synthetic): Unit = {
