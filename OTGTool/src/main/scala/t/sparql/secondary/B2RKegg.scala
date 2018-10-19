@@ -68,8 +68,6 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     pw.copy(genes = genes)
   }
 
-  //TODO simplify, move functionality into Query
-  //track prefixes, selected vars
   private[sparql] def attributes(pw: Pathway): (String, String) = {
     val (constraint, endFilter) = if (pw.identifier == null) {
       ("dc:title ?title", "FILTER(STR(?title)=\"" + pw.name + "\")")

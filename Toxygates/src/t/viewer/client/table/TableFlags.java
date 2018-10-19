@@ -17,7 +17,8 @@ public class TableFlags {
    * 
    * @param matrixId ID of the matrix being displayed (for server communication)
    * @param withPValueOption
-   * @param withPager whether navigation controls should be present
+   * @param withPager whether navigation controls should be present (note: this flag is 
+   * currently not used anywyhere - we always construct at least an invisible pager.)
    * @param initPageSize initial page size
    * @param title human-readable label to display
    * @param allowHighlight allow highlighting rows?

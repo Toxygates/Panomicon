@@ -234,7 +234,8 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
 
   @Override
-  public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
+  public void loadInitialMatrix(ValueType valueType, 
+		  int initPageSize, List<ColumnFilter> initFilters) {
     matrixService.loadMatrix(defaultMatrix, chosenColumns, chosenProbes, 
       valueType, initFilters, 
       new AsyncCallback<ManagedMatrixInfo>() {

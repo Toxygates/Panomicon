@@ -260,12 +260,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }
   
   @Override
-  public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
-    //TODO page size
-    //TODO init filters
-    final int pageSize = 100;
+  public void loadInitialMatrix(ValueType valueType, int initPageSize,
+		  List<ColumnFilter> initFilters) {
     networkService.loadNetwork(mainMatrix, expressionTable.chosenColumns, chosenProbes, 
-      sideMatrix, sideExpressionTable.chosenColumns, valueType, pageSize, 
+      sideMatrix, sideExpressionTable.chosenColumns, valueType, initPageSize, 
       new PendingAsyncCallback<NetworkInfo>(this.screen, "Unable to load network") {
         
         @Override

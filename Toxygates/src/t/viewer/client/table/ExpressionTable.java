@@ -123,7 +123,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     }
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 
-    // TODO use flags.withPager
     navigationTools = new NavigationTools(this, grid, withPValueOption, this);
     chosenValueType = navigationTools.getValueType();
 
