@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="gwt-clean.css" type="text/css"/>
     <!-- Now needed for user data screen -->
     <link type="text/css" rel="stylesheet" href="AdminConsole.css">
-	<link href='http://fonts.googleapis.com/css?family=Play:400,700' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Play:400,700' rel='stylesheet' type='text/css'>
 
     <title>Toxygates</title>
     
