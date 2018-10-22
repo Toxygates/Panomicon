@@ -506,6 +506,9 @@ function onReadyForVisualization(){
       vizNet[MAIN_ID].initStyle();        // default style for network elements
       vizNet[MAIN_ID].initContextMenu();  // default context menu
 
+      vizNet[MAIN_ID].on("select", "node", onNodeSelection);
+      vizNet[MAIN_ID].on("unselect", "node", onNodeUnselection);
+
       // vizNet[MAIN_ID].on("select", "node", onNodeSelection(MAIN_ID));
       changeNetwork(MAIN_ID);
 
@@ -517,19 +520,46 @@ function onReadyForVisualization(){
 }
 
 /**
- *
+ * Handle selection of nodes on the complementary display, in order to provide
+ * a paired visualization.
+ * @param {any} event the selection event triggered on the original display.
+ * Notice that in the event of multiple selection, an event is triggered for
+ * each newly selected element.
  */
-// function onNodeSelection(id){
-//   return function(evt){
-//     console.log("entered on selection");
-//     var n = evt.target;
-//     var otherID = (id+1)%2;
-//     if( vizNet[otherID] !== null ){
-//       console.log("trying to select: "+n.id()+" on "+otherID);
-//       vizNet[otherID].$([id=n.id()]).selected();
-//     }
-//   }
-// }
+function onNodeSelection(event){
+  // The id of the DOM element where the selection was triggered
+  var dpl = event.cy.container().id;
+  // Definition of the complementary display panel
+  var otherID = (dpl === "leftDisplay") ? 1 : 0;
+  // If the complementary display is empty, we don't need to do anything
+  if( vizNet[otherID] !== null ){
+    // Target node - the node that was selected
+    var n = event.target;
+    // Select the corresponding node on the complementary display (element with
+    // the same id). If no such node exists, the nothing will happen
+    vizNet[otherID].nodes('[id="'+n.id()+'"]').select();
+  }
+}
+
+/**
+ * Handle the de-selection of nodes on the complementary display, in order to
+ * provide a paired visualization.
+ * @param {any} event the un-selection event triggered on the original display.
+ */
+function onNodeUnselection(event){
+  // The id of the DOM element where the unselection was triggered
+  var dpl = event.cy.container().id;
+  // Definition of the complementary display panel
+  var otherID = (dpl === "leftDisplay") ? 1 : 0;
+  // If the complementary display is empty, we don't need to do anything
+  if( vizNet[otherID] !== null ){
+    // Target node - the node that was unselected
+    var n = event.target;
+    // Un-select the corresponding node on the complementary display (element
+    // with the same id)
+    vizNet[otherID].nodes('[id="'+n.id()+'"]').unselect();
+  }
+}
 
 /**
  * Called by Toxygates on an already running network visualization dialog when
