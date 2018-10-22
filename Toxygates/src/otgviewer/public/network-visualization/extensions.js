@@ -25,6 +25,7 @@ function initStyle(){
  * within the display area
  */
 function updateLayout(type="null"){
+  window.addPendingRequest();
   var layout = {
     name: type,
     fit: true, // whether to fit to viewport
@@ -162,7 +163,6 @@ function initContextMenu(){
          selector: "node",
          onClickFunction: onUpdateNode,
       },
-
       //---------------------------------------------------------
       // Options shown when clicking on a selected node
       //---------------------------------------------------------
@@ -177,6 +177,18 @@ function initContextMenu(){
         tooltipText: "Color nodes according to a give property",
         coreAsWell: true,
         onClickFunction: onColorScale,
+      },
+      /**
+       * Search a node.
+       * The user is allowed to enter free text and search for a node within
+       * the network with the given label or ID.
+       */
+      {
+        id: "search-node",
+        content: "Search Node",
+        tooltipText: "Search a node by label",
+        coreAsWell: true,
+        onClickFunction: onSearchNode,
       },
       /**
        * filter the display of nodes to those that fullfill a certain criteria.
@@ -295,6 +307,19 @@ function onColorScale(event){
   $("#graphColorModal #maxRange").val("");
   $("#graphColorModal #colorRange").val(50);
   $("#graphColorModal #whiteRange").val("");
+}
+
+/**
+ * Define the initial set-up and options to be displayed when searching for a
+ * particular node within the network.
+ * @param {any} event the event triggered when the corresponding item in the
+ * context menu is pressed.
+ */
+function onSearchNode(event){
+  $("#searchNodeModal").show();
+
+  /* initialize search text */
+  $("#searchNodeModal #nodeLabel").val("");
 }
 
 /**
