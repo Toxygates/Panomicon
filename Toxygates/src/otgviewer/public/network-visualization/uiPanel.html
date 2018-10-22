@@ -20,7 +20,7 @@
       <option value="cose">Force Directed</option>
     </select>
     <br />
-    
+
     <div>Hide unconnected nodes:</div>
     <input id="hideNodesCheckbox" type="checkbox" checked>
 
@@ -85,9 +85,7 @@
     <span id="updateNode" class="modal-button" data-modal="updateNodeModal">
       Update
     </span>
-    <span class="modal-button modal-cancel" data-modal="updateNodeModal">
-      Cancel
-    </span>
+    <span class="modal-button modal-cancel" data-modal="updateNodeModal">Cancel</span>
   </div>
 </div>
 
@@ -140,6 +138,20 @@
   </div>
 </div>
 
+<!-- Window used to search for a node within the network -->
+<div id="searchNodeModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" data-modal="searchNodeModal">&times;</span>
+    <h1>Search Node</h1>
+    <label for="nodeLabel">Node Label:</label>
+    <input id="nodeLabel" type="text">
+    <br />
+    <span class="modal-button modal-cancel" data-modal="searchNodeModal">Cancel</span>
+    <span class="modal-button" id="searchNodes" data-modal="searchNodeModal">Search</span>
+  </div>
+</div>
+
+
 <!-- Window used to filter the nodes being shown on screen -->
 <div id="filterModal" class="modal">
   <div class="modal-content">
@@ -153,11 +165,5 @@
       <span class="modal-add" data-type="degFilter">+</span> <br />
 
     <span class="modal-button" id="filterNodes" data-modal="filterModal">Apply</span>
-  </div>
-</div>
-
-<div id="waitModal", class="modal">
-  <div class="modal-content">
-    <h1>Please Wait</h1>
   </div>
 </div>

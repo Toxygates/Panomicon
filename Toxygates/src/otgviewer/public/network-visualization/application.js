@@ -38,7 +38,7 @@ $(document).on("change", "#layoutSelect", function (){
 
   // update the layout accordingly
   // $("#waitModal").attr("style", "display:block");
-  window.addPendingRequest();
+  // window.addPendingRequest();
   toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
   setTimeout(function(){
     toxyNet[id].layout.run();
@@ -98,7 +98,7 @@ $(document).on("change", "#showRightCheckbox", function(){
           styleEnabled: true,
         });
         vizNet[SIDE_ID].initStyle();        // default style for network elements
-        vizNet[SIDE_ID].initContextMenu();  // default context menu
+        // vizNet[SIDE_ID].initContextMenu();  // default context menu
         // Here I add elements to the network display... based on the network
         // currently stored in convertedNetwork
         changeNetwork(SIDE_ID);
@@ -359,6 +359,27 @@ $(document).on("change", "#updateNodeModal #nodeWeights", function(evt){
 //   $("#graphColorModal #whiteRange").val(threshold.toFixed(2));
 // });
 //
+
+/** ---------------------------- SEARCH NODE  ---------------------------- **/
+/**
+ * Handle the search of a particular node within the network.
+ */
+$(document).on("click", "#searchNodeModal #searchNodes", function(evt){
+  // nothing to do if there is no network
+  var id = $("#panelSelect").val();
+  if( vizNet[id] === null ) return;
+
+  // retrieve the search string
+  var label = $("#searchNodeModal #nodeLabel").val();
+  // select the corresponding nodes within the graph
+  var selection = vizNet[id].nodes('[label*="'+label+'"]');
+  selection.select();
+
+  // once all nodes with matching labels have been selected, hide the modal
+  var modal = $(event.target).data().modal;
+  $("#"+modal).hide();
+});
+
 // /** ---------------------------- FILTER GRAPH ---------------------------- **/
 // /**
 //  * Handle the application of filters to the visualization.
@@ -392,7 +413,7 @@ $(document).on("change", "#updateNodeModal #nodeWeights", function(evt){
 //     }
 //   });
 //
-//   /* onde all filters have beeb applied, hide the modal */
+//   /* once all filters have beeb applied, hide the modal */
 //   var modal = $(event.target).data().modal;
 //   $("#"+modal).hide();
 // });
@@ -487,13 +508,12 @@ function onReadyForVisualization(){
 
       // vizNet[MAIN_ID].on("select", "node", onNodeSelection(MAIN_ID));
       changeNetwork(MAIN_ID);
+
+      /* Move the Cytoscape context menu into the modal GWT network visualiaztion
+      * dialog, because otherwise input to it will be intercepted */
+      $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
+      $(".cy-context-menus-cxt-menu").hide();
     });
-
-  /* Move the Cytoscape context menu into the modal GWT network visualiaztion
-   * dialog, because otherwise input to it will be intercepted */
-  $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
-  $(".cy-context-menus-cxt-menu").hide();
-
 }
 
 /**
