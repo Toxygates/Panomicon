@@ -107,11 +107,15 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Read all platforms. Slow.
-   * Probes will be annotated with entrez and refseq transcript information only.
+   * Probes will be potentially annotated with 
+   * entrez, refseq atranscript and symbol information only.
    */
   private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
     val query = s"""$tPrefixes
-       |SELECT DISTINCT ?gl ?pl ?ent ?trn WHERE {
+       |SELECT ?gl ?pl       
+       |  (GROUP_CONCAT(?ent; separator = ":") AS ?entCon) 
+       |  (GROUP_CONCAT(?trn; separator = ":") AS ?trnCon) 
+       |  (GROUP_CONCAT(?sym; separator = ":") AS ?symCon) WHERE {
        |  GRAPH ?g {
        |    ?p a t:probe; rdfs:label ?pl.
        |    OPTIONAL {
@@ -120,20 +124,25 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |      ?p t:symbol ?sym.
        |    }
        |   } . ?g rdfs:label ?gl .
-       |}""".stripMargin
+       |}       
+       |GROUP BY ?pl ?gl
+       |""".stripMargin
 
-    val r = triplestore.mapQuery(query, 30000).map(x => 
-      (x("gl"), x("pl"), x.get("ent"), x.get("trn"), x.get("sym")))
+    val r = triplestore.mapQuery(query, 30000)
 
-    //Note that probes might have multiple entrez and refseq annotations.
-    val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
-      (probeId, probes) <- probes.groupBy(_._2);
-      entrez = Seq() ++ probes.flatMap(_._3).map(Gene(_));
-      transcripts = probes.flatMap(_._4.map(RefSeq(_)));
-      symbols = probes.flatMap(_._5);
-      pr = Probe(probeId, genes = entrez, platform = pf, transcripts = transcripts,
-          symbols = symbols))
-      yield (pf, pr)
+    //Note that probes might have multiple entrez, symbol and refseq annotations.
+    //With this query form, that results in multiple result tuples per probe.
+    val all = for (probe <- r;
+      probeId = probe("pl");
+      platform = probe("gl");
+      entrez = probe.get("entCon").toSeq.flatMap(_.split(":")).map(Gene(_));
+      transcripts = probe.get("trnCon").toSeq.flatMap(_.split(":")).map(RefSeq(_));
+      symbols = probe.get("symCon").toSeq.flatMap(_.split(":"));
+      pr = Probe(probeId, genes = entrez.distinct,
+        platform = platform,
+        transcripts = transcripts.distinct,
+        symbols = symbols)
+    ) yield (platform, pr)
 
     Map() ++ all.groupBy(_._1).mapValues(_.map(_._2))
   }
