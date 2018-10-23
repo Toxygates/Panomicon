@@ -32,18 +32,16 @@ object Probe {
   def unpackOnly(uri: String) = uri.split(split)(1)
 }
 
-//TODO reconsider which members should be standard for a T application in general
-//Most of these are used by Toxygates, but not by Tritigate
 case class Probe(val identifier: String, override val name: String = "",
   //Gene titles
   val titles: Iterable[String] = Seq(),
   val proteins: Iterable[Protein] = Seq(),
   val genes: Iterable[Gene] = Seq(),
-  val symbols: Iterable[Gene] = Seq(),
+  val symbols: Iterable[String] = Seq(),
   val transcripts: Iterable[RefSeq] = Seq(),
   val platform: String = "") extends StoredBioObject[Probe] {
 
-  def symbolStrings = symbols.map(_.symbol)
+  def symbolStrings = symbols
 
   //GenBioObject overrides hashCode
   override def equals(other: Any): Boolean = other match {

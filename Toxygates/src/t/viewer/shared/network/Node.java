@@ -19,18 +19,21 @@ public class Node implements Serializable {
   //GWT constructor
   Node() {}
 
-  public static Node fromRow(ExpressionRow row, String type, ColumnSet columnNames) {
-    String[] geneSymbols = row.getGeneSyms();
+  //Note: it is probably desirable to maintain symbols consistently inside each ExpressionRow,
+  //removing the need to pass them in from outside here.
+  //This may be done as part of removing/refactoring RowAnnotation
+  public static Node fromRow(ExpressionRow row, List<String> geneSymbols,
+		  String type, ColumnSet columnNames) {
+	  
+//    String[] geneSymbols = row.getGeneSyms();
     ExpressionValue[] values = row.getValues();
     Map<String, Double> weights = IntStream.range(0, values.length).boxed()
         .collect(Collectors.toMap(i -> columnNames.columnName(i), i -> values[i].getValue()));
 
     if (geneSymbols == null) {
-      //TODO! Define handling of this
-      geneSymbols = new String[0];
+      geneSymbols = new ArrayList<String>();
     }
-    return new Node(row.getProbe(), 
-        Arrays.asList(geneSymbols), type, new HashMap<String, Double>(weights));
+    return new Node(row.getProbe(), geneSymbols, type, new HashMap<String, Double>(weights));
   }
   
   public Node(String id, List<String> symbols, String type, HashMap<String, Double> weights) {

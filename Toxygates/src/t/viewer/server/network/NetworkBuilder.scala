@@ -63,7 +63,11 @@ class NetworkBuilder(targets: TargetTable,
       case Some(n) => allRows take n
       case None => allRows
     }
-    useRows.map(r => Node.fromRow(r, mtype, mat.info))
+    useRows.map(r => {
+      val probe = r.getProbe
+      val symbols = platforms.identifierLookup(probe).symbols.asGWT
+      Node.fromRow(r, symbols, mtype, mat.info)
+    })
   }
 
   def interactions(ints: Iterable[(MiRNA, Probe, Double, String)]) = {

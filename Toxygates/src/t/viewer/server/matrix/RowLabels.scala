@@ -52,7 +52,7 @@ class RowLabels(context: Context, schema: DataSchema) {
         //TODO make sure to pass all titles into ExpressionRow
       pr.toArray.flatMap(_.titles),
       pr.toArray.flatMap(_.genes.map(_.identifier)),
-      pr.toArray.flatMap(_.symbols.map(_.symbol)),
+      pr.toArray.flatMap(_.symbols),
       r.getValues)
   }
 
@@ -83,7 +83,7 @@ class MergedRowLabels(context: Context, schema: DataSchema) extends RowLabels(co
     val expandedGenes = ps.flatMap(p =>
       p.genes.map(g => (schema.platformSpecies(p.platform), g.identifier)))
     val expandedSymbols = ps.flatMap(p =>
-      p.symbols.map(schema.platformSpecies(p.platform) + ":" + _.symbol))
+      p.symbols.map(schema.platformSpecies(p.platform) + ":" + _))
 
     val nr = new ExpressionRow(atomics.mkString("/"),
       atomics,

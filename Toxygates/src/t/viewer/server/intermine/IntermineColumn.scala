@@ -28,7 +28,6 @@ import org.intermine.pathquery.PathQuery
 import t.db.DefaultBio
 import t.intermine.Query
 import t.sparql._
-//TODO remove sparql dependency by refactoring that package
 import t.sparql.secondary.Gene
 import t.viewer.server.Platforms
 

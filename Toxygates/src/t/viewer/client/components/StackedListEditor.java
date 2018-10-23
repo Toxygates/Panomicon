@@ -142,11 +142,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       super.setSelection(items);
       textArea.setText(SharedUtils.mkString(items, "\n"));
     }
-
-    @Override
-    public void setItems(List<String> items, boolean clearSelection) {
-      //no-op
-    }
   }
 
   /**
@@ -245,12 +240,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
     public void scrollToTop() {
       scrollPanel.scrollToTop();
-    }
-
-    @Override
-    public void setItems(List<String> items, boolean clearSelection) {
-      // TODO Auto-generated method stub
-      
     }
   }
 
@@ -433,11 +422,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   @Override
   public Set<String> getSelection() {
     return selectedItems;
-  }
-
-  @Override
-  public void setItems(List<String> items, boolean clearSelection) {
-    setItems(items, clearSelection, false);
   }
 
   /**

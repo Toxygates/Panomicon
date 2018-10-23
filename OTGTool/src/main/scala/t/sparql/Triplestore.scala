@@ -36,6 +36,7 @@ import org.eclipse.rdf4j.rio.RDFFormat
 
 import t.Closeable
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory
+import org.eclipse.rdf4j.query.BindingSet
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()
@@ -99,6 +100,7 @@ abstract class Triplestore extends Closeable {
     if (PRINT_QUERIES) println
     printHash("printing query:", query)
     if (PRINT_QUERIES) println(query)
+    
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
     pq.setMaxExecutionTime(timeoutMillis / 1000)
     pq.evaluate()
@@ -196,8 +198,8 @@ abstract class Triplestore extends Closeable {
     logQueryStats(recs, start, query)
     recs
   }
-
-  def logQueryStats(recs: Vector[Object], start: Long, query: String) {
+  
+  def logQueryStats[T](recs: Vector[T], start: Long, query: String) {
     printHash("printing query result:", query)
     if (PRINT_RESULTS) {
       println("Found " + recs.size + " results in " + (System.currentTimeMillis() - start) / 1000.0 + "s:")

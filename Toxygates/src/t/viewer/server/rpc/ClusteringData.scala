@@ -74,7 +74,7 @@ class ClusteringData(val controller: MatrixController,
 
     allRows.map(r => {
       val atrs = r.getAtomicProbes.map(aaLookup(_))
-      joinedAbbreviated(atrs.flatMap(_.symbols.map(_.symbol)), 20)
+      joinedAbbreviated(atrs.flatMap(_.symbols), 20)
     }).toArray
   }
 }

@@ -31,7 +31,6 @@ import t.model.sample.AttributeSet;
 @SuppressWarnings("serial")
 public class Group extends SampleGroup<Sample> implements SampleColumn {
 
-  // TODO lift units up
   protected Unit[] _units;
 
   public Group() {}
@@ -40,6 +39,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     super(schema, name, barcodes, color);
     // TODO unit formation will not work if the barcodes have different sample classes
     // - fix
+    // TODO is the above comment still correct? Also see the constructor below
     if (barcodes.length > 0) {
       _units = Unit.formUnits(schema, barcodes);
     } else {

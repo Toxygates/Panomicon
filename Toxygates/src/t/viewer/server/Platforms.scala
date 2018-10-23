@@ -27,8 +27,10 @@ import t.platform.Species.Species
 
 object Platforms {
   def apply(probes: Probes): Platforms = {
-    //TODO load platforms incrementally - this is too big and slow
-    //Alternatively, speed up this query
+    /*
+     * Note: if this query becomes too slow, it may be desirable to load
+     * the platforms incrementally, e.g. by species
+     */
     val pps = Probes.platformsAndProbes(probes)
     new Platforms(pps.map(x => x._1 -> x._2.toSet))
   }

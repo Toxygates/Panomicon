@@ -24,7 +24,10 @@ import javax.annotation.Nullable;
  * All known association types. In order to add a new type, it is necessary to define it here, and
  * then add the corresponding lookup code in SparqlServiceImpl.
  * 
- * TODO split into common, otg and triti annotations
+ * Note: instead of defining everything in a single place, it may eventually
+ * be better to have a registry
+ * and allow different modules with specialised functionality to register their own association
+ * types.
  */
 public enum AType {
   KEGG("KEGG pathways") {
@@ -121,17 +124,23 @@ public enum AType {
   // Enzymes("Kegg Enzymes") {
   // public String formLink(String value) { return value; }
   // },
+  
+  //Was used in Tritigate
   EnsemblOSA("O.Sativa orth. genes") {
     public String formLink(String value) {
       return formEnsemblPlantsLink(value);
     }
   },
+  
+  //Was used in Tritigate
   KEGGOSA("O.Sativa orth. pathways") {
     //Not used currently (Tritigate legacy)
     public String formLink(String value) {
       return value;
     }
   },
+  
+  //Was used in Tritigate
   Contigs("Contigs"), SNPs("SNPs"), POPSEQ("POPSEQ distances") {
     public boolean canSort() {
       return true;
