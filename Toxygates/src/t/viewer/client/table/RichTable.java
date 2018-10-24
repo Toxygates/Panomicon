@@ -65,7 +65,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   
   public interface ColumnHelper<T> {
     Column<T, String> toolColumn(Cell<String> cell);
-
     Cell<String> toolCell();    
     Header<SafeHtml> getColumnHeader(ColumnInfo info);
   }
@@ -114,7 +113,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     
     initWidget(lp);
     
-//    initWidget(grid);
     grid.setWidth("100%");
     grid.setRowStyles(new RowHighlighter());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
@@ -154,13 +152,9 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     ensureSection("extra");
     ensureSection("data");
 
-    Column<T, String> tcl = toolColumn(toolCell());
-
-    grid.addColumn(tcl, "");
-    increaseSectionColumnCount("default");
-
-    tcl.setCellStyleNames("clickCell");
-    grid.setColumnWidth(tcl, "2.5em");
+    // Add column of icons that can be clicked to show charts for the probe
+    addColumn(toolColumn(toolCell()), "default",
+        new ColumnInfo("", "", false, false, "2.5em", "clickCell", false, false, false));
 
     setupHideableColumns();
   }
