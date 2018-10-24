@@ -111,6 +111,16 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * entrez, refseq atranscript and symbol information only.
    */
   private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
+    /*
+     * An important concern with these queries is reducing the number of tuples being returned.
+     * Doing SELECT DISTINCT on all the variables (e.g. ?ent, ?trn, ?sym) 
+     * will cause a combinatorial explosion in 
+     * this case, where one probe can have e.g. multiple gene symbols and transcripts.
+     * GROUP_CONCAT aggregates such multiple values so that only one tuple is returned for all
+     * such combinations.
+     * Another interesting aggregation function that may be used is SAMPLE.
+     */
+    
     val query = s"""$tPrefixes
        |SELECT ?gl ?pl       
        |  (GROUP_CONCAT(?ent; separator = ":") AS ?entCon) 
@@ -130,8 +140,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
     val r = triplestore.mapQuery(query, 30000)
 
-    //Note that probes might have multiple entrez, symbol and refseq annotations.
-    //With this query form, that results in multiple result tuples per probe.
     val all = for (probe <- r;
       probeId = probe("pl");
       platform = probe("gl");
