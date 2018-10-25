@@ -7,8 +7,10 @@
   <property name="lib.dir" value="lib" />
   <property name="otgtool.root" value="../OTGTool" />
 
-  <property name="test.dir" value="test" />
   <property name="build.dir" value="war/WEB-INF/classes" />
+
+  <property name="test-sources.dir" value="test" />
+  <property name="testbuild.dir" value="test-classes" />
 
   <property environment="env" />
   
@@ -17,6 +19,9 @@
 
   <!-- set scala.home -->
   <property name="scala.home" value="${env.SCALA_HOME}" />
+
+  <!-- needed for tests -->
+  <property name="kyotocabinet_lib.dir" value="${env.KC_LIB_DIR}" />
 
   <target name="init">
     <property name="scala-library.jar" 
@@ -62,10 +67,16 @@
     <ivy:resolve file="ivy.xml" />
   </target>
 
-  <path id="full.classpath">
+  <path id="compile.classpath">
     <path refid="build.classpath" />
     <path refid="ivy.classpath" />
     <path refid="gwtpath" />
+  </path>
+
+  <path id="test.classpath">
+    <path refid="compile.classpath" />
+    <pathelement location="${build.dir}" />
+    <pathelement location="${otgtool.root}/test-classes" />
   </path>
 
   <target name="classfiles" depends="init,resolve">
@@ -73,7 +84,7 @@
     <mkdir dir="${build.dir}" />
     <scalac srcdir="${sources.dir}"
       destdir="${build.dir}"
-      classpathref="full.classpath"
+      classpathref="compile.classpath"
       deprecation="on"
       optimise="on">
       <include name="**/*.scala" />
@@ -81,9 +92,15 @@
     </scalac>
     <javac srcdir="${sources.dir}"
       destdir="${build.dir}"
-      classpathref="full.classpath">
+      classpathref="compile.classpath">
       <include name="**/*.java" />
     </javac>
+
+    <mkdir dir="${testbuild.dir}" />
+    <scalac srcdir="${test-sources.dir}" destdir="${testbuild.dir}" classpathref="test.classpath"
+      deprecation="on">
+      <include name="**/*.scala" />
+    </scalac>
 
   </target>
 
@@ -102,7 +119,7 @@
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" maxmemory="1g">
       <classpath>
         <pathelement location="src"/>
-        <path refid="full.classpath"/>
+        <path refid="compile.classpath"/>
       </classpath>
       <arg line="-war"/>
       <arg value="war"/>
@@ -115,15 +132,30 @@
   </target>
 
   <target name="build" depends="gwtc">
-  <!-- Deletes obsolete artifacts. -->
-      <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
-        sync="true" type="bundle,jar" />
+    <!-- Deletes obsolete artifacts. -->
+    <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+      sync="true" type="bundle,jar" />
   </target>
 
   <target name="compile" depends="build" />
 
+  <target name="test" depends="classfiles">
+    <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
+      <classpath refid="test.classpath" />
+    </taskdef>
+    <scalatest fork="true" parallel="true">
+      <reporter type="stdout" config="FD"/>
+      <reporter type="file" filename="tests.out"/>
+      <runpath>
+        <pathelement location="${testbuild.dir}" />
+      </runpath>
+      <jvmarg value="-Djava.library.path=${kyotocabinet_lib.dir}"/>
+    </scalatest>
+  </target>
+
   <target name="clean">
     <delete dir="${build.dir}" failonerror="false" />
+    <delete dir="${testbuild.dir}" failonerror="false" />
   </target>
 
 

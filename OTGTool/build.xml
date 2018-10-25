@@ -7,12 +7,16 @@
   <property name="lib.dir" value="lib" />
   <property name="scala-source.dir" value="main/scala" />
   <property name="java-source.dir" value="main/java" />
-  <property name="scala-test.dir" value="main/test" />
+  <property name="scala-test.dir" value="test/scala" />
   <property name="build.dir" value="classes" />
+  <property name="testbuild.dir" value="test-classes" />
 
   <!-- set scala.home -->
   <property environment="env" />
   <property name="scala.home" value="${env.SCALA_HOME}" />
+
+  <!-- needed for tests -->
+  <property name="kyotocabinet_lib.dir" value="${env.KC_LIB_DIR}" />
 
   <target name="init">
     <property name="scala-library.jar" 
@@ -37,6 +41,7 @@
     </taskdef>
   </target>
 
+  <!-- Not currently used -->
   <target name="resolve">
     <ivy:settings />
     <!--
@@ -45,22 +50,24 @@
     <ivy:resolve file="ivy.xml" conf="compile" />
   </target>
 
-  <path id="full.classpath">
+  <path id="compile.classpath">
     <path refid="build.classpath" />
     <path refid="ivy.classpath" />
   </path>
 
-  <target name="compile" depends="init">
+  <target name="retrieve" depends="init">
     <ivy:cachepath pathid="ivy.classpath" />
-
     <!-- Needed for bundling/packaging of front-end. Deletes obsolete artifacts. -->
     <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
       sync="true" type="bundle,jar" />
+  </target>
+
+  <target name="compile" depends="retrieve">
 
     <mkdir dir="${build.dir}" />
     <scalac srcdir="${sources.dir}"
       destdir="${build.dir}"
-      classpathref="full.classpath"
+      classpathref="compile.classpath"
       deprecation="on"
       optimise="on">
       <include name="${scala-source.dir}/**/*.scala" />
@@ -69,13 +76,34 @@
     </scalac>
     <javac srcdir="${sources.dir}"
       destdir="${build.dir}"
-      classpathref="full.classpath">
+      classpathref="compile.classpath">
       <include name="${java-source.dir}/**/*.java" />
     </javac>
+
+    <mkdir dir="${testbuild.dir}" />
+    <scalac srcdir="${sources.dir}" destdir="${testbuild.dir}" classpathref="compile.classpath"
+      deprecation="on">
+      <include name="${scala-test.dir}/**/*.scala" />
+    </scalac>
+  </target>
+
+  <target name="test" depends="compile">
+    <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
+      <classpath refid="compile.classpath" />
+    </taskdef>
+    <scalatest fork="true" parallel="true">
+      <reporter type="stdout" config="FD"/>
+      <reporter type="file" filename="tests.out"/>
+      <runpath>
+        <pathelement location="${testbuild.dir}" />
+      </runpath>
+      <jvmarg value="-Djava.library.path=${kyotocabinet_lib.dir}"/>
+    </scalatest>
   </target>
 
   <target name="clean">
     <delete dir="${build.dir}" failonerror="false" />
+    <delete dir="${testbuild.dir}" failonerror="false" />
   </target>
 
 
