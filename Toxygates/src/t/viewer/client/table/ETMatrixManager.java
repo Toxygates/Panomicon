@@ -162,14 +162,17 @@ public class ETMatrixManager {
   }
 
   void removeTests() {
-    matrixService.removeSyntheticColumns(matrixId,
-        new PendingAsyncCallback<ManagedMatrixInfo>(screen, "There was an error removing the test columns.") {
-          @Override
-          public void handleSuccess(ManagedMatrixInfo result) {
-            matrixInfo = result; // no need to do the full setMatrix
-            delegate.setupColumns();
-          }
-        });
+    matrixService.removeSyntheticColumns(matrixId, new PendingAsyncCallback<ManagedMatrixInfo>(
+        screen, "There was an error removing the test columns.") {
+      /*
+       * Note that the number of rows can change as a result of this operation, due to filtering
+       * being affected.
+       */
+      @Override
+      public void handleSuccess(ManagedMatrixInfo result) {
+        setInitialMatrix(result);
+      }
+    });
   }
 
   void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name,

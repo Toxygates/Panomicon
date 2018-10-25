@@ -266,6 +266,16 @@ trait Synthetics extends CoreMatrix {
     current = current.selectColumns(dataColumns)
     params.rawGrouped = params.rawGrouped.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
+    
+    _sortColumn match {
+      case Some(n) =>
+        if (n >= currentInfo.numDataColumns()) {
+          _sortColumn = None          
+        }
+      case None =>        
+    }
+  
+    resetSortAndFilter()
     filterAndSort()
   }
 
