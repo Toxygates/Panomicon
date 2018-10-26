@@ -34,14 +34,14 @@ import t.model.sample.Attribute;
 abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable,
     Comparable<SampleGroup<?>> {
 
-  public static String[] groupColors;
+  /**
+   * The default color is currently used by tests only. Other users should currently call
+   * SampleGroup.setColors before creating instances of this class.
+   */
+  public static String[] groupColors = new String[] {"#FF7300"};
 
   public static void setColors(String[] colors) {
-    if (groupColors != null) {
-      throw new RuntimeException("Colors have already been set");
-    } else {
-      groupColors = colors;
-    }
+    groupColors = colors;
   }
 
   private static int nextColor = 0;

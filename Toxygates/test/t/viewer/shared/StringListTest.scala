@@ -37,6 +37,6 @@ class StringListTest extends TTestSuite {
     val up = ItemList.unpack(p)
     assert(up.packedItems().toArray === items.toArray)
     assert(up.name() === l.name())
-    assert(up.`type` === l.`type`)
+    assert(up.`type`() === l.`type`())
   }
 }

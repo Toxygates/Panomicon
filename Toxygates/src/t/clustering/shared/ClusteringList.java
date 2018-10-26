@@ -167,7 +167,7 @@ public class ClusteringList extends ItemList {
   }
 
   @Override
-  protected Collection<String> packedItems() {
+  public Collection<String> packedItems() {
     List<String> items = new ArrayList<String>();
     items.add(packedHeader());
     for (StringList l : clusters) {

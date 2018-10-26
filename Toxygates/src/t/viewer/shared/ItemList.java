@@ -63,7 +63,7 @@ abstract public class ItemList implements Packable, Serializable, Comparable<Ite
     return sb.toString();
   }
 
-  abstract protected Collection<String> packedItems();
+  abstract public Collection<String> packedItems();
 
   abstract public int size();
 
