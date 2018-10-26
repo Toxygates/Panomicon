@@ -84,22 +84,13 @@ trait Uniprot extends Triplestore {
    * Orthologs in the given species for the given proteins.
    */
   def orthologsFor(uniprots: Iterable[Protein], s: Species): MMap[Protein, Protein] = {
-    try {
-      //      B2RIProClass.connect()
-      //first obtain the corresponding orthologs
-      val orthologs = if (!uniprots.isEmpty) {
-        orthologsInDB(uniprots, s)
-      } else { emptyMMap[Protein, Protein]() }
-      println(orthologs)
-      //      val allUniprots = orthologs.values.flatten
-      //      val genes = if (!allUniprots.isEmpty) { B2RIProClass.geneIdsForUniProts(allUniprots) } else { Map[String, CSet[String]]() }
-      //      println(genes)
-      //      orthologs.map(x => (x._1 -> x._2.flatMap(up => genes.getOrElse(up, Set()))))
-      orthologs
-    } finally {
-      //      B2RIProClass.close()
+    if (!uniprots.isEmpty) {
+      orthologsInDB(uniprots, s)
+    } else {
+      throw new Exception("Unable to obtain full ortholog set for a species")
     }
   }
+
 }
 
 /**

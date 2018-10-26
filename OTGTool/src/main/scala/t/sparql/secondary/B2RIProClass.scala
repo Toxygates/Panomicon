@@ -23,6 +23,9 @@ import t.sparql._
 
 class B2RIProClass extends Triplestore {
 
+  /*
+   * Note: server unavailable as of Oct 2018
+   */
   val con = Triplestore.connectSPARQLRepository("http://iproclass.bio2rdf.org/sparql")
 
   val prefixes = """
