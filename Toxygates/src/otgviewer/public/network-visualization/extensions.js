@@ -190,17 +190,7 @@ function initContextMenu(){
         coreAsWell: true,
         onClickFunction: onSearchNode,
       },
-      /**
-       * filter the display of nodes to those that fullfill a certain criteria.
-       * The filtering is selected by the user.
-       */
-       // {
-       //  id: "node-filter",
-       //  content: "Filter Nodes",
-       //  tooltipText: "Nodes that do not fill the criteria will not be displayed",
-       //  coreAsWell: true,
-       //  onClickFunction: onNodeFiltering,
-       // },
+
     ] // menuItems
   });
 }
@@ -320,16 +310,6 @@ function onSearchNode(event){
 
   /* initialize search text */
   $("#searchNodeModal #nodeLabel").val("");
-}
-
-/**
- * Define initial set-up and options to be displayed when selecting to filter
- * the nodes of a network.
- * @param {any} event the event triggered when the corresponding item in the
- * context menu is pressed.
- */
-function onNodeFiltering(event){
-  $("#filterModal").show();
 }
 
 // add functions to cytoscape prototype

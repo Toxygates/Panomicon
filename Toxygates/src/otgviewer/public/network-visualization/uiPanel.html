@@ -21,11 +21,18 @@
     </select>
     <br />
 
-    <div>Hide unconnected nodes:</div>
-    <input id="hideNodesCheckbox" type="checkbox" checked>
+    <div>Hide unconnected nodes:
+      <input id="hideNodesCheckbox" type="checkbox" checked>
+    </div>
 
-    <div>Show right panel:</div>
-    <input id="showRightCheckbox" type="checkbox">
+    <div>Show right panel:
+      <input id="showRightCheckbox" type="checkbox">
+    </div>
+
+    <div>Highlight intesection:
+      <input id="showIntersectionCheckbox" type="checkbox" disabled="true">
+    </div>
+
     <br />
   </fieldset>
 </form>
@@ -148,22 +155,5 @@
     <br />
     <span class="modal-button modal-cancel" data-modal="searchNodeModal">Cancel</span>
     <span class="modal-button" id="searchNodes" data-modal="searchNodeModal">Search</span>
-  </div>
-</div>
-
-
-<!-- Window used to filter the nodes being shown on screen -->
-<div id="filterModal" class="modal">
-  <div class="modal-content">
-    <span class="modal-close" data-modal="filterModal">&times;</span>
-    <h1>Filter nodes</h1>
-    <ul id="filterList">
-    </ul>
-    <h3>Degree</h3>
-      Show nodes with at least:
-      <input id="nodeDegree" type="number" min="0"> Edges
-      <span class="modal-add" data-type="degFilter">+</span> <br />
-
-    <span class="modal-button" id="filterNodes" data-modal="filterModal">Apply</span>
   </div>
 </div>
