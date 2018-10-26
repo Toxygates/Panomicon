@@ -143,7 +143,7 @@
     <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
       <classpath refid="test.classpath" />
     </taskdef>
-    <scalatest fork="true" parallel="true">
+    <scalatest fork="true" parallel="false">
       <reporter type="stdout" config="FD"/>
       <reporter type="file" filename="tests.out"/>
       <runpath>
