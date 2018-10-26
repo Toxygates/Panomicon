@@ -84,6 +84,8 @@ $(document).on("change", "#hideNodesCheckbox", function(){
 $(document).on("change", "#showRightCheckbox", function(){
   // See if the checkbox is checked (enable display)
   if( $("#showRightCheckbox").is(":checked") ){
+    // Enable the display of intersection of both networks
+    $("#showIntersectionCheckbox").attr("disabled", false);
     // Have the left-panel reduce its size to half of the available display
     $("#leftDisplay").addClass("with-side");
     // Define the new right-side panel, together with its elements, and add it
@@ -111,6 +113,10 @@ $(document).on("change", "#showRightCheckbox", function(){
   }
   // When the checkbox is not checked (disabled display of right-side panel)
   else{
+    // Unselect and disable the possibility of showing the intersection of
+    // both networks
+    $("#showIntersectionCheckbox").prop("checked", false);
+    $("#showIntersectionCheckbox").attr("disabled", true);
     // we remove the panel from the DOM
     $("#rightDisplay").remove();
     // remove the information from the corresponding variables
@@ -129,6 +135,35 @@ $(document).on("change", "#showRightCheckbox", function(){
   }
 });
 
+/**
+ * Highlight, on both panels, the intersection (equal nodes) of both networks
+ * currently on display
+ */
+$(document).on("change", "#showIntersectionCheckbox", function(){
+  // If any of the displays is empty, there is no need to do an intersection
+  if( vizNet[MAIN_ID] === null || vizNet[SIDE_ID] === null ) return;
+
+  // Check whether the display of the intersections needs to be enabled or
+  // disabled
+  if( $("#showIntersectionCheckbox").is(":checked") ){
+    // create a headless (unshown) copy of the left-side network, this is done
+    // to prevent the redraw of intersected nodes, as they are added to the pool
+    // with information regarding its parent container
+    var clone = cytoscape({headless: true});
+    clone.add(vizNet[MAIN_ID].nodes());
+    // calculate the intersection of both networks
+    var inter = clone.nodes().intersection(vizNet[SIDE_ID].nodes());
+    // select each node found to be part of the intersection
+    inter.forEach(function(node){
+      vizNet[0].$('#'+node.id()).select();
+    });
+  }
+  // Unselect everything when canceling the display
+  else{
+    vizNet[0].$('node').unselect();
+  }
+
+});
 
 /** ---------------------- UPDATE NODE MODAL ---------------------------- **/
 /**
@@ -197,7 +232,7 @@ $(document).on("change", "#updateNodeModal #nodeWeights", function(evt){
     $("#weightValue").val("");
 });
 
-// /** ---------------------- UPDATE GRAPH COLORING ------------------------ **/
+/** ---------------------- UPDATE GRAPH COLORING ------------------------ **/
 // /**
 //  * Apply the user defined color scale to all nodes of a particular type.
 //  */
@@ -380,87 +415,9 @@ $(document).on("click", "#searchNodeModal #searchNodes", function(evt){
   $("#"+modal).hide();
 });
 
-// /** ---------------------------- FILTER GRAPH ---------------------------- **/
-// /**
-//  * Handle the application of filters to the visualization.
-//  * All filters currently active (listed) will be applied to the visualization.
-//  */
-// $(document).on("click", "#filterModal #filterNodes", function(evt){
-//   /* since the application of filters could translate in several drawing
-//    * iterations, we batch them to optimize rendering */
-//   vizNet.batch(function(){
-//     // make all elements in the graph visible again, as elements that should not
-//     // be filtered by the current list of filters could remain invisible due to
-//     // previous filtering rules
-//     vizNet.nodes().style("display", "element");
-//
-//     // get the current list of filters to be applied
-//     var list = $("#filterModal #filterList")[0];
-//     for(var i=0; i<list.childElementCount; ++i ){
-//       // get the details of each filter included within the list
-//       var data = list.children[i].dataset;
-//       var filtered;
-//       if(data["type"] === "degFilter"){
-//         // select the group of nodes that should be filtered out from the
-//         // visualization
-//         filtered = vizNet.nodes().filter(function(ele){
-//           return ele.degree(false) < parseInt(data["degree"]);
-//         });
-//       }
-//       // by setting their display to "none", we effectively prevent nodes to be
-//       // show, without permanently removing them from the graph
-//       filtered.style('display', 'none');
-//     }
-//   });
-//
-//   /* once all filters have beeb applied, hide the modal */
-//   var modal = $(event.target).data().modal;
-//   $("#"+modal).hide();
-// });
-//
-// /**
-//  * Handle the addition of filter rules to the corresponding list. Later, and
-//  * upon user selection, filters are applied to the network visualization
-//  */
-// $(document).on("click", ".modal-add", function(event){
-//   /* list of filters currently defined */
-//   var list = $("#filterModal #filterList")[0];
-//
-//   /* create a new filter element */
-//   var type = $(event.target).data().type;
-//   var node = document.createElement("li");
-//   node.setAttribute("data-type", type);
-//
-//   /* define the filter element */
-//   var html = "";
-//   if( type === "degFilter"){
-//     var deg = Math.trunc($("#nodeDegree").val());
-//     deg = deg >= 0 ? deg : 0;
-//     node.setAttribute("data-degree", deg);
-//     html += ("Degree at least "+deg);
-//     html +=  "<span class='modal-remove'>&times;</span>";
-//
-//   }
-//   node.innerHTML = html;
-//
-//   /* add the new filter to the list of filters */
-//   list.appendChild(node);
-// });
-//
-// /**
-//  * Handle the removal of a specific filter from the corresponding list.
-//  */
-// $(document).on("click", ".modal-remove", function(event){
-//   /* the list of filters */
-//   var list = $("#filterModal #filterList")[0]
-//   /* removal of the element selected by the user */
-//   list.removeChild(event.target.parentElement);
-// })
-
 /** ------------------------------------------------------------------ **/
 /**                    Other MODAL Functions                           **/
 /** ------------------------------------------------------------------ **/
-
 /**
 * Hide the corresponding modal when the close option is selected.
 * No changes are applied and whatever information the user added to the modal
