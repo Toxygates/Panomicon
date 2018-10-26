@@ -125,7 +125,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         if (groupInspector.chosenColumns().size() == 0) {
           Window.alert("Please define and activate at least one group.");
         } else {
-            manager.attemptProceed(key);
+            manager.attemptProceed(DataScreen.key);
         }
       });
 
