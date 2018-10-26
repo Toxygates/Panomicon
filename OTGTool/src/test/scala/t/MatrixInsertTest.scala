@@ -20,17 +20,25 @@
 
 package t
 
+import org.junit.runner.RunWith
+
 import t.db._
 import t.db.testing.FakeBasicMatrixDB
-import t.testing.FakeContext
 import t.db.testing.TestData
-import org.junit.runner.RunWith
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import org.scalatest.junit.JUnitRunner
+import scala.concurrent.Future
 
 @RunWith(classOf[JUnitRunner])
 class MatrixInsertTest extends TTestSuite {
 
-  import TestData._
+  import t.db.testing.TestData._
+
+  def await[T](task: Task[T]) = {
+    val fut = TaskRunner.runThenFinally(task)(())
+    Await.ready(fut, Duration.Inf)
+  }
 
   test("Absolute value insertion") {
     val data = makeTestData(false, (samples take 10))
@@ -40,17 +48,21 @@ class MatrixInsertTest extends TTestSuite {
       def mkValue(v: FoldPExpr) =
        BasicExprValue(v._1, v._2)
     }
+    await(ins.insert("Absolute value data insert"))
 
-    ins.insert("Absolute value data insert").execute()
+    val ss1 = db.records.map(_._1).distinct
+    val ss2 = data.samples
+    ss1 should (contain theSameElementsAs ss2)
 
-    val s1 = db.records.map(ev => (ev._1, context.probeMap.unpack(ev._2),
-        ev._3.value, ev._3.call))
-    val s2 = for {
-      s <- data.samples;
-      (probe, PExprValue(expr, p, call, prb)) <- data.asExtValues(s)
-    } yield (s, probe, expr, call)
-          
-    s1 should (contain theSameElementsAs s2)
+    for (sample <- ss1) {
+      val vs1 = db.records.filter(_._1 == sample).map(ev =>
+        (context.probeMap.unpack(ev._2), ev._3.value, ev._3.call))
+      val vs2 = for {
+        (probe, PExprValue(expr, p, call, prb)) <- data.asExtValues(sample)
+      } yield (probe, expr, call)
+
+      vs1 should (contain theSameElementsAs vs2)
+    }
 
     db.released should be(true)
   }

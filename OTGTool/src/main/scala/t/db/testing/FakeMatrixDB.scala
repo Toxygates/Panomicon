@@ -30,7 +30,7 @@ abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample,
 
   def sortSamples(xs: Iterable[Sample]): Seq[Sample] = xs.toSeq
 
-  def allSamples: Iterable[Sample] = records.map(_._1).toSet
+  def allSamples: Iterable[Sample] = records.map(_._1).distinct
 
   def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)] = {
     null
@@ -54,7 +54,8 @@ abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample,
   }
 }
 
-class FakeBasicMatrixDB(initRecords: Seq[(Sample, Int, BasicExprValue)] = Seq())(implicit probes: ProbeMap) extends AbsFakeMatrixDB[BasicExprValue](initRecords) {
+class FakeBasicMatrixDB(initRecords: Seq[(Sample, Int, BasicExprValue)] = Seq())(implicit probes: ProbeMap)
+extends AbsFakeMatrixDB[BasicExprValue](initRecords) {
 
   def emptyValue(probe: String) = ExprValue(Double.NaN, 'A', probe)
 

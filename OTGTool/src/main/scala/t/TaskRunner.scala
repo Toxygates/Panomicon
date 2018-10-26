@@ -127,6 +127,10 @@ abstract class AtomicTask[+T](val name: String) extends Task[T] {
  * A way of running tasks, on a single thread, in a way that lets
  * them be monitored or stopped.
  * Tasks are queued up and run sequentially.
+ *
+ * Note: Instad of having the TaskRunner be a global object, we might want to
+ * switch to a design where TaskRunner instances are passed to Tasks.
+ * This would simplify e.g. parallel execution of unit tests.
  */
 object TaskRunner {
   import scala.concurrent.ExecutionContext.Implicits.global
