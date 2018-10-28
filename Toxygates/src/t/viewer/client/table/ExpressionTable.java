@@ -334,8 +334,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     charts.makeRowCharts(params, chartBarcodes, probes,
         new AChartAcceptor() {
       @Override
-          public void acceptCharts(final AdjustableGrid<?, ?> ag) {
-            Utils.displayInPopup("Charts", ag, true, DialogPosition.Side);
+      public void acceptCharts(final AdjustableGrid<?, ?> ag) {
+        Utils.displayInPopup("Charts", ag, true, DialogPosition.Side);
       }
 
       @Override
@@ -480,21 +480,21 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       // Before disabling p-value columns we need to check whether we are filtering on
       // any of them, and if so, act accordingly.
       if (!newState) {
-        List<ExpressionColumn> pValueSortedColumns = new ArrayList<ExpressionColumn>();
+        List<ExpressionColumn> pValueFilteredColumns = new ArrayList<ExpressionColumn>();
         for (int i = 0; i < grid.getColumnCount(); i++) {
           Column<ExpressionRow, ?> column = grid.getColumn(i);
           if (column instanceof ExpressionColumn) {
             ExpressionColumn eColumn = (ExpressionColumn) column;
             if (matrixInfo().isPValueColumn(eColumn.matrixColumn()) &&
                 eColumn.columnInfo().filterActive()) {
-              pValueSortedColumns.add(eColumn);
+              pValueFilteredColumns.add(eColumn);
             }
           }
         }
-        if (pValueSortedColumns.size() > 0) {
+        if (pValueFilteredColumns.size() > 0) {
           if (Window.confirm("Hiding p-value columns will undo all filtering based on " + 
                 "p-value columns.")) {
-            int[] columnIndices = pValueSortedColumns.stream().mapToInt(col -> col.matrixColumn()).
+            int[] columnIndices = pValueFilteredColumns.stream().mapToInt(col -> col.matrixColumn()).
                 toArray();
             matrix.clearColumnFilters(columnIndices);
             setDisplayPColumns(newState);
