@@ -331,7 +331,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         new AChartAcceptor() {
       @Override
       public void acceptCharts(final AdjustableGrid<?, ?> ag) {
-        Utils.displayInPopup("Charts", ag, true, DialogPosition.Side);
+        Utils.displayInPopup("Charts", ag, true, DialogPosition.Side, () -> {
+          int oldHighlightedRow = highlightedRow;
+          highlightedRow = -1;
+          if (oldHighlightedRow >= 0) {
+            grid.redrawRow(oldHighlightedRow);
+          }
+        });
       }
 
       @Override
@@ -430,7 +436,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public void onToolCellClickedForProbe(String probe) {
     int oldHighlightedRow = highlightedRow;
     highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), probe);
-    if (oldHighlightedRow > 0) {
+    if (oldHighlightedRow >= 0) {
       grid.redrawRow(oldHighlightedRow);
     }
     grid.redrawRow(highlightedRow);
