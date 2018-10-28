@@ -116,10 +116,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     } else {
       selectionModel = new SingleSelectionModel<ExpressionRow>();
       grid.setSelectionModel(selectionModel);
-      
-      //To avoid confusion, we can avoid simultaneous selection and indication in the same table.
-//      selectionModel.addSelectionChangeHandler(e ->
-//        setIndicatedProbes(new String[] {}));     
     }
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 
@@ -179,6 +175,16 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   private Group oldSortColumnGroup = null;
   private boolean oldSortAscending = false;
 
+  @Override
+  public void setupColumns() {
+    super.setupColumns();
+    ManagedMatrixInfo matrixInfo = matrix.info();
+    columns.addDataColumns(matrixInfo, displayPColumns);
+    ensureSection("synthetic");
+    columns.addSynthColumns(matrixInfo);
+    restoreSort();
+  }
+
   public void storeSortInfo() {
     ColumnSortList csl = grid.getColumnSortList();
     if (csl.size() > 0) {
@@ -193,16 +199,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       oldSortColumnHint = null;
       oldSortColumnGroup = null;
     }
-  }
-
-  @Override
-  public void setupColumns() {
-    super.setupColumns();
-    ManagedMatrixInfo matrixInfo = matrix.info();
-    columns.addDataColumns(matrixInfo, displayPColumns);
-    ensureSection("synthetic");
-    columns.addSynthColumns(matrixInfo);
-    restoreSort();
   }
 
   private void restoreSort() {
@@ -470,44 +466,46 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   // NavigationTools delegate method
   @Override
   public void setPValueDisplay(boolean newState) {
-    if (newState && !matrix.hasPValueColumns()) {
-      Window.alert("Precomputed p-values are only available for sample groups "
-          + " in fold-change mode, consisting of a single time and dose.\n"
-          + "If you wish to compare two columns, use "
-          + "\"Compare two sample groups\" in the tools menu.");
-      setDisplayPColumns(false);
-    } else {
-      // Before disabling p-value columns we need to check whether we are filtering on
-      // any of them, and if so, act accordingly.
-      if (!newState) {
-        List<ExpressionColumn> pValueFilteredColumns = new ArrayList<ExpressionColumn>();
-        for (int i = 0; i < grid.getColumnCount(); i++) {
-          Column<ExpressionRow, ?> column = grid.getColumn(i);
-          if (column instanceof ExpressionColumn) {
-            ExpressionColumn eColumn = (ExpressionColumn) column;
-            if (matrixInfo().isPValueColumn(eColumn.matrixColumn()) &&
-                eColumn.columnInfo().filterActive()) {
-              pValueFilteredColumns.add(eColumn);
-            }
-          }
-        }
-        if (pValueFilteredColumns.size() > 0) {
-          if (Window.confirm("Hiding p-value columns will undo all filtering based on " + 
-                "p-value columns.")) {
-            int[] columnIndices = pValueFilteredColumns.stream().mapToInt(col -> col.matrixColumn()).
-                toArray();
-            matrix.clearColumnFilters(columnIndices);
-            setDisplayPColumns(newState);
-          } else {
-            navigationTools.pValueCheck.setValue(true);
-          }
-        } else {
-          setDisplayPColumns(newState);
-          setupColumns();
-        }
-      } else {
+    if (newState) {
+      if (matrix.hasPValueColumns()) {
         setDisplayPColumns(newState);
         setupColumns();
+      } else {
+        Window.alert("Precomputed p-values are only available for sample groups "
+            + " in fold-change mode, consisting of a single time and dose.\n"
+            + "If you wish to compare two columns, use "
+            + "\"Compare two sample groups\" in the tools menu.");
+        setDisplayPColumns(false);
+      }
+    } else {
+      // Generate list of p-value columns that are currently being filtered on
+      List<ExpressionColumn> pValueFilteredColumns = new ArrayList<ExpressionColumn>();
+      for (int i = 0; i < grid.getColumnCount(); i++) {
+        Column<ExpressionRow, ?> column = grid.getColumn(i);
+        if (column instanceof ExpressionColumn) {
+          ExpressionColumn eColumn = (ExpressionColumn) column;
+          if (matrixInfo().isPValueColumn(eColumn.matrixColumn()) &&
+              eColumn.columnInfo().filterActive()) {
+            pValueFilteredColumns.add(eColumn);
+          }
+        }
+      }
+      if (pValueFilteredColumns.size() == 0) {
+        // If we're not filtering on any p-value columns, proceed normally
+        setDisplayPColumns(newState);
+        setupColumns();
+      } else {
+        // If we are filtering on p-value columns, get user confirmation before clearing
+        // filters based on p-value columns
+        if (Window.confirm("Hiding p-value columns will undo all filtering based on " + 
+              "p-value columns.")) {
+          int[] columnIndices = pValueFilteredColumns.stream().mapToInt(col -> col.matrixColumn()).
+              toArray();
+          matrix.clearColumnFilters(columnIndices);
+          setDisplayPColumns(newState);
+        } else {
+          navigationTools.pValueCheck.setValue(true);
+        }
       }
     }
   }

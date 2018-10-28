@@ -138,6 +138,14 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     return false;
   }
   
+  /**
+   * Create columns for the DataGrid, adding all the columns that should be
+   * displayed based on the current application state. Some of these come from the
+   * hideableColumns list and are created in the setupHideableColumns method.
+   * 
+   * Subclasses that want to display additional columns, outside of the
+   * hideableColumns mechanism, should override this method.
+   */
   protected void setupColumns() {
     int count = grid.getColumnCount();
     for (int i = 0; i < count; ++i) {
@@ -159,22 +167,9 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     setupHideableColumns();
   }
   
-  public void loadColumnVisibility() {
-    columnState.load(screen.getParser());
-    Set<String> preferredColumns = columnState.getValue();
-    if (preferredColumns != null) {
-      for (HideableColumn<T, ?> c : hideableColumns) {
-        //TODO: we ignore persisted state for standard columns - for now this is to
-        //play nicely with dual data screen
-        if (c.standard == null) {
-          ColumnInfo info = c.columnInfo();
-          boolean visible = preferredColumns.contains(info.title());
-          c.setVisibility(visible);
-        }
-      }
-    }
-  }
-
+  /**
+   * 
+   */
   protected void setupHideableColumns() {
     boolean first = true;
 
@@ -266,10 +261,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
         return;
       }
     }
-  }
-
-  protected int sectionCount(String section) {
-    return sectionColumnCount.get(section);
   }
 
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
@@ -385,7 +376,47 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   public void onResize() {
     grid.onResize();
   }
+
+  public void redrawGrid() {
+    grid.redraw();
+  }
+
+  public List<T> visibleItems() {
+    return grid.getVisibleItems();
+  }
+
+  public Column<T, ?> sectionColumnAtIndex(String desiredSection, int sectionIndex) {
+    int totalIndex = 0;
+    for (String section : columnSections) {
+      if (section == desiredSection) {
+        if (sectionIndex < sectionColumnCount.get(section)) {
+          return grid.getColumn(totalIndex + sectionIndex);
+        } else {
+          return null;
+        }
+      } else {
+        totalIndex += sectionColumnCount.get(section);
+      }
+    }
+    return null;
+  }
   
+  public void loadColumnVisibility() {
+    columnState.load(screen.getParser());
+    Set<String> preferredColumns = columnState.getValue();
+    if (preferredColumns != null) {
+      for (HideableColumn<T, ?> c : hideableColumns) {
+        //TODO: we ignore persisted state for standard columns - for now this is to
+        //play nicely with dual data screen
+        if (c.standard == null) {
+          ColumnInfo info = c.columnInfo();
+          boolean visible = preferredColumns.contains(info.title());
+          c.setVisibility(visible);
+        }
+      }
+    }
+  }
+
   public void persistColumnState() {
     Set<String> vs = hideableColumns.stream().filter(c -> c.visible()).
         map(c -> c.columnInfo().title()).collect(Collectors.toSet());
@@ -412,28 +443,4 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
       return new HashSet<String>(Arrays.asList(state.split(":::")));
     }
   };
-
-  public void redrawGrid() {
-    grid.redraw();
-  }
-
-  public List<T> visibleItems() {
-    return grid.getVisibleItems();
-  }
-
-  public Column<T, ?> sectionColumnAtIndex(String desiredSection, int sectionIndex) {
-    int totalIndex = 0;
-    for (String section : columnSections) {
-      if (section == desiredSection) {
-        if (sectionIndex < sectionColumnCount.get(section)) {
-          return grid.getColumn(totalIndex + sectionIndex);
-        } else {
-          return null;
-        }
-      } else {
-        totalIndex += sectionColumnCount.get(section);
-      }
-    }
-    return null;
-  }
 }
