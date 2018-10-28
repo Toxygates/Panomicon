@@ -21,12 +21,15 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.logging.Logger;
 
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
@@ -76,6 +79,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   
   private NavigationTools navigationTools;
   private AnalysisTools analysisTools;
+  
+  private DialogBox lastChartDialog;
 
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
@@ -331,11 +336,33 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         new AChartAcceptor() {
       @Override
       public void acceptCharts(final AdjustableGrid<?, ?> ag) {
-        Utils.displayInPopup("Charts", ag, true, DialogPosition.Side, () -> {
-          int oldHighlightedRow = highlightedRow;
-          highlightedRow = -1;
-          if (oldHighlightedRow >= 0) {
-            grid.redrawRow(oldHighlightedRow);
+        int oldHighlightedRow = highlightedRow;
+        DialogBox dialog = Utils.displayInPopup("Charts", ag, true, DialogPosition.Side);
+        lastChartDialog = dialog;
+        dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+          @Override
+          public void onClose(CloseEvent<PopupPanel> event) {
+            /* Un-highlight the row charts for which charts were shown, when the chart dialog is 
+             * dismissed.
+             * 
+             * The hack below is necessary to allow a user to click on a ToolCell to bring up 
+             * charts for a row, while charts are already being displayed for some row. 
+             * Because GWT is internally very asynchronous, if a grid.redrawRow happens on 
+             * *any* row after between a user's click on a ToolCell but before that click event 
+             * gets processed, the event appears to get cancelled.
+             */
+            Timer t = new Timer() {
+              @Override
+              public void run() {
+                if (lastChartDialog == dialog) {
+                  highlightedRow = -1;
+                }
+                grid.redrawRow(oldHighlightedRow);
+              }
+            };
+            // This delay is small enough to feel responsive, but long enough to ensure that the
+            // grid.redrawRow doesn't happen before a ToolCell click is resolved (in all my testing). 
+            t.schedule(200); 
           }
         });
       }
@@ -434,11 +461,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   @Override
   public void onToolCellClickedForProbe(String probe) {
-    int oldHighlightedRow = highlightedRow;
     highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), probe);
-    if (oldHighlightedRow >= 0) {
-      grid.redrawRow(oldHighlightedRow);
-    }
     grid.redrawRow(highlightedRow);
     Utils.ensureVisualisationAndThen(new Runnable() {
       @Override

@@ -165,10 +165,9 @@ public class Utils {
    *        location can be remembered as we use static variables for this purpose. 
    *        (TODO: fix by having a DialogContext or similar)
    * @param pos The position to display the dialog at.
-   * @param onClose a callback to run when the popup is closed.
    */
   public static DialogBox displayInPopup(String caption, final Widget widget,
-      final boolean trackLocation, final DialogPosition pos, Runnable onClose) {
+      final boolean trackLocation, final DialogPosition pos) {
     final DialogBox dialogBox = new DialogBox(true, false) {
       @Override
       protected void endDragging(MouseUpEvent event) {
@@ -182,7 +181,6 @@ public class Utils {
       @Override
       public void hide(boolean autoClosed) {
         super.hide(autoClosed);
-        onClose.run();
       }
     };
     dialogBox.setText(caption);
@@ -196,11 +194,6 @@ public class Utils {
       dialogBox.setPopupPositionAndShow(displayAt(dialogBox, dockPanel, widget, -1, -1, pos));
     }
     return dialogBox;
-  }
-  
-  public static DialogBox displayInPopup(String caption, final Widget widget,
-      final boolean trackLocation, final DialogPosition pos) {
-    return displayInPopup(caption, widget, trackLocation, pos, () -> {});
   }
 
   public static PositionCallback displayInCenter(final PopupPanel panel) {
