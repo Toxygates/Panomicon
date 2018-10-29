@@ -166,7 +166,9 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     targets = targets.speciesFilter(species)
 
     val scMainColumns = mainColumns.asScala
-    val params = ControllerParams(context, scMainColumns, mainProbes,
+    //Always load the empty probe set(all probes), to be able to revert to this view.
+    //We optionally filter probes below.
+    val params = ControllerParams(context, scMainColumns, Seq(),
       MatrixController.groupPlatforms(context, scMainColumns), typ, false)
 
     //The network controller (actually the managed network) will ensure that
@@ -176,7 +178,10 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     getState.networks += mainId -> net
 
     val mainMat = net.managedMatrix
-
+    if (!mainProbes.isEmpty) {
+      mainMat.selectProbes(mainProbes)
+    }
+    
     val fromMiRNA = gt == Network.mrnaType;
     val countMap = NetworkState.buildCountMap(mainMat, targets, platforms,
       fromMiRNA)
@@ -186,7 +191,8 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       new Synthetic.Precomputed("Count", s"Number of times each $gt appeared",
         new JHMap(mapAsJavaMap(filtered)), null))
 
-    //To do: init filters...
+    //Note: might add another synthetic column with filtered count in the current gene set        
+        
     new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)
   }
 

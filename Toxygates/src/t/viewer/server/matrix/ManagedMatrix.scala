@@ -159,6 +159,18 @@ class CoreMatrix(val params: LoadParams) {
     resetSortAndFilter()
     filterAndSort()
   }
+  
+  /**
+   * For efficiency, perform both of the above operations at once. Probes cannot be empty.
+   */
+  def selectProbesAndFilter(probes: Seq[String], filters: Seq[ColumnFilter]): Unit = {
+    requestProbes = probes
+    for ((f, i) <- filters.zipWithIndex) {
+      currentInfo.setColumnFilter(i, f)
+    }
+    resetSortAndFilter()
+    filterAndSort()
+  }
 
   /**
    * Called when the order or selection of rows in the current matrix changes.
@@ -191,6 +203,7 @@ class CoreMatrix(val params: LoadParams) {
       case Some(sc) => sort(sc, _sortAscending)
       case _ => //not sorting
     }
+    updateRowInfo()
   }
 
   private final def sortRows(col: Int, ascending: Boolean)(v1: RowData, v2: RowData): Boolean = {

@@ -112,12 +112,16 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     typ: ValueType,
     initFilters: JList[ColumnFilter]): ManagedMatrixInfo = {
 
+    //Always load the empty probe set(all probes), to be able to revert to this view.
+    //We optionally filter probes below.
     getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
-          groups.asScala, probes, typ, false))
+          groups.asScala, Seq(), typ, false))
     val mat = getState.matrix(id)
 
-    if (!initFilters.isEmpty) {
+    if (!probes.isEmpty) {
+      mat.selectProbesAndFilter(probes, initFilters.asScala)
+    } else if (!initFilters.isEmpty) {
       mat.setFilters(initFilters.asScala)
     }
     mat.info
