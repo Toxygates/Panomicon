@@ -17,12 +17,13 @@ import t.viewer.shared.network.Network
 class NetworkController(params: ControllerParams,  
     sideMatrix: ManagedMatrix, targets: TargetTable,
     platforms: Platforms,
-    initMainPageSize: Int) extends MatrixController(params) {
+    initMainPageSize: Int,
+    sideIsMRNA: Boolean) extends MatrixController(params) {
 
   type Mat = ManagedNetwork
   
   override def finish(mm: ManagedMatrix): Mat = {
-    new ManagedNetwork(mm.params, sideMatrix, targets, platforms, initMainPageSize)
+    new ManagedNetwork(mm.params, sideMatrix, targets, platforms, initMainPageSize, sideIsMRNA)
   }
 
   /**

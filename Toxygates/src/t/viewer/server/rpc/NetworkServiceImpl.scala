@@ -46,24 +46,28 @@ import t.viewer.shared.mirna.MirnaSource
 import t.viewer.shared.network.Format
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.NetworkInfo
+import t.viewer.server.matrix.ExprMatrix
+import t.viewer.shared.ManagedMatrixInfo
 
 object NetworkState {
   val stateKey = "network"
 
   //Temporary location for this
-  def buildCountMap(mat: ManagedMatrix,
+  def buildCountMap(
+    info:        ManagedMatrixInfo,
+    mat:         ExprMatrix,
     targetTable: TargetTable,
-    platforms: t.viewer.server.Platforms,
-    fromMiRNA: Boolean): Map[String, JDouble] = {
-    val lookup = mat.rawGrouped.rowKeys.toSeq
+    platforms:   t.viewer.server.Platforms,
+    fromMiRNA:   Boolean): Map[String, JDouble] = {
+    val lookup = mat.rowKeys.toSeq
 
     //TODO filter by species etc
     if (fromMiRNA) {
-      if (mat.currentInfo.numColumns() < 1) {
+      if (info.numColumns() < 1) {
         Console.err.println("Cannot construct count map - no columns available!")
         return Map()
       }
-      val gr = mat.currentInfo.columnGroup(0)
+      val gr = info.columnGroup(0)
       val sp = t.viewer.server.Conversions.groupSpecies(gr)
 
       val all = platforms.data(sp.expectedPlatform)
@@ -113,13 +117,13 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   override def localInit(c: Configuration) {
     config = c
   }
-  
+
   protected def mirnaTargetTable(source: MirnaSource): Option[TargetTable]
-  
+
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     if (sources.length == 1) {
-      //This special case is not strictly needed, but 
+      //This special case is not strictly needed, but
       //reduces peak memory usage
       for {
         t <- mirnaTargetTable(sources(0))
@@ -148,8 +152,8 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
    * and the mapping between the two.
    */
   def loadNetwork(mainId: String, mainColumns: JList[Group], mainProbes: Array[String],
-    sideId: String, sideColumns: JList[Group], typ: ValueType,
-    mainPageSize: Int): NetworkInfo = {
+                  sideId: String, sideColumns: JList[Group], typ: ValueType,
+                  mainPageSize: Int): NetworkInfo = {
 
     val scSideColumns = sideColumns.asScala
     //Orthologous mode is not supported for network loading
@@ -161,6 +165,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
 
     val gt = GroupUtils.groupType(scSideColumns(0))
     val species = groupSpecies(scSideColumns(0))
+    val sideIsMRNA = gt == Network.mrnaType;
 
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
@@ -173,7 +178,8 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
 
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-    val net = new NetworkController(params, sideMat, targets, platforms, mainPageSize)
+    val net = new NetworkController(params, sideMat, targets, platforms, mainPageSize,
+      sideIsMRNA)
     getState.controllers += mainId -> net
     getState.networks += mainId -> net
 
@@ -181,18 +187,15 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     if (!mainProbes.isEmpty) {
       mainMat.selectProbes(mainProbes)
     }
-    
-    val fromMiRNA = gt == Network.mrnaType;
-    val countMap = NetworkState.buildCountMap(mainMat, targets, platforms,
-      fromMiRNA)
-    val pset = sideMat.initProbes.toSet
-    val filtered = countMap.filter(x => pset.contains(x._1))
+
     sideMat.addSynthetic(
       new Synthetic.Precomputed("Count", s"Number of times each $gt appeared",
-        new JHMap(mapAsJavaMap(filtered)), null))
+        new JHMap(mapAsJavaMap(mainMat.countMap)), null))
 
-    //Note: might add another synthetic column with filtered count in the current gene set        
-        
+    sideMat.addSynthetic(
+      new Synthetic.Precomputed("Set", s"Number of times each $gt appeared in the set",
+        mainMat.currentViewCountMap, null))
+
     new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)
   }
 
@@ -200,12 +203,12 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     getState.networks(mainTableId).makeNetwork
 
   def prepareNetworkDownload(mainTableId: String, format: Format,
-    messengerWeightColumn: String, microWeightColumn: String): String = {
+                             messengerWeightColumn: String, microWeightColumn: String): String = {
     prepareNetworkDownload(currentView(mainTableId), format, messengerWeightColumn, microWeightColumn)
   }
 
   def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String,
-    microWeightColumn: String): String = {
+                             microWeightColumn: String): String = {
     val s = new Serializer(network, messengerWeightColumn, microWeightColumn)
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)

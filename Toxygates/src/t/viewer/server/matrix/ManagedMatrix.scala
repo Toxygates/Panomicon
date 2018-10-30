@@ -239,7 +239,7 @@ class CoreMatrix(val params: LoadParams) {
     updateRowInfo()
   }
 
-  private def updateRowInfo() {
+  protected def updateRowInfo() {
     currentInfo.setNumRows(current.rows)
     currentInfo.setAtomicProbes(current.annotations.flatMap(_.atomics).toArray)
   }

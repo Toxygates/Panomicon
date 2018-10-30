@@ -10,6 +10,7 @@ import t.viewer.server.matrix.MatrixController
 import t.viewer.shared.network.NetworkInfo
 import t.viewer.shared.network.Network
 import t.viewer.server.Platforms
+import scala.collection.JavaConverters._
 
 /**
  * Extended version of ManagedMatrix to preserve
@@ -22,7 +23,8 @@ class ManagedNetwork(mainParams: LoadParams,
     sideMatrix: ManagedMatrix,
     var targets: TargetTable,
     platforms: Platforms,
-    var currentPageSize: Int) extends ManagedMatrix(mainParams) {
+    var currentPageSize: Int,
+    sideIsMRNA: Boolean) extends ManagedMatrix(mainParams) {
 
   //TODO check if this is called in the correct places
   override protected def currentViewChanged() {
@@ -40,5 +42,33 @@ class ManagedNetwork(mainParams: LoadParams,
         this, offset, length)
     println(s"Managed network: selecting ${sideProbes.size} probes for side matrix")
     sideMatrix.selectProbes(sideProbes)
+  }
+  
+  private def filteredCountMap(mat: ExprMatrix) = {  
+    val r = NetworkState.buildCountMap(currentInfo, mat, targets, platforms,
+      sideIsMRNA)
+    val pset = sideMatrix.initProbes.toSet
+    r.filter(x => pset.contains(x._1))
+  }
+  
+  def countMap = filteredCountMap(rawGrouped)
+  
+  import java.util.{HashMap => JHMap}
+  import java.lang.{Double => JDouble}
+  
+  private[this] var currentCountMap: JHMap[String, JDouble] = new JHMap[String, JDouble]
+  
+  /**
+   * A mutable count map that will be updated as the current gene set changes,
+   * to reflect the counts in that set.
+   */
+  def currentViewCountMap: JHMap[String, JDouble] = currentCountMap 
+   
+  override protected def updateRowInfo() = synchronized {
+    super.updateRowInfo
+    if (currentCountMap != null) {
+      currentCountMap.clear()
+      currentCountMap.putAll(filteredCountMap(current).asJava)
+    }
   }
 }
