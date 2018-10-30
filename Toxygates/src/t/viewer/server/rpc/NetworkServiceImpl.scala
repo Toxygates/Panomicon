@@ -55,7 +55,7 @@ object NetworkState {
     targetTable: TargetTable,
     platforms: t.viewer.server.Platforms,
     fromMiRNA: Boolean): Map[String, JDouble] = {
-    val lookup = mat.current.rowKeys.toSeq
+    val lookup = mat.rawGrouped.rowKeys.toSeq
 
     //TODO filter by species etc
     if (fromMiRNA) {
