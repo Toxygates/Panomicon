@@ -73,6 +73,33 @@ $(document).on("change", "#hideNodesCheckbox", function(){
   }
 });
 
+function showNetworkOnRight() {
+  // Enable the display of intersection of both networks
+  $("#showIntersectionCheckbox").attr("disabled", false);
+  // Have the left-panel reduce its size to half of the available display
+  $("#leftDisplay").addClass("with-side");
+  // Define the new right-side panel, together with its elements, and add it
+  // to the DOM
+  $("#display")
+    .append('<div id="rightDisplay" class="sub-viz"></div>')
+    .ready(function(){
+      var right = $("#rightDisplay");
+      right.data("idx", SIDE_ID);
+      vizNet[SIDE_ID] = cytoscape({
+        container: right,
+        styleEnabled: true,
+      });
+      vizNet[SIDE_ID].initStyle();        // default style for network elements
+      // vizNet[SIDE_ID].initContextMenu();  // default context menu
+      // Here I add elements to the network display... based on the network
+      // currently stored in convertedNetwork
+      changeNetwork(SIDE_ID);
+
+      vizNet[MAIN_ID].resize();
+      vizNet[MAIN_ID].fit();
+    });
+}
+
 /**
  * Show (or not) a Right-side panel for additional network visualization. The
  * user typically works only on the visualization of a single network structure,
@@ -84,32 +111,7 @@ $(document).on("change", "#hideNodesCheckbox", function(){
 $(document).on("change", "#showRightCheckbox", function(){
   // See if the checkbox is checked (enable display)
   if( $("#showRightCheckbox").is(":checked") ){
-    // Enable the display of intersection of both networks
-    $("#showIntersectionCheckbox").attr("disabled", false);
-    // Have the left-panel reduce its size to half of the available display
-    $("#leftDisplay").addClass("with-side");
-    // Define the new right-side panel, together with its elements, and add it
-    // to the DOM
-    $("#display")
-      .append('<div id="rightDisplay" class="sub-viz"></div>')
-      .ready(function(){
-        var right = $("#rightDisplay");
-        right.data("idx", SIDE_ID);
-        vizNet[SIDE_ID] = cytoscape({
-          container: right,
-          styleEnabled: true,
-        });
-        vizNet[SIDE_ID].initStyle();        // default style for network elements
-        // vizNet[SIDE_ID].initContextMenu();  // default context menu
-        // Here I add elements to the network display... based on the network
-        // currently stored in convertedNetwork
-        changeNetwork(SIDE_ID);
-
-        vizNet[MAIN_ID].resize();
-        vizNet[MAIN_ID].fit();
-      });
-
-
+    showNetworkOnRight();
   }
   // When the checkbox is not checked (disabled display of right-side panel)
   else{

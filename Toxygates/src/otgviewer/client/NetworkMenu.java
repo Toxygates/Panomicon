@@ -15,13 +15,9 @@ public class NetworkMenu {
 
   public interface Delegate {
     void visualizeNetwork();
-
     void deleteNetwork(PackedNetwork network);
-
     void visualizeNetwork(PackedNetwork network);
-
     void downloadNetwork(Format format);
-
     List<PackedNetwork> networks();
   }
 

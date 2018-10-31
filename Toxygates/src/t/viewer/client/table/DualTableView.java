@@ -321,7 +321,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     return _networks;
   }
 
-
   @Override
   public void deleteNetwork(PackedNetwork network) {
     if (!networks().remove(network)) {

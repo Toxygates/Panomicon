@@ -1,7 +1,6 @@
 package t.viewer.client.network;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -22,7 +21,7 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
 import t.viewer.shared.network.Network;
 
-public class NetworkVisualizationDialog {
+public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   private static final String[] injectList = {
       "network-visualization/lib/jquery-3.3.1.min.js", "network-visualization/lib/cytoscape.min.js",
       "network-visualization/lib/cytoscape-context-menus.js", "network-visualization/lib/weaver-1.2.0.min.js",
@@ -47,6 +46,7 @@ public class NetworkVisualizationDialog {
     void onNetworkVisualizationDialogClose();
     void addPendingRequest();
     void removePendingRequest();
+    List<PackedNetwork> networks();
   }
 
   public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
@@ -147,8 +147,17 @@ public class NetworkVisualizationDialog {
       }
     });
 
+    Button loadNetworkButton = new Button("Load additional network");
+    loadNetworkButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        new LoadNetworkDialog(NetworkVisualizationDialog.this).initWindow();
+      }
+    });
+
     FilterEditPanel filterEditPanel = delegate.filterEditPanel();
-    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton, filterEditPanel.content());
+    Panel buttonPanel = Utils.mkHorizontalPanel(true, closeButton, saveButton, mirnaButton,
+        filterEditPanel.content(), loadNetworkButton);
 
     dockPanel.addNorth(uiDiv, getUiHeight());
     dockPanel.addSouth(buttonPanel, 35);
@@ -252,5 +261,21 @@ public class NetworkVisualizationDialog {
 
   protected static native void attachToHead(JavaScriptObject scriptElement) /*-{
     $doc.getElementsByTagName("head")[0].appendChild(scriptElement);
+  }-*/;
+
+  // LoadNetworkDialog.Delegate methods
+  @Override
+  public List<PackedNetwork> networks() {
+    return delegate.networks();
+  }
+
+  @Override
+  public void loadNetwork(PackedNetwork network) {
+    convertAndStoreNetwork(network.unpack());
+    showNetworkOnRight();
+  }
+
+  protected static native void showNetworkOnRight() /*-{
+    $wnd.showNetworkOnRight();
   }-*/;
 }
