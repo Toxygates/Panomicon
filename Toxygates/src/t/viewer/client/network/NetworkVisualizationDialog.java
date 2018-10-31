@@ -213,8 +213,8 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
 
   public native void saveCurrentNetwork(String title) /*-{
     $wnd.updateToxyNet();
-    $wnd.toxyNet.title = title;
-    this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet);
+    $wnd.toxyNet[0].title = title;
+    this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet[0]);
   }-*/;
 
   /**
