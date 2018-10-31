@@ -138,7 +138,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |GROUP BY ?pl ?gl
        |""".stripMargin
 
-    val r = triplestore.mapQuery(query, 30000)
+    val r = triplestore.mapQuery(query, 120000)
 
     val all = for (probe <- r;
       probeId = probe("pl");
