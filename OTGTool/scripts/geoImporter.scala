@@ -18,6 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import scala.Codec
 import scala.io.Source
 import java.io._
 
@@ -32,7 +33,7 @@ import java.io._
 val inputFile = args(0)
 println("Processing " + inputFile)
 
-val lines = Source.fromFile(inputFile).getLines.toList
+val lines = Source.fromFile(inputFile)(Codec.UTF8).getLines.toList
 val (nonMatrixLines, otherLines) = lines.span(!_.startsWith("!series_matrix_table_begin"))
 
 // Generate data CSV
