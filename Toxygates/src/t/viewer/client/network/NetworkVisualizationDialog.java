@@ -168,6 +168,13 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
     dockPanel.add(displayPanel);
   }
 
+  /**
+   * Show a dialog asking the user to provide a name for the currently displayed
+   * network, and save it under that name.
+   * 
+   * @param title the current name of the network, used as the default value of
+   *          the text field
+   */
   private void showNetworkNameDialog(String title) {
     InputDialog entry = new InputDialog("Please enter a name for the network.", title) {
       @Override
@@ -186,6 +193,11 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
     networkNameDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
   }
 
+  /**
+   * Determines the height that should be given to the div used to contain user
+   * interface elements above the graph display. The actual value is set in the
+   * injected JavaScript.
+   */
   private native int getUiHeight() /*-{
     return $wnd.uiHeight();
   }-*/;
@@ -199,7 +211,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   }-*/;
 
   /**
-   * Handles the logic for actually saving a network from the visualization dialog
+   * Saves a JavaScript network into local storage.
    */
   public native void saveNetwork(JavaScriptObject network) /*-{
     var delegate = this.@t.viewer.client.network.NetworkVisualizationDialog::delegate;
@@ -211,6 +223,10 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
     return $wnd.toxyNet.title;
   }-*/;
 
+  /**
+   * Saves the currently displayed network, under the provided title, into local
+   * storage.
+   */
   public native void saveCurrentNetwork(String title) /*-{
     $wnd.updateToxyNet();
     $wnd.toxyNet[0].title = title;

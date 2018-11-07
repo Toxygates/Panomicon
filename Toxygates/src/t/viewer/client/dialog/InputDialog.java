@@ -48,7 +48,6 @@ public class InputDialog extends Composite {
       @Override
       public void onClick(ClickEvent event) {
         onChange(input.getText());
-
       }
     });
 
@@ -68,5 +67,4 @@ public class InputDialog extends Composite {
   protected void onChange(@Nullable String result) {
 
   }
-
 }
