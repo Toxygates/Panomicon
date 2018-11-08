@@ -224,7 +224,7 @@ public class Utils {
    * @param pos Used to compute coordinates if atX or atY is -1
    * @return
    */
-  public static PositionCallback displayAt(final PopupPanel panel, final DockPanel dialogPosition,
+  private static PositionCallback displayAt(final PopupPanel panel, final DockPanel dialogPosition,
       final Widget center, final int atX, final int atY, final DialogPosition pos) {
     return new PositionCallback() {
       @Override
