@@ -168,21 +168,23 @@ public class Utils {
    */
   public static DialogBox displayInPopup(String caption, final Widget widget,
       final boolean trackLocation, final DialogPosition pos) {
-    final DialogBox dialogBox = new DialogBox(true, false) {
-      @Override
-      protected void endDragging(MouseUpEvent event) {
-        super.endDragging(event);
-        if (trackLocation) {
-          lastX = getAbsoluteLeft();
-          lastY = getAbsoluteTop();
-        }
-      }
+    DialogBox dialogBox = trackLocation ? new LocationTrackedDialog() : new DialogBox(true, false);
+    return displayInPopup(dialogBox, caption, widget, trackLocation, pos);
+  }
 
-      @Override
-      public void hide(boolean autoClosed) {
-        super.hide(autoClosed);
-      }
-    };
+  /**
+   * Display a popup dialog.
+   * 
+   * @param dialogBox the dialog box to display the content in
+   * @param caption Dialog title
+   * @param widget Widget to show in dialog
+   * @param trackLocation Whether to remember the location of this dialog box. Only one dialog box
+   *        location can be remembered as we use static variables for this purpose. 
+   *        (TODO: fix by having a DialogContext or similar)
+   * @param pos The position to display the dialog at.
+   */
+  public static DialogBox displayInPopup(DialogBox dialogBox, String caption, final Widget widget,
+      final boolean trackLocation, final DialogPosition pos) {
     dialogBox.setText(caption);
     final DockPanel dockPanel = new DockPanel();
     dockPanel.add(widget, DockPanel.CENTER);
@@ -196,12 +198,24 @@ public class Utils {
     return dialogBox;
   }
 
+  public static class LocationTrackedDialog extends DialogBox {
+    public LocationTrackedDialog() {
+      super(true, false);
+    }
+
+    @Override
+    protected void endDragging(MouseUpEvent event) {
+      super.endDragging(event);
+      lastX = getAbsoluteLeft();
+      lastY = getAbsoluteTop();
+    }
+  }
+
   public static PositionCallback displayInCenter(final PopupPanel panel) {
     return displayAt(panel, null, null, -1, -1, DialogPosition.Center);
   }
 
   /**
-   * 
    * @param panel
    * @param dialogPosition
    * @param center
@@ -210,7 +224,7 @@ public class Utils {
    * @param pos Used to compute coordinates if atX or atY is -1
    * @return
    */
-  private static PositionCallback displayAt(final PopupPanel panel, final DockPanel dialogPosition,
+  public static PositionCallback displayAt(final PopupPanel panel, final DockPanel dialogPosition,
       final Widget center, final int atX, final int atY, final DialogPosition pos) {
     return new PositionCallback() {
       @Override
