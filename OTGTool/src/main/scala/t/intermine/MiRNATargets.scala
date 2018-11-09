@@ -16,7 +16,7 @@ import scala.io.Source
  */
 class MiRNATargets(conn: Connector) extends Query(conn) {
 
-  def makeQuery(): PathQuery = {
+  def makeQuery: PathQuery = {
     val pq = new PathQuery(model)
 
     val synonymsView = "MiRNA.miRNAInteractions.targetGene.synonyms.value"
@@ -91,7 +91,7 @@ object MiRNATargets {
   }
 
   def main(args: Array[String]) {
-    val conn = new Connector("targetmine", "http://targetmine.mizuguchilab.org/targetmine/service")
+    val conn = new Connector("targetmine", "https://targetmine.mizuguchilab.org/targetmine/service")
     val op = new MiRNATargets(conn)
     //    val res = op.results
     //    println(res.size + " results")

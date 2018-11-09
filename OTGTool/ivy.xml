@@ -46,9 +46,11 @@
   This means that we pull in the top level jar, but not its dependencies. We guarantee that a functional
   log4j will be provided in the runtime environment. 
   See https://stackoverflow.com/questions/37840659/ivy-dependency-as-provided
+  
+  conf="provided->master" 
   -->
- <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2" conf="provided->master" />
- <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" conf="provided->master" />
+ <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2" />
+ <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" />
  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
 
  <dependency org="org.antlr" name="antlr" rev="latest.integration" />
