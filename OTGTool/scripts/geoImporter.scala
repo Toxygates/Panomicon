@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import scala.Codec
+import scala.io.Codec
 import scala.io.Source
 import java.io._
 
@@ -40,7 +40,7 @@ val (nonMatrixLines, otherLines) = lines.span(!_.startsWith("!series_matrix_tabl
 val matrixLines = otherLines.drop(1).takeWhile(!_.startsWith("!series_matrix_table_end"))
 val fixedFirstRow = ("\"\"" + matrixLines(0).dropWhile(_ != '\t')) // clear the first cell
 val fixedLines = fixedFirstRow +: matrixLines.drop(1)
-val csvLines = fixedLines.map(_.split("\t").mkString(","))
+val csvLines = fixedLines.map(_.split("\t", -1).mkString(","))
 
 val matrixFileName = inputFile.split('.')(0) + ".data.csv"
 writeStringToFile(csvLines.mkString("\n"), matrixFileName)
@@ -48,7 +48,7 @@ writeStringToFile(csvLines.mkString("\n"), matrixFileName)
 // Generate metadata TSV
 val sampleIdColumn = "sample_id" +: fixedFirstRow.split("\t").drop(1).toList
 
-val nonMatrixCells = nonMatrixLines.map(_.split("\t").toList)
+val nonMatrixCells = nonMatrixLines.map(_.split("\t", -1).toList)
 val metadataCells = nonMatrixCells.filter(_.size == sampleIdColumn.size)
 
 val requiredMetadataColumns = List("control_group", "platform_id", "type", 
