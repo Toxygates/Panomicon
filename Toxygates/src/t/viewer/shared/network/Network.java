@@ -68,4 +68,8 @@ public class Network implements Serializable {
   public String jsonString() {
     return jsonString;
   }
+  
+  public void storeJsonString(String string) {
+    jsonString = string;
+  }
 }

@@ -25,8 +25,6 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   private static final String[] injectList = {
       "network-visualization/lib/jquery-3.3.1.min.js", "network-visualization/lib/cytoscape.min.js",
       "network-visualization/lib/cytoscape-context-menus.js", "network-visualization/lib/weaver-1.2.0.min.js",
-      "network-visualization/toxyNode.js",
-      "network-visualization/interaction.js", "network-visualization/network.js",
       "network-visualization/utils.js", "network-visualization/extensions.js",
       "network-visualization/application.js" };
 
@@ -63,7 +61,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
 
   public void initWindow(@Nullable Network network) {
     createPanel();
-    exportPendingRequsetHandling();
+    exportPendingRequestHandling();
 
     Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
       @Override
@@ -71,7 +69,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
         uiDiv.setHTML(html);
         injectOnce(() -> {
           setupDockPanel();
-          convertAndStoreNetwork(network);
+          storeNetwork(NetworkConversion.convertNetworkToJS(network));
           startVisualization();
         });
       }
@@ -81,7 +79,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   }
 
   public void loadNetwork(Network network) {
-    convertAndStoreNetwork(network);
+    storeNetwork(NetworkConversion.convertNetworkToJS(network));
     changeNetwork();
   }
 
@@ -203,11 +201,10 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   }-*/;
 
   /**
-   * Converts a Java network to a JavaScript network , and stores it as
-   * window.convertedNetwork.
+   * Stores a JavaScript network as window.convertedNetwork.
    */
-  private static native void convertAndStoreNetwork(Network network) /*-{
-    $wnd.convertedNetwork = @t.viewer.client.network.NetworkConversion::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
+  private static native void storeNetwork(JavaScriptObject network) /*-{
+    $wnd.convertedNetwork = network;
   }-*/;
 
   /**
@@ -238,7 +235,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
    * window.add/removePendingRequests, that control the display of Toxygates's
    * universal "Please wait..." modal dialog.
    */
-  private native void exportPendingRequsetHandling() /*-{
+  private native void exportPendingRequestHandling() /*-{
     var delegate = this.@t.viewer.client.network.NetworkVisualizationDialog::delegate;
     $wnd.addPendingRequest = $entry(function() {
       delegate.@t.viewer.client.network.NetworkVisualizationDialog.Delegate::addPendingRequest()();
@@ -287,7 +284,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
 
   @Override
   public void loadNetwork(PackedNetwork network) {
-    convertAndStoreNetwork(network.unpack());
+    storeNetwork(network.unpackJS());
     showNetworkOnRight();
   }
 

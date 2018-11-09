@@ -35,6 +35,10 @@
         ga('send', 'pageview');
     </script>
     
+    <script type="text/javascript" language="javascript" src="toxygates/network-visualization/network.js"></script>
+    <script type="text/javascript" language="javascript" src="toxygates/network-visualization/toxyNode.js"></script>
+    <script type="text/javascript" language="javascript" src="toxygates/network-visualization/interaction.js"></script>
+    
     <!--                                           -->
     <!-- This script loads your compiled module.   -->
     <!-- If you add any GWT meta tags, they must   -->

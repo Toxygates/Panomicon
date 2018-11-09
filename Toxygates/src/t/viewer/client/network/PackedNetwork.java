@@ -1,5 +1,7 @@
 package t.viewer.client.network;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import t.viewer.shared.network.Network;
 
 /**
@@ -10,6 +12,7 @@ import t.viewer.shared.network.Network;
 public class PackedNetwork {
   private String title, jsonString;
   private Network unpacked;
+  private JavaScriptObject unpackedJS;
 
   public PackedNetwork(String title, String jsonString) {
     this.title = title;
@@ -21,9 +24,17 @@ public class PackedNetwork {
   public String jsonString() { return jsonString; }
 
   public Network unpack() {
+    unpackJS();
     if (unpacked == null) {
-      unpacked = NetworkConversion.unpackNetwork(jsonString);
+      unpacked = NetworkConversion.convertNetworkToJava(unpackedJS);
     }
     return unpacked;
+  }
+  
+  public JavaScriptObject unpackJS() {
+    if (unpackedJS == null) {
+      unpackedJS = NetworkConversion.unpackToJavaScript(jsonString);
+    }
+    return unpackedJS;
   }
 }

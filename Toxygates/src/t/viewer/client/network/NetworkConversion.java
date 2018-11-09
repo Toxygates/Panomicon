@@ -11,7 +11,7 @@ public class NetworkConversion {
   /**
    * Converts a Java network to a JavaScript network.
    */
-  private static native JavaScriptObject convertNetworkToJS(Network network) /*-{
+  public static native JavaScriptObject convertNetworkToJS(Network network) /*-{
     // If there's already a stored JSON representation of the network, use that instead.
     var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
     if (jsonString != "") {
@@ -73,8 +73,11 @@ public class NetworkConversion {
         var toId = to.@t.viewer.shared.network.Node::id()();
         return $wnd.makeInteraction(fromId, toId, label, weight);
     });
-
-    return $wnd.makeNetwork(networkName, jsInteractions, jsNodes);
+    
+    var jsNetwork = $wnd.makeNetwork(networkName, jsInteractions, jsNodes);
+    network.@t.viewer.shared.network.Network::storeJsonString(Ljava/lang/String;)(JSON.stringify(jsNetwork));
+    
+    return jsNetwork;
   }-*/;
 
   /**
@@ -94,7 +97,7 @@ public class NetworkConversion {
   /**
    * Converts a JavaScript network to a Java network.
    */
-  private static native Network convertNetworkToJava(JavaScriptObject network) /*-{
+  public static native Network convertNetworkToJava(JavaScriptObject network) /*-{
     var javaNodes = @java.util.ArrayList::new(I)(network.nodes.length);
     var nodeDictionary = {};
     network.nodes.forEach(function(node) {
@@ -126,11 +129,10 @@ public class NetworkConversion {
   }-*/;
 
   /**
-   * Converts a JSON string representing a JavaScript network into a Java network.
+   * Converts a JSON string into a JavaScript network.
    */
-  public static native Network unpackNetwork(String packedString) /*-{
-    var network = JSON.parse(packedString);
-    return @t.viewer.client.network.NetworkConversion::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);
+  public static native JavaScriptObject unpackToJavaScript(String packedString) /*-{
+    return @t.viewer.client.network.NetworkConversion::reanimateNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)(JSON.parse(packedString))
   }-*/;
 
   /**
@@ -138,7 +140,7 @@ public class NetworkConversion {
    * that they have the appropriate class methods. Used on networks deserialized
    * from JSON to restore their functionality.
    */
-  public static native JavaScriptObject reanimateNetwork(JavaScriptObject network) /*-{
+  private static native JavaScriptObject reanimateNetwork(JavaScriptObject network) /*-{
     Object.setPrototypeOf(network, $wnd.makeNetwork().__proto__);
     network.interactions.forEach(function(interaction) {
       Object.setPrototypeOf(interaction, $wnd.makeInteraction().__proto__);
