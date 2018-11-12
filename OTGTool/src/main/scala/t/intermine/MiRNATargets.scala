@@ -1,11 +1,14 @@
 package t.intermine
 
 import scala.collection.JavaConverters._
-import org.intermine.pathquery.PathQuery
+import scala.io.Source
+
 import org.intermine.pathquery.Constraints
+import org.intermine.pathquery.PathQuery
+
 import t.platform._
 import t.platform.mirna._
-import scala.io.Source
+
 
 /**
  * Obtain MiRNA targets from TargetMine.
@@ -16,17 +19,17 @@ import scala.io.Source
  */
 class MiRNATargets(conn: Connector) extends Query(conn) {
 
-  def makeQuery(): PathQuery = {
+  def makeQuery: PathQuery = {    
     val pq = new PathQuery(model)
-
+    
     val synonymsView = "MiRNA.miRNAInteractions.targetGene.synonyms.value"
 
     pq.addViews("MiRNA.secondaryIdentifier", "MiRNA.miRNAInteractions.supportType",
       synonymsView)
-
+    
     //NM is to match RefSeq IDs like NM_000389
     pq.addConstraint(Constraints.contains(synonymsView, "NM"))
-
+        
     println(s"Intermine query: ${pq.toXml}")
     pq
   }
@@ -91,7 +94,7 @@ object MiRNATargets {
   }
 
   def main(args: Array[String]) {
-    val conn = new Connector("targetmine", "http://targetmine.mizuguchilab.org/targetmine/service")
+    val conn = new Connector("targetmine", "https://targetmine.mizuguchilab.org/targetmine/service")
     val op = new MiRNATargets(conn)
     //    val res = op.results
     //    println(res.size + " results")

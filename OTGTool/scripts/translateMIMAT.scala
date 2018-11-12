@@ -49,7 +49,7 @@ val out = new PrintWriter(args(1).replace(".csv", ".mir_translate.csv"))
 try {
   out.println(input.next)
   for (line <- input) {
-    val spl = line.split(",")
+    val spl = line.split(",", -1)
     val mimat = spl(0).replace("\"", "")
     lookup.get(mimat) match {
       case Some(id) => out.println("\"" + id + "\"," + spl.drop(1).mkString(","))
