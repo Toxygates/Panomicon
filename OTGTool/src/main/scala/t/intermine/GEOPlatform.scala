@@ -1,15 +1,18 @@
 package t.intermine
 
-import scala.io.Source
-import org.intermine.pathquery.PathQuery
-import org.intermine.pathquery.Constraints
-import t.platform.Species.Species
+import java.io.PrintWriter
+
 import scala.collection.JavaConverters._
-import org.intermine.pathquery.OrderDirection
+import scala.io.Source
+
+import org.intermine.pathquery.Constraints
+import org.intermine.pathquery.PathQuery
+
+import t.platform.Species.Species
 
 class EnsemblConversion(conn: Connector, sp: Species) extends Query(conn) {
 
-  def makeQuery: PathQuery = {
+  def makeQuery: PathQuery = {    
     val pq = new PathQuery(model)
     val synonymView = "Gene.synonyms.value"
     pq.addViews("Gene.ncbiGeneId", synonymView)
@@ -35,12 +38,19 @@ class EnsemblConversion(conn: Connector, sp: Species) extends Query(conn) {
   }
 }
 
-case class GEOPlatformProbe(id: String, ensembl: String, symbol: String, refseq: String,
-  title: String) {
+case class GEOPlatformProbe(id: String, ensembl: String, symbol: Option[String], refseq: Option[String],
+  title: Option[String]) {
 
   def asPlatformLine(sp: Species, ensLookup: Map[String, Seq[String]]) = {
-    val entrez = ensLookup(ensembl).map(ent => s"entrez=$ent").mkString(",")
-    s"$id\tspecies=${sp.longName},title=$title,symbol=$symbol,ensembl=$ensembl,refseqTrn=$refseq,entrez=$entrez"
+    val entrez = ensLookup.getOrElse(ensembl, Seq()).map(ent => s"entrez=$ent").mkString(",")
+    
+    val items = Seq(s"title=$title",
+      s"ensembl=$ensembl") ++ 
+      Seq(symbol.map("symbol=" + _),
+        refseq.map("refseqTrn=" + _),
+        GEOPlatform.asOpt(entrez)).flatten
+    
+    s"$id\tspecies=${sp.longName},${items.mkString(",")}"
   }
 }
 
@@ -52,17 +62,27 @@ case class GEOPlatformProbe(id: String, ensembl: String, symbol: String, refseq:
 object GEOPlatform {
   /**
    * Arguments: input platform file, species
-   * The resulting platform will be written to standard output.
    */
   def main(args: Array[String]) {
      val conn = new Connector("targetmine", "https://targetmine.mizuguchilab.org/targetmine/service")
      val input = Source.fromFile(args(0)).getLines
-     val sp = t.platform.Species.withName(args(1))
-     val conversion = new EnsemblConversion(conn, sp)
-     val ensLookup = conversion.ensemblToNCBIMap
-     for (l <- input) {
-       println(processLine(l).asPlatformLine(sp, ensLookup))
-     }
+     val outFile = args(0) + ".t_platform.tsv"
+     val output = new PrintWriter(outFile)
+    try {
+      val sp = t.platform.Species.withName(args(1))
+      val conversion = new EnsemblConversion(conn, sp)
+      val ensLookup = conversion.ensemblToNCBIMap
+      for (l <- input) {
+        output.println(processLine(l).asPlatformLine(sp, ensLookup))
+      }
+    } finally {
+      output.close
+    }
+  }
+  
+  def asOpt(data: String) = data.trim match {
+    case "" => None
+    case x => Some(x)
   }
 
   def processLine(line: String) = {
@@ -72,10 +92,10 @@ object GEOPlatform {
     val spl = line.split("\t")
     val probeId = spl(0)
     val ensembl = spl(1)
-    val symbol = spl(2)
-    val refseqTranscript = spl(3)
-    val title = spl(4)
+    val symbol = asOpt(spl(2))
+    val refseqTranscript = asOpt(spl(3))
+    val title = asOpt(spl(4))
 
-    GEOPlatformProbe(probeId, ensembl, symbol, refseqTranscript, title)
+    GEOPlatformProbe(probeId, ensembl, symbol, refseqTranscript, title)    
   }
 }
