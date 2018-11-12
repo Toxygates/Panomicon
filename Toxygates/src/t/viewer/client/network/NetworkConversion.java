@@ -125,6 +125,9 @@ public class NetworkConversion {
     return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)(network.title, javaNodes, javaInteractions, jsonString);
   }-*/;
 
+  /**
+   * Converts a JSON string representing a JavaScript network into a Java network.
+   */
   public static native Network unpackNetwork(String packedString) /*-{
     var network = JSON.parse(packedString);
     return @t.viewer.client.network.NetworkConversion::convertNetworkToJava(Lcom/google/gwt/core/client/JavaScriptObject;)(network);

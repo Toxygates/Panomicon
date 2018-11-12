@@ -21,15 +21,17 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.logging.Logger;
 
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
@@ -80,7 +82,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   private NavigationTools navigationTools;
   private AnalysisTools analysisTools;
   
-  private DialogBox lastChartDialog;
+  private ChartDialog lastChartDialog;
 
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
@@ -300,6 +302,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected Set<String> indicatedRows = new HashSet<String>();
 
   public void setIndicatedProbes(Set<String> highlighted, boolean redraw) {
+    logger.info(highlighted.size() + " rows are indicated zz");
     logger.info(highlighted.size() + " rows are indicated");
     Set<String> oldIndicated = indicatedRows;
     indicatedRows = highlighted;
@@ -325,6 +328,84 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     matrix.getExpressions(preserveFilters, chosenValueType);
   }
 
+  private class ChartDialog extends Utils.LocationTrackedDialog {
+    private int chartRow; // The row for which this dialog is displaying charts
+    private Element mouseDownChartElement = null; // The chart ImageClickCell DOM element that a mousedown event occurred on
+    private boolean startedOpeningNewCharts; // True if a new ChartDialog (not this one) has been opened
+
+    public ChartDialog() {
+      super();
+      chartRow = highlightedRow;
+      addCloseHandler(new ChartCloseHandler());
+    }
+
+    /* If a user clicks on an ImageClickCell, but the mousedown associated with that click causes any row
+     * in the DataGrid to be redrawn, then that click won't be recognized. To work around this, this method
+     * implements custom logic for the following two cases:
+     * 1. mousedown events on a chart ImageClickCell
+     * 2. mouseup events associated with a mousedown event that was on a chart ImageClickCell, but occurs
+     *    somewhere other than that chart ImageClickCell
+     * In a third case - if a mouseup event occurs on the same chart ImageClickCell as a mousedown event, 
+     * that's just a click, which will cause a *new* ChartDialog to be shown. That new ChartDialog will, 
+     * in its show() method, hide the old ChartDialog.
+     */
+    @Override
+    protected void onPreviewNativeEvent(NativePreviewEvent event) {
+      // Get some information about the browser event
+      NativeEvent ev = event.getNativeEvent();
+      EventTarget et = ev.getEventTarget();
+      String parentId = "";
+      Element parentElement = null;
+      if (Element.is(et)) {
+        Element e = et.cast();
+        parentId = e.getParentElement().getId(); // The ID of the parent DOM element where the event occurred 
+        parentElement = e.getParentElement(); // The actual parent DOM element 
+      }
+
+      if (ev.getType() == "mousedown" && parentId == "charts") {
+        /* We cancel mousedown events on a chart ImageClickCell, so they don't cause the dialog box to be
+         * redrawn.
+         */
+        mouseDownChartElement = parentElement;
+        event.cancel();
+      } else if ((ev.getType() == "mouseup") && mouseDownChartElement != null
+          && parentElement != mouseDownChartElement) {
+        /* For a mouseup event which doesn't occur on the some chart ImageClickCell as the last mousedown
+         * event,  we hide the dialog, since it wasn't hidden before.
+         * If a mouseup event does occur on the same chart ImageClickCell as the last mousedown event, that
+         * will be recognized as a click, and be dealt with in the new ChartDialog's show() method.
+         */
+        hide(true);
+      }
+      super.onPreviewNativeEvent(event);
+    }
+
+    public void show(Widget widget) {
+      Utils.displayInPopup(this, "Charts", widget, true, DialogPosition.Side);
+      if (lastChartDialog != null) {
+        lastChartDialog.hide();
+      }
+      lastChartDialog = this;
+    }
+
+    private class ChartCloseHandler implements CloseHandler<PopupPanel> {
+      @Override
+      public void onClose(CloseEvent<PopupPanel> event) {
+        if (!startedOpeningNewCharts) {
+          // If we've started opening a new ChartDialog, then it's already set highlightedRow to some desired
+          // value, which we don't want to overwrite.
+          highlightedRow = -1;
+          lastChartDialog = null;
+        }
+        grid.redrawRow(chartRow);
+      }
+    }
+    
+    public void startedOpeningNewCharts() {
+      startedOpeningNewCharts = true;
+    }
+  }
+
   private void displayCharts() {
     final Charts charts = new Charts(screen, chosenColumns);
     ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
@@ -332,39 +413,12 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     final String title =
         SharedUtils.mkString(probes, "/") + ":" + SharedUtils.mkString(dispRow.getGeneSyms(), "/");
     ChartParameters params = charts.parameters(chosenValueType, title);
+
     charts.makeRowCharts(params, chartBarcodes, probes,
         new AChartAcceptor() {
       @Override
       public void acceptCharts(final AdjustableGrid<?, ?> ag) {
-        int oldHighlightedRow = highlightedRow;
-        DialogBox dialog = Utils.displayInPopup("Charts", ag, true, DialogPosition.Side);
-        lastChartDialog = dialog;
-        dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-          @Override
-          public void onClose(CloseEvent<PopupPanel> event) {
-            /* Un-highlight the row charts for which charts were shown, when the chart dialog is 
-             * dismissed.
-             * 
-             * The hack below is necessary to allow a user to click on a ToolCell to bring up 
-             * charts for a row, while charts are already being displayed for some row. 
-             * Because GWT is internally very asynchronous, if a grid.redrawRow happens on 
-             * *any* row after between a user's click on a ToolCell but before that click event 
-             * gets processed, the event appears to get cancelled.
-             */
-            Timer t = new Timer() {
-              @Override
-              public void run() {
-                if (lastChartDialog == dialog) {
-                  highlightedRow = -1;
-                }
-                grid.redrawRow(oldHighlightedRow);
-              }
-            };
-            // This delay is small enough to feel responsive, but long enough to ensure that the
-            // grid.redrawRow doesn't happen before a ToolCell click is resolved (in all my testing). 
-            t.schedule(200); 
-          }
-        });
+        new ChartDialog().show(ag);
       }
 
       @Override
@@ -462,6 +516,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public void onToolCellClickedForProbe(String probe) {
     highlightedRow = SharedUtils.indexOf(matrix.displayedProbes(), probe);
+    if (lastChartDialog != null) {
+      lastChartDialog.startedOpeningNewCharts();
+    }
     grid.redrawRow(highlightedRow);
     Utils.ensureVisualisationAndThen(new Runnable() {
       @Override

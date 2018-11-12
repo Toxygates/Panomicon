@@ -29,12 +29,19 @@ class EnsemblConversion(conn: Connector, sp: Species) extends Query(conn) {
     })
   }
 
-  def ensemblToNCBIMap = Map() ++ results.map(_.swap)
+  def ensemblToNCBIMap = {
+    val pairs = results.toSeq.map(_.swap)
+    pairs.groupBy(_._1).mapValues(_.map(_._2))
+  }
 }
 
 case class GEOPlatformProbe(id: String, ensembl: String, symbol: String, refseq: String,
   title: String) {
 
+  def asPlatformLine(sp: Species, ensLookup: Map[String, Seq[String]]) = {
+    val entrez = ensLookup(ensembl).map(ent => s"entrez=$ent").mkString(",")
+    s"$id\tspecies=${sp.longName},title=$title,symbol=$symbol,ensembl=$ensembl,refseqTrn=$refseq,entrez=$entrez"
+  }
 }
 
 /**
@@ -53,7 +60,9 @@ object GEOPlatform {
      val sp = t.platform.Species.withName(args(1))
      val conversion = new EnsemblConversion(conn, sp)
      val ensLookup = conversion.ensemblToNCBIMap
-     println(ensLookup take 10)
+     for (l <- input) {
+       println(processLine(l).asPlatformLine(sp, ensLookup))
+     }
   }
 
   def processLine(line: String) = {
