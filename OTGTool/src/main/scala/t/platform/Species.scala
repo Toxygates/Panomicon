@@ -58,10 +58,14 @@ object Species extends Enumeration(0) {
 
   val supportedSpecies = List(Rat, Human, Mouse)
 
+  /*
+   * Note: mapping species to platform IDs here is too static
+   * and we should probably do it dynamically instead.
+   */
   def forStandardPlatform(plat: String) = plat match {
-    case "HG-U133_Plus_2" => Some(Human)
-    case "Rat230_2"       => Some(Rat)
-    case "Mouse430_2"     => Some(Mouse)
-    case _                => None
+    case "HG-U133_Plus_2"         => Some(Human)
+    case "Rat230_2"               => Some(Rat)
+    case "Mouse430_2" | "GPL5462" => Some(Mouse)
+    case _                        => None
   }
 }
