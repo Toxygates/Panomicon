@@ -38,17 +38,18 @@ class EnsemblConversion(conn: Connector, sp: Species) extends Query(conn) {
   }
 }
 
-case class GEOPlatformProbe(id: String, ensembl: String, symbol: Option[String], refseq: Option[String],
-  title: Option[String]) {
+case class GEOPlatformProbe(id: String, ensembl: String, symbol: Seq[String], refseq: Seq[String],
+  title: Seq[String]) {
 
   def asPlatformLine(sp: Species, ensLookup: Map[String, Seq[String]]) = {
-    val entrez = ensLookup.getOrElse(ensembl, Seq()).map(ent => s"entrez=$ent").mkString(",")
+    val entrez = ensLookup.getOrElse(ensembl, Seq()).map(ent => s"entrez=$ent")
     
-    val items = Seq(s"title=$title",
+    val items = Seq(
       s"ensembl=$ensembl") ++ 
       Seq(symbol.map("symbol=" + _),
         refseq.map("refseqTrn=" + _),
-        GEOPlatform.asOpt(entrez)).flatten
+        title.map("title=" + _),
+        entrez).flatten        
     
     s"$id\tspecies=${sp.longName},${items.mkString(",")}"
   }
@@ -80,10 +81,9 @@ object GEOPlatform {
     }
   }
   
-  def asOpt(data: String) = data.trim match {
-    case "" => None
-    case x => Some(x)
-  }
+  def removeCommas(data: String) = data.replace(",", ";")
+  
+  def asSeq(data: String) = data.trim.split(",").toSeq
 
   def processLine(line: String) = {
     //Example line:
@@ -92,9 +92,9 @@ object GEOPlatform {
     val spl = line.split("\t")
     val probeId = spl(0)
     val ensembl = spl(1)
-    val symbol = asOpt(spl(2))
-    val refseqTranscript = asOpt(spl(3))
-    val title = asOpt(spl(4))
+    val symbol = asSeq(spl(2))
+    val refseqTranscript = asSeq(spl(3))
+    val title = Seq(removeCommas(spl(4)))
 
     GEOPlatformProbe(probeId, ensembl, symbol, refseqTranscript, title)    
   }
