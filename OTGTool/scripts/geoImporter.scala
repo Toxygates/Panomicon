@@ -30,17 +30,26 @@ import java.io._
    data are also copied into the generated TSV file.
 */
 
+def splitRejoin(s: String, transform: (String => String) = (x => x)) = 
+  s.split("\t", -1).map(transform).mkString(",")
+
+def emptyToNaN(s: String) = {
+  if (s.length == 0) "NaN" else s
+}
+
+
 val inputFile = args(0)
 println("Processing " + inputFile)
-
+  
 val lines = Source.fromFile(inputFile)(Codec.UTF8).getLines.toList
 val (nonMatrixLines, otherLines) = lines.span(!_.startsWith("!series_matrix_table_begin"))
 
 // Generate data CSV
 val matrixLines = otherLines.drop(1).takeWhile(!_.startsWith("!series_matrix_table_end"))
 val fixedFirstRow = ("\"\"" + matrixLines(0).dropWhile(_ != '\t')) // clear the first cell
-val fixedLines = fixedFirstRow +: matrixLines.drop(1)
-val csvLines = fixedLines.map(_.split("\t", -1).mkString(","))
+
+val dataLines = matrixLines.drop(1).map(l => splitRejoin(l, emptyToNaN))
+val csvLines = splitRejoin(fixedFirstRow) +: dataLines
 
 val matrixFileName = inputFile.split('.')(0) + ".data.csv"
 writeStringToFile(csvLines.mkString("\n"), matrixFileName)
