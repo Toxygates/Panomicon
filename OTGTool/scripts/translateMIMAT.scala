@@ -49,11 +49,18 @@ val out = new PrintWriter(args(1).replace(".csv", ".mir_translate.csv"))
 try {
   out.println(input.next)
   for (line <- input) {
-    val spl = line.split(",", -1)
-    val mimat = spl(0).replace("\"", "")
-    lookup.get(mimat) match {
-      case Some(id) => out.println("\"" + id + "\"," + spl.drop(1).mkString(","))
-      case None => scala.Console.err.println(s"Couldn't translate miRNA ${spl(0)}")
+    //multiple IDs can occur, e.g. lines like
+    //"MIMAT0000230, MIMAT0004667",NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN
+    val spl = line.split("\",")
+    val idPart = spl(0)
+    val mimatIds = idPart.replace("\"", "").split(",").map(_.trim)    
+    val data = spl(1).split(",", -1)
+
+    for (mimat <- mimatIds) {
+      lookup.get(mimat) match {
+        case Some(id) => out.println("\"" + id + "\"," + data.mkString(","))
+        case None     => scala.Console.err.println(s"Couldn't translate miRNA $mimat")
+      }
     }
   }  
 } finally {
