@@ -18,8 +18,6 @@
 
 package otgviewer.client.components.groupdef;
 
-import static t.common.client.Utils.makeScrolled;
-
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
 import com.google.gwt.cell.client.*;
 import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.*;
@@ -43,6 +41,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
 import t.viewer.client.*;
+import t.viewer.client.components.ImmediateValueChangeTextBox;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
@@ -121,19 +120,28 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     lblSaveGroupAs.addStyleName("slightlySpaced");
     toolPanel.add(lblSaveGroupAs);
 
-    txtbxGroup = new TextBox();
+    txtbxGroup = new ImmediateValueChangeTextBox();
     txtbxGroup.addValueChangeHandler(new ValueChangeHandler<String>() {
       @Override
       public void onValueChange(ValueChangeEvent<String> event) {
         nameIsAutoGen = false;
+        onGroupNameInputChanged();
+      }
+    });
+    txtbxGroup.addKeyDownHandler(new KeyDownHandler() {
+      // Pressing enter saves a group, but only if saving a new group rather than overwriting.
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER && !groups.containsKey(txtbxGroup.getValue())) {
+          makeGroup(txtbxGroup.getValue());
+        }
       }
     });
     toolPanel.add(txtbxGroup);
 
-    saveButton = new Button("Save", (ClickHandler) e -> {     
-        makeGroup(txtbxGroup.getValue());
-      });
-
+    saveButton = new Button("Save", (ClickHandler) e -> {
+      makeGroup(txtbxGroup.getValue());
+    });
     toolPanel.add(saveButton);
 
     autoGroupsButton = new Button("Automatic groups", (ClickHandler) e -> {
@@ -218,9 +226,17 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     existingGroupsTable.setVisible(false);
     existingGroupsTable.table().setRowStyles(new GroupColouring());
     existingGroupsTable.setSize("100%", "100px");
-    sp.addSouth(makeScrolled(existingGroupsTable), 200);
+    sp.addSouth(t.common.client.Utils.makeScrolled(existingGroupsTable), 200);
 
-    sp.add(makeScrolled(vp));
+    sp.add(t.common.client.Utils.makeScrolled(vp));
+  }
+
+  private void onGroupNameInputChanged() {
+    if (groups.containsKey(txtbxGroup.getValue())) {
+      saveButton.setText("Overwrite");
+    } else {
+      saveButton.setText("Save");
+    }
   }
 
   abstract protected void makeGroupColumns(CellTable<Group> table);
@@ -261,7 +277,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     } else if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
       txtbxGroup.setText(suggestGroupName(selectedUnits));
       nameIsAutoGen = true;
-    } 
+    }
+    onGroupNameInputChanged();
   }
 
   @Override
@@ -301,6 +318,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   private void prepareForNewGroup() {
     txtbxGroup.setText("");
+    onGroupNameInputChanged();
     msg.setAll(false);
     compoundSel.setSelection(new ArrayList<String>());
     setHeading("new group");
@@ -593,6 +611,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     compoundSel.setSelection(compounds);
     txtbxGroup.setValue(name);
+    onGroupNameInputChanged();
     nameIsAutoGen = false;
 
     msg.setSelection(g.getUnits());
