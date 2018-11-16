@@ -37,34 +37,17 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   public Group(DataSchema schema, String name, Sample[] barcodes, String color) {
     super(schema, name, barcodes, color);
-    // TODO unit formation will not work if the barcodes have different sample classes
-    // - fix
-    // TODO is the above comment still correct? Also see the constructor below
-    if (barcodes.length > 0) {
-      _units = Unit.formUnits(schema, barcodes);
-    } else {
-      _units = new Unit[] {};
-    }
+    _units = Unit.formUnits(schema, barcodes);
   }
 
   public Group(DataSchema schema, String name, Sample[] barcodes) {
     super(schema, name, barcodes);
-    // TODO unit formation will not work if the barcodes have different sample classes
-    // - fix
-    if (barcodes.length > 0) {
-      _units = Unit.formUnits(schema, barcodes);
-    } else {
-      _units = new Unit[] {};
-    }
+    _units = Unit.formUnits(schema, barcodes);
   }
 
   public Group(DataSchema schema, String name, Unit[] units) {
     super(schema, name, Unit.collectBarcodes(units));
     _units = units;
-  }
-
-  public Group(DataSchema schema, String name, Unit[] units, String color) {
-    this(schema, name, Unit.collectBarcodes(units), color);
   }
 
   @Override
