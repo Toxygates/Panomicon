@@ -46,7 +46,8 @@ object MedianValueMapper extends ValueMapper {
       return ExprValue(0.0, 'A')
     }
 
-    //TODO call handling here
+    //Note: this finds the median value irrespective of P/A calls.
+    //Other approaches may be possible.
     val sorted = domainVs.toList.sortWith(_.value < _.value)
     val mid = domainVs.size / 2
     val nv = if (domainVs.size % 2 == 0) {

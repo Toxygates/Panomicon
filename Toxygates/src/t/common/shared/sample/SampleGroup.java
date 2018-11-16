@@ -85,6 +85,10 @@ abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Se
     return Arrays.stream(_samples).anyMatch(s -> s.id().equals(sampleId));
   }
 
+  public DataSchema getSchema() {
+    return schema;
+  }
+
   public String getName() {
     return name;
   }

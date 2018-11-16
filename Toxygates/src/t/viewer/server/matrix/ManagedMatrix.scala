@@ -159,7 +159,7 @@ class CoreMatrix(val params: LoadParams) {
     resetSortAndFilter()
     filterAndSort()
   }
-  
+
   /**
    * For efficiency, perform both of the above operations at once. Probes cannot be empty.
    */
@@ -279,15 +279,15 @@ trait Synthetics extends CoreMatrix {
     current = current.selectColumns(dataColumns)
     params.rawGrouped = params.rawGrouped.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
-    
+
     _sortColumn match {
       case Some(n) =>
         if (n >= currentInfo.numDataColumns()) {
-          _sortColumn = None          
+          _sortColumn = None
         }
-      case None =>        
+      case None =>
     }
-  
+
     resetSortAndFilter()
     filterAndSort()
   }
@@ -310,11 +310,10 @@ trait Synthetics extends CoreMatrix {
   protected def addSyntheticInner(s: Synthetic): Unit = {
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
-        //TODO avoid using magic strings
-        val g1s = test.getGroup1.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
-          .map(_.id)
-        val g2s = test.getGroup2.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
-          .map(_.id)
+        val sc = test.getGroup1.getSchema
+
+        val g1s = test.getGroup1.getSamples.filter(!sc.isControl(_)).map(_.id)
+        val g2s = test.getGroup2.getSamples.filter(!sc.isControl(_)).map(_.id)
 
         val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat

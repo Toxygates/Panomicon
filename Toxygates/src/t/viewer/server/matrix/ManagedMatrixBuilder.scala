@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -36,7 +36,7 @@ import otg.model.sample.OTGAttribute
  */
 abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
   import ManagedMatrix._
-  
+
   def build(requestColumns: Seq[Group], sparseRead: Boolean,
     fullLoad: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
     loadRawData(requestColumns, reader, sparseRead,
@@ -60,9 +60,9 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
    * Default tooltip for columns
    */
   protected def tooltipSuffix: String = ": average of treated samples"
-  
+
   protected def shortName(g: Group): String = g.toString
-  
+
   protected def defaultColumns[E <: ExprValue](g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[RowData]): (Seq[RowData], ManagedMatrixInfo) = {
     // A simple average column
@@ -145,16 +145,17 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
     tus.flatMap(_.getSamples())
   }
 
-  //TODO use schema
-  protected def treatedAndControl(g: Group) =
-    g.getUnits().partition(_.get(OTGAttribute.DoseLevel) != "Control")
+  protected def treatedAndControl(g: Group) = {
+    val sc = g.getSchema
+    g.getUnits().partition(u => !sc.isControl(u))
+  }
 }
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
   this: ManagedMatrixBuilder[E] =>
-    
+
   type RowData = ManagedMatrix.RowData
-    
+
   def enhancedColumns: Boolean
 
   protected def buildRow(raw: Seq[E],
@@ -197,9 +198,9 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
     with TreatedControlBuilder[ExprValue] {
 
   protected def buildValue(raw: RowData): ExprValue = ExprValue.presentMean(raw)
-  
+
   override protected def shortName(g: Group): String = "Treated"
-  
+
   protected def buildRow(raw: RowData,
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData =
     Seq(buildValue(selectIdx(raw, treatedIdx)),
@@ -241,19 +242,19 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   import ManagedMatrix._
 
   protected def buildValue(raw: RowData): ExprValue = log2(javaMean(raw))
-    
+
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData = {
     val treatedVs = selectIdx(raw, treatedIdx)
-    val first = treatedVs.head    
+    val first = treatedVs.head
     val fold = buildValue(treatedVs)
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
   override protected def log2transform = true
-  
+
   override protected def shortName(g: Group) = "Log2-fold"
-  
+
   override protected def tooltipSuffix = ": log2-fold change of treated versus control"
 
   override protected def columnInfo(g: Group): ManagedMatrixInfo = {
