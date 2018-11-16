@@ -107,24 +107,24 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Read all platforms. Slow.
-   * Probes will be potentially annotated with 
+   * Probes will be potentially annotated with
    * entrez, refseq atranscript and symbol information only.
    */
   private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
     /*
      * An important concern with these queries is reducing the number of tuples being returned.
-     * Doing SELECT DISTINCT on all the variables (e.g. ?ent, ?trn, ?sym) 
-     * will cause a combinatorial explosion in 
+     * Doing SELECT DISTINCT on all the variables (e.g. ?ent, ?trn, ?sym)
+     * will cause a combinatorial explosion in
      * this case, where one probe can have e.g. multiple gene symbols and transcripts.
      * GROUP_CONCAT aggregates such multiple values so that only one tuple is returned for all
      * such combinations.
      * Another interesting aggregation function that may be used is SAMPLE.
      */
-    
+
     val query = s"""$tPrefixes
-       |SELECT ?gl ?pl       
-       |  (GROUP_CONCAT(?ent; separator = ":") AS ?entCon) 
-       |  (GROUP_CONCAT(?trn; separator = ":") AS ?trnCon) 
+       |SELECT ?gl ?pl
+       |  (GROUP_CONCAT(?ent; separator = ":") AS ?entCon)
+       |  (GROUP_CONCAT(?trn; separator = ":") AS ?trnCon)
        |  (GROUP_CONCAT(?sym; separator = ":") AS ?symCon) WHERE {
        |  GRAPH ?g {
        |    ?p a t:probe; rdfs:label ?pl.
@@ -134,7 +134,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |      ?p t:symbol ?sym.
        |    }
        |   } . ?g rdfs:label ?gl .
-       |}       
+       |}
        |GROUP BY ?pl ?gl
        |""".stripMargin
 
@@ -311,12 +311,12 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     triplestore.simpleQuery(query).map(Probe.unpack)
   }
 
-  def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {    
+  def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
   /*
    * While title and platform seem sufficiently general, it's open-ended whether attributes like
    * swissprot (UniProt proteins) should get this kind of special treatment.
    */
-    
+
     def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
 
     val q = s"""$tPrefixes
@@ -423,7 +423,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       instanceURI.map(u =>
         s"?g a ${ProbeLists.itemClass}; ${Instances.memberRelation} <$u>. ").getOrElse("") +
       s"?g ${ProbeLists.memberRelation} ?probeLabel; rdfs:label ?list. } " +
-      //Note: string matching, such as in the following fragment, is impacted by 
+      //Note: string matching, such as in the following fragment, is impacted by
       //the handling of RDF1.0/1.1 strings (untyped/typed)
       // "?probe a t:probe; rdfs:label ?probeLabel. " + //filter out invalid probeLabels
       "}"
@@ -435,8 +435,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Look up the auxiliary sort map for a given association, identified by
-   * a string. 
-   * 
+   * a string.
+   *
    * This mechanism is not currently used. If we revive it, then it might possibly
    * be moved to a different location.
    */
@@ -482,13 +482,9 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   private def mirnaAssociationGraphs(species: Option[Species]) = {
     val r = species match {
-      case Some(Rat)   => "FROM <http://level-five.jp/t/platform/Rat230_2>"
-      case Some(Mouse) => "FROM <http://level-five.jp/t/platform/Mouse430_2>"
-      case Some(Human) => "FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>"
+      case Some(s)   => s"FROM <${s.expectedPlatformGraph}>"
       case _ =>
-      """|FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
-         |FROM <http://level-five.jp/t/platform/Mouse430_2>
-         |FROM <http://level-five.jp/t/platform/Rat230_2>""".stripMargin
+        Species.supportedSpecies.map(s => s"FROM <${s.expectedPlatformGraph}>").mkString("\n")
     }
     s"""|$r
        |$mirnaAssociationGraphsAllSpecies""".stripMargin
@@ -514,6 +510,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Obtain mRNA-miRNA associations.
+   * Note: this is not currently used - target tables are loaded from text files instead.
    * @param queryFromMirna if true, query probes are mirna, otherwise mrna.
    */
   def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],

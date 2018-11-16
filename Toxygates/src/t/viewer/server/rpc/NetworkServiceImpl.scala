@@ -70,6 +70,7 @@ object NetworkState {
       val gr = info.columnGroup(0)
       val sp = t.viewer.server.Conversions.groupSpecies(gr)
 
+      //TODO platform handling
       val all = platforms.data(sp.expectedPlatform)
       val targets = targetTable.targets(lookup.map(MiRNA(_)), all)
       targets.groupBy(_._2).map(x => (x._1.identifier, new JDouble(x._2.size)))

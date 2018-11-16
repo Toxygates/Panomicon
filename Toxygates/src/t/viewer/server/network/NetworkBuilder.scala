@@ -22,6 +22,7 @@ object NetworkBuilder {
       mainOffset: Int, mainSize: Int): Seq[String] = {
     val mainType = main.params.typ
     val mainSpecies = main.params.species
+    //TODO platform handling
     val expPlatform = mainSpecies.expectedPlatform
 
     mainType match {

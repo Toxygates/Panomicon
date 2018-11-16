@@ -107,6 +107,7 @@ class AssociationResolver(probeStore: OTGProbes,
       //Note: we might unify this lookup with the "aprobes" mechanism
       val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
 
+      //TODO platform handling
       val data = filtTable.associationLookup(lookedUp, fromMirna,
         probeStore.platformsAndProbes(species.expectedPlatform), sizeLimit)
 

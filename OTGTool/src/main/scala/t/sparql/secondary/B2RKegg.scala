@@ -41,11 +41,11 @@ case class Pathway(val identifier: String,
   }
 }
 
-object B2RKegg {  
-  def platformTaxon(plat: String): String = 
+object B2RKegg {
+  def platformTaxon(plat: String): String =
     Species.forStandardPlatform(plat).map(_.shortCode.toUpperCase).
-      getOrElse(plat)    
-  
+      getOrElse(plat)
+
 }
 
 class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Pathway] { //RemoteRDF
@@ -118,8 +118,6 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
 
   /**
    * Obtain all pathways associated with each of a set of genes.
-   * TODO: simplify these queries, when it is operationally easy to do so,
-   * to use the kv:x-ncbigene predicate of the probes directly
    */
   def forGenes(genes: Iterable[Gene]): MMap[Gene, Pathway] = {
     def convert(uri: String, g: Gene): String = {

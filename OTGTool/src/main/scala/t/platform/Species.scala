@@ -20,8 +20,10 @@
 
 package t.platform
 
+import t.sparql.Platforms
+
 /*
- * Note: Some of this code might be moved to Java enums, and then 
+ * Note: Some of this code might be moved to Java enums, and then
  * shared with the front-end, e.g. in OTGSchema/DataSchema.
  */
 object Species extends Enumeration(0) {
@@ -49,11 +51,17 @@ object Species extends Enumeration(0) {
       case Rat   => "rno"
       case Mouse => "mmu"
     }
+
+    //TODO this mechanism needs to be improved, as we now have multiple
+    //platforms per species.
     def expectedPlatform = s match {
       case Human => "HG-U133_Plus_2"
       case Rat   => "Rat230_2"
       case Mouse => "Mouse430_2"
     }
+
+    //Note: as above
+    def expectedPlatformGraph = Platforms.defaultPrefix + s"/$expectedPlatform"
   }
 
   val supportedSpecies = List(Rat, Human, Mouse)
