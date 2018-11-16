@@ -76,7 +76,6 @@ class MatrixMapperTest extends TTestSuite {
     }
   }
 
-  //TODO quite a lot of code here is shared with ManagedMatrixTest
   test("managedMatrix") {
     val mm = new MatrixMapper(pm, vm)
     val schema = OTestData.dataSchema

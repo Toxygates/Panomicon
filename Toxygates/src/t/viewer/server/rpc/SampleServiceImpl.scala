@@ -209,10 +209,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
 //    usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
 //  }
 
-  //TODO move to OTG
-  @throws[TimeoutException]
-  def pathologies(column: SampleColumn): Array[Pathology] = Array()
-
   @throws[TimeoutException]
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)

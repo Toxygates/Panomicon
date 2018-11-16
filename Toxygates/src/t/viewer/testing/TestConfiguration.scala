@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,6 +21,7 @@
 package t.viewer.testing
 
 import t.viewer.server.Configuration
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 
 /**
  * Generates configurations for testing of servlet implementations.
@@ -32,7 +33,7 @@ object TestConfiguration {
   val data = tc.dataConfig
 
   lazy val config = new Configuration(ts.repository,
-      data.dir, null, null,
+      KCChunkMatrixDB.CHUNK_PREFIX + ":" + data.dir, null, null,
       ts.url, ts.updateUrl,
       ts.user, ts.pass,
       null, null,
