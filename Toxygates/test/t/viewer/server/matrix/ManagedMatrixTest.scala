@@ -18,19 +18,16 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server.matrix
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 import otgviewer.server.rpc.Conversions._
 import t.TTestSuite
-
 import t.common.shared.sample._
 import t.db.testing._
 import t.db.testing.TestData._
-import t.viewer.server.matrix.ExtFoldBuilder
-import t.viewer.server.matrix.NormalizedBuilder
+import org.scalactic.source.Position.apply
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {

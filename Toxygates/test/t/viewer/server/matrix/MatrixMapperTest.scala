@@ -18,11 +18,10 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server.matrix
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 import t.TTestSuite
 import t.common.shared.sample.Group
 import t.common.testing.{TestData => OTestData}
@@ -30,10 +29,7 @@ import t.db.ExprValue
 import t.db.testing.TestData
 import t.viewer.server.Conversions._
 import t.viewer.server._
-import t.viewer.server.matrix.MatrixMapper
-import t.viewer.server.matrix.OrthologProbeMapper
-import t.viewer.server.matrix.MedianValueMapper
-import t.viewer.server.matrix.ExtFoldBuilder
+import org.scalactic.source.Position.apply
 
 @RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {

@@ -18,15 +18,15 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.viewer.server.matrix
 
 import t.common.shared.sample.EVABuilder
 import t.db.ExprValue
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import t.viewer.server.matrix.SimpleAnnotation
-import t.viewer.server.matrix.ExprMatrix
+import org.scalactic.source.Position.apply
+import scala.collection.Seq
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends TTestSuite {
