@@ -27,6 +27,8 @@ import t.platform.OrthologMapping
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter._
 import otg.model.sample.OTGAttribute._
+import t.platform._
+import t.platform.mirna._
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -123,6 +125,10 @@ object TestData {
     val pmap = Map() ++ probes.map(x => ("probe_" + x -> x))
     new ProbeIndex(pmap)
   }
+  
+  def platform(n: Int, prefix: String) = {
+    (0 until n).map(i => s"$prefix$i")
+  }
 
   val unpackedProbes = probes.map(probeMap.unpack)
 
@@ -186,5 +192,21 @@ object TestData {
     val orths = (0 until n).map(p =>
       List(pmap.unpack(p), pmap.unpack(p + n), pmap.unpack(p + n * 2)))
     OrthologMapping("test", orths)
+  }
+  
+  def targetTable(mirnaPlatform: Iterable[String],
+    refseqPlatform: Iterable[String],
+    maxScore: Double, fraction: Double) = {
+     val builder = new TargetTableBuilder
+     
+     val associations = for (p1 <- mirnaPlatform; p2 <- refseqPlatform;
+       mirna = new MiRNA(p1); refseq = new RefSeq(p2);
+       score = Math.random() * maxScore;
+       frac = Math.random();
+       if frac > fraction;
+       database = "pseudo") {
+       builder.add(mirna, refseq, score, database)  
+     }
+     builder.build
   }
 }
