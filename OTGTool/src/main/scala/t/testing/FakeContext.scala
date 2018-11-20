@@ -43,7 +43,7 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   private val abs = memDBHash
 
   lazy val absoluteDBReader: ExtMatrixDBReader = ???
-  lazy val foldsDBReader: ExtMatrixDB = new KCChunkMatrixDB(folds, false)
+  lazy val foldsDBReader: ExtMatrixDB = new KCChunkMatrixDB(folds, false)(this)
 
   def timeSeriesDBReader: SeriesDB[_] = ???
   def timeSeriesBuilder: SeriesBuilder[_] = ???
@@ -51,6 +51,10 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   def doseSeriesBuilder: SeriesBuilder[_] = ???
 
   def populate() {
-    TestData.populate(foldsDBReader, testData)
+    populate(testData)
+  }
+  
+  def populate(d: ColumnExpressionData) {
+    TestData.populate(foldsDBReader, d)(probeMap)
   }
 }

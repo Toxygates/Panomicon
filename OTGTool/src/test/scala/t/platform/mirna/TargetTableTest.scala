@@ -5,6 +5,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.testing.TestData
 import t.platform._
+import t.db.testing.NetworkTestData
 
 @RunWith(classOf[JUnitRunner])
 class TargetTableTest extends TTestSuite {
@@ -12,7 +13,7 @@ class TargetTableTest extends TTestSuite {
      val pf1 = TestData.platform(100, "p1-")
      val pf2 = TestData.platform(100, "p2-")
      
-     val tt = TestData.targetTable(pf1, pf2, 100, 0.5)
+     val tt = NetworkTestData.targetTable(pf1, pf2, 100, 0.5)
      val assocs = tt.toVector
      
      assert(tt === assocs)

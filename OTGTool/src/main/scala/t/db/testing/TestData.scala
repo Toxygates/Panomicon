@@ -54,7 +54,7 @@ object TestData {
 
   def calls = List('A', 'P', 'M')
 
-  private def cgroup(time: String, compound: String) = {
+  def cgroup(time: String, compound: String) = {
     val c = (enumMaps(ExposureTime.id)(time)) * 100 +
       enumMaps("compound_name")(compound)
     "" + c
@@ -94,7 +94,7 @@ object TestData {
     }
   }
 
-  val ids = (0 until (5 * 4 * 3 * 4)).toStream.iterator
+  val ids = (0 until (5 * 4 * 3 * 4)).iterator
   val samples = for (
     dose <- em(DoseLevel); time <- em(ExposureTime);
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
@@ -102,6 +102,7 @@ object TestData {
           ExposureTime -> time, Compound -> compound,
           Repeat -> "Single", Organ -> "Liver",
           TestType -> "Vivo", Organism -> "Rat",
+          Type -> "mRNA",
           LiverWeight -> liverWeight(dose, ind).toString,
           KidneyWeight -> kidneyWeight(dose, ind).toString,
           ControlGroup -> cgroup(time, compound));
@@ -132,7 +133,9 @@ object TestData {
 
   val unpackedProbes = probes.map(probeMap.unpack)
 
-  val dbIdMap = {
+  val dbIdMap = sampleIndex(samples)   
+  
+  def sampleIndex(samples: Iterable[Sample]) = {
     val dbIds = Map() ++ samples.zipWithIndex.map(s => (s._1.sampleId -> s._2))
     new SampleIndex(dbIds)
   }
@@ -141,7 +144,8 @@ object TestData {
     makeTestData(sparse, samples)
   }
 
-  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): ColumnExpressionData = {
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample])
+    (implicit probeMap: ProbeMap): ColumnExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
     for (s <- useSamples) {
       var thisProbe = Map[String, (Double, Char, Double)]()
@@ -178,7 +182,8 @@ object TestData {
     r
   }
 
-  def populate(db: MatrixDBWriter[PExprValue], d: ColumnExpressionData) {    
+  def populate(db: MatrixDBWriter[PExprValue], d: ColumnExpressionData)
+    (implicit probeMap: ProbeMap) {    
     for (s <- d.samples; (p, v) <- d.asExtValues(s)) {
       db.write(s, probeMap.pack(p), v)
     }
@@ -193,20 +198,5 @@ object TestData {
       List(pmap.unpack(p), pmap.unpack(p + n), pmap.unpack(p + n * 2)))
     OrthologMapping("test", orths)
   }
-  
-  def targetTable(mirnaPlatform: Iterable[String],
-    refseqPlatform: Iterable[String],
-    maxScore: Double, fraction: Double) = {
-     val builder = new TargetTableBuilder
-     
-     val associations = for (p1 <- mirnaPlatform; p2 <- refseqPlatform;
-       mirna = new MiRNA(p1); refseq = new RefSeq(p2);
-       score = Math.random() * maxScore;
-       frac = Math.random();
-       if frac > fraction;
-       database = "pseudo") {
-       builder.add(mirna, refseq, score, database)  
-     }
-     builder.build
-  }
+
 }
