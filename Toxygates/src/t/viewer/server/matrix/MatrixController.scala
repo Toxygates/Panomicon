@@ -37,6 +37,7 @@ import t.viewer.server.matrix._
 import t.viewer.server.Platforms
 import t.viewer.shared.SortKey
 import t.common.shared.sample.ExpressionRow
+import t.db.MatrixContext
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
@@ -58,10 +59,20 @@ object MatrixController {
   }
 }
 
+object ControllerParams {
+  def apply(context: Context, groups: Seq[Group],
+    initProbes: Seq[String], groupPlatforms: Iterable[String],
+    typ: ValueType, fullLoad: Boolean): ControllerParams = 
+      ControllerParams(context.matrix, 
+      Platforms(context.probes), groups, initProbes, groupPlatforms, typ,
+      fullLoad)
+}
+
 /**
  * Principal parameters that a matrix controller needs to load a matrix.
  */
-case class ControllerParams(context: Context,
+case class ControllerParams(val matrixContext: MatrixContext,
+    val platforms: Platforms,
     val groups: Seq[Group],
     val initProbes: Seq[String],
     val groupPlatforms: Iterable[String],
@@ -83,12 +94,10 @@ abstract class MatrixController(params: ControllerParams) {
    * The type of the matrix that is managed.
    */
   type Mat <: ManagedMatrix
-  
-  private def probes = params.context.probes
 
-  protected val platforms = Platforms(probes)
+  protected def platforms = params.platforms
 
-  private implicit val mcontext = params.context.matrix
+  private implicit val mcontext = params.matrixContext
 
   def groupSpecies = groups.headOption.map(g => asSpecies(g.getSamples()(0).sampleClass()))
 
@@ -192,11 +201,11 @@ abstract class MatrixController(params: ControllerParams) {
     managedMatrix
   }
 
-  protected def rowLabels(schema: DataSchema): RowLabels = new RowLabels(params.context, schema)
+  protected def rowLabels(context: Context, schema: DataSchema): RowLabels = new RowLabels(context, schema)
 
-  def insertAnnotations(schema: DataSchema,
+  def insertAnnotations(context: Context, schema: DataSchema,
       rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val rl = rowLabels(schema)
+    val rl = rowLabels(context, schema)
     rl.insertAnnotations(rows)
   }
 }
@@ -251,5 +260,5 @@ class MergedMatrixController(params: ControllerParams, orthologs: () => Iterable
     Some(new MatrixMapper(pm, vm))
   }
 
-  override protected def rowLabels(schema: DataSchema) = new MergedRowLabels(params.context, schema)
+  override protected def rowLabels(context: Context, schema: DataSchema) = new MergedRowLabels(context, schema)
 }

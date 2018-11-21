@@ -147,7 +147,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     println(s"Session targetTable filtered to size ${getState().targetTable.size}")
   }
 
-  /**
+  /**fold
    * The main network loading operation.
    * Needs to load two matrices and also set up count columns
    * and the mapping between the two.

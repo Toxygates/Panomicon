@@ -197,7 +197,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   private def insertAnnotations(controller: MatrixController,
       rows: Seq[ExpressionRow]): Seq[ExpressionRow] =
-    controller.insertAnnotations(schema, rows)
+    controller.insertAnnotations(context, schema, rows)
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
