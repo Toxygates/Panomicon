@@ -20,8 +20,17 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
     Map<AType, Association> associations();
   }
 
+  static String columnWidth(AType assoc) {
+    switch (assoc) {
+      case MiRNA:
+        return "18em";
+      default:
+        return "15em";
+    }
+  }
+
   public AssociationColumn(SafeHtmlCell tc, AType association, Delegate<T> delegate) {
-    super(tc, association.title(), false, "15em", null);
+    super(tc, association.title(), false, columnWidth(association), null);
     this.delegate = delegate;
     this.assoc = association;
     this._columnInfo = new ColumnInfo(_name, _width, association.canSort(), true, true, false);
