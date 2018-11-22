@@ -93,17 +93,25 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
     })
   }
 
-  override def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
+  /**
+   * Look up probes by the start of their symbol or ID string. Case-insensitive.
+   */
+  override def probesForPartialSymbol(platform: Option[String], title: String): Vector[(String, String)] = {
     val query = s"""$prefixes
-      |SELECT DISTINCT ?s WHERE {
+      |SELECT DISTINCT ?s ?l WHERE {
       |  GRAPH ?g {
-      |    ?p a $itemClass; t:symbol ?s.
+      |    ?p a $itemClass; rdfs:label ?l.
+      |    OPTIONAL { ?p t:symbol ?s. }
       |  }
       |  ${platform.map(x => "?g rdfs:label \"" + x + "\".").getOrElse("")}
-      |  FILTER REGEX(STR(?s), "^$title.*", "i")
+      |  FILTER (
+      |   REGEX(STR(?s), "^$title.*", "i") || REGEX(STR(?l), "^$title.*", "i")
+      |  )
+      |
       |}
       |LIMIT 10""".stripMargin
-    triplestore.mapQuery(query).map(x => Probe(x("s")))
+    triplestore.mapQuery(query).map(x =>
+      (x.get("s").getOrElse(x("l")), x("l")))
   }
 
   /**

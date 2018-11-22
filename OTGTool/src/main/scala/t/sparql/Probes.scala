@@ -231,7 +231,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   /**
    * Convert a list of identifiers, such as proteins, genes and probes,
    * to a list of probes.
-   * final GeneOracle oracle = new GeneOracle();
    */
   def identifiersToProbes(map: ProbeMap, idents: Array[String], precise: Boolean,
     quick: Boolean = false, tritigate: Boolean = false): Iterable[Probe] = {
@@ -341,7 +340,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   }
 
-  def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
+  def probesForPartialSymbol(platform: Option[String], title: String): Vector[(String, String)] = {
     ???
   }
 

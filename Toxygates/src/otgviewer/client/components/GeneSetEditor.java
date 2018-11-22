@@ -456,7 +456,7 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
           @Override
           public void handleSuccess(String[] probes) {
             if (probes.length == 0) {
-              Window.alert("No matching probes were found.");
+              Window.alert("No matching probes were found for the current platform.");
             } else {
               addProbes(probes);
             }

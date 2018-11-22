@@ -22,10 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import t.common.shared.Pair;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
@@ -46,20 +47,22 @@ public class GeneOracle extends SuggestOracle {
   private static String lastRequest = "";
 
   private class GeneSuggestion implements Suggestion {
-    private String geneId;
+    private String symbol;
+    private String probeId;
 
-    public GeneSuggestion(String geneId) {
-      this.geneId = geneId;
+    public GeneSuggestion(String symbol, String probeId) {
+      this.symbol = symbol;
+      this.probeId = probeId;
     }
 
     @Override
     public String getDisplayString() {
-      return geneId;
+      return symbol + " (" + probeId + ")";
     }
 
     @Override
     public String getReplacementString() {
-      return geneId;
+      return symbol;
     }
 
   }
@@ -86,17 +89,23 @@ public class GeneOracle extends SuggestOracle {
   }
 
   private void getSuggestions(final Request request, final Callback callback) {
-    probeService.geneSuggestions(sampleClass, request.getQuery(), 
-      new PendingAsyncCallback<String[]>(screen) {
-      @Override
-      public void handleSuccess(String[] result) {
-        List<Suggestion> ss = new ArrayList<Suggestion>();
-        for (String sug : result) {
-          ss.add(new GeneSuggestion(sug));
-        }
-        Response r = new Response(ss);
-        callback.onSuggestionsReady(request, r);
-      }
+    probeService.geneSuggestions(sampleClass, request.getQuery(),
+        new AsyncCallback<Pair<String, String>[]>() {
+          @Override
+          public void onSuccess(Pair<String, String>[] result) {
+            List<Suggestion> ss = new ArrayList<Suggestion>();
+            for (Pair<String, String> sug : result) {
+              ss.add(new GeneSuggestion(sug.first(), sug.second()));
+            }
+            Response r = new Response(ss);
+            callback.onSuggestionsReady(request, r);
+          }
+
+          @Override
+          public void onFailure(Throwable caught) {
+            screen.getLogger()
+                .warning("Unable to get gene suggestions for request: " + request.getQuery());
+          }
     });
   }
 }

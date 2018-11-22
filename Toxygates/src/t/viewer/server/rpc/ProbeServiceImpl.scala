@@ -257,11 +257,12 @@ with ProbeService {
   }
 
    @throws[TimeoutException]
-  def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
+  def geneSuggestions(sc: SampleClass, partialName: String): Array[Pair[String, String]] = {
       val plat = for (scl <- Option(sc);
         org <- Option(scl.get(OTGAttribute.Organism));
         pl <- Option(schema.organismPlatform(org))) yield pl
 
-      probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
+      probeStore.probesForPartialSymbol(plat, partialName).map(x =>
+        new Pair(x._1, x._2)).toArray
   }
 }

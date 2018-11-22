@@ -60,10 +60,11 @@ public interface ProbeService extends RemoteService {
    * Obtain gene suggestions from a partial gene symbol
    * 
    * @param partialName
-   * @return An array of pairs, where the first item is the precise gene symbol and the second is
-   * the full gene name.
+   * @return An array of pairs, where the first item is the gene symbol and the second is the
+   *         identifier
    */
-  String[] geneSuggestions(SampleClass sc, String partialName) throws TimeoutException;
+  Pair<String, String>[] geneSuggestions(SampleClass sc, String partialName)
+      throws TimeoutException;
   
   /**
    * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
