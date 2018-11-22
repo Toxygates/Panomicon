@@ -189,12 +189,14 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       mainMat.selectProbes(mainProbes)
     }
 
-    sideMat.addSynthetic(
-      new Synthetic.Precomputed("Count", s"Number of times each $gt appeared",
-        new JHMap(mapAsJavaMap(mainMat.countMap)), null))
+//Not in use currently - count across the "initial load" set, irrespective of the currently
+//viewed gene set
+//    sideMat.addSynthetic(
+//      new Synthetic.Precomputed("Count", s"Number of times each $gt appeared",
+//        new JHMap(mapAsJavaMap(mainMat.countMap)), null))
 
     sideMat.addSynthetic(
-      new Synthetic.Precomputed("Set", s"Number of times each $gt appeared in the set",
+      new Synthetic.Precomputed("Count", s"Number of times each $gt appeared in the set",
         mainMat.currentViewCountMap, null))
 
     new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)
