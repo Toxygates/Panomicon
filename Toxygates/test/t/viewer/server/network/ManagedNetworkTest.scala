@@ -9,6 +9,7 @@ import t.TTestSuite
 import t.common.shared.ValueType
 import t.common.shared.sample.Group
 import t.db.testing.NetworkTestData
+import t.platform.mirna._
 import t.viewer.server.Conversions._
 import t.viewer.server.Platforms
 import t.viewer.server.matrix.ControllerParams
@@ -32,13 +33,13 @@ class ManagedNetworkTest extends TTestSuite {
 
   val mirnaGroup = new Group(dataSchema, "mirnaGroup", mirnaSamples.map(s => asJavaSample(s)).toArray)
   val platforms = new Platforms(Map(
-    mrnaPlatformId -> mrnaProbes.toSet,
+    t.db.testing.TestData.mrnaPlatformId -> mrnaProbes.toSet,
     mirnaPlatformId -> mirnaProbes.toSet))
 
-  val mainGroups = t.common.testing.TestData.groups take 5
+  val mrnaGroups = t.common.testing.TestData.groups take 5
 
   test("basic") {
-    val main = mrnaBuilder.build(mainGroups, false, true)
+    val main = mrnaBuilder.build(mrnaGroups, false, true)
     val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
     val builder = new NetworkBuilder(targets, platforms, main, side)
     val network = builder.build
@@ -54,42 +55,62 @@ class ManagedNetworkTest extends TTestSuite {
     network.nodes.asScala.map(_.id).toSet should equal(ids.toSet)
   }
 
-  def checkNetworkInvariants(main: ManagedNetwork, side: ManagedMatrix) {
+  def checkNetworkInvariants(main: ManagedNetwork, side: ManagedMatrix,
+      reverseLookup: Boolean) {
     println(s"Checking network with ${main.current.rows} rows, side ${side.current.rows}, targets ${main.targets.size}")
     //getPageView updates the side matrix based on the new view
     var probes = main.getPageView(0, 100).map(_.getProbe)
-    checkSideTable(probes, main.targets, side)
+    checkSideTable(probes, main.targets, side, reverseLookup)
     probes = main.getPageView(100, 100).map(_.getProbe)
-    checkSideTable(probes, main.targets, side)
+    checkSideTable(probes, main.targets, side, reverseLookup)
     probes = main.getPageView(500, 100).map(_.getProbe)
-    checkSideTable(probes, main.targets, side)
+    checkSideTable(probes, main.targets, side, reverseLookup)
   }
 
-  def checkSideTable(mainProbes: Seq[String], targets: TargetTable, side: ManagedMatrix) {
+  def checkSideTable(mainProbes: Seq[String], targets: TargetTable, side: ManagedMatrix,
+      reverseLookup: Boolean) {
     val sideProbes = side.current.asRows.map(_.getProbe)
 
-    val expSideTargets = targets.reverseTargets(platforms.resolve(mainProbes))
-    checkEqualSets(sideProbes.toSet, expSideTargets.map(_._2.id).toSet)
+    val expSideTargets = if (reverseLookup) {
+      targets.reverseTargets(platforms.resolve(mainProbes)).map(_._2.id)
+    } else {
+      targets.targets(mainProbes.map(MiRNA(_)), mrnaProbes).map(_._2.identifier)
+    }
+    checkEqualSets(sideProbes.toSet, expSideTargets.toSet)
 
-    checkSubset(mainProbes.toSet, mrnaIds.toSet)
-    checkSubset(sideProbes.toSet, mirnaIds.toSet)
+    val (mainSet, sideSet) =
+      if (reverseLookup) (mrnaIds.toSet, mirnaIds.toSet)
+      else (mirnaIds.toSet, mrnaIds.toSet)
+
+    checkSubset(mainProbes.toSet, mainSet)
+    checkSubset(sideProbes.toSet, sideSet)
   }
 
-  test("controller") {
+  test("forward network") {
     val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
+    networkTest(side, mrnaGroups, t.db.testing.TestData.mrnaPlatformId, true)
+  }
+
+  test("reverse network") {
+    val side = mrnaBuilder.build(mrnaGroups, false, true)
+    networkTest(side, Seq(mirnaGroup), mirnaPlatformId, false)
+  }
+
+  def networkTest(side: ManagedMatrix, mainGroups: Seq[Group],
+      mainPlatform: String, reverseLookup: Boolean) {
     val params = ControllerParams(context, platforms, mainGroups, Seq(),
-      Seq(mrnaPlatformId), ValueType.Folds, false)
+      Seq(mainPlatform), ValueType.Folds, false)
     val mainPageSize = 100
     val netCon = new NetworkController(params, side, targets, platforms, mainPageSize,
       false)
     val main = netCon.managedMatrix
 
     //Check that the side table - main table correspondence agrees with what the target table says
-    checkNetworkInvariants(main, side)
+    checkNetworkInvariants(main, side, reverseLookup)
 
     val subset = mrnaIds take 100
     main.selectProbes(subset)
-    checkNetworkInvariants(main, side)
+    checkNetworkInvariants(main, side, reverseLookup)
 
     main.resetSortAndFilter()
     main.targets = targets.scoreFilter(90)
@@ -97,7 +118,7 @@ class ManagedNetworkTest extends TTestSuite {
     main.updateSideMatrix()
     assert(main.targets.size > 0)
     assert(main.targets.size != targets.size)
-    checkNetworkInvariants(main, side)
+    checkNetworkInvariants(main, side, reverseLookup)
 
     main.resetSortAndFilter()
   }

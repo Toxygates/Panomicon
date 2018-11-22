@@ -94,6 +94,8 @@ object TestData {
     }
   }
 
+  val mrnaPlatformId = "mrnaTest"
+
   val ids = (0 until (5 * 4 * 3 * 4)).iterator
   val samples = for (
     dose <- em(DoseLevel); time <- em(ExposureTime);
@@ -103,6 +105,7 @@ object TestData {
           Repeat -> "Single", Organ -> "Liver",
           TestType -> "Vivo", Organism -> "Rat",
           Type -> "mRNA",
+          Platform -> mrnaPlatformId,
           LiverWeight -> liverWeight(dose, ind).toString,
           KidneyWeight -> kidneyWeight(dose, ind).toString,
           ControlGroup -> cgroup(time, compound));
@@ -126,15 +129,15 @@ object TestData {
     val pmap = Map() ++ probes.map(x => ("probe_" + x -> x))
     new ProbeIndex(pmap)
   }
-  
+
   def platform(n: Int, prefix: String) = {
     (0 until n).map(i => s"$prefix$i")
   }
 
   val unpackedProbes = probes.map(probeMap.unpack)
 
-  val dbIdMap = sampleIndex(samples)   
-  
+  val dbIdMap = sampleIndex(samples)
+
   def sampleIndex(samples: Iterable[Sample]) = {
     val dbIds = Map() ++ samples.zipWithIndex.map(s => (s._1.sampleId -> s._2))
     new SampleIndex(dbIds)
@@ -183,7 +186,7 @@ object TestData {
   }
 
   def populate(db: MatrixDBWriter[PExprValue], d: ColumnExpressionData)
-    (implicit probeMap: ProbeMap) {    
+    (implicit probeMap: ProbeMap) {
     for (s <- d.samples; (p, v) <- d.asExtValues(s)) {
       db.write(s, probeMap.pack(p), v)
     }

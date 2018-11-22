@@ -38,14 +38,13 @@ object NetworkTestData {
      builder.build
   }
 
-  val mrnaPlatformId = "mrnaTest"
   val mirnaPlatformId = "mirnaTest"
 
   val targets = targetTable(mirnaIds, refseqIds, 100, 0.1)
   val mrnaProbes = mrnaIds.map(m => {
     Probe(m,
       transcripts = Seq(RefSeq(m.replace("mrna", "refseq"))),
-      platform = mrnaPlatformId)
+      platform = TestData.mrnaPlatformId)
   })
   val mirnaProbes = mirnaIds.map(m => {
     Probe(m, platform = mirnaPlatformId)
@@ -61,6 +60,7 @@ object NetworkTestData {
           ExposureTime -> time, OTGAttribute.Compound -> "acetaminophen",
           Repeat -> "Single", Organ -> "Liver",
           Type -> "miRNA",
+          Platform -> "mirnaTest",
           TestType -> "Vivo", Organism -> "Rat",
           ControlGroup -> TestData.cgroup(time, "acetaminophen"));
     s = Sample("mir-s" + ids.next, values)
