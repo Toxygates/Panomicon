@@ -51,7 +51,7 @@ import t.viewer.client.rpc.SampleServiceAsync;
 abstract public class GroupInspector extends Composite implements RequiresResize,
     SelectionTDGrid.UnitListener {
 
-  private MultiSelectionGrid msg;
+  private MultiSelectionGrid multiSelectionGrid;
   private Map<String, Group> groups = new HashMap<String, Group>();
   private final Screen screen;
   private final Delegate delegate;
@@ -62,8 +62,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private SelectionTable<Group> existingGroupsTable;
   private CompoundSelector compoundSel;
   private HorizontalPanel toolPanel;
-  private SplitLayoutPanel sp;
-  private VerticalPanel vp;
+  private SplitLayoutPanel splitPanel;
+  private VerticalPanel verticalPanel;
   private boolean nameIsAutoGen = false;
   private Set<String> staticGroupNames = new HashSet<String>();
 
@@ -83,7 +83,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   public interface Delegate {
     void groupInspectorDatasetsChanged(Dataset[] ds);
-
     void groupInspectorSampleClassChanged(SampleClass sc);
   }
 
@@ -99,22 +98,22 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     this.delegate = delegate;
     schema = scr.schema();
     sampleService = scr.manager().sampleService();
-    sp = new SplitLayoutPanel();
-    initWidget(sp);
+    splitPanel = new SplitLayoutPanel();
+    initWidget(splitPanel);
 
-    vp = Utils.mkTallPanel();
+    verticalPanel = Utils.mkTallPanel();
 
     titleLabel = new Label("Sample group definition");
     titleLabel.addStyleName("heading");
-    vp.add(titleLabel);
+    verticalPanel.add(titleLabel);
 
-    msg = new MultiSelectionGrid(scr, this);
-    vp.add(msg);
+    multiSelectionGrid = new MultiSelectionGrid(scr, this);
+    verticalPanel.add(multiSelectionGrid);
 
-    vp.setWidth("440px");
+    verticalPanel.setWidth("440px");
 
     toolPanel = Utils.mkHorizontalPanel(true);
-    vp.add(toolPanel);
+    verticalPanel.add(toolPanel);
 
     Label lblSaveGroupAs = new Label("Save group as");
     lblSaveGroupAs.addStyleName("slightlySpaced");
@@ -226,9 +225,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     existingGroupsTable.setVisible(false);
     existingGroupsTable.table().setRowStyles(new GroupColouring());
     existingGroupsTable.setSize("100%", "100px");
-    sp.addSouth(t.common.client.Utils.makeScrolled(existingGroupsTable), 200);
+    splitPanel.addSouth(t.common.client.Utils.makeScrolled(existingGroupsTable), 200);
 
-    sp.add(t.common.client.Utils.makeScrolled(vp));
+    splitPanel.add(t.common.client.Utils.makeScrolled(verticalPanel));
   }
 
   private void onGroupNameInputChanged() {
@@ -295,9 +294,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void confirmDeleteAllGroups() {
-    int n = existingGroupsTable.getItems().size();
-    int fn = n - staticGroupNames.size();
-    if (Window.confirm("Delete " + fn + " groups?")) {
+    int numberToDelete = existingGroupsTable.getItems().size() - staticGroupNames.size();
+    if (Window.confirm("Delete " + numberToDelete + " groups?")) {
       clearNonStaticGroups();
       reflectGroupChanges(true);
       prepareForNewGroup();
@@ -319,7 +317,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private void prepareForNewGroup() {
     txtbxGroup.setText("");
     onGroupNameInputChanged();
-    msg.setAll(false);
+    multiSelectionGrid.setAll(false);
     compoundSel.setSelection(new ArrayList<String>());
     setHeading("new group");
     setEditing(true);
@@ -365,23 +363,23 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public String suggestGroupName(List<Unit> units) {
-    String g = "";
+    String groupDescription = "";
     if (!units.isEmpty()) {
-      Unit b = units.get(0);
-      g =
-          firstChars(b.get(schema.majorParameter())) + "/"
-              + b.get(schema.mediumParameter()).substring(0, 1) + "/"
-              + b.get(schema.minorParameter());
+      Unit firstUnit = units.get(0);
+      groupDescription =
+          firstChars(firstUnit.get(schema.majorParameter())) + "/"
+              + firstUnit.get(schema.mediumParameter()).substring(0, 1) + "/"
+              + firstUnit.get(schema.minorParameter());
       if (units.size() > 1) {
-        g += ", ...";
+        groupDescription += ", ...";
       }
     } else {
-      g = "Empty group";
+      groupDescription = "Empty group";
     }
     int i = 1;
-    String name = g;
+    String name = groupDescription;
     while (groups.containsKey(name)) {
-      name = g + " " + i;
+      name = groupDescription + " " + i;
       i++;
     }
     return name;
@@ -392,7 +390,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     if (!sc.equals(chosenSampleClass)) {
       compoundsChanged(new ArrayList<String>());
     }
-    msg.sampleClassChanged(sc);
+    multiSelectionGrid.sampleClassChanged(sc);
   }
 
   public void datasetsChanged(Dataset[] ds) {
@@ -400,19 +398,19 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     disableGroupsIfNeeded(ds);
   }
 
-  protected void disableGroupsIfNeeded(Dataset[] ds) {
-    Set<String> availDs = new HashSet<String>();
-    for (Dataset d : ds) {
-      availDs.add(d.getId());
+  protected void disableGroupsIfNeeded(Dataset[] datasets) {
+    Set<String> availableDatasets = new HashSet<String>();
+    for (Dataset d : datasets) {
+      availableDatasets.add(d.getId());
     }
     int disableCount = 0;
 
-    logger.info("Available DS: " + SharedUtils.mkString(availDs, ", "));
-    for (Group g : existingGroupsTable.getSelection()) {
-      List<String> reqDs = g.collect(OTGAttribute.Dataset).collect(Collectors.toList());
-      logger.info("Group " + g.getShortTitle() + " needs " + SharedUtils.mkString(reqDs, ", "));
-      if (!availDs.containsAll(reqDs)) {
-        existingGroupsTable.unselect(g);
+    logger.info("Available DS: " + SharedUtils.mkString(availableDatasets, ", "));
+    for (Group group : existingGroupsTable.getSelection()) {
+      List<String> requiredDatasets = group.collect(OTGAttribute.Dataset).collect(Collectors.toList());
+      logger.info("Group " + group.getShortTitle() + " needs " + SharedUtils.mkString(requiredDatasets, ", "));
+      if (!availableDatasets.containsAll(requiredDatasets)) {
+        existingGroupsTable.unselect(group);
         disableCount += 1;
       }
     }
@@ -437,16 +435,16 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       HashSet<String> missing = new HashSet<String>(neededDatasets);
       missing.removeAll(enabled);
 
-      List<Dataset> newEnabled = new ArrayList<Dataset>();
+      List<Dataset> newEnabledList = new ArrayList<Dataset>();
       for (Dataset d : allDatasets) {
         if (enabled.contains(d.getId()) || neededDatasets.contains(d.getId())) {
-          newEnabled.add(d);
+          newEnabledList.add(d);
         }
       }
-      Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
-      datasetsChanged(enAr);
-      delegate.groupInspectorDatasetsChanged(enAr);
-      sampleService.chooseDatasets(enAr, new PendingAsyncCallback<SampleClass[]>(screen));
+      Dataset[] newEnabled = newEnabledList.toArray(new Dataset[0]);
+      datasetsChanged(newEnabled);
+      delegate.groupInspectorDatasetsChanged(newEnabled);
+      sampleService.chooseDatasets(newEnabled, new PendingAsyncCallback<SampleClass[]>(screen));
       screen.getParser().storeDatasets(chosenDatasets);
       Window
           .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
@@ -475,20 +473,20 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     } else {
       setEditing(true);
     }
-    msg.compoundsChanged(compounds);
+    multiSelectionGrid.compoundsChanged(compounds);
   }
 
   public void inactiveColumnsChanged(List<Group> columns) {
-    Collection<Group> igs = sortedGroupList(columns);
-    for (Group g : igs) {
+    Collection<Group> inactiveGroups = sortedGroupList(columns);
+    for (Group g : inactiveGroups) {
       groups.put(g.getName(), g);
     }
 
     List<Group> all = new ArrayList<Group>();
     all.addAll(sortedGroupList(existingGroupsTable.getSelection()));
-    all.addAll(igs);
+    all.addAll(inactiveGroups);
     existingGroupsTable.setItems(all, false);
-    existingGroupsTable.unselectAll(igs);
+    existingGroupsTable.unselectAll(inactiveGroups);
     existingGroupsTable.table().redraw();
     existingGroupsTable.setVisible(groups.size() > 0);
     prepareForNewGroup();
@@ -524,7 +522,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       return;
     }
 
-    List<Unit> units = msg.fullSelection(false);
+    List<Unit> units = multiSelectionGrid.fullSelection(false);
 
     if (units.size() == 0) {
       Window.alert("No samples found.");
@@ -614,14 +612,14 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     onGroupNameInputChanged();
     nameIsAutoGen = false;
 
-    msg.setSelection(g.getUnits());
+    multiSelectionGrid.setSelection(g.getUnits());
 
     setEditing(true);
   }
 
   @Override
   public void onResize() {
-    sp.onResize();
+    splitPanel.onResize();
   }
 
   private class GroupColouring implements RowStyles<Group> {
