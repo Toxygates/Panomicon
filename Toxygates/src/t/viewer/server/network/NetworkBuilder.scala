@@ -19,11 +19,10 @@ object NetworkBuilder {
   def extractSideProbes(targets: TargetTable,
                         platforms: Platforms,
       main: ManagedMatrix,
+      side: ManagedMatrix,
       mainOffset: Int, mainSize: Int): Seq[String] = {
     val mainType = main.params.typ
-    val mainSpecies = main.params.species
-    //TODO platform handling
-    val expPlatform = mainSpecies.expectedPlatform
+    val expPlatform = side.params.platform
 
     mainType match {
       case Network.mrnaType =>

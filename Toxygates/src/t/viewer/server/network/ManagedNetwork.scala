@@ -39,31 +39,31 @@ class ManagedNetwork(mainParams: LoadParams,
       println("Warning: targets table is empty. No side table can be constructed.")
     }
     val sideProbes = NetworkBuilder.extractSideProbes(targets, platforms,
-        this, offset, length)
+        this, sideMatrix, offset, length)
     println(s"Managed network: selecting ${sideProbes.size} probes for side matrix")
     sideMatrix.selectProbes(sideProbes)
   }
-  
-  private def filteredCountMap(mat: ExprMatrix) = {  
+
+  private def filteredCountMap(mat: ExprMatrix) = {
     val r = NetworkState.buildCountMap(currentInfo, mat, targets, platforms,
       sideIsMRNA)
     val pset = sideMatrix.initProbes.toSet
     r.filter(x => pset.contains(x._1))
   }
-  
+
   def countMap = filteredCountMap(rawGrouped)
-  
+
   import java.util.{HashMap => JHMap}
   import java.lang.{Double => JDouble}
-  
+
   private[this] var currentCountMap: JHMap[String, JDouble] = new JHMap[String, JDouble]
-  
+
   /**
    * A mutable count map that will be updated as the current gene set changes,
    * to reflect the counts in that set.
    */
-  def currentViewCountMap: JHMap[String, JDouble] = currentCountMap 
-   
+  def currentViewCountMap: JHMap[String, JDouble] = currentCountMap
+
   override protected def updateRowInfo() = synchronized {
     super.updateRowInfo
     if (currentCountMap != null) {

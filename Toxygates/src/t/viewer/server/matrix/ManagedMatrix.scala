@@ -65,6 +65,7 @@ case class LoadParams(val initProbes: Seq[String],
     val baseColumnMap: Map[Int, Seq[Int]],
     val log2Transform: Boolean = false) {
 
+  def platform = GroupUtils.groupPlatform(currentInfo.columnGroup(0))
   def typ = GroupUtils.groupType(currentInfo.columnGroup(0))
   def species = groupSpecies(currentInfo.columnGroup(0))
 }
