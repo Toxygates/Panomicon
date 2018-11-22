@@ -14,6 +14,9 @@ import t.viewer.server.Platforms
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.ExtFoldBuilder
 import t.viewer.shared.network.Network
+import t.viewer.shared.ColumnFilter
+import t.viewer.server.matrix.ManagedMatrix
+import t.platform.mirna.TargetTable
 
 @RunWith(classOf[JUnitRunner])
 class ManagedNetworkTest extends TTestSuite {
@@ -51,6 +54,27 @@ class ManagedNetworkTest extends TTestSuite {
     network.nodes.asScala.map(_.id).toSet should equal(ids.toSet)
   }
 
+  def checkNetworkInvariants(main: ManagedNetwork, side: ManagedMatrix) {
+    println(s"Checking network with ${main.current.rows} rows, side ${side.current.rows}, targets ${main.targets.size}")
+    //getPageView updates the side matrix based on the new view
+    var probes = main.getPageView(0, 100).map(_.getProbe)
+    checkSideTable(probes, main.targets, side)
+    probes = main.getPageView(100, 100).map(_.getProbe)
+    checkSideTable(probes, main.targets, side)
+    probes = main.getPageView(500, 100).map(_.getProbe)
+    checkSideTable(probes, main.targets, side)
+  }
+
+  def checkSideTable(mainProbes: Seq[String], targets: TargetTable, side: ManagedMatrix) {
+    val sideProbes = side.current.asRows.map(_.getProbe)
+
+    val expSideTargets = targets.reverseTargets(platforms.resolve(mainProbes))
+    checkEqualSets(sideProbes.toSet, expSideTargets.map(_._2.id).toSet)
+
+    checkSubset(mainProbes.toSet, mrnaIds.toSet)
+    checkSubset(sideProbes.toSet, mirnaIds.toSet)
+  }
+
   test("controller") {
     val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
     val params = ControllerParams(context, platforms, mainGroups, Seq(),
@@ -59,15 +83,40 @@ class ManagedNetworkTest extends TTestSuite {
     val netCon = new NetworkController(params, side, targets, platforms, mainPageSize,
       false)
     val main = netCon.managedMatrix
-    val expMainNodes = main.current.asRows take Network.MAX_NODES
-    assert(expMainNodes.map(_.getProbe).toSet.subsetOf(mrnaIds.toSet))
-    main.current.asRows.size should equal(mainPageSize)
-    
-    //Check that the edited side table agrees with what the target table says
-    val expSideTargets = targets.reverseTargets(platforms.resolve(expMainNodes.map(_.getProbe)))
-    val mirnas = expSideTargets.map(_._2).map(_.id)
-    val sideNodes = side.current.asRows.map(_.getProbe)
-    assert(sideNodes.toSet.subsetOf(mirnas.toSet))
-    
+
+    //Check that the side table - main table correspondence agrees with what the target table says
+    checkNetworkInvariants(main, side)
+
+    val subset = mrnaIds take 100
+    main.selectProbes(subset)
+    checkNetworkInvariants(main, side)
+
+    main.resetSortAndFilter()
+    main.targets = targets.scoreFilter(90)
+    //Propagate the new target table
+    main.updateSideMatrix()
+    assert(main.targets.size > 0)
+    assert(main.targets.size != targets.size)
+    checkNetworkInvariants(main, side)
+
+    main.resetSortAndFilter()
+  }
+
+  def checkEqualSets[T](x: Set[T], y: Set[T]) {
+    if (x != y) {
+      println("Two sets were not equal. Added in LHS:")
+      println(x -- y)
+      println("Added in RHS:")
+      println(y -- x)
+      assert(false)
+    }
+  }
+
+  def checkSubset[T](sub: Set[T], main: Set[T]) {
+    if (!sub.subsetOf(main)) {
+      println("Sub was not a subset of main, new elements:")
+      println(sub -- main)
+      assert(false)
+    }
   }
 }
