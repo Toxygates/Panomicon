@@ -54,6 +54,7 @@ object Species extends Enumeration(0) {
 
     //TODO this mechanism needs to be improved, as we now have multiple
     //platforms per species.
+    @deprecated("This concept will be phased out.", "Nov 2018")
     def expectedPlatform = s match {
       case Human => "HG-U133_Plus_2"
       case Rat   => "Rat230_2"
@@ -61,6 +62,7 @@ object Species extends Enumeration(0) {
     }
 
     //Note: as above
+    @deprecated("This concept will be phased out.", "Nov 2018")
     def expectedPlatformGraph = Platforms.defaultPrefix + s"/$expectedPlatform"
   }
 
@@ -70,7 +72,7 @@ object Species extends Enumeration(0) {
    * Note: mapping species to platform IDs here is too static
    * and we should probably do it dynamically instead.
    */
-  def forStandardPlatform(plat: String) = plat match {
+  def forKnownPlatform(plat: String) = plat match {
     case "HG-U133_Plus_2"         => Some(Human)
     case "Rat230_2"               => Some(Rat)
     case "Mouse430_2" | "GPL5462" => Some(Mouse)

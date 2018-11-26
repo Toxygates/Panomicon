@@ -45,8 +45,9 @@ class ManagedNetwork(mainParams: LoadParams,
   }
 
   private def filteredCountMap(mat: ExprMatrix) = {
+    val sidePlatform = sideMatrix.params.platform
     val r = NetworkState.buildCountMap(currentInfo, mat, targets, platforms,
-      sideIsMRNA)
+      sidePlatform, sideIsMRNA)
     val pset = sideMatrix.initProbes.toSet
     r.filter(x => pset.contains(x._1))
   }

@@ -43,7 +43,7 @@ case class Pathway(val identifier: String,
 
 object B2RKegg {
   def platformTaxon(plat: String): String =
-    Species.forStandardPlatform(plat).map(_.shortCode.toUpperCase).
+    Species.forKnownPlatform(plat).map(_.shortCode.toUpperCase).
       getOrElse(plat)
 
 }

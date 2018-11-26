@@ -54,11 +54,12 @@ object NetworkState {
 
   //Temporary location for this
   def buildCountMap(
-    info:        ManagedMatrixInfo,
-    mat:         ExprMatrix,
-    targetTable: TargetTable,
-    platforms:   t.viewer.server.Platforms,
-    fromMiRNA:   Boolean): Map[String, JDouble] = {
+    info:         ManagedMatrixInfo,
+    mat:          ExprMatrix,
+    targetTable:  TargetTable,
+    platforms:    t.viewer.server.Platforms,
+    sidePlatform: String,
+    fromMiRNA:    Boolean): Map[String, JDouble] = {
     val lookup = mat.rowKeys.toSeq
 
     //TODO filter by species etc
@@ -70,8 +71,7 @@ object NetworkState {
       val gr = info.columnGroup(0)
       val sp = t.viewer.server.Conversions.groupSpecies(gr)
 
-      //TODO platform handling
-      val all = platforms.data(sp.expectedPlatform)
+      val all = platforms.data(sidePlatform)
       val targets = targetTable.targets(lookup.map(MiRNA(_)), all)
       targets.groupBy(_._2).map(x => (x._1.identifier, new JDouble(x._2.size)))
     } else {
