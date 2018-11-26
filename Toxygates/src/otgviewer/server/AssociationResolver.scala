@@ -49,6 +49,7 @@ class AssociationResolver(probeStore: OTGProbes,
     chembl: ChEMBL,
     drugBank: DrugBank,
     mirnaTable: TargetTable,
+    sidePlatform: Option[String], //TODO temporary
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String])(implicit sf: SampleFilter) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
@@ -107,9 +108,10 @@ class AssociationResolver(probeStore: OTGProbes,
       //Note: we might unify this lookup with the "aprobes" mechanism
       val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
 
-      //TODO platform handling
+      //TODO this is a short term solution to get the right platform, should be revised
+      val mrnaPlatform = sidePlatform.getOrElse(species.expectedPlatform)
       val data = filtTable.associationLookup(lookedUp, fromMirna,
-        probeStore.platformsAndProbes(species.expectedPlatform), sizeLimit)
+        probeStore.platformsAndProbes(mrnaPlatform), sizeLimit)
 
       if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
         sizeLimitExceeded = true

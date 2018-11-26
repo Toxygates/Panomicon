@@ -99,11 +99,13 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val targetTable = netState.synchronized {
        netState.map(_.targetTable).getOrElse(TargetTable.empty)
     }
+    val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
+    
 
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         platformsCache,
         b2rKegg, uniprot, chembl, drugBank,
-        targetTable,
+        targetTable, sidePlatform,
         sc, types, _probes).resolve
   }
 }

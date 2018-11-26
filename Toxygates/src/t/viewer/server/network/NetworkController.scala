@@ -15,7 +15,7 @@ import t.viewer.shared.network.Network
  * instead of a ManagedMatrix.
  */
 class NetworkController(params: ControllerParams,  
-    sideMatrix: ManagedMatrix, targets: TargetTable,
+    val sideMatrix: ManagedMatrix, targets: TargetTable,
     platforms: Platforms,
     initMainPageSize: Int,
     sideIsMRNA: Boolean) extends MatrixController(params) {
