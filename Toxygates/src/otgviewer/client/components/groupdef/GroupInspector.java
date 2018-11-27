@@ -19,7 +19,6 @@
 package otgviewer.client.components.groupdef;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -52,8 +51,9 @@ import t.viewer.client.rpc.SampleServiceAsync;
 abstract public class GroupInspector extends Composite implements RequiresResize,
     SelectionTDGrid.UnitListener {
 
+  public final Groups groups = new Groups();
+
   private MultiSelectionGrid multiSelectionGrid;
-  private Map<String, Group> groups = new HashMap<String, Group>();
   private final Screen screen;
   private final Delegate delegate;
   private final DataSchema schema;
@@ -66,7 +66,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private SplitLayoutPanel splitPanel;
   private VerticalPanel verticalPanel;
   private boolean nameIsAutoGen = false;
-  private Set<String> staticGroupNames = new HashSet<String>();
 
   private List<Pair<Unit, Unit>> availableUnits;
 
@@ -76,11 +75,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   protected Dataset[] chosenDatasets = new Dataset[0];
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
-  protected List<Group> chosenColumns = new ArrayList<Group>();
-
-  public List<Group> chosenColumns() {
-    return chosenColumns;
-  }
 
   public interface Delegate {
     void groupInspectorDatasetsChanged(Dataset[] ds);
@@ -181,7 +175,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         Column<Group, String> editColumn = new Column<Group, String>(editCell) {
           @Override
           public String getValue(Group g) {
-            editCell.setEnabled(!isStatic(g));
+            editCell.setEnabled(!groups.isStatic(g));
             return "Edit";
           }
         };
@@ -197,7 +191,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
           @Override
           public String getValue(Group g) {
-            deleteCell.setEnabled(!isStatic(g));
+            deleteCell.setEnabled(!groups.isStatic(g));
             return "Delete";
           }
         };
@@ -217,7 +211,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
       @Override
       protected void selectionChanged(Set<Group> selected) {
-        chosenColumns = new ArrayList<Group>(selected);
+        groups.chosenColumns = new ArrayList<Group>(selected);
         storeColumns();
         updateConfigureStatus(true);
       }
@@ -248,22 +242,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public void addStaticGroups(Group[] staticGroups) {
     for (Group g : staticGroups) {
       addGroup(g, false);
-      staticGroupNames.add(g.getName());
+      groups.staticGroupNames.add(g.getName());
     }
     reflectGroupChanges(false);
-  }
-
-  private boolean isStatic(Group g) {
-    return staticGroupNames.contains(g.getName());
-  }
-
-  private void clearNonStaticGroups() {
-    Set<String> keys = new HashSet<String>(groups.keySet());
-    for (String k : keys) {
-      if (!isStatic(groups.get(k))) {
-        groups.remove(k);
-      }
-    }
   }
 
   /**
@@ -275,7 +256,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       //retract the previous suggestion
       txtbxGroup.setText("");
     } else if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
-      txtbxGroup.setText(suggestGroupName(selectedUnits));
+      txtbxGroup.setText(groups.suggestName(selectedUnits, schema));
       nameIsAutoGen = true;
     }
     onGroupNameInputChanged();
@@ -295,9 +276,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void confirmDeleteAllGroups() {
-    int numberToDelete = existingGroupsTable.getItems().size() - staticGroupNames.size();
+    int numberToDelete = existingGroupsTable.getItems().size() - groups.staticGroupNames.size();
     if (Window.confirm("Delete " + numberToDelete + " groups?")) {
-      clearNonStaticGroups();
+      groups.clearNonStatic();
       reflectGroupChanges(true);
       prepareForNewGroup();
     }
@@ -337,53 +318,22 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    */
   private void reflectGroupChanges(boolean store) {
     existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
-    chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
-    logger.info(chosenColumns.size() + " columns have been chosen");
+    groups.chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
+    logger.info(groups.chosenColumns.size() + " columns have been chosen");
     if (store) {
       storeColumns();
     }
     txtbxGroup.setText("");
     updateConfigureStatus(true);
-    existingGroupsTable.setVisible(groups.values().size() > 0);
+    existingGroupsTable.setVisible(groups.size() > 0);
 
   }
 
   private void updateConfigureStatus(boolean internalTriggered) {
-    enableDatasetsIfNeeded(chosenColumns);
+    enableDatasetsIfNeeded(groups.chosenColumns);
     if (internalTriggered) {
       screen.manager().resetWorkflowLinks();
     }
-  }
-
-  private String firstChars(String s) {
-    if (s.length() < 8) {
-      return s;
-    } else {
-      return s.substring(0, 8);
-    }
-  }
-
-  public String suggestGroupName(List<Unit> units) {
-    String groupDescription = "";
-    if (!units.isEmpty()) {
-      Unit firstUnit = units.get(0);
-      groupDescription =
-          firstChars(firstUnit.get(schema.majorParameter())) + "/"
-              + firstUnit.get(schema.mediumParameter()).substring(0, 1) + "/"
-              + firstUnit.get(schema.minorParameter());
-      if (units.size() > 1) {
-        groupDescription += ", ...";
-      }
-    } else {
-      groupDescription = "Empty group";
-    }
-    int i = 1;
-    String name = groupDescription;
-    while (groups.containsKey(name)) {
-      name = groupDescription + " " + i;
-      i++;
-    }
-    return name;
   }
 
   public void sampleClassChanged(SampleClass sc) {
@@ -453,36 +403,12 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void loadGroups() {
-    StorageParser parser = screen.getParser();
-    clearNonStaticGroups();
-
-    List<Group> allGroups = new ArrayList<Group>();
-
-    // Load chosen columns
-    chosenColumns = parser.getChosenColumns(screen.schema(), screen.attributes());
-    for (Group g : chosenColumns) {
-      groups.put(g.getName(), g);
-    }
+    groups.loadGroups(screen.getParser(), screen.schema(), screen.attributes());
     updateConfigureStatus(false);
-    allGroups.addAll(sortedGroupList(chosenColumns));
-
-    // Load inactive columns
-    Collection<Group> inactiveGroups = null;
-    try {
-      List<Group> inactiveColumns = parser.getColumns(screen.schema(), "inactiveColumns", screen.attributes());
-      inactiveGroups = sortedGroupList(inactiveColumns);
-      for (Group g : inactiveGroups) {
-        groups.put(g.getName(), g);
-      }
-      allGroups.addAll(sortedGroupList(inactiveGroups));
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Unable to load inactive columns", e);
-      Window.alert("Unable to load inactive columns.");
-    }
 
     // Reflect loaded group information in UI
-    existingGroupsTable.setItems(allGroups, false);
-    existingGroupsTable.setSelection(chosenColumns);
+    existingGroupsTable.setItems(groups.all(), false);
+    existingGroupsTable.setSelection(groups.chosen());
     existingGroupsTable.table().redraw();
     existingGroupsTable.setVisible(groups.size() > 0);
     prepareForNewGroup();
@@ -499,13 +425,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   private void storeColumns() {
-    screen.getParser().storeColumns("columns", chosenColumns);
+    screen.getParser().storeColumns("columns", groups.chosenColumns);
     screen.getParser().storeColumns("inactiveColumns",
         new ArrayList<SampleColumn>(existingGroupsTable.inverseSelection()));
-  }
-
-  public Map<String, Group> getGroups() {
-    return groups;
   }
 
   private void makeAutoGroups() {

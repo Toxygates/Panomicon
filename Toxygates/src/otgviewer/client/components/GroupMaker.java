@@ -34,7 +34,7 @@ public class GroupMaker {
    * finds the dose/time combination with the largest number of majors available, and then creates
    * groups with 1 unit each.
    */
-  public static List<Group> autoGroups(GroupInspector gi, DataSchema schema,
+  public static List<Group> autoGroups(GroupInspector groupInspector, DataSchema schema,
       List<Pair<Unit, Unit>> units) {
     List<Group> r = new ArrayList<Group>();
     Map<String, List<Pair<Unit, Unit>>> byMedMin = new HashMap<String, List<Pair<Unit, Unit>>>();
@@ -71,7 +71,7 @@ public class GroupMaker {
       if (c != null) {
         us.add(c);
       }
-      String n = gi.suggestGroupName(us);
+      String n = groupInspector.groups.suggestName(us, schema);
       Group g = new Group(schema, n, us.toArray(new Unit[0]));
       r.add(g);
     }

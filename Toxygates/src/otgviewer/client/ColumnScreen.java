@@ -103,7 +103,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
     Button b2 = new Button("Next: View data", 
         (ClickHandler) e -> {
-        if (groupInspector.chosenColumns().size() == 0) {
+        if (groupInspector.groups.size() == 0) {
           Window.alert("Please define and activate at least one group.");
         } else {
             manager.attemptProceed(DataScreen.key);
