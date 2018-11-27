@@ -53,7 +53,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.datasetsChanged(chosenDatasets);
     compoundSelector.sampleClassChanged(sampleClass);
-    compoundSelector.compoundsChanged(getParser().getCompounds());
+    compoundSelector.loadCompounds(getParser().getCompounds());
   }
 
   public RankingScreen(ScreenManager man) {

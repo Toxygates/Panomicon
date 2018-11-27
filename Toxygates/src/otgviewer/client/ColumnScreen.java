@@ -51,18 +51,17 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     chosenDatasets = getParser().getDatasets(appInfo());
     filterTools.datasetsChanged(chosenDatasets);
     groupInspector.datasetsChanged(chosenDatasets);
+
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
 
     List<String> compounds = getParser().getCompounds();
-
     groupInspector.compoundsChanged(compounds);
     groupInspector.loadGroups();
-
     // This needs to happen after groupInspector.loadGroups, which causes
     // the compound selector's selection to be cleared.
-    compoundSelector.compoundsChanged(compounds);
+    compoundSelector.loadCompounds(compounds);
   }
 
   public ColumnScreen(ScreenManager man) {

@@ -191,7 +191,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     compoundEditor.setLists(lists);
   }
 
-  public void compoundsChanged(List<String> compounds) {
+  public void loadCompounds(List<String> compounds) {
     chosenCompounds = compounds;
     setSelection(compounds);
   }

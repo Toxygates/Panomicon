@@ -77,7 +77,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     dataView.columnsChanged(chosenColumns);
     dataView.probesChanged(chosenProbes);  
     geneSetToolbar.geneSetChanged(chosenGeneSet);
-
     geneSetsMenu.itemListsChanged(chosenItemLists);
   }
 
