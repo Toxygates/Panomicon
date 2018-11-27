@@ -19,7 +19,6 @@
 package otgviewer.client;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -29,7 +28,6 @@ import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.Dataset;
-import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
@@ -56,29 +54,13 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     SampleClass sampleClass = getParser().getSampleClass(attributes);
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
-    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes);
+
     List<String> compounds = getParser().getCompounds();
+
     groupInspector.compoundsChanged(compounds);
-    groupInspector.columnsChanged(chosenColumns);
+    groupInspector.loadGroups();
 
-    try {
-      List<Group> ics = getParser().getColumns(schema(), "inactiveColumns", attributes());
-      // loadColumns(getParser(), schema(), "inactiveColumns", new
-      // ArrayList<SampleColumn>(groupInspector
-      // .existingGroupsTable().inverseSelection()), attributes());
-      if (ics != null && ics.size() > 0) {
-        logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
-        groupInspector.inactiveColumnsChanged(ics);
-      } else {
-        logger.info("No inactive columns available");
-      }
-
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Unable to load inactive columns", e);
-      Window.alert("Unable to load inactive columns.");
-    }
-
-    // This needs to happen after groupInspector.inactiveColumnsChanged, which causes
+    // This needs to happen after groupInspector.loadGroups, which causes
     // the compound selector's selection to be cleared.
     compoundSelector.compoundsChanged(compounds);
   }

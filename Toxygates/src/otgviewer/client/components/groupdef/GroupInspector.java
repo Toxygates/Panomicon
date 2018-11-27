@@ -19,6 +19,7 @@
 package otgviewer.client.components.groupdef;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -451,17 +452,38 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
   }
 
-  public void columnsChanged(List<Group> columns) {
-    chosenColumns = columns;
+  public void loadGroups() {
+    StorageParser parser = screen.getParser();
     clearNonStaticGroups();
 
-    for (Group g : columns) {
+    List<Group> allGroups = new ArrayList<Group>();
+
+    // Load chosen columns
+    chosenColumns = parser.getChosenColumns(screen.schema(), screen.attributes());
+    for (Group g : chosenColumns) {
       groups.put(g.getName(), g);
     }
     updateConfigureStatus(false);
+    allGroups.addAll(sortedGroupList(chosenColumns));
 
-    existingGroupsTable.setItems(sortedGroupList(groups.values()), true);
+    // Load inactive columns
+    Collection<Group> inactiveGroups = null;
+    try {
+      List<Group> inactiveColumns = parser.getColumns(screen.schema(), "inactiveColumns", screen.attributes());
+      inactiveGroups = sortedGroupList(inactiveColumns);
+      for (Group g : inactiveGroups) {
+        groups.put(g.getName(), g);
+      }
+      allGroups.addAll(sortedGroupList(inactiveGroups));
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Unable to load inactive columns", e);
+      Window.alert("Unable to load inactive columns.");
+    }
+
+    // Reflect loaded group information in UI
+    existingGroupsTable.setItems(allGroups, false);
     existingGroupsTable.setSelection(chosenColumns);
+    existingGroupsTable.table().redraw();
     existingGroupsTable.setVisible(groups.size() > 0);
     prepareForNewGroup();
   }
@@ -474,22 +496,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       setEditing(true);
     }
     multiSelectionGrid.compoundsChanged(compounds);
-  }
-
-  public void inactiveColumnsChanged(List<Group> columns) {
-    Collection<Group> inactiveGroups = sortedGroupList(columns);
-    for (Group g : inactiveGroups) {
-      groups.put(g.getName(), g);
-    }
-
-    List<Group> all = new ArrayList<Group>();
-    all.addAll(sortedGroupList(existingGroupsTable.getSelection()));
-    all.addAll(inactiveGroups);
-    existingGroupsTable.setItems(all, false);
-    existingGroupsTable.unselectAll(inactiveGroups);
-    existingGroupsTable.table().redraw();
-    existingGroupsTable.setVisible(groups.size() > 0);
-    prepareForNewGroup();
   }
 
   private void storeColumns() {
