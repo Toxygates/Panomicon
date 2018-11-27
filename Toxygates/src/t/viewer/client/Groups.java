@@ -11,7 +11,6 @@ import t.model.sample.AttributeSet;
 
 public class Groups {
   private Map<String, Group> groups = new HashMap<String, Group>();
-  public Set<String> staticGroupNames = new HashSet<String>();
 
   List<Group> allGroups = new ArrayList<Group>();
   public List<Group> chosenColumns = new ArrayList<Group>();
@@ -48,17 +47,8 @@ public class Groups {
     return groups.size();
   }
 
-  public boolean isStatic(Group g) {
-    return staticGroupNames.contains(g.getName());
-  }
-
-  public void clearNonStatic() {
-    Set<String> keys = new HashSet<String>(groups.keySet());
-    for (String k : keys) {
-      if (!isStatic(groups.get(k))) {
-        groups.remove(k);
-      }
-    }
+  public void clear() {
+    groups.clear();
   }
 
   private List<Group> sortedGroupList(Collection<Group> groups) {
@@ -68,7 +58,7 @@ public class Groups {
   }
 
   public void loadGroups(StorageParser parser, DataSchema schema, AttributeSet attributes) {
-    clearNonStatic();
+    clear();
 
     allGroups = new ArrayList<Group>();
 

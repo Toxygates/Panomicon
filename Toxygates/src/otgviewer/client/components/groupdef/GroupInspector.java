@@ -175,7 +175,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         Column<Group, String> editColumn = new Column<Group, String>(editCell) {
           @Override
           public String getValue(Group g) {
-            editCell.setEnabled(!groups.isStatic(g));
             return "Edit";
           }
         };
@@ -191,7 +190,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
           @Override
           public String getValue(Group g) {
-            deleteCell.setEnabled(!groups.isStatic(g));
             return "Delete";
           }
         };
@@ -239,14 +237,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     return existingGroupsTable;
   }
 
-  public void addStaticGroups(Group[] staticGroups) {
-    for (Group g : staticGroups) {
-      addGroup(g, false);
-      groups.staticGroupNames.add(g.getName());
-    }
-    reflectGroupChanges(false);
-  }
-
   /**
    * Callback from SelectionTDGrid
    */
@@ -276,9 +266,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void confirmDeleteAllGroups() {
-    int numberToDelete = existingGroupsTable.getItems().size() - groups.staticGroupNames.size();
-    if (Window.confirm("Delete " + numberToDelete + " groups?")) {
-      groups.clearNonStatic();
+    if (Window.confirm("Delete " + existingGroupsTable.getItems().size() + " groups?")) {
+      groups.clear();
       reflectGroupChanges(true);
       prepareForNewGroup();
     }

@@ -90,7 +90,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   protected Widget content() {
     groupInspector = factory().groupInspector(compoundSelector, this, this);
     groupInspector.datasetsChanged(chosenDatasets);
-    groupInspector.addStaticGroups(appInfo().predefinedSampleGroups());
     return groupInspector;
   }
 
