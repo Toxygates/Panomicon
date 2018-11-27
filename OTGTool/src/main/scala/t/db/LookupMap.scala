@@ -21,40 +21,33 @@
 package t.db
 
 /**
- * A set of string values that can quickly and reversibly be
- * converted to another type T. Useful for database encodings.
- * Unlike a standard Map, efficient bidirectional lookups are supported.
+ * A bidirectional mapping between tokens and their database codes.
  */
-trait LookupMap[T] {
-  
-  protected def baseMap: Map[T, String]
-  
+trait LookupMap[Code, Token] {  
   /**
    * Keys that are actually used
    */
-  lazy val keys: Set[T] = baseMap.keySet
+  lazy val keys: Set[Code] = revMap.keySet
+  lazy val tokens: Set[Token] = data.keySet
 
-  lazy val tokens: Set[String] = baseMap.values.toSet
+  def unpack(item: Code): Token = revMap(item)
+  def tryUnpack(item: Code): Option[Token] = revMap.get(item)
 
-  def pack(item: String): T 
+  def isToken(t: Token): Boolean = tokens.contains(t)
 
-  def unpack(item: T): String = baseMap(item)
-  def tryUnpack(item: T): Option[String] = baseMap.get(item)
-
-  def isToken(t: String): Boolean = tokens.contains(t)
-}
-
-trait CachedLookupMap[T] extends LookupMap[T] {
-  def data: Map[String, T]
+  def data: Map[Token, Code]
   
-  protected val baseMap = Map[T, String]() ++ data.map(_.swap)
+  protected val revMap = Map[Code, Token]() ++ data.map(_.swap)
 
-  def pack(item: String): T = data.get(item).getOrElse(
+  def pack(item: Token): Code = data.get(item).getOrElse(
     throw new LookupFailedException(s"Lookup failed for $item"))  
 }
 
-trait CachedIntLookupMap extends CachedLookupMap[Int] {
-  protected val revLookup = Array.tabulate(keys.max + 1)(x => baseMap.get(x))
+/*
+ * More efficient lookup for integers
+ */
+trait CachedIntLookupMap[Token] extends LookupMap[Int, Token] {
+  protected val revLookup = Array.tabulate(revMap.keys.max + 1)(x => revMap.get(x))
 
   override def tryUnpack(x: Int) = revLookup(x)
   override def unpack(x: Int) =  revLookup(x).get

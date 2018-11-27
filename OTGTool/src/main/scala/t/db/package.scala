@@ -24,6 +24,11 @@ package object db {
 //(expr value, call, p)
   type FoldPExpr = (Double, Char, Double)
   
-  type ProbeMap = LookupMap[Int]
-  type SampleMap = LookupMap[Int]
+  final case class SampleId(id: String) extends AnyVal {
+    override def toString = id
+  }
+  type ProbeId = String
+  
+  type ProbeMap = LookupMap[Int, ProbeId]
+  type SampleMap = LookupMap[Int, SampleId]
 }

@@ -22,7 +22,8 @@ package t.sparql
 
 import scala.collection.JavaConverters._
 
-import t.db._
+import t.db.Sample
+import t.db.Metadata
 import t.Factory
 import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
@@ -60,12 +61,12 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
 
   val useQuerySet = (querySet.toSeq :+ SampleId).distinct
 
-  override lazy val sampleIds = rawData.keySet
+  override lazy val sampleIds: Set[DSampleId] = rawData.keySet
 
   override lazy val samples = os.sampleAttributeQuery(useQuerySet)(sf)()
 
   lazy val rawData = {
-    Map() ++ samples.map(r => r(SampleId) -> r)
+    Map() ++ samples.map(r => new DSampleId(r(SampleId)) -> r)
   }
 
   lazy val data =

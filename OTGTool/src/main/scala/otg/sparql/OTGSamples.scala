@@ -66,7 +66,8 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
         val attributeValues = convertMapToAttributes(adjustSample(x, batchFilter), bc.attributes)
-        Sample(x("id"), SampleClassFilter(attributeValues) ++ filter)
+        val sampleId = t.db.SampleId(x("id"))
+        Sample(sampleId, SampleClassFilter(attributeValues) ++ filter)
        })
      )
   }
