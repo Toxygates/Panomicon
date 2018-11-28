@@ -21,14 +21,15 @@ package otgviewer.client.components.groupdef;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.ButtonCellBase;
 import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
@@ -39,17 +40,17 @@ import t.common.client.components.SelectionTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.model.sample.CoreParameter;
 import t.viewer.client.*;
 import t.viewer.client.components.ImmediateValueChangeTextBox;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
- * This widget is intended to help visually define and modify groups of samples. The main dose/time
- * grid is implemented in the SelectionTDGrid. The rest is in this class.
+ * This widget provides a visual interface where the user can interactively
+ * define and modify groups of samples. The main dose/time grid is implemented
+ * in the SelectionTDGrid. The rest is in this class.
  */
 abstract public class GroupInspector extends Composite implements RequiresResize,
-    SelectionTDGrid.UnitListener {
+    SelectionTDGrid.UnitListener, ExistingGroupsTable.Delegate {
 
   public final Groups groups = new Groups();
 
@@ -143,77 +144,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     });
     toolPanel.add(autoGroupsButton);
 
-    setEditing(false);
+    setEditMode(false);
 
-    existingGroupsTable = new SelectionTable<Group>("Active", false) {
-      @Override
-      protected void initTable(CellTable<Group> table) {
-        TextColumn<Group> textColumn = new TextColumn<Group>() {
-          @Override
-          public String getValue(Group object) {
-            return object.getName();
-          }
-        };
-        table.addColumn(textColumn, "Group");
-
-        textColumn = new TextColumn<Group>() {
-          @Override
-          public String getValue(Group object) {
-            return object.getSamples()[0].get(CoreParameter.Type);
-          }
-        };
-        table.addColumn(textColumn, "Type");
-        
-        makeGroupColumns(table);
-
-        ButtonCellResources resources = GWT.create(ButtonCellResources.class);
-        TextButtonCell.Appearance appearance = new TextButtonCell.DefaultAppearance(resources);
-
-        // We use TextButtonCell instead of ButtonCell since it has setEnabled
-        final TextButtonCell editCell = new TextButtonCell(appearance);
-
-        Column<Group, String> editColumn = new Column<Group, String>(editCell) {
-          @Override
-          public String getValue(Group g) {
-            return "Edit";
-          }
-        };
-        editColumn.setFieldUpdater(new FieldUpdater<Group, String>() {
-          @Override
-          public void update(int index, Group object, String value) {
-            displayGroup(object.getName());
-          }
-        });
-        table.addColumn(editColumn, "");
-
-        final TextButtonCell deleteCell = new TextButtonCell(appearance);
-        Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
-          @Override
-          public String getValue(Group g) {
-            return "Delete";
-          }
-        };
-        deleteColumn.setFieldUpdater(new FieldUpdater<Group, String>() {
-          @Override
-          public void update(int index, Group object, String value) {
-            if (Window.confirm("Are you sure you want to delete the group " + object.getName()
-                + "?")) {
-              deleteGroup(object.getName(), true);
-            }
-          }
-
-        });
-        table.addColumn(deleteColumn, "");
-
-      }
-
-      @Override
-      protected void selectionChanged(Set<Group> selected) {
-        groups.chosenColumns = new ArrayList<Group>(selected);
-        storeColumns();
-        updateConfigureStatus(true);
-      }
-    };
+    existingGroupsTable = new ExistingGroupsTable(this);
     // vp.add(existingGroupsTable);
     existingGroupsTable.setVisible(false);
     existingGroupsTable.table().setRowStyles(new GroupColouring());
@@ -231,7 +164,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
   }
 
-  abstract protected void makeGroupColumns(CellTable<Group> table);
+  @Override
+  abstract public void makeGroupColumns(CellTable<Group> table);
 
   public SelectionTable<Group> existingGroupsTable() {
     return existingGroupsTable;
@@ -257,11 +191,12 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     availableUnits = units;
   }
 
-  private void deleteGroup(String name, boolean createNew) {
+  @Override
+  public void deleteGroup(String name, boolean createNew) {
     groups.remove(name);
     reflectGroupChanges(true); // stores columns
     if (createNew) {
-      prepareForNewGroup();
+      clearUiForNewGroup();
     }
   }
 
@@ -269,14 +204,11 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     if (Window.confirm("Delete " + existingGroupsTable.getItems().size() + " groups?")) {
       groups.clear();
       reflectGroupChanges(true);
-      prepareForNewGroup();
+      clearUiForNewGroup();
     }
   }
 
-  /**
-   * Toggle edit mode
-   */
-  private void setEditing(boolean editing) {
+  private void setEditMode(boolean editing) {
     boolean val = editing && (chosenCompounds.size() > 0);
     toolPanel.setVisible(val);
   }
@@ -285,13 +217,17 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     titleLabel.setText("Sample group definition - " + title);
   }
 
-  private void prepareForNewGroup() {
+  /**
+   * Clears selections and input fields in the UI to prepare for the user entering
+   * information for a new group.
+   */
+  private void clearUiForNewGroup() {
     txtbxGroup.setText("");
     onGroupNameInputChanged();
-    multiSelectionGrid.setAll(false);
+    multiSelectionGrid.clearSelection();
     compoundSel.setSelection(new ArrayList<String>());
     setHeading("new group");
-    setEditing(true);
+    setEditMode(true);
   }
 
   private List<Group> sortedGroupList(Collection<Group> groups) {
@@ -400,15 +336,15 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     existingGroupsTable.setSelection(groups.chosen());
     existingGroupsTable.table().redraw();
     existingGroupsTable.setVisible(groups.size() > 0);
-    prepareForNewGroup();
+    clearUiForNewGroup();
   }
 
   public void compoundsChanged(List<String> compounds) {
     chosenCompounds = compounds;
     if (compounds.size() == 0) {
-      setEditing(false);
+      setEditMode(false);
     } else {
-      setEditing(true);
+      setEditMode(true);
     }
     multiSelectionGrid.compoundsChanged(compounds);
   }
@@ -445,45 +381,35 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       Window.alert("No samples found.");
     } else {
       Group newGroup = setGroup(name, units);
-      prepareForNewGroup();
+      clearUiForNewGroup();
       loadTimeWarningIfNeeded(newGroup);
     }
   }
 
   private void loadTimeWarningIfNeeded(Group newGroup) {
-    int newGroupSize = 0;
-    int totalSize = 0;
+    Set<String> newIds = Stream.of(newGroup.samples())
+      .filter(sample -> !schema.isSelectionControl(sample.sampleClass()))
+      .map(sample -> sample.id())
+      .collect(Collectors.toSet());
+    
+    HashSet<String> allIds = existingGroupsTable.getSelection().stream()
+      .flatMap(group -> Stream.of(group.samples()))
+      .filter(sample -> !schema.isSelectionControl(sample.sampleClass()))
+      .map(sample -> sample.id())
+      .collect(Collectors.toCollection(HashSet::new));
+    allIds.addAll(newIds);
 
-    HashSet<String> sampleIds = new HashSet<String>();
-
-    for (Sample sample : newGroup.samples()) {
-      if (!schema.isSelectionControl(sample.sampleClass())) {
-        sampleIds.add(sample.id());
-        newGroupSize += 1;
-        totalSize += 1;
-      }
-    }
-
-    for (Group group : existingGroupsTable.getSelection()) {
-      for (Sample sample : group.samples()) {
-        if (!schema.isSelectionControl(sample.sampleClass())
-            && !sampleIds.contains(sample.id())) {
-          sampleIds.add(sample.id());
-          totalSize += 1;
-        }
-      }
-    }
-
-    // Conservatively estimate that we load 10 samples per second
-    int loadTime = totalSize / 10;
-
-    if (loadTime > 20) {
-      Window.alert("Warning: Your new group contains " + newGroupSize + " samples.\n"
-          + "You will now be requesting data for " + totalSize + " samples.\n"
-          + "The total loading time is expected to be " + loadTime + " seconds.");
+    if (allIds.size() > 200) { // just an arbitrary cutoff
+      Window.alert("Warning: Your new group contains " + newIds.size() + " samples.\n"
+          + "You will now be requesting data for " + allIds.size() + " samples.\n"
+          + "The total loading time is expected to be very long.");
     }
   }
-
+  
+  /**
+   * Sets a group's units, and updates it in the existing groups table (or adds it),
+   * as well as saving it to the Groups object.  
+   */
   private Group setGroup(String pendingGroupName, List<Unit> units) {
     logger.info("Set group with " + SharedUtils.mkString(units, ","));
     Group pendingGroup = groups.get(pendingGroupName);
@@ -500,6 +426,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     return pendingGroup;
   }
 
+  /**
+   * Adds a group to the existing groups table, and also adds it to the Groups object 
+   */
   private void addGroup(Group group, boolean active) {
     String name = group.getName();
     groups.put(name, group);
@@ -512,7 +441,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
   }
 
-  private void displayGroup(String name) {
+  @Override
+  public void displayGroup(String name) {
     setHeading("editing " + name);
     Group g = groups.get(name);
     SampleClass macroClass = 
@@ -531,7 +461,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     multiSelectionGrid.setSelection(g.getUnits());
 
-    setEditing(true);
+    setEditMode(true);
   }
 
   @Override
@@ -544,5 +474,12 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     public String getStyleNames(Group g, int rowIndex) {
       return g.getStyleName();
     }
+  }
+
+  @Override
+  public void selectionChanged(Set<Group> selected) {
+    groups.chosenColumns = new ArrayList<Group>(selected);
+    storeColumns();
+    updateConfigureStatus(true);
   }
 }

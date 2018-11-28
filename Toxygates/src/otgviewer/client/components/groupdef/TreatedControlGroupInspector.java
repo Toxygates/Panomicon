@@ -34,7 +34,7 @@ public class TreatedControlGroupInspector extends GroupInspector {
   }
 
   @Override
-  protected void makeGroupColumns(CellTable<Group> table) {
+  public void makeGroupColumns(CellTable<Group> table) {
     TextColumn<Group> textColumn = new TextColumn<Group>() {
       @Override
       public String getValue(Group object) {

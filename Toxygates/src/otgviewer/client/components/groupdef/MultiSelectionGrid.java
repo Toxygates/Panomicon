@@ -112,7 +112,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     return r;
   }
 
-  void setAll(boolean state) {
+  void clearSelection() {
     for (SelectionTDGrid g : sections.values()) {
       g.setAll(false, true);
     }

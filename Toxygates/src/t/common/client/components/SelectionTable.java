@@ -39,10 +39,9 @@ import t.common.shared.SharedUtils;
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
  * the user can select some set of rows.
- * 
  */
 abstract public class SelectionTable<T> extends Composite implements SetEditor<T> {
-  private CellTable<T> table;
+  protected CellTable<T> table;
   private Column<T, Boolean> selectColumn;
   private Set<T> selected = new HashSet<T>();
   private ListDataProvider<T> provider = new ListDataProvider<T>();

@@ -257,7 +257,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public List<ExpressionRow> getDisplayedRows() {
     return grid.getVisibleItems();
   }
-  
 
   public void columnsChanged(List<Group> columns) {
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
