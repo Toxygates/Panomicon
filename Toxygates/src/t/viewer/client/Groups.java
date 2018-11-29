@@ -9,21 +9,24 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
 import t.model.sample.AttributeSet;
 
+/**
+ * Functionality for managing active and inactive groups, factored out of
+ * GroupInspector. The logic for the most part comes directly from
+ * GroupInspector, and so is in need of significant further refactoring.
+ */
 public class Groups {
   private Map<String, Group> groups = new HashMap<String, Group>();
-  private List<Group> allGroups = new ArrayList<Group>();
-  public List<Group> chosenColumns = new ArrayList<Group>();
+  private List<Group> activeGroups = new ArrayList<Group>();
 
   public void loadGroups(StorageParser parser, DataSchema schema, AttributeSet attributes) {
     clear();
 
     // Load chosen columns
-    chosenColumns = parser.getChosenColumns(schema, attributes);
-    for (Group g : chosenColumns) {
+    activeGroups = parser.getChosenColumns(schema, attributes);
+    for (Group g : activeGroups) {
       groups.put(g.getName(), g);
     }
-    //updateConfigureStatus(false);
-    allGroups.addAll(sortedGroupList(chosenColumns));
+    //allGroups.addAll(sortedGroupList(chosenColumns));
 
     // Load inactive columns
     Collection<Group> inactiveGroups = null;
@@ -33,27 +36,34 @@ public class Groups {
       for (Group g : inactiveGroups) {
         groups.put(g.getName(), g);
       }
-      allGroups.addAll(sortedGroupList(inactiveGroups));
+      //allGroups.addAll(sortedGroupList(inactiveGroups));
     } catch (Exception e) {
       //logger.log(Level.WARNING, "Unable to load inactive columns", e);
       Window.alert("Unable to load inactive columns.");
     }
   }
 
-  public List<Group> all() {
-    return allGroups;
+  public void saveToLocalStorage(StorageParser parser) {
+    parser.storeColumns("columns", activeGroups());
+
+    List<Group> inactiveGroups = new ArrayList<Group>(groups.values());
+    inactiveGroups.removeAll(activeGroups());
+    parser.storeColumns("inactiveColumns", inactiveGroups);
   }
 
-  public List<Group> chosen() {
-    return chosenColumns;
+  public List<Group> activeGroups() {
+    return activeGroups;
   }
 
   public Group get(String key) {
     return groups.get(key);
   }
 
-  public void put(String key, Group value) {
+  public void put(String key, Group value, boolean chosen) {
     groups.put(key, value);
+    if (chosen) {
+      activeGroups.add(value);
+    }
   }
 
   public boolean containsKey(String key) {
@@ -61,10 +71,21 @@ public class Groups {
   }
 
   public void remove(String key) {
-    groups.remove(key);
+    Group removed = groups.remove(key);
+    if (removed != null) {
+      deactivate(removed);
+    }
   }
 
-  public Collection<Group> values() {
+  public void deactivate(Group group) {
+    activeGroups.remove(group);
+  }
+
+  public void setActive(Collection<Group> selection) {
+    activeGroups = new ArrayList<Group>(selection);
+  }
+
+  public Collection<Group> allGroups() {
     return groups.values();
   }
 
@@ -74,7 +95,7 @@ public class Groups {
 
   public void clear() {
     groups.clear();
-    allGroups.clear();
+    activeGroups.clear();
   }
 
   private List<Group> sortedGroupList(Collection<Group> groups) {

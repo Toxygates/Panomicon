@@ -19,7 +19,7 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
   public interface Delegate {
     void makeGroupColumns(CellTable<Group> table);
     void displayGroup(String name);
-    void deleteGroup(String name, boolean createNew);
+    void deleteGroup(String name);
     void selectionChanged(Set<Group> selected);
   }
   
@@ -76,7 +76,7 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
       @Override
       public void update(int index, Group object, String value) {
         if (Window.confirm("Are you sure you want to delete the group " + object.getName() + "?")) {
-          delegate.deleteGroup(object.getName(), true);
+          delegate.deleteGroup(object.getName());
         }
       }
 

@@ -147,7 +147,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     setEditMode(false);
 
     existingGroupsTable = new ExistingGroupsTable(this);
-    // vp.add(existingGroupsTable);
     existingGroupsTable.setVisible(false);
     existingGroupsTable.table().setRowStyles(new GroupColouring());
     existingGroupsTable.setSize("100%", "100px");
@@ -166,10 +165,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   @Override
   abstract public void makeGroupColumns(CellTable<Group> table);
-
-  public SelectionTable<Group> existingGroupsTable() {
-    return existingGroupsTable;
-  }
 
   /**
    * Callback from SelectionTDGrid
@@ -192,16 +187,14 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   @Override
-  public void deleteGroup(String name, boolean createNew) {
+  public void deleteGroup(String name) {
     groups.remove(name);
     reflectGroupChanges(true); // stores columns
-    if (createNew) {
-      clearUiForNewGroup();
-    }
+    clearUiForNewGroup();
   }
 
   public void confirmDeleteAllGroups() {
-    if (Window.confirm("Delete " + existingGroupsTable.getItems().size() + " groups?")) {
+    if (Window.confirm("Delete " + groups.size() + " groups?")) {
       groups.clear();
       reflectGroupChanges(true);
       clearUiForNewGroup();
@@ -230,33 +223,29 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     setEditMode(true);
   }
 
-  private List<Group> sortedGroupList(Collection<Group> groups) {
-    ArrayList<Group> r = new ArrayList<Group>(groups);
-    Collections.sort(r);
-    return r;
-  }
-
   /**
-   * To be called when groups are added or deleted.
+   * To be called whenever the set of active, or inactive groups, changes, in
+   * order to make corresponding updates to the UI.
    * 
-   * @param store if the new group list should be stored or not
+   * @param store whether changes to the active and inactive group sets should be
+   *          saved to local storage
    */
   private void reflectGroupChanges(boolean store) {
-    existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
-    groups.chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
-    logger.info(groups.chosenColumns.size() + " columns have been chosen");
     if (store) {
-      storeColumns();
+      groups.saveToLocalStorage(screen.getParser());
     }
     txtbxGroup.setText("");
     updateConfigureStatus(true);
-    existingGroupsTable.setVisible(groups.size() > 0);
-
+    updateTableData();
   }
 
-  private void updateConfigureStatus(boolean internalTriggered) {
-    enableDatasetsIfNeeded(groups.chosenColumns);
-    if (internalTriggered) {
+  /**
+   * Update some application state based on the currently active groups. Called
+   * after each change to the set of active groups.
+   */
+  private void updateConfigureStatus(boolean triggeredByUserAction) {
+    enableDatasetsIfNeeded(groups.activeGroups());
+    if (triggeredByUserAction) {
       screen.manager().resetWorkflowLinks();
     }
   }
@@ -282,11 +271,11 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     int disableCount = 0;
 
     logger.info("Available DS: " + SharedUtils.mkString(availableDatasets, ", "));
-    for (Group group : existingGroupsTable.getSelection()) {
+    for (Group group : groups.activeGroups()) {
       List<String> requiredDatasets = group.collect(OTGAttribute.Dataset).collect(Collectors.toList());
       logger.info("Group " + group.getShortTitle() + " needs " + SharedUtils.mkString(requiredDatasets, ", "));
       if (!availableDatasets.containsAll(requiredDatasets)) {
-        existingGroupsTable.unselect(group);
+        groups.deactivate(group);
         disableCount += 1;
       }
     }
@@ -327,15 +316,19 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
   }
 
+  private void updateTableData() {
+    existingGroupsTable.setItems(groups.allGroups(), false);
+    existingGroupsTable.setSelection(groups.activeGroups());
+    existingGroupsTable.setVisible(groups.size() > 0);
+  }
+
   public void loadGroups() {
     groups.loadGroups(screen.getParser(), screen.schema(), screen.attributes());
     updateConfigureStatus(false);
 
     // Reflect loaded group information in UI
-    existingGroupsTable.setItems(groups.all(), false);
-    existingGroupsTable.setSelection(groups.chosen());
+    updateTableData();
     existingGroupsTable.table().redraw();
-    existingGroupsTable.setVisible(groups.size() > 0);
     clearUiForNewGroup();
   }
 
@@ -349,18 +342,13 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     multiSelectionGrid.compoundsChanged(compounds);
   }
 
-  private void storeColumns() {
-    screen.getParser().storeColumns("columns", groups.chosenColumns);
-    screen.getParser().storeColumns("inactiveColumns",
-        new ArrayList<SampleColumn>(existingGroupsTable.inverseSelection()));
-  }
-
   private void makeAutoGroups() {
     List<Group> gs = GroupMaker.autoGroups(this, schema, availableUnits);
     for (Group g : gs) {
       addGroup(g, true);
     }
     reflectGroupChanges(true);
+    clearUiForNewGroup();
   }
 
   /**
@@ -392,7 +380,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       .map(sample -> sample.id())
       .collect(Collectors.toSet());
     
-    HashSet<String> allIds = existingGroupsTable.getSelection().stream()
+    HashSet<String> allIds = groups.activeGroups().stream()
       .flatMap(group -> Stream.of(group.samples()))
       .filter(sample -> !schema.isSelectionControl(sample.sampleClass()))
       .map(sample -> sample.id())
@@ -412,33 +400,30 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    */
   private Group setGroup(String pendingGroupName, List<Unit> units) {
     logger.info("Set group with " + SharedUtils.mkString(units, ","));
-    Group pendingGroup = groups.get(pendingGroupName);
-    if (pendingGroup == null) {
+    Group existingGroup = groups.get(pendingGroupName);
+    if (existingGroup == null) {
       Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_CREATE_NEW_SAMPLE_GROUP);
     } else {
+      existingGroupsTable.removeItem(existingGroup);
       Analytics.trackEvent(Analytics.CATEGORY_GENERAL,
           Analytics.ACTION_MODIFY_EXISTING_SAMPLE_GROUP);
     }
-    existingGroupsTable.removeItem(pendingGroup);
-    pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
-    addGroup(pendingGroup, true);
+
+    Group newGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
+    addGroup(newGroup, true);
     reflectGroupChanges(true);
-    return pendingGroup;
+    return newGroup;
   }
 
   /**
-   * Adds a group to the existing groups table, and also adds it to the Groups object 
+   * Adds a group to the existing groups table
    */
   private void addGroup(Group group, boolean active) {
     String name = group.getName();
-    groups.put(name, group);
+    groups.put(name, group, active);
+
     logger.info("Add group " + name + " with " + group.getSamples().length + " samples " + "and "
         + group.getUnits().length + " units ");
-
-    existingGroupsTable.addItem(group);
-    if (active) {
-      existingGroupsTable.select(group);
-    }
   }
 
   @Override
@@ -478,8 +463,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   @Override
   public void selectionChanged(Set<Group> selected) {
-    groups.chosenColumns = new ArrayList<Group>(selected);
-    storeColumns();
+    groups.setActive(selected);
+    groups.saveToLocalStorage(screen.getParser());
     updateConfigureStatus(true);
   }
 }
