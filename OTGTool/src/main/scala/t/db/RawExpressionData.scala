@@ -27,7 +27,7 @@ import scala.collection.{ Map => CMap }
  * For some methods, values are returned in the order specified by the probes sequence.
  */
 trait ColumnExpressionData {
-  def probes: Seq[String] 
+  def probes: Seq[ProbeId] 
   def samples: Iterable[Sample]
   
   /**
@@ -36,9 +36,9 @@ trait ColumnExpressionData {
    */
   def loadData(ss: Iterable[Sample]) {}
   
-  def data(s: Sample): CMap[String, FoldPExpr]
+  def data(s: Sample): CMap[ProbeId, FoldPExpr]
   
-  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
+  def data(ss: Iterable[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
     loadData(ss)
     Map() ++ ss.map(s => s -> data(s))
   }
@@ -69,7 +69,7 @@ trait ColumnExpressionData {
   /**
    * Used mainly by tests
    */
-  def asExtValue(s: Sample, probe: String) = { 
+  def asExtValue(s: Sample, probe: ProbeId) = { 
     val v = data(s).get(probe)
     v.map(v => PExprValue(v._1, v._3, v._2, probe))
   }
@@ -77,7 +77,7 @@ trait ColumnExpressionData {
   /**
    * Used mainly by tests
    */
-  def asExtValues(s: Sample): CMap[String, PExprValue] =
+  def asExtValues(s: Sample): CMap[ProbeId, PExprValue] =
     Map() ++ data(s).toSeq.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1))
 }
 

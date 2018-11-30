@@ -23,9 +23,8 @@ package t.sparql
 import java.io._
 
 import Triplestore.tPrefixes
-import t.db.Metadata
 import t.TriplestoreConfig
-import t.db.Sample
+import t.db._
 import t.util.TempFiles
 
 object Batches extends RDFClass {
@@ -130,10 +129,10 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
     })
   }
 
-  def samples(batch: String): Iterable[String] = {
+  def samples(batch: String): Iterable[SampleId] = {
     val prefix = Samples.defaultPrefix
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
-      s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
+      s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }").map(SampleId(_))
   }
 
   override def delete(name: String): Unit = {

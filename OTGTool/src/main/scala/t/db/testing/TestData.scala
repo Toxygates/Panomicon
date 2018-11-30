@@ -109,7 +109,7 @@ object TestData {
           LiverWeight -> liverWeight(dose, ind).toString,
           KidneyWeight -> kidneyWeight(dose, ind).toString,
           ControlGroup -> cgroup(time, compound));
-    s = Sample("s" + ids.next, values)
+    s = Sample(t.db.SampleId("s" + ids.next), values)
   ) yield s
 
   def randomExpr(): (Double, Char, Double) = {

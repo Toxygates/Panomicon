@@ -52,7 +52,9 @@ object NetworkTestData {
   val probes = mrnaProbes.map(_.identifier) ++ mirnaProbes.map(_.identifier)
   implicit val probeIndex = new ProbeIndex(Map() ++ probes.zipWithIndex)
 
-  val ids = (TestData.samples.size + 1 until TestData.samples.size + 1000).iterator
+  val ids = (TestData.samples.size + 1 until TestData.samples.size + 1000).map(i =>
+    t.db.SampleId(s"mir-s$i")).iterator
+  
   val mirnaSamples = for (
     dose <- Seq("Control", "Middle"); time = "24 hr";
     ind <- Set("1", "2", "3");
@@ -63,7 +65,7 @@ object NetworkTestData {
           Platform -> "mirnaTest",
           TestType -> "Vivo", Organism -> "Rat",
           ControlGroup -> TestData.cgroup(time, "acetaminophen"));
-    s = Sample("mir-s" + ids.next, values)
+    s = Sample(ids.next, values)
   ) yield s
 
   val samples = TestData.samples.toSeq ++ mirnaSamples

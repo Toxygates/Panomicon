@@ -33,7 +33,7 @@ class TMaps(config: BaseConfig) {
     new ProbeIndex(KCIndexDB.readOnce(data.probeIndex))
 
   lazy val sampleMap =
-    new SampleIndex(KCIndexDB.readOnce(data.sampleIndex))
+    SampleIndex.fromRaw(KCIndexDB.readOnce(data.sampleIndex))
 
   lazy val enumMaps = {
     val db = KCIndexDB(data.enumIndex, false)

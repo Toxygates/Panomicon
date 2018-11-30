@@ -28,7 +28,7 @@ import t.model.sample.SampleLike
 /**
  * A sample.
  */
-case class Sample(sampleId: String, sampleClass: SampleClass) {
+case class Sample(sampleId: SampleId, sampleClass: SampleClass) {
 
   def dbCode(implicit context: MatrixContext): Int =
     context.sampleMap.pack(sampleId)
@@ -52,7 +52,7 @@ case class Sample(sampleId: String, sampleClass: SampleClass) {
     }
   }
 
-  override def toString = sampleId
+  override def toString = sampleId.id
 
   /**
    * Convenience method to obtain a parameter from the sample class.
@@ -65,14 +65,14 @@ case class Sample(sampleId: String, sampleClass: SampleClass) {
   def apply(key: Attribute): String = sampleClass(key)
 }
 
-object Sample {
-  def identifierFor(code: Int)(implicit context: MatrixContext): String = {
+object Sample {  
+  def identifierFor(code: Int)(implicit context: MatrixContext): SampleId = {
     context.sampleMap.tryUnpack(code) match {
       case Some(i) => i
       case None =>
         val r = s"unknown_sample[$code]"
         println(r)
-        r
+        SampleId(r)
     }
   }
 
@@ -95,7 +95,7 @@ object Sample {
     new Sample(identifierFor(code), SampleClassHelper())
   }
 
-  def apply(id: String) = new Sample(id, SampleClassHelper())
+  def apply(id: SampleId) = new Sample(id, SampleClassHelper())
 
-  def apply(id: String, map: Map[Attribute, String]) = new Sample(id, SampleClassHelper(map))
+  def apply(id: SampleId, map: Map[Attribute, String]) = new Sample(id, SampleClassHelper(map))
 }
