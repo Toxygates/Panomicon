@@ -24,15 +24,15 @@ import t.platform._
 
 object ExprValue {
   import t.util.SafeMath._
-  
-  def mean(data: Iterable[ExprValue], presentOnly: Boolean) = 
+
+  def mean(data: Iterable[ExprValue], presentOnly: Boolean) =
     if (presentOnly) {
       presentMean(data)
     } else {
       allMean(data)
     }
-  
-  def presentMean(vs: Iterable[ExprValue], probe: String = ""): ExprValue = {
+
+  def presentMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
     val nps = vs.filter(_.call != 'A')
     if (nps.size > 0) {
       apply(safeMean(nps.map(_.value)), 'P', probe)
@@ -41,9 +41,9 @@ object ExprValue {
     }
   }
 
-  def allMean(vs: Iterable[ExprValue], probe: String = ""): ExprValue = {
+  def allMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
     val value = if (vs.size > 0) {
-      safeMean(vs.map(_.value))      
+      safeMean(vs.map(_.value))
     } else {
       0
     }
@@ -63,8 +63,9 @@ object ExprValue {
   def log2[E <: ExprValue](value: E): ExprValue = {
     ExprValue.apply(log2(value.value), value.call, value.probe)
   }
-  
-  def apply(v: Double, call: Char = 'P', probe: String = null) = BasicExprValue(v, call, probe)
+
+  def apply(v: RawExprValue, call: PACall = 'P', probe: ProbeId = null) =
+    BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()
 
@@ -82,29 +83,29 @@ object ExprValue {
 }
 
 trait ExprValue {
-  def value: Double
-  def call: Char
-  def probe: String
+  def value: RawExprValue
+  def call: PACall
+  def probe: ProbeId
 
   // Currently we interpret both P and M as present
   def present: Boolean = (call != 'A')
 
   override def toString(): String =
     s"(${ExprValue.nf.format(value)}:$call)"
-    
+
   /**
    * Flag to indicate that a missing value was auto-generated as padding by the database.
    */
   var isPadding: Boolean = false
-  
-  final def paddingOption = if (isPadding) None else Some(this) 
+
+  final def paddingOption = if (isPadding) None else Some(this)
 }
 
 /**
  * An expression value for one probe in a microarray sample, with an associated
  * call. Call can be P, A or M (present, absent, marginal).
  */
-case class BasicExprValue(value: Double, call: Char = 'P', probe: String = null) extends ExprValue
+case class BasicExprValue(value: Double, call: PACall = 'P', probe: ProbeId = null) extends ExprValue
 
 /**
  * An expression value that also has an associated p-value.
@@ -112,7 +113,7 @@ case class BasicExprValue(value: Double, call: Char = 'P', probe: String = null)
  * sample group that the sample belongs to (all samples with identical
  * experimental conditions).
  */
-case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue {
+case class PExprValue(value: Double, p: PValue, call: PACall = 'P', probe: ProbeId = null) extends ExprValue {
     override def toString(): String = {
       if (!java.lang.Double.isNaN(p)) {
         s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"

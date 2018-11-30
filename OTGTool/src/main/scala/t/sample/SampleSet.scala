@@ -20,8 +20,7 @@
 
 package t.sample
 
-import t.db.Sample
-import t.db.ParameterSet
+import t.db._
 import t.model.sample.Attribute
 
 /**
@@ -34,7 +33,7 @@ trait SampleSet {
    */
   def samples: Iterable[Sample]
 
-  lazy val sampleIds = samples.map(_.sampleId).toSet
+  lazy val sampleIds: Set[SampleId] = samples.map(_.sampleId).toSet
 
   /**
    * Obtain all available attributes for a given sample.

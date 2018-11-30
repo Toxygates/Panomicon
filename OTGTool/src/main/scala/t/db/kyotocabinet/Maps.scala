@@ -29,5 +29,5 @@ class Maps(data: DataConfig) {
     new ProbeIndex(KCIndexDB.readOnce(data.probeIndex))
 
   lazy val sampleMap =
-    new SampleIndex(KCIndexDB.readOnce(data.sampleIndex))
+    SampleIndex.fromRaw(KCIndexDB.readOnce(data.sampleIndex))
 }

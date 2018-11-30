@@ -125,7 +125,7 @@ trait MatrixDBReader[+E <: ExprValue] {
    */
   def release(): Unit
 
-  def emptyValue(probe: String): E
+  def emptyValue(probe: ProbeId): E
 
   def emptyValue(pm: ProbeMap, probe: Int): E = {
     val pname = pm.unpack(probe)
