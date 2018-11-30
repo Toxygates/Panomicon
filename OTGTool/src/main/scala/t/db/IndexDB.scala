@@ -105,11 +105,11 @@ trait IndexDBWriter extends IndexDB {
 }
 
 object SampleIndex {
-  def fromRaw(data: Map[String, Int]) = new SampleIndex(data.map(x => SampleId(x._1) -> x._2))
+  def fromRaw(data: Map[String, Int]) = new SampleIndex(data.map(x => x._1 -> x._2))
   def fromDb(db: IndexDB) = fromRaw(db.fullMap)
 }
 
-class SampleIndex(val data: Map[SampleId, Int]) extends CachedIntLookupMap[SampleId] 
+class SampleIndex(val data: Map[SampleId, Int]) extends CachedIntLookupMap[SampleId]
 
 class ProbeIndex(val data: Map[ProbeId, Int]) extends CachedIntLookupMap[ProbeId] {
   def this(db: IndexDB) = this(db.fullMap)

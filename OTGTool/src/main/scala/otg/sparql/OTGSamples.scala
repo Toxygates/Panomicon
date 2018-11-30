@@ -66,7 +66,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
         val attributeValues = convertMapToAttributes(adjustSample(x, batchFilter), bc.attributes)
-        val sampleId = t.db.SampleId(x("id"))
+        val sampleId = x("id")
         Sample(sampleId, SampleClassFilter(attributeValues) ++ filter)
        })
      )
@@ -91,10 +91,10 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =
     sampleAttributeQuery(Compound).constrain(filter)()
 
-  def pathologyQuery(constraints: String): Vector[Pathology] = 
-    PathologySparql.pathologyQuery(triplestore, constraints)    
+  def pathologyQuery(constraints: String): Vector[Pathology] =
+    PathologySparql.pathologyQuery(triplestore, constraints)
 
-  def pathologies(barcode: String): Vector[Pathology] = {    
+  def pathologies(barcode: String): Vector[Pathology] = {
     val r = pathologyQuery("?x rdfs:label \"" + barcode + "\". ")
     r.map(_.copy(barcode = barcode))
   }

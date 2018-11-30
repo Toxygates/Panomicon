@@ -75,14 +75,14 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
   val requiredColumns = attributeSet.getRequired.asScala.map(_.id.toLowerCase)
 
   def samples: Iterable[Sample] = {
-    val ids = metadata("sample_id").map(SampleId)
+    val ids = metadata("sample_id")
     ids.map(Sample(_))
   }
 
   protected lazy val idxLookup = Map() ++ metadata("sample_id").zipWithIndex
 
   protected def getIdx(s: Sample): Int = {
-    idxLookup.get(s.identifier.id) match {
+    idxLookup.get(s.identifier) match {
       case Some(i) => i
       case _ =>
         throw new Exception(s"Sample (${s.sampleId}) not found in metadata")

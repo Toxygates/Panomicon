@@ -32,7 +32,7 @@ case class Sample(sampleId: SampleId, sampleClass: SampleClass) {
 
   def dbCode(implicit context: MatrixContext): Int =
     context.sampleMap.pack(sampleId)
-    
+
   def getDbCode(implicit context: MatrixContext): Option[Int] = {
     if (context.sampleMap.isToken(sampleId)) {
       Some(context.sampleMap.pack(sampleId))
@@ -41,7 +41,7 @@ case class Sample(sampleId: SampleId, sampleClass: SampleClass) {
     }
   }
 
-  def identifier = sampleId
+  def identifier: SampleId = sampleId
 
   override def hashCode: Int = sampleId.hashCode
 
@@ -52,7 +52,7 @@ case class Sample(sampleId: SampleId, sampleClass: SampleClass) {
     }
   }
 
-  override def toString = sampleId.id
+  override def toString = sampleId
 
   /**
    * Convenience method to obtain a parameter from the sample class.
@@ -65,14 +65,14 @@ case class Sample(sampleId: SampleId, sampleClass: SampleClass) {
   def apply(key: Attribute): String = sampleClass(key)
 }
 
-object Sample {  
+object Sample {
   def identifierFor(code: Int)(implicit context: MatrixContext): SampleId = {
     context.sampleMap.tryUnpack(code) match {
       case Some(i) => i
       case None =>
         val r = s"unknown_sample[$code]"
         println(r)
-        SampleId(r)
+        r
     }
   }
 

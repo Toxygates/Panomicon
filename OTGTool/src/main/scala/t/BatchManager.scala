@@ -102,7 +102,7 @@ object BatchManager extends ManagerTool {
           val sampleFilter = new SampleFilter(None, Some(Batches.packURI(title)))
           val metadata =
             factory.cachingTriplestoreMetadata(context.samples, config.attributes,
-                config.attributes.getHighLevel.asScala ++ 
+                config.attributes.getHighLevel.asScala ++
                 config.attributes.getUnitLevel.asScala ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup,
                   CoreParameter.Batch))(sampleFilter)
@@ -413,14 +413,14 @@ class BatchManager(context: Context) {
         val batchSampleIds = batches.samples(title).toSet
         platformsCheck(metadata)
         val metadataIds = metadata.samples.map(_.identifier)
-        metadataIds.map(_.id).foreach(checkValidIdentifier(_, "sample ID"))
+        metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
 
         val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
         if (foundInBatch.size > 0) {
           log(s"Will replace samples ${foundInBatch mkString ", "}")
         }
 
-        val existingSamples = samples.list.map(SampleId).toSet
+        val existingSamples = samples.list.toSet
         val (idCollisions, newSamples) = notInBatch.partition(existingSamples contains _)
         if (idCollisions.size > 0) {
           throw new Exception(s"The samples ${idCollisions mkString ", "} have already been " +
@@ -446,7 +446,7 @@ class BatchManager(context: Context) {
       val batchSampleIds = batches.samples(title).toSet
       platformsCheck(metadata)
       val metadataIds = metadata.samples.map(_.identifier)
-      metadataIds.map(_.id).foreach(checkValidIdentifier(_, "sample ID"))
+      metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
 
       val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
       if (notInBatch.size > 0 && !force) {
@@ -498,7 +498,7 @@ class BatchManager(context: Context) {
       val dbfile = config.data.sampleIndex
       val db = KCIndexDB(dbfile, true)
       log(s"Opened $dbfile for writing")
-      for (s <- metadata.samples; id = s.identifier.id) {
+      for (s <- metadata.samples; id = s.identifier) {
         db.get(id) match {
           case Some(id) => existingSamples += 1
           case None =>
@@ -517,7 +517,7 @@ class BatchManager(context: Context) {
       val db = KCIndexDB(dbfile, true)
       log(s"Opened $dbfile for writing")
       val bs = new Batches(config.triplestore)
-      db.remove(bs.samples(title).map(_.id))
+      db.remove(bs.samples(title))
     }
   }
 

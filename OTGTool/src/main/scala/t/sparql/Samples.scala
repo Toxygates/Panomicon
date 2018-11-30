@@ -226,8 +226,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     val withIndex = queryParams.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ")
     val query = "SELECT * WHERE { GRAPH ?batchGraph { " +
-      "{ { ?x rdfs:label \"" + sample.id + "\" } UNION" +
-      "{ ?x rdfs:label \"" + sample.id + "\"^^xsd:string } }" +
+      "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
+      "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +
       triples.mkString + " } } "
     val r = triplestore.mapQuery(tPrefixes + '\n' + query)
     if (r.isEmpty) {
@@ -325,7 +325,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
         triplestore.mapQuery(_, 20000).map(s => {
           val sampleClass = new SampleClass((convertMapToAttributes(s, bc.attributes)
               ++ sampleClassFilter.constraints).asJava)
-          val id = t.db.SampleId(s(SampleId.id))
+          val id = s(SampleId.id)
           Sample(id, sampleClass)
           }
     ))
@@ -352,8 +352,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 
     for (
-      (group, all) <- byGroup;      
-      samples = all.flatMap(m => lookup.get(t.db.SampleId(m("sid"))))
+      (group, all) <- byGroup;
+      samples = all.flatMap(m => lookup.get(m("sid")))
     ) yield (group, samples)
   }
 }

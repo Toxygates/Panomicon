@@ -39,7 +39,7 @@ class CSVRawExpressionData(exprFile: String,
   private def samplesInFile(file: String) = {
     val line = Source.fromFile(file).getLines.next
     val columns = line.split(",", -1).map(_.trim)
-    columns.drop(1).toVector.map(s => Sample(asSampleId(s)))
+    columns.drop(1).toVector.map(s => Sample(s))
   }
 
   override lazy val samples: Seq[Sample] =
@@ -90,8 +90,6 @@ class CSVRawExpressionData(exprFile: String,
     r.sizeHint(samples.size)
     r
   }
-  
-  private def asSampleId(x: String) = SampleId(unquote(x))
 
   protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
     extract: String => T): CMap[Sample, Seq[T]] = {
@@ -106,9 +104,9 @@ class CSVRawExpressionData(exprFile: String,
       if(keptColumns == None) {
         println("Read columns: " + ss.mkString(" "))
         keptColumns = Some(ArrayBuffer(columns.head) ++
-           columns.filter(x => samples.contains(asSampleId(x))))
+           columns.filter(x => samples.contains(x)))
         keptIndices = Some(ArrayBuffer(0) ++
-           columns.indices.filter(i => samples.contains(asSampleId(columns(i)))))
+           columns.indices.filter(i => samples.contains(columns(i))))
       }
 
       val spl = l.split(",", -1).map(x => x.trim)
@@ -125,7 +123,7 @@ class CSVRawExpressionData(exprFile: String,
 
     var r = Map[Sample, Seq[T]]()
     for (c <- 1 until keptColumns.get.size;
-      sampleId = SampleId(keptColumns.get(c));
+      sampleId = keptColumns.get(c);
       sample = Sample(sampleId)) {
 
       val col = rawAndProbes.map {case (row, probe) =>

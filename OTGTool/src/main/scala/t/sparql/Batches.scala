@@ -132,7 +132,7 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   def samples(batch: String): Iterable[SampleId] = {
     val prefix = Samples.defaultPrefix
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
-      s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }").map(SampleId(_))
+      s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
   }
 
   override def delete(name: String): Unit = {

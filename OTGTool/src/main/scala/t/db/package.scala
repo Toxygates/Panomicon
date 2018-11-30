@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,14 +21,14 @@
 package t
 
 package object db {
-//(expr value, call, p)
-  type FoldPExpr = (Double, Char, Double)
-  
-  final case class SampleId(id: String) extends AnyVal {
-    override def toString = id
-  }
+  type RawExprValue = Double
+  type PACall = Char
+  type PValue = Double
+  type FoldPExpr = (RawExprValue, PACall, PValue)
+
+  type SampleId = String
   type ProbeId = String
-  
+
   type ProbeMap = LookupMap[Int, ProbeId]
   type SampleMap = LookupMap[Int, SampleId]
 }
