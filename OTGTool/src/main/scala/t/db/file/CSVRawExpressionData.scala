@@ -123,8 +123,7 @@ class CSVRawExpressionData(exprFile: String,
 
     var r = Map[Sample, Seq[T]]()
     for (c <- 1 until keptColumns.get.size;
-      sampleId = keptColumns.get(c);
-      sample = Sample(sampleId)) {
+      sampleId = keptColumns.get(c); sample = Sample(sampleId)) {
 
       val col = rawAndProbes.map {case (row, probe) =>
         try {

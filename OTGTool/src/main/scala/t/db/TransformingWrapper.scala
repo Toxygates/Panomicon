@@ -28,7 +28,7 @@ abstract class TransformingWrapper[E >: Null <: ExprValue](val
   def allSamples: Iterable[Sample] =
     wrapped.allSamples
 
-  def emptyValue(probe: String): E =
+  def emptyValue(probe: ProbeId): E =
     wrapped.emptyValue(probe)
 
   def probeMap: ProbeMap =
