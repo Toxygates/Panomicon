@@ -463,7 +463,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   @Override
   public void selectionChanged(Set<Group> selected) {
-    groups.setActive(selected);
+    groups.setActiveGroups(selected);
     groups.saveToLocalStorage(screen.getParser());
     updateConfigureStatus(true);
   }

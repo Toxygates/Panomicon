@@ -15,28 +15,24 @@ import t.model.sample.AttributeSet;
  * GroupInspector, and so is in need of significant further refactoring.
  */
 public class Groups {
-  private Map<String, Group> groups = new HashMap<String, Group>();
+  private Map<String, Group> groups = new LinkedHashMap<String, Group>();
   private List<Group> activeGroups = new ArrayList<Group>();
 
   public void loadGroups(StorageParser parser, DataSchema schema, AttributeSet attributes) {
     clear();
 
     // Load chosen columns
-    activeGroups = parser.getChosenColumns(schema, attributes);
+    activeGroups = sortedGroupList(parser.getChosenColumns(schema, attributes));
     for (Group g : activeGroups) {
       groups.put(g.getName(), g);
     }
-    //allGroups.addAll(sortedGroupList(chosenColumns));
 
     // Load inactive columns
-    Collection<Group> inactiveGroups = null;
     try {
-      List<Group> inactiveColumns = parser.getColumns(schema, "inactiveColumns", attributes);
-      inactiveGroups = sortedGroupList(inactiveColumns);
+      Collection<Group> inactiveGroups = sortedGroupList(parser.getColumns(schema, "inactiveColumns", attributes));
       for (Group g : inactiveGroups) {
         groups.put(g.getName(), g);
       }
-      //allGroups.addAll(sortedGroupList(inactiveGroups));
     } catch (Exception e) {
       //logger.log(Level.WARNING, "Unable to load inactive columns", e);
       Window.alert("Unable to load inactive columns.");
@@ -81,7 +77,7 @@ public class Groups {
     activeGroups.remove(group);
   }
 
-  public void setActive(Collection<Group> selection) {
+  public void setActiveGroups(Collection<Group> selection) {
     activeGroups = new ArrayList<Group>(selection);
   }
 
