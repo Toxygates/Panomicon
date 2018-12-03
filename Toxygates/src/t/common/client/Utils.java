@@ -143,7 +143,7 @@ public class Utils {
   public static SampleClass unpackSampleClass(AttributeSet attributes, String value) {
     String[] spl = value.split(",,,");
     Map<Attribute, String> d = new HashMap<Attribute, String>();
-    for (int i = 0; i < spl.length; i += 2) {
+    for (int i = 0; i < spl.length - 1; i += 2) {
       d.put(attributes.byId(spl[i]), spl[i + 1]);
     }
     
