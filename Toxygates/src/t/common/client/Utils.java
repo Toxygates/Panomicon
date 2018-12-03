@@ -144,7 +144,10 @@ public class Utils {
     String[] spl = value.split(",,,");
     Map<Attribute, String> d = new HashMap<Attribute, String>();
     for (int i = 0; i < spl.length - 1; i += 2) {
-      d.put(attributes.byId(spl[i]), spl[i + 1]);
+      Attribute attribute = attributes.byId(spl[i]);
+      if (attribute != null) {
+        d.put(attribute, spl[i + 1]);
+      }
     }
     
     if (!d.containsKey(Type)) {

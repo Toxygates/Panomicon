@@ -23,4 +23,13 @@ class UtilsTest extends FunSuite with Matchers {
     sampleClass.getKeys.contains(OTGAttribute.Repeat) shouldBe false
     sampleClass.get(OTGAttribute.TestType) shouldBe "SAT"
   }
+
+  test("unpackSampleClass ignores invalid attributes") {
+    val input = "asdf,,,42,,,test_type,,,SAT"
+    var sampleClass = Utils.unpackSampleClass(attributes, input)
+
+    sampleClass shouldBe a [SampleClass]
+    sampleClass.getKeys.size shouldBe 2 // as above, type is added by unpackSampleClass
+    sampleClass.get(OTGAttribute.TestType) shouldBe "SAT"
+  }
 }
