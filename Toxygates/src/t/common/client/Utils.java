@@ -95,18 +95,34 @@ public class Utils {
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     return table;
   }  
-  
-  private static NumberFormat df = NumberFormat.getDecimalFormat();
-  private static NumberFormat sf = NumberFormat.getScientificFormat();
+
+  // These are instantiated lazily so that parts of this class can be tested without 
+  // GWT. Ultimately it would probably be better to split up the functionality in this
+  // class so that this isn't necessary.
+  private static NumberFormat decimalFormat;
+  private static NumberFormat scientificFormat;
+
+  private static NumberFormat decimalFormat() {
+    if (decimalFormat == null) {
+      decimalFormat = NumberFormat.getDecimalFormat();
+    }
+    return decimalFormat;
+  }
+  private static NumberFormat scientificFormat() {
+    if (scientificFormat == null) {
+      scientificFormat = NumberFormat.getScientificFormat();
+    }
+    return scientificFormat;
+  }
 
   public static String formatNumber(double v) {
     if (v == 0.0) {
       return "0";
     }
     if (Math.abs(v) > 0.001) {
-      return df.format(v);
+      return decimalFormat().format(v);
     } else {
-      return sf.format(v);
+      return scientificFormat().format(v);
     }
   }
   
