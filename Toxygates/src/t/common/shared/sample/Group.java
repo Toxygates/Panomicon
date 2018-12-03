@@ -23,8 +23,6 @@ import java.util.*;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
-import t.model.sample.AttributeSet;
-import t.viewer.client.StorageParser;
 
 /**
  * A group of barcodes.
@@ -102,44 +100,6 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
   public String tooltipText(DataSchema schema) {
     SampleClass sc = getSamples()[0].sampleClass();
     return SampleClassUtils.label(sc, schema) + ":\n" + getTriples(schema, -1, ", ");
-  }
-
-  @Override
-  public String pack() {
-    StringBuilder s = new StringBuilder();
-    s.append("Group:::");
-    s.append(name + ":::"); // !!
-    s.append(color + ":::");
-    for (Sample sample : _samples) {
-      s.append(StorageParser.packSample(sample));
-      s.append("^^^");
-    }
-    return s.toString();
-  }
-
-  public static Group unpack(DataSchema schema, String s, AttributeSet attributeSet) {
-    String[] s1 = s.split(":::"); // !!
-    String name = s1[1];
-    String color = "";
-    String barcodes = "";
-
-    color = s1[2];
-    barcodes = s1[3];
-    if (SharedUtils.indexOf(groupColors, color) == -1) {
-      // replace the color if it is invalid.
-      // this lets us safely upgrade colors in the future.
-      color = groupColors[0];
-    }
-
-    String[] s2 = barcodes.split("\\^\\^\\^");
-    Sample[] bcs = new Sample[s2.length];
-    for (int i = 0; i < s2.length; ++i) {
-      Sample b = StorageParser.unpackSample(s2[i], attributeSet);
-      bcs[i] = b;
-    }
-    // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
-    return new Group(schema, name, bcs, color);
-
   }
 
   public static List<Sample> getAllSamples(List<Group> columns) {

@@ -94,8 +94,49 @@ public class StorageParser {
     return new Sample(id, sc);
   }
 
-  public static String packColumns(Collection<? extends SampleColumn> columns) {
-    return packPackableList(columns, "###");
+  public static String packGroup(Group group) {
+    StringBuilder s = new StringBuilder();
+    s.append("Group:::");
+    s.append(group.getName() + ":::"); // !!
+    s.append(group.getColor() + ":::");
+    for (Sample sample : group.samples()) {
+      s.append(StorageParser.packSample(sample));
+      s.append("^^^");
+    }
+    return s.toString();
+  }
+
+  public static Group unpackGroup(DataSchema schema, String s, AttributeSet attributeSet) {
+    String[] s1 = s.split(":::"); // !!
+    String name = s1[1];
+    String color = "";
+    String barcodes = "";
+
+    color = s1[2];
+    barcodes = s1[3];
+    if (SharedUtils.indexOf(SampleGroup.groupColors, color) == -1) {
+      // replace the color if it is invalid.
+      // this lets us safely upgrade colors in the future.
+      color = SampleGroup.groupColors[0];
+    }
+
+    String[] s2 = barcodes.split("\\^\\^\\^");
+    Sample[] bcs = new Sample[s2.length];
+    for (int i = 0; i < s2.length; ++i) {
+      Sample b = StorageParser.unpackSample(s2[i], attributeSet);
+      bcs[i] = b;
+    }
+    // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
+    return new Group(schema, name, bcs, color);
+
+  }
+
+  public static String packColumns(Collection<Group> columns) {
+    List<String> xs = new ArrayList<String>();
+    for (Group group : columns) {
+      xs.add(packGroup(group));
+    }
+    return packList(xs, "###");
   }
 
   @Nullable
@@ -105,7 +146,7 @@ public class StorageParser {
     }
     String[] spl = s.split("\\$\\$\\$");
     if (!spl[0].equals("Barcode") && !spl[0].equals("Barcode_v3")) {
-      return Group.unpack(schema, s, attributes);
+      return unpackGroup(schema, s, attributes);
     } else {
       // Legacy or incorrect format
       logger.warning("Unexpected column format: " + s);
@@ -276,7 +317,7 @@ public class StorageParser {
     setItem("compounds", packList(compounds, "###"));
   }
 
-  public void storeColumns(String key, Collection<? extends SampleColumn> columns) {
+  public void storeColumns(String key, Collection<Group> columns) {
     if (!columns.isEmpty()) {
       SampleColumn first = columns.iterator().next();
       String representative = (first.getSamples().length > 0) ? first.getSamples()[0].toString() : "(no samples)";
@@ -289,9 +330,9 @@ public class StorageParser {
     }
   }
 
-  public void storeCustomColumn(DataColumn<?> column) {
+  public void storeCustomColumn(Group column) {
     if (column != null) {
-      setItem("customColumn", column.pack());
+      setItem("customColumn", packGroup(column));
     } else {
       clearItem("customColumn");
     }
