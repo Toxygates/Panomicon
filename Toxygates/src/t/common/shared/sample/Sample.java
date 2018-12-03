@@ -21,17 +21,14 @@ package t.common.shared.sample;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import com.google.gwt.user.client.Window;
-
-import t.common.client.Utils;
-import t.common.shared.*;
+import t.common.shared.DataSchema;
+import t.common.shared.HasClass;
 import t.model.SampleClass;
-import t.model.sample.*;
+import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 
 @SuppressWarnings("serial")
-public class Sample implements Packable, Serializable, HasClass, SampleLike {
+public class Sample implements Serializable, HasClass, SampleLike {
 
   public Sample() {}
 
@@ -92,28 +89,5 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
   @Override
   public String toString() {
     return sampleClass.toString();
-  }
-
-  public static @Nullable Sample unpack(String s, AttributeSet attributeSet) {
-    String[] spl = s.split("\\$\\$\\$");
-    String v = spl[0];
-    if (!v.equals("Barcode_v3")) {
-      Window.alert("Legacy data has been detected in your browser's storage. " +
-            "Some of your older sample groups may not load properly.");
-      return null;
-    }
-    String id = spl[1];
-    SampleClass sc = Utils.unpackSampleClass(attributeSet, spl[2]);
-    return new Sample(id, sc);
-  }
-
-  @Override
-  public String pack() {
-    final String sep = "$$$";
-    StringBuilder sb = new StringBuilder();
-    sb.append("Barcode_v3").append(sep);
-    sb.append(id()).append(sep);
-    sb.append(Utils.packSampleClass(sampleClass)).append(sep);
-    return sb.toString();
   }
 }

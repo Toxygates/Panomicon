@@ -24,6 +24,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.client.StorageParser;
 
 /**
  * A group of barcodes.
@@ -110,7 +111,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     s.append(name + ":::"); // !!
     s.append(color + ":::");
     for (Sample sample : _samples) {
-      s.append(sample.pack());
+      s.append(StorageParser.packSample(sample));
       s.append("^^^");
     }
     return s.toString();
@@ -133,7 +134,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     String[] s2 = barcodes.split("\\^\\^\\^");
     Sample[] bcs = new Sample[s2.length];
     for (int i = 0; i < s2.length; ++i) {
-      Sample b = Sample.unpack(s2[i], attributeSet);
+      Sample b = StorageParser.unpackSample(s2[i], attributeSet);
       bcs[i] = b;
     }
     // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;

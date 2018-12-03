@@ -72,6 +72,28 @@ public class StorageParser {
     storage.removeItem(prefix + "." + key);
   }
 
+  public static String packSample(Sample sample) {
+    final String sep = "$$$";
+    StringBuilder sb = new StringBuilder();
+    sb.append("Barcode_v3").append(sep);
+    sb.append(sample.id()).append(sep);
+    sb.append(Utils.packSampleClass(sample.sampleClass())).append(sep);
+    return sb.toString();
+  }
+
+  public static @Nullable Sample unpackSample(String s, AttributeSet attributeSet) {
+    String[] spl = s.split("\\$\\$\\$");
+    String v = spl[0];
+    if (!v.equals("Barcode_v3")) {
+      Window.alert("Legacy data has been detected in your browser's storage. "
+          + "Some of your older sample groups may not load properly.");
+      return null;
+    }
+    String id = spl[1];
+    SampleClass sc = Utils.unpackSampleClass(attributeSet, spl[2]);
+    return new Sample(id, sc);
+  }
+
   public static String packColumns(Collection<? extends SampleColumn> columns) {
     return packPackableList(columns, "###");
   }

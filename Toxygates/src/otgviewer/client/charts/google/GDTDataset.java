@@ -23,14 +23,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.DataTable;
+
 import otgviewer.client.charts.ChartSample;
 import otgviewer.client.charts.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
-
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.DataTable;
+import t.viewer.client.StorageParser;
 
 public class GDTDataset extends Dataset<GDTData> {
 
@@ -62,6 +63,7 @@ public class GDTDataset extends Dataset<GDTData> {
     return gdt;
   }
 
+  @Override
   protected void makeColumns(GDTData gdt, List<ChartSample> samples) {
     int colCount = 0;
     int[] valCount = new int[categories.length];
@@ -80,7 +82,7 @@ public class GDTDataset extends Dataset<GDTData> {
         final int col = valCount[cat] * 2 + 1;
         dt.setValue(cat, col, s.value());
         if (s.sample() != null) {
-          dt.setProperty(cat, col, "barcode", s.sample().pack());
+          dt.setProperty(cat, col, "barcode", StorageParser.packSample(s.sample()));
         }
         dt.setFormattedValue(cat, col, s.formattedValue());
         String style = "fill-color:" + s.color() + "; stroke-width:1px; ";
@@ -92,7 +94,10 @@ public class GDTDataset extends Dataset<GDTData> {
   }
 
   protected native void addStyleColumn(DataTable dt) /*-{
-		dt.addColumn({type:'string', role:'style'});
-	}-*/;
+    dt.addColumn({
+      type : 'string',
+      role : 'style'
+    });
+  }-*/;
 
 }
