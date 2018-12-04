@@ -18,9 +18,7 @@
 
 package t.common.client;
 
-import static t.model.sample.CoreParameter.Type;
-
-import java.util.*;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -34,9 +32,6 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 
 import t.common.shared.ManagedItem;
-import t.model.SampleClass;
-import t.model.sample.Attribute;
-import t.model.sample.AttributeSet;
 
 public class Utils {
 
@@ -96,67 +91,20 @@ public class Utils {
     return table;
   }  
 
-  // These are instantiated lazily so that parts of this class can be tested without 
-  // GWT. Ultimately it would probably be better to split up the functionality in this
-  // class so that this isn't necessary.
-  private static NumberFormat decimalFormat;
-  private static NumberFormat scientificFormat;
-
-  private static NumberFormat decimalFormat() {
-    if (decimalFormat == null) {
-      decimalFormat = NumberFormat.getDecimalFormat();
-    }
-    return decimalFormat;
-  }
-  private static NumberFormat scientificFormat() {
-    if (scientificFormat == null) {
-      scientificFormat = NumberFormat.getScientificFormat();
-    }
-    return scientificFormat;
-  }
+  private static NumberFormat decimalFormat = NumberFormat.getDecimalFormat();
+  private static NumberFormat scientificFormat = NumberFormat.getScientificFormat();
 
   public static String formatNumber(double v) {
     if (v == 0.0) {
       return "0";
     }
     if (Math.abs(v) > 0.001) {
-      return decimalFormat().format(v);
+      return decimalFormat.format(v);
     } else {
-      return scientificFormat().format(v);
+      return scientificFormat.format(v);
     }
   }
-  
-  public static String packSampleClass(SampleClass sc) {
-    StringBuilder sb = new StringBuilder();
-    for (Attribute k : sc.getKeys()) {
-      sb.append(k.id() + ",,,");
-      sb.append(sc.get(k) + ",,,");
-    }
-    return sb.toString();
-  }
-  
-  //Transitional method for upgrading from old format, as of Jan 2018
-  private static void upgradeSampleClass(Map<Attribute, String> data) {
-    data.put(Type, "mRNA");
-  }
-  
-  public static SampleClass unpackSampleClass(AttributeSet attributes, String value) {
-    String[] spl = value.split(",,,");
-    Map<Attribute, String> d = new HashMap<Attribute, String>();
-    for (int i = 0; i < spl.length - 1; i += 2) {
-      Attribute attribute = attributes.byId(spl[i]);
-      if (attribute != null) {
-        d.put(attribute, spl[i + 1]);
-      }
-    }
-    
-    if (!d.containsKey(Type)) {
-      upgradeSampleClass(d);
-    }
-    
-    return new SampleClass(d);
-  }
-  
+
   public static boolean shouldHandleClickEvent(NativeEvent ev, String expectedParentId) {
     String id = clickParentId(ev);
     return (id != null && id.equals(expectedParentId));

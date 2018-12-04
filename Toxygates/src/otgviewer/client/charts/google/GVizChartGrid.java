@@ -33,7 +33,7 @@ import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenUtils;
 import t.common.shared.sample.Sample;
-import t.viewer.client.StorageParser;
+import t.viewer.client.Packer;
 
 /**
  * A ChartGrid that uses the Google Visualization API.
@@ -105,7 +105,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           int row = s.getRow();
           String bc = dt.getProperty(row, col, "barcode");
           if (bc != null) {
-            Sample b = StorageParser.unpackSample(bc, screen.appInfo().attributes());
+            Sample b = Packer.unpackSample(bc, screen.appInfo().attributes());
             ScreenUtils.displaySampleDetail(screen, b);
           }
         }

@@ -31,7 +31,7 @@ import otgviewer.client.charts.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
-import t.viewer.client.StorageParser;
+import t.viewer.client.Packer;
 
 public class GDTDataset extends Dataset<GDTData> {
 
@@ -82,7 +82,7 @@ public class GDTDataset extends Dataset<GDTData> {
         final int col = valCount[cat] * 2 + 1;
         dt.setValue(cat, col, s.value());
         if (s.sample() != null) {
-          dt.setProperty(cat, col, "barcode", StorageParser.packSample(s.sample()));
+          dt.setProperty(cat, col, "barcode", Packer.packSample(s.sample()));
         }
         dt.setFormattedValue(cat, col, s.formattedValue());
         String style = "fill-color:" + s.color() + "; stroke-width:1px; ";

@@ -27,9 +27,9 @@ import javax.annotation.Nullable;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 
-import t.common.client.Utils;
 import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.network.PackedNetwork;
@@ -37,10 +37,11 @@ import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
 
 /**
- * Storage parsing/serialising code. Some is still spread out in other classes, 
- * such as Group.
- * PersistedState may also be considered for some of these items in the future, where 
- * lifecycle management is needed.
+ * Refactoring in progress. Methods for converting objects to and from strings
+ * have been moved to Packer.
+ * 
+ * Storage parsing/serialising code. PersistedState may also be considered for
+ * some of these items in the future, where lifecycle management is needed.
  */
 public class StorageParser {
 
@@ -72,109 +73,6 @@ public class StorageParser {
     storage.removeItem(prefix + "." + key);
   }
 
-  public static String packSample(Sample sample) {
-    final String sep = "$$$";
-    StringBuilder sb = new StringBuilder();
-    sb.append("Barcode_v3").append(sep);
-    sb.append(sample.id()).append(sep);
-    sb.append(Utils.packSampleClass(sample.sampleClass())).append(sep);
-    return sb.toString();
-  }
-
-  public static @Nullable Sample unpackSample(String s, AttributeSet attributeSet) {
-    String[] spl = s.split("\\$\\$\\$");
-    String v = spl[0];
-    if (!v.equals("Barcode_v3")) {
-      Window.alert("Legacy data has been detected in your browser's storage. "
-          + "Some of your older sample groups may not load properly.");
-      return null;
-    }
-    String id = spl[1];
-    SampleClass sc = Utils.unpackSampleClass(attributeSet, spl[2]);
-    return new Sample(id, sc);
-  }
-
-  public static String packGroup(Group group) {
-    StringBuilder s = new StringBuilder();
-    s.append("Group:::");
-    s.append(group.getName() + ":::"); // !!
-    s.append(group.getColor() + ":::");
-    for (Sample sample : group.samples()) {
-      s.append(StorageParser.packSample(sample));
-      s.append("^^^");
-    }
-    return s.toString();
-  }
-
-  public static Group unpackGroup(DataSchema schema, String s, AttributeSet attributeSet) {
-    String[] s1 = s.split(":::"); // !!
-    String name = s1[1];
-    String color = "";
-    String barcodes = "";
-
-    color = s1[2];
-    barcodes = s1[3];
-    if (SharedUtils.indexOf(SampleGroup.groupColors, color) == -1) {
-      // replace the color if it is invalid.
-      // this lets us safely upgrade colors in the future.
-      color = SampleGroup.groupColors[0];
-    }
-
-    String[] s2 = barcodes.split("\\^\\^\\^");
-    Sample[] bcs = new Sample[s2.length];
-    for (int i = 0; i < s2.length; ++i) {
-      Sample b = StorageParser.unpackSample(s2[i], attributeSet);
-      bcs[i] = b;
-    }
-    // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
-    return new Group(schema, name, bcs, color);
-
-  }
-
-  public static String packColumns(Collection<Group> columns) {
-    List<String> xs = new ArrayList<String>();
-    for (Group group : columns) {
-      xs.add(packGroup(group));
-    }
-    return packList(xs, "###");
-  }
-
-  @Nullable
-  public static Group unpackColumn(DataSchema schema, String s, AttributeSet attributes) {
-    if (s == null) {
-      return null;
-    }
-    String[] spl = s.split("\\$\\$\\$");
-    if (!spl[0].equals("Barcode") && !spl[0].equals("Barcode_v3")) {
-      return unpackGroup(schema, s, attributes);
-    } else {
-      // Legacy or incorrect format
-      logger.warning("Unexpected column format: " + s);
-      return null;
-    }
-  }
-
-  public static String packProbes(String[] probes) {
-    return packList(Arrays.asList(probes), "###");
-  }
-
-  public static String packPackableList(Collection<? extends Packable> items, String separator) {
-    List<String> xs = new ArrayList<String>();
-    for (Packable p : items) {
-      xs.add(p.pack());
-    }
-    return packList(xs, separator);
-  }
-
-  public static String packList(Collection<String> items, String separator) {
-    // TODO best location of this? handle viewer/common separation cleanly.
-    return SharedUtils.packList(items, separator);
-  }
-
-  public static String packItemLists(Collection<ItemList> lists, String separator) {
-    return packPackableList(lists, separator);
-  }
-
   public static boolean isAcceptableString(String test, String failMessage) {
     for (char c : reservedChars) {
       if (test.indexOf(c) != -1) {
@@ -191,7 +89,7 @@ public class StorageParser {
     if (v == null) {
       return new SampleClass();
     } else {
-      return Utils.unpackSampleClass(attributes, v);
+      return Packer.unpackSampleClass(attributes, v);
     }
   }
 
@@ -204,7 +102,7 @@ public class StorageParser {
     if (v != null) {
       String[] spl = v.split("###");
       for (String cl : spl) {
-        Group c = unpackColumn(schema, cl, attributes);
+        Group c = Packer.unpackColumn(schema, cl, attributes);
         r.add(c);
       }
     }
@@ -221,7 +119,7 @@ public class StorageParser {
   }
 
   public Group getCustomColumn(DataSchema schema, AttributeSet attributes) {
-    return unpackColumn(schema, getItem("customColumn"), attributes);
+    return Packer.unpackColumn(schema, getItem("customColumn"), attributes);
   }
 
   public String[] getProbes() {
@@ -245,14 +143,6 @@ public class StorageParser {
     return r.toArray(new Dataset[0]);
   }
 
-  public static String packDatasets(Dataset[] datasets) {
-    List<String> r = new ArrayList<String>();
-    for (Dataset d : datasets) {
-      r.add(d.getId());
-    }
-    return packList(r, "###");
-  }
-
   public List<String> getCompounds() {
     String v = getItem("compounds");
     if (v == null) {
@@ -265,10 +155,6 @@ public class StorageParser {
       }
     }
     return r;
-  }
-
-  public String packCompounds(List<String> compounds) {
-    return packList(compounds, "###");
   }
 
   public List<ItemList> getItemLists() {
@@ -314,7 +200,7 @@ public class StorageParser {
   }
 
   public void storeCompounds(List<String> compounds) {
-    setItem("compounds", packList(compounds, "###"));
+    setItem("compounds", Packer.packList(compounds, "###"));
   }
 
   public void storeColumns(String key, Collection<Group> columns) {
@@ -323,7 +209,7 @@ public class StorageParser {
       String representative = (first.getSamples().length > 0) ? first.getSamples()[0].toString() : "(no samples)";
 
       logger.info("Storing columns for " + key + " : " + first + " : " + representative + " ...");
-      setItem(key, packColumns(columns));
+      setItem(key, Packer.packColumns(columns));
     } else {
       logger.info("Clearing stored columns for: " + key);
       clearItem(key);
@@ -332,18 +218,18 @@ public class StorageParser {
 
   public void storeCustomColumn(Group column) {
     if (column != null) {
-      setItem("customColumn", packGroup(column));
+      setItem("customColumn", Packer.packGroup(column));
     } else {
       clearItem("customColumn");
     }
   }
 
   public void storeDatasets(Dataset[] datasets) {
-    setItem("datasets", StorageParser.packDatasets(datasets));
+    setItem("datasets", Packer.packDatasets(datasets));
   }
 
   public void storeItemLists(List<ItemList> itemLists) {
-    setItem("lists", packItemLists(itemLists, "###"));
+    setItem("lists", Packer.packItemLists(itemLists, "###"));
   }
 
   public void storePackedNetworks(List<PackedNetwork> networks) {
@@ -351,15 +237,15 @@ public class StorageParser {
     for (PackedNetwork network : networks) {
       networkStrings.add(network.title() + ":::" + network.jsonString());
     }
-    setItem("networks", packList(networkStrings, "###"));
+    setItem("networks", Packer.packList(networkStrings, "###"));
   }
 
   public void storeSampleClass(SampleClass sampleClass) {
-    setItem("sampleClass", t.common.client.Utils.packSampleClass(sampleClass));
+    setItem("sampleClass", Packer.packSampleClass(sampleClass));
   }
 
   public void storeProbes(String[] probes) {
-    setItem("probes", packProbes(probes));
+    setItem("probes", Packer.packProbes(probes));
   }
 
   public void storeGeneSet(ItemList geneList) {
@@ -367,6 +253,6 @@ public class StorageParser {
   }
 
   public void storeClusteringLists(List<ItemList> clusteringList) {
-    setItem("clusterings", packItemLists(clusteringList, "###"));
+    setItem("clusterings", Packer.packItemLists(clusteringList, "###"));
   }
 }
