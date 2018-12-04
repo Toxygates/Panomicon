@@ -95,6 +95,9 @@ class NetworkState extends MatrixState {
       net <- networks.values; network = net.managedMatrix
     } {
       network.targets = tt
+      
+      //Make the count map in ManagedNetwork recalculate
+      network.updateRowInfo()
       //Make the count column update
       network.sideMatrix.reapplySynthetics()
       network.updateSideMatrix()

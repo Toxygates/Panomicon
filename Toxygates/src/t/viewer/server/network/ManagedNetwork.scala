@@ -44,8 +44,14 @@ class ManagedNetwork(mainParams: LoadParams,
 
   private def filteredCountMap(mat: ExprMatrix) = {
     val sidePlatform = sideMatrix.params.platform
+    if (targets.isEmpty) {
+      Console.err.println("Warning: unable to build count map, targets table is empty")
+    }
     val r = NetworkState.buildCountMap(currentInfo, mat, targets, platforms,
       sidePlatform, sideIsMRNA)
+    if (sideMatrix.initProbes.isEmpty) {
+      Console.err.println("Warning: unable to build count map, initProbes is empty")
+    }
     val pset = sideMatrix.initProbes.toSet
     r.filter(x => pset.contains(x._1))
   }
@@ -64,7 +70,7 @@ class ManagedNetwork(mainParams: LoadParams,
    */
   def currentViewCountMap: JHMap[ProbeId, JDouble] = currentCountMap
 
-  override protected def updateRowInfo() = synchronized {
+  override private[server] def updateRowInfo() = synchronized {
     super.updateRowInfo
     if (currentCountMap != null) {
       currentCountMap.clear()
