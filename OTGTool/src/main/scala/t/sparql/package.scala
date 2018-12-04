@@ -30,6 +30,8 @@ package object sparql {
   import scala.collection.{ Set => CSet, Map => CMap }
   import scala.language.implicitConversions
 
+  type DSampleId = t.db.SampleId
+  
   type SMMap = CMap[String, CSet[String]]
   type SMPMap = CMap[String, CSet[(String, String)]]
   type MMap[K, T] = CMap[K, CSet[T]]

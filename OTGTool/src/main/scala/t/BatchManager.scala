@@ -102,7 +102,7 @@ object BatchManager extends ManagerTool {
           val sampleFilter = new SampleFilter(None, Some(Batches.packURI(title)))
           val metadata =
             factory.cachingTriplestoreMetadata(context.samples, config.attributes,
-                config.attributes.getHighLevel.asScala ++ 
+                config.attributes.getHighLevel.asScala ++
                 config.attributes.getUnitLevel.asScala ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup,
                   CoreParameter.Batch))(sampleFilter)
@@ -227,7 +227,7 @@ class BatchManager(context: Context) {
       lazy val probeMap: ProbeMap =
         new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
       lazy val sampleMap: SampleMap =
-        new SampleIndex(KCIndexDB.readOnce(config.data.sampleIndex))
+        SampleIndex.fromRaw(KCIndexDB.readOnce(config.data.sampleIndex))
 
       override lazy val probeSets =
         new Probes(config.triplestore).platformsAndProbes.

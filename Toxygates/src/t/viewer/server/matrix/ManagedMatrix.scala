@@ -352,7 +352,7 @@ trait Synthetics extends CoreMatrix {
     }
   }
 
-  protected def reapplySynthetics(): Unit = {
+  private[server] def reapplySynthetics(): Unit = {
     for (s <- _synthetics) {
       addSyntheticInner(s)
     }

@@ -1,12 +1,10 @@
 package t.viewer.server.network
 
-import t.viewer.server.matrix.ManagedMatrix
-import t.viewer.server.matrix.ExprMatrix
+import t.db._
+import t.viewer.server.matrix._
 import t.viewer.shared.ManagedMatrixInfo
 import t.platform.mirna.TargetTable
-import t.viewer.server.matrix.LoadParams
 import t.viewer.server.rpc.NetworkState
-import t.viewer.server.matrix.MatrixController
 import t.viewer.shared.network.NetworkInfo
 import t.viewer.shared.network.Network
 import t.viewer.server.Platforms
@@ -20,7 +18,7 @@ import scala.collection.JavaConverters._
  * For best performance, the target table should be pre-filtered for the species.
  */
 class ManagedNetwork(mainParams: LoadParams,
-    sideMatrix: ManagedMatrix,
+    val sideMatrix: ManagedMatrix,
     var targets: TargetTable,
     platforms: Platforms,
     var currentPageSize: Int,
@@ -57,13 +55,14 @@ class ManagedNetwork(mainParams: LoadParams,
   import java.util.{HashMap => JHMap}
   import java.lang.{Double => JDouble}
 
-  private[this] var currentCountMap: JHMap[String, JDouble] = new JHMap[String, JDouble]
+  private[this] var currentCountMap: JHMap[ProbeId, JDouble] =
+    new JHMap[ProbeId, JDouble]
 
   /**
    * A mutable count map that will be updated as the current gene set changes,
    * to reflect the counts in that set.
    */
-  def currentViewCountMap: JHMap[String, JDouble] = currentCountMap
+  def currentViewCountMap: JHMap[ProbeId, JDouble] = currentCountMap
 
   override protected def updateRowInfo() = synchronized {
     super.updateRowInfo

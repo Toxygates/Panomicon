@@ -51,20 +51,10 @@ object Species extends Enumeration(0) {
       case Rat   => "rno"
       case Mouse => "mmu"
     }
-
-    //TODO this mechanism needs to be improved, as we now have multiple
-    //platforms per species.
-    @deprecated("This concept will be phased out.", "Nov 2018")
-    def expectedPlatform = s match {
-      case Human => "HG-U133_Plus_2"
-      case Rat   => "Rat230_2"
-      case Mouse => "Mouse430_2"
-    }
-
-    //Note: as above
-    @deprecated("This concept will be phased out.", "Nov 2018")
-    def expectedPlatformGraph = Platforms.defaultPrefix + s"/$expectedPlatform"
   }
+  
+  val knownPlatforms = Seq("HG-U133_Plus_2", "Rat230_2",
+      "Mouse430_2", "GPL5462")
 
   val supportedSpecies = List(Rat, Human, Mouse)
 

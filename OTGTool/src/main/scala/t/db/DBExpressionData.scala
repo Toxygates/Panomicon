@@ -32,16 +32,16 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
     val np = requestedProbes.size
     val ns = requestedSamples.size
     logEvent(s"Requesting $np probes for $ns samples")
-    
+
     val r = reader.valuesInSamples(samples, reader.sortProbes(requestedProbes), false)
-    
+
     val present = r.map(_.count(!_.isPadding)).sum
-    
+
     logEvent(s"Found $present values out of a possible " +
               (np * ns))
     r
   }
-  
+
   private lazy val filteredValues = exprValues.map(_.filter(!_.isPadding))
 
   /**
@@ -49,25 +49,25 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
    */
   lazy val foundValues: Int = filteredValues.map(_.size).sum
 
-  private lazy val _data: Map[Sample, Map[String, FoldPExpr]] = {
-    val values: Iterable[Map[String, FoldPExpr]] = filteredValues.map(Map() ++
+  private lazy val _data: Map[Sample, Map[ProbeId, FoldPExpr]] = {
+    val values: Iterable[Map[ProbeId, FoldPExpr]] = filteredValues.map(Map() ++
         _.map(exprValue => exprValue.probe -> (exprValue.value, exprValue.call, 0.0)))
 
     Map() ++ (samples zip values)
   }
 
-  lazy val probes: Iterable[String] = {
-    var r = MSet[String]()
+  lazy val probes: Iterable[ProbeId] = {
+    var r = MSet[ProbeId]()
     for ((sample, lookup) <- _data) {
       r ++= lookup.keys
     }
     r.toSeq
   }
 
-  def data(s: Sample): Map[String, FoldPExpr] = _data(s)
-    
+  def data(s: Sample): Map[ProbeId, FoldPExpr] = _data(s)
+
   def logEvent(message: String) {}
-  
+
   def close() { reader.release() }
 }
 
@@ -81,19 +81,19 @@ import scala.collection.{Map => CMap}
 class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
   requestedSamples: Iterable[Sample],
    requestedProbes: Iterable[Int]) extends ColumnExpressionData {
-  
+
   override val samples: Iterable[Sample] = reader.sortSamples(requestedSamples)
-  
+
   val codedProbes = reader.sortProbes(requestedProbes)
-  override val probes = 
+  override val probes =
      codedProbes.map(reader.probeMap.unpack)
-  
+
   var currentSamples: Seq[Sample] = Seq()
-  var currentCalls: Seq[Seq[Option[Char]]] = Seq()
+  var currentCalls: Seq[Seq[Option[PACall]]] = Seq()
   var currentExprs: Seq[Seq[Option[Double]]] = Seq()
-  
+
   def logEvent(s: String) { println(s) }
-  
+
   /**
    * Pre-cache data for the given samples.
    * Should be a subset of the samples requested at construction.
@@ -109,15 +109,15 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
       currentExprs = d.map(_.map(_.paddingOption.map(_.value)).toSeq).toSeq
     }
   }
-  
-  def data(s: Sample): CMap[String, FoldPExpr] = {
+
+  def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
     loadData(Seq(s))
     val pec = (probes zip (exprs(s) zip calls(s)))
-    Map() ++ pec.collect { case (p, (Some(exp), Some(call))) => 
+    Map() ++ pec.collect { case (p, (Some(exp), Some(call))) =>
       p -> (exp, call, 0.0)
     }
   }
-  
+
   /**
    * Obtain calls for all probes.
    */
@@ -125,7 +125,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
     loadData(Seq(x))
     currentCalls(currentSamples indexOf x)
   }
-  
+
   /**
    * Obtain expression values for all probes.
    */
@@ -133,6 +133,6 @@ class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
     loadData(Seq(x))
     currentExprs(currentSamples indexOf x)
   }
-  
+
   override def release() { reader.release() }
 }

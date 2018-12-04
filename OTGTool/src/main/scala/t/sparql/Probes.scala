@@ -479,11 +479,11 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     """|FROM <http://level-five.jp/t/mapping/mirdb>
        |""".stripMargin
 
-  private def mirnaAssociationGraphs(species: Option[Species]) = {
-    val r = species match {
-      case Some(s)   => s"FROM <${s.expectedPlatformGraph}>"
+  private def mirnaAssociationGraphs(platform: Option[String]) = {
+    val r = platform match {
+      case Some(s)   => s"FROM <${Platforms.context(s)}>"
       case _ =>
-        Species.supportedSpecies.map(s => s"FROM <${s.expectedPlatformGraph}>").mkString("\n")
+        Species.knownPlatforms.map(p => s"FROM <${Platforms.context(p)}>").mkString("\n")
     }
     s"""|$r
        |$mirnaAssociationGraphsAllSpecies""".stripMargin
@@ -515,7 +515,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],
                         queryFromMirna: Boolean,
                         maxCount: Option[Int],
-                        species: Option[Species] = None): MMap[Probe, DefaultBio] = {
+                        platform: Option[String] = None): MMap[Probe, DefaultBio] = {
 
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
     val targetVar = if(queryFromMirna) "mrna" else "mirna"
@@ -527,7 +527,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
     val q = s"""$tPrefixes
     |SELECT DISTINCT *
-    |${mirnaAssociationGraphs(species)}
+    |${mirnaAssociationGraphs(platform)}
     |${ if (queryFromMirna)
       mirnaToMrnaQuery(queryForFilter, scoreLimit) else
       mrnaToMirnaQuery(queryForFilter, scoreLimit)}

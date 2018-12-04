@@ -49,7 +49,7 @@ class AssociationResolver(probeStore: OTGProbes,
     chembl: ChEMBL,
     drugBank: DrugBank,
     mirnaTable: TargetTable,
-    sidePlatform: Option[String], //TODO temporary
+    sidePlatform: Option[String], //Needed for MiRNA resolution
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String])(implicit sf: SampleFilter) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
@@ -108,10 +108,12 @@ class AssociationResolver(probeStore: OTGProbes,
       //Note: we might unify this lookup with the "aprobes" mechanism
       val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
 
-      //TODO this is a short term solution to get the right platform, should be revised
-      val mrnaPlatform = sidePlatform.getOrElse(species.expectedPlatform)
+      if (!sidePlatform.isDefined) {
+        throw new Exception("The side platform of the association resolver must be set for miRNA lookup to work.")
+      }
+
       val data = filtTable.associationLookup(lookedUp, fromMirna,
-        probeStore.platformsAndProbes(mrnaPlatform), sizeLimit)
+        probeStore.platformsAndProbes(sidePlatform.get), sizeLimit)
 
       if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
         sizeLimitExceeded = true

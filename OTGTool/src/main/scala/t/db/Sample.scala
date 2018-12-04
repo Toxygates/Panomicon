@@ -28,11 +28,11 @@ import t.model.sample.SampleLike
 /**
  * A sample.
  */
-case class Sample(sampleId: String, sampleClass: SampleClass) {
+case class Sample(sampleId: SampleId, sampleClass: SampleClass) {
 
   def dbCode(implicit context: MatrixContext): Int =
     context.sampleMap.pack(sampleId)
-    
+
   def getDbCode(implicit context: MatrixContext): Option[Int] = {
     if (context.sampleMap.isToken(sampleId)) {
       Some(context.sampleMap.pack(sampleId))
@@ -41,7 +41,7 @@ case class Sample(sampleId: String, sampleClass: SampleClass) {
     }
   }
 
-  def identifier = sampleId
+  def identifier: SampleId = sampleId
 
   override def hashCode: Int = sampleId.hashCode
 
@@ -66,7 +66,7 @@ case class Sample(sampleId: String, sampleClass: SampleClass) {
 }
 
 object Sample {
-  def identifierFor(code: Int)(implicit context: MatrixContext): String = {
+  def identifierFor(code: Int)(implicit context: MatrixContext): SampleId = {
     context.sampleMap.tryUnpack(code) match {
       case Some(i) => i
       case None =>
@@ -95,7 +95,7 @@ object Sample {
     new Sample(identifierFor(code), SampleClassHelper())
   }
 
-  def apply(id: String) = new Sample(id, SampleClassHelper())
+  def apply(id: SampleId) = new Sample(id, SampleClassHelper())
 
-  def apply(id: String, map: Map[Attribute, String]) = new Sample(id, SampleClassHelper(map))
+  def apply(id: SampleId, map: Map[Attribute, String]) = new Sample(id, SampleClassHelper(map))
 }
