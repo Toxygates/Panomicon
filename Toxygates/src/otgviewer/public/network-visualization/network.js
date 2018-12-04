@@ -204,6 +204,18 @@ class Network{
     return JSON.stringify(this);
   }
 
+  /**
+   * Override toJSON method of object
+   */
+  toJSON(){
+    return {
+      title: this.title,
+      nodes: this.nodes,
+      interactions: this.interactions
+    };
+  }
+
+
 } // class Network
 
 /**

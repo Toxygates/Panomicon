@@ -25,7 +25,7 @@ function initStyle(){
  * within the display area
  */
 function updateLayout(type="null"){
-  window.addPendingRequest();
+  // window.addPendingRequest();
   var layout = {
     name: type,
     fit: true, // whether to fit to viewport
@@ -37,7 +37,7 @@ function updateLayout(type="null"){
     animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
     ready: undefined, // callback on layoutready
     stop: function() {
-      window.removePendingRequest();
+      // window.removePendingRequest();
     }, // callback on layoutstop
     transform: function (node, position ){ return position; }, // transform a given node position. Useful for changing flow direction in discrete layouts
     weaver: weaver
