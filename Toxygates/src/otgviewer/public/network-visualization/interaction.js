@@ -22,6 +22,16 @@ class Interaction{
     this.weight = weight;
   }
 
+  /**
+   *
+   */
+  toJSON(){
+    return{
+      from: this.from,
+      to: this.to,
+    }
+  }
+
 } // class Interaction
 
 /**

@@ -93,6 +93,24 @@ class ToxyNode{
     return this.id+" "+this.weight.toString();
   }
 
+  /**
+   *
+   */
+  toJSON(){
+    return{
+      id: this.id,
+      type: this.type,
+      symbol: this.symbol,
+      weight: this.weight,
+
+      // visual properties of a node
+      x: this.x,
+      y: this.y,
+      shape: this.shape,
+      color: this.color,
+    }
+  }
+
 } // class ToxyNode
 
 /**
