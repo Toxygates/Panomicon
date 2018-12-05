@@ -57,11 +57,21 @@ public class StorageParser {
   private AttributeSet attributes;
   private DataSchema schema;
 
+  private SampleClassPacker sampleClassPacker;
+  private SamplePacker samplePacker;
+  private GroupPacker groupPacker;
+  private ColumnsPacker columnsPacker;
+
   public StorageParser(Storage storage, String prefix, AttributeSet attributes, DataSchema schema) {
     this.prefix = prefix;
     this.storage = storage;
     this.attributes = attributes;
     this.schema = schema;
+
+    sampleClassPacker = new SampleClassPacker(attributes);
+    samplePacker = new SamplePacker(sampleClassPacker);
+    groupPacker = new GroupPacker(samplePacker, schema);
+    columnsPacker = new ColumnsPacker(groupPacker);
   }
 
   public void setItem(String key, String value) {
@@ -95,24 +105,13 @@ public class StorageParser {
     if (v == null) {
       return new SampleClass();
     } else {
-      return Packer.unpackSampleClass(attributes, v);
+      return sampleClassPacker.unpack(v);
     }
   }
 
   @Nullable
-  // Separator hierarchy for columns:
-  // ### > ::: > ^^^ > $$$
   public List<Group> getColumns(String key) throws Exception {
-    String v = getItem(key);
-    List<Group> r = new ArrayList<Group>();
-    if (v != null) {
-      String[] spl = v.split("###");
-      for (String cl : spl) {
-        Group c = Packer.unpackColumn(schema, cl, attributes);
-        r.add(c);
-      }
-    }
-    return r;
+    return columnsPacker.unpack(getItem(key));
   }
 
   public List<Group> getChosenColumns() {
@@ -125,7 +124,7 @@ public class StorageParser {
   }
 
   public Group getCustomColumn() throws UnpackInputException {
-    return Packer.unpackColumn(schema, getItem("customColumn"), attributes);
+    return groupPacker.unpack(getItem("customColumn"));
   }
 
   public String[] getProbes() {
@@ -215,7 +214,7 @@ public class StorageParser {
       String representative = (first.getSamples().length > 0) ? first.getSamples()[0].toString() : "(no samples)";
 
       logger.info("Storing columns for " + key + " : " + first + " : " + representative + " ...");
-      setItem(key, Packer.packColumns(columns));
+      setItem(key, columnsPacker.pack(columns));
     } else {
       logger.info("Clearing stored columns for: " + key);
       clearItem(key);
@@ -224,7 +223,7 @@ public class StorageParser {
 
   public void storeCustomColumn(Group column) {
     if (column != null) {
-      setItem("customColumn", Packer.packGroup(column));
+      setItem("customColumn", groupPacker.pack(column));
     } else {
       clearItem("customColumn");
     }
@@ -247,7 +246,7 @@ public class StorageParser {
   }
 
   public void storeSampleClass(SampleClass sampleClass) {
-    setItem("sampleClass", Packer.packSampleClass(sampleClass));
+    setItem("sampleClass", sampleClassPacker.pack(sampleClass));
   }
 
   public void storeProbes(String[] probes) {
