@@ -205,18 +205,16 @@ public class StorageParser {
   }
 
   public List<PackedNetwork> getPackedNetworks() {
-    List<PackedNetwork> networks = new ArrayList<PackedNetwork>();
     String value = getItem("networks");
-    if (value != null) {
-      String[] splits = value.split("###");
-      for (String split : splits) {
-        String[] subsplits = split.split(":::");
-        if (subsplits.length == 2) {
-          networks.add(new PackedNetwork(subsplits[0], subsplits[1]));
-        }
+    if (value == null) {
+      return new ArrayList<PackedNetwork>();
+    } else {
+      try {
+        return packedNetworksPacker.unpack(value);
+      } catch (UnpackInputException e) {
+        return new ArrayList<PackedNetwork>();
       }
     }
-    return networks;
   }
 
   public ItemList getGeneSet() {
