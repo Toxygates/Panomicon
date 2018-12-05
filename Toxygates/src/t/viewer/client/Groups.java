@@ -7,7 +7,6 @@ import com.google.gwt.user.client.Window;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
-import t.model.sample.AttributeSet;
 
 /**
  * Functionality for managing active and inactive groups, factored out of
@@ -18,18 +17,18 @@ public class Groups {
   private Map<String, Group> groups = new LinkedHashMap<String, Group>();
   private List<Group> activeGroups = new ArrayList<Group>();
 
-  public void loadGroups(StorageParser parser, DataSchema schema, AttributeSet attributes) {
+  public void loadGroups(StorageParser parser) {
     clear();
 
     // Load chosen columns
-    activeGroups = sortedGroupList(parser.getChosenColumns(schema, attributes));
+    activeGroups = sortedGroupList(parser.getChosenColumns());
     for (Group g : activeGroups) {
       groups.put(g.getName(), g);
     }
 
     // Load inactive columns
     try {
-      Collection<Group> inactiveGroups = sortedGroupList(parser.getColumns(schema, "inactiveColumns", attributes));
+      Collection<Group> inactiveGroups = sortedGroupList(parser.getColumns("inactiveColumns"));
       for (Group g : inactiveGroups) {
         groups.put(g.getName(), g);
       }

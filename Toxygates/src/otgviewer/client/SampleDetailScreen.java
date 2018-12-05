@@ -75,9 +75,9 @@ public class SampleDetailScreen extends MinimalScreen {
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    chosenColumns = getParser().getChosenColumns();
     try {
-      chosenCustomColumn = getParser().getCustomColumn(schema(), attributes);
+      chosenCustomColumn = getParser().getCustomColumn();
     } catch (UnpackInputException e) {
       Window.alert("Failed to load custom column: " + e);
       chosenCustomColumn = null;
@@ -85,7 +85,7 @@ public class SampleDetailScreen extends MinimalScreen {
     // TODO: serialize choice of displayed column, don't reload/rerender unless necessary, reconsider custom column behavior 
     //    // consume the data so the custom column isn't shown when switching back to this screen
     //    getParser().storeCustomColumn(null); 
-    chosenSampleClass = getParser().getSampleClass(attributes);
+    chosenSampleClass = getParser().getSampleClass();
   }
 
   @Override
@@ -175,7 +175,7 @@ public class SampleDetailScreen extends MinimalScreen {
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes());
+    List<Group> chosenColumns = getParser().getChosenColumns();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 

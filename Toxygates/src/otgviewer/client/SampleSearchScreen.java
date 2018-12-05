@@ -74,9 +74,9 @@ public class SampleSearchScreen extends MinimalScreen
   @Override
   public void loadState(AttributeSet attributes) {
     filterTools.datasetsChanged(getParser().getDatasets(appInfo()));
-    chosenSampleClass = getParser().getSampleClass(attributes);
+    chosenSampleClass = getParser().getSampleClass();
     filterTools.sampleClassChanged(chosenSampleClass);
-    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    chosenColumns = getParser().getChosenColumns();
   }
 
   private void getParameterInfo() {
@@ -156,7 +156,7 @@ public class SampleSearchScreen extends MinimalScreen
 
   private String findAvailableGroupName(String prefix) throws Exception {
     List<Group> inactiveGroups =
-        getParser().getColumns(schema(), "inactiveColumns", attributes());
+        getParser().getColumns("inactiveColumns");
 
     Set<String> groupNames = new HashSet<String>();
     for (Group group : chosenColumns) {

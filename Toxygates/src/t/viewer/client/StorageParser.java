@@ -54,9 +54,14 @@ public class StorageParser {
 
   protected static final Logger logger = SharedUtils.getLogger("storage");
 
-  public StorageParser(Storage storage, String prefix) {
+  private AttributeSet attributes;
+  private DataSchema schema;
+
+  public StorageParser(Storage storage, String prefix, AttributeSet attributes, DataSchema schema) {
     this.prefix = prefix;
     this.storage = storage;
+    this.attributes = attributes;
+    this.schema = schema;
   }
 
   public void setItem(String key, String value) {
@@ -85,7 +90,7 @@ public class StorageParser {
   }
 
   @Nullable
-  public SampleClass getSampleClass(AttributeSet attributes) {
+  public SampleClass getSampleClass() {
     String v = getItem("sampleClass");
     if (v == null) {
       return new SampleClass();
@@ -97,7 +102,7 @@ public class StorageParser {
   @Nullable
   // Separator hierarchy for columns:
   // ### > ::: > ^^^ > $$$
-  public List<Group> getColumns(DataSchema schema, String key, AttributeSet attributes) throws Exception {
+  public List<Group> getColumns(String key) throws Exception {
     String v = getItem(key);
     List<Group> r = new ArrayList<Group>();
     if (v != null) {
@@ -110,16 +115,16 @@ public class StorageParser {
     return r;
   }
 
-  public List<Group> getChosenColumns(DataSchema schema, AttributeSet attributes) {
+  public List<Group> getChosenColumns() {
     try {
-      return getColumns(schema, "columns", attributes);
+      return getColumns("columns");
     } catch (Exception e) {
       logger.log(Level.WARNING, "Exception while retrieving columns", e);
       return new ArrayList<Group>();
     }
   }
 
-  public Group getCustomColumn(DataSchema schema, AttributeSet attributes) throws UnpackInputException {
+  public Group getCustomColumn() throws UnpackInputException {
     return Packer.unpackColumn(schema, getItem("customColumn"), attributes);
   }
 

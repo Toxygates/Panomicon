@@ -65,7 +65,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public void loadState(AttributeSet attributes) {
     StorageParser parser = getParser();
     chosenProbes = parser.getProbes();
-    chosenColumns = parser.getChosenColumns(schema(), attributes());
+    chosenColumns = parser.getChosenColumns();
     chosenItemLists = parser.getItemLists();
     chosenGeneSet = parser.getGeneSet();
     chosenClusteringList = parser.getClusteringLists();
@@ -173,7 +173,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   public TableView.ViewType preferredViewType() {
     StorageParser parser = getParser();    
-    chosenColumns = parser.getChosenColumns(schema(), attributes());
+    chosenColumns = parser.getChosenColumns();
     String[] types =
         chosenColumns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);    
     return types.length >= 2 ? ViewType.Dual : ViewType.Single;
@@ -233,7 +233,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes());
+    List<Group> chosenColumns = getParser().getChosenColumns();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 
