@@ -29,7 +29,7 @@ public class GroupPacker extends Packer<Group> {
   @Override
   public Group unpack(String string) throws UnpackInputException {
     if (string == null) {
-      throw new UnpackInputException("Null input string");
+      return null;
     }
 
     // This check for a legacy format is probably not necessary now that we have 
