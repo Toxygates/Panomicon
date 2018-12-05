@@ -5,8 +5,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.Window;
-
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -19,6 +17,17 @@ import t.viewer.shared.ItemList;
  */
 public class Packer {
   protected static final Logger logger = SharedUtils.getLogger("storage");
+
+  /**
+   * Thrown when unpacking an object from a string fails because of bad input
+   * data.
+   */
+  @SuppressWarnings("serial")
+  public static class UnpackInputException extends Exception {
+    public UnpackInputException(String message) {
+      super(message);
+    }
+  }
 
   public static String packSampleClass(SampleClass sc) {
     StringBuilder sb = new StringBuilder();
@@ -60,13 +69,12 @@ public class Packer {
     return sb.toString();
   }
 
-  public static @Nullable Sample unpackSample(String s, AttributeSet attributeSet) {
+  public static @Nullable Sample unpackSample(String s, AttributeSet attributeSet) throws UnpackInputException {
     String[] spl = s.split("\\$\\$\\$");
     String v = spl[0];
     if (!v.equals("Barcode_v3")) {
-      Window.alert("Legacy data has been detected in your browser's storage. "
+      throw new UnpackInputException("Legacy data has been detected in your browser's storage. "
           + "Some of your older sample groups may not load properly.");
-      return null;
     }
     String id = spl[1];
     SampleClass sc = unpackSampleClass(attributeSet, spl[2]);
@@ -85,7 +93,7 @@ public class Packer {
     return s.toString();
   }
 
-  public static Group unpackGroup(DataSchema schema, String s, AttributeSet attributeSet) {
+  public static Group unpackGroup(DataSchema schema, String s, AttributeSet attributeSet) throws UnpackInputException {
     String[] s1 = s.split(":::"); // !!
     String name = s1[1];
     String color = "";
@@ -102,12 +110,10 @@ public class Packer {
     String[] s2 = barcodes.split("\\^\\^\\^");
     Sample[] bcs = new Sample[s2.length];
     for (int i = 0; i < s2.length; ++i) {
-      Sample b = unpackSample(s2[i], attributeSet);
-      bcs[i] = b;
+        bcs[i] = unpackSample(s2[i], attributeSet);
     }
     // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
     return new Group(schema, name, bcs, color);
-
   }
 
   public static String packColumns(Collection<Group> columns) {
@@ -119,7 +125,7 @@ public class Packer {
   }
 
   @Nullable
-  public static Group unpackColumn(DataSchema schema, String s, AttributeSet attributes) {
+  public static Group unpackColumn(DataSchema schema, String s, AttributeSet attributes) throws UnpackInputException {
     if (s == null) {
       return null;
     }

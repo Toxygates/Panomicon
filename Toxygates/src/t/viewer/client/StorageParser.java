@@ -32,6 +32,7 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.client.Packer.UnpackInputException;
 import t.viewer.client.network.PackedNetwork;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
@@ -118,7 +119,7 @@ public class StorageParser {
     }
   }
 
-  public Group getCustomColumn(DataSchema schema, AttributeSet attributes) {
+  public Group getCustomColumn(DataSchema schema, AttributeSet attributes) throws UnpackInputException {
     return Packer.unpackColumn(schema, getItem("customColumn"), attributes);
   }
 

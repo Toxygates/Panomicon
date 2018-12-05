@@ -32,6 +32,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
+import t.viewer.client.Packer.UnpackInputException;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -75,7 +76,12 @@ public class SampleDetailScreen extends MinimalScreen {
   @Override
   public void loadState(AttributeSet attributes) {
     chosenColumns = getParser().getChosenColumns(schema(), attributes);
-    chosenCustomColumn = getParser().getCustomColumn(schema(), attributes);
+    try {
+      chosenCustomColumn = getParser().getCustomColumn(schema(), attributes);
+    } catch (UnpackInputException e) {
+      Window.alert("Failed to load custom column: " + e);
+      chosenCustomColumn = null;
+    }
     // TODO: serialize choice of displayed column, don't reload/rerender unless necessary, reconsider custom column behavior 
     //    // consume the data so the custom column isn't shown when switching back to this screen
     //    getParser().storeCustomColumn(null); 

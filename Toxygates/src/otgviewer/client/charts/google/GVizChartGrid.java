@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.*;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -34,6 +35,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenUtils;
 import t.common.shared.sample.Sample;
 import t.viewer.client.Packer;
+import t.viewer.client.Packer.UnpackInputException;
 
 /**
  * A ChartGrid that uses the Google Visualization API.
@@ -66,59 +68,63 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
   protected Widget chartFor(final GDTData gdt, ChartStyle style,
       double minVal, double maxVal, int column,
       int columnCount) {
-    final DataTable dt = gdt.data();
-    AxisOptions ao = AxisOptions.create();
+    final DataTable dataTable = gdt.data();
+    AxisOptions axisOptions = AxisOptions.create();
 
-    while (dt.getNumberOfColumns() < columnCount) {
-      int idx = dt.addColumn(ColumnType.NUMBER);
-      for (int j = 0; j < dt.getNumberOfRows(); ++j) {
-        dt.setValue(j, idx, 0);
+    while (dataTable.getNumberOfColumns() < columnCount) {
+      int newColumnIndex = dataTable.addColumn(ColumnType.NUMBER);
+      for (int j = 0; j < dataTable.getNumberOfRows(); ++j) {
+        dataTable.setValue(j, newColumnIndex, 0);
       }
     }
 
-    ao.setMinValue(minVal != Double.NaN ? minVal : dataset.getMin());
-    ao.setMaxValue(maxVal != Double.NaN ? maxVal : dataset.getMax());
+    axisOptions.setMinValue(minVal != Double.NaN ? minVal : dataset.getMin());
+    axisOptions.setMaxValue(maxVal != Double.NaN ? maxVal : dataset.getMax());
 
-    Options o = GVizCharts.createChartOptions();
+    Options chartOptions = GVizCharts.createChartOptions();
 
-    int fw = adjustWidth(style.width, style.bigMode);
-    int fh = adjustHeight(170, style.bigMode);
-    o.setWidth(fw);
-    o.setHeight(fh);
-    o.setVAxisOptions(ao);
+    int width = adjustWidth(style.width, style.bigMode);
+    int height = adjustHeight(170, style.bigMode);
+    chartOptions.setWidth(width);
+    chartOptions.setHeight(height);
+    chartOptions.setVAxisOptions(axisOptions);
 
     if (!style.isSeries) {
-      ChartArea ca = ChartArea.create();
-      ca.setWidth(style.bigMode ? fw * 0.7 : fw - 75);
-      ca.setHeight(style.bigMode ? fh * 0.8 : fh - 75);
-      o.setChartArea(ca);
+      ChartArea chartArea = ChartArea.create();
+      chartArea.setWidth(style.bigMode ? width * 0.7 : width - 75);
+      chartArea.setHeight(style.bigMode ? height * 0.8 : height - 75);
+      chartOptions.setChartArea(chartArea);
     } 
 
-    final CoreChart c = new ColumnChart(dt, o);
+    final CoreChart coreChart = new ColumnChart(dataTable, chartOptions);
     if (screen != null) {
-      c.addSelectHandler(new SelectHandler() {
+      coreChart.addSelectHandler(new SelectHandler() {
         @Override
         public void onSelect(SelectEvent event) {
-          JsArray<Selection> ss = c.getSelections();
-          Selection s = ss.get(0);
-          int col = s.getColumn();
-          int row = s.getRow();
-          String bc = dt.getProperty(row, col, "barcode");
-          if (bc != null) {
-            Sample b = Packer.unpackSample(bc, screen.appInfo().attributes());
-            ScreenUtils.displaySampleDetail(screen, b);
+          JsArray<Selection> allSelections = coreChart.getSelections();
+          Selection selection = allSelections.get(0);
+          int col = selection.getColumn();
+          int row = selection.getRow();
+          String barcode = dataTable.getProperty(row, col, "barcode");
+          if (barcode != null) {
+            try {
+              Sample sample = Packer.unpackSample(barcode, screen.appInfo().attributes());
+              ScreenUtils.displaySampleDetail(screen, sample);
+            } catch (UnpackInputException e) {
+              Window.alert("Error unpacking sample: " + e.getMessage());
+            }
           }
         }
       });
     }
-    c.addReadyHandler(new ReadyHandler() {
+    coreChart.addReadyHandler(new ReadyHandler() {
       @Override
       public void onReady(ReadyEvent event) {
-        String URI = imageURI(c.getJso());
+        String URI = imageURI(coreChart.getJso());
         style.downloadLink.setHTML("<a target=_blank href=\"" + URI + "\">Download</a>");
       }
     });
-    return c;
+    return coreChart;
   }
 
   private static native String imageURI(JavaScriptObject coreChart) /*-{
