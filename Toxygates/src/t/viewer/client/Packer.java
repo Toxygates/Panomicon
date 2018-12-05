@@ -71,6 +71,10 @@ public class Packer {
 
   public static @Nullable Sample unpackSample(String s, AttributeSet attributeSet) throws UnpackInputException {
     String[] spl = s.split("\\$\\$\\$");
+    if (spl.length != 3) {
+      throw new UnpackInputException("Malformed serialized sample: wrong number of "
+          + "$$$-separated tokens. Should be 3, but found " + spl.length + ".");
+    }
     String v = spl[0];
     if (!v.equals("Barcode_v3")) {
       throw new UnpackInputException("Legacy data has been detected in your browser's storage. "
@@ -95,6 +99,10 @@ public class Packer {
 
   public static Group unpackGroup(DataSchema schema, String s, AttributeSet attributeSet) throws UnpackInputException {
     String[] s1 = s.split(":::"); // !!
+    if (s1.length != 4) {
+      throw new UnpackInputException("Malformed serialized group: wrong number of "
+          + ":::-separated tokens. Should be 4, but found " + s1.length + ".");
+    }
     String name = s1[1];
     String color = "";
     String barcodes = "";
