@@ -28,8 +28,7 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 
 import t.common.shared.*;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Packer.UnpackInputException;
@@ -72,6 +71,14 @@ public class StorageParser {
     samplePacker = new SamplePacker(sampleClassPacker);
     groupPacker = new GroupPacker(samplePacker, schema);
     columnsPacker = new ColumnsPacker(groupPacker);
+  }
+
+  public String packSample(Sample sample) {
+    return samplePacker.pack(sample);
+  }
+
+  public Sample unpackSample(String string) throws UnpackInputException {
+    return samplePacker.unpack(string);
   }
 
   public void setItem(String key, String value) {

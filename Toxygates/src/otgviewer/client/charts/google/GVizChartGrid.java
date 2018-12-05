@@ -34,7 +34,6 @@ import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenUtils;
 import t.common.shared.sample.Sample;
-import t.viewer.client.Packer;
 import t.viewer.client.Packer.UnpackInputException;
 
 /**
@@ -108,7 +107,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           String barcode = dataTable.getProperty(row, col, "barcode");
           if (barcode != null) {
             try {
-              Sample sample = Packer.unpackSample(barcode, screen.appInfo().attributes());
+              Sample sample = screen.getParser().unpackSample(barcode);
               ScreenUtils.displaySampleDetail(screen, sample);
             } catch (UnpackInputException e) {
               Window.alert("Error unpacking sample: " + e.getMessage());
