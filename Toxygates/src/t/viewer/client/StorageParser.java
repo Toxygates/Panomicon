@@ -53,19 +53,28 @@ public class StorageParser {
 
   protected static final Logger logger = SharedUtils.getLogger("storage");
 
-  private AttributeSet attributes;
-  private DataSchema schema;
-
-  private SampleClassPacker sampleClassPacker;
-  private SamplePacker samplePacker;
-  private GroupPacker groupPacker;
-  private ColumnsPacker columnsPacker;
+  public final SampleClassPacker sampleClassPacker;
+  public final SamplePacker samplePacker;
+  public final GroupPacker groupPacker;
+  public final ColumnsPacker columnsPacker;
+  
+  public final ListPacker<String> probesPacker = 
+      new ListPacker<String>(new IdentityPacker(), "###");
+  public final ListPacker<String> compoundsPacker = 
+      new ListPacker<String>(new IdentityPacker(), "###");
+  public final ListPacker<Dataset> datasetsPacker = 
+      new ListPacker<Dataset>(new DatasetPacker(), "###");
+  public final ListPacker<ItemList> itemListsPacker = 
+      new ListPacker<ItemList>(new ItemListPacker(), "###");
+  public final ListPacker<ItemList> clusteringListsPacker = 
+      new ListPacker<ItemList>(new ItemListPacker(), "###");
+  public final ItemListPacker genesetPacker = new ItemListPacker();
+  public final ListPacker<PackedNetwork> packedNetworksPacker =
+      new ListPacker<PackedNetwork>(new PackedNetworkPacker(), "###");
 
   public StorageParser(Storage storage, String prefix, AttributeSet attributes, DataSchema schema) {
     this.prefix = prefix;
     this.storage = storage;
-    this.attributes = attributes;
-    this.schema = schema;
 
     sampleClassPacker = new SampleClassPacker(attributes);
     samplePacker = new SamplePacker(sampleClassPacker);
@@ -106,6 +115,9 @@ public class StorageParser {
     return true;
   }
 
+  // TBD: encapsulate all these "get" and "store" operations, with all their 
+  // error/contingency handling, into objects, like we did with all the Packers.
+
   @Nullable
   public SampleClass getSampleClass() {
     String v = getItem("sampleClass");
@@ -136,8 +148,12 @@ public class StorageParser {
 
   public String[] getProbes() {
     String probeString = getItem("probes");
-    if (probeString != null && !probeString.equals("")) {
-      return probeString.split("###");
+    if (probeString != null) {
+      try {
+        return probesPacker.unpack(probeString).toArray(new String[0]);
+      } catch (UnpackInputException e) {
+        return null; // this will never happen
+      }
     } else {
       return new String[0];
     }
@@ -145,14 +161,15 @@ public class StorageParser {
 
   public Dataset[] getDatasets(AppInfo info) {
     String v = getItem("datasets");
-    if (v == null) {      
+    if (v == null || v == "") {      
       return Dataset.defaultSelection(info.datasets());        
     }
-    List<Dataset> r = new ArrayList<Dataset>();
-    for (String ds : v.split("###")) {
-      r.add(new Dataset(ds, "", "", null, ds, 0));
+    try {
+      return datasetsPacker.unpack(v).toArray(new Dataset[0]);
+    } catch (UnpackInputException e) {
+      return null; // this will never happen
     }
-    return r.toArray(new Dataset[0]);
+    
   }
 
   public List<String> getCompounds() {
@@ -160,13 +177,11 @@ public class StorageParser {
     if (v == null) {
       return new ArrayList<String>();
     }
-    List<String> r = new ArrayList<String>();
-    if (v.length() > 0) {
-      for (String c : v.split("###")) {
-        r.add(c);
-      }
+    try {
+      return compoundsPacker.unpack(v);
+    } catch (UnpackInputException e) {
+      return null; // this will never happen
     }
-    return r;
   }
 
   public List<ItemList> getItemLists() {
@@ -178,18 +193,15 @@ public class StorageParser {
   }
 
   public List<ItemList> getLists(String name) {
-    List<ItemList> r = new ArrayList<ItemList>();
-    String v = getItem(name);
-    if (v != null) {
-      String[] spl = v.split("###");
-      for (String x : spl) {
-        ItemList il = ItemList.unpack(x);
-        if (il != null) {
-          r.add(il);
-        }
-      }
+    String value = getItem(name);
+    if (value == null) {
+      return new ArrayList<ItemList>();
     }
-    return r;
+    try {
+      return itemListsPacker.unpack(value);
+    } catch (UnpackInputException e) {
+      return null; // this will never happen
+    }
   }
 
   public List<PackedNetwork> getPackedNetworks() {
@@ -208,11 +220,11 @@ public class StorageParser {
   }
 
   public ItemList getGeneSet() {
-    return ItemList.unpack(getItem("geneset"));
+    return genesetPacker.unpack(getItem("geneset"));
   }
 
   public void storeCompounds(List<String> compounds) {
-    setItem("compounds", Packer.packList(compounds, "###"));
+    setItem("compounds", compoundsPacker.pack(compounds));
   }
 
   public void storeColumns(String key, Collection<Group> columns) {
@@ -237,19 +249,15 @@ public class StorageParser {
   }
 
   public void storeDatasets(Dataset[] datasets) {
-    setItem("datasets", Packer.packDatasets(datasets));
+    setItem("datasets", datasetsPacker.pack(Arrays.asList(datasets)));
   }
 
   public void storeItemLists(List<ItemList> itemLists) {
-    setItem("lists", Packer.packItemLists(itemLists, "###"));
+    setItem("lists", itemListsPacker.pack(itemLists));
   }
 
   public void storePackedNetworks(List<PackedNetwork> networks) {
-    List<String> networkStrings = new ArrayList<String>();
-    for (PackedNetwork network : networks) {
-      networkStrings.add(network.title() + ":::" + network.jsonString());
-    }
-    setItem("networks", Packer.packList(networkStrings, "###"));
+    setItem("networks", packedNetworksPacker.pack(networks));
   }
 
   public void storeSampleClass(SampleClass sampleClass) {
@@ -257,14 +265,14 @@ public class StorageParser {
   }
 
   public void storeProbes(String[] probes) {
-    setItem("probes", Packer.packProbes(probes));
+    setItem("probes", probesPacker.pack(Arrays.asList(probes)));
   }
 
   public void storeGeneSet(ItemList geneList) {
-    setItem("geneset", (geneList != null ? geneList.pack() : ""));
+    setItem("geneset", (geneList != null ? genesetPacker.pack(geneList) : ""));
   }
 
   public void storeClusteringLists(List<ItemList> clusteringList) {
-    setItem("clusterings", Packer.packItemLists(clusteringList, "###"));
+    setItem("clusterings", clusteringListsPacker.pack(clusteringList));
   }
 }

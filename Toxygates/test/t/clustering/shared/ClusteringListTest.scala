@@ -27,6 +27,7 @@ import t.viewer.shared._
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
+import t.viewer.client.ItemListPacker
 
 @RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends TTestSuite {
@@ -42,8 +43,8 @@ class ClusteringListTest extends TTestSuite {
     l.addParam("cutoff", "1.0")
     assert(l.size() === items.size)
     assert(l.items() === items.toArray)
-    val p = l.pack()
-    val up = ItemList.unpack(p)
+    val p = ItemListPacker.doPack(l)
+    val up = ItemListPacker.doUnpack(p)
     assert(up.name() === l.name())
     assert(up.`type` === l.`type`)
     assert(up.asInstanceOf[ClusteringList].algorithm() == algorithm)
