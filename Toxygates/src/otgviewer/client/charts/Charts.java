@@ -37,6 +37,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
+import t.viewer.client.StorageParser;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 
@@ -63,7 +64,7 @@ public class Charts {
   private SampleClass[] sampleClasses;
   private List<Group> groups;
   final private DataSchema schema;
-
+  private StorageParser storageParser;
   /*
    * Note: ideally this should be instantiated/chosen by some dependency injection system
    */
@@ -71,7 +72,8 @@ public class Charts {
   private Screen screen;
 
   private Charts(Screen screen) {
-    this.schema = screen.manager().schema();
+    schema = screen.manager().schema();
+    storageParser = screen.getParser();
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();
     this.seriesService = screen.manager().seriesService();
@@ -141,7 +143,7 @@ public class Charts {
         @Override
         public void accept(final List<ChartSample> samples) {
           boolean categoriesAreMinors = seriesType == SeriesType.Time;
-          GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors);
+              GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors, storageParser);
           List<String> filters = 
               series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
 

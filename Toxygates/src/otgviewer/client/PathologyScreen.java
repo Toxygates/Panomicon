@@ -61,8 +61,8 @@ public class PathologyScreen extends MinimalScreen {
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenSampleClass = getParser().getSampleClass(attributes);
-    chosenColumns = getParser().getChosenColumns(schema(), attributes);
+    chosenSampleClass = getParser().getSampleClass();
+    chosenColumns = getParser().getChosenColumns();
   }
 
   public interface Resources extends CellTable.Resources {
@@ -73,7 +73,7 @@ public class PathologyScreen extends MinimalScreen {
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getParser().getChosenColumns(schema(), attributes());
+    List<Group> chosenColumns = getParser().getChosenColumns();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 

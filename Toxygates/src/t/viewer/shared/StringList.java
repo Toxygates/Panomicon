@@ -22,6 +22,8 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import t.viewer.client.ItemListPacker;
+
 @SuppressWarnings("serial")
 public class StringList extends ItemList {
 
@@ -45,6 +47,7 @@ public class StringList extends ItemList {
     return new StringList(type, name, items);
   }
   
+  @Override
   public Collection<String> packedItems() {
     return Arrays.asList(items);
   }
@@ -53,6 +56,7 @@ public class StringList extends ItemList {
     return items;
   }
 
+  @Override
   public int size() {
     if (items == null) {
       return 0;
@@ -82,9 +86,9 @@ public class StringList extends ItemList {
   
   @Override
   public String toString() {
-    return "StringList:" + pack();
-   }
-  
+    return "StringList:" + ItemListPacker.doPack(this);
+  }
+
   @Override
   public int hashCode() {
     return name.hashCode() + 41 * (
@@ -102,6 +106,5 @@ public class StringList extends ItemList {
     return sol.name().equals(name()) &&
         sol.type().equals(type()) &&
         Arrays.equals(items(), sol.items());
-        
   }
 }

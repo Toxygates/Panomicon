@@ -119,8 +119,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
 
+    // We don't use StorageParser here, because StorageParser initialization requires an appInfo
     @Nullable
-    String existingKey = getParser().getItem("userDataKey");
+    String existingKey = tryGetStorage().getItem(storageParserPrefix() + "userDataKey");
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
@@ -299,7 +300,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     if (parser != null) {
       return parser;
     }
-    parser = new StorageParser(tryGetStorage(), storageParserPrefix());
+    parser = new StorageParser(tryGetStorage(), storageParserPrefix(), schema(), appInfo());
     return parser;
   }
 

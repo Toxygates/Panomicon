@@ -49,7 +49,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   public void loadState(AttributeSet attributes) {
     chosenDatasets = getParser().getDatasets(appInfo());
     filterTools.datasetsChanged(chosenDatasets);
-    SampleClass sampleClass = getParser().getSampleClass(attributes);
+    SampleClass sampleClass = getParser().getSampleClass();
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.datasetsChanged(chosenDatasets);
     compoundSelector.sampleClassChanged(sampleClass);

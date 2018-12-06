@@ -52,7 +52,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     filterTools.datasetsChanged(chosenDatasets);
     groupInspector.datasetsChanged(chosenDatasets);
 
-    SampleClass sampleClass = getParser().getSampleClass(attributes);
+    SampleClass sampleClass = getParser().getSampleClass();
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
 

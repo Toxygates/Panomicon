@@ -22,6 +22,7 @@ import java.util.List;
 
 import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
+import t.viewer.client.StorageParser;
 
 public class GVizFactory extends Factory<GDTData, GDTDataset> {
 
@@ -32,8 +33,8 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
 
   @Override
   public GDTDataset dataset(List<ChartSample> samples,
-      String[] categories, boolean categoriesAreMins) {
-    return new GDTDataset(samples, categories, categoriesAreMins);
+      String[] categories, boolean categoriesAreMins, StorageParser parser) {
+    return new GDTDataset(samples, categories, categoriesAreMins, parser);
   }
 
   @Override

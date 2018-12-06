@@ -31,23 +31,25 @@ import otgviewer.client.charts.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
-import t.viewer.client.Packer;
+import t.viewer.client.StorageParser;
 
 public class GDTDataset extends Dataset<GDTData> {
+  private StorageParser parser;
 
   GDTDataset(List<ChartSample> samples, String[] categories,
-      boolean categoriesAreMins) {
+      boolean categoriesAreMins, StorageParser parser) {
     super(samples, categories, categoriesAreMins);
+    this.parser = parser;
   }
 
   @Override
   public GDTData makeData(SampleClass filter, @Nullable String probe) {
-    DataTable t = DataTable.create();
-    t.addColumn(ColumnType.STRING, "Time");
+    DataTable dataTable = DataTable.create();
+    dataTable.addColumn(ColumnType.STRING, "Time");
 
     for (int i = 0; i < categories.length; ++i) {
-      t.addRow();
-      t.setValue(i, 0, categories[i]);
+      dataTable.addRow();
+      dataTable.setValue(i, 0, categories[i]);
     }
 
     List<ChartSample> fsamples = new ArrayList<ChartSample>();
@@ -58,37 +60,36 @@ public class GDTDataset extends Dataset<GDTData> {
       }
     }
 
-    GDTData gdt = new GDTData(t);
-    makeColumns(gdt, fsamples);
-    return gdt;
+    GDTData gdtData = new GDTData(dataTable);
+    makeColumns(gdtData, fsamples);
+    return gdtData;
   }
 
   @Override
   protected void makeColumns(GDTData gdt, List<ChartSample> samples) {
     int colCount = 0;
     int[] valCount = new int[categories.length];
-    DataTable dt = gdt.data();
+    DataTable dataTable = gdt.data();
 
-    for (ChartSample s : samples) {
-      String scat = categoryForSample(s);
-      int cat = SharedUtils.indexOf(categories, scat);
-      if (cat != -1) {
-        if (colCount < valCount[cat] + 1) {
-          dt.addColumn(ColumnType.NUMBER);
-          addStyleColumn(dt);
+    for (ChartSample sample : samples) {
+      int categoryIndex = SharedUtils.indexOf(categories, categoryForSample(sample));
+      if (categoryIndex != -1) {
+        if (colCount < valCount[categoryIndex] + 1) {
+          dataTable.addColumn(ColumnType.NUMBER);
+          addStyleColumn(dataTable);
           colCount++;
         }
 
-        final int col = valCount[cat] * 2 + 1;
-        dt.setValue(cat, col, s.value());
-        if (s.sample() != null) {
-          dt.setProperty(cat, col, "barcode", Packer.packSample(s.sample()));
+        final int col = valCount[categoryIndex] * 2 + 1;
+        dataTable.setValue(categoryIndex, col, sample.value());
+        if (sample.sample() != null) {
+          dataTable.setProperty(categoryIndex, col, "barcode", parser.packSample(sample.sample()));
         }
-        dt.setFormattedValue(cat, col, s.formattedValue());
-        String style = "fill-color:" + s.color() + "; stroke-width:1px; ";
+        dataTable.setFormattedValue(categoryIndex, col, sample.formattedValue());
+        String style = "fill-color:" + sample.color() + "; stroke-width:1px; ";
 
-        dt.setValue(cat, col + 1, style);
-        valCount[cat]++;
+        dataTable.setValue(categoryIndex, col + 1, style);
+        valCount[categoryIndex]++;
       }
     }
   }
@@ -99,5 +100,4 @@ public class GDTDataset extends Dataset<GDTData> {
       role : 'style'
     });
   }-*/;
-
 }

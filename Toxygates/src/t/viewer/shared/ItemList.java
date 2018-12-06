@@ -21,11 +21,6 @@ package t.viewer.shared;
 import java.io.Serializable;
 import java.util.Collection;
 
-import t.clustering.shared.ClusteringList;
-import t.common.shared.Packable;
-import t.common.shared.SharedUtils;
-import t.viewer.shared.clustering.ProbeClustering;
-
 /**
  * A typed, named list of items.
  * 
@@ -33,7 +28,7 @@ import t.viewer.shared.clustering.ProbeClustering;
  * be gene identifiers (entrez).
  */
 @SuppressWarnings("serial")
-abstract public class ItemList implements Packable, Serializable, Comparable<ItemList> {
+abstract public class ItemList implements Serializable, Comparable<ItemList> {
 
   protected String type;
   protected String name;
@@ -53,48 +48,9 @@ abstract public class ItemList implements Packable, Serializable, Comparable<Ite
     return type;
   }
 
-  public String pack() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(type);
-    sb.append(":::");
-    sb.append(name);
-    sb.append(":::");
-    sb.append(SharedUtils.packList(packedItems(), "^^^"));
-    return sb.toString();
-  }
-
   abstract public Collection<String> packedItems();
 
   abstract public int size();
-
-  public static ItemList unpack(String input) {
-    if (input == null) {
-      return null;
-    }
-
-    String[] spl = input.split(":::");
-    if (spl.length < 3) {
-      return null;
-    }
-
-    String type = spl[0];
-    String name = spl[1];
-    String[] items = spl[2].split("\\^\\^\\^");
-
-    // Note: it would be good to avoid having this kind of central registry
-    // of list types here. An alternative approach would be that different types
-    // register themselves when the corresponding class is loaded/initialized.
-    if (type.equals(StringList.PROBES_LIST_TYPE) ||
-        type.equals(StringList.COMPOUND_LIST_TYPE) ||
-        type.equals(ProbeClustering.PROBE_CLUSTERING_TYPE)) {
-      return new StringList(type, name, items);
-    } else if (type.equals("userclustering")) {
-      return new ClusteringList(type, name, items);
-    } else {
-      // Unexpected type, ignore
-      return null;
-    }
-  }
 
   @Override
   public int compareTo(ItemList o) {

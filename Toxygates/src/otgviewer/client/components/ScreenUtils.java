@@ -30,5 +30,4 @@ public class ScreenUtils {
     screen.getParser().storeCustomColumn(g);
     screen.manager().attemptProceed(SampleDetailScreen.key);
   }
-
 }

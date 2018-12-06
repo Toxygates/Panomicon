@@ -21,13 +21,14 @@ package otgviewer.client.charts;
 import java.util.List;
 
 import otgviewer.client.components.Screen;
+import t.viewer.client.StorageParser;
 
 abstract public class Factory<D extends Data, DS extends Dataset<D>> {
 
   abstract public D[][] dataArray(int rows, int cols);
 
   abstract public DS dataset(List<ChartSample> samples,
-      String[] categories, boolean categoriesAreMins);
+      String[] categories, boolean categoriesAreMins, StorageParser parser);
 
   abstract public ChartGrid<D> grid(Screen screen, DS table, final List<String> rowFilters,
       final List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,

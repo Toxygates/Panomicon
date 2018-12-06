@@ -323,7 +323,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void loadGroups() {
-    groups.loadGroups(screen.getParser(), screen.schema(), screen.attributes());
+    groups.loadGroups(screen.getParser());
     updateConfigureStatus(false);
 
     // Reflect loaded group information in UI
