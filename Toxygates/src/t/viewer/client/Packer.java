@@ -6,13 +6,18 @@ import java.util.logging.Logger;
 import t.common.shared.SharedUtils;
 
 /**
- * Methods for packing objects into strings, and unpacking from strings,
- * factored out of StorageParser.
+ * Converts (packs) objects of a given type into a string, and also converts
+ * (unpacks) such strings back into an object of that type.
  */
 abstract public class Packer<T> {
   protected static final Logger logger = SharedUtils.getLogger("storage");
 
   abstract public String pack(T entity);
+
+  /**
+   * Unpacks a string into an object of type T. Not expected to handle cases where
+   * the input is null.
+   */
   abstract public T unpack(String string) throws UnpackInputException;
 
   /**

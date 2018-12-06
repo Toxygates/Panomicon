@@ -56,7 +56,7 @@ public class StorageParser {
   public final SampleClassPacker sampleClassPacker;
   public final SamplePacker samplePacker;
   public final GroupPacker groupPacker;
-  public final ColumnsPacker columnsPacker;
+  public final ListPacker<Group> columnsPacker;
   
   public final ListPacker<String> probesPacker = 
       new ListPacker<String>(new IdentityPacker(), "###");
@@ -79,7 +79,7 @@ public class StorageParser {
     sampleClassPacker = new SampleClassPacker(attributes);
     samplePacker = new SamplePacker(sampleClassPacker);
     groupPacker = new GroupPacker(samplePacker, schema);
-    columnsPacker = new ColumnsPacker(groupPacker);
+    columnsPacker = new ListPacker<Group>(groupPacker, "###");
   }
 
   public String packSample(Sample sample) {

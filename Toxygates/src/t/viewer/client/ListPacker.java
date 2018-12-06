@@ -28,11 +28,11 @@ public class ListPacker<T> extends Packer<Collection<T>> {
 
   @Override
   public ArrayList<T> unpack(String string) throws UnpackInputException {
-    // can't use lambdas because elementPacker.unpack throws UnpackInputException
     if (string.length() == 0) {
       return new ArrayList<T>(0);
     }
     String[] tokens = string.split(separator);
+    // can't use lambdas because elementPacker.unpack throws UnpackInputException
     ArrayList<T> entities = new ArrayList<T>(tokens.length);
     for (String token : tokens) {
       entities.add(elementPacker.unpack(token));
