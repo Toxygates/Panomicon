@@ -135,7 +135,7 @@ public class SampleSearchScreen extends MinimalScreen
             Group pendingGroup = new Group(schema(), name, allUnits);
 
             chosenColumns.add(pendingGroup);
-          getParser().storeColumns("columns", chosenColumns);
+          getParser().storeChosenColumns(chosenColumns);
 
             currentSearch.helper().selectionTable().clearSelection();
 
@@ -156,7 +156,7 @@ public class SampleSearchScreen extends MinimalScreen
 
   private String findAvailableGroupName(String prefix) throws Exception {
     List<Group> inactiveGroups =
-        getParser().getColumns("inactiveColumns");
+        getParser().getInactiveColumns();
 
     Set<String> groupNames = new HashSet<String>();
     for (Group group : chosenColumns) {

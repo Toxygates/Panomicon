@@ -24,13 +24,12 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 
 import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.model.SampleClass;
-import t.model.sample.AttributeSet;
 import t.viewer.client.Packer.UnpackInputException;
 import t.viewer.client.network.PackedNetwork;
 import t.viewer.shared.AppInfo;
@@ -43,10 +42,10 @@ import t.viewer.shared.ItemList;
  * Storage parsing/serialising code. PersistedState may also be considered for
  * some of these items in the future, where lifecycle management is needed.
  */
-public class StorageParser {
+public class StorageParser implements Storage.StorageProvider {
 
   private final String prefix;
-  private final Storage storage;
+  private final com.google.gwt.storage.client.Storage storage;
   private static final char[] reservedChars = new char[] {':', '#', '$', '^'};
   public static final String unacceptableStringMessage =
       "The characters ':', '#', '$' and '^' are reserved and may not be used.";
@@ -60,26 +59,78 @@ public class StorageParser {
   
   public final ListPacker<String> probesPacker = 
       new ListPacker<String>(new IdentityPacker(), "###");
+  
   public final ListPacker<String> compoundsPacker = 
       new ListPacker<String>(new IdentityPacker(), "###");
+  
   public final ListPacker<Dataset> datasetsPacker = 
       new ListPacker<Dataset>(new DatasetPacker(), "###");
+  
   public final ListPacker<ItemList> itemListsPacker = 
       new ListPacker<ItemList>(new ItemListPacker(), "###");
-  public final ListPacker<ItemList> clusteringListsPacker = 
+  
+  public final ListPacker<ItemList> clusteringListsPacker =  
       new ListPacker<ItemList>(new ItemListPacker(), "###");
+  
   public final ItemListPacker genesetPacker = new ItemListPacker();
-  public final ListPacker<PackedNetwork> packedNetworksPacker =
+  
+  public final ListPacker<PackedNetwork> packedNetworksPacker = 
       new ListPacker<PackedNetwork>(new PackedNetworkPacker(), "###");
 
-  public StorageParser(Storage storage, String prefix, AttributeSet attributes, DataSchema schema) {
+  public final Storage<SampleClass> sampleClassStorage;
+  public final Storage<List<Group>> chosenColumnsStorage;
+  public final Storage<List<Group>> inactiveColumnsStorage;
+  
+  public final Storage<Group> customColumnStorage;
+  public final Storage<List<Dataset>> datasetsStorage;
+  
+  public final Storage<List<String>> probesStorage = 
+      new Storage<List<String>>("probes", probesPacker, this, 
+          () -> new ArrayList<String>());
+  
+  public final Storage<List<String>> compoundsStorage = 
+      new Storage<List<String>>("compounds", compoundsPacker, this, 
+          () -> new ArrayList<String>());
+  
+  public final Storage<List<ItemList>> itemListsStorage = 
+      new Storage<List<ItemList>>("lists", itemListsPacker, this, 
+          () -> new ArrayList<ItemList>());
+  
+  public final Storage<List<ItemList>> clusteringListsStorage = 
+      new Storage<List<ItemList>>("clusterings", clusteringListsPacker, this, 
+          () -> new ArrayList<ItemList>());
+
+  public final Storage<ItemList> genesetStorage = 
+      new Storage<ItemList>("geneset", genesetPacker, this);
+  
+  public final Storage<List<PackedNetwork>> packedNetworksStorage = 
+      new Storage<List<PackedNetwork>>("networks", packedNetworksPacker, this,
+          () -> new ArrayList<PackedNetwork>());
+  
+  public StorageParser(com.google.gwt.storage.client.Storage storage, String prefix, 
+      DataSchema schema, AppInfo info) {
+    
     this.prefix = prefix;
     this.storage = storage;
 
-    sampleClassPacker = new SampleClassPacker(attributes);
+    sampleClassPacker = new SampleClassPacker(info.attributes());
     samplePacker = new SamplePacker(sampleClassPacker);
     groupPacker = new GroupPacker(samplePacker, schema);
     columnsPacker = new ListPacker<Group>(groupPacker, "###");
+    
+    sampleClassStorage = 
+        new Storage<SampleClass>("sampleClass", sampleClassPacker, this, () -> new SampleClass());
+    chosenColumnsStorage = 
+        new Storage<List<Group>>("columns", columnsPacker, this,
+            () -> new ArrayList<Group>());
+    inactiveColumnsStorage = 
+        new Storage<List<Group>>("inactiveColumns", columnsPacker, this, 
+            () -> new ArrayList<Group>());
+    
+    customColumnStorage = new Storage<Group>("customColumn", groupPacker, this);
+    
+    datasetsStorage = new Storage<List<Dataset>>("datasets", datasetsPacker, this,
+        () -> Arrays.asList(Dataset.defaultSelection(info.datasets())));
   }
 
   public String packSample(Sample sample) {
@@ -90,17 +141,20 @@ public class StorageParser {
     return samplePacker.unpack(string);
   }
 
+  @Override
   public void setItem(String key, String value) {
     storage.setItem(prefix + "." + key, value);
     // logger.info("SET " + prefix + "." + key + " -> " + value);
   }
 
+  @Override
   public String getItem(String key) {
     String v = storage.getItem(prefix + "." + key);
     // logger.info("GET " + prefix + "." + key + " -> " + v);
     return v;
   }
 
+  @Override
   public void clearItem(String key) {
     storage.removeItem(prefix + "." + key);
   }
@@ -114,163 +168,101 @@ public class StorageParser {
     }
     return true;
   }
-
-  // TBD: encapsulate all these "get" and "store" operations, with all their 
-  // error/contingency handling, into objects, like we did with all the Packers.
+  
+  /* TBD: remove the following boilerplate methods, and instead have other classes 
+   * directly use the public Storage<T> instances.
+   * Also, considering using lists rather than arrays for datasets and probes so 
+   * we don't have to do the conversion here. 
+   */
 
   @Nullable
   public SampleClass getSampleClass() {
-    String v = getItem("sampleClass");
-    if (v == null) {
-      return new SampleClass();
-    } else {
-      return sampleClassPacker.unpack(v);
-    }
-  }
-
-  @Nullable
-  public List<Group> getColumns(String key) throws Exception {
-    return columnsPacker.unpack(getItem(key));
+    return sampleClassStorage.getIgnoringException();
   }
 
   public List<Group> getChosenColumns() {
-    try {
-      return getColumns("columns");
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Exception while retrieving columns", e);
-      return new ArrayList<Group>();
-    }
+    return chosenColumnsStorage.getWithExceptionHandler(e -> 
+        logger.log(Level.WARNING, "Exception while retrieving columns", e));
+  }
+
+  public List<Group> getInactiveColumns() {
+    return inactiveColumnsStorage.getWithExceptionHandler(e -> 
+        logger.log(Level.WARNING, "Exception while retrieving columns", e));
   }
 
   public Group getCustomColumn() throws UnpackInputException {
-    return groupPacker.unpack(getItem("customColumn"));
+    return customColumnStorage.get();
   }
 
   public String[] getProbes() {
-    String probeString = getItem("probes");
-    if (probeString != null) {
-      try {
-        return probesPacker.unpack(probeString).toArray(new String[0]);
-      } catch (UnpackInputException e) {
-        return null; // this will never happen
-      }
-    } else {
-      return new String[0];
-    }
+    return probesStorage.getIgnoringException().toArray(new String[0]);
   }
 
   public Dataset[] getDatasets(AppInfo info) {
-    String v = getItem("datasets");
-    if (v == null || v == "") {      
-      return Dataset.defaultSelection(info.datasets());        
-    }
-    try {
-      return datasetsPacker.unpack(v).toArray(new Dataset[0]);
-    } catch (UnpackInputException e) {
-      return null; // this will never happen
-    }
-    
+    return datasetsStorage.getIgnoringException().toArray(new Dataset[0]);
   }
 
   public List<String> getCompounds() {
-    String v = getItem("compounds");
-    if (v == null) {
-      return new ArrayList<String>();
-    }
-    try {
-      return compoundsPacker.unpack(v);
-    } catch (UnpackInputException e) {
-      return null; // this will never happen
-    }
+    return compoundsStorage.getIgnoringException();
   }
 
   public List<ItemList> getItemLists() {
-    return getLists("lists");
+    return itemListsStorage.getIgnoringException();
   }
 
   public List<ItemList> getClusteringLists() {
-    return getLists("clusterings");
-  }
-
-  public List<ItemList> getLists(String name) {
-    String value = getItem(name);
-    if (value == null) {
-      return new ArrayList<ItemList>();
-    }
-    try {
-      return itemListsPacker.unpack(value);
-    } catch (UnpackInputException e) {
-      return null; // this will never happen
-    }
+    return clusteringListsStorage.getIgnoringException();
   }
 
   public List<PackedNetwork> getPackedNetworks() {
-    String value = getItem("networks");
-    if (value == null) {
-      return new ArrayList<PackedNetwork>();
-    } else {
-      try {
-        return packedNetworksPacker.unpack(value);
-      } catch (UnpackInputException e) {
-        return new ArrayList<PackedNetwork>();
-      }
-    }
+    return packedNetworksStorage.getIgnoringException();
   }
 
   public ItemList getGeneSet() {
-    return genesetPacker.unpack(getItem("geneset"));
+    return genesetStorage.getIgnoringException();
   }
 
   public void storeCompounds(List<String> compounds) {
-    setItem("compounds", compoundsPacker.pack(compounds));
+    compoundsStorage.store(compounds);
   }
-
-  public void storeColumns(String key, Collection<Group> columns) {
-    if (!columns.isEmpty()) {
-      SampleColumn first = columns.iterator().next();
-      String representative = (first.getSamples().length > 0) ? first.getSamples()[0].toString() : "(no samples)";
-
-      logger.info("Storing columns for " + key + " : " + first + " : " + representative + " ...");
-      setItem(key, columnsPacker.pack(columns));
-    } else {
-      logger.info("Clearing stored columns for: " + key);
-      clearItem(key);
-    }
+  
+  public void storeChosenColumns(List<Group> columns) {
+    chosenColumnsStorage.store(columns);
+  }
+  
+  public void storeInactiveColumns(List<Group> columns) {
+    inactiveColumnsStorage.store(columns);
   }
 
   public void storeCustomColumn(Group column) {
-    if (column != null) {
-      setItem("customColumn", groupPacker.pack(column));
-    } else {
-      clearItem("customColumn");
-    }
+    customColumnStorage.store(column);
   }
 
   public void storeDatasets(Dataset[] datasets) {
-    setItem("datasets", datasetsPacker.pack(Arrays.asList(datasets)));
+    datasetsStorage.store(Arrays.asList(datasets));
   }
 
   public void storeItemLists(List<ItemList> itemLists) {
-    setItem("lists", itemListsPacker.pack(itemLists));
+    itemListsStorage.store(itemLists);
   }
 
   public void storePackedNetworks(List<PackedNetwork> networks) {
-    setItem("networks", packedNetworksPacker.pack(networks));
+    packedNetworksStorage.store(networks);
   }
 
   public void storeSampleClass(SampleClass sampleClass) {
-    setItem("sampleClass", sampleClassPacker.pack(sampleClass));
+    sampleClassStorage.store(sampleClass);
   }
 
   public void storeProbes(String[] probes) {
-    setItem("probes", probesPacker.pack(Arrays.asList(probes)));
+    probesStorage.store(Arrays.asList(probes));
   }
 
   public void storeGeneSet(ItemList geneList) {
-    setItem("geneset", (geneList != null ? genesetPacker.pack(geneList) : ""));
+    genesetStorage.store(geneList);
   }
 
   public void storeClusteringLists(List<ItemList> clusteringList) {
-    setItem("clusterings", clusteringListsPacker.pack(clusteringList));
+    clusteringListsStorage.store(clusteringList);
   }
 }

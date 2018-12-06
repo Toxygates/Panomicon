@@ -28,7 +28,7 @@ public class Groups {
 
     // Load inactive columns
     try {
-      Collection<Group> inactiveGroups = sortedGroupList(parser.getColumns("inactiveColumns"));
+      Collection<Group> inactiveGroups = sortedGroupList(parser.getInactiveColumns());
       for (Group g : inactiveGroups) {
         groups.put(g.getName(), g);
       }
@@ -39,11 +39,11 @@ public class Groups {
   }
 
   public void saveToLocalStorage(StorageParser parser) {
-    parser.storeColumns("columns", activeGroups());
+    parser.storeChosenColumns(activeGroups());
 
     List<Group> inactiveGroups = new ArrayList<Group>(groups.values());
     inactiveGroups.removeAll(activeGroups());
-    parser.storeColumns("inactiveColumns", inactiveGroups);
+    parser.storeInactiveColumns(inactiveGroups);
   }
 
   public List<Group> activeGroups() {

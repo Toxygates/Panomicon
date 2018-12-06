@@ -1,7 +1,6 @@
 package t.viewer.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import t.common.shared.SharedUtils;
@@ -9,7 +8,7 @@ import t.common.shared.SharedUtils;
 /**
  * Packs/unpacks lists of type T, using a Packer<T>.
  */
-public class ListPacker<T> extends Packer<Collection<T>> {
+public class ListPacker<T> extends Packer<List<T>> {
   private Packer<T> elementPacker;
   private String separator;
 
@@ -19,7 +18,7 @@ public class ListPacker<T> extends Packer<Collection<T>> {
   }
 
   @Override
-  public String pack(Collection<T> entities) {
+  public String pack(List<T> entities) {
     Collection<String> packedEntities = entities.stream()
         .map(e -> elementPacker.pack(e))
         .collect(Collectors.toList());
