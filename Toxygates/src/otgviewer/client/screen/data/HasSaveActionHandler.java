@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package otgviewer.client.screen.data;
 
 public interface HasSaveActionHandler {
 

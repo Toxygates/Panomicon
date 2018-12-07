@@ -18,6 +18,7 @@
 
 package otgviewer.client;
 
+import otgviewer.client.screen.data.DataScreen;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 

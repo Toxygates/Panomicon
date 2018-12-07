@@ -25,6 +25,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
+import otgviewer.client.screen.data.DataFilterEditor;
 import t.common.client.Utils;
 import t.common.shared.Dataset;
 import t.model.SampleClass;

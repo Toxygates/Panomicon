@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.dialog;
+package t.viewer.server.intermine;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.components.InputGrid;
 import otgviewer.client.components.Screen;
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.intermine.InstanceSelector;
 import t.viewer.shared.intermine.IntermineInstance;
 

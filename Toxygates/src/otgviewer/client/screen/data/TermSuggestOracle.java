@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package otgviewer.client;
+package otgviewer.client.screen.data;
 
 import java.util.*;
 
@@ -29,8 +29,7 @@ import otgviewer.client.components.*;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
-public class TermSuggestOracle extends SuggestOracle implements
-    HasExactMatchHandler<Term> {
+public class TermSuggestOracle extends SuggestOracle implements HasExactMatchHandler<Term> {
 
   private final ProbeServiceAsync probeService;
 

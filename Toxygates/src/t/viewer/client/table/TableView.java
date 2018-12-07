@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.dialog.MirnaSourceDialog;
+import otgviewer.client.screen.data.HeatmapViewer;
 import t.common.shared.GroupUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;

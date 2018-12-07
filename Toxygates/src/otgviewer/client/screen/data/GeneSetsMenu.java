@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.screen.data;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -27,12 +27,12 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.GeneSetEditor;
-import otgviewer.client.components.MenuItemCaptionSeparator;
+import otgviewer.client.*;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
+import t.viewer.client.components.MenuItemCaptionSeparator;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.clustering.ProbeClustering;
@@ -307,7 +307,7 @@ public class GeneSetsMenu {
 
   private ScheduledCommand addNewClustering() {
     return () ->
-        HeatmapViewer.show(screen, screen.dataView, screen.dataView.chosenValueType());      
+    HeatmapViewer.show(screen, screen.dataView(), screen.dataView().chosenValueType());
   }
 
   /*
@@ -350,7 +350,7 @@ public class GeneSetsMenu {
    * fired when the DataScreen is activated. [DataScreen#show -> Screen#show ->
    * Screen#lodaState -> ? ]
    * 
-   * @see otgviewer.client.DataScreen#show()
+   * @see otgviewer.client.screen.data.DataScreen#show()
    */
   public void itemListsChanged(List<ItemList> lists) {
     root.clearItems();
@@ -362,7 +362,7 @@ public class GeneSetsMenu {
    * also fired when the DataScreen is activated. [DataScreen#show -> Screen#show
    * -> Screen#loadState -> ? ]
    * 
-   * @see otgviewer.client.DataScreen#show()
+   * @see otgviewer.client.screen.data.DataScreen#show()
    */
   public void clusteringListsChanged(List<ItemList> lists) {
     root.clearItems();

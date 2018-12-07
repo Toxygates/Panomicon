@@ -35,6 +35,8 @@ import t.common.client.components.StringArrayTable;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.dialog.*;
+import t.viewer.server.intermine.InterMineEnrichDialog;
+import t.viewer.server.intermine.InterMineSyncDialog;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.EnrichmentParams;

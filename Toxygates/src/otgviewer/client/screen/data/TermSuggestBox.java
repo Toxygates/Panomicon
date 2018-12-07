@@ -17,19 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package otgviewer.client.components;
+package otgviewer.client.screen.data;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import otgviewer.client.TermSuggestOracle.TermSuggestion;
-import t.common.shared.Term;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.screen.data.TermSuggestOracle.TermSuggestion;
+import t.common.shared.Term;
 
 public class TermSuggestBox extends SuggestBox implements FocusHandler,
     BlurHandler, SelectionHandler<TermSuggestion>,

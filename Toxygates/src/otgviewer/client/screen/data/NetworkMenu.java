@@ -1,10 +1,10 @@
-package otgviewer.client;
+package otgviewer.client.screen.data;
 
 import java.util.List;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.MenuItemCaptionSeparator;
+import t.viewer.client.components.MenuItemCaptionSeparator;
 import t.viewer.client.network.PackedNetwork;
 import t.viewer.shared.network.Format;
 

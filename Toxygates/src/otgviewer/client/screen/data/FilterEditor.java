@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.dialog;
+package otgviewer.client.screen.data;
 
 import javax.annotation.Nullable;
 

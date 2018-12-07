@@ -16,13 +16,12 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package otgviewer.client.screen.data;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.DataScreen;
 import t.clustering.shared.ClusteringList;
 import t.viewer.client.Utils;
 import t.viewer.shared.ItemList;

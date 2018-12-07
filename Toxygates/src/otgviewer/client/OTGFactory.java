@@ -29,6 +29,7 @@ import otgviewer.client.components.groupdef.*;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
+import otgviewer.client.screen.data.*;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.viewer.client.intermine.InterMineData;

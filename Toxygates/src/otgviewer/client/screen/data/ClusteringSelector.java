@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.screen.data;
 
 import java.util.*;
 import java.util.Map.Entry;

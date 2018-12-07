@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package otgviewer.client.screen.data;
 
 import static t.common.client.Utils.makeButton;
 
@@ -30,6 +30,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.*;
+import otgviewer.client.components.*;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;

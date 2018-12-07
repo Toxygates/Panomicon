@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package otgviewer.client.screen.data;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -25,6 +25,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.*;
 
+import otgviewer.client.components.Screen;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.Attribute;

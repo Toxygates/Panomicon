@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package t.viewer.client.components;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;

@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.screen.data;
 
 import java.util.*;
 
@@ -81,6 +81,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     geneSetsMenu.itemListsChanged(chosenItemLists);
   }
 
+  public TableView dataView() {
+    return dataView;
+  }
+
   @Override
   protected void rebuild() {
     dataView = makeDataView();
@@ -89,7 +93,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     setupMenuItems();
   }
 
-  DataScreen(ScreenManager man) {
+  public DataScreen(ScreenManager man) {
     super("View data", key, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     geneSetToolbar = makeGeneSetSelector();    

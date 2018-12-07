@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.dialog;
+package t.viewer.server.intermine;
 
 import javax.annotation.Nullable;
 

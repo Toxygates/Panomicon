@@ -22,6 +22,7 @@ package otgviewer.client;
 import otgviewer.client.components.*;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.FullCompoundRanker;
+import otgviewer.client.screen.data.*;
 
 /**
  * This factory lets the UI mimic the "classic" Toxygates interface
