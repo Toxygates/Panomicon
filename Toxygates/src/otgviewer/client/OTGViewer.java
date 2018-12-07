@@ -19,6 +19,8 @@
 package otgviewer.client;
 
 import otgviewer.client.screen.data.DataScreen;
+import otgviewer.client.screen.groupdef.ColumnScreen;
+import otgviewer.client.screen.ranking.RankingScreen;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 

@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License along with Toxygates. If not,
  * see <http://www.gnu.org/licenses/>.
  */
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.*;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.ImportingScreen;
 import t.clustering.shared.ClusteringList;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;

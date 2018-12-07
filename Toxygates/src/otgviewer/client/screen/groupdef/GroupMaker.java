@@ -16,11 +16,10 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package otgviewer.client.screen.groupdef;
 
 import java.util.*;
 
-import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.sample.Group;

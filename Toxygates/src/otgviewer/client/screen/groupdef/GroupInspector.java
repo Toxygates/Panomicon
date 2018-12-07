@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.groupdef;
+package otgviewer.client.screen.groupdef;
 
 import java.util.*;
 import java.util.logging.Logger;

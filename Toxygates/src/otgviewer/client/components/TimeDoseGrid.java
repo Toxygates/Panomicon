@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -24,8 +24,6 @@ import java.util.logging.Logger;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;

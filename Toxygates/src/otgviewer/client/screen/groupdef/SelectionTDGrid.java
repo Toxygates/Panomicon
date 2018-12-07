@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.groupdef;
+package otgviewer.client.screen.groupdef;
 
 import java.util.*;
 
@@ -28,8 +28,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.SampleDetailTable;
-import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.TimeDoseGrid;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;

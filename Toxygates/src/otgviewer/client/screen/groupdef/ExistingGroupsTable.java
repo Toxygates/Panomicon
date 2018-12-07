@@ -1,4 +1,4 @@
-package otgviewer.client.components.groupdef;
+package otgviewer.client.screen.groupdef;
 
 import java.util.Set;
 
@@ -8,7 +8,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
 
-import otgviewer.client.components.groupdef.GroupInspector.ButtonCellResources;
+import otgviewer.client.screen.groupdef.GroupInspector.ButtonCellResources;
 import t.common.client.components.SelectionTable;
 import t.common.shared.sample.Group;
 import t.model.sample.CoreParameter;

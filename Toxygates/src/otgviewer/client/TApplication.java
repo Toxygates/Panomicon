@@ -39,7 +39,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
-import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.rpc.ProbeService;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import otgviewer.client.rpc.SampleService;

@@ -16,20 +16,13 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.ranking;
+package otgviewer.client.screen.ranking;
 
-import otgviewer.shared.RuleType;
+@SuppressWarnings("serial")
+public class RankRuleException extends Exception {
 
-public class SimpleRuleInputHelper extends RuleInputHelper {
-
-  public SimpleRuleInputHelper(CompoundRanker _ranker, boolean lastRule) {
-    super(_ranker, lastRule);
-  }
-
-  final static int REQUIRED_COLUMNS = 3;
-
-  protected RuleType[] ruleTypes() {
-    return new RuleType[] {RuleType.Sum, RuleType.NegativeSum};
+  public RankRuleException(String message) {
+    super(message);
   }
 
 }

@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.groupdef;
+package otgviewer.client.screen.groupdef;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
+import otgviewer.client.screen.groupdef.SelectionTDGrid.UnitListener;
 import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;

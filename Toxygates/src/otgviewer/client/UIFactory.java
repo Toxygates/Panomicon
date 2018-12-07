@@ -25,11 +25,11 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
-import otgviewer.client.components.groupdef.GroupInspector;
-import otgviewer.client.components.groupdef.SelectionTDGrid;
-import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
-import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.screen.data.*;
+import otgviewer.client.screen.groupdef.GroupInspector;
+import otgviewer.client.screen.groupdef.SelectionTDGrid;
+import otgviewer.client.screen.groupdef.SelectionTDGrid.UnitListener;
+import otgviewer.client.screen.ranking.CompoundRanker;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.DataSchema;

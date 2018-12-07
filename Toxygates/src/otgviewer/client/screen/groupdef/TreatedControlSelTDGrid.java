@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package otgviewer.client.components.groupdef;
+package otgviewer.client.screen.groupdef;
 
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.Unit;

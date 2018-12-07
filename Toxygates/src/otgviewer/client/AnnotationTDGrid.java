@@ -27,8 +27,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;

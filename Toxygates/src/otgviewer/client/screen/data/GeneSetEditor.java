@@ -29,7 +29,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;

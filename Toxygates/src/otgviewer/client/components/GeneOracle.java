@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
-import otgviewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;

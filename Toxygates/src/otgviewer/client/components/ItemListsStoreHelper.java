@@ -17,14 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.*;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
-import otgviewer.client.components.ImportingScreen;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;

@@ -1,4 +1,4 @@
-package otgviewer.client.dialog;
+package otgviewer.client.screen.data;
 
 import java.util.Arrays;
 import java.util.Map;

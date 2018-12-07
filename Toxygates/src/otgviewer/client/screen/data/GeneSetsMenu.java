@@ -27,7 +27,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.*;
+import otgviewer.client.components.StringListsStoreHelper;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.SharedUtils;

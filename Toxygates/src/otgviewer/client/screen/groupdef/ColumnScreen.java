@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.screen.groupdef;
 
 import java.util.List;
 
@@ -26,7 +26,6 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
-import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.screen.data.DataScreen;
 import t.common.shared.Dataset;
 import t.model.SampleClass;

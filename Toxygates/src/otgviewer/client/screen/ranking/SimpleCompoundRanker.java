@@ -16,13 +16,31 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.ranking;
+package otgviewer.client.screen.ranking;
 
-@SuppressWarnings("serial")
-public class RankRuleException extends Exception {
+import otgviewer.client.components.Screen;
+import t.viewer.client.Utils;
 
-  public RankRuleException(String message) {
-    super(message);
+public class SimpleCompoundRanker extends CompoundRanker {
+
+  public SimpleCompoundRanker(Screen _screen) {
+    super(_screen);
+  }
+
+  @Override
+  protected void addHeaderWidgets() {
+    grid.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
+    grid.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
+  }
+
+  @Override
+  protected int gridColumns() {
+    return SimpleRuleInputHelper.REQUIRED_COLUMNS;
+  }
+
+  @Override
+  protected RuleInputHelper makeInputHelper(boolean isLast) {
+    return new SimpleRuleInputHelper(this, isLast);
   }
 
 }

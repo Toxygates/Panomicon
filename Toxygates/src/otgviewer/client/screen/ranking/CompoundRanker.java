@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.ranking;
+package otgviewer.client.screen.ranking;
 
 import java.util.*;
 

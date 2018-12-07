@@ -16,31 +16,20 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components.ranking;
+package otgviewer.client.screen.ranking;
 
-import otgviewer.client.components.Screen;
-import t.viewer.client.Utils;
+import otgviewer.shared.RuleType;
 
-public class SimpleCompoundRanker extends CompoundRanker {
+public class SimpleRuleInputHelper extends RuleInputHelper {
 
-  public SimpleCompoundRanker(Screen _screen) {
-    super(_screen);
+  public SimpleRuleInputHelper(CompoundRanker _ranker, boolean lastRule) {
+    super(_ranker, lastRule);
   }
 
-  @Override
-  protected void addHeaderWidgets() {
-    grid.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
-    grid.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
-  }
+  final static int REQUIRED_COLUMNS = 3;
 
-  @Override
-  protected int gridColumns() {
-    return SimpleRuleInputHelper.REQUIRED_COLUMNS;
-  }
-
-  @Override
-  protected RuleInputHelper makeInputHelper(boolean isLast) {
-    return new SimpleRuleInputHelper(this, isLast);
+  protected RuleType[] ruleTypes() {
+    return new RuleType[] {RuleType.Sum, RuleType.NegativeSum};
   }
 
 }

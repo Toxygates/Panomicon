@@ -29,6 +29,8 @@ import t.viewer.shared.ItemList
 import t.viewer.shared.StringList
 import org.scalatest.junit.JUnitRunner
 
+import otgviewer.client.components.StringListsStoreHelper;
+
 @RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends TTestSuite {
 

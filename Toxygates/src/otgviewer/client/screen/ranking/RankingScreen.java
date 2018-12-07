@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.screen.ranking;
 
 import static t.common.client.Utils.makeScrolled;
 
@@ -26,7 +26,6 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
-import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;

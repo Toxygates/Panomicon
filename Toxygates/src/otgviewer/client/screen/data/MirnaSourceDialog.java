@@ -1,4 +1,4 @@
-package otgviewer.client.dialog;
+package otgviewer.client.screen.data;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

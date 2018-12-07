@@ -16,14 +16,13 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.dialog;
+package otgviewer.client.components;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.MatrixServiceAsync;

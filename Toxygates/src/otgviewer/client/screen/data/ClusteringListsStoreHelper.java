@@ -19,8 +19,8 @@ package otgviewer.client.screen.data;
 
 import java.util.*;
 
-import otgviewer.client.ItemListsStoreHelper;
 import otgviewer.client.components.ImportingScreen;
+import otgviewer.client.components.ItemListsStoreHelper;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
 import t.viewer.client.Utils;
