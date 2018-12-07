@@ -43,6 +43,7 @@ import t.model.SampleClass;
 import t.viewer.client.*;
 import t.viewer.client.components.ImmediateValueChangeTextBox;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.storage.StorageProvider;
 
 /**
  * This widget provides a visual interface where the user can interactively

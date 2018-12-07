@@ -17,10 +17,10 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
-import t.viewer.client.PersistedState;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.storage.PersistedState;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 

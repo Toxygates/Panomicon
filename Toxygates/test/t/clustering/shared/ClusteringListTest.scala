@@ -27,7 +27,7 @@ import t.viewer.shared._
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import t.viewer.client.ItemListPacker
+import t.viewer.client.storage.ItemListPacker
 
 @RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends TTestSuite {

@@ -1,4 +1,4 @@
-package t.viewer.client;
+package t.viewer.client.storage;
 
 import t.common.shared.Dataset;
 

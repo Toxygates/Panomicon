@@ -22,7 +22,7 @@ import java.util.List;
 
 import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
-import t.viewer.client.StorageProvider;
+import t.viewer.client.storage.StorageProvider;
 
 public class GVizFactory extends Factory<GDTData, GDTDataset> {
 

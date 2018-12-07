@@ -37,9 +37,9 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
-import t.viewer.client.StorageProvider;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.client.storage.StorageProvider;
 
 public class Charts {
 

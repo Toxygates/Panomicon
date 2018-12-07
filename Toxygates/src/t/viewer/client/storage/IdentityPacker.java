@@ -1,4 +1,4 @@
-package t.viewer.client;
+package t.viewer.client.storage;
 
 public class IdentityPacker extends Packer<String> {
   @Override

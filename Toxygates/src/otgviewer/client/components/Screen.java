@@ -30,7 +30,7 @@ import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
-import t.viewer.client.StorageProvider;
+import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
 
 public interface Screen {

@@ -30,8 +30,8 @@ import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
-import t.viewer.client.StorageProvider;
 import t.viewer.client.Utils;
+import t.viewer.client.storage.StorageProvider;
 
 /**
  * A chart grid where the user can interactively choose what kind of charts to display (for example,

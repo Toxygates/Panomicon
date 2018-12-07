@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.storage;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -30,8 +30,8 @@ import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
-import t.viewer.client.Packer.UnpackInputException;
 import t.viewer.client.network.PackedNetwork;
+import t.viewer.client.storage.Packer.UnpackInputException;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
 

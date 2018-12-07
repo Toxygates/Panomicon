@@ -24,10 +24,10 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.viewer.client.StorageProvider;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
+import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 

@@ -31,7 +31,7 @@ import otgviewer.client.charts.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
-import t.viewer.client.StorageProvider;
+import t.viewer.client.storage.StorageProvider;
 
 public class GDTDataset extends Dataset<GDTData> {
   private StorageProvider storage;

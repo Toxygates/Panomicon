@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Window;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
+import t.viewer.client.storage.StorageProvider;
 
 /**
  * Functionality for managing active and inactive groups, factored out of

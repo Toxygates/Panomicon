@@ -1,4 +1,4 @@
-package t.viewer.client;
+package t.viewer.client.storage;
 
 import java.util.*;
 import java.util.stream.Collectors;

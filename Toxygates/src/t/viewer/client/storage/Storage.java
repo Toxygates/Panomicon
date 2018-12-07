@@ -1,9 +1,9 @@
-package t.viewer.client;
+package t.viewer.client.storage;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import t.viewer.client.Packer.UnpackInputException;
+import t.viewer.client.storage.Packer.UnpackInputException;
 
 /**
  * Stores objects into browser local storage using GWT's Storage class, and 

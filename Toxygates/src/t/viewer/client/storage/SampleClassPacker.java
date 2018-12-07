@@ -1,4 +1,4 @@
-package t.viewer.client;
+package t.viewer.client.storage;
 
 import java.util.HashMap;
 import java.util.Map;

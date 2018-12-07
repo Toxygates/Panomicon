@@ -21,7 +21,7 @@ package otgviewer.client.charts;
 import java.util.List;
 
 import otgviewer.client.components.Screen;
-import t.viewer.client.StorageProvider;
+import t.viewer.client.storage.StorageProvider;
 
 abstract public class Factory<D extends Data, DS extends Dataset<D>> {
 

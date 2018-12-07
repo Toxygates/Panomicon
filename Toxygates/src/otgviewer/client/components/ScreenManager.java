@@ -26,8 +26,8 @@ import otgviewer.client.UIFactory;
 import otgviewer.client.rpc.ProbeServiceAsync;
 import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.DataSchema;
-import t.viewer.client.StorageProvider;
 import t.viewer.client.rpc.*;
+import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
 
 /**

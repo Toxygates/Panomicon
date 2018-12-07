@@ -22,7 +22,7 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.viewer.client.ItemListPacker;
+import t.viewer.client.storage.ItemListPacker;
 
 @SuppressWarnings("serial")
 public class StringList extends ItemList {

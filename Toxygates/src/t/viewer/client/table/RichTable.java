@@ -35,7 +35,7 @@ import otgviewer.client.components.Screen;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
-import t.viewer.client.PersistedState;
+import t.viewer.client.storage.PersistedState;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost

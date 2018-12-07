@@ -50,6 +50,7 @@ import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
+import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
 
 /**

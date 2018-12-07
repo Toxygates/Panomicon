@@ -32,10 +32,10 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
-import t.viewer.client.Packer.UnpackInputException;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.storage.Packer.UnpackInputException;
 
 /**
  * This screen displays detailed information about a sample or a set of samples, i.e. experimental

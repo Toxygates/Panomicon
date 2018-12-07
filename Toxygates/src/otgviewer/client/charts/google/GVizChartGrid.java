@@ -34,7 +34,7 @@ import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenUtils;
 import t.common.shared.sample.Sample;
-import t.viewer.client.Packer.UnpackInputException;
+import t.viewer.client.storage.Packer.UnpackInputException;
 
 /**
  * A ChartGrid that uses the Google Visualization API.
