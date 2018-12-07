@@ -73,10 +73,10 @@ public class SampleSearchScreen extends MinimalScreen
 
   @Override
   public void loadState(AttributeSet attributes) {
-    filterTools.datasetsChanged(getParser().getDatasets(appInfo()));
-    chosenSampleClass = getParser().getSampleClass();
+    filterTools.datasetsChanged(getStorage().getDatasets(appInfo()));
+    chosenSampleClass = getStorage().getSampleClass();
     filterTools.sampleClassChanged(chosenSampleClass);
-    chosenColumns = getParser().getChosenColumns();
+    chosenColumns = getStorage().getChosenColumns();
   }
 
   private void getParameterInfo() {
@@ -135,7 +135,7 @@ public class SampleSearchScreen extends MinimalScreen
             Group pendingGroup = new Group(schema(), name, allUnits);
 
             chosenColumns.add(pendingGroup);
-          getParser().storeChosenColumns(chosenColumns);
+          getStorage().storeChosenColumns(chosenColumns);
 
             currentSearch.helper().selectionTable().clearSelection();
 
@@ -156,7 +156,7 @@ public class SampleSearchScreen extends MinimalScreen
 
   private String findAvailableGroupName(String prefix) throws Exception {
     List<Group> inactiveGroups =
-        getParser().getInactiveColumns();
+        getStorage().getInactiveColumns();
 
     Set<String> groupNames = new HashSet<String>();
     for (Group group : chosenColumns) {
@@ -384,11 +384,11 @@ public class SampleSearchScreen extends MinimalScreen
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
     chosenSampleClass = sc;
-    getParser().storeSampleClass(sc);
+    getStorage().storeSampleClass(sc);
   }
 
   @Override
   public void filterToolsDatasetsChanged(Dataset[] ds) {
-    getParser().storeDatasets(ds);
+    getStorage().storeDatasets(ds);
   }
 }

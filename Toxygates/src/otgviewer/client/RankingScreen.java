@@ -47,13 +47,13 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenDatasets = getParser().getDatasets(appInfo());
+    chosenDatasets = getStorage().getDatasets(appInfo());
     filterTools.datasetsChanged(chosenDatasets);
-    SampleClass sampleClass = getParser().getSampleClass();
+    SampleClass sampleClass = getStorage().getSampleClass();
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.datasetsChanged(chosenDatasets);
     compoundSelector.sampleClassChanged(sampleClass);
-    compoundSelector.loadCompounds(getParser().getCompounds());
+    compoundSelector.loadCompounds(getStorage().getCompounds());
   }
 
   public RankingScreen(ScreenManager man) {
@@ -117,12 +117,12 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   // CompoundSelector.Delegate methods
   @Override
   public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
-    getParser().storeItemLists(itemLists);
+    getStorage().storeItemLists(itemLists);
   }
 
   @Override
   public void CompoundSelectorCompoundsChanged(List<String> compounds) {
-    RankingScreen.this.getParser().storeCompounds(compounds);
+    RankingScreen.this.getStorage().storeCompounds(compounds);
     compoundRanker.compoundsChanged(compounds);
   }
 
@@ -134,14 +134,14 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   // FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
-    getParser().storeSampleClass(sc);
+    getStorage().storeSampleClass(sc);
     compoundSelector.sampleClassChanged(sc);
   }
 
   @Override
   public void filterToolsDatasetsChanged(Dataset[] ds) {
     chosenDatasets = ds;
-    getParser().storeDatasets(chosenDatasets);
+    getStorage().storeDatasets(chosenDatasets);
     compoundSelector.datasetsChanged(chosenDatasets);
   }
 }

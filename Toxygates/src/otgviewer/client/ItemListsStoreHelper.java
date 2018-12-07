@@ -25,7 +25,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
 import otgviewer.client.components.ImportingScreen;
-import t.viewer.client.StorageParser;
+import t.viewer.client.StorageProvider;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
@@ -100,7 +100,7 @@ public abstract class ItemListsStoreHelper {
       Window.alert("You must enter a non-empty name.");
       return false;
     }
-    if (!StorageParser.isAcceptableString(name, "Unacceptable list name.")) {
+    if (!StorageProvider.isAcceptableString(name, "Unacceptable list name.")) {
       return false;
     }
     if (isContainedInPredefinedLists(type, name)) {

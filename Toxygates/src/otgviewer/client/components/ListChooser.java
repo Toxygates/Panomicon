@@ -24,7 +24,7 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.viewer.client.StorageParser;
+import t.viewer.client.StorageProvider;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
@@ -181,7 +181,7 @@ public class ListChooser extends Composite {
       Window.alert("This name is reserved for the system and cannot be used.");
       return false;
     }
-    if (!StorageParser.isAcceptableString(name, "Unacceptable list name.")) {
+    if (!StorageProvider.isAcceptableString(name, "Unacceptable list name.")) {
       return false;
     }
     return true;

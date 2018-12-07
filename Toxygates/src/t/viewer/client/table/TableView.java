@@ -60,7 +60,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     initWidget(content());   
     setupMenus();
     
-    mirnaState.load(screen.getParser());
+    mirnaState.load(screen.getStorage());
     fetchAssociations();
 
     for (String title : tickMenuItems.keySet()) {

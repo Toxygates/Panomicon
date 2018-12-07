@@ -27,7 +27,7 @@ import t.common.shared.sample.Sample;
 public class ScreenUtils {
   public static void displaySampleDetail(Screen screen, Sample b) {
     Group g = new Group(screen.manager().schema(), "custom", new Sample[] {b});
-    screen.getParser().storeCustomColumn(g);
+    screen.getStorage().storeCustomColumn(g);
     screen.manager().attemptProceed(SampleDetailScreen.key);
   }
 }

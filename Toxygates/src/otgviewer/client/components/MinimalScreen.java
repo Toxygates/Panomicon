@@ -47,9 +47,9 @@ public abstract class MinimalScreen implements Screen {
 
   protected void storeState() {
     if (showGuide) {
-      getParser().setItem("OTG.showGuide", "yes");
+      getStorage().setItem("OTG.showGuide", "yes");
     } else {
-      getParser().setItem("OTG.showGuide", "no");
+      getStorage().setItem("OTG.showGuide", "no");
     }
   }
 

@@ -17,18 +17,18 @@ public class Groups {
   private Map<String, Group> groups = new LinkedHashMap<String, Group>();
   private List<Group> activeGroups = new ArrayList<Group>();
 
-  public void loadGroups(StorageParser parser) {
+  public void loadGroups(StorageProvider storage) {
     clear();
 
     // Load chosen columns
-    activeGroups = sortedGroupList(parser.getChosenColumns());
+    activeGroups = sortedGroupList(storage.getChosenColumns());
     for (Group g : activeGroups) {
       groups.put(g.getName(), g);
     }
 
     // Load inactive columns
     try {
-      Collection<Group> inactiveGroups = sortedGroupList(parser.getInactiveColumns());
+      Collection<Group> inactiveGroups = sortedGroupList(storage.getInactiveColumns());
       for (Group g : inactiveGroups) {
         groups.put(g.getName(), g);
       }
@@ -38,12 +38,12 @@ public class Groups {
     }
   }
 
-  public void saveToLocalStorage(StorageParser parser) {
-    parser.storeChosenColumns(activeGroups());
+  public void saveToLocalStorage(StorageProvider storage) {
+    storage.storeChosenColumns(activeGroups());
 
     List<Group> inactiveGroups = new ArrayList<Group>(groups.values());
     inactiveGroups.removeAll(activeGroups());
-    parser.storeInactiveColumns(inactiveGroups);
+    storage.storeInactiveColumns(inactiveGroups);
   }
 
   public List<Group> activeGroups() {

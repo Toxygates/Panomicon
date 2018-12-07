@@ -30,7 +30,7 @@ import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
-import t.viewer.client.StorageParser;
+import t.viewer.client.StorageProvider;
 import t.viewer.shared.AppInfo;
 
 public interface Screen {
@@ -54,8 +54,8 @@ public interface Screen {
     return manager().appInfo().attributes();
   }
 
-  default StorageParser getParser() {
-    return manager().getParser();
+  default StorageProvider getStorage() {
+    return manager().getStorage();
   }
 
   // Accessors

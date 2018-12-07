@@ -60,7 +60,7 @@ public class MyDataScreen extends MinimalScreen {
     resources = man.resources();
     addToolbar(cmds, 35);
     
-    String key = getParser().getItem("userDataKey");
+    String key = getStorage().getItem("userDataKey");
     if (key == null) {
       key = manager().appInfo().getUserKey();
     }
@@ -79,7 +79,7 @@ public class MyDataScreen extends MinimalScreen {
       
       @Override
       protected boolean confirmAddNew() {
-        String hasSeen = MyDataScreen.this.getParser().getItem(HAS_SEEN_WARNING);
+        String hasSeen = MyDataScreen.this.getStorage().getItem(HAS_SEEN_WARNING);
         if ("true".equals(hasSeen)) { // hasSeen might be null
           return true;
         }
@@ -90,7 +90,7 @@ public class MyDataScreen extends MinimalScreen {
             "For more details, see the README file provided in the example data above.";
         boolean confirm = Window.confirm(message);
         if (confirm) {
-          MyDataScreen.this.getParser().setItem(HAS_SEEN_WARNING, "true");
+          MyDataScreen.this.getStorage().setItem(HAS_SEEN_WARNING, "true");
           return true;
         }
         return false;
@@ -201,7 +201,7 @@ public class MyDataScreen extends MinimalScreen {
   }
   
   private void setUserKey(String key) {
-    getParser().setItem("userDataKey", key);    
+    getStorage().setItem("userDataKey", key);    
     userKey = key;
     userDataset = Dataset.userDatasetId(key);
     userSharedDataset = Dataset.userSharedDatasetId(key);        

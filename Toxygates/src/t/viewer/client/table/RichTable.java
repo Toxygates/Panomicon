@@ -402,7 +402,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
   
   public void loadColumnVisibility() {
-    columnState.load(screen.getParser());
+    columnState.load(screen.getStorage());
     Set<String> preferredColumns = columnState.getValue();
     if (preferredColumns != null) {
       for (HideableColumn<T, ?> c : hideableColumns) {
@@ -420,7 +420,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   public void persistColumnState() {
     Set<String> vs = hideableColumns.stream().filter(c -> c.visible()).
         map(c -> c.columnInfo().title()).collect(Collectors.toSet());
-    columnState.changeAndPersist(screen.manager().getParser(), vs);
+    columnState.changeAndPersist(screen.manager().getStorage(), vs);
   }
   
   public boolean persistedVisibility(String columnId, boolean default_) {

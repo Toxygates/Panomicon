@@ -38,11 +38,8 @@ import t.viewer.shared.ItemList;
 /**
  * Refactoring in progress. Methods for converting objects to and from strings
  * have been moved to Packer.
- * 
- * Storage parsing/serialising code. PersistedState may also be considered for
- * some of these items in the future, where lifecycle management is needed.
  */
-public class StorageParser implements Storage.StorageProvider {
+public class StorageProvider implements Storage.StorageProvider {
 
   private final String prefix;
   private final com.google.gwt.storage.client.Storage storage;
@@ -52,10 +49,16 @@ public class StorageParser implements Storage.StorageProvider {
 
   protected static final Logger logger = SharedUtils.getLogger("storage");
 
+  // These Packer and Storage instances are initialized in the constructor
   public final SampleClassPacker sampleClassPacker;
   public final SamplePacker samplePacker;
   public final GroupPacker groupPacker;
   public final ListPacker<Group> columnsPacker;
+  public final Storage<SampleClass> sampleClassStorage;
+  public final Storage<List<Group>> chosenColumnsStorage;
+  public final Storage<List<Group>> inactiveColumnsStorage;
+  public final Storage<Group> customColumnStorage;
+  public final Storage<List<Dataset>> datasetsStorage;
   
   public final ListPacker<String> probesPacker = 
       new ListPacker<String>(new IdentityPacker(), "###");
@@ -76,13 +79,6 @@ public class StorageParser implements Storage.StorageProvider {
   
   public final ListPacker<PackedNetwork> packedNetworksPacker = 
       new ListPacker<PackedNetwork>(new PackedNetworkPacker(), "###");
-
-  public final Storage<SampleClass> sampleClassStorage;
-  public final Storage<List<Group>> chosenColumnsStorage;
-  public final Storage<List<Group>> inactiveColumnsStorage;
-  
-  public final Storage<Group> customColumnStorage;
-  public final Storage<List<Dataset>> datasetsStorage;
   
   public final Storage<List<String>> probesStorage = 
       new Storage<List<String>>("probes", probesPacker, this, 
@@ -107,7 +103,7 @@ public class StorageParser implements Storage.StorageProvider {
       new Storage<List<PackedNetwork>>("networks", packedNetworksPacker, this,
           () -> new ArrayList<PackedNetwork>());
   
-  public StorageParser(com.google.gwt.storage.client.Storage storage, String prefix, 
+  public StorageProvider(com.google.gwt.storage.client.Storage storage, String prefix, 
       DataSchema schema, AppInfo info) {
     
     this.prefix = prefix;

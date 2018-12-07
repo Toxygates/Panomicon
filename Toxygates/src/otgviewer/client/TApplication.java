@@ -119,9 +119,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
 
-    // We don't use StorageParser here, because StorageParser initialization requires an appInfo
+    // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
     @Nullable
-    String existingKey = tryGetStorage().getItem(storageParserPrefix() + "userDataKey");
+    String existingKey = tryGetStorage().getItem(storagePrefix() + "userDataKey");
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
@@ -289,19 +289,19 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return r;
   }
 
-  private StorageParser parser;
+  private StorageProvider storage;
 
-  protected String storageParserPrefix() {
+  protected String storagePrefix() {
     return instanceName();
   }
 
   @Override
-  public StorageParser getParser() {
-    if (parser != null) {
-      return parser;
+  public StorageProvider getStorage() {
+    if (storage != null) {
+      return storage;
     }
-    parser = new StorageParser(tryGetStorage(), storageParserPrefix(), schema(), appInfo());
-    return parser;
+    storage = new StorageProvider(tryGetStorage(), storagePrefix(), schema(), appInfo());
+    return storage;
   }
 
   private @Nullable String getMeta(String key) {
@@ -319,7 +319,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * In the HTML head, e.g.: <meta name="instanceName" content="toxygates"> .
    * 
    * TODO: this information is also available via AppInfo and we should move towards using only
-   * that. Except we now only use it in storageParserPrefix, which is needed for getting AppInfo in
+   * that. Except we now only use it in storagePrefix, which is needed for getting AppInfo in
    * the first place...
    */
   @Deprecated

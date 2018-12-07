@@ -232,7 +232,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    */
   private void reflectGroupChanges(boolean store) {
     if (store) {
-      groups.saveToLocalStorage(screen.getParser());
+      groups.saveToLocalStorage(screen.getStorage());
     }
     txtbxGroup.setText("");
     updateConfigureStatus(true);
@@ -310,7 +310,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       datasetsChanged(newEnabled);
       delegate.groupInspectorDatasetsChanged(newEnabled);
       sampleService.chooseDatasets(newEnabled, new PendingAsyncCallback<SampleClass[]>(screen));
-      screen.getParser().storeDatasets(chosenDatasets);
+      screen.getStorage().storeDatasets(chosenDatasets);
       Window
           .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
     }
@@ -323,7 +323,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void loadGroups() {
-    groups.loadGroups(screen.getParser());
+    groups.loadGroups(screen.getStorage());
     updateConfigureStatus(false);
 
     // Reflect loaded group information in UI
@@ -359,7 +359,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       Window.alert("Please enter a group name.");
       return;
     }
-    if (!StorageParser.isAcceptableString(name, "Unacceptable group name.")) {
+    if (!StorageProvider.isAcceptableString(name, "Unacceptable group name.")) {
       return;
     }
 
@@ -464,7 +464,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   @Override
   public void selectionChanged(Set<Group> selected) {
     groups.setActiveGroups(selected);
-    groups.saveToLocalStorage(screen.getParser());
+    groups.saveToLocalStorage(screen.getStorage());
     updateConfigureStatus(true);
   }
 }

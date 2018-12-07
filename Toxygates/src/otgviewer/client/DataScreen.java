@@ -63,12 +63,12 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public void loadState(AttributeSet attributes) {
-    StorageParser parser = getParser();
-    chosenProbes = parser.getProbes();
-    chosenColumns = parser.getChosenColumns();
-    chosenItemLists = parser.getItemLists();
-    chosenGeneSet = parser.getGeneSet();
-    chosenClusteringList = parser.getClusteringLists();
+    StorageProvider storage = getStorage();
+    chosenProbes = storage.getProbes();
+    chosenColumns = storage.getChosenColumns();
+    chosenItemLists = storage.getItemLists();
+    chosenGeneSet = storage.getGeneSet();
+    chosenClusteringList = storage.getClusteringLists();
     ViewType type = preferredViewType();
     if (type != dataView.type()) {
       rebuild();
@@ -171,9 +171,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     return dataView;
   }
 
-  public TableView.ViewType preferredViewType() {
-    StorageParser parser = getParser();    
-    chosenColumns = parser.getChosenColumns();
+  public TableView.ViewType preferredViewType() {  
+    chosenColumns = getStorage().getChosenColumns();
     String[] types =
         chosenColumns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);    
     return types.length >= 2 ? ViewType.Dual : ViewType.Single;
@@ -233,7 +232,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getParser().getChosenColumns();
+    List<Group> chosenColumns = getStorage().getChosenColumns();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 
@@ -268,7 +267,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
     chosenProbes = probes;
 
-    getParser().storeProbes(chosenProbes);
+    getStorage().storeProbes(chosenProbes);
 
     lastProbes = null;
     lastColumns = null;
@@ -280,7 +279,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
    */
   public void geneSetChanged(ItemList geneSet) {
     chosenGeneSet = geneSet;
-    getParser().storeGeneSet(geneSet);
+    getStorage().storeGeneSet(geneSet);
     geneSetToolbar.geneSetChanged(geneSet);
     Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
   }
@@ -293,14 +292,14 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     chosenItemLists = lists;
-    getParser().storeItemLists(lists);
+    getStorage().storeItemLists(lists);
     geneSetsMenu.itemListsChanged(lists);
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     chosenClusteringList = lists;
-    getParser().storeClusteringLists(lists);
+    getStorage().storeClusteringLists(lists);
     geneSetsMenu.clusteringListsChanged(lists);
   }
 

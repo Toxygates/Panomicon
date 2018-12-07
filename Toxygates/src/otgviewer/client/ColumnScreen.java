@@ -48,15 +48,15 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenDatasets = getParser().getDatasets(appInfo());
+    chosenDatasets = getStorage().getDatasets(appInfo());
     filterTools.datasetsChanged(chosenDatasets);
     groupInspector.datasetsChanged(chosenDatasets);
 
-    SampleClass sampleClass = getParser().getSampleClass();
+    SampleClass sampleClass = getStorage().getSampleClass();
     filterTools.sampleClassChanged(sampleClass);
     compoundSelector.sampleClassChanged(sampleClass);
 
-    List<String> compounds = getParser().getCompounds();
+    List<String> compounds = getStorage().getCompounds();
     groupInspector.compoundsChanged(compounds);
     groupInspector.loadGroups();
     // This needs to happen after groupInspector.loadGroups, which causes
@@ -128,7 +128,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   // FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
-    getParser().storeSampleClass(sc);
+    getStorage().storeSampleClass(sc);
     compoundSelector.sampleClassChanged(sc);
     groupInspector.sampleClassChanged(sc);
   }
@@ -142,7 +142,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void filterToolsDatasetsChanged(Dataset[] ds) {
-    getParser().storeDatasets(ds);
+    getStorage().storeDatasets(ds);
     groupInspector.datasetsChanged(ds);
   }
 
@@ -154,13 +154,13 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   // CompoundSelector.Delegate methods
   @Override
   public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
-    getParser().storeItemLists(itemLists);
+    getStorage().storeItemLists(itemLists);
   }
 
   @Override
   public void CompoundSelectorCompoundsChanged(List<String> compounds) {
     groupInspector.compoundsChanged(compounds);
-    ColumnScreen.this.getParser().storeCompounds(compounds);
+    ColumnScreen.this.getStorage().storeCompounds(compounds);
   }
 
   @Override

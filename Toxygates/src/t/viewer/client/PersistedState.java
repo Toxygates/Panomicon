@@ -69,17 +69,17 @@ abstract public class PersistedState<T> {
   
   abstract protected @Nullable T doUnpack(String state); 
   
-  public void load(StorageParser parser) {
-    T state = unpack(parser.getItem(storageKey));
+  public void load(StorageProvider storage) {
+    T state = unpack(storage.getItem(storageKey));
     value = state;
   }
   
-  public void store(StorageParser parser, @Nullable T state) {
+  public void store(StorageProvider storage, @Nullable T state) {
     String sstate = pack(state);
     if (sstate != null) {
-      parser.setItem(storageKey, sstate);
+      storage.setItem(storageKey, sstate);
     } else {
-      parser.clearItem(storageKey);
+      storage.clearItem(storageKey);
     }
   }
 
@@ -87,17 +87,17 @@ abstract public class PersistedState<T> {
    * Convenience method
    */
   public void changeAndPersist(Screen screen, @Nullable T newState) {
-    changeAndPersist(screen.manager().getParser(), newState);
+    changeAndPersist(screen.manager().getStorage(), newState);
   }
   
   /**
    * Change the value of this state as a result of e.g. 
    * a user action, persisting and then applying it.
    */  
-  public void changeAndPersist(StorageParser parser, @Nullable T newState) {
+  public void changeAndPersist(StorageProvider storage, @Nullable T newState) {
     logger.info("Changed");
     value = newState;
-    store(parser, newState);
+    store(storage, newState);
   }  
 }
 

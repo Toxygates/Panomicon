@@ -31,15 +31,15 @@ import otgviewer.client.charts.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
-import t.viewer.client.StorageParser;
+import t.viewer.client.StorageProvider;
 
 public class GDTDataset extends Dataset<GDTData> {
-  private StorageParser parser;
+  private StorageProvider storage;
 
   GDTDataset(List<ChartSample> samples, String[] categories,
-      boolean categoriesAreMins, StorageParser parser) {
+      boolean categoriesAreMins, StorageProvider storage) {
     super(samples, categories, categoriesAreMins);
-    this.parser = parser;
+    this.storage = storage;
   }
 
   @Override
@@ -83,7 +83,7 @@ public class GDTDataset extends Dataset<GDTData> {
         final int col = valCount[categoryIndex] * 2 + 1;
         dataTable.setValue(categoryIndex, col, sample.value());
         if (sample.sample() != null) {
-          dataTable.setProperty(categoryIndex, col, "barcode", parser.packSample(sample.sample()));
+          dataTable.setProperty(categoryIndex, col, "barcode", storage.packSample(sample.sample()));
         }
         dataTable.setFormattedValue(categoryIndex, col, sample.formattedValue());
         String style = "fill-color:" + sample.color() + "; stroke-width:1px; ";

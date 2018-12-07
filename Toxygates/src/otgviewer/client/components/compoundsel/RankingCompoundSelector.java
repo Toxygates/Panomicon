@@ -190,7 +190,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
-      Charts cgf = new Charts(screen, new SampleClass[] { w.manager().getParser().getSampleClass() });
+      Charts cgf = new Charts(screen, new SampleClass[] { w.manager().getStorage().getSampleClass() });
       cgf.makeSeriesCharts(seriesType, ss, scores.get(value).fixedValue(), 
           new Charts.ChartAcceptor() {
         @Override

@@ -30,7 +30,7 @@ import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
-import t.viewer.client.StorageParser;
+import t.viewer.client.StorageProvider;
 import t.viewer.client.Utils;
 
 /**
@@ -60,7 +60,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private List<String> chartSubtypes = new ArrayList<String>();
 
   private final DataSchema schema;
-  private final StorageParser storageParser;
+  private final StorageProvider storageProvider;
 
   public AdjustableGrid(Factory<D, DS> factory, ChartParameters params,
       DataSource source) {
@@ -69,7 +69,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     this.screen = params.screen;
     this.factory = factory;
     schema = screen.manager().schema();
-    storageParser = screen.getParser();
+    storageProvider = screen.getStorage();
 
     // TODO use schema somehow to handle organism propagation   
     organisms = groups.stream().
@@ -209,7 +209,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
         allSamples.addAll(samples);
         DS ct =
             factory.dataset(samples, vsMinor ? source.minorVals() : source.mediumVals(),
-                    vsMinor, storageParser);
+                    vsMinor, storageProvider);
 
         ChartGrid<D> cg =
             factory.grid(screen, ct, useMajors == null ? majorVals : Arrays.asList(useMajors),
