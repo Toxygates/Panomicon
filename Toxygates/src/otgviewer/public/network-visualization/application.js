@@ -21,6 +21,12 @@ $(document).on("change", "#panelSelect", function(){
   // Determine the selected active panel
   var id = $("#panelSelect").val();
 
+  if( id == 2 ){
+    $("#layoutSelect").val("null");
+    $("#hideNodesCheckbox").attr("disabled", true);
+    return;
+  }
+
   // Display the appropriate layout
   if( toxyNet[id].layout !== "null" )
     $("#layoutSelect").val(toxyNet[id].layout.options.name);
@@ -44,11 +50,72 @@ $(document).on("change", "#layoutSelect", function (){
   // Retrieve the selected layout
   var opt = $("#layoutSelect").find(":selected").val();
 
+  // If we need to apply a layout to the interserction of two networks
+  if( id == 2){
+
+    /* Define a collection for the intersection of both networks*/
+    var intersection = vizNet[MAIN_ID].nodes().intersection(vizNet[SIDE_ID].nodes());
+
+    /* Define collections for the remainders of both networks */
+    var othersMain = vizNet[MAIN_ID].nodes().difference(intersection);
+    var othersSide = vizNet[SIDE_ID].nodes().difference(intersection);
+
+    /* layout only the intersection of both networks */
+    var removedMain = vizNet[MAIN_ID].remove(othersMain);
+    vizNet[MAIN_ID].layout = vizNet[MAIN_ID].makeLayout(vizNet[MAIN_ID].updateLayout(opt));
+
+    /* once the positioning of the nodes is completed, position the nodes on
+     * both networks, and arrange the remainder nodes for both networks */
+    vizNet[MAIN_ID].layout.promiseOn('layoutstop').then(function(evt){
+
+      /* position the intersected nodes in the side panel */
+      vizNet[MAIN_ID].nodes().forEach(function(node){
+        vizNet[SIDE_ID].$("#"+node.id())
+          .position(node.position());
+      });
+
+      /* position the remainder nodes in the main panel */
+      var bb = vizNet[MAIN_ID].extent();
+      var startx = bb["x1"]+15;
+      var starty = bb["y2"]+30;
+      removedMain.nodes().forEach(function(node){
+        node.position({x:startx, y:starty});
+        startx += 60;
+        if( startx >= bb["x2"] ){
+          startx = bb["x1"]+15;
+          starty += 60;
+        }
+      });
+
+      /* position the remainder nodes in the side panel */
+      startx = bb["x1"]+15;
+      starty = bb["y2"]+30;
+      othersSide.nodes().forEach(function(node){
+        node.position({x:startx, y:starty});
+        startx += 60;
+        if( startx >= bb["x2"] ){
+          startx = bb["x1"]+15;
+          starty += 60;
+        }
+      });
+
+      /* restore the removed elements to the main panel */
+      removedMain.restore();
+      /* fit the viewport of both panels to show all nodes in their updated
+       * positions */
+      vizNet[MAIN_ID].fit();
+      vizNet[SIDE_ID].fit();
+    });
+    vizNet[MAIN_ID].layout.run();
+  }
+  else{
   // Update the layout
-  toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
-  setTimeout(function(){
-    toxyNet[id].layout.run();
-  });
+    toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
+    console.log(toxyNet[id].layout.options);
+    setTimeout(function(){
+      toxyNet[id].layout.run();
+    });
+  }
 });
 
 /**
@@ -94,10 +161,16 @@ $(document).on("change", "#showRightCheckbox", function(){
   }
   // When the checkbox is not checked (disabled display of right-side panel)
   else{
+    /* Disable interaction layout application */
+    $("#panelSelect option[value=0]").prop("selected", true);
+    $("#panelSelect option[value=1]").attr("disabled", true);
+    $("#panelSelect option[value=2]").attr("disabled", true);
+
     // Unselect and disable the possibility of showing the intersection of
     // both networks
     $("#showIntersectionCheckbox").prop("checked", false);
     $("#showIntersectionCheckbox").attr("disabled", true);
+    $("#showIntersectionCheckbox").trigger("change");
     // we remove the panel from the DOM
     $("#rightDisplay").remove();
     // remove the information from the corresponding variables
@@ -136,12 +209,27 @@ $(document).on("change", "#showIntersectionCheckbox", function(){
     var inter = clone.nodes().intersection(vizNet[SIDE_ID].nodes());
     // select each node found to be part of the intersection
     inter.forEach(function(node){
-      vizNet[0].$('#'+node.id()).select();
+
+      vizNet[0].$('#'+node.id())
+        .data("color", '#ffde4c')
+        .style('background-color', '#ffde4c');
+      vizNet[1].$('#'+node.id())
+          .data("color", '#ffde4c')
+          .style('background-color', '#ffde4c');
     });
   }
   // Unselect everything when canceling the display
   else{
-    vizNet[0].$('node').unselect();
+    vizNet[0].nodes().forEach(function(n){
+      var c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
+      n.style("background-color", c);
+      n.data("color", c);
+    });
+    vizNet[1].nodes().forEach(function(n){
+      var c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
+      n.style("background-color", c);
+      n.data("color", c);
+    });
   }
 
 });
@@ -507,6 +595,10 @@ function onNodeUnselection(event){
 function showNetworkOnRight() {
   // Enable the display of intersection of both networks
   $("#showIntersectionCheckbox").attr("disabled", false);
+  /* Enable layout application for side and both networks */
+  $("#panelSelect option[value=1]").attr("disabled", false);
+  $("#panelSelect option[value=2]").attr("disabled", false);
+
 
   // Check if there is already a right panel
   var right = $("#rightDisplay");
