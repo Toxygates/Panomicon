@@ -29,7 +29,7 @@ import otgviewer.client.components.*;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
-public class TermSuggestOracle extends SuggestOracle implements HasExactMatchHandler<Term> {
+public class TermSuggestOracle extends SuggestOracle {
 
   private final ProbeServiceAsync probeService;
 
@@ -40,11 +40,6 @@ public class TermSuggestOracle extends SuggestOracle implements HasExactMatchHan
 
   public TermSuggestOracle(Screen screen) {
     probeService = screen.manager().probeService();
-  }
-
-  @Override
-  public void addExactMatchHandler(ExactMatchHandler<Term> handler) {
-    handlers.add(handler);
   }
 
   @Override

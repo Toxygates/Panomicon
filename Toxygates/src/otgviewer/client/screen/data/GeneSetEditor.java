@@ -43,7 +43,7 @@ import t.viewer.client.Utils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
-public class GeneSetEditor extends Composite implements HasSaveActionHandler {
+public class GeneSetEditor extends Composite {
 
   private static final String NEW_TITLE_PREFIX = "NewGeneSet";
 
@@ -638,9 +638,7 @@ public class GeneSetEditor extends Composite implements HasSaveActionHandler {
     return false;
   }
 
-  @Override
   public void addSaveActionHandler(SaveActionHandler handler) {
     this.saveActions.add(handler);
   }
-
 }

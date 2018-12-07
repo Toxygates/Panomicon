@@ -32,8 +32,7 @@ import otgviewer.client.screen.data.TermSuggestOracle.TermSuggestion;
 import t.common.shared.Term;
 
 public class TermSuggestBox extends SuggestBox implements FocusHandler,
-    BlurHandler, SelectionHandler<TermSuggestion>,
-    ExactMatchHandler<Term>, KeyPressHandler {
+    BlurHandler, SelectionHandler<TermSuggestion>, KeyPressHandler {
 
   private String WATERMARK;
 
@@ -94,7 +93,6 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
     previousValue = selected.getTermString();
   }
 
-  @Override
   public void onExactMatchFound(List<Term> exactMatches) {
     this.exactMatches = exactMatches;
     if (exactMatches.size() == 1) {
