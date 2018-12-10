@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.client
+package t.viewer.client.components
 
 import java.util.logging.Logger
 import scala.collection.JavaConverters._
@@ -28,8 +28,6 @@ import t.clustering.shared.ClusteringList
 import t.viewer.shared.ItemList
 import t.viewer.shared.StringList
 import org.scalatest.junit.JUnitRunner
-
-import otg.viewer.client.components.StringListsStoreHelper;
 
 @RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends TTestSuite {

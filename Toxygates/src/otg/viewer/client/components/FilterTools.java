@@ -29,6 +29,7 @@ import otg.viewer.client.screen.data.DataFilterEditor;
 import t.common.client.Utils;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
+import t.viewer.client.components.DatasetSelector;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;

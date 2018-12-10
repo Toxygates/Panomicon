@@ -27,12 +27,12 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.StringListsStoreHelper;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.MenuItemCaptionSeparator;
+import t.viewer.client.components.StringListsStoreHelper;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.clustering.ProbeClustering;

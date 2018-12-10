@@ -33,6 +33,7 @@ import t.common.client.components.StringArrayTable;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.components.StringListsStoreHelper;
 import t.viewer.client.dialog.*;
 import t.viewer.client.intermine.*;
 import t.viewer.shared.ItemList;

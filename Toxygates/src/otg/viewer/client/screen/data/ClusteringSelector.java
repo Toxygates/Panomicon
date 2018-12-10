@@ -25,8 +25,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.ListChooser;
 import t.viewer.client.Utils;
+import t.viewer.client.components.ListChooser;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.clustering.Algorithm;
