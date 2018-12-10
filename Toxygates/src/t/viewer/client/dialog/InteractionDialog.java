@@ -23,7 +23,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
-import otgviewer.client.components.Screen;
+import otg.viewer.client.components.Screen;
 import t.viewer.client.Utils;
 
 abstract public class InteractionDialog {

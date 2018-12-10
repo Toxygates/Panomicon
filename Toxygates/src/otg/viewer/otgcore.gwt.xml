@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN" "http://google-web-toolkit.googlecode.com/svn/tags/2.7.0/distro-source/core/src/gwt-module.dtd">
+
+<!--  This is a transitional module for Tritigate (etc) until we have moved 
+generic code from otg.viewer into t.viewer. -->
+<module>
+	<inherits name="com.google.gwt.user.User" />
+		<!-- Other module inherits                                      -->
+	<inherits name='com.google.gwt.visualization.Visualization'/>
+	<inherits name='com.google.gwt.http.HTTP'/>
+
+	<inherits name='t.viewer.Viewer' />
+	
+	<source path="client"/>
+	<source path='shared' />
+</module>

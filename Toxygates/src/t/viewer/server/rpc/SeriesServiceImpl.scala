@@ -28,10 +28,10 @@ import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import t.common.server.GWTUtils._
 
-import otgviewer.server.rpc.Conversions.asScala
-import otgviewer.shared.MatchResult
-import otgviewer.shared.RankRule
-import otgviewer.shared.{Series => SSeries}
+import otg.viewer.server.rpc.Conversions.asScala
+import otg.viewer.shared.MatchResult
+import otg.viewer.shared.RankRule
+import otg.viewer.shared.{Series => SSeries}
 import t.SeriesRanking
 import t.common.shared.Dataset
 import t.db._

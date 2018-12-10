@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.Screen;
+import otg.viewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
 import t.viewer.shared.intermine.*;
 

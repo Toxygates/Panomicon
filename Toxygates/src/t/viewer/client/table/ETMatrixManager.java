@@ -12,9 +12,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.view.client.*;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.screen.data.FilterEditor;
+import otg.viewer.client.components.PendingAsyncCallback;
+import otg.viewer.client.components.Screen;
+import otg.viewer.client.screen.data.FilterEditor;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;

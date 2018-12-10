@@ -22,7 +22,7 @@ import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import otgviewer.shared.*;
+import otg.viewer.shared.*;
 import t.common.shared.Dataset;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;

@@ -89,7 +89,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   import t.viewer.server.Conversions._
   import t.common.server.GWTUtils._
   import ScalaUtils._
-  import MatrixServiceImpl._
+import MatrixServiceImpl._
 
   protected implicit var mcontext: MatrixContext = _
   private def probes = context.probes

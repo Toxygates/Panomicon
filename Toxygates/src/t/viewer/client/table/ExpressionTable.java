@@ -35,9 +35,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
-import otgviewer.client.charts.*;
-import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.Screen;
+import otg.viewer.client.charts.*;
+import otg.viewer.client.charts.Charts.AChartAcceptor;
+import otg.viewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;

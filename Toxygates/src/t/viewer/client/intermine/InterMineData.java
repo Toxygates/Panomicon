@@ -27,7 +27,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
-import otgviewer.client.components.*;
+import otg.viewer.client.components.*;
 import t.clustering.shared.ClusteringList;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.SharedUtils;

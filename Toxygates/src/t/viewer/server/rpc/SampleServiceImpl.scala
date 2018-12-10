@@ -25,7 +25,7 @@ import java.util.{ List => JList }
 import scala.collection.JavaConverters._
 import t.common.server.GWTUtils._
 
-import otgviewer.shared.Pathology
+import otg.viewer.shared.Pathology
 import t.common.server.ScalaUtils
 import t.common.shared._
 import t.common.shared.sample._

@@ -24,9 +24,9 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.InputGrid;
-import otgviewer.client.components.Screen;
+import otg.viewer.client.components.Screen;
 import t.viewer.client.Utils;
+import t.viewer.client.components.InputGrid;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.intermine.InstanceSelector;
 import t.viewer.shared.intermine.IntermineInstance;

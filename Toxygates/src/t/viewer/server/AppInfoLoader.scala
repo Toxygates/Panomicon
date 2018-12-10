@@ -24,6 +24,7 @@ import t.sparql.Probes
 import t.viewer.shared.clustering.ProbeClustering
 import t.viewer.shared.StringList
 import t.viewer.shared.AppInfo
+import otg.viewer.server.rpc.Conversions._
 import scala.collection.JavaConverters._
 import t.common.shared.Platform
 import t.BaseConfig

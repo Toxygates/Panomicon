@@ -33,8 +33,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
-import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.ResizableTextArea;
+import otg.viewer.client.components.ListChooser;
+import otg.viewer.client.components.ResizableTextArea;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.common.shared.SharedUtils;

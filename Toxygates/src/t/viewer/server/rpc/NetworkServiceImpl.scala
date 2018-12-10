@@ -23,6 +23,7 @@ import java.lang.{ Double => JDouble }
 import java.util.{ HashMap => JHMap }
 import java.util.{ List => JList }
 
+import otg.viewer.server.rpc.Conversions._
 import scala.collection.JavaConverters._
 
 import t.common.shared.GroupUtils

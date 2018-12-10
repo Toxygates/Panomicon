@@ -9,11 +9,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.*;
-import otgviewer.client.components.*;
-import otgviewer.client.screen.data.HeatmapViewer;
-import otgviewer.client.screen.data.MirnaSourceDialog;
-import otgviewer.client.screen.groupdef.ColumnScreen;
+import otg.viewer.client.*;
+import otg.viewer.client.components.*;
+import otg.viewer.client.screen.data.HeatmapViewer;
+import otg.viewer.client.screen.data.MirnaSourceDialog;
+import otg.viewer.client.screen.groupdef.ColumnScreen;
 import t.common.shared.GroupUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;

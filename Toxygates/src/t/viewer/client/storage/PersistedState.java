@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.Screen;
+import otg.viewer.client.components.Screen;
 
 /**
  * A piece of client state that can be individually stored and applied.

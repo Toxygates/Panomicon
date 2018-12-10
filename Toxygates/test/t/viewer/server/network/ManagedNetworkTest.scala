@@ -5,6 +5,8 @@ import scala.collection.JavaConverters._
 import org.junit.runner.RunWith
 
 import org.scalatest.junit.JUnitRunner
+
+import otg.viewer.server.rpc.Conversions._
 import t.TTestSuite
 import t.common.shared.ValueType
 import t.common.shared.sample.Group

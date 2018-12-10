@@ -31,7 +31,7 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.Screen;
+import otg.viewer.client.components.Screen;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
