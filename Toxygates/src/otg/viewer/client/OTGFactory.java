@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 
 import otg.viewer.client.components.*;
 import otg.viewer.client.components.compoundsel.CompoundSelector;
+import otg.viewer.client.intermine.InterMineData;
 import otg.viewer.client.screen.data.*;
 import otg.viewer.client.screen.groupdef.*;
 import otg.viewer.client.screen.groupdef.SelectionTDGrid.UnitListener;
@@ -32,7 +33,6 @@ import otg.viewer.client.screen.ranking.CompoundRanker;
 import otg.viewer.client.screen.ranking.SimpleCompoundRanker;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
-import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 

@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server.intermine;
+package t.viewer.client.intermine;
 
 import javax.annotation.Nullable;
 
@@ -24,11 +24,10 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.Screen;
 import t.viewer.client.Utils;
 import t.viewer.client.components.InputGrid;
+import t.viewer.client.components.ViewContext;
 import t.viewer.client.dialog.InteractionDialog;
-import t.viewer.client.intermine.InstanceSelector;
 import t.viewer.shared.intermine.IntermineInstance;
 
 abstract public class InterMineSyncDialog extends InteractionDialog {
@@ -52,7 +51,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
    * @param withReplace
    * @param instance must not be null if withPassword is true
    */
-  public InterMineSyncDialog(Screen parent, String action,
+  public InterMineSyncDialog(ViewContext parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable InstanceSelector selector,
       @Nullable IntermineInstance instance) {
@@ -65,7 +64,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
     setup();
   }
   
-  public InterMineSyncDialog(Screen parent, String action,
+  public InterMineSyncDialog(ViewContext parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable IntermineInstance preferredInstance) {
     this(parent, action, withPassword, withReplace, null,

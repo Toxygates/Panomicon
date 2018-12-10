@@ -42,6 +42,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.*;
 import t.viewer.client.components.ImmediateValueChangeTextBox;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.StorageProvider;
 

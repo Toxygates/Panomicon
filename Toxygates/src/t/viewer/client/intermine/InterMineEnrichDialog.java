@@ -18,19 +18,19 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server.intermine;
+package t.viewer.client.intermine;
 
 import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
+import t.viewer.client.components.ViewContext;
 import t.viewer.shared.intermine.*;
 
 public class InterMineEnrichDialog extends InterMineSyncDialog {
 
-  public InterMineEnrichDialog(Screen parent, String action,
+  public InterMineEnrichDialog(ViewContext parent, String action,
       @Nullable IntermineInstance preferredInstance) {
     super(parent, action, false, false, preferredInstance);
   }

@@ -30,15 +30,15 @@ import otg.model.sample.OTGAttribute;
 import otg.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.charts.google.GVizFactory;
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
+import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.storage.StorageProvider;
 
 public class Charts {

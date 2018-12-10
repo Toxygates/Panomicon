@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.rpc;
+package otg.viewer.client.rpc;
 
 import java.util.List;
 

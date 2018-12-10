@@ -29,6 +29,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.FullMatrix;
 

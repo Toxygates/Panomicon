@@ -21,7 +21,6 @@
 package otg.viewer.client.components;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
@@ -30,18 +29,11 @@ import otg.viewer.client.Resources;
 import otg.viewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
+import t.viewer.client.components.ViewContext;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
 
-public interface Screen {
-  default AppInfo appInfo() {
-    return manager().appInfo();
-  }
-
-  default DataSchema schema() {
-    return manager().schema();
-  }
-
+public interface Screen extends ViewContext {
   default UIFactory factory() {
     return manager().factory();
   }
@@ -50,17 +42,25 @@ public interface Screen {
     return manager().resources();
   }
 
+  default StorageProvider getStorage() {
+    return manager().getStorage();
+  }
+  
+  default AppInfo appInfo() {
+    return manager().appInfo();
+  }
+
+  default DataSchema schema() {
+    return manager().schema();
+  }
+
   default AttributeSet attributes() {
     return manager().appInfo().attributes();
   }
 
-  default StorageProvider getStorage() {
-    return manager().getStorage();
-  }
-
   // Accessors
   ScreenManager manager();
-  Logger getLogger();
+
   String getTitle();
   String key();
   boolean enabled();
@@ -91,8 +91,4 @@ public interface Screen {
   void showToolbar(Widget toolbar);
   
   void hideToolbar(Widget toolbar);
-  
-  void addPendingRequest();
-
-  void removePendingRequest(); 
 }

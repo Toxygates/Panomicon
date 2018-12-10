@@ -33,6 +33,7 @@ import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.Packer.UnpackInputException;

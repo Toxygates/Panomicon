@@ -22,12 +22,12 @@ package otg.viewer.client;
 
 import static otg.model.sample.OTGAttribute.*;
 
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
 import t.model.sample.Attribute;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
 /** 

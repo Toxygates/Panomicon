@@ -28,8 +28,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otg.viewer.client.charts.ChartGrid;
 import otg.viewer.client.charts.Charts;
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
+import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
@@ -38,8 +38,8 @@ import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SeriesServiceAsync;
 
 public class RankingCompoundSelector extends CompoundSelector {
 

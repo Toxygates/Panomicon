@@ -34,6 +34,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.*;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;

@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.client.components;
+package t.viewer.client.components;
 
 import java.util.logging.Level;
 
@@ -25,16 +25,16 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class PendingAsyncCallback<T> implements AsyncCallback<T> {
 
-  private Screen screen;
+  private ViewContext screen;
   private String onErrorMessage;
 
-  public PendingAsyncCallback(Screen _widget, String _onErrorMessage) {
+  public PendingAsyncCallback(ViewContext _widget, String _onErrorMessage) {
     screen = _widget;
     onErrorMessage = _onErrorMessage;
     screen.addPendingRequest();
   }
 
-  public PendingAsyncCallback(Screen _widget) {
+  public PendingAsyncCallback(ViewContext _widget) {
     this(_widget, "There was a server-side error.");
   }
 

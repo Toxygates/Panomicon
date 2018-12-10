@@ -24,7 +24,6 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
 import otg.viewer.client.charts.google.GVizChartGrid;
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
@@ -32,6 +31,7 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.ProbeServiceAsync;
 

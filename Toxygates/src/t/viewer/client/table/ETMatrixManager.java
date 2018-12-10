@@ -12,7 +12,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.view.client.*;
 
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
 import otg.viewer.client.screen.data.FilterEditor;
 import t.common.shared.*;
@@ -20,6 +19,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;

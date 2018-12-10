@@ -37,7 +37,6 @@ import t.common.shared.Dataset
 import t.db._
 import t.sparql._
 import t.model.SampleClass
-import t.viewer.client.rpc.SeriesService
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.shared.NoSuchProbeException
@@ -46,6 +45,7 @@ import otg.model.sample.OTGAttribute._
 import otg.TimeSeries
 import t.util.SafeMath
 import t.common.shared.SeriesType
+import otg.viewer.client.rpc.SeriesService
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }

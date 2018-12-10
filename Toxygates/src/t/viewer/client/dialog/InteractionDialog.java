@@ -23,15 +23,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
-import otg.viewer.client.components.Screen;
 import t.viewer.client.Utils;
+import t.viewer.client.components.ViewContext;
 
 abstract public class InteractionDialog {
 
   protected DialogBox db;
-  protected final Screen parent;
+  protected final ViewContext parent;
 
-  public InteractionDialog(Screen parent) {
+  public InteractionDialog(ViewContext parent) {
     this.parent = parent;
   }
 

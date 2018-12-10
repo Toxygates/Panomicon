@@ -28,13 +28,14 @@ import javax.annotation.Nullable;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+
+import otg.viewer.client.intermine.InterMineData;
 
 public interface ImportingScreen extends Screen {
   void setUrlProbes(String[] probes);

@@ -31,6 +31,7 @@ import otg.viewer.client.components.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
+import t.viewer.client.components.PendingAsyncCallback;
 
 /**
  * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a

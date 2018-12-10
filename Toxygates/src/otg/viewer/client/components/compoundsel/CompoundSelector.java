@@ -27,12 +27,12 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
 import t.common.client.components.SetEditor;
 import t.common.shared.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.ItemList;

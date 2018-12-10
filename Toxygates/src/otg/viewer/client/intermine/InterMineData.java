@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.intermine;
+package otg.viewer.client.intermine;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -32,9 +32,9 @@ import t.clustering.shared.ClusteringList;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.*;
-import t.viewer.server.intermine.InterMineEnrichDialog;
-import t.viewer.server.intermine.InterMineSyncDialog;
+import t.viewer.client.intermine.*;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.EnrichmentParams;

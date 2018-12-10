@@ -32,10 +32,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import otg.viewer.client.components.PendingAsyncCallback;
 import otg.viewer.client.components.Screen;
 import t.common.shared.sample.*;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.table.TooltipColumn;
 

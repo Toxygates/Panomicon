@@ -43,6 +43,8 @@ import otg.viewer.client.rpc.ProbeService;
 import otg.viewer.client.rpc.ProbeServiceAsync;
 import otg.viewer.client.rpc.SampleService;
 import otg.viewer.client.rpc.SampleServiceAsync;
+import otg.viewer.client.rpc.SeriesService;
+import otg.viewer.client.rpc.SeriesServiceAsync;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleGroup;
 import t.viewer.client.*;

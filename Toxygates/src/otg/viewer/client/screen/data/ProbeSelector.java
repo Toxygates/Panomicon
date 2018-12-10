@@ -34,6 +34,7 @@ import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
 /**

@@ -25,6 +25,7 @@ import otg.viewer.client.Resources;
 import otg.viewer.client.UIFactory;
 import otg.viewer.client.rpc.ProbeServiceAsync;
 import otg.viewer.client.rpc.SampleServiceAsync;
+import otg.viewer.client.rpc.SeriesServiceAsync;
 import t.common.shared.DataSchema;
 import t.viewer.client.rpc.*;
 import t.viewer.client.storage.StorageProvider;
