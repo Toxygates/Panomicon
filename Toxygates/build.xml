@@ -126,8 +126,8 @@
       <arg value="war"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
-      <arg value="otgviewer.toxygates"/>
-      <arg value="otgviewer.admin.OTGAdmin"/>
+      <arg value="otg.viewer.toxygates"/>
+      <arg value="otg.admin.OTGAdmin"/>
     </java>
 
   </target>
