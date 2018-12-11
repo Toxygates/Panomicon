@@ -1,6 +1,7 @@
 package t.viewer.client.table;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -41,7 +42,6 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   protected AppInfo appInfo;
   protected ScreenManager manager;
   protected UIFactory factory;
-  private Map<String, TickMenuItem> tickMenuItems = new HashMap<String, TickMenuItem>();
   protected Logger logger;
   protected MatrixServiceAsync matrixService;
   
@@ -62,12 +62,6 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     
     mirnaState.load(screen.getStorage());
     fetchAssociations();
-
-    for (String title : tickMenuItems.keySet()) {
-      TickMenuItem mi = tickMenuItems.get(title);
-      boolean state = expressionTable.persistedVisibility(title, mi.getState());
-      mi.setState(state);
-    }
 
     addToolbar(expressionTable.analysisTools());
   }
@@ -116,28 +110,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     });
     fileMenu.addItem(mntmDownloadCsv);    
     
-    MenuBar menuBar = new MenuBar(true);
-    //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
-    for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
-        final String title = c.columnInfo().title();
-   
-      tickMenuItems.put(title, 
-        //Automatically added to the menuBar
-      new TickMenuItem(menuBar, title, c.visible()) {
-        @Override
-        public void stateChange(boolean newState) {
-          expressionTable.setVisible(c, newState);
-          expressionTable.persistColumnState();
-          expressionTable.associations().getAssociations();
-          if (newState) {
-              Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
-                      Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
-          }
-        }
-      });
-    }
-
-    MenuItem mColumns = new MenuItem("View", false, menuBar);
+    MenuItem mColumns = new MenuItem("View", false, expressionTable.createColumnVisibilityMenu());
     addTopLevelMenu(mColumns);
     
     // TODO: this is effectively a tick menu item without the tick.

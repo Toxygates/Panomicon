@@ -32,9 +32,11 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.TickMenuItem;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Analytics;
 import t.viewer.client.storage.PersistedState;
 
 /**
@@ -167,9 +169,6 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     setupHideableColumns();
   }
   
-  /**
-   * 
-   */
   protected void setupHideableColumns() {
     boolean first = true;
 
@@ -399,6 +398,29 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
       }
     }
     return null;
+  }
+  
+  public MenuBar createColumnVisibilityMenu() {
+    MenuBar menuBar = new MenuBar(true);
+    //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
+    for (final HideableColumn<T, ?> column : getHideableColumns()) {
+        final String title = column.columnInfo().title();
+   
+      //Automatically added to the menuBar
+      new TickMenuItem(menuBar, title, column.visible()) {
+        @Override
+        public void stateChange(boolean newState) {
+          setVisible(column, newState);
+          persistColumnState();
+          //associations().getAssociations();
+          if (newState) {
+              Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
+                      Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
+          }
+        }
+      }.setState(persistedVisibility(title, column.visible()));;
+    }
+    return menuBar;
   }
   
   public void loadColumnVisibility() {
