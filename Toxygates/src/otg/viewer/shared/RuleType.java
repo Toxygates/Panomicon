@@ -21,7 +21,7 @@ package otg.viewer.shared;
 import java.io.Serializable;
 
 /**
- * Rule types for compound ranking. See otgviewer.server.Conversions for conversions to the Scala
+ * Rule types for compound ranking. See otg.viewer.server.Conversions for conversions to the Scala
  * equivalents.
  * 
  * @author johan

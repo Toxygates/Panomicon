@@ -39,7 +39,7 @@ import com.google.gwt.user.client.ui.*;
 import otg.viewer.client.components.ImportingScreen;
 
 /**
- * Adapts the HeatmapDialog for use inside otgviewer.
+ * Adapts the HeatmapDialog for use inside otg.viewer.
  */
 public class HeatmapViewer extends Composite {
 

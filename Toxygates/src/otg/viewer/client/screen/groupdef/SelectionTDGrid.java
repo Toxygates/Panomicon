@@ -44,8 +44,8 @@ import t.viewer.client.dialog.DialogPosition;
 abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   /*
-   * Note: like many other classes in otgviewer, this is probably too general 
-   * to be in otgviewer and could be moved to t.viewer
+   * Note: like many other classes in otg.viewer, this is probably too general 
+   * and could be moved to t.viewer
    */
   private CheckBox[] cmpDoseCheckboxes; // selecting all samples for a cmp/dose combo
   private CheckBox[] doseTimeCheckboxes; // selecting all samples for a dose/time combo
