@@ -35,9 +35,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.TickMenuItem;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
-import t.viewer.client.storage.PersistedState;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -401,6 +399,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
   
   public MenuBar createColumnVisibilityMenu() {
+    Set<String> visibleColumns = new HashSet<String>(screen.getStorage().columnStateStorage.getIgnoringException());
     MenuBar menuBar = new MenuBar(true);
     //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
     for (final HideableColumn<T, ?> column : getHideableColumns()) {
@@ -412,27 +411,25 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
         public void stateChange(boolean newState) {
           setVisible(column, newState);
           persistColumnState();
-          //associations().getAssociations();
           if (newState) {
               Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
                       Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
           }
         }
-      }.setState(persistedVisibility(title, column.visible()));;
+      }.setState(visibleColumns.contains(title));;
     }
     return menuBar;
   }
   
   public void loadColumnVisibility() {
-    columnState.load(screen.getStorage());
-    Set<String> preferredColumns = columnState.getValue();
-    if (preferredColumns != null) {
+    Set<String> visibleColumns = new HashSet<String>(screen.getStorage().columnStateStorage.getIgnoringException()); 
+    if (visibleColumns != null) {
       for (HideableColumn<T, ?> c : hideableColumns) {
         //TODO: we ignore persisted state for standard columns - for now this is to
         //play nicely with dual data screen
         if (c.standard == null) {
           ColumnInfo info = c.columnInfo();
-          boolean visible = preferredColumns.contains(info.title());
+          boolean visible = visibleColumns.contains(info.title());
           c.setVisibility(visible);
         }
       }
@@ -440,29 +437,8 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
 
   public void persistColumnState() {
-    Set<String> vs = hideableColumns.stream().filter(c -> c.visible()).
+    Set<String> visibleColumns = hideableColumns.stream().filter(c -> c.visible()).
         map(c -> c.columnInfo().title()).collect(Collectors.toSet());
-    columnState.changeAndPersist(screen.manager().getStorage(), vs);
+    screen.getStorage().columnStateStorage.store(new ArrayList<String>(visibleColumns));
   }
-  
-  public boolean persistedVisibility(String columnId, boolean default_) {
-    if (columnState.getValue() == null) {
-      return default_;
-    }
-    return columnState.getValue().contains(columnId);
-  }
-  
-  protected PersistedState<Set<String>> columnState = new PersistedState<Set<String>>(
-      "Hideable columns", "hideableColumns") {
-
-    @Override
-    protected String doPack(Set<String> state) {      
-      return SharedUtils.packList(state, ":::");
-    }
-
-    @Override
-    protected Set<String> doUnpack(String state) {
-      return new HashSet<String>(Arrays.asList(state.split(":::")));
-    }
-  };
 }

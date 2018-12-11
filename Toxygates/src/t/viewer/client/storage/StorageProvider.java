@@ -60,10 +60,7 @@ public class StorageProvider implements Storage.StorageProvider {
   public final Storage<Group> customColumnStorage;
   public final Storage<List<Dataset>> datasetsStorage;
   
-  public final ListPacker<String> probesPacker = 
-      new ListPacker<String>(new IdentityPacker(), "###");
-  
-  public final ListPacker<String> compoundsPacker = 
+  public final ListPacker<String> stringListPacker = 
       new ListPacker<String>(new IdentityPacker(), "###");
   
   public final ListPacker<Dataset> datasetsPacker = 
@@ -72,20 +69,17 @@ public class StorageProvider implements Storage.StorageProvider {
   public final ListPacker<ItemList> itemListsPacker = 
       new ListPacker<ItemList>(new ItemListPacker(), "###");
   
-  public final ListPacker<ItemList> clusteringListsPacker =  
-      new ListPacker<ItemList>(new ItemListPacker(), "###");
-  
   public final ItemListPacker genesetPacker = new ItemListPacker();
   
   public final ListPacker<PackedNetwork> packedNetworksPacker = 
       new ListPacker<PackedNetwork>(new PackedNetworkPacker(), "###");
   
   public final Storage<List<String>> probesStorage = 
-      new Storage<List<String>>("probes", probesPacker, this, 
+      new Storage<List<String>>("probes", stringListPacker, this, 
           () -> new ArrayList<String>());
   
   public final Storage<List<String>> compoundsStorage = 
-      new Storage<List<String>>("compounds", compoundsPacker, this, 
+      new Storage<List<String>>("compounds", stringListPacker, this, 
           () -> new ArrayList<String>());
   
   public final Storage<List<ItemList>> itemListsStorage = 
@@ -93,7 +87,7 @@ public class StorageProvider implements Storage.StorageProvider {
           () -> new ArrayList<ItemList>());
   
   public final Storage<List<ItemList>> clusteringListsStorage = 
-      new Storage<List<ItemList>>("clusterings", clusteringListsPacker, this, 
+      new Storage<List<ItemList>>("clusterings", itemListsPacker, this, 
           () -> new ArrayList<ItemList>());
 
   public final Storage<ItemList> genesetStorage = 
@@ -102,6 +96,9 @@ public class StorageProvider implements Storage.StorageProvider {
   public final Storage<List<PackedNetwork>> packedNetworksStorage = 
       new Storage<List<PackedNetwork>>("networks", packedNetworksPacker, this,
           () -> new ArrayList<PackedNetwork>());
+  
+  public final Storage<List<String>> columnStateStorage = 
+      new Storage<List<String>>("hideableColumns", stringListPacker, this);
   
   public StorageProvider(com.google.gwt.storage.client.Storage storage, String prefix, 
       DataSchema schema, AppInfo info) {
