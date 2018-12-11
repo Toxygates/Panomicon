@@ -34,6 +34,7 @@ import t.viewer.client.network.PackedNetwork;
 import t.viewer.client.storage.Packer.UnpackInputException;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * Refactoring in progress. Methods for converting objects to and from strings
@@ -74,6 +75,9 @@ public class StorageProvider implements Storage.StorageProvider {
   public final ListPacker<PackedNetwork> packedNetworksPacker = 
       new ListPacker<PackedNetwork>(new PackedNetworkPacker(), "###");
   
+  public final ListPacker<MirnaSource> mirnaSourcesPacker = 
+      new ListPacker<MirnaSource>(new MirnaSourcePacker(), ":::");
+  
   public final Storage<List<String>> probesStorage = 
       new Storage<List<String>>("probes", stringListPacker, this, 
           () -> new ArrayList<String>());
@@ -99,6 +103,9 @@ public class StorageProvider implements Storage.StorageProvider {
   
   public final Storage<List<String>> columnStateStorage = 
       new Storage<List<String>>("hideableColumns", stringListPacker, this);
+  
+  public final Storage<List<MirnaSource>> mirnaSourcesStorage = 
+      new Storage<List<MirnaSource>>("mirnaSources", mirnaSourcesPacker, this);
   
   public StorageProvider(com.google.gwt.storage.client.Storage storage, String prefix, 
       DataSchema schema, AppInfo info) {

@@ -24,10 +24,8 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.Packable;
-
 @SuppressWarnings("serial")
-public class MirnaSource implements Serializable, Packable {
+public class MirnaSource implements Serializable  {
   //GWT constructor
   MirnaSource() {}
   
@@ -70,6 +68,7 @@ public class MirnaSource implements Serializable, Packable {
   
   public int size() { return size; }
   
+  @Override
   public boolean equals(Object other) {
     if (other instanceof MirnaSource) {
       return id.equals(((MirnaSource) other).id());
@@ -78,30 +77,8 @@ public class MirnaSource implements Serializable, Packable {
     }
   }
   
+  @Override
   public int hashCode() {
     return id.hashCode();
-  }
-  
-  public String pack() {
-    return id + "^^^" + limit;
-  }
-  
-  public static MirnaSource unpack(String state) {
-    String[] spl = state.split("\\^\\^\\^");
-    Double limit;
-    try {
-      if (spl.length == 2) {
-        limit = Double.parseDouble(spl[1]);
-      } else {
-        return null;
-      }
-    } catch (NumberFormatException e) {
-      limit = null;
-    }
-    if (spl.length == 2) {
-      return new MirnaSource(spl[0], "", false, false, limit, 0);
-    } else {
-      return null;
-    }    
   }
 }

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,7 +20,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.components.DataView;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.storage.PersistedState;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 
@@ -60,7 +58,6 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     initWidget(content());   
     setupMenus();
     
-    mirnaState.load(screen.getStorage());
     fetchAssociations();
 
     addToolbar(expressionTable.analysisTools());
@@ -140,7 +137,8 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   
   protected void showMirnaSourceDialog() {
     MirnaSource[] sources = appInfo.mirnaSources();
-    new MirnaSourceDialog(screen, this, manager.probeService(), sources, mirnaState.getValue())
+    new MirnaSourceDialog(screen, this, manager.probeService(), sources,
+        screen.getStorage().mirnaSourcesStorage.getIgnoringException().toArray(new MirnaSource[0]))
         .display("Choose miRNA sources", DialogPosition.Center);
   }
 
@@ -251,35 +249,21 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
   
   public ExpressionTable expressionTable() { return expressionTable; }
-
-  protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
-      "miRNASources", "mirnaSources") {
-    @Override
-    protected String doPack(MirnaSource[] state) {
-      return Arrays.stream(state).map(ms -> ms.pack()).collect(Collectors.joining(":::"));
-    }
-
-    @Override
-    protected MirnaSource[] doUnpack(String state) {
-      String[] spl = state.split(":::");
-      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).
-          filter(ms -> ms != null).toArray(MirnaSource[]::new);
-    }
-  };
   
   // MirnaSourceDialog.Delegate method
   @Override
   public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
-    mirnaState.changeAndPersist(screen, mirnaSources);
+    screen.getStorage().mirnaSourcesStorage.store(Arrays.asList(mirnaSources));
     fetchAssociations();
   }
 
   public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
-    expressionTable.associations().getAssociations();
+     expressionTable.associations().getAssociations();
   };
   
   public void fetchAssociations() {
-    MirnaSource[] mirnaSources = mirnaState.getValue();
+    MirnaSource[] mirnaSources = 
+        screen.getStorage().mirnaSourcesStorage.getIgnoringException().toArray(new MirnaSource[0]);
     if (mirnaSources != null) {
       manager.networkService().setMirnaSources(mirnaSources, new AsyncCallback<Void>() {
         @Override
