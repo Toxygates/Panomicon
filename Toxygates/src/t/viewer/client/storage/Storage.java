@@ -20,7 +20,7 @@ public class Storage<T> {
    * returns null, or by getIgnoringException when an UnpackInputException is
    * thrown.
    */
-  private Supplier<T> defaultValueProvider = null;
+  private Supplier<T> defaultValueProvider = () -> null;
 
   public interface StorageProvider {
     void setItem(String key, String value);
