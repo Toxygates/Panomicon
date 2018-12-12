@@ -29,7 +29,8 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.*;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
@@ -285,7 +286,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
   }
 
-  public void columnsChanged(List<Group> columns) {
+  private void columnsChanged(List<Group> columns) {
     chosenColumns = columns;
     dataView.columnsChanged(columns);
   }
@@ -372,7 +373,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     urlGroups = null;
   }
 
-  public boolean importColumns(List<Group> groups) {
+  private boolean importColumns(List<Group> groups) {
     if (groups.size() > 0 && !groups.equals(chosenColumns)) {
       columnsChanged(groups);
       storeState();

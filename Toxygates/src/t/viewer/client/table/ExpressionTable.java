@@ -192,7 +192,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     restoreSort();
   }
 
-  public void storeSortInfo() {
+  private void storeSortInfo() {
     ColumnSortList csl = grid.getColumnSortList();
     if (csl.size() > 0) {
       Column<?, ?> column = csl.get(0).getColumn();
@@ -276,7 +276,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       allCs.addAll(SampleClassUtils.classes(Arrays.asList(g.getSamples())));
     }
 
-    sampleClassChanged(SampleClass.intersection(allCs));
+    chosenSampleClass = SampleClass.intersection(allCs);
     logger.info("Set SC to: " + chosenSampleClass.toString());
 
     analysisTools.columnsChanged(columns);
@@ -430,10 +430,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   
   public AssociationManager<ExpressionRow> associations() {
     return associations;
-  }
-
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
   }
 
   public void probesChanged(String[] probes) {
