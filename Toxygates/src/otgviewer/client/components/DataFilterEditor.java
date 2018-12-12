@@ -63,13 +63,14 @@ public class DataFilterEditor extends Composite {
       }
     }
 
-    void trySelect(String item) {
+    boolean trySelect(String item) {
       for (int i = 0; i < getItemCount(); i++) {
         if (getItemText(i).equals(item)) {
           setSelectedIndex(i);
-          return;
+          return true;
         }
       }
+      return false;
     }
 
     void setItemsFrom(List<SampleClass> scs, Attribute key) {
@@ -141,7 +142,6 @@ public class DataFilterEditor extends Composite {
           changeFrom(sel, true);
         }
       });
-
     }
   }
 
@@ -152,7 +152,22 @@ public class DataFilterEditor extends Composite {
     }
     this.sampleClasses = Arrays.asList(sampleClasses);
     selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
-    changeFrom(0, true); // Propagate the constraint
+    
+    // Attempt to preserve the already chosen sample class by sequentially setting
+    // each selector accordingly. 
+    boolean oldSampleClassMatchesConstraints = true;
+    for (int i = 0; i < selectors.length; ++i) {
+      oldSampleClassMatchesConstraints = 
+          selectors[i].trySelect(chosenSampleClass.get(parameters[i]));
+      if (oldSampleClassMatchesConstraints) {
+        changeFrom(i, false);
+      }
+    }
+    // If the above fails, we start at the top and generate a fresh set of values
+    // that match the constraints.
+    if (!oldSampleClassMatchesConstraints) {
+      changeFrom(0, true); 
+    }
   }
 
   // Incoming message from FilterTools
