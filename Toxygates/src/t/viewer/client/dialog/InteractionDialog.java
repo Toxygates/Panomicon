@@ -24,14 +24,14 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import t.viewer.client.Utils;
-import t.viewer.client.components.ViewContext;
+import t.viewer.client.components.Screen;
 
 abstract public class InteractionDialog {
 
   protected DialogBox db;
-  protected final ViewContext parent;
+  protected final Screen parent;
 
-  public InteractionDialog(ViewContext parent) {
+  public InteractionDialog(Screen parent) {
     this.parent = parent;
   }
 

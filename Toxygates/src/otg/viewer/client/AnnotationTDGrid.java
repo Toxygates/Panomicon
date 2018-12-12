@@ -44,7 +44,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private ListBox annotationSelector;
   private Button annotationButton;
 
-  public AnnotationTDGrid(Screen screen) {
+  public AnnotationTDGrid(OTGScreen screen) {
     super(screen, false);
   }
 

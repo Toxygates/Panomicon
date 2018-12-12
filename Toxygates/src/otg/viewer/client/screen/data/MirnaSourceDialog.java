@@ -4,7 +4,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.ProbeServiceAsync;
@@ -20,7 +20,7 @@ public class MirnaSourceDialog extends InteractionDialog {
     void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources);
   }
 
-  public MirnaSourceDialog(Screen parent, Delegate delegate,
+  public MirnaSourceDialog(OTGScreen parent, Delegate delegate,
                            ProbeServiceAsync probeService,
                            MirnaSource[] availableSources,
                            MirnaSource[] value) {

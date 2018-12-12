@@ -37,7 +37,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 
 import otg.viewer.client.intermine.InterMineData;
 
-public interface ImportingScreen extends Screen {
+public interface ImportingScreen extends OTGScreen {
   void setUrlProbes(String[] probes);
 
   void setUrlColumns(List<String[]> groups, List<String> names);

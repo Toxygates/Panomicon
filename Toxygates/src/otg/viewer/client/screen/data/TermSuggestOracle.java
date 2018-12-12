@@ -38,7 +38,7 @@ public class TermSuggestOracle extends SuggestOracle {
   private List<ExactMatchHandler<Term>> handlers =
       new ArrayList<ExactMatchHandler<Term>>();
 
-  public TermSuggestOracle(Screen screen) {
+  public TermSuggestOracle(OTGScreen screen) {
     probeService = screen.manager().probeService();
   }
 

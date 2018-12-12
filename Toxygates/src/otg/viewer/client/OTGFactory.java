@@ -43,23 +43,23 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener) {
+  public SelectionTDGrid selectionTDGrid(OTGScreen scr, @Nullable UnitListener listener) {
     return new TreatedControlSelTDGrid(scr, listener);
   }
 
   @Override
-  public CompoundRanker compoundRanker(Screen _screen) {
+  public CompoundRanker compoundRanker(OTGScreen _screen) {
     return new SimpleCompoundRanker(_screen);
   }
 
   @Override
-  public GroupInspector groupInspector(CompoundSelector cs, Screen scr,
+  public GroupInspector groupInspector(CompoundSelector cs, OTGScreen scr,
       GroupInspector.Delegate delegate) {
     return new TreatedControlGroupInspector(cs, scr, delegate);
   }
 
   @Override
-  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups) {
+  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups) {
     return new GroupLabels(screen, schema, groups);
   }
 

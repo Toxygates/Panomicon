@@ -90,18 +90,18 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * All screens in order of links being displayed at the top
    */
-  private List<Screen> screens = new ArrayList<Screen>();
+  private List<OTGScreen> screens = new ArrayList<OTGScreen>();
   
   /**
    * All available screens. The key in this map is the "key" field of each Screen instance, which
    * also corresponds to the history token used with GWT's history tracking mechanism.
    */
-  protected Map<String, Screen> screensBykey = new HashMap<String, Screen>();
+  protected Map<String, OTGScreen> screensBykey = new HashMap<String, OTGScreen>();
 
   /**
    * The screen currently being displayed.
    */
-  protected Screen currentScreen;
+  protected OTGScreen currentScreen;
 
   protected final Logger logger = SharedUtils.getLogger("application");
 
@@ -382,9 +382,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * enabled() method of each screen is used to test whether that screen is currently available for
    * use or not.
    */
-  void addWorkflowLinks(Screen current) {
+  void addWorkflowLinks(OTGScreen current) {
     navPanel.clear();
-    for (Screen s: screens) {
+    for (OTGScreen s: screens) {
       String link = s.getTitle();
       final Label label = new Label(link);
       label.setStylePrimaryName("navlink");
@@ -417,7 +417,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * Display the screen that corresponds to a given history token.
    */
   private void showScreenForToken(String token, boolean firstLoad) {
-    Screen screen;
+    OTGScreen screen;
     if (firstLoad && readURLParameters()) {
       screen = importingScreen;
     } else {
@@ -430,7 +430,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * Switch screens.
    */
-  protected void showScreen(Screen s) {
+  protected void showScreen(OTGScreen s) {
     if (currentScreen != null) {
       mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
@@ -460,7 +460,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @return
    */
-  protected Screen pickScreen(String token) {
+  protected OTGScreen pickScreen(String token) {
     if (!screensBykey.containsKey(token)) {
       return screensBykey.get(defaultScreenKey()); // default
     } else {
@@ -477,7 +477,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   @Override
   public void attemptProceed(String to) {
-    Screen s = pickScreen(to);
+    OTGScreen s = pickScreen(to);
     if (s.enabled()) {
       History.newItem(to);
     } else {
@@ -489,7 +489,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * Helper method for initialising screens
    */
-  protected void addScreenSeq(Screen s) {
+  protected void addScreenSeq(OTGScreen s) {
     logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
     screensBykey.put(s.key(), s);    
     screens.add(s);

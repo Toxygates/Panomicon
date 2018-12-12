@@ -28,7 +28,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otg.viewer.client.charts.ChartGrid;
 import otg.viewer.client.charts.Charts;
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.*;
 import t.common.client.ImageClickCell;
@@ -53,12 +53,12 @@ public class RankingCompoundSelector extends CompoundSelector {
   private boolean hasRankColumns = false;
   private final Resources resources;
 
-  public <T extends Screen & Delegate> RankingCompoundSelector(T screen,
+  public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen,
       String heading) {
     this(screen, screen, heading);
   }
 
-  public RankingCompoundSelector(final Screen screen, Delegate delegate,
+  public RankingCompoundSelector(final OTGScreen screen, Delegate delegate,
       String heading) {
     super(screen, delegate, heading, false, false);
     this.seriesService = screen.manager().seriesService();
@@ -155,9 +155,9 @@ public class RankingCompoundSelector extends CompoundSelector {
   }
 
   class ChartClickCell extends ImageClickCell.StringImageClickCell {
-    final Screen w;
+    final OTGScreen w;
 
-    public ChartClickCell(Screen w) {
+    public ChartClickCell(OTGScreen w) {
       super(resources.chart(), "charts", false);
       this.w = w;
     }

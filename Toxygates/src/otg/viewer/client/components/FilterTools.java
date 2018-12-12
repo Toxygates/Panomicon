@@ -41,7 +41,7 @@ import t.viewer.shared.AppInfo;
 public class FilterTools extends Composite {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
-  final Screen screen;
+  final OTGScreen screen;
   final Delegate delegate;
   final SampleServiceAsync sampleService;
 
@@ -54,11 +54,11 @@ public class FilterTools extends Composite {
     void filterToolsDatasetsChanged(Dataset[] ds);
   }
 
-  public <T extends Screen & Delegate> FilterTools(T screen) {
+  public <T extends OTGScreen & Delegate> FilterTools(T screen) {
     this(screen, screen);
   }
 
-  public FilterTools(final Screen screen, Delegate delegate) {
+  public FilterTools(final OTGScreen screen, Delegate delegate) {
     this.screen = screen;
     this.delegate = delegate;
     logger = screen.getLogger();

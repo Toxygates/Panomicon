@@ -159,10 +159,10 @@ abstract public class DataSource {
     protected final MatrixServiceAsync matrixService;
 
     protected String[] probes;
-    protected Screen screen;
+    protected OTGScreen screen;
 
     DynamicExpressionRowSource(DataSchema schema, String[] probes, Sample[] barcodes,
-        Screen screen) {
+        OTGScreen screen) {
       super(schema, barcodes, new ArrayList<ExpressionRow>());
       this.probes = probes;
       this.screen = screen;
@@ -212,7 +212,7 @@ abstract public class DataSource {
   static class DynamicUnitSource extends DynamicExpressionRowSource {
     private Unit[] units;
 
-    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, Screen screen) {
+    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, OTGScreen screen) {
       super(schema, probes, Unit.collectBarcodes(units), screen);
       this.units = units;
     }

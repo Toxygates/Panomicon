@@ -27,7 +27,7 @@ import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
@@ -64,7 +64,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
     //    void beforeGetAssociations(AssociationManager<T> associations);
   }
 
-  public AssociationManager(Screen screen, RichTable<T> table, TableDelegate<T> tableDelegate,
+  public AssociationManager(OTGScreen screen, RichTable<T> table, TableDelegate<T> tableDelegate,
       ViewDelegate<T> viewDelegate) {
     probeService = screen.manager().probeService();
     logger = screen.getLogger();

@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 
 /**
  * A piece of client state that can be individually stored and applied.
@@ -86,7 +86,7 @@ abstract public class PersistedState<T> {
   /**
    * Convenience method
    */
-  public void changeAndPersist(Screen screen, @Nullable T newState) {
+  public void changeAndPersist(OTGScreen screen, @Nullable T newState) {
     changeAndPersist(screen.manager().getStorage(), newState);
   }
   

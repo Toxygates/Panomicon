@@ -36,7 +36,7 @@ import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 
-public abstract class MinimalScreen implements Screen {
+public abstract class MinimalScreen implements OTGScreen {
     
   private String title;
 

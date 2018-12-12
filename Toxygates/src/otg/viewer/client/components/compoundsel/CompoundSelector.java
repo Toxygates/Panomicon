@@ -27,7 +27,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.common.client.components.SetEditor;
 import t.common.shared.*;
 import t.model.SampleClass;
@@ -51,7 +51,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   private DockLayoutPanel dp;
 
   private Widget north;
-  protected final Screen screen;
+  protected final OTGScreen screen;
   protected final Delegate delegate;
   private final String majorParameter;
 
@@ -76,12 +76,12 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     void CompoundSelectorSampleClassChanged(SampleClass sampleClass);
   }
 
-  public <T extends Screen & Delegate> CompoundSelector(T screen, String heading,
+  public <T extends OTGScreen & Delegate> CompoundSelector(T screen, String heading,
       boolean withListSelector, boolean withFreeEdit) {
     this(screen, screen, heading, withListSelector, withFreeEdit);
   }
 
-  public CompoundSelector(final Screen screen, Delegate delegate, String heading,
+  public CompoundSelector(final OTGScreen screen, Delegate delegate, String heading,
       boolean withListSelector, boolean withFreeEdit) {
     this.screen = screen;
     logger = screen.getLogger();

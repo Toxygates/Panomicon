@@ -31,7 +31,7 @@ import com.google.gwt.visualization.client.events.SelectHandler;
 import com.google.gwt.visualization.client.visualizations.corechart.*;
 
 import otg.viewer.client.charts.*;
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.ScreenUtils;
 import t.common.shared.sample.Sample;
 import t.viewer.client.storage.Packer.UnpackInputException;
@@ -43,7 +43,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 
   public static final int MAX_WIDTH = 400;
 
-  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, Screen screen, GDTDataset table,
+  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, OTGScreen screen, GDTDataset table,
       final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
       String[] timesOrDoses, boolean columnsAreTimes, int totalWidth) {
     super(factory, screen, table, rowFilters, organisms, rowsAreMajors, timesOrDoses,

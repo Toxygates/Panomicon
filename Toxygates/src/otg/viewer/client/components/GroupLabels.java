@@ -33,11 +33,11 @@ public class GroupLabels extends Composite {
   protected List<Group> groups;
   protected DataSchema schema;
   private FlowPanel flowPanel;
-  protected Screen screen;
+  protected OTGScreen screen;
 
   final static int LABEL_MAX_LEN = 40;
 
-  public GroupLabels(Screen screen, DataSchema schema, List<Group> groups) {
+  public GroupLabels(OTGScreen screen, DataSchema schema, List<Group> groups) {
     flowPanel = new FlowPanel();
     this.groups = groups;
     this.schema = schema;

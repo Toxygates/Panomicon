@@ -45,7 +45,7 @@ import t.viewer.shared.ItemList;
 abstract public class CompoundRanker extends Composite {
   protected final Resources resources;
   private RankingCompoundSelector selector;
-  protected final Screen screen;
+  protected final OTGScreen screen;
   protected ListChooser listChooser;
 
   final GeneOracle oracle;
@@ -78,7 +78,7 @@ abstract public class CompoundRanker extends Composite {
   /**
    * @param selector the selector that this CompoundRanker will communicate with.
    */
-  public CompoundRanker(Screen _screen) {
+  public CompoundRanker(OTGScreen _screen) {
     screen = _screen;
     oracle = new GeneOracle(screen);
     schema = screen.schema();

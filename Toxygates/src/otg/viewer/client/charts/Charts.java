@@ -30,7 +30,7 @@ import otg.model.sample.OTGAttribute;
 import otg.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.charts.google.GVizFactory;
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.Series;
 import t.common.shared.*;
@@ -69,9 +69,9 @@ public class Charts {
    * Note: ideally this should be instantiated/chosen by some dependency injection system
    */
   private GVizFactory factory = new GVizFactory();
-  private Screen screen;
+  private OTGScreen screen;
 
-  private Charts(Screen screen) {
+  private Charts(OTGScreen screen) {
     schema = screen.manager().schema();
     storageProvider = screen.getStorage();
     this.screen = screen;
@@ -79,7 +79,7 @@ public class Charts {
     this.seriesService = screen.manager().seriesService();
   }
 
-  public Charts(Screen screen, List<Group> groups) {
+  public Charts(OTGScreen screen, List<Group> groups) {
     this(screen);
     this.groups = groups;
 
@@ -98,7 +98,7 @@ public class Charts {
 
   }
 
-  public Charts(Screen screen, SampleClass[] sampleClasses) {
+  public Charts(OTGScreen screen, SampleClass[] sampleClasses) {
     this(screen);
     this.sampleClasses = sampleClasses;
     groups = new ArrayList<Group>();
@@ -109,7 +109,7 @@ public class Charts {
   }
 
   public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
-      final String highlightDoseOrTime, final ChartAcceptor acceptor, final Screen screen) {
+      final String highlightDoseOrTime, final ChartAcceptor acceptor, final OTGScreen screen) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0), 
         new PendingAsyncCallback<String[]>(screen,
         "Unable to obtain independent points for series.") {
@@ -125,7 +125,7 @@ public class Charts {
   private void finishSeriesCharts(SeriesType seriesType, 
       final List<Series> series, final String[] indepPoints,
       final String highlightFixed, final ChartAcceptor acceptor,
-      final Screen screen) {
+      final OTGScreen screen) {
     try {
       final String[] fixedVals = series.stream().
           map(s -> s.get(seriesType.fixedAttribute())).distinct().

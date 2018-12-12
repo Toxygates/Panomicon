@@ -37,7 +37,7 @@ import t.viewer.client.rpc.ProbeServiceAsync;
 public class GeneOracle extends SuggestOracle {
 
   private SampleClass sampleClass;
-  private Screen screen;
+  private OTGScreen screen;
 
   public void setFilter(SampleClass sc) {
     this.sampleClass = sc;
@@ -66,7 +66,7 @@ public class GeneOracle extends SuggestOracle {
 
   }
 
-  public GeneOracle(Screen screen) {
+  public GeneOracle(OTGScreen screen) {
     probeService = screen.manager().probeService();
     this.screen = screen;
   }

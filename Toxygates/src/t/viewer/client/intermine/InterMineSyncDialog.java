@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.Utils;
 import t.viewer.client.components.InputGrid;
-import t.viewer.client.components.ViewContext;
+import t.viewer.client.components.Screen;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -51,7 +51,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
    * @param withReplace
    * @param instance must not be null if withPassword is true
    */
-  public InterMineSyncDialog(ViewContext parent, String action,
+  public InterMineSyncDialog(Screen parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable InstanceSelector selector,
       @Nullable IntermineInstance instance) {
@@ -64,7 +64,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
     setup();
   }
   
-  public InterMineSyncDialog(ViewContext parent, String action,
+  public InterMineSyncDialog(Screen parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable IntermineInstance preferredInstance) {
     this(parent, action, withPassword, withReplace, null,

@@ -25,12 +25,12 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.client.components.ItemSelector;
-import t.viewer.client.components.ViewContext;
+import t.viewer.client.components.Screen;
 import t.viewer.shared.intermine.*;
 
 public class InterMineEnrichDialog extends InterMineSyncDialog {
 
-  public InterMineEnrichDialog(ViewContext parent, String action,
+  public InterMineEnrichDialog(Screen parent, String action,
       @Nullable IntermineInstance preferredInstance) {
     super(parent, action, false, false, preferredInstance);
   }

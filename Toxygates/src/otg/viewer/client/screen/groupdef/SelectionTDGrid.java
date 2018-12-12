@@ -28,7 +28,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.SampleDetailTable;
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.TimeDoseGrid;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
@@ -132,7 +132,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   private UnitListener listener;
 
-  public SelectionTDGrid(Screen screen, @Nullable UnitListener listener) {
+  public SelectionTDGrid(OTGScreen screen, @Nullable UnitListener listener) {
     super(screen, true);
     this.listener = listener;
   }

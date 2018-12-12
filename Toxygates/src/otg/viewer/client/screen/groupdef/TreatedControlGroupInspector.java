@@ -22,13 +22,13 @@ package otg.viewer.client.screen.groupdef;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.compoundsel.CompoundSelector;
 import t.common.shared.sample.Group;
 
 public class TreatedControlGroupInspector extends GroupInspector {
 
-  public TreatedControlGroupInspector(CompoundSelector cs, Screen scr,
+  public TreatedControlGroupInspector(CompoundSelector cs, OTGScreen scr,
       Delegate delegate) {
     super(cs, scr, delegate);
   }

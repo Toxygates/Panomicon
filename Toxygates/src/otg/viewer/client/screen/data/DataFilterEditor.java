@@ -25,7 +25,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
@@ -118,7 +118,7 @@ public class DataFilterEditor extends Composite {
     }
   }
 
-  public DataFilterEditor(Screen screen) {
+  public DataFilterEditor(OTGScreen screen) {
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");

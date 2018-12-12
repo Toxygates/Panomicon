@@ -21,7 +21,7 @@ package otg.viewer.client.charts.google;
 import java.util.List;
 
 import otg.viewer.client.charts.*;
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.storage.StorageProvider;
 
 public class GVizFactory extends Factory<GDTData, GDTDataset> {
@@ -38,7 +38,7 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   @Override
-  public GVizChartGrid grid(Screen screen, GDTDataset table, List<String> rowFilters,
+  public GVizChartGrid grid(OTGScreen screen, GDTDataset table, List<String> rowFilters,
       List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
       boolean columnsAreTimes, int totalWidth) {
     return new GVizChartGrid(this, screen, table, rowFilters, organisms, rowsAreMajors,

@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
 import otg.viewer.client.charts.google.GVizChartGrid;
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
@@ -49,7 +49,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   String[] minsOrMeds;
   protected Dataset<D> dataset;
   protected Factory<?, ?> factory;
-  protected Screen screen;
+  protected OTGScreen screen;
   protected D[][] tables;
   final int totalWidth;
   final static String NO_ORGANISM = "";
@@ -58,7 +58,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * @param rowFilters major parameter values or gene symbols, depending on the chart type.
    * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
    */
-  public ChartGrid(Factory<D, ?> factory, Screen screen, Dataset<D> dataset,
+  public ChartGrid(Factory<D, ?> factory, OTGScreen screen, Dataset<D> dataset,
       final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
       String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
     super();

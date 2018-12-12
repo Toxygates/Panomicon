@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.screen.groupdef.SelectionTDGrid.UnitListener;
 import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
@@ -43,12 +43,12 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   private Map<SampleClass, SelectionTDGrid> sections = new HashMap<SampleClass, SelectionTDGrid>();
   private UnitListener listener;
   private VerticalPanel vp;
-  private final Screen screen;
+  private final OTGScreen screen;
   protected final Logger logger = SharedUtils.getLogger("msg");
 
   protected List<String> chosenCompounds = new ArrayList<String>();
 
-  public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {
+  public MultiSelectionGrid(OTGScreen scr, @Nullable SelectionTDGrid.UnitListener listener) {
     vp = new VerticalPanel();
     initWidget(vp);
     this.screen = scr;
@@ -57,7 +57,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
 
-  private SelectionTDGrid findOrCreateSection(Screen scr, SampleClass sc, boolean noCompounds) {
+  private SelectionTDGrid findOrCreateSection(OTGScreen scr, SampleClass sc, boolean noCompounds) {
     SelectionTDGrid g = sections.get(sc);
     if (g == null) {
       g = scr.factory().selectionTDGrid(scr, this);

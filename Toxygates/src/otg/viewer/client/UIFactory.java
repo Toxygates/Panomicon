@@ -39,14 +39,14 @@ import t.viewer.shared.intermine.IntermineInstance;
 
 public interface UIFactory {
 
-  public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener);
+  public SelectionTDGrid selectionTDGrid(OTGScreen scr, @Nullable UnitListener listener);
 
-  public CompoundRanker compoundRanker(Screen _screen);
+  public CompoundRanker compoundRanker(OTGScreen _screen);
   
-  public GroupInspector groupInspector(CompoundSelector cs, Screen scr,
+  public GroupInspector groupInspector(CompoundSelector cs, OTGScreen scr,
       GroupInspector.Delegate delegate);
   
-  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups);
+  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups);
   
   public GeneSetEditor geneSetEditor(ImportingScreen screen);
   
@@ -72,7 +72,7 @@ public interface UIFactory {
    * Return a summary of samples for display on the start screen, if appropriate.
    * The value will never be produced if no table should be displayed.
    */
-  default void sampleSummaryTable(Screen screen, 
+  default void sampleSummaryTable(OTGScreen screen, 
                                   ValueAcceptor<StringArrayTable> acceptor) {    
   }
   

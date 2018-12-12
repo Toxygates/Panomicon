@@ -25,16 +25,16 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class PendingAsyncCallback<T> implements AsyncCallback<T> {
 
-  private ViewContext screen;
+  private Screen screen;
   private String onErrorMessage;
 
-  public PendingAsyncCallback(ViewContext _widget, String _onErrorMessage) {
+  public PendingAsyncCallback(Screen _widget, String _onErrorMessage) {
     screen = _widget;
     onErrorMessage = _onErrorMessage;
     screen.addPendingRequest();
   }
 
-  public PendingAsyncCallback(ViewContext _widget) {
+  public PendingAsyncCallback(Screen _widget) {
     this(_widget, "There was a server-side error.");
   }
 

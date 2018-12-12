@@ -57,7 +57,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public final Groups groups = new Groups();
 
   private MultiSelectionGrid multiSelectionGrid;
-  private final Screen screen;
+  private final OTGScreen screen;
   private final Delegate delegate;
   private final DataSchema schema;
   private Label titleLabel;
@@ -90,7 +90,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     Style buttonCellBaseStyle();
   }
 
-  public GroupInspector(CompoundSelector cs, Screen scr, Delegate delegate) {
+  public GroupInspector(CompoundSelector cs, OTGScreen scr, Delegate delegate) {
     compoundSel = cs;
     this.screen = scr;
     this.delegate = delegate;

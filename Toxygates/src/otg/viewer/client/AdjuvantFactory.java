@@ -22,7 +22,7 @@ package otg.viewer.client;
 
 import static otg.model.sample.OTGAttribute.*;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
@@ -37,7 +37,7 @@ import t.viewer.client.rpc.UserDataServiceAsync;
 public class AdjuvantFactory extends OTGFactory {
 
   @Override
-  public void sampleSummaryTable(Screen screen,
+  public void sampleSummaryTable(OTGScreen screen,
       ValueAcceptor<StringArrayTable> acceptor) {
     UserDataServiceAsync userData = screen.manager().userDataService();
     Dataset d = new Dataset("adjuvant", null, null, null, null, 0);

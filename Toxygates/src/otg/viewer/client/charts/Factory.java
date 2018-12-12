@@ -20,7 +20,7 @@ package otg.viewer.client.charts;
 
 import java.util.List;
 
-import otg.viewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.storage.StorageProvider;
 
 abstract public class Factory<D extends Data, DS extends Dataset<D>> {
@@ -30,7 +30,7 @@ abstract public class Factory<D extends Data, DS extends Dataset<D>> {
   abstract public DS dataset(List<ChartSample> samples,
       String[] categories, boolean categoriesAreMins, StorageProvider storage);
 
-  abstract public ChartGrid<D> grid(Screen screen, DS table, final List<String> rowFilters,
+  abstract public ChartGrid<D> grid(OTGScreen screen, DS table, final List<String> rowFilters,
       final List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
       boolean columnsAreTimes, int totalWidth);
 

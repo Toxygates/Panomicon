@@ -480,7 +480,7 @@ public class GeneSetEditor extends Composite {
   }
 
   private void doTargetLookup(final String service, final boolean homologs) {
-    final Screen w = screen;
+    final OTGScreen w = screen;
     if (compoundList.getSelectedIndex() != -1) {
       String compound = compoundList.getItemText(compoundList.getSelectedIndex());
 

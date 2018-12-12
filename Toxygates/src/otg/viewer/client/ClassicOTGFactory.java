@@ -30,7 +30,7 @@ import otg.viewer.client.screen.ranking.FullCompoundRanker;
  */
 public class ClassicOTGFactory extends OTGFactory {
   @Override
-  public CompoundRanker compoundRanker(Screen _screen) {
+  public CompoundRanker compoundRanker(OTGScreen _screen) {
     return new FullCompoundRanker(_screen);
   }
 

@@ -45,7 +45,7 @@ abstract public class TimeDoseGrid extends Composite {
 
   protected final SampleServiceAsync sampleService;
 
-  protected Screen screen;
+  protected OTGScreen screen;
   protected final DataSchema schema;
 
   protected List<String> mediumValues = new ArrayList<String>();
@@ -65,7 +65,7 @@ abstract public class TimeDoseGrid extends Composite {
    */
   protected void initTools(HorizontalPanel toolPanel) {}
 
-  public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
+  public TimeDoseGrid(OTGScreen screen, boolean hasDoseTimeGUIs) {
     rootPanel = Utils.mkVerticalPanel();
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();

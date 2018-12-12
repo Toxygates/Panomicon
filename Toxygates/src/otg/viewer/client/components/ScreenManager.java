@@ -31,12 +31,6 @@ import t.viewer.client.rpc.*;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
 
-/**
- * A screen manager provides screen management services.
- * 
- * @author johan
- *
- */
 public interface ScreenManager extends ProvidesResize {
 
   /**
