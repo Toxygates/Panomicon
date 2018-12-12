@@ -108,12 +108,9 @@ class AssociationResolver(probeStore: OTGProbes,
       //Note: we might unify this lookup with the "aprobes" mechanism
       val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
 
-      if (!sidePlatform.isDefined) {
-        throw new Exception("The side platform of the association resolver must be set for miRNA lookup to work.")
-      }
-
+      val platform = sidePlatform.map(probeStore.platformsAndProbes)
       val data = filtTable.associationLookup(lookedUp, fromMirna,
-        probeStore.platformsAndProbes(sidePlatform.get), sizeLimit)
+        platform, sizeLimit)
 
       if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
         sizeLimitExceeded = true

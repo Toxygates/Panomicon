@@ -64,15 +64,22 @@ class TargetTable(
   }
 
   /**
-   * Efficient miRNA to mRNA lookup.
-   * mRNA probes in the platform must have transcripts populated.
+   * miRNA to mRNA lookup without a platform. Simple RefSeq IDs will be returned.
    */
-  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {
+  def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, String)] = {
     val allMicro = miRNAs.toSet
-    val allTrn = for {
+    for {
       (origin, target, score, db) <- this;
       if (allMicro.contains(origin))
     } yield (origin, target, score, db)
+  }
+  
+  /**
+   * Efficient miRNA to mRNA lookup for a specific mRNA platform.
+   * mRNA probes in the platform must have transcripts populated.
+   */
+  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {    
+    val allTrn = targets(miRNAs)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     allTrn.flatMap(x => probeLookup.get(x._2) match {
       case Some(ps) => ps.map((x._1, _, x._3, x._4))
@@ -106,19 +113,24 @@ class TargetTable(
   /**
    * Convenience method.
    * If not from MiRNA, then probes must have transcripts populated.
-   * If from MiRNA, then the platform must have transcripts populated.
+   * If from MiRNA, then any platform given must have transcripts populated.
    */
   def associationLookup(
     probes: Seq[Probe],
     fromMirna: Boolean,
-    platform: Iterable[Probe],
+    platform: Option[Iterable[Probe]],
     sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
     if (fromMirna) {
-      makeMultiMap(
-        limitSize(
-          targets(probes.map(p => MiRNA(p.identifier)), platform),
-          sizeLimit).map(x =>
-            (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some(label(x))))))
+      val targetRes = platform match {
+        //Return probes in the requested mRNA platform
+        case Some(p) => targets(probes.map(p => MiRNA(p.identifier)), p).map(x =>
+          (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some(label(x)))))
+        //Return plain RefSeq IDs
+        case None => targets(probes.map(p => MiRNA(p.identifier))).map(x =>
+          (x._1.asProbe, DefaultBio(x._2.id, x._2.id, Some(label(x)))))
+      }
+      
+      makeMultiMap(limitSize(targetRes,sizeLimit))
     } else {
       makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
         (x._1, DefaultBio(x._2.id, x._2.id, Some(label(x))))))
