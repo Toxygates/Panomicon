@@ -34,8 +34,13 @@ public class DataFilterEditor extends Composite {
   final SCListBox[] selectors;
   private final Attribute[] parameters;
   protected final Logger logger;
-
+  private Delegate delegate;
+  
   protected SampleClass chosenSampleClass;
+  
+  public interface Delegate {
+    void dataFilterEditorSampleClassChanged(SampleClass sc);
+  }
 
   class SCListBox extends ListBox {
     int idx;
@@ -99,25 +104,27 @@ public class DataFilterEditor extends Composite {
     if (sel < selectors.length - 1) {
       changeFrom(sel + 1, emitChange);
     } else if (sel == selectors.length - 1) {
-      SampleClass r = new SampleClass();
+      SampleClass sampleClass = new SampleClass();
       boolean allSet = true;
       for (int i = 0; i < selectors.length; ++i) {
         String x = selectors[i].getSelected();
         if (x == null) {
           allSet = false;
         } else {
-          r.put(parameters[i], x);
+          sampleClass.put(parameters[i], x);
         }
       }
 
       if (allSet && emitChange) {
 //        logger.info("Propagate change to " + r.toString());
-        setSampleClass(r);
+        chosenSampleClass = sampleClass;
+        delegate.dataFilterEditorSampleClassChanged(sampleClass);
       }
     }
   }
 
-  public DataFilterEditor(Screen screen) {
+  public DataFilterEditor(Screen screen, Delegate delegate) {
+    this.delegate = delegate;
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");
@@ -156,11 +163,5 @@ public class DataFilterEditor extends Composite {
       selectors[i].trySelect(sc.get(parameters[i]));      
       changeFrom(i, false);
     }
-  }
-
-  // Called as a result of user manipulation of data filter; overridden in 
-  // FilterTools to send message back to screen
-  protected void setSampleClass(SampleClass sc) {
-    chosenSampleClass = sc;
   }
 }

@@ -35,7 +35,7 @@ import t.viewer.shared.AppInfo;
  * Tools to select from the available datasets, and then from
  * the available sample macro classes within those datasets.
  */
-public class FilterTools extends Composite {
+public class FilterTools extends Composite implements DataFilterEditor.Delegate {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
   final Screen screen;
@@ -71,13 +71,7 @@ public class FilterTools extends Composite {
     b.addStyleName("lightButton");
     filterTools.add(b);
 
-    dfe = new DataFilterEditor(screen) {
-      @Override
-      protected void setSampleClass(SampleClass sc) {
-        super.setSampleClass(sc);
-        FilterTools.this.delegate.filterToolsSampleClassChanged(sc);
-      }
-    };
+    dfe = new DataFilterEditor(screen, this);
     filterTools.add(dfe);
   }
 
@@ -140,5 +134,11 @@ public class FilterTools extends Composite {
   
   public void sampleClassChanged(SampleClass sc) {
     dfe.sampleClassChanged(sc);
+  }
+  
+  
+  @Override
+  public void dataFilterEditorSampleClassChanged(SampleClass sc) {
+    delegate.filterToolsSampleClassChanged(sc);
   }
 }
