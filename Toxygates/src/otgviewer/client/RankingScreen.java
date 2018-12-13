@@ -20,6 +20,7 @@ package otgviewer.client;
 
 import static t.common.client.Utils.makeScrolled;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.user.client.ui.*;
@@ -44,16 +45,25 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   private ScrollPanel sp;
 
   protected Dataset[] chosenDatasets;
+  private SampleClass chosenSampleClass;
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenDatasets = getStorage().getDatasets(appInfo());
-    filterTools.datasetsChanged(chosenDatasets);
-    SampleClass sampleClass = getStorage().getSampleClass();
-    filterTools.sampleClassChanged(sampleClass);
-    compoundSelector.datasetsChanged(chosenDatasets);
-    compoundSelector.sampleClassChanged(sampleClass);
-    compoundSelector.loadCompounds(getStorage().getCompounds());
+    Dataset[] newChosenDatasets = getStorage().getDatasets(appInfo());
+    filterTools.datasetsChanged(newChosenDatasets);
+    SampleClass newSampleClass = getStorage().getSampleClass();
+    filterTools.sampleClassChanged(newSampleClass);
+    compoundSelector.datasetsChanged(newChosenDatasets);
+    compoundSelector.sampleClassChanged(newSampleClass);
+    
+    if (!newSampleClass.equals(chosenSampleClass) ||
+        !Arrays.equals(newChosenDatasets, chosenDatasets)) {
+      compoundSelector.fetchCompounds();
+    }
+    chosenDatasets = newChosenDatasets;
+    chosenSampleClass = newSampleClass;
+    
+    compoundSelector.setChosenCompounds(getStorage().getCompounds());
   }
 
   public RankingScreen(ScreenManager man) {

@@ -18,6 +18,7 @@
 
 package otgviewer.client;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -45,23 +46,31 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   private FilterTools filterTools;
 
   protected Dataset[] chosenDatasets = new Dataset[0];
+  private SampleClass chosenSampleClass;
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenDatasets = getStorage().getDatasets(appInfo());
-    filterTools.datasetsChanged(chosenDatasets);
-    groupInspector.datasetsChanged(chosenDatasets);
+    Dataset[] newChosenDatasets = getStorage().getDatasets(appInfo());
+    filterTools.datasetsChanged(newChosenDatasets);
+    groupInspector.datasetsChanged(newChosenDatasets);
 
-    SampleClass sampleClass = getStorage().getSampleClass();
-    filterTools.sampleClassChanged(sampleClass);
-    compoundSelector.sampleClassChanged(sampleClass);
+    SampleClass newSampleClass = getStorage().getSampleClass();
+    filterTools.sampleClassChanged(newSampleClass);
+    compoundSelector.sampleClassChanged(newSampleClass);
+    
+    if (!newSampleClass.equals(chosenSampleClass) ||
+        !Arrays.equals(newChosenDatasets, chosenDatasets)) {
+      compoundSelector.fetchCompounds();
+    }
+    chosenDatasets = newChosenDatasets;
+    chosenSampleClass = newSampleClass;
 
-    List<String> compounds = getStorage().getCompounds();
-    groupInspector.compoundsChanged(compounds);
+    List<String> chosenCompounds = getStorage().getCompounds();
+    groupInspector.compoundsChanged(chosenCompounds);
     groupInspector.loadGroups();
     // This needs to happen after groupInspector.loadGroups, which causes
     // the compound selector's selection to be cleared.
-    compoundSelector.loadCompounds(compounds);
+    compoundSelector.setChosenCompounds(chosenCompounds);
   }
 
   public ColumnScreen(ScreenManager man) {
