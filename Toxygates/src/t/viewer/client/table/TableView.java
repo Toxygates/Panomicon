@@ -9,8 +9,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.*;
-import otg.viewer.client.components.*;
+import otg.viewer.client.UIFactory;
+import otg.viewer.client.components.ImportingScreen;
+import otg.viewer.client.components.ScreenManager;
 import otg.viewer.client.screen.data.HeatmapViewer;
 import otg.viewer.client.screen.data.MirnaSourceDialog;
 import otg.viewer.client.screen.groupdef.ColumnScreen;
@@ -84,7 +85,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
 
   @Override
   public ValueType chosenValueType() {
-    return expressionTable.chosenValueType;
+    return expressionTable.getValueType();
   }
   
   protected Widget content() {
