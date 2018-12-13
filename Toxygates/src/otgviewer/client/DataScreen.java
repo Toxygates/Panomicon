@@ -66,7 +66,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public void loadState(AttributeSet attributes) {
     StorageProvider storage = getStorage();
-    chosenProbes = storage.getProbes();
+    chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
     chosenColumns = storage.getChosenColumns();
     chosenItemLists = storage.itemListsStorage.getIgnoringException();
     chosenGeneSet = storage.genesetStorage.getIgnoringException();
@@ -115,11 +115,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public List<Group> chosenColumns() {
     return chosenColumns;
-  }
-
-  @Override
-  public String[] chosenProbes() {
-    return chosenProbes;
   }
 
   protected GeneSetToolbar makeGeneSetSelector() {
@@ -269,7 +264,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
     chosenProbes = probes;
 
-    getStorage().storeProbes(chosenProbes);
+    getStorage().probesStorage.store(Arrays.asList(chosenProbes));
 
     lastProbes = null;
     lastColumns = null;

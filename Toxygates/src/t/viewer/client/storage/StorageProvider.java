@@ -157,12 +157,6 @@ public class StorageProvider implements Storage.StorageProvider {
     return true;
   }
   
-  /* TBD: remove the following boilerplate methods, and instead have other classes 
-   * directly use the public Storage<T> instances.
-   * Also, considering using lists rather than arrays for datasets and probes so 
-   * we don't have to do the conversion here. 
-   */
-
   public List<Group> getChosenColumns() {
     return chosenColumnsStorage.getWithExceptionHandler(e -> 
         logger.log(Level.WARNING, "Exception while retrieving columns", e));
@@ -171,21 +165,5 @@ public class StorageProvider implements Storage.StorageProvider {
   public List<Group> getInactiveColumns() {
     return inactiveColumnsStorage.getWithExceptionHandler(e -> 
         logger.log(Level.WARNING, "Exception while retrieving columns", e));
-  }
-
-  public String[] getProbes() {
-    return probesStorage.getIgnoringException().toArray(new String[0]);
-  }
-
-  public Dataset[] getDatasets(AppInfo info) {
-    return datasetsStorage.getIgnoringException().toArray(new Dataset[0]);
-  }
-
-  public void storeDatasets(Dataset[] datasets) {
-    datasetsStorage.store(Arrays.asList(datasets));
-  }
-
-  public void storeProbes(String[] probes) {
-    probesStorage.store(Arrays.asList(probes));
   }
 }

@@ -18,7 +18,7 @@
 
 package otgviewer.client;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -45,12 +45,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   private CompoundSelector compoundSelector;
   private FilterTools filterTools;
 
-  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   private SampleClass chosenSampleClass;
 
   @Override
   public void loadState(AttributeSet attributes) {
-    Dataset[] newChosenDatasets = getStorage().getDatasets(appInfo());
+    List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     filterTools.datasetsChanged(newChosenDatasets);
     groupInspector.datasetsChanged(newChosenDatasets);
 
@@ -58,8 +58,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     filterTools.sampleClassChanged(newSampleClass);
     compoundSelector.sampleClassChanged(newSampleClass);
     
-    if (!newSampleClass.equals(chosenSampleClass) ||
-        !Arrays.equals(newChosenDatasets, chosenDatasets)) {
+    if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
       compoundSelector.fetchCompounds();
     }
     chosenDatasets = newChosenDatasets;
@@ -144,15 +143,15 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   // GroupInspector.Delegate methods
   @Override
-  public void groupInspectorDatasetsChanged(Dataset[] ds) {
-    chosenDatasets = ds;
-    filterTools.datasetsChanged(ds);
+  public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
+    filterTools.datasetsChanged(datasets);
   }
 
   @Override
-  public void filterToolsDatasetsChanged(Dataset[] ds) {
-    getStorage().storeDatasets(ds);
-    groupInspector.datasetsChanged(ds);
+  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+    getStorage().datasetsStorage.store(datasets);
+    groupInspector.datasetsChanged(datasets);
   }
 
   @Override

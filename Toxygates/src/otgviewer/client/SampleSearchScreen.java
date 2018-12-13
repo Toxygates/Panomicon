@@ -73,7 +73,7 @@ public class SampleSearchScreen extends MinimalScreen
 
   @Override
   public void loadState(AttributeSet attributes) {
-    filterTools.datasetsChanged(getStorage().getDatasets(appInfo()));
+    filterTools.datasetsChanged(getStorage().datasetsStorage.getIgnoringException());
     chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(chosenSampleClass);
     chosenColumns = getStorage().getChosenColumns();
@@ -388,7 +388,7 @@ public class SampleSearchScreen extends MinimalScreen
   }
 
   @Override
-  public void filterToolsDatasetsChanged(Dataset[] ds) {
-    getStorage().storeDatasets(ds);
+  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+    getStorage().datasetsStorage.store(datasets);
   }
 }

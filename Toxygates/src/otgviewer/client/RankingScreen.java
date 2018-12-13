@@ -44,20 +44,19 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   private FilterTools filterTools;
   private ScrollPanel sp;
 
-  protected Dataset[] chosenDatasets;
+  protected List<Dataset> chosenDatasets;
   private SampleClass chosenSampleClass;
 
   @Override
   public void loadState(AttributeSet attributes) {
-    Dataset[] newChosenDatasets = getStorage().getDatasets(appInfo());
+    List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     filterTools.datasetsChanged(newChosenDatasets);
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(newSampleClass);
     compoundSelector.datasetsChanged(newChosenDatasets);
     compoundSelector.sampleClassChanged(newSampleClass);
     
-    if (!newSampleClass.equals(chosenSampleClass) ||
-        !Arrays.equals(newChosenDatasets, chosenDatasets)) {
+    if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
       compoundSelector.fetchCompounds();
     }
     chosenDatasets = newChosenDatasets;
@@ -70,7 +69,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     super("Compound ranking", key, man,
         man.resources().compoundRankingHTML(),
         man.resources().compoundRankingHelp());
-    chosenDatasets = appInfo().datasets();
+    chosenDatasets = Arrays.asList(appInfo().datasets());
     filterTools = new FilterTools(this);
 
     compoundRanker = factory().compoundRanker(this);
@@ -149,9 +148,9 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   }
 
   @Override
-  public void filterToolsDatasetsChanged(Dataset[] ds) {
-    chosenDatasets = ds;
-    getStorage().storeDatasets(chosenDatasets);
+  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
+    getStorage().datasetsStorage.store(chosenDatasets);
     compoundSelector.datasetsChanged(chosenDatasets);
   }
 }

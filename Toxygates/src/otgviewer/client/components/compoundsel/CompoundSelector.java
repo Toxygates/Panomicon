@@ -59,7 +59,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   protected Logger logger;
 
-  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
@@ -197,7 +197,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     setSelection(compounds);
   }
 
-  public void datasetsChanged(Dataset[] datasets) {
+  public void datasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
   }
 

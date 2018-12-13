@@ -33,8 +33,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.common.shared.SeriesType;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
@@ -127,7 +126,7 @@ public class RankingCompoundSelector extends CompoundSelector {
         SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
 
     if (rules.size() > 0) { // do we have at least 1 rule?
-      seriesService.rankedCompounds(seriesType, chosenDatasets, chosenSampleClass,
+      seriesService.rankedCompounds(seriesType, chosenDatasets.toArray(new Dataset[0]), chosenSampleClass,
           rules.toArray(new RankRule[0]), new PendingAsyncCallback<MatchResult[]>(screen) {
             @Override
             public void handleSuccess(MatchResult[] res) {
