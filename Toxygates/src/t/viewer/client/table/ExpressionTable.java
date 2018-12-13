@@ -93,7 +93,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected SampleClass chosenSampleClass;
   protected String[] chosenProbes = new String[0];
 
-  protected ValueType chosenValueType;
   private Sample[] chartBarcodes = null;
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
 
@@ -126,8 +125,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     }
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 
-    navigationTools = new NavigationTools(this, grid, withPValueOption, this);
-    chosenValueType = navigationTools.getValueType();
+    navigationTools = new NavigationTools(grid, withPValueOption, this);
 
     analysisTools = new AnalysisTools(this);
 
@@ -324,7 +322,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public void getExpressions(boolean preserveFilters) {
     matrix.logInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
-    matrix.getExpressions(preserveFilters, chosenValueType);
+    matrix.getExpressions(preserveFilters, navigationTools.getValueType());
   }
 
   private class ChartDialog extends Utils.LocationTrackedDialog {
@@ -411,7 +409,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     final String[] probes = dispRow.getAtomicProbes();
     final String title =
         SharedUtils.mkString(probes, "/") + ":" + SharedUtils.mkString(dispRow.getGeneSyms(), "/");
-    ChartParameters params = charts.parameters(chosenValueType, title);
+    ChartParameters params = charts.parameters(navigationTools.getValueType(), title);
 
     charts.makeRowCharts(params, chartBarcodes, probes,
         new AChartAcceptor() {
@@ -459,7 +457,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public void setEnabled(boolean enabled) {
     navigationTools.setEnabled(enabled);
-    analysisTools.setEnabled(chosenValueType, enabled);
+    analysisTools.setEnabled(navigationTools.getValueType(), enabled);
   }
 
   @Override
@@ -544,7 +542,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return matrix.info();
   }
 
-  // NavigationTools delegate method
+  // NavigationTools delegate methods
   @Override
   public void setPValueDisplay(boolean newState) {
     if (newState) {
@@ -589,6 +587,12 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         }
       }
     }
+  }
+  
+  @Override
+  public void navigationToolsValueTypeChanged() {
+    matrix().removeTests();
+    getExpressions();
   }
 
   // AssociationManager.TableDelegate methods

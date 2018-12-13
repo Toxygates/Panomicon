@@ -43,7 +43,7 @@ public class NavigationTools extends Composite {
   final static int MAX_PAGE_SIZE = 250;
   final static int PAGE_SIZE_INCREMENT = 50;
 
-  protected ListBox tableList = new ListBox();
+  protected ListBox valueTypeListBox = new ListBox();
   
   public CheckBox pValueCheck;
 
@@ -51,9 +51,10 @@ public class NavigationTools extends Composite {
 
   public interface Delegate {
     void setPValueDisplay(boolean newState);
+    void navigationToolsValueTypeChanged();
   }
   
-  NavigationTools(ExpressionTable table, DataGrid<ExpressionRow> grid,
+  NavigationTools(DataGrid<ExpressionRow> grid,
       boolean withPValueOption, Delegate delegate) {
     tools = Utils.mkHorizontalPanel();
     initWidget(tools);
@@ -63,15 +64,13 @@ public class NavigationTools extends Composite {
     horizontalPanel.addStyleName("slightlySpaced");
     tools.add(horizontalPanel);
 
-    tableList.setVisibleItemCount(1);
-    horizontalPanel.add(tableList);
+    valueTypeListBox.setVisibleItemCount(1);
+    horizontalPanel.add(valueTypeListBox);
     initTableList();
     
-    tableList.addChangeHandler(e -> {      
-        table.matrix().removeTests();
-        table.chosenValueType = getValueType();
-        table.getExpressions();
-      });    
+    valueTypeListBox.addChangeHandler(e -> {      
+        delegate.navigationToolsValueTypeChanged();
+      });
     
     SimplePager.Resources res = GWT.create(SimplePager.Resources.class);
 
@@ -128,13 +127,13 @@ public class NavigationTools extends Composite {
   }
   
   ValueType getValueType() {
-    String vt = tableList.getItemText(tableList.getSelectedIndex());
+    String vt = valueTypeListBox.getItemText(valueTypeListBox.getSelectedIndex());
     return ValueType.unpack(vt);
   }
   
   protected void initTableList() {
-    tableList.addItem(ValueType.Folds.toString());
-    tableList.addItem(ValueType.Absolute.toString());
+    valueTypeListBox.addItem(ValueType.Folds.toString());
+    valueTypeListBox.addItem(ValueType.Absolute.toString());
   }
 
   void setEnabled(boolean enabled) {
