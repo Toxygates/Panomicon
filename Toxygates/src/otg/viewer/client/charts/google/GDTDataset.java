@@ -85,7 +85,7 @@ public class GDTDataset extends Dataset<GDTData> {
         final int col = valCount[categoryIndex] * 2 + 1;
         dataTable.setValue(categoryIndex, col, sample.value());
         if (sample.sample() != null) {
-          dataTable.setProperty(categoryIndex, col, "barcode", storage.packSample(sample.sample()));
+          dataTable.setProperty(categoryIndex, col, "barcode", storage.samplePacker.pack(sample.sample()));
         }
         dataTable.setFormattedValue(categoryIndex, col, sample.formattedValue());
         String style = "fill-color:" + sample.color() + "; stroke-width:1px; ";

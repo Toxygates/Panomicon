@@ -316,7 +316,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   @Override
   public List<PackedNetwork> networks() {
     if (_networks == null) {
-      _networks = screen.getStorage().getPackedNetworks();
+      _networks = screen.getStorage().packedNetworksStorage.getIgnoringException();
     }
     return _networks;
   }
@@ -326,7 +326,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     if (!networks().remove(network)) {
 
     }
-    screen.getStorage().storePackedNetworks(networks());
+    screen.getStorage().packedNetworksStorage.store(networks());
     networkMenu.networksChanged();
   }
 
@@ -340,7 +340,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   @Override
   public void saveNetwork(PackedNetwork network) {
     networks().add(network);
-    screen.getStorage().storePackedNetworks(networks());
+    screen.getStorage().packedNetworksStorage.store(networks());
     networkMenu.networksChanged();
   }
 

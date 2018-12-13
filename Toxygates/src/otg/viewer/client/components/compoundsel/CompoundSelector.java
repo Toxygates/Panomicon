@@ -29,7 +29,7 @@ import com.google.gwt.view.client.NoSelectionModel;
 
 import otg.viewer.client.components.OTGScreen;
 import t.common.client.components.SetEditor;
-import t.common.shared.*;
+import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
@@ -59,7 +59,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   protected Logger logger;
 
-  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
@@ -150,7 +150,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     return r;
   }
 
-  void loadMajors() {
+  public void fetchCompounds() {
     sampleService.parameterValues(chosenSampleClass, majorParameter,
         new PendingAsyncCallback<String[]>(screen, "Unable to retrieve values for parameter: "
             + majorParameter) {
@@ -180,9 +180,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
-    loadMajors();
-    delegate.CompoundSelectorSampleClassChanged(sc);
+      //Window.alert("sc = " + sc + "; chosen = " + chosenSampleClass);
+      chosenSampleClass = sc;
+      //Window.alert("loading majors compoundSeletor");
+      delegate.CompoundSelectorSampleClassChanged(sc);
   }
 
   @Override
@@ -191,12 +192,12 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     compoundEditor.setLists(lists);
   }
 
-  public void loadCompounds(List<String> compounds) {
+  public void setChosenCompounds(List<String> compounds) {
     chosenCompounds = compounds;
     setSelection(compounds);
   }
 
-  public void datasetsChanged(Dataset[] datasets) {
+  public void datasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
   }
 

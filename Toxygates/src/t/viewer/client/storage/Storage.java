@@ -59,7 +59,8 @@ public class Storage<T> {
 
   /**
    * Like get(), except that if an UnpackInputException is thrown, it is consumed
-   * by exceptionHandler, and defaultValue is returned.
+   * by exceptionHandler, and a value from defaultValueProvider is returned. Callers
+   * should be sure that they can smoothly handle the default value. 
    */
   public T getWithExceptionHandler(Consumer<UnpackInputException> exceptionHandler) {
     try {
@@ -73,7 +74,9 @@ public class Storage<T> {
   private final Consumer<UnpackInputException> exceptionIgnorer = e -> {};
 
   /**
-   * Like getWithExceptionHandler, except that exceptions are silently ignored.
+   * Like getWithExceptionHandler, except that exceptions are silently ignored. Should
+   * only be used when silently losing malformed or outdated data is acceptable. Callers
+   * should also be sure that they can smoothly handle the default value.
    */
   public T getIgnoringException() {
     return getWithExceptionHandler(exceptionIgnorer);

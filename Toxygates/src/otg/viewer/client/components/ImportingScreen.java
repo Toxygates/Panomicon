@@ -25,17 +25,16 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+
+import otg.viewer.client.intermine.InterMineData;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-
-import otg.viewer.client.intermine.InterMineData;
 
 public interface ImportingScreen extends OTGScreen {
   void setUrlProbes(String[] probes);
@@ -55,8 +54,6 @@ public interface ImportingScreen extends OTGScreen {
   void itemListsChanged(List<ItemList> lists);
 
   List<Group> chosenColumns();
-
-  String[] chosenProbes();
   
   default List<MenuItem> intermineMenuItems(AppInfo appInfo) {
     List<MenuItem> intermineItems = new ArrayList<MenuItem>();

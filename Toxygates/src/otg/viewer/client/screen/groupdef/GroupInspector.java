@@ -75,12 +75,12 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   protected final Logger logger = SharedUtils.getLogger("group");
   private final SampleServiceAsync sampleService;
 
-  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
 
   public interface Delegate {
-    void groupInspectorDatasetsChanged(Dataset[] ds);
+    void groupInspectorDatasetsChanged(List<Dataset> ds);
     void groupInspectorSampleClassChanged(SampleClass sc);
   }
 
@@ -260,12 +260,12 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     multiSelectionGrid.sampleClassChanged(sc);
   }
 
-  public void datasetsChanged(Dataset[] ds) {
-    chosenDatasets = ds;
-    disableGroupsIfNeeded(ds);
+  public void datasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
+    disableGroupsIfNeeded(datasets);
   }
 
-  protected void disableGroupsIfNeeded(Dataset[] datasets) {
+  protected void disableGroupsIfNeeded(List<Dataset> datasets) {
     Set<String> availableDatasets = new HashSet<String>();
     for (Dataset d : datasets) {
       availableDatasets.add(d.getId());
@@ -308,11 +308,11 @@ abstract public class GroupInspector extends Composite implements RequiresResize
           newEnabledList.add(d);
         }
       }
-      Dataset[] newEnabled = newEnabledList.toArray(new Dataset[0]);
-      datasetsChanged(newEnabled);
-      delegate.groupInspectorDatasetsChanged(newEnabled);
-      sampleService.chooseDatasets(newEnabled, new PendingAsyncCallback<SampleClass[]>(screen));
-      screen.getStorage().storeDatasets(chosenDatasets);
+      datasetsChanged(newEnabledList);
+      delegate.groupInspectorDatasetsChanged(newEnabledList);
+      sampleService.chooseDatasets(newEnabledList.toArray(new Dataset[0]), 
+          new PendingAsyncCallback<SampleClass[]>(screen));
+      screen.getStorage().datasetsStorage.store(chosenDatasets);
       Window
           .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
     }

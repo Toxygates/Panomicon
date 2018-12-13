@@ -18,7 +18,7 @@
 
 package otg.viewer.client.components;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
@@ -47,11 +47,11 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
 
   private Logger logger;
 
-  protected Dataset[] chosenDatasets = new Dataset[0];
+  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
-    void filterToolsDatasetsChanged(Dataset[] ds);
+    void filterToolsDatasetsChanged(List<Dataset> ds);
   }
 
   public <T extends OTGScreen & Delegate> FilterTools(T screen) {
@@ -99,10 +99,10 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     final DialogBox db = new DialogBox(false, true);    
     DatasetSelector dsel =
         new DatasetSelector(Arrays.asList(info.datasets()),
-            Arrays.asList(chosenDatasets)) {
+            chosenDatasets) {
           @Override
           public void onOK() {
-            datasetsChanged(getSelected().toArray(new Dataset[0]));
+            datasetsChanged(new ArrayList<Dataset>(getSelected()));
             delegate.filterToolsDatasetsChanged(chosenDatasets);
             db.hide();
           }
@@ -119,14 +119,14 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     db.show();
   }
 
-  public void datasetsChanged(Dataset[] ds) {
-    chosenDatasets = ds;
+  public void datasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
     getSampleClasses();
   }
 
   protected void getSampleClasses() {
-    logger.info("Request sample classes for " + chosenDatasets.length + " datasets");
-    sampleService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<SampleClass[]>(screen,
+    logger.info("Request sample classes for " + chosenDatasets.size() + " datasets");
+    sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), new PendingAsyncCallback<SampleClass[]>(screen,
         "Unable to choose datasets") {
       @Override
       public void handleSuccess(SampleClass[] sampleClasses) {
