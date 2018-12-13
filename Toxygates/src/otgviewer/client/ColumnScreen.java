@@ -54,7 +54,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     filterTools.datasetsChanged(newChosenDatasets);
     groupInspector.datasetsChanged(newChosenDatasets);
 
-    SampleClass newSampleClass = getStorage().getSampleClass();
+    SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(newSampleClass);
     compoundSelector.sampleClassChanged(newSampleClass);
     
@@ -65,7 +65,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     chosenDatasets = newChosenDatasets;
     chosenSampleClass = newSampleClass;
 
-    List<String> chosenCompounds = getStorage().getCompounds();
+    List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
     groupInspector.compoundsChanged(chosenCompounds);
     groupInspector.loadGroups();
     // This needs to happen after groupInspector.loadGroups, which causes
@@ -137,7 +137,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   // FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
-    getStorage().storeSampleClass(sc);
+    getStorage().sampleClassStorage.store(sc);
     compoundSelector.sampleClassChanged(sc);
     groupInspector.sampleClassChanged(sc);
   }
@@ -163,13 +163,13 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   // CompoundSelector.Delegate methods
   @Override
   public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
-    getStorage().storeItemLists(itemLists);
+    getStorage().itemListsStorage.store(itemLists);
   }
 
   @Override
   public void CompoundSelectorCompoundsChanged(List<String> compounds) {
     groupInspector.compoundsChanged(compounds);
-    ColumnScreen.this.getStorage().storeCompounds(compounds);
+    ColumnScreen.this.getStorage().compoundsStorage.store(compounds);
   }
 
   @Override

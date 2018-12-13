@@ -40,11 +40,11 @@ public class Groups {
   }
 
   public void saveToLocalStorage(StorageProvider storage) {
-    storage.storeChosenColumns(activeGroups());
+    storage.chosenColumnsStorage.store(activeGroups());
 
     List<Group> inactiveGroups = new ArrayList<Group>(groups.values());
     inactiveGroups.removeAll(activeGroups());
-    storage.storeInactiveColumns(inactiveGroups);
+    storage.inactiveColumnsStorage.store(inactiveGroups);
   }
 
   public List<Group> activeGroups() {

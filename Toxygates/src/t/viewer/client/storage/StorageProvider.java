@@ -22,16 +22,12 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.client.Window;
 
 import t.common.shared.*;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.client.network.PackedNetwork;
-import t.viewer.client.storage.Packer.UnpackInputException;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.mirna.MirnaSource;
@@ -133,14 +129,6 @@ public class StorageProvider implements Storage.StorageProvider {
         () -> Arrays.asList(Dataset.defaultSelection(info.datasets())));
   }
 
-  public String packSample(Sample sample) {
-    return samplePacker.pack(sample);
-  }
-
-  public Sample unpackSample(String string) throws UnpackInputException {
-    return samplePacker.unpack(string);
-  }
-
   @Override
   public void setItem(String key, String value) {
     storage.setItem(prefix + "." + key, value);
@@ -175,11 +163,6 @@ public class StorageProvider implements Storage.StorageProvider {
    * we don't have to do the conversion here. 
    */
 
-  @Nullable
-  public SampleClass getSampleClass() {
-    return sampleClassStorage.getIgnoringException();
-  }
-
   public List<Group> getChosenColumns() {
     return chosenColumnsStorage.getWithExceptionHandler(e -> 
         logger.log(Level.WARNING, "Exception while retrieving columns", e));
@@ -190,10 +173,6 @@ public class StorageProvider implements Storage.StorageProvider {
         logger.log(Level.WARNING, "Exception while retrieving columns", e));
   }
 
-  public Group getCustomColumn() throws UnpackInputException {
-    return customColumnStorage.get();
-  }
-
   public String[] getProbes() {
     return probesStorage.getIgnoringException().toArray(new String[0]);
   }
@@ -202,67 +181,11 @@ public class StorageProvider implements Storage.StorageProvider {
     return datasetsStorage.getIgnoringException().toArray(new Dataset[0]);
   }
 
-  public List<String> getCompounds() {
-    return compoundsStorage.getIgnoringException();
-  }
-
-  public List<ItemList> getItemLists() {
-    return itemListsStorage.getIgnoringException();
-  }
-
-  public List<ItemList> getClusteringLists() {
-    return clusteringListsStorage.getIgnoringException();
-  }
-
-  public List<PackedNetwork> getPackedNetworks() {
-    return packedNetworksStorage.getIgnoringException();
-  }
-
-  public ItemList getGeneSet() {
-    return genesetStorage.getIgnoringException();
-  }
-
-  public void storeCompounds(List<String> compounds) {
-    compoundsStorage.store(compounds);
-  }
-  
-  public void storeChosenColumns(List<Group> columns) {
-    chosenColumnsStorage.store(columns);
-  }
-  
-  public void storeInactiveColumns(List<Group> columns) {
-    inactiveColumnsStorage.store(columns);
-  }
-
-  public void storeCustomColumn(Group column) {
-    customColumnStorage.store(column);
-  }
-
   public void storeDatasets(Dataset[] datasets) {
     datasetsStorage.store(Arrays.asList(datasets));
   }
 
-  public void storeItemLists(List<ItemList> itemLists) {
-    itemListsStorage.store(itemLists);
-  }
-
-  public void storePackedNetworks(List<PackedNetwork> networks) {
-    packedNetworksStorage.store(networks);
-  }
-
-  public void storeSampleClass(SampleClass sampleClass) {
-    sampleClassStorage.store(sampleClass);
-  }
-
   public void storeProbes(String[] probes) {
     probesStorage.store(Arrays.asList(probes));
-  }
-
-  public void storeGeneSet(ItemList geneList) {
-    genesetStorage.store(geneList);
-  }
-
-  public void storeClusteringLists(List<ItemList> clusteringList) {
-    clusteringListsStorage.store(clusteringList);
   }
 }

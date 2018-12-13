@@ -107,7 +107,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           String barcode = dataTable.getProperty(row, col, "barcode");
           if (barcode != null) {
             try {
-              Sample sample = screen.getStorage().unpackSample(barcode);
+              Sample sample = screen.getStorage().samplePacker.unpack(barcode);
               ScreenUtils.displaySampleDetail(screen, sample);
             } catch (UnpackInputException e) {
               Window.alert("Error unpacking sample: " + e.getMessage());

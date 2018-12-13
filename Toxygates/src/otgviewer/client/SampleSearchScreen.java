@@ -74,7 +74,7 @@ public class SampleSearchScreen extends MinimalScreen
   @Override
   public void loadState(AttributeSet attributes) {
     filterTools.datasetsChanged(getStorage().getDatasets(appInfo()));
-    chosenSampleClass = getStorage().getSampleClass();
+    chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(chosenSampleClass);
     chosenColumns = getStorage().getChosenColumns();
   }
@@ -135,7 +135,7 @@ public class SampleSearchScreen extends MinimalScreen
             Group pendingGroup = new Group(schema(), name, allUnits);
 
             chosenColumns.add(pendingGroup);
-          getStorage().storeChosenColumns(chosenColumns);
+          getStorage().chosenColumnsStorage.store(chosenColumns);
 
             currentSearch.helper().selectionTable().clearSelection();
 
@@ -384,7 +384,7 @@ public class SampleSearchScreen extends MinimalScreen
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
     chosenSampleClass = sc;
-    getStorage().storeSampleClass(sc);
+    getStorage().sampleClassStorage.store(sc);
   }
 
   @Override

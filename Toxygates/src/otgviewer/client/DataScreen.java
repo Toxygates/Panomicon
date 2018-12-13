@@ -68,9 +68,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     StorageProvider storage = getStorage();
     chosenProbes = storage.getProbes();
     chosenColumns = storage.getChosenColumns();
-    chosenItemLists = storage.getItemLists();
-    chosenGeneSet = storage.getGeneSet();
-    chosenClusteringList = storage.getClusteringLists();
+    chosenItemLists = storage.itemListsStorage.getIgnoringException();
+    chosenGeneSet = storage.genesetStorage.getIgnoringException();
+    chosenClusteringList = storage.clusteringListsStorage.getIgnoringException();
     ViewType type = preferredViewType();
     if (type != dataView.type()) {
       rebuild();
@@ -281,7 +281,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
    */
   public void geneSetChanged(ItemList geneSet) {
     chosenGeneSet = geneSet;
-    getStorage().storeGeneSet(geneSet);
+    getStorage().genesetStorage.store(geneSet);
     geneSetToolbar.geneSetChanged(geneSet);
     Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
   }
@@ -294,14 +294,14 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     chosenItemLists = lists;
-    getStorage().storeItemLists(lists);
+    getStorage().itemListsStorage.store(lists);
     geneSetsMenu.itemListsChanged(lists);
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     chosenClusteringList = lists;
-    getStorage().storeClusteringLists(lists);
+    getStorage().clusteringListsStorage.store(lists);
     geneSetsMenu.clusteringListsChanged(lists);
   }
 

@@ -61,7 +61,7 @@ public class PathologyScreen extends MinimalScreen {
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenSampleClass = getStorage().getSampleClass();
+    chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     chosenColumns = getStorage().getChosenColumns();
   }
 
