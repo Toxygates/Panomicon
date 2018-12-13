@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 
 import otg.model.sample.OTGAttribute._
 import otg.testing.TestData
-import otgviewer.shared.OTGSchema
+import otg.viewer.shared.OTGSchema
 import t.TTestSuite
 import t.common.server.sample.search.IndividualSearch
 import t.common.server.sample.search.UnitSearch

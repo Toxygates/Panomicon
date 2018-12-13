@@ -6,13 +6,13 @@ import java.util.stream.Collectors;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.NetworkMenu;
-import otgviewer.client.components.ImportingScreen;
-import otgviewer.client.components.PendingAsyncCallback;
+import otg.viewer.client.components.ImportingScreen;
+import otg.viewer.client.screen.data.NetworkMenu;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;

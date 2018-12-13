@@ -22,7 +22,7 @@ package t.viewer.server.matrix
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otgviewer.server.rpc.Conversions._
+import otg.viewer.server.rpc.Conversions._
 import t.TTestSuite
 import t.common.shared.sample._
 import t.db.testing._

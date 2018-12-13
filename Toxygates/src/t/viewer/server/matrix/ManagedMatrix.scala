@@ -30,8 +30,6 @@ import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
 import otg.model.sample.OTGAttribute
-import t.common.shared.sample.{Sample => SSample}
-import t.common.shared.sample.{Unit => TUnit}
 import t.common.shared.GroupUtils
 import t.common.shared.sample.ExpressionRow
 

@@ -35,9 +35,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
-import otgviewer.client.charts.*;
-import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.Screen;
+import otg.viewer.client.charts.*;
+import otg.viewer.client.charts.Charts.AChartAcceptor;
+import otg.viewer.client.components.OTGScreen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -70,7 +70,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   private final String COLUMN_WIDTH = "10em";
 
-  private Screen screen;
+  private OTGScreen screen;
   private AssociationManager<ExpressionRow> associations;
   private ETMatrixManager matrix;
   private ETColumns columns;
@@ -103,7 +103,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     void afterGetRows(ExpressionTable table);
   }
 
-  public ExpressionTable(Screen _screen, TableFlags flags, TableStyle style, ETMatrixManager.Loader loader,
+  public ExpressionTable(OTGScreen _screen, TableFlags flags, TableStyle style, ETMatrixManager.Loader loader,
       Delegate delegate, AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
     super(_screen, style, flags);
     screen = _screen;
@@ -137,7 +137,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
   
   @Override
-  protected ETColumns makeColumnHelper(Screen screen) {
+  protected ETColumns makeColumnHelper(OTGScreen screen) {
     this.columns = new ETColumns(this, screen.manager().resources(), COLUMN_WIDTH, logger);
     return columns;
   }

@@ -23,7 +23,7 @@ package t.common.server.sample.search
 import scala.collection.JavaConverters._
 import scala.collection.Seq
 
-import otgviewer.shared.OTGSchema
+import otg.viewer.shared.OTGSchema
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.AndMatch

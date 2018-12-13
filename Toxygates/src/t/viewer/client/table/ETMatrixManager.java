@@ -12,15 +12,15 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.view.client.*;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otg.viewer.client.components.OTGScreen;
+import otg.viewer.client.screen.data.FilterEditor;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
 
@@ -31,7 +31,7 @@ import t.viewer.shared.*;
  */
 public class ETMatrixManager {
 
-  private Screen screen;
+  private OTGScreen screen;
   private final MatrixServiceAsync matrixService;
   private String matrixId;
   private ManagedMatrixInfo matrixInfo = null;
@@ -75,7 +75,7 @@ public class ETMatrixManager {
     void loadInitialMatrix(ValueType valueType, int initPageSize, List<ColumnFilter> initFilters);
   }
 
-  public ETMatrixManager(Screen screen, TableFlags flags, Delegate delegate, Loader loader,
+  public ETMatrixManager(OTGScreen screen, TableFlags flags, Delegate delegate, Loader loader,
       DataGrid<ExpressionRow> grid) {
     this.screen = screen;
     this.loader = loader;

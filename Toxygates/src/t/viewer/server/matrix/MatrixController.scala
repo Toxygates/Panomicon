@@ -22,6 +22,7 @@ package t.viewer.server.matrix
 
 import java.util.logging.Logger
 
+import otg.viewer.server.rpc.Conversions._
 import t.Context
 import t.common.shared._
 import t.common.shared.sample.Group
