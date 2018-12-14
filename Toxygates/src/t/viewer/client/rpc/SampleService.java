@@ -39,38 +39,47 @@ import t.viewer.shared.TimeoutException;
  * A service that provides information about samples, datasets, and 
  * related objects.
  */
-
 @RemoteServiceRelativePath("sample")
 public interface SampleService extends RemoteService {
   
   /**
-   * Choose the visible datasets.
+   * Choose the visible datasets. This changes session state on the server side. All methods in this
+   * interface that obtain information about samples and their parameters respect this state, unless
+   * otherwise stated.
    * 
-   * @param enabled 
-   * @return sample classes in the new dataset view.
+   * @param enabled The enabled datasets
+   * @return Sample classes in the new dataset view.
    * @throws TimeoutException
    */
   SampleClass[] chooseDatasets(Dataset[] enabled) throws TimeoutException;
   
-  String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
-      throws TimeoutException;
-
-  String[] parameterValues(SampleClass sc, String parameter) throws TimeoutException;
-
-  String[] parameterValues(SampleClass[] scs, String parameter) throws TimeoutException;
-  
   /**
-   * Obtain samples (fully populated with metadata) from given IDs
+   * Obtain all values for a given parameter.
    * 
-   * @param ids
+   * @param ds Select values across these datasets
+   * @param sc Select values from samples in this sample class
+   * @param parameter The parameter to select values for
    * @return
    * @throws TimeoutException
    */
-  Sample[] samplesById(String[] ids) throws TimeoutException;
+  String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
+      throws TimeoutException;
 
   /**
-   * Obtain samples, fully populated with metadata, from given IDs.
-   * Convenience function that keeps samples grouped.
+   * Obtain all values for a given parameter, in the currently selected datasets in the session
+   * state.
+   * 
+   * @param sc Select values from samples in this sample class
+   * @param parameter The parameter to select values for
+   * @return
+   * @throws TimeoutException
+   */
+  String[] parameterValues(SampleClass sc, String parameter) throws TimeoutException;
+
+  /**
+   * Obtain samples, populated with the standard attributes, for the given ids. Keeps samples
+   * grouped in the same way that the ids parameter was grouped upon calling this function.
+   * 
    * @param ids
    * @return
    * @throws TimeoutException
@@ -78,31 +87,43 @@ public interface SampleService extends RemoteService {
   List<Sample[]> samplesById(List<String[]> ids) throws TimeoutException;
   
   /**
-   * Obtain samples for a given sample class.
+   * Obtain samples for a given sample class, populated with the standard attributes.
    */
   Sample[] samples(SampleClass sc) throws TimeoutException;
 
   /**
-   * Obtain samples with a filter on one parameter.
+   * Obtain samples for the given sample classes, with a filter on one parameter, populated with the
+   * standard attributes.
+   * 
+   * @param scs Sample classes to select samples from
+   * @param param parameter to filter
+   * @param paramValues acceptable values for the parameter.
    */
-  Sample[] samples(SampleClass sc, String param, String[] paramValues)
-      throws TimeoutException;
-
-  Sample[] samples(SampleClass[] scs, String param, String[] paramValues)
-      throws TimeoutException;
+  Sample[] samples(SampleClass[] scs, String param, String[] paramValues) throws TimeoutException;
   
   /**
    * Obtain units that are populated with the samples that belong to them, with a filter on one
    * parameter.
    * 
-   * @param sc
-   * @param
+   * @param sc The sample class to select samples from
+   * @param param The parameter to filter on
+   * @param paramValues acceptable values for the parameter
    * @return Pairs of units, where the first is treated samples and the second the corresponding
    *         control samples, or null if there are none.
    */
   Pair<Unit, Unit>[] units(SampleClass sc, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
+  /**
+   * Obtain units that are populated with the samples that belong to them, with a filter on one
+   * parameter.
+   * 
+   * @param scs The sample classes to select samples from
+   * @param param The parameter to filter on
+   * @param paramValues acceptable values for the parameter
+   * @return Pairs of units, where the first is treated samples and the second the corresponding
+   *         control samples, or null if there are none.
+   */
   Pair<Unit, Unit>[] units(SampleClass[] scs, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
@@ -114,7 +135,8 @@ public interface SampleService extends RemoteService {
   Annotation annotations(Sample barcode) throws TimeoutException;
 
   /**
-   * Obtain annotations for a set of samples
+   * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
+   * values for all of the specified attributes will be returned.
    * 
    * @param samples
    * @param attributes the attributes to fetch
@@ -123,9 +145,10 @@ public interface SampleService extends RemoteService {
   Annotation[] annotations(Sample[] samples, Attribute[] attributes) throws TimeoutException;
 
   /**
-   * Obtain annotations for a set of samples
+   * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
+   * values for all of the specified attributes will be returned.
    * 
-   * @param column
+   * @param column the samples to obtain annotations for
    * @param importantOnly If true, a smaller set of core annotations will be obtained. If false, all
    *        annotations will be obtained.
    * @return
@@ -135,18 +158,45 @@ public interface SampleService extends RemoteService {
 
   /**
    * Prepare a CSV file with annotation information for download.
-   * @param column
+   * 
+   * @param column The samples to include in the downloadable file.
    * @return The URL of the downloadable file.
    * @throws TimeoutException
    */
   String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
   
+  /**
+   * Search for samples
+   * 
+   * @param sampleClass The class to search within
+   * @param condition
+   * @param maxResults
+   * @return
+   * @throws TimeoutException
+   */
   RequestResult<Pair<Sample, Pair<Unit, Unit>>> sampleSearch(SampleClass sampleClass,
       MatchCondition condition, int maxResults) throws TimeoutException;
 
+  /**
+   * Search for units
+   * 
+   * @param sampleClass The class to search within
+   * @param condition
+   * @param maxResults
+   * @return Treated and control unit pairs
+   * @throws TimeoutException
+   */
   RequestResult<Pair<Unit, Unit>> unitSearch(SampleClass sampleClass, MatchCondition condition,
       int maxResults)
       throws TimeoutException;
 
+  /**
+   * Prepare a CSV file with attribute information for download.
+   * 
+   * @param samples The samples to include in the download
+   * @param attributes The attributes to include in the download
+   * @return The URL of the downloadable file
+   * @throws TimeoutException
+   */
   String prepareCSVDownload(SampleLike[] samples, Attribute[] attributes) throws TimeoutException;
 }

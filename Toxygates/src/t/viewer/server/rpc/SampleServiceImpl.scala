@@ -153,21 +153,14 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   @throws[TimeoutException]
-  def parameterValues(sc: Array[SampleClass], parameter: String): Array[String] = {
-    sc.flatMap(x => parameterValues(x, parameter)).distinct.toArray
-  }
-
-  @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     val attr = baseConfig.attributes.byId(parameter)
     sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
-  def samplesById(ids: Array[String]): Array[Sample] = {
-    sampleStore.samples(SampleClassFilter(), "id",
-        ids).map(asJavaSample(_)).toArray
-  }
+  private def samplesById(ids: Array[String]) = 
+    sampleStore.samples(SampleClassFilter(), "id", ids).map(asJavaSample(_)).toArray
 
   def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
     ids.asScala.map(samplesById(_)).asGWT
@@ -178,10 +171,9 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     samples.map(asJavaSample).toArray
   }
 
-  @throws[TimeoutException]
-  def samples(sc: SampleClass, param: String,
-      paramValues: Array[String]): Array[Sample] =
-    sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_)).toArray
+  private def samples(sc: SampleClass, param: String,
+      paramValues: Array[String]) =
+    sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_))
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,

@@ -40,15 +40,9 @@ public interface SampleServiceAsync {
 
   void parameterValues(SampleClass sc, String parameter, AsyncCallback<String[]> callback);
 
-  void parameterValues(SampleClass[] scs, String parameter, AsyncCallback<String[]> callback);
-
-  void samplesById(String[] ids, AsyncCallback<Sample[]> callback);
-
   void samplesById(List<String[]> ids, AsyncCallback<List<Sample[]>> callback);
 
   void samples(SampleClass sc, AsyncCallback<Sample[]> callback);
-
-  void samples(SampleClass sc, String param, String[] paramValues, AsyncCallback<Sample[]> callback);
 
   void samples(SampleClass[] scs, String param, String[] paramValues,
       AsyncCallback<Sample[]> callback);
