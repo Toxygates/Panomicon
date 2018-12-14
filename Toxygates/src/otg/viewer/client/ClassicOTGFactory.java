@@ -62,9 +62,4 @@ public class ClassicOTGFactory extends OTGFactory {
       }
     };
   }
-  
-  @Override
-  public boolean hasMyData() {
-    return true;
-  }
 }

@@ -37,6 +37,11 @@ import t.common.shared.sample.Group;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
+/**
+ * Factory methods for the different UI types supported. This is not (currently) related to the
+ * T/OTG divide, but instead supports constructing different component families for different
+ * flavours of the OTG interface.
+ */
 public interface UIFactory {
 
   public SelectionTDGrid selectionTDGrid(OTGScreen scr, @Nullable UnitListener listener);
@@ -65,12 +70,10 @@ public interface UIFactory {
    */
   void multiEnrichment(ImportingScreen screen, StringList[] lists,
       @Nullable IntermineInstance preferredInstance);
-  
-  boolean hasMyData();
-  
+
   /**
-   * Return a summary of samples for display on the start screen, if appropriate.
-   * The value will never be produced if no table should be displayed.
+   * Call back with a summary of samples for display on the start screen, if appropriate. The call
+   * will not be made if the table should not be displayed.
    */
   default void sampleSummaryTable(OTGScreen screen, 
                                   ValueAcceptor<StringArrayTable> acceptor) {    

@@ -91,9 +91,4 @@ public class OTGFactory implements UIFactory {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.multiEnrich(lists);    
   }
-  
-  @Override
-  public boolean hasMyData() {
-    return true;
-  }
 }
