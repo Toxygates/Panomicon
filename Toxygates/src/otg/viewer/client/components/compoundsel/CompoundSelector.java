@@ -70,10 +70,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   public interface Delegate {
     void CompoundSelectorItemListsChanged(List<ItemList> itemLists);
-
     void CompoundSelectorCompoundsChanged(List<String> compounds);
-
-    void CompoundSelectorSampleClassChanged(SampleClass sampleClass);
   }
 
   public <T extends OTGScreen & Delegate> CompoundSelector(T screen, String heading,
@@ -183,7 +180,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
       //Window.alert("sc = " + sc + "; chosen = " + chosenSampleClass);
       chosenSampleClass = sc;
       //Window.alert("loading majors compoundSeletor");
-      delegate.CompoundSelectorSampleClassChanged(sc);
   }
 
   @Override

@@ -134,16 +134,12 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     compoundRanker.compoundsChanged(compounds);
   }
 
-  @Override
-  public void CompoundSelectorSampleClassChanged(SampleClass sc) {
-    compoundRanker.sampleClassChanged(sc);
-  }
-
   // FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
     getStorage().sampleClassStorage.store(sc);
     compoundSelector.sampleClassChanged(sc);
+    compoundSelector.fetchCompounds();
   }
 
   @Override
@@ -151,5 +147,6 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     chosenDatasets = datasets;
     getStorage().datasetsStorage.store(chosenDatasets);
     compoundSelector.datasetsChanged(chosenDatasets);
+    compoundSelector.fetchCompounds();
   }
 }

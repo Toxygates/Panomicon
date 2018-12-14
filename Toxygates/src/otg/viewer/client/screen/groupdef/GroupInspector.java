@@ -34,7 +34,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otg.viewer.client.components.*;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.compoundsel.CompoundSelector;
 import t.common.client.components.SelectionTable;
 import t.common.shared.*;
@@ -273,7 +273,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     int disableCount = 0;
 
     logger.info("Available DS: " + SharedUtils.mkString(availableDatasets, ", "));
-    for (Group group : groups.activeGroups()) {
+    for (Group group : new ArrayList<Group>(groups.activeGroups())) {
       List<String> requiredDatasets = group.collect(OTGAttribute.Dataset).collect(Collectors.toList());
       logger.info("Group " + group.getShortTitle() + " needs " + SharedUtils.mkString(requiredDatasets, ", "));
       if (!availableDatasets.containsAll(requiredDatasets)) {
