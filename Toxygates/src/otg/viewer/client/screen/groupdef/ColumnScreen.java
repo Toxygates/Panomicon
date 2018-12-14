@@ -135,10 +135,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   // FilterTools.Delegate method
   @Override
-  public void filterToolsSampleClassChanged(SampleClass sc) {
-    getStorage().sampleClassStorage.store(sc);
-    compoundSelector.sampleClassChanged(sc);
-    groupInspector.sampleClassChanged(sc);
+  public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
+    getStorage().sampleClassStorage.store(newSampleClass);
+    compoundSelector.sampleClassChanged(newSampleClass);
+    groupInspector.sampleClassChanged(newSampleClass);
+    compoundSelector.fetchCompounds();
+    chosenSampleClass = newSampleClass;
   }
 
   // GroupInspector.Delegate methods
@@ -146,17 +148,23 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
     filterTools.datasetsChanged(datasets);
+    compoundSelector.fetchCompounds();
   }
 
   @Override
   public void filterToolsDatasetsChanged(List<Dataset> datasets) {
     getStorage().datasetsStorage.store(datasets);
     groupInspector.datasetsChanged(datasets);
+    compoundSelector.fetchCompounds();
   }
 
   @Override
-  public void groupInspectorSampleClassChanged(SampleClass sc) {
-    filterTools.sampleClassChanged(sc);
+  public void groupInspectorSampleClassChanged(SampleClass newSampleClass) {
+    getStorage().sampleClassStorage.store(newSampleClass);
+    filterTools.sampleClassChanged(newSampleClass);
+    compoundSelector.sampleClassChanged(newSampleClass);
+    compoundSelector.fetchCompounds();
+    chosenSampleClass = newSampleClass;
   }
 
   // CompoundSelector.Delegate methods
@@ -170,9 +178,4 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     groupInspector.compoundsChanged(compounds);
     ColumnScreen.this.getStorage().compoundsStorage.store(compounds);
   }
-
-  @Override
-  public void CompoundSelectorSampleClassChanged(SampleClass sc) {
-    groupInspector.sampleClassChanged(sc);
-  }  
 }
