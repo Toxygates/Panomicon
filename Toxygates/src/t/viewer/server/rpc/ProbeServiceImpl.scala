@@ -147,7 +147,7 @@ with ProbeService {
     }
 
     //Keep this up-to-date also in the session
-    getThreadLocalRequest.getSession.setAttribute(APPINFO_KEY, appInfo)
+    setSharedSessionState(APPINFO_KEY, appInfo)
 
     appInfo
   }

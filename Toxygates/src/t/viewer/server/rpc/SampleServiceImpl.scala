@@ -99,9 +99,9 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   protected def appInfo = {
-    Option(getThreadLocalRequest.getSession.
-      getAttribute(ProbeServiceImpl.APPINFO_KEY).asInstanceOf[AppInfo]).
-      getOrElse(throw new NoSessionException("AppInfo not initialised"))
+    val ai = Option(getSharedSessionState(ProbeServiceImpl.APPINFO_KEY).
+      asInstanceOf[AppInfo])
+    ai.getOrElse(throw new NoSessionException("AppInfo not initialised"))
   }
 
   protected def stateKey = "sparql"
@@ -159,7 +159,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
-  private def samplesById(ids: Array[String]) = 
+  private def samplesById(ids: Array[String]) =
     sampleStore.samples(SampleClassFilter(), "id", ids).map(asJavaSample(_)).toArray
 
   def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =

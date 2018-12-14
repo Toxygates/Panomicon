@@ -29,6 +29,8 @@ import t.Factory
 import t.common.shared.DataSchema
 import t.viewer.server.Configuration
 
+object ServletSessionMutex
+
 abstract class TServiceServlet extends RemoteServiceServlet {
   protected def context: Context
   protected def factory: Factory
@@ -91,12 +93,49 @@ abstract class StatefulServlet[State] extends TServiceServlet {
     getThreadLocalRequest().getSession().setAttribute(stateKey, m)
 
   /**
+   * Obtain an in-session object that can be used for synchronizing session state between servlet threads.
+   * Code that expects to read from another thread or publish to another thread via the session
+   * should lock on this.
+   *
+   * Inspired by: https://stackoverflow.com/questions/616601/is-httpsession-thread-safe-are-set-get-attribute-thread-safe-operations
+   * And http://web.archive.org/web/20110806042745/http://www.ibm.com/developerworks/java/library/j-jtp09238/index.html
+   *
+   */
+  protected def mutex: AnyRef = {
+    val mutId = "mutex"
+    val ses = getThreadLocalRequest().getSession()
+    Option(ses.getAttribute(mutId)) match {
+      case Some(m) => m
+      case None =>
+        ServletSessionMutex.synchronized {
+          ses.setAttribute(mutId, mutId)
+          ses.getAttribute(mutId)
+        }
+    }
+  }
+
+  /**
+   * Set state that may be shared between two servlet threads.
+   */
+  def setSharedSessionState[T](key: String, t: T) = mutex.synchronized {
+    getThreadLocalRequest.getSession.setAttribute(key, t)
+  }
+
+  /**
+   * Get state that may be shared between two servlet threads.
+   */
+  def getSharedSessionState(key: String) = mutex.synchronized {
+    getThreadLocalRequest.getSession.getAttribute(key)
+  }
+
+  /**
    * Attempts to get another service's state, but does not initialise it if
    * it is missing.
    */
   protected def getOtherServiceState[OState](key: String): Option[OState] =
-     Option(getThreadLocalRequest.getSession.
-      getAttribute(key).
+    mutex.synchronized {
+     Option(getThreadLocalRequest.getSession.getAttribute(key).
       asInstanceOf[OState])
+    }
 
 }

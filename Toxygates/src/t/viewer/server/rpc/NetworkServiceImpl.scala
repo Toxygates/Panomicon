@@ -96,7 +96,7 @@ class NetworkState extends MatrixState {
       net <- networks.values; network = net.managedMatrix
     } {
       network.targets = tt
-      
+
       //Make the count map in ManagedNetwork recalculate
       network.updateRowInfo()
       //Make the count column update
@@ -135,7 +135,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       for {
         t <- mirnaTargetTable(sources(0))
       } {
-        getState.synchronized {
+        mutex.synchronized {
           getState().mirnaSources = sources
           getState().targetTable = t
         }
@@ -145,7 +145,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       for (s <- sources; t <- mirnaTargetTable(s)) {
         r.addAll(t)
       }
-      getState.synchronized {
+      mutex.synchronized {
         getState().mirnaSources = sources
         getState().targetTable = r.build
       }

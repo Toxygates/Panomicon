@@ -96,12 +96,10 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
 
     val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
     //    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
-    val targetTable = netState.synchronized {
-       netState.map(_.targetTable).getOrElse(TargetTable.empty)
-    }
+    val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
     
-
+    
     new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
         platformsCache,
         b2rKegg, uniprot, chembl, drugBank,
