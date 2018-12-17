@@ -273,7 +273,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
     int disableCount = 0;
 
-    logger.info("Available DS: " + SharedUtils.mkString(availableDatasets, ", "));
+    logger.info("Available datasets: " + SharedUtils.mkString(availableDatasets, ", "));
     for (Group group : new ArrayList<Group>(groups.activeGroups())) {
       List<String> requiredDatasets = group.collect(OTGAttribute.Dataset).collect(Collectors.toList());
       logger.info("Group " + group.getShortTitle() + " needs " + SharedUtils.mkString(requiredDatasets, ", "));

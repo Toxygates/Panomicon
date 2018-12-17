@@ -54,10 +54,9 @@ public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
         String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
         String style = groupStyle + " " + borderStyle;
 
-        logger.info(matrixInfo.shortColumnName(i) + " " + matrixInfo.columnFilter(i).threshold + " "
-            + matrixInfo.columnFilter(i).active());
         ColumnInfo columnInfo = new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
             columnWidth, style, false, true, matrixInfo.columnFilter(i).active());
+        
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i, columnInfo);
         columnInfo.setHeaderStyleNames(style);
 

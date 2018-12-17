@@ -162,7 +162,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       this.selTable = new StringSelectionTable("", itemTitle) {
         @Override
         protected void selectionChanged(Set<String> selected) {
-          BrowseCheck.logger.info("Send selection " + selected.size());
+          //BrowseCheck.logger.info("Send selection " + selected.size());
           parentSelector.setSelection(selected, bc);
           currentSelection = selected;
         }

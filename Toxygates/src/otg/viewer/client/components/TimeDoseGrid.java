@@ -85,8 +85,8 @@ abstract public class TimeDoseGrid extends Composite {
       logger.warning("Unable to sort medium parameters");
     }
 
-    logger.info("Medium: " + schema.mediumParameter().id() + 
-        " minor: " + schema.minorParameter().id());
+//    logger.info("Medium: " + schema.mediumParameter().id() + 
+//        " minor: " + schema.minorParameter().id());
 
     HorizontalPanel selectionPanel = Utils.mkHorizontalPanel();
     mainPanel.add(selectionPanel);
@@ -145,7 +145,6 @@ abstract public class TimeDoseGrid extends Composite {
 
   private void fetchMinor() {
     fetchingMinor = true;
-    logger.info("Fetch minor");
     sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to fetch minor parameter for samples") {
@@ -261,7 +260,6 @@ abstract public class TimeDoseGrid extends Composite {
     int r = 1;
     final int numMed = mediumValues.size();
     final int numMin = minorValues.size();
-    logger.info("Draw grid inner: " + numMed + ", " + numMin);
     if (hasDoseTimeGUIs && chosenCompounds.size() > 0) {
       for (int d = 0; d < numMed; ++d) {
         HorizontalPanel hp = Utils.mkHorizontalPanel(true);

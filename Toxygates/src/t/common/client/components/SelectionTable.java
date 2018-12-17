@@ -197,7 +197,6 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
   }
 
   public void setItems(Collection<T> data, boolean clearSelection) {
-    logger.info("Set items " + data.size() + " clear: " + clearSelection);
     provider.setList(new ArrayList<T>(data));
     table.setVisibleRange(0, data.size());
     if (clearSelection) {

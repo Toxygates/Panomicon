@@ -147,10 +147,6 @@ public class DataFilterEditor extends Composite {
   }
 
   public void setAvailable(SampleClass[] sampleClasses) {
-    logger.info("Received " + sampleClasses.length + " sample classes");
-    if (sampleClasses.length > 0) {
-      logger.info(sampleClasses[0].toString() + " ...");
-    }
     this.sampleClasses = Arrays.asList(sampleClasses);
     selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
     

@@ -48,7 +48,6 @@ abstract public class Dataset<D extends Data> {
     this.samples = samples;
     this.categoriesAreMins = categoriesAreMins;
     this.categories = categories;
-    logger.info(categories.length + " categories");
     init();
   }
 

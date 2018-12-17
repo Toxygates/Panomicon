@@ -361,10 +361,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       samplesWaiting = true;
       return; //wait
     }
-    logger.info("Samples available: " + availableUnits.size() + " units.");
-    if (availableUnits.size() > 0 && availableUnits.get(0) != null) {
-      logger.info("1st: " + availableUnits.get(0));
-    }
+    //logger.info("Samples available: " + availableUnits.size() + " units.");
+//    if (availableUnits.size() > 0 && availableUnits.get(0) != null) {
+//      logger.info("1st: " + availableUnits.get(0));
+//    }
     
     controlUnits.clear();
     for (Pair<Unit, Unit> u : availableUnits) {
@@ -375,9 +375,9 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     for (Pair<Unit, Unit> treatedControl : availableUnits) {
       Unit u = treatedControl.first();
       if (u == null || u.getSamples() == null || u.getSamples().length == 0) {
-        if (u != null) {
-          logger.warning("Not creating UI for unit " + u);
-        }
+//        if (u != null) {
+//          logger.warning("Not creating UI for unit " + u);
+//        }
         continue;
       }
 
@@ -405,7 +405,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       doseTimeCheckboxes[dIdx * minorValues.size() + tIdx].setEnabled(true);
     }
     if (preSelection != null) {
-      logger.info("Set preselection " + preSelection.length);
+      //logger.info("Set preselection " + preSelection.length);
       setSelection(preSelection);
       preSelection = null;
     }

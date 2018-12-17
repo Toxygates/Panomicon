@@ -205,7 +205,6 @@ public class MyDataScreen extends MinimalScreen {
     userKey = key;
     userDataset = Dataset.userDatasetId(key);
     userSharedDataset = Dataset.userSharedDatasetId(key);        
-    logger.info("The unique user key is: " + key);
     if (keyLabel != null) {
       keyLabel.setText("Your access key is: " + userKey);
     }

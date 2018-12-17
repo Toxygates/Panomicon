@@ -81,7 +81,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     if (listener != null) {
       listener.unitsChanged(fullSel);
     }
-    logger.info("U.Chgd. Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
+    //logger.info("U.Chgd. Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
     if (fullSelAll.size() == expectedSelection.length && expectedSelection.length > 0) {
       clearEmptySections();
       expectedSelection = new Unit[] {};
@@ -121,7 +121,6 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   public void sampleClassChanged(SampleClass sc) {
     SelectionTDGrid g = findOrCreateSection(screen, sc, false);
     if (g != currentGrid) {
-      logger.info("SC change " + sc.toString());
       currentGrid = g;
       clearEmptySections();
     }
@@ -139,10 +138,8 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   }
 
   void setSelection(Unit[] selection) {
-    logger.info("Set selection: " + selection.length + " units ");
-    if (selection.length > 0) {
-      logger.info("1st sel: " + selection[0]);
-    }
+    logger.info("Set selection: " + selection.length + " units" + 
+        (selection.length > 0 ? ("\n1st selection: " + selection[0]) : ""));
     final DataSchema schema = screen.schema();
 
     for (SelectionTDGrid g : sections.values()) {

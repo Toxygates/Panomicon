@@ -137,8 +137,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
           .info("Get associations for " + dispAtomic.length + " probes in "
               + tableDelegate.chosenSampleClass().toString());
       probeService.associations(tableDelegate.chosenSampleClass(), assocs, dispAtomic, assocCallback);
-    } else {
-      logger.info("No associations to fetch");
     }
   }
   

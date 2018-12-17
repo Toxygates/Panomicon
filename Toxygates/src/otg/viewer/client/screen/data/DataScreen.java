@@ -29,7 +29,8 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.*;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.client.table.DualTableView;
@@ -264,7 +265,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   public void probesChanged(String[] probes) {
-    logger.info("received " + probes.length + " probes");
 
     chosenProbes = probes;
 

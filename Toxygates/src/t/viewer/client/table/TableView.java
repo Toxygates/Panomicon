@@ -175,8 +175,8 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   
   @Override
   public void reloadDataIfNeeded() {
-    logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
-        + (lastProbes == null ? "null" : "" + lastProbes.length));
+//    logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
+//        + (lastProbes == null ? "null" : "" + lastProbes.length));
 
     if (chosenColumns.size() == 0) {
       Window.alert("Please define sample groups to see data.");
@@ -186,13 +186,13 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
-      logger.info("Data reloading needed");
+//      logger.info("Data reloading needed");
       Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_DATA);
       expressionTable.setStyle(styleForColumns(chosenColumns));
       expressionTable.getExpressions();
       onReloadData();
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
-      logger.info("Only refiltering needed");
+//      logger.info("Only refiltering needed");
       expressionTable.matrix().refilterData(chosenProbes);
       onReloadData();
     }
