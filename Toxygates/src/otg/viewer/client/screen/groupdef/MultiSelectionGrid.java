@@ -129,9 +129,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
 
   public void compoundsChanged(List<String> compounds) {
     chosenCompounds = compounds;
-    if (currentGrid != null) {
-      currentGrid.compoundsChanged(compounds);
-    }
+    currentGrid.compoundsChanged(compounds);
   }
 
   @SuppressWarnings("deprecation")

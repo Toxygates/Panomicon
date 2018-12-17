@@ -251,11 +251,14 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void sampleClassChanged(SampleClass sc) {
+    // This needs to happen before compoundsChanged, so that multiSelectionGrid.currentGrid
+    // will get a value before being used in multiSelectionGrid.compoundsChanged
+    multiSelectionGrid.sampleClassChanged(sc);
+    
     if (!sc.equals(chosenSampleClass)) {
       compoundsChanged(new ArrayList<String>());
     }
     chosenSampleClass = sc;
-    multiSelectionGrid.sampleClassChanged(sc);
   }
 
   public void datasetsChanged(List<Dataset> datasets) {

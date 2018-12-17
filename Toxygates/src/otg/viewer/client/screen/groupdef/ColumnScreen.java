@@ -56,6 +56,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(newSampleClass);
+    groupInspector.sampleClassChanged(newSampleClass);
     compoundSelector.sampleClassChanged(newSampleClass);
     
     if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
