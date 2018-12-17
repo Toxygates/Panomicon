@@ -24,7 +24,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otg.viewer.client.components.*;
-import otg.viewer.client.components.compoundsel.CompoundSelector;
 import otg.viewer.client.intermine.InterMineData;
 import otg.viewer.client.screen.data.*;
 import otg.viewer.client.screen.groupdef.*;
@@ -53,9 +52,9 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GroupInspector groupInspector(CompoundSelector cs, OTGScreen scr,
+  public GroupInspector groupInspector(OTGScreen scr,
       GroupInspector.Delegate delegate) {
-    return new TreatedControlGroupInspector(cs, scr, delegate);
+    return new TreatedControlGroupInspector(scr, delegate);
   }
 
   @Override

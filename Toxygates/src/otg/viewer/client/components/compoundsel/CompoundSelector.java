@@ -69,8 +69,8 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public interface Delegate {
-    void CompoundSelectorItemListsChanged(List<ItemList> itemLists);
-    void CompoundSelectorCompoundsChanged(List<String> compounds);
+    void compoundSelectorItemListsChanged(List<ItemList> itemLists);
+    void compoundSelectorCompoundsChanged(List<String> compounds);
   }
 
   public <T extends OTGScreen & Delegate> CompoundSelector(T screen, String heading,
@@ -112,7 +112,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
           @Override
           protected void listsChanged(List<ItemList> itemLists) {
-            delegate.CompoundSelectorItemListsChanged(itemLists);
+            delegate.compoundSelectorItemListsChanged(itemLists);
           }
           
           @Override
@@ -173,7 +173,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   private void setCompounds(List<String> compounds) {
     chosenCompounds = compounds;
-    delegate.CompoundSelectorCompoundsChanged(compounds);
+    delegate.compoundSelectorCompoundsChanged(compounds);
   }
 
   public void sampleClassChanged(SampleClass sc) {

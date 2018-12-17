@@ -124,12 +124,12 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
 
   // CompoundSelector.Delegate methods
   @Override
-  public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
+  public void compoundSelectorItemListsChanged(List<ItemList> itemLists) {
     getStorage().itemListsStorage.store(itemLists);
   }
 
   @Override
-  public void CompoundSelectorCompoundsChanged(List<String> compounds) {
+  public void compoundSelectorCompoundsChanged(List<String> compounds) {
     RankingScreen.this.getStorage().compoundsStorage.store(compounds);
     compoundRanker.compoundsChanged(compounds);
   }

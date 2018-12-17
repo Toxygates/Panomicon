@@ -23,14 +23,13 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 
 import otg.viewer.client.components.OTGScreen;
-import otg.viewer.client.components.compoundsel.CompoundSelector;
 import t.common.shared.sample.Group;
 
 public class TreatedControlGroupInspector extends GroupInspector {
 
-  public TreatedControlGroupInspector(CompoundSelector cs, OTGScreen scr,
+  public TreatedControlGroupInspector(OTGScreen scr,
       Delegate delegate) {
-    super(cs, scr, delegate);
+    super(scr, delegate);
   }
 
   @Override

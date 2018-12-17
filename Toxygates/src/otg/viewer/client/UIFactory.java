@@ -24,7 +24,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otg.viewer.client.components.*;
-import otg.viewer.client.components.compoundsel.CompoundSelector;
 import otg.viewer.client.screen.data.*;
 import otg.viewer.client.screen.groupdef.GroupInspector;
 import otg.viewer.client.screen.groupdef.SelectionTDGrid;
@@ -48,7 +47,7 @@ public interface UIFactory {
 
   public CompoundRanker compoundRanker(OTGScreen _screen);
   
-  public GroupInspector groupInspector(CompoundSelector cs, OTGScreen scr,
+  public GroupInspector groupInspector(OTGScreen scr,
       GroupInspector.Delegate delegate);
   
   public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups);

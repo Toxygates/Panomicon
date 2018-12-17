@@ -35,7 +35,6 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
 import otg.viewer.client.components.OTGScreen;
-import otg.viewer.client.components.compoundsel.CompoundSelector;
 import t.common.client.components.SelectionTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -64,7 +63,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private TextBox txtbxGroup;
   private Button saveButton, autoGroupsButton;
   private SelectionTable<Group> existingGroupsTable;
-  private CompoundSelector compoundSel;
   private HorizontalPanel toolPanel;
   private SplitLayoutPanel splitPanel;
   private VerticalPanel verticalPanel;
@@ -82,6 +80,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public interface Delegate {
     void groupInspectorDatasetsChanged(List<Dataset> ds);
     void groupInspectorSampleClassChanged(SampleClass sc);
+    void groupInspectorCompoundsChanged(List<String> compounds);
   }
 
   public interface ButtonCellResources extends ButtonCellBase.DefaultAppearance.Resources {
@@ -90,8 +89,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     Style buttonCellBaseStyle();
   }
 
-  public GroupInspector(CompoundSelector cs, OTGScreen scr, Delegate delegate) {
-    compoundSel = cs;
+  public GroupInspector(OTGScreen scr, Delegate delegate) {
     this.screen = scr;
     this.delegate = delegate;
     schema = scr.schema();
@@ -220,7 +218,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     txtbxGroup.setText("");
     onGroupNameInputChanged();
     multiSelectionGrid.clearSelection();
-    compoundSel.setSelection(new ArrayList<String>());
+    delegate.groupInspectorCompoundsChanged(new ArrayList<String>());
     setHeading("new group");
     setEditMode(true);
   }
@@ -253,10 +251,10 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
     if (!sc.equals(chosenSampleClass)) {
       compoundsChanged(new ArrayList<String>());
     }
+    chosenSampleClass = sc;
     multiSelectionGrid.sampleClassChanged(sc);
   }
 
@@ -441,7 +439,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).
         collect(Collectors.toList());
 
-    compoundSel.setSelection(compounds);
+    delegate.groupInspectorCompoundsChanged(compounds);
     txtbxGroup.setValue(name);
     onGroupNameInputChanged();
     nameIsAutoGen = false;

@@ -117,7 +117,7 @@ abstract public class CompoundRanker extends Composite {
 
       @Override
       protected void listsChanged(List<ItemList> lists) {
-        selector.delegate().CompoundSelectorItemListsChanged(lists);
+        selector.delegate().compoundSelectorItemListsChanged(lists);
       }
     };
     listChooser.addStyleName("colored");

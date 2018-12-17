@@ -96,7 +96,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   protected Widget content() {
-    groupInspector = factory().groupInspector(compoundSelector, this, this);
+    groupInspector = factory().groupInspector(this, this);
     groupInspector.datasetsChanged(chosenDatasets);
     return groupInspector;
   }
@@ -166,16 +166,22 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     compoundSelector.fetchCompounds();
     chosenSampleClass = newSampleClass;
   }
-
+  
+  @Override
+  public void groupInspectorCompoundsChanged(List<String> compounds) {
+    compoundSelector.setChosenCompounds(compounds);
+    getStorage().compoundsStorage.store(compounds);
+  }
+  
   // CompoundSelector.Delegate methods
   @Override
-  public void CompoundSelectorItemListsChanged(List<ItemList> itemLists) {
+  public void compoundSelectorItemListsChanged(List<ItemList> itemLists) {
     getStorage().itemListsStorage.store(itemLists);
   }
 
   @Override
-  public void CompoundSelectorCompoundsChanged(List<String> compounds) {
+  public void compoundSelectorCompoundsChanged(List<String> compounds) {
     groupInspector.compoundsChanged(compounds);
-    ColumnScreen.this.getStorage().compoundsStorage.store(compounds);
+    getStorage().compoundsStorage.store(compounds);
   }
 }
