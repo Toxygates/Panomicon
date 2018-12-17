@@ -85,7 +85,7 @@ public class RankingCompoundSelector extends CompoundSelector {
       };
       table.addColumn(textColumn, "Score");
 
-      ChartClickCell ccc = new ChartClickCell(screen);
+      ChartClickCell ccc = new ChartClickCell();
       IdentityColumn<String> clickCol = new IdentityColumn<String>(ccc);
       clickCol.setCellStyleNames("clickCell");
       table.addColumn(clickCol, "");
@@ -154,11 +154,9 @@ public class RankingCompoundSelector extends CompoundSelector {
   }
 
   class ChartClickCell extends ImageClickCell.StringImageClickCell {
-    final OTGScreen w;
 
-    public ChartClickCell(OTGScreen w) {
+    public ChartClickCell() {
       super(resources.chart(), "charts", false);
-      this.w = w;
     }
 
     @Override
@@ -174,7 +172,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
-      return new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
+      return new PendingAsyncCallback<List<Series>>(screen, "Unable to retrieve data.") {
         @Override
         public void handleSuccess(final List<Series> ss) {
           Utils.ensureVisualisationAndThen(new Runnable() {
@@ -189,7 +187,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
-      Charts cgf = new Charts(screen, new SampleClass[] { w.manager().getStorage().sampleClassStorage.getIgnoringException() });
+      Charts cgf = new Charts(screen, new SampleClass[] { screen.manager().getStorage().sampleClassStorage.getIgnoringException() });
       cgf.makeSeriesCharts(seriesType, ss, scores.get(value).fixedValue(), 
           new Charts.ChartAcceptor() {
         @Override
