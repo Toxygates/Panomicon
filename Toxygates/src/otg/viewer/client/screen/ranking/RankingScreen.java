@@ -136,9 +136,10 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
 
   // FilterTools.Delegate method
   @Override
-  public void filterToolsSampleClassChanged(SampleClass sc) {
-    getStorage().sampleClassStorage.store(sc);
-    compoundSelector.sampleClassChanged(sc);
+  public void filterToolsSampleClassChanged(SampleClass sampleClass) {
+    chosenSampleClass = sampleClass;
+    getStorage().sampleClassStorage.store(sampleClass);
+    compoundSelector.sampleClassChanged(sampleClass);
     compoundSelector.fetchCompounds();
   }
 
