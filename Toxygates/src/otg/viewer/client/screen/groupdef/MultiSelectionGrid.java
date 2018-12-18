@@ -42,36 +42,36 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   private SelectionTDGrid currentGrid;
   private Map<SampleClass, SelectionTDGrid> sections = new HashMap<SampleClass, SelectionTDGrid>();
   private UnitListener listener;
-  private VerticalPanel vp;
+  private VerticalPanel verticalPanel;
   private final OTGScreen screen;
   protected final Logger logger = SharedUtils.getLogger("msg");
 
   protected List<String> chosenCompounds = new ArrayList<String>();
 
-  public MultiSelectionGrid(OTGScreen scr, @Nullable SelectionTDGrid.UnitListener listener) {
-    vp = new VerticalPanel();
-    initWidget(vp);
-    this.screen = scr;
+  public MultiSelectionGrid(OTGScreen screen, @Nullable SelectionTDGrid.UnitListener listener) {
+    verticalPanel = new VerticalPanel();
+    initWidget(verticalPanel);
+    this.screen = screen;
     this.listener = listener;
   }
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
 
-  private SelectionTDGrid findOrCreateSection(OTGScreen scr, SampleClass sc, boolean noCompounds) {
-    SelectionTDGrid g = sections.get(sc);
-    if (g == null) {
-      g = scr.factory().selectionTDGrid(scr, this);
-      g.sampleClassChanged(sc);
-      sections.put(sc, g);
+  private SelectionTDGrid findOrCreateSection(SampleClass sampleClass, boolean noCompounds) {
+    SelectionTDGrid grid = sections.get(sampleClass);
+    if (grid == null) {
+      grid = screen.factory().selectionTDGrid(screen, this);
+      grid.sampleClassChanged(sampleClass);
+      sections.put(sampleClass, grid);
       if (!noCompounds) {
-        g.compoundsChanged(chosenCompounds);
+        grid.compoundsChanged(chosenCompounds);
       }
-      Label l = new Label(SampleClassUtils.label(sc, scr.schema()));
-      l.addStyleName("selectionGridSectionHeading");
-      vp.add(l);
-      vp.add(g);
+      Label label = new Label(SampleClassUtils.label(sampleClass, screen.schema()));
+      label.addStyleName("selectionGridSectionHeading");
+      verticalPanel.add(label);
+      verticalPanel.add(grid);
     }
-    return g;
+    return grid;
   }
 
   @Override
@@ -119,7 +119,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   }
 
   public void sampleClassChanged(SampleClass sc) {
-    SelectionTDGrid g = findOrCreateSection(screen, sc, false);
+    SelectionTDGrid g = findOrCreateSection(sc, false);
     if (g != currentGrid) {
       currentGrid = g;
       clearEmptySections();
@@ -142,19 +142,19 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
         (selection.length > 0 ? ("\n1st selection: " + selection[0]) : ""));
     final DataSchema schema = screen.schema();
 
-    for (SelectionTDGrid g : sections.values()) {
-      g.setAll(false, false);
+    for (SelectionTDGrid grid : sections.values()) {
+      grid.setAll(false, false);
     }
     expectedSelection = selection;
 
     final Attribute majorParam = screen.schema().majorParameter();
     Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
-    for (Unit u : selection) {
-      SampleClass sc = SampleClassUtils.asMacroClass(u, schema);
+    for (Unit unit : selection) {
+      SampleClass sc = SampleClassUtils.asMacroClass(unit, schema);
       if (!lcompounds.containsKey(sc)) {
         lcompounds.put(sc, new HashSet<String>());
       }
-      String majorVal = u.get(majorParam);
+      String majorVal = unit.get(majorParam);
       if (majorVal != null && !isMajorParamSharedControl(schema, majorVal)) {
         lcompounds.get(sc).add(majorVal);
       }
@@ -163,18 +163,18 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     for (SampleClass sc : lcompounds.keySet()) {
       List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
       Collections.sort(compounds);
-      SelectionTDGrid g = findOrCreateSection(screen, sc, true);
+      SelectionTDGrid g = findOrCreateSection(sc, true);
       g.compoundsChanged(compounds, selection);
     }
   }
 
   private void clearEmptySections() {
-    int count = vp.getWidgetCount();
+    int count = verticalPanel.getWidgetCount();
     for (int i = 1; i < count; i += 2) {
-      SelectionTDGrid tg = (SelectionTDGrid) vp.getWidget(i);
+      SelectionTDGrid tg = (SelectionTDGrid) verticalPanel.getWidget(i);
       if (tg != currentGrid && tg.getSelectedUnits(true).size() == 0) {
-        vp.remove(i);
-        vp.remove(i - 1);
+        verticalPanel.remove(i);
+        verticalPanel.remove(i - 1);
         sections.remove(tg.sampleClass());
         clearEmptySections();
         return;
