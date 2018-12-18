@@ -20,6 +20,7 @@ package t.viewer.client.components;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -434,6 +435,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       m.setItems(items, clearSelection, alreadySorted);
     }
     availableItems = new HashSet<String>(items);
+    setSelection(selectedItems.stream().filter(item -> availableItems.contains(item)).collect(Collectors.toList()),
+        null);
   }
 
   public void setLists(List<ItemList> lists) {
