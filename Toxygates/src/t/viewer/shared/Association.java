@@ -39,7 +39,7 @@ public class Association implements Serializable {
   public Association() {}
 
   /**
-   * Construct a successful association result.
+   * Construct an Association result with data.
    * @param type
    * @param data Association data keyed on probe id:s.
    */
@@ -51,7 +51,7 @@ public class Association implements Serializable {
   }
   
   /**
-   * Construct an empty, possibly failed Association result.
+   * Construct an empty Association result.
    * @param type
    */
   public Association(AType type, boolean success) {
