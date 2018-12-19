@@ -108,7 +108,7 @@ abstract class StatefulServlet[State] extends TServiceServlet {
       case Some(m) => m
       case None =>
         ServletSessionMutex.synchronized {
-          ses.setAttribute(mutId, mutId)
+          ses.setAttribute(mutId, new Object)
           ses.getAttribute(mutId)
         }
     }
