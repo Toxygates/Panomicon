@@ -80,19 +80,23 @@ class AssociationResolver(probeStore: Probes,
 
   val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
   val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))
+  def errorAssoc(t: AType) = new Association(t, 
+    convertAssociations(standardMapping(errorVals)), false, false)
 
-  def queryOrEmpty[T](f: () => BBMap): BBMap = {
-    gracefully(f, errorVals)
+  def queryOrEmpty[T](t: AType, f: => BBMap): Association = {
+    gracefully( 
+      new Association(t, 
+        convertAssociations(standardMapping(f)), 
+        sizeLimitExceeded, true), errorAssoc(t))
   }
 
-  private def lookupFunction(t: AType): BBMap =
-    queryOrEmpty(() => associationLookup(t, sc, aprobes))
+  private def lookupFunction(t: AType): Association =
+    queryOrEmpty(t, associationLookup(t, sc, aprobes))
 
   def standardMapping(m: BBMap): MMap[String, (String, String, Option[String])] =
     m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier, p.additionalInfo))
 
   def resolve: Array[Association] = {
-    val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
-    m1.map(p => new Association(p._1, convertAssociations(p._2), sizeLimitExceeded)).toArray
+    types.par.map(lookupFunction).seq.toArray
   }
 }

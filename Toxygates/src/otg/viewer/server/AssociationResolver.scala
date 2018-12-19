@@ -98,31 +98,24 @@ class AssociationResolver(probeStore: OTGProbes,
     val species = asSpecies(sc)
     val sizeLimit = Some(1000)
 
-    try {
-      if (mirnaTable.size == 0) {
-        Console.err.println("Warning: no mirnaTable available, association lookups will fail")
-      }
-      //Note: we might perform this filtering once and store it in the matrix state
-      val filtTable = mirnaTable.speciesFilter(species)
-      println(s"Lookup from miRNA table of size ${filtTable.size}, species: $species")
-
-      //Note: we might unify this lookup with the "aprobes" mechanism
-      val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
-
-      val platform = sidePlatform.map(probeStore.platformsAndProbes)
-      val data = filtTable.associationLookup(lookedUp, fromMirna,
-        platform, sizeLimit)
-
-      if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
-        sizeLimitExceeded = true
-      }
-      data
-
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        emptyMMap()
+    if (mirnaTable.size == 0) {
+      throw new Exception("No miRNA sources have been set, unable to resolve miRNA-mRNA association")
     }
+    //Note: we might perform this filtering once and store it in the matrix state
+    val filtTable = mirnaTable.speciesFilter(species)
+    println(s"Lookup from miRNA table of size ${filtTable.size}, species: $species")
+
+    //Note: we might unify this lookup with the "aprobes" mechanism
+    val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
+
+    val platform = sidePlatform.map(probeStore.platformsAndProbes)
+    val data = filtTable.associationLookup(lookedUp, fromMirna,
+      platform, sizeLimit)
+
+    if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
+      sizeLimitExceeded = true
+    }
+    data
   }
 
   def resolveMiRNA(probes: Iterable[Probe], fromMirna: Boolean): BBMap = {

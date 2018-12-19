@@ -34,19 +34,29 @@ public class Association implements Serializable {
   private Map<String, ? extends Set<AssociationValue>> _data =
       new HashMap<String, HashSet<AssociationValue>>();
   private boolean _overSizeLimit;
+  private boolean _success;
 
   public Association() {}
 
   /**
-   * 
+   * Construct a successful association result.
    * @param type
    * @param data Association data keyed on probe id:s.
    */
   public Association(AType type, Map<String, ? extends Set<AssociationValue>> data,
-      boolean overSizeLimit) {
-    _type = type;
+      boolean overSizeLimit, boolean success) {
+    this(type, success);
     _data = data;
     _overSizeLimit = overSizeLimit;
+  }
+  
+  /**
+   * Construct an empty, possibly failed Association result.
+   * @param type
+   */
+  public Association(AType type, boolean success) {
+    _type = type;
+    _success = success;
   }
 
   public AType type() {
@@ -64,4 +74,12 @@ public class Association implements Serializable {
   public boolean overSizeLimit() {
     return _overSizeLimit;
   }
+  
+  /**
+   * Was the data successfully fetched?
+   * @return
+   */
+  public boolean success() {
+    return _success;
+  }  
 }

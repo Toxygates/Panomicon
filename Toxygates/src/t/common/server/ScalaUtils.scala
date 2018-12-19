@@ -21,9 +21,9 @@
 package t.common.server
 
 object ScalaUtils {
-  def gracefully[T](f: () => T, onFailure: T): T = {
+  def gracefully[T](f: => T, onFailure: => T): T = {
     try {
-      f()
+      f
     } catch {
       case e: Exception =>
         e.printStackTrace()
