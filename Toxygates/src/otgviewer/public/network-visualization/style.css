@@ -68,6 +68,14 @@
 	width: 100px;
 
 }
+/* ----------------------------------------------------------
+ * CSS for pop-ups
+ * ---------------------------------------------------------- */
+  .popper{
+    background: rgba(255,193,7,1);
+    padding: 5px;
+    text-align: center;
+  }
 
 /* ----------------------------------------------------------
  * CSS for modal elements - based on the w3schools example

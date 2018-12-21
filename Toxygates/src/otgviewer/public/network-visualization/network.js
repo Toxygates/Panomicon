@@ -36,10 +36,10 @@ class Network{
    * parameter, our model also considers a name (string) for the network.
    * The constructor initializes all the required parameters, using default
    * values when neccesary.
-   * @param {String} title - the name given to a network
-   * @param {[Interaction]} interactions - the array of interactions that exist
+   * @param {string} title - the name given to a network
+   * @param {array<Interaction>} interactions - the array of interactions that exist
    * between nodes
-   * @param {[ToxyNode]} nodes - the nodes that comprise the newtwork
+   * @param {array<ToxyNode>} nodes - the nodes that comprise the newtwork
    */
   constructor(title="", interactions=[], nodes=[]){
     this.title = title;
