@@ -19,7 +19,6 @@
 package t.viewer.client.components;
 
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -152,8 +151,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
     private Button sortButton;
     private ScrollPanel scrollPanel;
-
-    private static Logger logger = SharedUtils.getLogger("sle.bc");
 
     public BrowseCheck(StackedListEditor editor, String itemTitle, final int maxAutoSel) {
       super(editor);

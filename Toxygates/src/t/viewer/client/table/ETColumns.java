@@ -1,7 +1,6 @@
 package t.viewer.client.table;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 import com.google.gwt.cell.client.*;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -25,7 +24,6 @@ import t.viewer.shared.ManagedMatrixInfo;
 public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
   private final Resources resources;
   private Delegate delegate;
-  private Logger logger;
 
   private final String columnWidth;
 
@@ -37,11 +35,10 @@ public class ETColumns implements RichTable.ColumnHelper<ExpressionRow> {
     int columnCountForSection(String section);
   }
 
-  public ETColumns(Delegate delegate, Resources resources, String columnWidth, Logger logger) {
+  public ETColumns(Delegate delegate, Resources resources, String columnWidth) {
     this.delegate = delegate;
     this.resources = resources;
     this.columnWidth = columnWidth;
-    this.logger = logger;
   }
 
   public void addDataColumns(ManagedMatrixInfo matrixInfo, boolean displayPColumns) {

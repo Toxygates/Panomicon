@@ -108,7 +108,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     screen = _screen;
     this.matrix = new ETMatrixManager(_screen, flags, this, loader, grid);
     this.associations = new AssociationManager<ExpressionRow>(screen, this, this, viewDelegate);
-    this.columns = new ETColumns(this, _screen.manager().resources(), COLUMN_WIDTH, logger);
     this.delegate = delegate;
     this.withPValueOption = flags.withPValueOption;
     this.initPageSize = flags.initPageSize;
@@ -136,7 +135,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   
   @Override
   protected ETColumns makeColumnHelper(OTGScreen screen) {
-    this.columns = new ETColumns(this, screen.manager().resources(), COLUMN_WIDTH, logger);
+    this.columns = new ETColumns(this, screen.manager().resources(), COLUMN_WIDTH);
     return columns;
   }
 
