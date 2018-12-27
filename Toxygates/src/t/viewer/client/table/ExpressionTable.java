@@ -299,7 +299,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected Set<String> indicatedRows = new HashSet<String>();
 
   public void setIndicatedProbes(Set<String> highlighted, boolean redraw) {
-    logger.info(highlighted.size() + " rows are indicated zz");
     logger.info(highlighted.size() + " rows are indicated");
     Set<String> oldIndicated = indicatedRows;
     indicatedRows = highlighted;
