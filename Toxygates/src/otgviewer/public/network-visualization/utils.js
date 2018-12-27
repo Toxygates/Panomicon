@@ -1,11 +1,4 @@
 "use strict";
-$.getScript("toxygates/network-visualization/lib/popper.min.js", function() {
-  alert("popper.js loaded but not necessarily executed.");
-});
-
-$.getScript("toxygates/network-visualization/lib/cytoscape-popper.js", function() {
-   alert("cystoscape-popper.js loaded but not necessarily executed.");
-});
 
 /**
  * If we consider that is is possible to get a linear interpolation that goes

@@ -25,6 +25,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   private static final String[] injectList = {
       "network-visualization/lib/jquery-3.3.1.min.js", "network-visualization/lib/cytoscape.min.js",
       "network-visualization/lib/cytoscape-context-menus.js", "network-visualization/lib/weaver-1.2.0.min.js",
+      "network-visualization/lib/popper-1.14.6.min.js", "network-visualization/lib/cytoscape-popper-1.0.2.js",
       "network-visualization/utils.js", "network-visualization/extensions.js",
       "network-visualization/application.js" };
 
