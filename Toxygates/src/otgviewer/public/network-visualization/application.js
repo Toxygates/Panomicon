@@ -51,7 +51,7 @@ $(document).on("change", "#layoutSelect", function (){
     // Apply layout to the selected panel
     case MAIN_ID:
     case SIDE_ID:
-      toxyNet[id].layout = vizNet[id].layout({name: name});
+      toxyNet[id].layout = vizNet[id].updateLayout(name);
       toxyNet[id].layout.run();
       break;
 
@@ -59,11 +59,11 @@ $(document).on("change", "#layoutSelect", function (){
     // intersection and, arrange other nodes as a grid beneath them
     case BOTH_ID:
       // Define a collection for the intersection of both networks
-      let inter = vizNet[MAIN_ID].nodes().intersection(vizNet[SIDE_ID].nodes());
+      let inter = vizNet[MAIN_ID].elements().intersection(vizNet[SIDE_ID].elements());
 
       // Apply a composite layout to the graph in the main panel
       vizNet[MAIN_ID].compositeLayout(inter, name, function(){
-        // Once the positioning has been completed, used an annonymous callback
+        // Once the positioning has been completed, use an annonymous callback
         // to position the nodes on the side panel
         // First, position the nodes that are part of the intersection
         vizNet[MAIN_ID].nodes().forEach(function(node){
@@ -71,16 +71,16 @@ $(document).on("change", "#layoutSelect", function (){
           .position(node.position());
         });
         // Then those that are not part of the intersection
-        let difSide = vizNet[SIDE_ID].nodes().difference(inter);
-        let outerLayout = difSide.layout({name:"grid"});
+        let difSide = vizNet[SIDE_ID].elements().difference(inter);
+        let outerLayout = difSide.layout({name: "grid"});
         outerLayout.run();
         // Finally shift and fit all nodes to the viewport
         difSide.shift('y', vizNet[SIDE_ID].height());
         vizNet[SIDE_ID].fit();
       });
 
-      toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].layout({name: "preset"});
-      toxyNet[SIDE_ID].layout = vizNet[SIDE_ID].layout({name: "preset"});
+      // toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].newLayout("preset");
+      // toxyNet[SIDE_ID].layout = vizNet[SIDE_ID].newLayout("preset");
       break;
   }
 });

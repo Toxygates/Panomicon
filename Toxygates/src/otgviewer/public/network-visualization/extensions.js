@@ -64,29 +64,27 @@ function compositeLayout(eles, innerName, callback, outerName="grid"){
 
 
 /**
- * apply a specific layout to the visual representation of the graph
- * @param {string} type the type of layout to use for the placement of the nodes
- * within the display area
+ * Generate the options Object needed to define the layout for a cytoscape
+ * network.
+ * @param {string} name The identifier used by cytoscape to define a default
+ * layout type.
  */
-function updateLayout(type="null", bb=undefined){
-  // window.addPendingRequest();
-  var layout = {
-    name: type,
+function updateLayout(name="null"){
+  window.addPendingRequest();
+  return this.layout({
+    name: name,
     fit: true, // whether to fit to viewport
     padding: 0, // fit padding
-    boundingBox: bb, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+    boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
     animate: false, // whether to transition the node positions
     animationDuration: 500, // duration of animation in ms if enabled
     animationEasing: undefined, // easing of animation if enabled
     animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
     ready: undefined, // callback on layoutready
-    stop: function() {
-      // window.removePendingRequest();
-    }, // callback on layoutstop
+    stop: function() { window.removePendingRequest(); }, // callback on layoutstop
     transform: function (node, position ){ return position; }, // transform a given node position. Useful for changing flow direction in discrete layouts
     weaver: weaver
-  }
-  return layout;
+  });
 }
 
 /**
