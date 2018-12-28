@@ -542,10 +542,10 @@ function changeNetwork(id=MAIN_ID){
   /* if the nodes had no position, and the user has previously selected a layout
    * option, apply it tho the recently loaded network */
   var layout = $("#layoutSelect").val(); // UI selected layout
-  if( toxyNet[id].layout === "null" && layout !== "null"){
-    toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(layout));
-    toxyNet[id].layout.run();
-  }
+  // if( toxyNet[id].layout === "null" && layout !== "null"){
+  //   toxyNet[id].layout = vizNet[id].updateLayout(layout);
+  //   toxyNet[id].layout.run();
+  // }
   vizNet[id].fit();
 
 }

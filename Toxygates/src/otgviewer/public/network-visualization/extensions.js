@@ -69,13 +69,13 @@ function compositeLayout(eles, innerName, callback, outerName="grid"){
  * @param {string} name The identifier used by cytoscape to define a default
  * layout type.
  */
-function updateLayout(name="null"){
+function updateLayout(type="null", bb=undefined){
   window.addPendingRequest();
   return this.layout({
-    name: name,
+    name: type,
     fit: true, // whether to fit to viewport
     padding: 0, // fit padding
-    boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+    boundingBox: bb, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
     animate: false, // whether to transition the node positions
     animationDuration: 500, // duration of animation in ms if enabled
     animationEasing: undefined, // easing of animation if enabled
