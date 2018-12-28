@@ -2,17 +2,21 @@
   <fieldset>
     <legend>User Interaction</legend>
 
+    <!-- Select the panel on which a particular layout will be applied -->
     <div>Select Panel:</div>
     <select id="panelSelect">
-      <option value="0" selected>Left</option>
-      <option value="1" disabled>Right</option>
-      <option value="2" disabled>Intersection</option>
+      <!-- On load, the only panel available is the one on the 'left side'. The
+      panel extends the whole visualiation area -->
+      <option value=0 selected>Left</option>
+      <option value=1 disabled>Right</option>
+      <option value=2 disabled>Intersection</option>
     </select>
     <br />
 
     <div>Apply Layout:</div>
-    <select id="layoutSelect">
+    <select class="gwt-ListBox" id="layoutSelect">
       <option value="null" selected>None</option>
+      <option value="preset">Preset</option>
       <option value="random">Random</option>
       <option value="grid">Grid</option>
       <option value="circle">Circle</option>
@@ -22,17 +26,24 @@
     </select>
     <br />
 
-    <div>Hide unconnected nodes:
-      <input id="hideNodesCheckbox" type="checkbox" checked>
-    </div>
+    <span class="gwt-CheckBox">
+      <input id="hideUnconnectedCheckbox" type="checkbox" checked>
+      <label for="hideUnconnectedCheckbox">Hide unconnected nodes</label>
+    </span>
 
-    <div>Show right panel:
-      <input id="showRightCheckbox" type="checkbox">
-    </div>
-
-    <div>Highlight intesection:
+    <span class="gwt-CheckBox">
       <input id="showIntersectionCheckbox" type="checkbox" disabled="true">
+      <label for="showIntersectionCheckbox">Highlight intersection</label>
+    </span>
+
+    <div>
+      <button id="mergeNetworkButton"
+        type="button"
+        class="gwt-Button">
+        Merge Networks
+      </button>
     </div>
+
 
     <br />
   </fieldset>

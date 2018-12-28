@@ -2,119 +2,86 @@
 /* identifiers for cystoscape display panels */
 const MAIN_ID = 0; // left-side
 const SIDE_ID = 1; // right-side
+const BOTH_ID = 2; // both panels, used for intersection
 
-// this are the main and side graphs - as Cytoscape objects
+// these are the main and side graphs - as Cytoscape objects
 var vizNet = [null, null];
-// this are also the Graphs - using Network structure
+// these are also the Graphs - using Network structure
 var toxyNet = [null, null];
 
-/** ------------------------- FORM HANDLERS ------------------------------ **/
 /**
- * The user is able to interact, using the same interface, with the graphs shown
- * on the left and right side panel only by turns. By changing the value of this
- * component, the user chooses to which of the two, the results of the
- * interaction should be applied.
- * Adjust interface controls whenever the user changes the active visualization
- * panel
+ * Determine the user available controls, depending on whether we want to apply
+ * changes to the left, right or both visualization panels.
  */
 $(document).on("change", "#panelSelect", function(){
-  // Determine the selected active panel
-  var id = $("#panelSelect").val();
-
-  if( id == 2 ){
-    $("#layoutSelect").val("null");
-    $("#hideNodesCheckbox").attr("disabled", true);
-    return;
+  // Capture the value of the option selected by the user
+  let id = parseInt($("#panelSelect").val());
+  // Enable/Disbale interface controls based on the option selected by the user
+  switch(id){
+    case MAIN_ID:
+    case SIDE_ID:
+      // Display the appropriate layout for a single panel
+      let layout = (toxyNet[id].layout !== "null" ? toxyNet[id].layout.options.name : "null");
+      $("#layoutSelect").val(layout);
+      // Make sure display of hidden nodes is available
+      $("#hideUnconnectedCheckbox").attr("disabled", false);
+      break;
+    case BOTH_ID:
+      // If both panels are selected show, None as default layout
+      $("#layoutSelect").val("null");
+      // Make sure display of hidden nodes is unavailable
+      $("#hideUnconnectedCheckbox").attr("disabled", true);
+      break;
   }
-
-  // Display the appropriate layout
-  if( toxyNet[id].layout !== "null" )
-    $("#layoutSelect").val(toxyNet[id].layout.options.name);
-  else
-    $("#layoutSelect").val("null");
-
-  // Display the correct value for hiding of unconnected nodes
-  $("#hideNodesCheckbox").prop("checked", toxyNet[id].unconnected !== null);
 });
 
 /**
- * Applies the selected layout, to the currently active graph.
+ * Applies the selected layout, to the currently active graph. In case the
+ * option "Both" has been selected, the layout is applied ONLY to the
+ * intersection of the networks
  */
 $(document).on("change", "#layoutSelect", function (){
   // Determine which panel is currently active
-  var id = $("#panelSelect").val();
-  // If the selected panel has no information, then is no need to perform any
-  // routine
-  if( vizNet[id] === null ) return;
+  let id = parseInt($("#panelSelect").val());
 
-  // Retrieve the selected layout
-  var opt = $("#layoutSelect").find(":selected").val();
+  // Retrieve the name of the selected layout
+  let name = $("#layoutSelect").find(":selected").val();
 
-  // If we need to apply a layout to the interserction of two networks
-  if( id == 2){
-
-    /* Define a collection for the intersection of both networks*/
-    var intersection = vizNet[MAIN_ID].nodes().intersection(vizNet[SIDE_ID].nodes());
-
-    /* Define collections for the remainders of both networks */
-    var othersMain = vizNet[MAIN_ID].nodes().difference(intersection);
-    var othersSide = vizNet[SIDE_ID].nodes().difference(intersection);
-
-    /* layout only the intersection of both networks */
-    var removedMain = vizNet[MAIN_ID].remove(othersMain);
-    vizNet[MAIN_ID].layout = vizNet[MAIN_ID].makeLayout(vizNet[MAIN_ID].updateLayout(opt));
-
-    /* once the positioning of the nodes is completed, position the nodes on
-     * both networks, and arrange the remainder nodes for both networks */
-    vizNet[MAIN_ID].layout.promiseOn('layoutstop').then(function(evt){
-
-      /* position the intersected nodes in the side panel */
-      vizNet[MAIN_ID].nodes().forEach(function(node){
-        vizNet[SIDE_ID].$("#"+node.id())
-          .position(node.position());
-      });
-
-      /* position the remainder nodes in the main panel */
-      var bb = vizNet[MAIN_ID].extent();
-      var startx = bb["x1"]+15;
-      var starty = bb["y2"]+30;
-      removedMain.nodes().forEach(function(node){
-        node.position({x:startx, y:starty});
-        startx += 60;
-        if( startx >= bb["x2"] ){
-          startx = bb["x1"]+15;
-          starty += 60;
-        }
-      });
-
-      /* position the remainder nodes in the side panel */
-      startx = bb["x1"]+15;
-      starty = bb["y2"]+30;
-      othersSide.nodes().forEach(function(node){
-        node.position({x:startx, y:starty});
-        startx += 60;
-        if( startx >= bb["x2"] ){
-          startx = bb["x1"]+15;
-          starty += 60;
-        }
-      });
-
-      /* restore the removed elements to the main panel */
-      removedMain.restore();
-      /* fit the viewport of both panels to show all nodes in their updated
-       * positions */
-      vizNet[MAIN_ID].fit();
-      vizNet[SIDE_ID].fit();
-    });
-    vizNet[MAIN_ID].layout.run();
-  }
-  else{
-  // Update the layout
-    toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
-    console.log(toxyNet[id].layout.options);
-    setTimeout(function(){
+  switch(id){
+    // Apply layout to the selected panel
+    case MAIN_ID:
+    case SIDE_ID:
+      toxyNet[id].layout = vizNet[id].layout({name: name});
       toxyNet[id].layout.run();
-    });
+      break;
+
+    // If Both panels are selected, apply the selected layout only to the
+    // intersection and, arrange other nodes as a grid beneath them
+    case BOTH_ID:
+      // Define a collection for the intersection of both networks
+      let inter = vizNet[MAIN_ID].nodes().intersection(vizNet[SIDE_ID].nodes());
+
+      // Apply a composite layout to the graph in the main panel
+      vizNet[MAIN_ID].compositeLayout(inter, name, function(){
+        // Once the positioning has been completed, used an annonymous callback
+        // to position the nodes on the side panel
+        // First, position the nodes that are part of the intersection
+        vizNet[MAIN_ID].nodes().forEach(function(node){
+          vizNet[SIDE_ID].$("#"+node.id())
+          .position(node.position());
+        });
+        // Then those that are not part of the intersection
+        let difSide = vizNet[SIDE_ID].nodes().difference(inter);
+        let outerLayout = difSide.layout({name:"grid"});
+        outerLayout.run();
+        // Finally shift and fit all nodes to the viewport
+        difSide.shift('y', vizNet[SIDE_ID].height());
+        vizNet[SIDE_ID].fit();
+      });
+
+      toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].layout({name: "preset"});
+      toxyNet[SIDE_ID].layout = vizNet[SIDE_ID].layout({name: "preset"});
+      break;
   }
 });
 
@@ -122,9 +89,9 @@ $(document).on("change", "#layoutSelect", function (){
  * Hide/show from the visualiation all nodes that are unconnected, that is,
  * nodes that are not linked to any other node within the network.
  */
-$(document).on("change", "#hideNodesCheckbox", function(){
+$(document).on("change", "#hideUnconnectedCheckbox", function(){
   // Determine the currently active panel
-  var id = $("#panelSelect").val();
+  let id = parseInt($("#panelSelect").val());
   // Return when there is no data to apply a layout to
   if( vizNet[id] === null ) return;
 
@@ -139,53 +106,11 @@ $(document).on("change", "#hideNodesCheckbox", function(){
 
   // Since the network has been modified, the corresponding layout needs to be
   // re-run in order to account for these changes
-  var opt = $("#layoutSelect").find(":selected").val();
+  let opt = $("#layoutSelect").find(":selected").val();
   if( toxyNet[id].layout !== "preset" ){
-    toxyNet[id].layout = vizNet[id].makeLayout(vizNet[id].updateLayout(opt));
+    toxyNet[id].layout = vizNet[id].layout({name: opt}); //makeLayout(vizNet[id].updateLayout(opt));
     toxyNet[id].layout.run();
-  }
-});
-
-/**
- * Show (or not) a Right-side panel for additional network visualization. The
- * user typically works only on the visualization of a single network structure,
- * but by using an extra panel it is possible to load a previously saved
- * network to work with.
- * TODO this type of interaction should be made available through the selection
- * of the network to be displayed and not only with a checkbox
- */
-$(document).on("change", "#showRightCheckbox", function(){
-  // See if the checkbox is checked (enable display)
-  if( $("#showRightCheckbox").is(":checked") ){
-    showNetworkOnRight();
-  }
-  // When the checkbox is not checked (disabled display of right-side panel)
-  else{
-    /* Disable interaction layout application */
-    $("#panelSelect option[value=0]").prop("selected", true);
-    $("#panelSelect option[value=1]").attr("disabled", true);
-    $("#panelSelect option[value=2]").attr("disabled", true);
-
-    // Unselect and disable the possibility of showing the intersection of
-    // both networks
-    $("#showIntersectionCheckbox").prop("checked", false);
-    $("#showIntersectionCheckbox").attr("disabled", true);
-    $("#showIntersectionCheckbox").trigger("change");
-    // we remove the panel from the DOM
-    $("#rightDisplay").remove();
-    // remove the information from the corresponding variables
-    /* As this should be linked to the loading of a previosly saved graph, it
-     doesn't make sense to keep the previous elements, even if the proper
-     functionality is not yet implemented */
-    vizNet[SIDE_ID] = null;
-    toxyNet[SIDE_ID] = null;
-
-    // modify the left-display, so that it takes all available display space
-    $("#leftDisplay").removeClass("with-side");
-    // re-layout the elements within the visualization panel
-    vizNet[MAIN_ID].resize();
-    vizNet[MAIN_ID].fit();
-
+    vizNet[id].fit();
   }
 });
 
@@ -203,35 +128,74 @@ $(document).on("change", "#showIntersectionCheckbox", function(){
     // create a headless (unshown) copy of the left-side network, this is done
     // to prevent the redraw of intersected nodes, as they are added to the pool
     // with information regarding its parent container
-    var clone = cytoscape({headless: true});
+    let clone = cytoscape({headless: true});
     clone.add(vizNet[MAIN_ID].nodes());
     // calculate the intersection of both networks
-    var inter = clone.nodes().intersection(vizNet[SIDE_ID].nodes());
+    let inter = clone.nodes().intersection(vizNet[SIDE_ID].nodes());
     // select each node found to be part of the intersection
     inter.forEach(function(node){
-
-      vizNet[0].$('#'+node.id())
-        .data("color", '#ffde4c')
-        .style('background-color', '#ffde4c');
-      vizNet[1].$('#'+node.id())
-          .data("color", '#ffde4c')
-          .style('background-color', '#ffde4c');
+      vizNet[MAIN_ID].$('#'+node.id())
+        .data("color", nodeColor.HIGHLIGHT)
+        .style('background-color', nodeColor.HIGHLIGHT);
+      vizNet[SIDE_ID].$('#'+node.id())
+          .data("color", nodeColor.HIGHLIGHT)
+          .style('background-color', nodeColor.HIGHLIGHT);
     });
   }
-  // Unselect everything when canceling the display
+  // Repaint with default color, depending on the type of node
   else{
-    vizNet[0].nodes().forEach(function(n){
-      var c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
+    vizNet[MAIN_ID].nodes().forEach(function(n){
+      let c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
       n.style("background-color", c);
       n.data("color", c);
     });
-    vizNet[1].nodes().forEach(function(n){
-      var c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
+    vizNet[SIDE_ID].nodes().forEach(function(n){
+      let c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
       n.style("background-color", c);
       n.data("color", c);
     });
   }
 
+});
+
+/**
+ * Handle the merging of two networks,
+ */
+$(document).on("click", "#mergeNetworkButton", function(){
+  let layout = $("#layoutSelect").find(":selected").val();
+
+  // create collections for each part of the new graph
+  let inter = vizNet[MAIN_ID].elements().intersection(vizNet[SIDE_ID].elements());
+  let compLeft = inter.absoluteComplement();
+  let compRight = vizNet[SIDE_ID].elements().difference(inter);
+
+  let interLayout = inter.layout({ name: "concentric" });
+  interLayout.run();
+  let compLeftLayout = compLeft.layout({ name: "grid" });
+  compLeftLayout.run();
+  compLeft.shift('x', -vizNet[MAIN_ID].width());
+  let compRightLayout = compRight.layout({ name: "grid" });
+  compRightLayout.run();
+  compRight.shift('x', vizNet[MAIN_ID].width());
+
+  // Clear unused variables
+  let mrg = cytoscape().collection();
+  mrg.merge(inter);
+  mrg.merge(compLeft);
+  mrg.merge(compRight);
+
+  vizNet[MAIN_ID].elements().remove();
+  vizNet[MAIN_ID].add(mrg);
+
+  // Remove DOM elements for the right SIDE_ID
+  vizNet[SIDE_ID] = null;
+  toxyNet[SIDE_ID] = null;
+
+  // modify the left-display, so that it takes all available display space
+  // re-layout the elements within the visualization panel
+  removeRightDisplay();
+  vizNet[MAIN_ID].resize();
+  vizNet[MAIN_ID].fit();
 });
 
 /** ---------------------- UPDATE NODE MODAL ---------------------------- **/
@@ -349,9 +313,8 @@ $(document).on("click", ".modal-cancel", function(event){
 /** ------------------------------------------------------------------ **/
 
 /**
- * Called by Toxygates once the user interface HTML has been loaded and all
- * scripts have been injected, it initialize the main and side visualization
- * so that they later can be used for network display.
+ * Initialize the main display as a Cytoscape container and use it to display
+ * the contents of convertedNetwork.
  */
 function onReadyForVisualization(){
   // mainDisplay initialization - the one currently being used by the user to
@@ -375,7 +338,6 @@ function onReadyForVisualization(){
       vizNet[MAIN_ID].on("mouseover", "node", onNodeEnter);
       vizNet[MAIN_ID].on("mouseout", "node", onNodeExit);
 
-      // vizNet[MAIN_ID].on("select", "node", onNodeSelection(MAIN_ID));
       changeNetwork(MAIN_ID);
 
       /* Move the Cytoscape context menu into the modal GWT network visualiaztion
@@ -473,6 +435,9 @@ function onNodeEnter(event){
   node.on('position', function(){popup.scheduleUpdate();});
 }
 
+/**
+ * Handle the removal of the pop-up for a node
+ */
 function onNodeExit(event){
   let node = event.target;
   node.removeListener('position');
@@ -493,7 +458,6 @@ function showNetworkOnRight() {
 
   // Check if there is already a right panel
   var right = $("#rightDisplay");
-  $("#showRightCheckbox").prop('checked', true);
 
   // If already a display has been displayed, we have to make sure the interface
   // is up-to date with this, and only change the contents of the internal
@@ -571,7 +535,7 @@ function changeNetwork(id=MAIN_ID){
   vizNet[id].add(toxyNet[id].getCytoElements());
 
   // we hide/show unconnected nodes based on user selection
-  if( $("#hideNodesCheckbox").is(":checked") ){
+  if( $("#hideUnconnectedCheckbox").is(":checked") ){
     toxyNet[id].unconnected = vizNet[id].hideUnconnected();
   }
 
