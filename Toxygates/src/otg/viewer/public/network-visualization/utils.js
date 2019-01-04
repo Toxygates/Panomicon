@@ -1,6 +1,31 @@
 "use strict";
 
 /**
+ * Remove the right display (DOM element) from the interface and handle the
+ * deactivation of any related interace components associated with it.
+ */
+function removeRightDisplay(){
+  // We remove the panel from the DOM
+  $("#rightDisplay").remove();
+  // Remove need for side-panel consideration in left panel
+  $("#leftDisplay").removeClass("with-side");
+
+  /* Disable interface components that are only of use when a dual display of
+   * networks is available */
+  // Options from panel selection
+  $("#panelSelect option[value=0]").prop("selected", true);
+  $("#panelSelect option[value=1]").attr("disabled", true);
+  $("#panelSelect option[value=2]").attr("disabled", true);
+  // Intersection highlighting
+  $("#showIntersectionCheckbox").prop("checked", false);
+  $("#showIntersectionCheckbox").attr("disabled", true);
+  $("#showIntersectionCheckbox").trigger("change");
+  // Merge network button
+  $("#mergeNetworkButton").attr("disabled", true);
+}
+
+
+/**
  * If we consider that is is possible to get a linear interpolation that goes
  * both between a minimum and maximum values, and a base and end color, then it
  * is possible to find, given a value within the linear interpolant, a

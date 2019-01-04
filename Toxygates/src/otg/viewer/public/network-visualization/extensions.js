@@ -20,13 +20,58 @@ function initStyle(){
 }
 
 /**
- * apply a specific layout to the visual representation of the graph
- * @param {string} type the type of layout to use for the placement of the nodes
- * within the display area
+ * Apply two different layouts, defined by innerName and outerName respectively,
+ * to two subsets of nodes within a collection. The inner layout is applied to
+ * the nodes in eles, while the outer layout is applied to the remainder of the
+ * nodes in the collection.
+ * @param {collection} eles The elements to which the layout defined by
+ * innerName will be applied. The intersection of two networks.
+ * @param {string} innerName The name of the inner layout
+ * @param {function} callback A callback function to be executed once the
+ * positioning of the nodes has been completed
+ * @param {string} outerName The name of the outer layout, the layout applied to
+ * the remainder nodes in the collection
+ */
+function compositeLayout(eles, innerName, callback, outerName="grid"){
+  // select the nodes to which the outer layout should be applied
+  let outer = eles.absoluteComplement();
+  // remove outer elements from current collection
+  let removed = this.remove(outer);
+  // define the layout for the inner nodes
+  let innerLayout = this.layout({name: innerName});
+  // define the positioning of outer nodes should be done once the layout for
+  // the inner nodes is completed
+  innerLayout.promiseOn('layoutstop').then(function(evt){
+    // restore removed (outer) nodes to the collection
+    removed.restore();
+    // define a layout for the outer nodes
+    let outerLayout = removed.layout({name: outerName});
+    // apply the layout
+    outerLayout.run();
+    // move the outer nodes below the inner nodes in the display
+    removed.shift('y', evt.cy.height());
+    // fit the viewport so that all nodes are displayed
+    evt.cy.fit();
+
+    if( callback ){
+      callback();
+    }
+  });
+  // apply layout to inner nodes
+  innerLayout.run()
+}
+
+
+
+/**
+ * Generate the options Object needed to define the layout for a cytoscape
+ * network.
+ * @param {string} name The identifier used by cytoscape to define a default
+ * layout type.
  */
 function updateLayout(type="null", bb=undefined){
-  // window.addPendingRequest();
-  var layout = {
+  window.addPendingRequest();
+  return this.layout({
     name: type,
     fit: true, // whether to fit to viewport
     padding: 0, // fit padding
@@ -36,13 +81,10 @@ function updateLayout(type="null", bb=undefined){
     animationEasing: undefined, // easing of animation if enabled
     animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
     ready: undefined, // callback on layoutready
-    stop: function() {
-      // window.removePendingRequest();
-    }, // callback on layoutstop
+    stop: function() { window.removePendingRequest(); }, // callback on layoutstop
     transform: function (node, position ){ return position; }, // transform a given node position. Useful for changing flow direction in discrete layouts
     weaver: weaver
-  }
-  return layout;
+  });
 }
 
 /**
@@ -314,6 +356,8 @@ function onSearchNode(event){
 
 // add functions to cytoscape prototype
 cytoscape("core", "initStyle", initStyle);
+// cytoscape("core", "mergeTo", mergeTo);
+cytoscape("core", "compositeLayout", compositeLayout);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "updateLayout", updateLayout);
 cytoscape("core", "hideUnconnected", hideUnconnected);

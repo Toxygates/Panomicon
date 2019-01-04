@@ -8,8 +8,10 @@ const nodeType = Object.freeze({
 
 /** default colours for nodes in the graph */
 const nodeColor = Object.freeze({
-  MSG_RNA: "#007f7f",
-  MICRO_RNA: "#827f00",
+  MSG_RNA: '#007f7f',
+  MICRO_RNA: '#827f00',
+  HIGHLIGHT: '#ffde4c',
+
 });
 
 /** list of shapes that can be used to draw a node */
@@ -46,7 +48,11 @@ class Network{
     this.interactions = interactions;
     this.nodes = nodes;
 
+    /* a list of hidden nodes, that even when not part of the visualization, are
+      still considered part of the network */
     this.unconnected = null;
+    /* the name of the layout algorithm using for positioning the nodes in the
+      network */
     this.layout = "null";
   }
 

@@ -50,12 +50,12 @@
 	display: inline-block;
 }
 
-#netvizdiv label{
+/* #netvizdiv label{
 	width: 120px;
 	font-weight: bold;
 	display: inline-block;
 
-}
+} */
 
 #netvizdiv input[type=text],
 #netvizdiv input[type=number]{
