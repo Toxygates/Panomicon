@@ -173,12 +173,16 @@ object KCDBRegistry {
     }
   }
 
+  def closeWriters(): Unit = {
+    closeWriters(false)
+  }
+
   /**
    * This method should be called after writing has been finished
    * to close all writers.
    * @param force if true, we close writers even if readers are also open on the same files.
    */
-  def closeWriters(force: Boolean = false): Unit = {
+  def closeWriters(force: Boolean): Unit = {
     while(inWriting.size > 0) {
       tryCloseWriters(force)
       if (inWriting.size > 0) {
