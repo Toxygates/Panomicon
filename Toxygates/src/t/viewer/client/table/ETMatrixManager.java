@@ -126,7 +126,7 @@ public class ETMatrixManager {
   }
 
   public void logInfo(String msg) {
-    logger.info("Matrix " + matrixId + ":" + msg);
+    logger.info("Matrix " + matrixId + ": " + msg);
   }
 
   public void log(Level level, String msg, Throwable throwable) {

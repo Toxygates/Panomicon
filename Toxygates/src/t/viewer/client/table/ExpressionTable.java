@@ -223,7 +223,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
      * to intercept click events at this high level and choose whether to pass them on (non-filter
      * clicks) or not (filter clicks).
      */
-    logger.info("Click target: " + target);
+    //logger.info("Click target: " + target);
     boolean shouldFilterClick = target.equals(FilterCell.CLICK_ID);
     if (shouldFilterClick && matrix.info() != null && matrix.info().numRows() > 0) {
       // Identify the column that was filtered.
@@ -259,7 +259,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
     HashSet<Group> newColumns = new HashSet<Group>(columns);
     if (newColumns.equals(oldColumns) && newColumns.size() > 0) {
-      matrix.logInfo("Ignoring column change signal");
+      matrix.logInfo("ExpressionTable ignoring column change signal: no actual change in columns");
       return;
     }
 

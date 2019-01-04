@@ -47,7 +47,8 @@ import otg.viewer.client.rpc.SeriesService;
 import otg.viewer.client.rpc.SeriesServiceAsync;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleGroup;
-import t.viewer.client.*;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
@@ -490,7 +491,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * Helper method for initialising screens
    */
   protected void addScreenSeq(OTGScreen s) {
-    logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
     screensBykey.put(s.key(), s);    
     screens.add(s);
     s.initGUI();
