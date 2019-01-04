@@ -106,6 +106,10 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
     AssociationColumn<T> aColumn = assocColumns.get(associationType);
     table.setVisible(aColumn, newState);
   }
+  
+  public void removeAssociation(AType association) {
+    associations.remove(association);
+  }
 
   public void getAllAssociations() {
 	  getAssociations(visibleAssociations());
@@ -135,8 +139,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
       };
 
       logger
-          .info("Get associations for " + dispAtomic.length + " probes in "
-              + tableDelegate.chosenSampleClass().toString());
+          .info("Fetching associations " + associationsToFetch + " for " + dispAtomic.length + " probes");
       probeService.associations(tableDelegate.chosenSampleClass(), associationsToFetch, dispAtomic, assocCallback);
     }
   }

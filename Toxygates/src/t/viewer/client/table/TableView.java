@@ -15,8 +15,7 @@ import otg.viewer.client.components.ScreenManager;
 import otg.viewer.client.screen.data.HeatmapViewer;
 import otg.viewer.client.screen.data.MirnaSourceDialog;
 import otg.viewer.client.screen.groupdef.ColumnScreen;
-import t.common.shared.GroupUtils;
-import t.common.shared.ValueType;
+import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
@@ -262,13 +261,25 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
 
   public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
-     expressionTable.associations().getAllAssociations();
+    if (expressionTable.associations().isVisible(AType.MiRNA)) {
+      expressionTable.associations().getAssociations(new AType[] {AType.MiRNA});
+      
+    } else if (expressionTable.associations().isVisible(AType.MRNA)) {
+      expressionTable.associations().getAssociations(new AType[] {AType.MRNA});
+    }
   };
   
   public void fetchAssociations() {
     MirnaSource[] mirnaSources = 
         screen.getStorage().mirnaSourcesStorage.getIgnoringException().toArray(new MirnaSource[0]);
     if (mirnaSources != null) {
+      if (expressionTable.associations().isVisible(AType.MiRNA)) {
+        expressionTable.associations().removeAssociation(AType.MiRNA);
+        expressionTable.redrawGrid();
+      } else if (expressionTable.associations().isVisible(AType.MRNA)) {
+        expressionTable.associations().removeAssociation(AType.MRNA);
+        expressionTable.redrawGrid();
+      }
       manager.networkService().setMirnaSources(mirnaSources, new AsyncCallback<Void>() {
         @Override
         public void onFailure(Throwable caught) {
