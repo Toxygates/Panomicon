@@ -497,7 +497,7 @@ class BatchManager(context: Context) {
       var newSamples, existingSamples: Int = 0
       val dbfile = config.data.sampleIndex
       val db = KCIndexDB(dbfile, true)
-      log(s"Opened $dbfile for writing")
+      log(s"Writing to $dbfile")
       for (s <- metadata.samples; id = s.identifier) {
         db.get(id) match {
           case Some(id) => existingSamples += 1
@@ -507,7 +507,6 @@ class BatchManager(context: Context) {
         }
       }
       logResult(s"$newSamples new samples added, $existingSamples samples already existed")
-      log(s"Closed $dbfile")
     }
   }
 
