@@ -13,8 +13,7 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
 
   public interface Delegate<T> {
     boolean refreshEnabled();
-    void getAssociations();
-    boolean waitingForAssociations();
+    void getAssociations(AType[] associationsToFetch);
     String[] atomicProbesForRow(T row);
     String[] geneIdsForRow(T row);
     Map<AType, Association> associations();
@@ -49,7 +48,7 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
   public void setVisibility(boolean v) {
     super.setVisibility(v);
     if (v && delegate.refreshEnabled()) {
-      delegate.getAssociations();
+      delegate.getAssociations(new AType[]{getAssociation()});
     }
   }
 
@@ -83,11 +82,10 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
 
   @Override
   protected String getHtml(T er) {
-    if (delegate.waitingForAssociations()) {
-      return ("(Waiting for data...)");
-    } else if (delegate.associations().containsKey(assoc)) {
+    if (delegate.associations().containsKey(assoc)) {
       return super.getHtml(er);
-    }
-    return ("(Data unavailable)");
+    } else {
+    	return ("(Waiting for data...)");
+    } 
   }
 }

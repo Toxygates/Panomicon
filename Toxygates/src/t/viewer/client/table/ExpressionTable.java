@@ -483,7 +483,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   @Override
   public void onGetRows() {
     highlightedRow = -1;
-    associations.getAssociations();
+    associations.getAllAssociations();
     delegate.afterGetRows(ExpressionTable.this);
     storeSortInfo();
   }

@@ -262,7 +262,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
 
   public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
-     expressionTable.associations().getAssociations();
+     expressionTable.associations().getAllAssociations();
   };
   
   public void fetchAssociations() {

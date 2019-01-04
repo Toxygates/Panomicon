@@ -44,7 +44,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
   protected Map<AType, AssociationColumn<T>> assocColumns;
   
-  private boolean waitingForAssociations = true;
   private boolean refreshEnabled = true;
 
   private Logger logger;
@@ -108,13 +107,17 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
     table.setVisible(aColumn, newState);
   }
 
+  public void getAllAssociations() {
+	  getAssociations(visibleAssociations());
+  }
+  
   @Override
-  public void getAssociations() {
-    //    viewDelegate.beforeGetAssociations(this);
-    waitingForAssociations = true;
-    AType[] assocs = visibleAssociations();
+  public void getAssociations(AType[] associationsToFetch) {
+    for (AType atype : associationsToFetch) {
+      associations.remove(atype);
+    }
     String[] dispAtomic = tableDelegate.displayedAtomicProbes();
-    if (assocs.length > 0 && dispAtomic.length > 0) {
+    if (associationsToFetch.length > 0 && dispAtomic.length > 0) {
       AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
         @Override
         public void onFailure(Throwable caught) {
@@ -123,8 +126,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
 
         @Override
         public void onSuccess(Association[] result) {
-          associations.clear();
-          waitingForAssociations = false;
           for (Association a : result) {
             associations.put(a.type(), a);
           };
@@ -136,7 +137,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
       logger
           .info("Get associations for " + dispAtomic.length + " probes in "
               + tableDelegate.chosenSampleClass().toString());
-      probeService.associations(tableDelegate.chosenSampleClass(), assocs, dispAtomic, assocCallback);
+      probeService.associations(tableDelegate.chosenSampleClass(), associationsToFetch, dispAtomic, assocCallback);
     }
   }
   
@@ -175,11 +176,6 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
   @Override
   public boolean refreshEnabled() {
     return refreshEnabled;
-  }
-
-  @Override
-  public boolean waitingForAssociations() {
-    return waitingForAssociations;
   }
 
   @Override
