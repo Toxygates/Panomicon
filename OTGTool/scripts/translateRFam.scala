@@ -12,7 +12,7 @@ import java.io._
 val mirbase = Source.fromFile(args(0)).getLines
 val ids = Map() ++ mirbase.map(_.split("\t")(0)).map(x => x.toLowerCase -> x)
 
-def bestMatches(id: String) = 
+def bestMatches(id: String): Option[Seq[String]] = 
   ids.get(id).orElse(ids.get(s"${id}a")).map(Seq(_)).orElse(    
     Some(Seq(s"$id-5p", s"$id-3p", s"${id}a-3p", s"${id}a-5p").flatMap(ids.get))
   )
@@ -26,7 +26,7 @@ for (l <- rfamPlatform; spl = l.split("\t");
   id = spl(0); mirna = spl(5)) {
   val best = bestMatches("mmu-" + mirna.toLowerCase)
   println(s"$mirna => $best")
-  if (best.isEmpty) { 
+  if (best.isEmpty || best.get.isEmpty) { 
     fail += 1
   } else {
     mapping += id -> best.get
@@ -36,7 +36,7 @@ for (l <- rfamPlatform; spl = l.split("\t");
 }
 println(s"Success $success fail $fail total range $total")
 
-val w = new PrintWriter(args(2) + "_pfamTranslate.csv")
+val w = new PrintWriter(args(2) + "_rfamTranslate.csv")
 val input = Source.fromFile(args(2)).getLines
 w.println(input.next)
 for (
