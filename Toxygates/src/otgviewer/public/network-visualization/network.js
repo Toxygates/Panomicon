@@ -50,7 +50,7 @@ class Network{
 
     /* a list of hidden nodes, that even when not part of the visualization, are
       still considered part of the network */
-    this.unconnected = null;
+    this.hidden = null;
     /* the name of the layout algorithm using for positioning the nodes in the
       network */
     this.layout = "null";

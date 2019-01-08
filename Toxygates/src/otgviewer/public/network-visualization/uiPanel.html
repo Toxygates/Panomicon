@@ -1,53 +1,85 @@
-<form>
-  <fieldset>
-    <legend>User Interaction</legend>
+<table
+  cellspacing="4"
+  cellpadding="0"
+  style="position: absolute; left: 0px; top:0px; right: 0px; bottom: 0px"
+>
+  <tbody>
+    <!-- Select the panel on which changes will be applied -->
+    <tr>
+      <td align="left" style="vertical-align: middle;">
+        <div class="gwt-Label">Select Panel:</div>
+      </td>
+      <td align="left" style="vertical-align: middle;">
+        <select id="panelSelect"
+          class="gwt-ListBox"
+        >
+        <!-- On load, the only panel available is the one on the
+        'left side'. The panel extends the whole visualiation area -->
+          <option value=0 selected>Left</option>
+          <option value=1 disabled>Right</option>
+          <option value=2 disabled>Intersection</option>
+        </select>
+      </td>
+    </tr>
 
-    <!-- Select the panel on which a particular layout will be applied -->
-    <div>Select Panel:</div>
-    <select id="panelSelect">
-      <!-- On load, the only panel available is the one on the 'left side'. The
-      panel extends the whole visualiation area -->
-      <option value=0 selected>Left</option>
-      <option value=1 disabled>Right</option>
-      <option value=2 disabled>Intersection</option>
-    </select>
-    <br />
+    <tr>
+      <td align="left" style="vertical-align: middle;">
+        <div class="gwt-Label">Apply Layout:</div>
+      </td>
+      <td align="left" style="vertical-align: middle;">
+        <select id="layoutSelect"
+          class="gwt-ListBox"
+        >
+          <option value="null" selected>None</option>
+          <!-- <option value="preset">Preset</option> -->
+          <option value="random">Random</option>
+          <option value="grid">Grid</option>
+          <option value="circle">Circle</option>
+          <option value="concentric">Concentric</option>
+          <option value="breadthfirst">BreadthFirst</option>
+          <option value="cose">Force Directed</option>
+        </select>
+      </td>
+    </tr>
 
-    <div>Apply Layout:</div>
-    <select class="gwt-ListBox" id="layoutSelect">
-      <option value="null" selected>None</option>
-      <option value="preset">Preset</option>
-      <option value="random">Random</option>
-      <option value="grid">Grid</option>
-      <option value="circle">Circle</option>
-      <option value="concentric">Concentric</option>
-      <option value="breadthfirst">BreadthFirst</option>
-      <option value="cose">Force Directed</option>
-    </select>
-    <br />
+    <tr>
+      <td align="center" style="vertical-align: middle;">
+      <span class="gwt-CheckBox">
+        <input id="showHiddenNodesCheckbox" type="checkbox">
+        <label for="showHiddenNodesCheckbox">Show hidden nodes</label>
+      </span>
+      </td>
 
-    <span class="gwt-CheckBox">
-      <input id="hideUnconnectedCheckbox" type="checkbox" checked>
-      <label for="hideUnconnectedCheckbox">Hide unconnected nodes</label>
-    </span>
+      <td align="center" style="vertical-align: middle;">
+      <span class="gwt-CheckBox">
+        <input id="showIntersectionCheckbox" type="checkbox" disabled="true">
+        <label for="showIntersectionCheckbox">Highlight intersection</label>
+      </span>
+      </td>
 
-    <span class="gwt-CheckBox">
-      <input id="showIntersectionCheckbox" type="checkbox" disabled="true">
-      <label for="showIntersectionCheckbox">Highlight intersection</label>
-    </span>
+      <td align="center" style="vertical-align: middle;">
+        <button id="mergeNetworkButton"
+          type="button"
+          class="gwt-Button"
+          disabled
+        > Merge Networks
+        </button>
+      </td>
 
-    <div>
-      <button id="mergeNetworkButton"
-        type="button"
-        class="gwt-Button">
-        Merge Networks
-      </button>
-    </div>
+      <td align="center" style="vertical-align: middle;">
+        <button id="closeRightPanelButton"
+          type="button"
+          class="gwt-Button"
+          disabled
+        > Close Right Panel
+        </button>
+      </td>
+
+    </tr>
 
 
-    <br />
-  </fieldset>
-</form>
+  </tbody>
+</table>
 <!-- ***************************************************************  -->
 <!-- Modal Components - only to be shown on user request -->
 

@@ -1,7 +1,7 @@
 /* -------------------------------------------
  * CSS for general elements
  * ------------------------------------------- */
-#netvizdiv h1,
+/* #netvizdiv h1,
 #netvizdiv h3{
 	color: #84c754;
 }
@@ -9,7 +9,7 @@
 #netvizdiv div{
 	width: 20%;
 	display: inline-block;
-}
+} */
 
 #display.visualization{
   border-style: dashed;
@@ -38,7 +38,7 @@
   height: 100%; */
 }
 
-#netvizdiv div.info-panel{
+/* #netvizdiv div.info-panel{
 	border-style: dashed;
 	display: inline-block;
 	width: 30%;
@@ -48,7 +48,7 @@
 #netvizdiv select{
 	width: 15%;
 	display: inline-block;
-}
+} */
 
 /* #netvizdiv label{
 	width: 120px;
@@ -57,7 +57,7 @@
 
 } */
 
-#netvizdiv input[type=text],
+/* #netvizdiv input[type=text],
 #netvizdiv input[type=number]{
 	border: 1px;
 	border-color: #b2c7ea;
@@ -67,7 +67,7 @@
 	display: inline;
 	width: 100px;
 
-}
+} */
 /* ----------------------------------------------------------
  * CSS for pop-ups
  * ---------------------------------------------------------- */

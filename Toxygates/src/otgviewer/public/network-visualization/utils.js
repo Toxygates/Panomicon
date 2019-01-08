@@ -8,6 +8,53 @@ $.getScript("toxygates/network-visualization/lib/cytoscape-popper.js", function(
 });
 
 /**
+ * Enable/Disable interface elements depending on whether we are using a single
+ * or double panel visualization.
+ * @param {number} panels The numer of panels that are currently being available
+ * within the visualization 1 - single panel visualization; 2 - double panel
+ * visualization
+ */
+function updateInterfaceControls(panels=1){
+  // single display visualization
+  if( panels === 1 ){
+  // if( $("#rightDisplay").length === 0 ){
+    // only left panel is available for selection
+    $("#panelSelect option[value=0]").prop("selected", true);
+    $("#panelSelect option[value=0]").attr("disabled", false);
+    $("#panelSelect option[value=1]").attr("disabled", true);
+    $("#panelSelect option[value=2]").attr("disabled", true);
+    // Hidden nodes
+    $("#hideUnconnectedCheckbox").trigger("change");
+    // Intersection highlighting
+    $("#showIntersectionCheckbox").prop("checked", false);
+    $("#showIntersectionCheckbox").attr("disabled", true);
+    $("#showIntersectionCheckbox").trigger("change");
+    // Merging networks
+    $("#mergeNetworkButton").attr("disabled", true);
+    // Close right panel
+    $("#closeRightPanelButton").attr("disabled", true);
+  }
+  // double display visualization
+  else{
+    // only left panel is available for selection
+    // $("#panelSelect option[value=0]").prop("selected", true);
+    $("#panelSelect option[value=0]").attr("disabled", false);
+    $("#panelSelect option[value=1]").attr("disabled", false);
+    $("#panelSelect option[value=2]").attr("disabled", false);
+    // Hidden nodes
+    // $("#hideUnconnectedCheckbox").trigger("change");
+    // Intersection highlighting
+    $("#showIntersectionCheckbox").prop("checked", false);
+    $("#showIntersectionCheckbox").attr("disabled", false);
+    $("#showIntersectionCheckbox").trigger("change");
+    // Merging networks
+    $("#mergeNetworkButton").attr("disabled", false);
+    // Close right panel
+    $("#closeRightPanelButton").attr("disabled", false);
+  }
+}
+
+/**
  * Remove the right display (DOM element) from the interface and handle the
  * deactivation of any related interace components associated with it.
  */
