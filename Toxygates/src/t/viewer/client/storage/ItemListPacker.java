@@ -34,13 +34,13 @@ public class ItemListPacker extends Packer<ItemList> {
     }
 
     String[] spl = string.split(":::");
-    if (spl.length < 3) {
+    if (spl.length < 2) {
       return null;
     }
 
     String type = spl[0];
     String name = spl[1];
-    String[] items = spl[2].split("\\^\\^\\^");
+    String[] items = spl.length >= 3 ? spl[2].split("\\^\\^\\^") : new String[0];
 
     // Note: it would be good to avoid having this kind of central registry
     // of list types here. An alternative approach would be that different types
