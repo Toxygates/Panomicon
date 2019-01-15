@@ -44,7 +44,7 @@ import t.viewer.client.components.TickMenuItem;
  */
 abstract public class RichTable<T> extends Composite implements RequiresResize {
   protected OTGScreen screen;
-  protected DataGrid<T> grid;
+  protected PublicHeaderDataGrid<T> grid;
   protected ColumnHelper<T> columnHelper;
   protected Label titleLabel = new Label();
 
@@ -86,7 +86,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     logger = screen.getLogger();
 
     Resources resources = GWT.create(Resources.class);
-    grid = new DataGrid<T>(50, resources) {
+    grid = new PublicHeaderDataGrid<T>(50, resources) {
       @Override
       protected void onBrowserEvent2(Event event) {
         String eventId = Utils.clickParentId(event);
@@ -186,13 +186,14 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   }
 
   /**
-   * Obtain the index of the column at the given x-position. Only works if there is at least one row
-   * in the table. (!!)
+   * Obtain the index of the column at the given x-position.
    */
   protected int columnAt(int x) {
     int prev = 0;
     for (int i = 0; i < grid.getColumnCount() - 1; ++i) {
-      int next = grid.getRowElement(0).getCells().getItem(i + 1).getAbsoluteLeft();
+      // We use the second row of table headers, since the first row will not
+      // have distinct cells for every table column.
+      int next = grid.getTableHeadElement().getRows().getItem(1).getCells().getItem(i + 1).getAbsoluteLeft();
       if (prev <= x && next > x) {
         return i;
       }
