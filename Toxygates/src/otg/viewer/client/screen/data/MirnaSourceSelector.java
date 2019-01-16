@@ -1,6 +1,7 @@
 package otg.viewer.client.screen.data;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -8,7 +9,9 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 
 import t.common.client.components.SelectionTable;
@@ -26,14 +29,14 @@ public class MirnaSourceSelector extends SelectionTable<MirnaSource> {
    * cutoff values will be respected.
    */
   public MirnaSourceSelector(MirnaSource[] availableSources,
-                             @Nullable MirnaSource[] preferredSources) {
+                             @Nullable List<MirnaSource> preferredSources) {
     super("", false);
     this.availableSources = availableSources;
     
     setItems(Arrays.asList(availableSources));
     if (preferredSources != null) {
       Map<String, Double> preferred = 
-          Arrays.stream(preferredSources).collect(Collectors.toMap(ms -> ms.id(), ms -> ms.limit()));
+          preferredSources.stream().collect(Collectors.toMap(ms -> ms.id(), ms -> ms.limit()));
       for (MirnaSource s: availableSources) {
         if (preferred.containsKey(s.id())) {
           s.setLimit(preferred.get(s.id()));

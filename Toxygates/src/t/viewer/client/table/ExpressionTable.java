@@ -225,7 +225,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
      */
     //logger.info("Click target: " + target);
     boolean shouldFilterClick = target.equals(FilterCell.CLICK_ID);
-    if (shouldFilterClick && matrix.info() != null && matrix.info().numRows() > 0) {
+    if (shouldFilterClick && matrix.info() != null) {
       // Identify the column that was filtered.
       int col = columnAt(x);
       Column<ExpressionRow, ?> clickedCol = grid.getColumn(col);
