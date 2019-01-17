@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.ImportingScreen;
+import otg.viewer.client.screen.data.DataScreen;
 import otg.viewer.client.screen.data.NetworkMenu;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
@@ -92,7 +92,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   protected SplitLayoutPanel splitLayout;
   
-  public DualTableView(ImportingScreen screen, String mainTableTitle) {
+  public DualTableView(DataScreen screen, String mainTableTitle) {
     super(screen, mainTableTitle, true);
     networkService = screen.manager().networkService();
     expressionTable.selectionModel().addSelectionChangeHandler(e -> {      
@@ -223,8 +223,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }  
   
   @Override
-  public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
-    super.afterMirnaSourcesUpdated(mirnaSources);
+  public void afterMirnaSourcesUpdated() {
+    super.afterMirnaSourcesUpdated();
     //The server-side network will have changed, so we force the side expression table
     //to reflect this.
     

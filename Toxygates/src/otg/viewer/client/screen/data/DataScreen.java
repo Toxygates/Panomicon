@@ -22,6 +22,8 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.*;
@@ -39,6 +41,7 @@ import t.viewer.client.table.TableView.ViewType;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
+import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * The main data display screen. It displays data in a single DataView instance.
@@ -63,6 +66,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   private String[] urlProbes = null;
   private List<String[]> urlGroups;
   private List<String> groupNames;
+  
+  private boolean mirnaSourcesSent = false;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -82,6 +87,32 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     geneSetToolbar.geneSetChanged(chosenGeneSet);
     geneSetsMenu.itemListsChanged(chosenItemLists);
   }
+  
+  public void sendMirnaSources() {
+    logger.info("Sending mirna sources to server");
+    List<MirnaSource> mirnaSources = getStorage().mirnaSourcesStorage.getIgnoringException();
+    if (mirnaSources == null) {
+      mirnaSources = new ArrayList<MirnaSource>();
+    }
+    if (dataView != null) {
+      dataView.beforeUpdateMirnaSources();
+    }
+    MirnaSource[] mirnaSourceArray  = mirnaSources.toArray(new MirnaSource[0]);
+    manager.networkService().setMirnaSources(mirnaSourceArray, new AsyncCallback<Void>() {
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("Unable to set miRNA sources.");
+      }
+
+      @Override
+      public void onSuccess(Void result) {
+        mirnaSourcesSent = true;
+        if (dataView != null) {
+          dataView.afterMirnaSourcesUpdated();
+        }
+      }
+    });
+  }
 
   public TableView dataView() {
     return dataView;
@@ -98,7 +129,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public DataScreen(ScreenManager man) {
     super("View data", key, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
-    geneSetToolbar = makeGeneSetSelector();    
+    geneSetToolbar = makeGeneSetSelector();
+    sendMirnaSources();
   }
 
   @Override

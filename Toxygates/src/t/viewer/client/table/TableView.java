@@ -7,19 +7,13 @@ import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.UIFactory;
-import otg.viewer.client.components.ImportingScreen;
 import otg.viewer.client.components.ScreenManager;
-import otg.viewer.client.screen.data.HeatmapViewer;
-import otg.viewer.client.screen.data.MirnaSourceDialog;
+import otg.viewer.client.screen.data.*;
 import otg.viewer.client.screen.groupdef.ColumnScreen;
-import t.common.shared.AType;
-import t.common.shared.GroupUtils;
-import t.common.shared.ValueType;
+import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
@@ -27,10 +21,7 @@ import t.viewer.client.components.DataView;
 import t.viewer.client.components.TickMenuItem;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.Association;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 
 /**
@@ -46,14 +37,14 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   
   protected ExpressionTable expressionTable;
   
-  protected ImportingScreen screen;
+  protected DataScreen screen;
   protected AppInfo appInfo;
   protected ScreenManager manager;
   protected UIFactory factory;
   protected Logger logger;
   protected MatrixServiceAsync matrixService;
   
-  public TableView(ImportingScreen screen,
+  public TableView(DataScreen screen,
                    String mainTableTitle, 
                    boolean mainTableSelectable) {
     this.screen = screen;
@@ -67,8 +58,6 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     expressionTable.loadColumnVisibility();
     initWidget(content());   
     setupMenus();
-    
-    sendMirnaSourcesAndGetAssociations();
 
     addToolbar(expressionTable.analysisTools());
   }
@@ -264,10 +253,20 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   @Override
   public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
     screen.getStorage().mirnaSourcesStorage.store(Arrays.asList(mirnaSources));
-    sendMirnaSourcesAndGetAssociations();
+    screen.sendMirnaSources();
+  }
+  
+  public void beforeUpdateMirnaSources() {
+    if (expressionTable.associations().isVisible(AType.MiRNA)) {
+      expressionTable.associations().removeAssociation(AType.MiRNA);
+      expressionTable.redrawGrid();
+    } else if (expressionTable.associations().isVisible(AType.MRNA)) {
+      expressionTable.associations().removeAssociation(AType.MRNA);
+      expressionTable.redrawGrid();
+    }
   }
 
-  public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
+  public void afterMirnaSourcesUpdated() {
     if (expressionTable.associations().isVisible(AType.MiRNA)) {
       expressionTable.associations().getAssociations(new AType[] {AType.MiRNA});
       
@@ -276,30 +275,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     }
   };
   
-  public void sendMirnaSourcesAndGetAssociations() {
-    List<MirnaSource> mirnaSources = 
-        screen.getStorage().mirnaSourcesStorage.getIgnoringException();
-    if (mirnaSources != null) {
-      if (expressionTable.associations().isVisible(AType.MiRNA)) {
-        expressionTable.associations().removeAssociation(AType.MiRNA);
-        expressionTable.redrawGrid();
-      } else if (expressionTable.associations().isVisible(AType.MRNA)) {
-        expressionTable.associations().removeAssociation(AType.MRNA);
-        expressionTable.redrawGrid();
-      }
-      MirnaSource[] mirnaSourceArray = mirnaSources.toArray(new MirnaSource[0]);
-      manager.networkService().setMirnaSources(mirnaSourceArray, new AsyncCallback<Void>() {
-        @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("Unable to set miRNA sources.");
-        }
-
-        @Override
-        public void onSuccess(Void result) {
-          afterMirnaSourcesUpdated(mirnaSourceArray);
-        }
-      });
-    }
+  public boolean needMirnaSources() {
+    return (expressionTable.associations().isVisible(AType.MiRNA) ||
+        expressionTable.associations().isVisible(AType.MRNA));
   }
   
   /**
@@ -346,9 +324,4 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   public void associationsUpdated(AssociationManager<ExpressionRow> associations, Association[] result) {
     TableView.this.associationsUpdated(result);
   }
-
-//  @Override
-//  public void beforeGetAssociations(AssociationManager<ExpressionRow> associations) {
-//    beforeGetAssociations();
-//  }
 }
