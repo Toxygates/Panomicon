@@ -384,6 +384,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
               @Override
               public void handleSuccess(Network result) {
                 netvizDialog.loadNetwork(result);
+                // Resume accepting user input, which would have been blocked in 
+                // onApplyColumnFilter or mirnaSourcesDialogMirnaSourcesChanged
                 screen.removePendingRequest();
               }
             });
@@ -393,6 +395,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void onApplyColumnFilter() {
+    // If the network visualization dialog is open, we block user input until 
+    // we eventually get a new network (which happens in afterGetRows)
     if (netvizDialog != null) {
       screen.addPendingRequest();
     }
@@ -409,6 +413,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   //MirnaSourceDialog.Delegate method
   @Override
   public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
+    // As in onApplyColumnFilter, block user input until we get a new network in afterGetRows
     if (netvizDialog != null) {
       screen.addPendingRequest();
     }
