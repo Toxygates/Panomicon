@@ -68,7 +68,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     initWidget(content());   
     setupMenus();
     
-    fetchAssociations();
+    sendMirnaSourcesAndGetAssociations();
 
     addToolbar(expressionTable.analysisTools());
   }
@@ -264,7 +264,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   @Override
   public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
     screen.getStorage().mirnaSourcesStorage.store(Arrays.asList(mirnaSources));
-    fetchAssociations();
+    sendMirnaSourcesAndGetAssociations();
   }
 
   public void afterMirnaSourcesUpdated(MirnaSource[] mirnaSources) {
@@ -276,7 +276,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     }
   };
   
-  public void fetchAssociations() {
+  public void sendMirnaSourcesAndGetAssociations() {
     List<MirnaSource> mirnaSources = 
         screen.getStorage().mirnaSourcesStorage.getIgnoringException();
     if (mirnaSources != null) {
