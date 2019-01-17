@@ -4,20 +4,15 @@ import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
-import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.mirna.MirnaSource;
 
 public class MirnaSourceDialog extends InteractionDialog {
   MirnaSourceSelector selector;
-  ProbeServiceAsync probeService;
   VerticalPanel vp;
   Delegate delegate;
   
@@ -26,13 +21,11 @@ public class MirnaSourceDialog extends InteractionDialog {
   }
 
   public MirnaSourceDialog(OTGScreen parent, Delegate delegate,
-                           ProbeServiceAsync probeService,
                            MirnaSource[] availableSources,
                            List<MirnaSource> value) {
     super(parent);
     this.delegate = delegate;
     this.selector = new MirnaSourceSelector(availableSources, value);
-    this.probeService = probeService;
     vp = Utils.mkVerticalPanel(true);
     vp.add(selector);
     

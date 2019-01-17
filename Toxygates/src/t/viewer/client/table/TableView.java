@@ -147,7 +147,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   
   protected void showMirnaSourceDialog() {
     MirnaSource[] sources = appInfo.mirnaSources();
-    new MirnaSourceDialog(screen, this, manager.probeService(), sources,
+    new MirnaSourceDialog(screen, this, sources,
         screen.getStorage().mirnaSourcesStorage.getIgnoringException())
         .display("Choose miRNA sources", DialogPosition.Center);
   }
