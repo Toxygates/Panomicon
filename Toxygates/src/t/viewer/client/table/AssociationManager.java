@@ -131,7 +131,11 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
         @Override
         public void onSuccess(Association[] result) {
           for (Association a : result) {
-            associations.put(a.type(), a);
+            if (a.success()) {
+              associations.put(a.type(), a);
+            } else {
+              associations.remove(a.type());
+            }
           };
           viewDelegate.associationsUpdated(AssociationManager.this, result);
           table.redrawGrid();
