@@ -135,20 +135,18 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       for {
         t <- mirnaTargetTable(sources(0))
       } {
-        mutex.synchronized {
-          getState().mirnaSources = sources
-          getState().targetTable = t
-        }
+
+        getState().mirnaSources = sources
+        getState().targetTable = t
       }
     } else {
       var r = new TargetTableBuilder
       for (s <- sources; t <- mirnaTargetTable(s)) {
         r.addAll(t)
       }
-      mutex.synchronized {
-        getState().mirnaSources = sources
-        getState().targetTable = r.build
-      }
+
+      getState().mirnaSources = sources
+      getState().targetTable = r.build
     }
     println(s"Session targetTable filtered to size ${getState().targetTable.size}")
   }

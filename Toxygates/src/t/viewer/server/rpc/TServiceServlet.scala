@@ -29,8 +29,6 @@ import t.Factory
 import t.common.shared.DataSchema
 import t.viewer.server.Configuration
 
-object ServletSessionMutex
-
 abstract class TServiceServlet extends RemoteServiceServlet {
   protected def context: Context
   protected def factory: Factory
@@ -63,34 +61,6 @@ abstract class TServiceServlet extends RemoteServiceServlet {
     t.printStackTrace()
     super.doUnexpectedFailure(t)
   }
-}
-
-abstract class StatefulServlet[State] extends TServiceServlet {
-
-  /**
-   * Identified this servlet's state in the user session.
-   */
-  protected def stateKey: String
-
-  /**
-   * Creates a new, blank state object.
-   */
-  protected def newState: State
-
-  protected def getState(): State = {
-    val r = getThreadLocalRequest().getSession().getAttribute(stateKey).
-      asInstanceOf[State]
-    if (r == null) {
-      val ss = newState
-      setState(ss)
-      ss
-    } else {
-      r
-    }
-  }
-
-  protected def setState(m: State) =
-    getThreadLocalRequest().getSession().setAttribute(stateKey, m)
 
   /**
    * Obtain an in-session object that can be used for synchronizing session state between servlet threads.
@@ -103,11 +73,11 @@ abstract class StatefulServlet[State] extends TServiceServlet {
    */
   protected def mutex: AnyRef = {
     val mutId = "mutex"
-    val ses = getThreadLocalRequest().getSession()
+    val ses = getThreadLocalRequest.getSession
     Option(ses.getAttribute(mutId)) match {
       case Some(m) => m
       case None =>
-        ServletSessionMutex.synchronized {
+        ServletSessions.synchronized {
           if (ses.getAttribute(mutId) == null) {
             ses.setAttribute(mutId, new Object)
           }
@@ -116,28 +86,60 @@ abstract class StatefulServlet[State] extends TServiceServlet {
     }
   }
 
+  protected def hasSession: Boolean = (getThreadLocalRequest.getSession(false) != null)
+
   /**
    * Set state that may be shared between two servlet threads.
    */
-  def setSharedSessionState[T](key: String, t: T) = mutex.synchronized {
+  def setSessionAttr[T](key: String, t: T) = {
     getThreadLocalRequest.getSession.setAttribute(key, t)
   }
 
   /**
    * Get state that may be shared between two servlet threads.
    */
-  def getSharedSessionState(key: String) = mutex.synchronized {
-    getThreadLocalRequest.getSession.getAttribute(key)
+  def getSessionAttr[T >: Null](key: String): T = {
+    if (hasSession) {
+        getThreadLocalRequest.getSession.getAttribute(key).asInstanceOf[T]
+    } else {
+      null
+    }
   }
+}
+
+object ServletSessions
+
+abstract class StatefulServlet[State >: Null] extends TServiceServlet {
+
+  /**
+   * Identified this servlet's state in the user session.
+   */
+  protected def stateKey: String
+
+  /**
+   * Creates a new, blank state object.
+   */
+  protected def newState: State
+
+  protected def getState(): State = {
+    val r = getSessionAttr[State](stateKey)
+    if (r == null) {
+      val ss = newState
+      setState(ss)
+      ss
+    } else {
+      r
+    }
+  }
+
+  protected def setState(m: State) =
+    getThreadLocalRequest.getSession.setAttribute(stateKey, m)
 
   /**
    * Attempts to get another service's state, but does not initialise it if
    * it is missing.
    */
-  protected def getOtherServiceState[OState](key: String): Option[OState] =
-    mutex.synchronized {
-     Option(getThreadLocalRequest.getSession.getAttribute(key).
-      asInstanceOf[OState])
-    }
+  protected def getOtherServiceState[OState >: Null](key: String): Option[OState] =
+    Option(getSessionAttr[OState](key))
 
 }
