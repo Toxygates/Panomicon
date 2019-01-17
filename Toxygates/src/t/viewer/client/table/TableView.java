@@ -163,8 +163,6 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     };
   }  
   
-  protected void afterGetRows() { }
-  
   //TODO hook to be overridden - try to remove this
   protected void onGettingExpressionFailed() { }
   
@@ -311,9 +309,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
 
   @Override
-  public void afterGetRows(ExpressionTable table) {
-    afterGetRows();
-  }
+  public void afterGetRows(ExpressionTable table) { }
 
   @Override
   public void onApplyColumnFilter() {

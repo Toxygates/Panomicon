@@ -249,12 +249,6 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }
 
   @Override
-  protected void afterGetRows() {
-    super.afterGetRows();
-    sideExpressionTable.refetchRows();
-  }
-  
-  @Override
   protected String mainMatrixId() {
     return mainMatrix;
   }
@@ -380,8 +374,9 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void afterGetRows(ExpressionTable table) {
+    super.afterGetRows(table);
     if (table == expressionTable) {
-      super.afterGetRows(table);
+      sideExpressionTable.refetchRows();
     } else if (table == sideExpressionTable) {
       if (netvizDialog != null) {
         networkService.currentView(mainMatrix,
