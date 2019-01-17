@@ -72,9 +72,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     chosenItemLists = storage.itemListsStorage.getIgnoringException();
     chosenGeneSet = storage.genesetStorage.getIgnoringException();
     chosenClusteringList = storage.clusteringListsStorage.getIgnoringException();
-    ViewType type = preferredViewType();
-    if (type != dataView.type()) {
-      rebuild();
+
+    if (dataView == null || dataView.type() != preferredViewType()) {
+      rebuildGUI();
     }
 
     dataView.columnsChanged(chosenColumns);
@@ -88,9 +88,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  protected void rebuild() {
+  protected void rebuildGUI() {
     dataView = makeDataView();
-    super.rebuild();
+    super.rebuildGUI();
     logger.info("DataScreen rebuilding to " + preferredViewType());
     setupMenuItems();
   }
@@ -99,8 +99,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     super("View data", key, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     geneSetToolbar = makeGeneSetSelector();    
-    dataView = makeDataView();
-    setupMenuItems();
   }
 
   @Override
@@ -151,16 +149,20 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     super.addToolbars();
     mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    Widget dvTools = dataView.tools();
-    if (dvTools != null) {
-      mainTools.add(dvTools);
+    if (dataView != null) {
+      Widget dvTools = dataView.tools();
+      if (dvTools != null) {
+        mainTools.add(dvTools);
+      }
     }
     mainTools.add(geneSetToolbar.selector());    
     mainTools.add(makeInfoPanel());
-    addToolbar(mainTools, STANDARD_TOOL_HEIGHT);    
-    for (Widget w: dataView.toolbars()) {
-      addToolbar(w, STANDARD_TOOL_HEIGHT);
-    }    
+    addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
+    if (dataView != null) {
+      for (Widget w: dataView.toolbars()) {
+        addToolbar(w, STANDARD_TOOL_HEIGHT);
+      }
+    }
   }
 
   protected void displayInfo(String message) {
@@ -169,8 +171,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
   
   @Override
-  protected Widget content() {    
-    return dataView;
+  protected Widget content() {
+    return dataView != null ? dataView : new SimplePanel(); 
   }
 
   public TableView.ViewType preferredViewType() {  

@@ -466,7 +466,7 @@ public abstract class MinimalScreen implements OTGScreen {
    * As this is not part of the standard lifecycle, not every screen needs to support
    * this method.
    */
-  protected void rebuild() {
+  protected void rebuildGUI() {
     toolbars.clear();
     menuItems.clear();
     screenPanel.clear();
