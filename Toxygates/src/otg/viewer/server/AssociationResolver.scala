@@ -99,7 +99,7 @@ class AssociationResolver(probeStore: OTGProbes,
     val sizeLimit = Some(1000)
 
     if (mirnaTable.size == 0) {
-      throw new Exception("No miRNA sources have been set, unable to resolve miRNA-mRNA association")
+      Console.err.println("Target table is empty; no mRNA-miRNA associations will be found")
     }
     //Note: we might perform this filtering once and store it in the matrix state
     val filtTable = mirnaTable.speciesFilter(species)
