@@ -251,6 +251,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   @Override
   public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
     screen.getStorage().mirnaSourcesStorage.store(Arrays.asList(mirnaSources));
+    if (needMirnaSources() && !mirnaSourcesSet()) {
+      Window.alert("miRNA sources not enabled; mRNA-miRNA associations will not be available.");
+    }
     screen.sendMirnaSources();
   }
   
@@ -271,7 +274,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     } else if (expressionTable.associations().isVisible(AType.MRNA)) {
       expressionTable.associations().getAssociations(new AType[] {AType.MRNA});
     }
-  };
+  };;
   
   public boolean needMirnaSources() {
     return (expressionTable.associations().isVisible(AType.MiRNA) ||
@@ -319,5 +322,11 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   @Override
   public void associationsUpdated(AssociationManager<ExpressionRow> associations, Association[] result) {
     TableView.this.associationsUpdated(result);
+  }
+  
+  @Override
+  public boolean mirnaSourcesSet() {
+    List<MirnaSource> mirnaSources = screen.getStorage().mirnaSourcesStorage.getIgnoringException();
+    return mirnaSources != null && mirnaSources.size() > 0;
   }
 }

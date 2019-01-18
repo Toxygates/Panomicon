@@ -50,7 +50,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   public static final String key = "data";
   protected GeneSetToolbar geneSetToolbar;
-  protected TableView dataView;
+  protected TableView tableView;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
@@ -78,12 +78,16 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     chosenGeneSet = storage.genesetStorage.getIgnoringException();
     chosenClusteringList = storage.clusteringListsStorage.getIgnoringException();
 
-    if (dataView == null || dataView.type() != preferredViewType()) {
+    if (tableView == null || tableView.type() != preferredViewType()) {
       rebuildGUI();
     }
+    
+    if (tableView.needMirnaSources() && !tableView.mirnaSourcesSet()) {
+      Window.alert("Please select miRNA sources (in the tools menu) to enable mRNA-miRNA associations.");
+    }
 
-    dataView.columnsChanged(chosenColumns);
-    dataView.probesChanged(chosenProbes);  
+    tableView.columnsChanged(chosenColumns);
+    tableView.probesChanged(chosenProbes);  
     geneSetToolbar.geneSetChanged(chosenGeneSet);
     geneSetsMenu.itemListsChanged(chosenItemLists);
   }
@@ -94,8 +98,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     if (mirnaSources == null) {
       mirnaSources = new ArrayList<MirnaSource>();
     }
-    if (dataView != null) {
-      dataView.beforeUpdateMirnaSources();
+    if (tableView != null) {
+      tableView.beforeUpdateMirnaSources();
     }
     MirnaSource[] mirnaSourceArray  = mirnaSources.toArray(new MirnaSource[0]);
     manager.networkService().setMirnaSources(mirnaSourceArray, new AsyncCallback<Void>() {
@@ -107,20 +111,20 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
       @Override
       public void onSuccess(Void result) {
         mirnaSourcesSent = true;
-        if (dataView != null) {
-          dataView.afterMirnaSourcesUpdated();
+        if (tableView != null) {
+          tableView.afterMirnaSourcesUpdated();
         }
       }
     });
   }
 
   public TableView dataView() {
-    return dataView;
+    return tableView;
   }
 
   @Override
   protected void rebuildGUI() {
-    dataView = makeDataView();
+    tableView = makeDataView();
     super.rebuildGUI();
     logger.info("DataScreen rebuilding to " + preferredViewType());
     setupMenuItems();
@@ -181,8 +185,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     super.addToolbars();
     mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    if (dataView != null) {
-      Widget dvTools = dataView.tools();
+    if (tableView != null) {
+      Widget dvTools = tableView.tools();
       if (dvTools != null) {
         mainTools.add(dvTools);
       }
@@ -190,8 +194,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     mainTools.add(geneSetToolbar.selector());    
     mainTools.add(makeInfoPanel());
     addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
-    if (dataView != null) {
-      for (Widget w: dataView.toolbars()) {
+    if (tableView != null) {
+      for (Widget w: tableView.toolbars()) {
         addToolbar(w, STANDARD_TOOL_HEIGHT);
       }
     }
@@ -204,7 +208,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   
   @Override
   protected Widget content() {
-    return dataView != null ? dataView : new SimplePanel(); 
+    return tableView != null ? tableView : new SimplePanel(); 
   }
 
   public TableView.ViewType preferredViewType() {  
@@ -232,8 +236,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   protected MenuBar analysisMenu;
   protected void setupMenuItems() {
-    analysisMenu = dataView.analysisMenu();    
-    for (MenuItem mi: dataView.topLevelMenus()) {
+    analysisMenu = tableView.analysisMenu();    
+    for (MenuItem mi: tableView.topLevelMenus()) {
       addMenu(mi);
     }
     
@@ -276,7 +280,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
    * Trigger a data reload, if necessary.
    */
   public void reloadDataIfNeeded() {
-    dataView.reloadDataIfNeeded();    
+    tableView.reloadDataIfNeeded();    
   }
   
   @Override
@@ -306,7 +310,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
     lastProbes = null;
     lastColumns = null;
-    dataView.probesChanged(probes);
+    tableView.probesChanged(probes);
   }
 
   /**
@@ -321,7 +325,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   private void columnsChanged(List<Group> columns) {
     chosenColumns = columns;
-    dataView.columnsChanged(columns);
+    tableView.columnsChanged(columns);
   }
 
   @Override
@@ -339,7 +343,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   public String[] displayedAtomicProbes() {
-    return dataView.displayedAtomicProbes();    
+    return tableView.displayedAtomicProbes();    
   }
 
   @Override

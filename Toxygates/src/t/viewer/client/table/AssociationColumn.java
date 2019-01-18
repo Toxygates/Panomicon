@@ -13,7 +13,7 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
 
   public interface Delegate<T> {
     boolean refreshEnabled();
-    void getAssociations(AType[] associationsToFetch);
+    void enableAssociation(AType association);
     String[] atomicProbesForRow(T row);
     String[] geneIdsForRow(T row);
     Map<AType, Association> associations();
@@ -48,7 +48,7 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
   public void setVisibility(boolean v) {
     super.setVisibility(v);
     if (v && delegate.refreshEnabled()) {
-      delegate.getAssociations(new AType[]{getAssociation()});
+      delegate.enableAssociation(getAssociation());
     }
   }
 
