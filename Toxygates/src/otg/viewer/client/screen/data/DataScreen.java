@@ -66,8 +66,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   private String[] urlProbes = null;
   private List<String[]> urlGroups;
   private List<String> groupNames;
-  
-  private boolean mirnaSourcesSent = false;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -110,7 +108,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
       @Override
       public void onSuccess(Void result) {
-        mirnaSourcesSent = true;
         if (tableView != null) {
           tableView.afterMirnaSourcesUpdated();
         }
