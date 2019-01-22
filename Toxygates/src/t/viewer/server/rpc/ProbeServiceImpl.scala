@@ -147,7 +147,7 @@ with ProbeService {
     }
 
     //Keep this up-to-date also in the session
-    setSharedSessionState(APPINFO_KEY, appInfo)
+    setSessionAttr(APPINFO_KEY, appInfo)
 
     appInfo
   }

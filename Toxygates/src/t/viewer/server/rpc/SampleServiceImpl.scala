@@ -99,19 +99,18 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   protected def appInfo = {
-    val ai = Option(getSharedSessionState(ProbeServiceImpl.APPINFO_KEY).
-      asInstanceOf[AppInfo])
+    val ai = Option(getSessionAttr[AppInfo](ProbeServiceImpl.APPINFO_KEY))
     ai.getOrElse(throw new NoSessionException("AppInfo not initialised"))
   }
 
-  protected def stateKey = "sparql"
+  protected def stateKey = "sparql" 
   protected def newState = {
     //Initialise the selected datasets by selecting all, except shared user data.
     val defaultVisible = appInfo.datasets.filter(ds =>
       Dataset.isInDefaultSelection(ds.getId))
 
     val s = new SampleState(instanceURI)
-    s.sampleFilter = sampleFilterFor(defaultVisible, None)
+    s.sampleFilter = sampleFilterFor(defaultVisible, None) 
     s
   }
 

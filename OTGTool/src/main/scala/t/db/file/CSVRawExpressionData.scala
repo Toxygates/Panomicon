@@ -39,7 +39,7 @@ class CSVRawExpressionData(exprFile: String,
   private def samplesInFile(file: String) = {
     val line = Source.fromFile(file).getLines.next
     val columns = line.split(",", -1).map(_.trim)
-    columns.drop(1).toVector.map(s => Sample(s))
+    columns.drop(1).toVector.map(s => Sample(unquote(s)))
   }
 
   override lazy val samples: Seq[Sample] =
