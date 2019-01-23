@@ -275,12 +275,13 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    */
   def sampleCountQuery(attributes: Iterable[Attribute])(implicit sf: SampleFilter):
     Query[Seq[Map[String, String]]] = {
-    val pattr = attributes.filter(isPredicateAttribute).toSeq
+    import otg.model.sample.OTGAttribute._
+
+    val pattr = attributes.filter(isPredicateAttribute).toSeq ++ Seq(Compound, DoseLevel)
     val queryVars = pattr.map(a => s"?${a.id}").mkString(" ")
 
     //For adjuvant compounds, e.g. ADDA.ID and ADDA.IP, this gives us the name
     //without the administration route suffix
-    import otg.model.sample.OTGAttribute._
     val cmpPar = Compound.id
     val extraVars = if (pattr.contains(Compound)) {
       s"(SUBSTR(?$cmpPar, 0, strlen(?$cmpPar) - 2) as ?${cmpPar}Edit)"
@@ -292,6 +293,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
           |    ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
       s"""|  }
           |  ${sf.standardSampleFilters}
+          |  FILTER (?dose_level != "Control" && ?compound_name != "Shared_control")
           |}
           |GROUP BY $queryVars""".stripMargin,
           triplestore.mapQuery(_, 10000))
