@@ -32,6 +32,7 @@ import t.common.shared.sample.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 import t.viewer.client.storage.StorageProvider;
+import static otg.viewer.client.charts.DataSource.*;
 
 /**
  * A chart grid where the user can interactively choose what kind of charts to display (for example,
@@ -44,7 +45,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private ItemSelector<ValueType> valueTypeSel;
   private ListBox chartCombo, chartSubtypeCombo;
 
-  private DataSource source;
+  private ExpressionRowSource source;
   private List<String> majorVals;
   private List<String> organisms;
   private List<Group> groups;
@@ -63,7 +64,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private final DataSchema schema;
   private final StorageProvider storageProvider;
 
-  public AdjustableGrid(Factory<D, DS> factory, ChartParameters params, DataSource source) {
+  public AdjustableGrid(Factory<D, DS> factory, ChartParameters params,
+      ExpressionRowSource source) {
     this.source = source;
     this.groups = params.groups;
     this.screen = params.screen;
@@ -201,8 +203,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       setWidth(computedWidth + "px");
     }
 
-    source.getSamples(valueTypeSel.value(), smf, makeGroupPolicy(),
-        new DataSource.SampleAcceptor() {
+    source.getSamplesAsync(valueTypeSel.value(), smf, makeGroupPolicy(),
+        new ExpressionRowSource.SampleAcceptor() {
           @Override
           public void accept(List<ChartSample> samples) {
             allSamples.addAll(samples);

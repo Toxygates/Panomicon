@@ -49,7 +49,7 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   public AdjustableGrid<GDTData, GDTDataset> adjustableGrid(ChartParameters params,
-      DataSource source) {
+      DataSource.ExpressionRowSource source) {
     return new AdjustableGrid<GDTData, GDTDataset>(this, params, source);
   }
 

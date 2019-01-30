@@ -31,6 +31,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
 import t.viewer.client.rpc.SampleServiceAsync;
+import static otg.viewer.client.charts.DataSource.*;
 
 /**
  * Entry point for constructing charts based on matrix data.
@@ -139,8 +140,8 @@ public class MatrixCharts extends Charts {
    */
   private void finish(ChartParameters params, String[] probes, Sample[] samples,
       Acceptor acceptor) {
-    DataSource dataSource =
-        new DataSource.DynamicExpressionRowSource(schema, probes, samples, params.screen);
+    ExpressionRowSource dataSource =
+        new DynamicExpressionRowSource(schema, probes, samples, params.screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.accept(acg);
@@ -153,8 +154,8 @@ public class MatrixCharts extends Charts {
       treated.add(u.first());
     }
 
-    DataSource dataSource = new DataSource.DynamicUnitSource(schema, probes,
-        treated.toArray(new Unit[0]), params.screen);
+    ExpressionRowSource dataSource =
+        new DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]), params.screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.accept(acg);

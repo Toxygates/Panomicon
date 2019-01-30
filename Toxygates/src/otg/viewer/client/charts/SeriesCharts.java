@@ -78,29 +78,24 @@ public class SeriesCharts extends Charts {
       DataSource cds = new DataSource.SeriesSource(schema, series,
           seriesType.independentAttribute(), indepPoints);
 
-      cds.getSamples(null, new SampleMultiFilter(),
-          new TimeDoseColorPolicy(highlightFixed, "SkyBlue"), new DataSource.SampleAcceptor() {
+      List<ChartSample> samples = cds.getSamples(null, new SampleMultiFilter(),
+          new TimeDoseColorPolicy(highlightFixed, "SkyBlue"));
 
-            @Override
-            public void accept(final List<ChartSample> samples) {
-              boolean categoriesAreMinors = seriesType == SeriesType.Time;
-              GDTDataset ds =
-                  factory.dataset(samples, indepPoints, categoriesAreMinors, storageProvider);
-              List<String> filters =
-                  series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
+      boolean categoriesAreMinors = seriesType == SeriesType.Time;
+      GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors, storageProvider);
+      List<String> filters =
+          series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
 
-              List<String> organisms = new ArrayList<String>(
-                  SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
+      List<String> organisms = new ArrayList<String>(
+          SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
-              boolean columnsAreTimes = seriesType == SeriesType.Dose;
-              ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, false, fixedVals,
-                  columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
-              cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(),
-                  ds.getMin(), ds.getMax());
-              acceptor.acceptCharts(cg);
-            }
+      boolean columnsAreTimes = seriesType == SeriesType.Dose;
+      ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, false, fixedVals,
+          columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
+      cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(), ds.getMin(),
+          ds.getMax());
+      acceptor.acceptCharts(cg);
 
-          });
     } catch (Exception e) {
       Window.alert("Unable to display charts: " + e.getMessage());
       logger.log(Level.WARNING, "Unable to display charts.", e);

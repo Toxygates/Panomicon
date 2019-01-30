@@ -39,10 +39,6 @@ import t.viewer.shared.FullMatrix;
  */
 abstract public class DataSource {
 
-  interface SampleAcceptor {
-    void accept(List<ChartSample> samples);
-  }
-
   private static Logger logger = SharedUtils.getLogger("chartdata");
 
   protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
@@ -89,11 +85,9 @@ abstract public class DataSource {
   }
 
   /**
-   * Obtain samples, making an asynchronous call if necessary, and pass them on to the sample
-   * acceptor when they are available.
+   * Obtain ChartSample datapoints for the chart.
    */
-  void getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
-      SampleAcceptor acceptor) {
+  List<ChartSample> getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy) {
     List<ChartSample> useSamples;
     if (smf.contains(schema.majorParameter())) {
       useSamples =
@@ -104,7 +98,7 @@ abstract public class DataSource {
     for (ChartSample s : useSamples) {
       s.color = policy.colorFor(s);
     }
-    acceptor.accept(useSamples);
+    return useSamples;
   }
 
   static class SeriesSource extends DataSource {
@@ -126,10 +120,24 @@ abstract public class DataSource {
   }
 
   /**
-   * An expression row source with a fixed dataset.
+   * An expression row source with a fixed dataset. This source supports asynchronous fetching and
+   * will return data through a callback.
    */
-  static class ExpressionRowSource extends DataSource {
+  public static class ExpressionRowSource extends DataSource {
     protected Sample[] samples;
+
+    interface SampleAcceptor {
+      void accept(List<ChartSample> samples);
+    }
+
+    /**
+     * Obtain ChartSample datapoints, making an asynchronous call if necessary, and pass them on to
+     * the sample acceptor when they are available.
+     */
+    void getSamplesAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+        SampleAcceptor acceptor) {
+      acceptor.accept(getSamples(vt, smf, policy));
+    }
 
     ExpressionRowSource(DataSchema schema, Sample[] samples, List<ExpressionRow> rows) {
       super(schema);
@@ -195,14 +203,14 @@ abstract public class DataSource {
     // TODO think about the way these methods interact with superclass
     // - bad design
     @Override
-    void getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+    void getSamplesAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
         SampleAcceptor acceptor) {
       loadData(vt, smf, policy, acceptor);
     }
 
     protected void getLoadedSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
         SampleAcceptor acceptor) {
-      super.getSamples(vt, smf, policy, acceptor);
+      super.getSamplesAsync(vt, smf, policy, acceptor);
     }
   }
 
