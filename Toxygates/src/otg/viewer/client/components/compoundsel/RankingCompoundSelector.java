@@ -155,12 +155,12 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     @Override
-    public void onClick(final String value) {
+    public void onClick(final String compoundName) {
       if (rankProbes.size() == 0) {
         Window.alert("These charts can only be displayed if compounds have been ranked.");
       } else {
         seriesService.getSeries(rankedType, chosenSampleClass, rankProbes.toArray(new String[0]),
-            null, new String[] {value}, getSeriesCallback(value));
+            null, new String[] {compoundName}, getSeriesCallback(compoundName));
       }
       Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING_CHARTS);
     }
@@ -168,11 +168,11 @@ public class RankingCompoundSelector extends CompoundSelector {
     private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
       return new PendingAsyncCallback<List<Series>>(screen, "Unable to retrieve data.") {
         @Override
-        public void handleSuccess(final List<Series> ss) {
+        public void handleSuccess(final List<Series> series) {
           Utils.ensureVisualisationAndThen(new Runnable() {
             @Override
             public void run() {
-              makeSeriesCharts(rankedType, value, ss);
+              makeSeriesCharts(rankedType, value, series);
             }
           });
 
@@ -180,11 +180,11 @@ public class RankingCompoundSelector extends CompoundSelector {
       };
     }
 
-    private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
+    private void makeSeriesCharts(SeriesType seriesType, String compoundName, List<Series> ss) {
       SeriesCharts cgf = new SeriesCharts(screen, new SampleClass[] {
           screen.manager().getStorage().sampleClassStorage.getIgnoringException()});
-      cgf.make(seriesType, ss, scores.get(value).fixedValue(),
-          cg -> Utils.displayInPopup("Charts", cg, DialogPosition.Side), screen);
+      cgf.make(seriesType, ss, scores.get(compoundName).fixedValue(),
+          cg -> Utils.displayInPopup("Charts", cg, DialogPosition.Side), screen, compoundName);
     }
   }
 }
