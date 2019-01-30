@@ -37,16 +37,28 @@ import t.model.sample.CoreParameter;
 public class MatrixCharts extends Charts {
 
   /**
-   * Callbacks for a client that expects to receive an adjustable (interactive) chart.
+   * Callback for a client that expects to receive an adjustable (interactive) chart.
    */
   public static interface Acceptor {
-    void acceptCharts(AdjustableGrid<?, ?> cg);
-
-    void acceptSamples(Sample[] samples);
+    void accept(AdjustableGrid<?, ?> cg);
   }
 
   private List<Group> groups;
 
+  /**
+   * Samples will be fetched based on the sample classes of the groups the first time they are
+   * needed (since for additional context, we may need samples that are not in the groups, e.g.
+   * other doses and times). They will then be cached for further use.
+   */
+  private Sample[] samples;
+
+  /**
+   * Construct MatrixCharts.
+   * 
+   * @param screen The screen that will display the charts.
+   * @param groups The user's selected groups. Based on these, additional surrounding sample classes
+   *        will also be included to give context in the charts.
+   */
   public MatrixCharts(OTGScreen screen, List<Group> groups) {
     super(screen);
     this.groups = groups;
@@ -71,8 +83,7 @@ public class MatrixCharts extends Charts {
   /**
    * Make charts based on expression rows.
    */
-  public void make(final ChartParameters params, final Sample[] samples, final String[] probes,
-      final Acceptor acceptor) {
+  public void make(final ChartParameters params, final String[] probes, final Acceptor acceptor) {
     String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
     String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
@@ -109,11 +120,7 @@ public class MatrixCharts extends Charts {
             @Override
             public void onSuccess(final Sample[] samples) {
               finish(params, probes, samples, acceptor);
-              /*
-               * Note: the acceptor.acceptSamples control flow may not be the best way to structure
-               * this
-               */
-              acceptor.acceptSamples(samples);
+              MatrixCharts.this.samples = samples;
             }
           });
     } else {
@@ -133,7 +140,7 @@ public class MatrixCharts extends Charts {
         new DataSource.DynamicExpressionRowSource(schema, probes, samples, params.screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
-    acceptor.acceptCharts(acg);
+    acceptor.accept(acg);
   }
 
   private void finish(ChartParameters params, String[] probes, Pair<Unit, Unit>[] units,
@@ -147,6 +154,6 @@ public class MatrixCharts extends Charts {
         treated.toArray(new Unit[0]), params.screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
-    acceptor.acceptCharts(acg);
+    acceptor.accept(acg);
   }
 }

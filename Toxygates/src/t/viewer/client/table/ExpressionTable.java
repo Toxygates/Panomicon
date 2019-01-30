@@ -82,6 +82,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   private NavigationTools navigationTools;
   private AnalysisTools analysisTools;
 
+  private MatrixCharts charts;
   private ChartDialog lastChartDialog;
 
   protected boolean displayPColumns = true;
@@ -93,7 +94,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected SampleClass chosenSampleClass;
   protected String[] chosenProbes = new String[0];
 
-  private Sample[] chartSamples = null;
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
 
   public interface Delegate {
@@ -281,7 +281,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
     analysisTools.columnsChanged(columns);
 
-    chartSamples = null;
+    charts = new MatrixCharts(screen, columns);
+
     matrix.clear();
     matrix.lastColumnFilters().clear();
     grid.getColumnSortList().clear();
@@ -411,24 +412,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   private void displayCharts() {
-    final MatrixCharts charts = new MatrixCharts(screen, chosenColumns);
     ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
     final String[] probes = dispRow.getAtomicProbes();
     final String title =
         SharedUtils.mkString(probes, "/") + ":" + SharedUtils.mkString(dispRow.getGeneSyms(), "/");
     ChartParameters params = charts.parameters(navigationTools.getValueType(), title);
 
-    charts.make(params, chartSamples, probes, new MatrixCharts.Acceptor() {
-      @Override
-      public void acceptCharts(final AdjustableGrid<?, ?> ag) {
-        new ChartDialog().show(ag);
-      }
-
-      @Override
-      public void acceptSamples(Sample[] bcs) {
-        chartSamples = bcs;
-      }
-    });
+    charts.make(params, probes, ag -> (new ChartDialog()).show(ag));
     Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
 
