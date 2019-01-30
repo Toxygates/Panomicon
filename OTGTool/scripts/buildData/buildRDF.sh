@@ -21,7 +21,7 @@ $BASE/triplestore/replace.sh $GENERATED/mirdb.trig $REPO http://level-five.jp/t/
 
 	
 echo SSorth
-$BASE/manager/tmanager.sh orthologs -output $GENERATED/ssorth.ttl -intermineURL http://targetmine.mizuguchilab.org/targetmine/service -intermineAppName targetmine
+$BASE/manager/tmanager.sh orthologs -output $GENERATED/ssorth.ttl -intermineURL https://targetmine.mizuguchilab.org/targetmine/service -intermineAppName targetmine
 ORTH_GRAPH=http://level-five.jp/t/ssorth.ttl
 $BASE/triplestore/replace.sh $GENERATED/ssorth.ttl $REPO $ORTH_GRAPH
 

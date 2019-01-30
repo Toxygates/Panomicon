@@ -33,7 +33,7 @@ object Manager extends t.Manager[OTGContext, OTGBConfig] with CmdLineOptions {
         val output = require(stringOption(args, "-output"),
           "Please specify an output file with -output")
         val intermineURL = require(stringOption(args, "-intermineURL"),
-          "Please specify an intermine URL with -intermineURL, e.g. http://mizuguchilab.org/targetmine/service")
+          "Please specify an intermine URL with -intermineURL, e.g. https://mizuguchilab.org/targetmine/service")
         val intermineAppName = require(stringOption(args, "-intermineAppName"),
           "Please specify an intermine app name with -intermineAppName, e.g. targetmine")
 

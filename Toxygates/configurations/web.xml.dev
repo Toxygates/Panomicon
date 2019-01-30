@@ -77,7 +77,7 @@
 	</context-param>
 	<context-param>
 		<param-name>intermine.target.userurl</param-name>
-		<param-value>http://targetmine.mizuguchilab.org</param-value>
+		<param-value>https://targetmine.mizuguchilab.org</param-value>
 	</context-param>
 	
 	<context-param>
