@@ -1,21 +1,19 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * Toxygates is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
  *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Toxygates is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Toxygates. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 package otg.viewer.client.components.compoundsel;
@@ -26,8 +24,7 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import otg.viewer.client.charts.ChartGrid;
-import otg.viewer.client.charts.Charts;
+import otg.viewer.client.charts.SeriesCharts;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.*;
@@ -52,13 +49,11 @@ public class RankingCompoundSelector extends CompoundSelector {
   private boolean hasRankColumns = false;
   private final Resources resources;
 
-  public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen,
-      String heading) {
+  public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen, String heading) {
     this(screen, screen, heading);
   }
 
-  public RankingCompoundSelector(final OTGScreen screen, Delegate delegate,
-      String heading) {
+  public RankingCompoundSelector(final OTGScreen screen, Delegate delegate, String heading) {
     super(screen, delegate, heading, false, false);
     this.seriesService = screen.manager().seriesService();
     this.resources = screen.resources();
@@ -105,29 +100,29 @@ public class RankingCompoundSelector extends CompoundSelector {
       hasRankColumns = false;
     }
   }
-  
+
   private SampleClass lastClass;
-  
+
   @Override
   public void sampleClassChanged(SampleClass sc) {
-      super.sampleClassChanged(sc);               
-      if (lastClass == null || !sc.equals(lastClass)) {
-          removeRankColumns();
-      }
-      lastClass = sc;          
+    super.sampleClassChanged(sc);
+    if (lastClass == null || !sc.equals(lastClass)) {
+      removeRankColumns();
+    }
+    lastClass = sc;
   }
 
-  public void performRanking(SeriesType seriesType, 
-      List<String> rankProbes, List<RankRule> rules) {
+  public void performRanking(SeriesType seriesType, List<String> rankProbes, List<RankRule> rules) {
     this.rankProbes = rankProbes;
     this.rankedType = seriesType;
     addRankColumns();
-    logger.info("Ranking compounds for datasets: " + 
-        SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
+    logger.info("Ranking compounds for datasets: "
+        + SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
 
     if (rules.size() > 0) { // do we have at least 1 rule?
-      seriesService.rankedCompounds(seriesType, chosenDatasets.toArray(new Dataset[0]), chosenSampleClass,
-          rules.toArray(new RankRule[0]), new PendingAsyncCallback<MatchResult[]>(screen) {
+      seriesService.rankedCompounds(seriesType, chosenDatasets.toArray(new Dataset[0]),
+          chosenSampleClass, rules.toArray(new RankRule[0]),
+          new PendingAsyncCallback<MatchResult[]>(screen) {
             @Override
             public void handleSuccess(MatchResult[] res) {
               ranks.clear();
@@ -164,9 +159,8 @@ public class RankingCompoundSelector extends CompoundSelector {
       if (rankProbes.size() == 0) {
         Window.alert("These charts can only be displayed if compounds have been ranked.");
       } else {
-        seriesService.getSeries(rankedType,
-            chosenSampleClass, rankProbes.toArray(new String[0]), null,
-            new String[] {value}, getSeriesCallback(value));
+        seriesService.getSeries(rankedType, chosenSampleClass, rankProbes.toArray(new String[0]),
+            null, new String[] {value}, getSeriesCallback(value));
       }
       Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING_CHARTS);
     }
@@ -187,14 +181,10 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(SeriesType seriesType, String value, List<Series> ss) {
-      Charts cgf = new Charts(screen, new SampleClass[] { screen.manager().getStorage().sampleClassStorage.getIgnoringException() });
-      cgf.makeSeriesCharts(seriesType, ss, scores.get(value).fixedValue(), 
-          new Charts.ChartAcceptor() {
-        @Override
-        public void acceptCharts(ChartGrid<?> cg) {
-          Utils.displayInPopup("Charts", cg, DialogPosition.Side);
-        }
-      }, screen);
+      SeriesCharts cgf = new SeriesCharts(screen, new SampleClass[] {
+          screen.manager().getStorage().sampleClassStorage.getIgnoringException()});
+      cgf.make(seriesType, ss, scores.get(value).fixedValue(),
+          cg -> Utils.displayInPopup("Charts", cg, DialogPosition.Side), screen);
     }
   }
 }

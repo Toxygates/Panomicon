@@ -18,239 +18,46 @@
 
 package otg.viewer.client.charts;
 
-import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import otg.model.sample.OTGAttribute;
-import otg.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
-import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.charts.google.GVizFactory;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.rpc.SeriesServiceAsync;
-import otg.viewer.shared.Series;
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
 import t.model.SampleClass;
-import t.model.sample.CoreParameter;
-import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.StorageProvider;
 
 /**
  * Routines to help construct and display charts. Some charts are interactive, and may fetch data
- * repeatedly based on choices made by the user. This class is the public entry point to the charts
- * package.
+ * repeatedly based on choices made by the user. Concrete subclasses of this class are the public
+ * entry points to the charts package.
  */
-public class Charts {
+abstract class Charts {
 
   final static int DEFAULT_CHART_GRID_WIDTH = 600;
 
-  /**
-   * Callback for a client that expects to receive a single, non-interactive chart.
-   */
-  public static interface ChartAcceptor {
-    void acceptCharts(ChartGrid<?> cg);
-  }
-
-  /**
-   * Callbacks for a client that expects to receive an adjustable (interactive) chart.
-   */
-  public static interface AdjChartAcceptor {
-    void acceptCharts(AdjustableGrid<?, ?> cg);
-
-    void acceptSamples(Sample[] samples);
-  }
-
-  private final Logger logger = SharedUtils.getLogger("charts");
+  protected final Logger logger = SharedUtils.getLogger("charts");
 
   protected final SampleServiceAsync sampleService;
   protected final SeriesServiceAsync seriesService;
 
 
-  private SampleClass[] sampleClasses;
-  private List<Group> groups;
-  final private DataSchema schema;
-  private StorageProvider storageProvider;
+  final protected DataSchema schema;
+  protected StorageProvider storageProvider;
   /*
    * Note: ideally this should be instantiated/chosen by some dependency injection system
    */
-  private GVizFactory factory = new GVizFactory();
-  private OTGScreen screen;
+  protected GVizFactory factory = new GVizFactory();
+  protected OTGScreen screen;
+  protected SampleClass[] sampleClasses;
 
-  private Charts(OTGScreen screen) {
+  protected Charts(OTGScreen screen) {
     schema = screen.manager().schema();
     storageProvider = screen.getStorage();
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();
     this.seriesService = screen.manager().seriesService();
-  }
-
-  public Charts(OTGScreen screen, List<Group> groups) {
-    this(screen);
-    this.groups = groups;
-
-    List<SampleClass> scs = new ArrayList<SampleClass>();
-    for (Group g : groups) {
-      for (Unit unit : g.getUnits()) {
-        SampleClass unitClass = unit.getSamples()[0].sampleClass();
-        SampleClass sc = SampleClassUtils.asMacroClass(unitClass, schema);
-        sc.put(CoreParameter.ControlGroup, unitClass.get(CoreParameter.ControlGroup));
-        scs.add(sc);
-      }
-    }
-
-    this.sampleClasses = scs.toArray(new SampleClass[0]);
-
-  }
-
-  public Charts(OTGScreen screen, SampleClass[] sampleClasses) {
-    this(screen);
-    this.sampleClasses = sampleClasses;
-    groups = new ArrayList<Group>();
-  }
-
-  public ChartParameters parameters(ValueType vt, String title) {
-    return new ChartParameters(screen, groups, vt, title);
-  }
-
-  public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series,
-      final String highlightDoseOrTime, final ChartAcceptor acceptor, final OTGScreen screen) {
-    seriesService.expectedIndependentPoints(seriesType, series.get(0),
-        new PendingAsyncCallback<String[]>(screen,
-            "Unable to obtain independent points for series.") {
-
-          @Override
-          public void handleSuccess(String[] result) {
-            finishSeriesCharts(seriesType, series, result, highlightDoseOrTime, acceptor, screen);
-          }
-        });
-  }
-
-  private void finishSeriesCharts(SeriesType seriesType, final List<Series> series,
-      final String[] indepPoints, final String highlightFixed, final ChartAcceptor acceptor,
-      final OTGScreen screen) {
-    try {
-      final String[] fixedVals = series.stream().map(s -> s.get(seriesType.fixedAttribute()))
-          .distinct().toArray(String[]::new);
-      schema.sort(seriesType.fixedAttribute(), fixedVals);
-
-      schema.sort(seriesType.independentAttribute(), indepPoints);
-      DataSource cds = new DataSource.SeriesSource(schema, series,
-          seriesType.independentAttribute(), indepPoints);
-
-      cds.getSamples(null, new SampleMultiFilter(),
-          new TimeDoseColorPolicy(highlightFixed, "SkyBlue"), new DataSource.SampleAcceptor() {
-
-            @Override
-            public void accept(final List<ChartSample> samples) {
-              boolean categoriesAreMinors = seriesType == SeriesType.Time;
-              GDTDataset ds =
-                  factory.dataset(samples, indepPoints, categoriesAreMinors, storageProvider);
-              List<String> filters =
-                  series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
-
-              List<String> organisms = new ArrayList<String>(
-                  SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
-
-              boolean columnsAreTimes = seriesType == SeriesType.Dose;
-              ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, false, fixedVals,
-                  columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
-              cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(),
-                  ds.getMin(), ds.getMax());
-              acceptor.acceptCharts(cg);
-            }
-
-          });
-    } catch (Exception e) {
-      Window.alert("Unable to display charts: " + e.getMessage());
-      logger.log(Level.WARNING, "Unable to display charts.", e);
-    }
-  }
-
-  /**
-   * Make charts based on expression rows.
-   */
-  public void makeRowCharts(final ChartParameters params, final Sample[] samples,
-      final String[] probes, final AdjChartAcceptor acceptor) {
-    String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
-
-    String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
-
-    // First, fetch data if we need to.
-
-    if (organisms.length > 1) {
-      logger.info("Get rows for chart based on units");
-      sampleService.units(sampleClasses, schema.majorParameter().id(), majorVals,
-          new AsyncCallback<Pair<Unit, Unit>[]>() {
-
-            @Override
-            public void onFailure(Throwable caught) {
-              Window.alert("Unable to obtain chart data.");
-              logger.log(Level.WARNING, "Unable to obtain chart data.", caught);
-            }
-
-            @Override
-            public void onSuccess(Pair<Unit, Unit>[] result) {
-              finishRowCharts(params, probes, result, acceptor);
-            }
-          });
-    } else if (samples == null) {
-      logger.info("Get rows for chart based on sample classes");
-      sampleService.samples(sampleClasses, schema.majorParameter().id(), majorVals,
-          new AsyncCallback<Sample[]>() {
-
-            @Override
-            public void onFailure(Throwable caught) {
-              Window.alert("Unable to obtain chart data.");
-              logger.log(Level.WARNING, "Unable to obtain chart data.", caught);
-            }
-
-            @Override
-            public void onSuccess(final Sample[] samples) {
-              finishRowCharts(params, probes, samples, acceptor);
-              /*
-               * Note: the acceptor.acceptSamples control flow may not be the best way to structure
-               * this
-               */
-              acceptor.acceptSamples(samples);
-            }
-          });
-    } else {
-      logger.info("Already had samples for chart");
-      // We already have the necessary samples, can finish immediately
-      finishRowCharts(params, probes, samples, acceptor);
-    }
-  }
-
-  /**
-   * Complete a row chart by constructing the necessary dynamic data source, invoking the factory
-   * method, and then sending the chart back to the acceptor.
-   */
-  private void finishRowCharts(ChartParameters params, String[] probes, Sample[] samples,
-      AdjChartAcceptor acceptor) {
-    DataSource dataSource =
-        new DataSource.DynamicExpressionRowSource(schema, probes, samples, params.screen);
-    logger.info("Finish charts with " + dataSource);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
-    acceptor.acceptCharts(acg);
-  }
-
-  private void finishRowCharts(ChartParameters params, String[] probes, Pair<Unit, Unit>[] units,
-      AdjChartAcceptor acceptor) {
-    Set<Unit> treated = new HashSet<Unit>();
-    for (Pair<Unit, Unit> u : units) {
-      treated.add(u.first());
-    }
-
-    DataSource dataSource = new DataSource.DynamicUnitSource(schema, probes,
-        treated.toArray(new Unit[0]), params.screen);
-    logger.info("Finish charts with " + dataSource);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
-    acceptor.acceptCharts(acg);
   }
 }

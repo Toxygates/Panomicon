@@ -36,7 +36,6 @@ import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
 import otg.viewer.client.charts.*;
-import otg.viewer.client.charts.Charts.AdjChartAcceptor;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -412,14 +411,14 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   private void displayCharts() {
-    final Charts charts = new Charts(screen, chosenColumns);
+    final MatrixCharts charts = new MatrixCharts(screen, chosenColumns);
     ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
     final String[] probes = dispRow.getAtomicProbes();
     final String title =
         SharedUtils.mkString(probes, "/") + ":" + SharedUtils.mkString(dispRow.getGeneSyms(), "/");
     ChartParameters params = charts.parameters(navigationTools.getValueType(), title);
 
-    charts.makeRowCharts(params, chartSamples, probes, new AdjChartAcceptor() {
+    charts.make(params, chartSamples, probes, new MatrixCharts.Acceptor() {
       @Override
       public void acceptCharts(final AdjustableGrid<?, ?> ag) {
         new ChartDialog().show(ag);
