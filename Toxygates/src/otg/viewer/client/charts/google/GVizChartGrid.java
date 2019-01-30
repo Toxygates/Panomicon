@@ -64,15 +64,15 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
    * charts to have equally wide bars. (To the greatest extent possible)
    */
   @Override
-  protected Widget chartFor(final GDTData gdt, ChartStyle style, double minVal, double maxVal,
+  protected Widget chartFor(final GDTData gdata, ChartStyle style, double minVal, double maxVal,
       int column, int columnCount) {
-    final DataTable dataTable = gdt.data();
+    final DataTable dataTable = gdata.data();
     AxisOptions axisOptions = AxisOptions.create();
 
     while (dataTable.getNumberOfColumns() < columnCount) {
       int newColumnIndex = dataTable.addColumn(ColumnType.NUMBER);
-      for (int j = 0; j < dataTable.getNumberOfRows(); ++j) {
-        dataTable.setValue(j, newColumnIndex, 0);
+      for (int row = 0; row < dataTable.getNumberOfRows(); ++row) {
+        dataTable.setValue(row, newColumnIndex, 0);
       }
     }
 

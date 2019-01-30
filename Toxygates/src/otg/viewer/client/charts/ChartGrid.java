@@ -42,7 +42,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 
   protected final ProbeServiceAsync probeService;
 
-  Grid g;
+  Grid grid;
 
   List<String> rowFilters;
   List<String> organisms;
@@ -77,31 +77,31 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 
     final int osize = organisms.size();
     final int rfsize = rowFilters.size();
-    g = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);
-    initWidget(g);
+    grid = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);
+    initWidget(grid);
 
     DataSchema schema = screen.manager().schema();
 
 
     tables = factory.dataArray(rfsize * osize, minsOrMeds.length);
-    for (int c = 0; c < minsOrMeds.length; ++c) {
-      g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));
-      for (int r = 0; r < rfsize; ++r) {
+    for (int col = 0; col < minsOrMeds.length; ++col) {
+      grid.setWidget(0, col, Utils.mkEmphLabel(minsOrMeds[col]));
+      for (int row = 0; row < rfsize; ++row) {
         for (int o = 0; o < osize; ++o) {
           String org = organisms.get(o).equals(NO_ORGANISM) ? null : organisms.get(o);
           SampleClass sc = new SampleClass();
           String probe = null;
           if (rowsAreMajors) {
-            sc.put(schema.majorParameter(), rowFilters.get(r));
+            sc.put(schema.majorParameter(), rowFilters.get(row));
           } else {
-            probe = rowFilters.get(r);
+            probe = rowFilters.get(row);
           }
           if (org != null) {
             sc.put(OTGAttribute.Organism, org);
           }
           Attribute colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
-          sc.put(colKey, minsOrMeds[c]);
-          tables[r * osize + o][c] = dataset.makeData(sc, probe);
+          sc.put(colKey, minsOrMeds[col]);
+          tables[row * osize + o][col] = dataset.makeData(sc, probe);
         }
       }
     }
@@ -112,7 +112,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
             @Override
             public void handleSuccess(String[][] results) {
               for (int i = 0; i < results.length; ++i) {
-                g.setWidget(i * 2 + 1, 0,
+                grid.setWidget(i * 2 + 1, 0,
                     Utils.mkEmphLabel(SharedUtils.mkString(results[i]) + "/" + rowFilters.get(i)));
               }
             }
@@ -122,7 +122,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   }
 
   public int computedTotalWidth() {
-    int theoretical = g.getColumnCount() * GVizChartGrid.MAX_WIDTH;
+    int theoretical = grid.getColumnCount() * GVizChartGrid.MAX_WIDTH;
     if (theoretical > totalWidth) {
       return totalWidth;
     } else {
@@ -135,10 +135,10 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    */
   public int getMaxColumnCount() {
     int max = 0;
-    for (int r = 0; r < tables.length; ++r) {
-      for (int c = 0; c < tables[0].length; ++c) {
-        if (tables[r][c].numberOfColumns() > max) {
-          max = tables[r][c].numberOfColumns();
+    for (int row = 0; row < tables.length; ++row) {
+      for (int col = 0; col < tables[0].length; ++col) {
+        if (tables[row][col].numberOfColumns() > max) {
+          max = tables[row][col].numberOfColumns();
         }
       }
     }
@@ -149,11 +149,11 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     int width = totalWidth / minsOrMeds.length; // width of each individual chart
     int osize = organisms.size();
     ChartStyle innerStyle = style.withWidth(width);
-    for (int c = 0; c < minsOrMeds.length; ++c) {
-      for (int r = 0; r < rowFilters.size(); ++r) {
-        for (int o = 0; o < osize; ++o) {
-          String label = organisms.get(o) + ":" + rowFilters.get(r);
-          displayAt(innerStyle, r * osize + o, c, minVal, maxVal, tableColumnCount, label);
+    for (int col = 0; col < minsOrMeds.length; ++col) {
+      for (int row = 0; row < rowFilters.size(); ++row) {
+        for (int org = 0; org < osize; ++org) {
+          String label = organisms.get(org) + ":" + rowFilters.get(row);
+          displayAt(innerStyle, row * osize + org, col, minVal, maxVal, tableColumnCount, label);
         }
       }
     }
@@ -165,25 +165,26 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    */
   private void displayAt(final ChartStyle style, final int row, final int column,
       final double minVal, final double maxVal, final int columnCount, String label) {
-    final D dt = tables[row][column];
+    final D dataTable = tables[row][column];
 
-    if (dt.numberOfColumns() == 1) {
+    if (dataTable.numberOfColumns() == 1) {
       return; // no data columns -> no data to show
     }
-    if (g.getWidget(row * 2 + 1, 0) == null) {
+    if (grid.getWidget(row * 2 + 1, 0) == null) {
       // add the label if this is the first chart for the rowFilter
-      g.setWidget(row * 2 + 1, 0, Utils.mkEmphLabel(label));
+      grid.setWidget(row * 2 + 1, 0, Utils.mkEmphLabel(label));
     }
     final HTML downloadLink = new HTML();
     VerticalPanel vp = new VerticalPanel();
     final ChartStyle innerStyle = style.withDownloadLink(downloadLink);
 
-    vp.add(chartFor(dt, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount));
+    vp.add(chartFor(dataTable, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount));
     Anchor a = new Anchor("Download");
     a.addClickHandler(e -> {
       // Larger chart
       VerticalPanel vpl = new VerticalPanel();
-      Widget w = chartFor(dt, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount);
+      Widget w =
+          chartFor(dataTable, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount);
       vpl.add(w);
       vpl.add(downloadLink);
       Utils.displayInPopup("Large chart", vpl, DialogPosition.Center);
@@ -191,9 +192,9 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     });
     vp.add(a);
 
-    g.setWidget(row * 2 + 2, column, vp);
+    grid.setWidget(row * 2 + 2, column, vp);
   }
 
-  abstract protected Widget chartFor(final D dt, ChartStyle style, double minVal, double maxVal,
-      int column, int columnCount);
+  abstract protected Widget chartFor(final D dataTable, ChartStyle style, double minVal,
+      double maxVal, int column, int columnCount);
 }
