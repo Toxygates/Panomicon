@@ -64,9 +64,8 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
    * charts to have equally wide bars. (To the greatest extent possible)
    */
   @Override
-  protected Widget chartFor(final GDTData gdt, ChartStyle style,
-      double minVal, double maxVal, int column,
-      int columnCount) {
+  protected Widget chartFor(final GDTData gdt, ChartStyle style, double minVal, double maxVal,
+      int column, int columnCount) {
     final DataTable dataTable = gdt.data();
     AxisOptions axisOptions = AxisOptions.create();
 
@@ -93,7 +92,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
       chartArea.setWidth(style.bigMode ? width * 0.7 : width - 75);
       chartArea.setHeight(style.bigMode ? height * 0.8 : height - 75);
       chartOptions.setChartArea(chartArea);
-    } 
+    }
 
     final CoreChart coreChart = new ColumnChart(dataTable, chartOptions);
     if (screen != null) {
@@ -104,10 +103,10 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           Selection selection = allSelections.get(0);
           int col = selection.getColumn();
           int row = selection.getRow();
-          String barcode = dataTable.getProperty(row, col, "barcode");
-          if (barcode != null) {
+          String sampleId = dataTable.getProperty(row, col, GDTDataset.SAMPLE_ID_PROP);
+          if (sampleId != null) {
             try {
-              Sample sample = screen.getStorage().samplePacker.unpack(barcode);
+              Sample sample = screen.getStorage().samplePacker.unpack(sampleId);
               ScreenUtils.displaySampleDetail(screen, sample);
             } catch (UnpackInputException e) {
               Window.alert("Error unpacking sample: " + e.getMessage());
@@ -127,6 +126,6 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
   }
 
   private static native String imageURI(JavaScriptObject coreChart) /*-{
-    return coreChart.getImageURI();
+		return coreChart.getImageURI();
   }-*/;
 }

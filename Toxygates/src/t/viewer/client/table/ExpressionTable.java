@@ -36,7 +36,7 @@ import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
 import otg.viewer.client.charts.*;
-import otg.viewer.client.charts.Charts.AChartAcceptor;
+import otg.viewer.client.charts.Charts.AdjChartAcceptor;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -48,25 +48,26 @@ import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.SortKey;
 
 /**
- * The main data display table. This class has many different functionalities.
- * (maybe still too many)
+ * The main data display table. This class has many different functionalities. (maybe still too
+ * many)
  * 
- * It requests microarray expression data dynamically, displays it, as well as
- * displaying additional dynamic data. It also provides functionality for chart
- * popups. It also has an interface for adding and removing t-tests and u-tests,
- * which can be hidden and displayed on demand.
+ * It requests microarray expression data dynamically, displays it, as well as displaying additional
+ * dynamic data. It also provides functionality for chart popups. It also has an interface for
+ * adding and removing t-tests and u-tests, which can be hidden and displayed on demand.
  * 
- * Data is managed by an ETMatrixManager, which also includes an
- * AsyncDataProvider for the table, providing data for whatever rows the user
- * navigates to.
+ * Data is managed by an ETMatrixManager, which also includes an AsyncDataProvider for the table,
+ * providing data for whatever rows the user navigates to.
  * 
- * Hideable columns and clickable icons are handled by the RichTable superclass.
- * Dynamic (association) columns are handled by the AssociationManager helper
- * class.
+ * Hideable columns and clickable icons are handled by the RichTable superclass. Dynamic
+ * (association) columns are handled by the AssociationManager helper class.
  */
 public class ExpressionTable extends RichTable<ExpressionRow>
-    implements ETMatrixManager.Delegate, ETColumns.Delegate, ETHeaderBuilder.Delegate, 
-    NavigationTools.Delegate, AssociationManager.TableDelegate<ExpressionRow> {
+    implements
+      ETMatrixManager.Delegate,
+      ETColumns.Delegate,
+      ETHeaderBuilder.Delegate,
+      NavigationTools.Delegate,
+      AssociationManager.TableDelegate<ExpressionRow> {
 
   private final String COLUMN_WIDTH = "10em";
 
@@ -78,10 +79,10 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   protected final int initPageSize;
   private final Logger logger = SharedUtils.getLogger("expressionTable");
-  
+
   private NavigationTools navigationTools;
   private AnalysisTools analysisTools;
-  
+
   private ChartDialog lastChartDialog;
 
   protected boolean displayPColumns = true;
@@ -93,17 +94,20 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected SampleClass chosenSampleClass;
   protected String[] chosenProbes = new String[0];
 
-  private Sample[] chartBarcodes = null;
+  private Sample[] chartSamples = null;
   protected AbstractSelectionModel<ExpressionRow> selectionModel;
 
   public interface Delegate {
     void onGettingExpressionFailed(ExpressionTable table);
+
     void onApplyColumnFilter();
+
     void afterGetRows(ExpressionTable table);
   }
 
-  public ExpressionTable(OTGScreen _screen, TableFlags flags, TableStyle style, ETMatrixManager.Loader loader,
-      Delegate delegate, AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
+  public ExpressionTable(OTGScreen _screen, TableFlags flags, TableStyle style,
+      ETMatrixManager.Loader loader, Delegate delegate,
+      AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
     super(_screen, style, flags);
     screen = _screen;
     this.matrix = new ETMatrixManager(_screen, flags, this, loader, grid);
@@ -132,7 +136,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
     setEnabled(false);
   }
-  
+
   @Override
   protected ETColumns makeColumnHelper(OTGScreen screen) {
     this.columns = new ETColumns(this, screen.manager().resources(), COLUMN_WIDTH);
@@ -144,9 +148,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   public void setStyle(TableStyle style) {
-    this.style = style;    
+    this.style = style;
   }
-  
+
   public ValueType getValueType() {
     return navigationTools.getValueType();
   }
@@ -154,12 +158,12 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   public Widget tools() {
     return this.navigationTools;
   }
-  
+
   public void setDisplayPColumns(boolean displayPColumns) {
     if (withPValueOption) {
       this.displayPColumns = displayPColumns;
       navigationTools.setPValueState(displayPColumns);
-    }    
+    }
   }
 
   public Widget analysisTools() {
@@ -168,13 +172,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   public void downloadCSV(boolean individualSamples) {
     if (individualSamples && matrix.isMergeMode()) {
-      Window.alert("Individual samples cannot be downloaded in orthologous mode.\n" +
-          "Please inspect one group at a time.");
+      Window.alert("Individual samples cannot be downloaded in orthologous mode.\n"
+          + "Please inspect one group at a time.");
     } else {
       matrix.downloadCSV(individualSamples);
     }
   }
-  
+
   private String oldSortColumnHint = null;
   private Group oldSortColumnGroup = null;
   private boolean oldSortAscending = false;
@@ -223,7 +227,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
      * to intercept click events at this high level and choose whether to pass them on (non-filter
      * clicks) or not (filter clicks).
      */
-    //logger.info("Click target: " + target);
+    // logger.info("Click target: " + target);
     boolean shouldFilterClick = target.equals(FilterCell.CLICK_ID);
     if (shouldFilterClick && matrix.info() != null) {
       // Identify the column that was filtered.
@@ -250,7 +254,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     hideableColumns.addAll(associations.createHideableColumns(schema));
     return hideableColumns;
   }
-  
+
   public List<ExpressionRow> getDisplayedRows() {
     return grid.getVisibleItems();
   }
@@ -277,31 +281,31 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     logger.info("Set SC to: " + chosenSampleClass.toString());
 
     analysisTools.columnsChanged(columns);
-    
-    chartBarcodes = null;
+
+    chartSamples = null;
     matrix.clear();
     matrix.lastColumnFilters().clear();
     grid.getColumnSortList().clear();
-    
+
     matrix.logInfo("Columns changed (" + columns.size() + ")");
   }
 
   /**
-   * Refetch rows as they are currently represented on the server side.
-   * TODO: this should respect page size changes
+   * Refetch rows as they are currently represented on the server side. TODO: this should respect
+   * page size changes
    */
   public void refetchRows() {
     int initSize = NavigationTools.INIT_PAGE_SIZE;
     grid.setVisibleRangeAndClearData(new Range(0, initSize), true);
   }
-  
+
   protected Set<String> indicatedRows = new HashSet<String>();
 
   public void setIndicatedProbes(Set<String> highlighted, boolean redraw) {
     logger.info(highlighted.size() + " rows are indicated");
     Set<String> oldIndicated = indicatedRows;
     indicatedRows = highlighted;
-    
+
     String[] displayedProbes = matrix.displayedProbes();
     if (redraw) {
       for (int i = 0; i < displayedProbes.length; ++i) {
@@ -311,7 +315,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       }
     }
   }
-  
+
   @Override
   protected boolean isIndicated(ExpressionRow row) {
     return indicatedRows.contains(row.getProbe());
@@ -325,8 +329,10 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   private class ChartDialog extends Utils.LocationTrackedDialog {
     private int chartRow; // The row for which this dialog is displaying charts
-    private Element mouseDownChartElement = null; // The chart ImageClickCell DOM element that a mousedown event occurred on
-    private boolean startedOpeningNewCharts; // True if a new ChartDialog (not this one) has been opened
+    private Element mouseDownChartElement = null; // The chart ImageClickCell DOM element that a
+                                                  // mousedown event occurred on
+    private boolean startedOpeningNewCharts; // True if a new ChartDialog (not this one) has been
+                                             // opened
 
     public ChartDialog() {
       super();
@@ -334,15 +340,15 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       addCloseHandler(new ChartCloseHandler());
     }
 
-    /* If a user clicks on an ImageClickCell, but the mousedown associated with that click causes any row
-     * in the DataGrid to be redrawn, then that click won't be recognized. To work around this, this method
-     * implements custom logic for the following two cases:
-     * 1. mousedown events on a chart ImageClickCell
-     * 2. mouseup events associated with a mousedown event that was on a chart ImageClickCell, but occurs
-     *    somewhere other than that chart ImageClickCell
-     * In a third case - if a mouseup event occurs on the same chart ImageClickCell as a mousedown event, 
-     * that's just a click, which will cause a *new* ChartDialog to be shown. That new ChartDialog will, 
-     * in its show() method, hide the old ChartDialog.
+    /*
+     * If a user clicks on an ImageClickCell, but the mousedown associated with that click causes
+     * any row in the DataGrid to be redrawn, then that click won't be recognized. To work around
+     * this, this method implements custom logic for the following two cases: 1. mousedown events on
+     * a chart ImageClickCell 2. mouseup events associated with a mousedown event that was on a
+     * chart ImageClickCell, but occurs somewhere other than that chart ImageClickCell In a third
+     * case - if a mouseup event occurs on the same chart ImageClickCell as a mousedown event,
+     * that's just a click, which will cause a *new* ChartDialog to be shown. That new ChartDialog
+     * will, in its show() method, hide the old ChartDialog.
      */
     @Override
     protected void onPreviewNativeEvent(NativePreviewEvent event) {
@@ -353,22 +359,25 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       Element parentElement = null;
       if (Element.is(et)) {
         Element e = et.cast();
-        parentId = e.getParentElement().getId(); // The ID of the parent DOM element where the event occurred 
-        parentElement = e.getParentElement(); // The actual parent DOM element 
+        parentId = e.getParentElement().getId(); // The ID of the parent DOM element where the event
+                                                 // occurred
+        parentElement = e.getParentElement(); // The actual parent DOM element
       }
 
       if (ev.getType() == "mousedown" && parentId == "charts") {
-        /* We cancel mousedown events on a chart ImageClickCell, so they don't cause the dialog box to be
-         * redrawn.
+        /*
+         * We cancel mousedown events on a chart ImageClickCell, so they don't cause the dialog box
+         * to be redrawn.
          */
         mouseDownChartElement = parentElement;
         event.cancel();
       } else if ((ev.getType() == "mouseup") && mouseDownChartElement != null
           && parentElement != mouseDownChartElement) {
-        /* For a mouseup event which doesn't occur on the some chart ImageClickCell as the last mousedown
-         * event,  we hide the dialog, since it wasn't hidden before.
-         * If a mouseup event does occur on the same chart ImageClickCell as the last mousedown event, that
-         * will be recognized as a click, and be dealt with in the new ChartDialog's show() method.
+        /*
+         * For a mouseup event which doesn't occur on the some chart ImageClickCell as the last
+         * mousedown event, we hide the dialog, since it wasn't hidden before. If a mouseup event
+         * does occur on the same chart ImageClickCell as the last mousedown event, that will be
+         * recognized as a click, and be dealt with in the new ChartDialog's show() method.
          */
         hide(true);
       }
@@ -387,7 +396,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       @Override
       public void onClose(CloseEvent<PopupPanel> event) {
         if (!startedOpeningNewCharts) {
-          // If we've started opening a new ChartDialog, then it's already set highlightedRow to some desired
+          // If we've started opening a new ChartDialog, then it's already set highlightedRow to
+          // some desired
           // value, which we don't want to overwrite.
           highlightedRow = -1;
           lastChartDialog = null;
@@ -395,7 +405,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         grid.redrawRow(chartRow);
       }
     }
-    
+
     public void startedOpeningNewCharts() {
       startedOpeningNewCharts = true;
     }
@@ -409,21 +419,20 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         SharedUtils.mkString(probes, "/") + ":" + SharedUtils.mkString(dispRow.getGeneSyms(), "/");
     ChartParameters params = charts.parameters(navigationTools.getValueType(), title);
 
-    charts.makeRowCharts(params, chartBarcodes, probes,
-        new AChartAcceptor() {
+    charts.makeRowCharts(params, chartSamples, probes, new AdjChartAcceptor() {
       @Override
       public void acceptCharts(final AdjustableGrid<?, ?> ag) {
         new ChartDialog().show(ag);
       }
 
       @Override
-      public void acceptBarcodes(Sample[] bcs) {
-        chartBarcodes = bcs;
+      public void acceptSamples(Sample[] bcs) {
+        chartSamples = bcs;
       }
     });
     Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
-  
+
   public AssociationManager<ExpressionRow> associations() {
     return associations;
   }
@@ -561,8 +570,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         Column<ExpressionRow, ?> column = grid.getColumn(i);
         if (column instanceof ExpressionColumn) {
           ExpressionColumn eColumn = (ExpressionColumn) column;
-          if (matrixInfo().isPValueColumn(eColumn.matrixColumn()) &&
-              eColumn.columnInfo().filterActive()) {
+          if (matrixInfo().isPValueColumn(eColumn.matrixColumn())
+              && eColumn.columnInfo().filterActive()) {
             pValueFilteredColumns.add(eColumn);
           }
         }
@@ -574,10 +583,10 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       } else {
         // If we are filtering on p-value columns, get user confirmation before clearing
         // filters based on p-value columns
-        if (Window.confirm("Hiding p-value columns will undo all filtering based on " + 
-              "p-value columns.")) {
-          int[] columnIndices = pValueFilteredColumns.stream().mapToInt(col -> col.matrixColumn()).
-              toArray();
+        if (Window.confirm(
+            "Hiding p-value columns will undo all filtering based on " + "p-value columns.")) {
+          int[] columnIndices =
+              pValueFilteredColumns.stream().mapToInt(col -> col.matrixColumn()).toArray();
           matrix.clearColumnFilters(columnIndices);
           setDisplayPColumns(newState);
         } else {
@@ -586,7 +595,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
       }
     }
   }
-  
+
   @Override
   public void navigationToolsValueTypeChanged() {
     matrix().removeTests();

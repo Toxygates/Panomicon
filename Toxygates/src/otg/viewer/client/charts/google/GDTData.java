@@ -22,6 +22,9 @@ import com.google.gwt.visualization.client.DataTable;
 
 import otg.viewer.client.charts.Data;
 
+/**
+ * Data backed by a DataTable from the Google Visualization library.
+ */
 public class GDTData extends Data {
 
   private DataTable data;

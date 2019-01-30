@@ -41,18 +41,29 @@ import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.StorageProvider;
 
+/**
+ * Routines to help construct and display charts. Some charts are interactive, and may fetch data
+ * repeatedly based on choices made by the user. This class is the public entry point to the charts
+ * package.
+ */
 public class Charts {
 
   final static int DEFAULT_CHART_GRID_WIDTH = 600;
-  
+
+  /**
+   * Callback for a client that expects to receive a single, non-interactive chart.
+   */
   public static interface ChartAcceptor {
     void acceptCharts(ChartGrid<?> cg);
   }
 
-  public static interface AChartAcceptor {
+  /**
+   * Callbacks for a client that expects to receive an adjustable (interactive) chart.
+   */
+  public static interface AdjChartAcceptor {
     void acceptCharts(AdjustableGrid<?, ?> cg);
 
-    void acceptBarcodes(Sample[] barcodes);
+    void acceptSamples(Sample[] samples);
   }
 
   private final Logger logger = SharedUtils.getLogger("charts");
@@ -87,8 +98,7 @@ public class Charts {
     for (Group g : groups) {
       for (Unit unit : g.getUnits()) {
         SampleClass unitClass = unit.getSamples()[0].sampleClass();
-        SampleClass sc = SampleClassUtils.asMacroClass(unitClass,
-            schema);
+        SampleClass sc = SampleClassUtils.asMacroClass(unitClass, schema);
         sc.put(CoreParameter.ControlGroup, unitClass.get(CoreParameter.ControlGroup));
         scs.add(sc);
       }
@@ -108,60 +118,54 @@ public class Charts {
     return new ChartParameters(screen, groups, vt, title);
   }
 
-  public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series, 
+  public void makeSeriesCharts(final SeriesType seriesType, final List<Series> series,
       final String highlightDoseOrTime, final ChartAcceptor acceptor, final OTGScreen screen) {
-    seriesService.expectedIndependentPoints(seriesType, series.get(0), 
+    seriesService.expectedIndependentPoints(seriesType, series.get(0),
         new PendingAsyncCallback<String[]>(screen,
-        "Unable to obtain independent points for series.") {
+            "Unable to obtain independent points for series.") {
 
-      @Override
-      public void handleSuccess(String[] result) {
-        finishSeriesCharts(seriesType, series, result,  
-            highlightDoseOrTime, acceptor, screen);
-      }
-    });
+          @Override
+          public void handleSuccess(String[] result) {
+            finishSeriesCharts(seriesType, series, result, highlightDoseOrTime, acceptor, screen);
+          }
+        });
   }
 
-  private void finishSeriesCharts(SeriesType seriesType, 
-      final List<Series> series, final String[] indepPoints,
-      final String highlightFixed, final ChartAcceptor acceptor,
+  private void finishSeriesCharts(SeriesType seriesType, final List<Series> series,
+      final String[] indepPoints, final String highlightFixed, final ChartAcceptor acceptor,
       final OTGScreen screen) {
     try {
-      final String[] fixedVals = series.stream().
-          map(s -> s.get(seriesType.fixedAttribute())).distinct().
-          toArray(String[]::new);
+      final String[] fixedVals = series.stream().map(s -> s.get(seriesType.fixedAttribute()))
+          .distinct().toArray(String[]::new);
       schema.sort(seriesType.fixedAttribute(), fixedVals);
-      
+
       schema.sort(seriesType.independentAttribute(), indepPoints);
-      DataSource cds = new DataSource.SeriesSource(schema, series, 
+      DataSource cds = new DataSource.SeriesSource(schema, series,
           seriesType.independentAttribute(), indepPoints);
 
-      cds.getSamples(null, new SampleMultiFilter(), 
-        new TimeDoseColorPolicy(highlightFixed, "SkyBlue"), 
-        new DataSource.SampleAcceptor() {
+      cds.getSamples(null, new SampleMultiFilter(),
+          new TimeDoseColorPolicy(highlightFixed, "SkyBlue"), new DataSource.SampleAcceptor() {
 
-        @Override
-        public void accept(final List<ChartSample> samples) {
-          boolean categoriesAreMinors = seriesType == SeriesType.Time;
-              GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors, storageProvider);
-          List<String> filters = 
-              series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
+            @Override
+            public void accept(final List<ChartSample> samples) {
+              boolean categoriesAreMinors = seriesType == SeriesType.Time;
+              GDTDataset ds =
+                  factory.dataset(samples, indepPoints, categoriesAreMinors, storageProvider);
+              List<String> filters =
+                  series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
 
-          List<String> organisms =
-                  new ArrayList<String>(
-                      SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
+              List<String> organisms = new ArrayList<String>(
+                  SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
-          boolean columnsAreTimes = seriesType == SeriesType.Dose;
-          ChartGrid<?> cg =
-              factory.grid(screen, ds, filters, organisms, false,
-                  fixedVals, columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
-          cg.adjustAndDisplay(
-            new ChartStyle(0, true, null, false),
-            cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
-          acceptor.acceptCharts(cg);
-        }
+              boolean columnsAreTimes = seriesType == SeriesType.Dose;
+              ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, false, fixedVals,
+                  columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
+              cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(),
+                  ds.getMin(), ds.getMax());
+              acceptor.acceptCharts(cg);
+            }
 
-      });
+          });
     } catch (Exception e) {
       Window.alert("Unable to display charts: " + e.getMessage());
       logger.log(Level.WARNING, "Unable to display charts.", e);
@@ -171,12 +175,13 @@ public class Charts {
   /**
    * Make charts based on expression rows.
    */
-  public void makeRowCharts(final ChartParameters params, final Sample[] barcodes,
-      final String[] probes, final AChartAcceptor acceptor) {
+  public void makeRowCharts(final ChartParameters params, final Sample[] samples,
+      final String[] probes, final AdjChartAcceptor acceptor) {
     String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
-    String[] majorVals =
-        GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
+    String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
+
+    // First, fetch data if we need to.
 
     if (organisms.length > 1) {
       logger.info("Get rows for chart based on units");
@@ -194,7 +199,7 @@ public class Charts {
               finishRowCharts(params, probes, result, acceptor);
             }
           });
-    } else if (barcodes == null) {
+    } else if (samples == null) {
       logger.info("Get rows for chart based on sample classes");
       sampleService.samples(sampleClasses, schema.majorParameter().id(), majorVals,
           new AsyncCallback<Sample[]>() {
@@ -206,41 +211,44 @@ public class Charts {
             }
 
             @Override
-            public void onSuccess(final Sample[] barcodes) {
-              finishRowCharts(params, probes, barcodes, acceptor);
+            public void onSuccess(final Sample[] samples) {
+              finishRowCharts(params, probes, samples, acceptor);
               /*
-               * Note: the acceptor.acceptBarcodes control flow may not be the best
-               * way to structure this 
+               * Note: the acceptor.acceptSamples control flow may not be the best way to structure
+               * this
                */
-              acceptor.acceptBarcodes(barcodes);
+              acceptor.acceptSamples(samples);
             }
           });
     } else {
       logger.info("Already had samples for chart");
       // We already have the necessary samples, can finish immediately
-      finishRowCharts(params, probes, barcodes, acceptor);
+      finishRowCharts(params, probes, samples, acceptor);
     }
   }
 
-  private void finishRowCharts(ChartParameters params, String[] probes, Sample[] barcodes,
-      AChartAcceptor acceptor) {
+  /**
+   * Complete a row chart by constructing the necessary dynamic data source, invoking the factory
+   * method, and then sending the chart back to the acceptor.
+   */
+  private void finishRowCharts(ChartParameters params, String[] probes, Sample[] samples,
+      AdjChartAcceptor acceptor) {
     DataSource dataSource =
-        new DataSource.DynamicExpressionRowSource(schema, probes, barcodes, params.screen);
+        new DataSource.DynamicExpressionRowSource(schema, probes, samples, params.screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.acceptCharts(acg);
   }
 
   private void finishRowCharts(ChartParameters params, String[] probes, Pair<Unit, Unit>[] units,
-      AChartAcceptor acceptor) {
+      AdjChartAcceptor acceptor) {
     Set<Unit> treated = new HashSet<Unit>();
     for (Pair<Unit, Unit> u : units) {
       treated.add(u.first());
     }
 
-    DataSource dataSource =
-        new DataSource.DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]),
-            params.screen);
+    DataSource dataSource = new DataSource.DynamicUnitSource(schema, probes,
+        treated.toArray(new Unit[0]), params.screen);
     logger.info("Finish charts with " + dataSource);
     AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.acceptCharts(acg);

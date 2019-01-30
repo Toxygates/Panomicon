@@ -163,8 +163,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * We normalise the column count of each data table when displaying it in order to force the
    * charts to have equally wide bars. (To the greatest extent possible)
    */
-  private void displayAt(final ChartStyle style, final int row, final int column, final double minVal,
-      final double maxVal, final int columnCount, String label) {
+  private void displayAt(final ChartStyle style, final int row, final int column,
+      final double minVal, final double maxVal, final int columnCount, String label) {
     final D dt = tables[row][column];
 
     if (dt.numberOfColumns() == 1) {
@@ -177,7 +177,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     final HTML downloadLink = new HTML();
     VerticalPanel vp = new VerticalPanel();
     final ChartStyle innerStyle = style.withDownloadLink(downloadLink);
-    
+
     vp.add(chartFor(dt, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount));
     Anchor a = new Anchor("Download");
     a.addClickHandler(e -> {
@@ -194,7 +194,6 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     g.setWidget(row * 2 + 2, column, vp);
   }
 
-  abstract protected Widget chartFor(final D dt, ChartStyle style,
-                                     double minVal, double maxVal,
-                                     int column, int columnCount);
+  abstract protected Widget chartFor(final D dt, ChartStyle style, double minVal, double maxVal,
+      int column, int columnCount);
 }

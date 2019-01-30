@@ -34,8 +34,8 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.FullMatrix;
 
 /**
- * This class brings series and row data into a unified interface for the purposes of chart drawing.
- * TODO: simplify
+ * This class brings series and row data into a unified data fetching interface for the purposes of
+ * chart drawing.
  */
 abstract public class DataSource {
 
@@ -69,7 +69,7 @@ abstract public class DataSource {
     try {
       Attribute minorParam = schema.minorParameter();
       Attribute medParam = schema.mediumParameter();
-      minorVals = SampleClassUtils.collectInner(from, minorParam).toArray(String[]::new);      
+      minorVals = SampleClassUtils.collectInner(from, minorParam).toArray(String[]::new);
       schema.sort(minorParam, minorVals);
 
       Set<String> medVals = new HashSet<String>();
@@ -92,24 +92,24 @@ abstract public class DataSource {
    * Obtain samples, making an asynchronous call if necessary, and pass them on to the sample
    * acceptor when they are available.
    */
-  void getSamples(ValueType vt, SampleMultiFilter smf, 
-      ColorPolicy policy, SampleAcceptor acceptor) {
+  void getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+      SampleAcceptor acceptor) {
     List<ChartSample> useSamples;
     if (smf.contains(schema.majorParameter())) {
-      useSamples = chartSamples.stream().filter(s -> smf.accepts(s)).distinct().
-          collect(Collectors.toList());
+      useSamples =
+          chartSamples.stream().filter(s -> smf.accepts(s)).distinct().collect(Collectors.toList());
     } else {
       useSamples = chartSamples;
-    }    
+    }
     for (ChartSample s : useSamples) {
       s.color = policy.colorFor(s);
     }
-    acceptor.accept(useSamples);    
+    acceptor.accept(useSamples);
   }
 
   static class SeriesSource extends DataSource {
-    SeriesSource(DataSchema schema, List<Series> series, 
-        Attribute indepAttribute, String[] indepPoints) {
+    SeriesSource(DataSchema schema, List<Series> series, Attribute indepAttribute,
+        String[] indepPoints) {
       super(schema);
       for (Series s : series) {
         for (int i = 0; i < s.values().length; ++i) {
@@ -143,9 +143,8 @@ abstract public class DataSource {
       for (int i = 0; i < samples.length; ++i) {
         for (ExpressionRow er : rows) {
           ExpressionValue ev = er.getValue(i);
-          ChartSample cs =
-              new ChartSample(samples[i], schema, ev.getValue(), er.getProbe(), ev.getCall(),
-                  schema.chartLabel(samples[i]));
+          ChartSample cs = new ChartSample(samples[i], schema, ev.getValue(), er.getProbe(),
+              ev.getCall(), schema.chartLabel(samples[i]));
           chartSamples.add(cs);
         }
       }
@@ -173,9 +172,9 @@ abstract public class DataSource {
         final SampleAcceptor acceptor) {
       logger.info("Dynamic source: load for " + smf + " " + vt);
 
-      
-      Sample[] useSamples = Arrays.stream(samples).filter(s -> smf.accepts(s)).
-          toArray(Sample[]::new);
+
+      Sample[] useSamples =
+          Arrays.stream(samples).filter(s -> smf.accepts(s)).toArray(Sample[]::new);
 
       chartSamples.clear();
       Group g = new Group(schema, "temporary", useSamples);
@@ -196,7 +195,8 @@ abstract public class DataSource {
     // TODO think about the way these methods interact with superclass
     // - bad design
     @Override
-    void getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+    void getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+        SampleAcceptor acceptor) {
       loadData(vt, smf, policy, acceptor);
     }
 
@@ -225,7 +225,7 @@ abstract public class DataSource {
       final List<Group> groups = new ArrayList<Group>();
       final List<Unit> useUnits = new ArrayList<Unit>();
       int i = 0;
-      
+
       for (Unit u : units) {
         if (smf.accepts(u)) {
           Group g = new Group(schema, "g" + i, u.getSamples());

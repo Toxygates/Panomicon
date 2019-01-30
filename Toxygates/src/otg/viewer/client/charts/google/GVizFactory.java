@@ -24,6 +24,9 @@ import otg.viewer.client.charts.*;
 import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.storage.StorageProvider;
 
+/**
+ * Concrete factory methods that use Google Visualizations to display charts.
+ */
 public class GVizFactory extends Factory<GDTData, GDTDataset> {
 
   @Override
@@ -32,15 +35,15 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   @Override
-  public GDTDataset dataset(List<ChartSample> samples,
-      String[] categories, boolean categoriesAreMins, StorageProvider storage) {
+  public GDTDataset dataset(List<ChartSample> samples, String[] categories,
+      boolean categoriesAreMins, StorageProvider storage) {
     return new GDTDataset(samples, categories, categoriesAreMins, storage);
   }
 
   @Override
   public GVizChartGrid grid(OTGScreen screen, GDTDataset table, List<String> rowFilters,
-      List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
-      boolean columnsAreTimes, int totalWidth) {
+      List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses, boolean columnsAreTimes,
+      int totalWidth) {
     return new GVizChartGrid(this, screen, table, rowFilters, organisms, rowsAreMajors,
         timesOrDoses, columnsAreTimes, totalWidth);
   }

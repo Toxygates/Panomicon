@@ -7,6 +7,9 @@ import otg.viewer.client.components.OTGScreen;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 
+/**
+ * Parameters for chart creation and display.
+ */
 public class ChartParameters {
   public final OTGScreen screen;
   public final List<Group> groups;

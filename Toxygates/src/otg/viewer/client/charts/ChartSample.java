@@ -29,6 +29,9 @@ import t.common.shared.sample.Unit;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 
+/**
+ * A ChartSample is a single data point in a chart.
+ */
 public class ChartSample implements HasClass {
   final SampleClass sc;
   final DataSchema schema;

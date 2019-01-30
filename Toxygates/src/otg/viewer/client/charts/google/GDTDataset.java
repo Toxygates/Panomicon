@@ -35,11 +35,15 @@ import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
 import t.viewer.client.storage.StorageProvider;
 
+/**
+ * A Dataset backed by a DataTable from Google Visualizations.
+ */
 public class GDTDataset extends Dataset<GDTData> {
   private StorageProvider storage;
+  static final String SAMPLE_ID_PROP = "sample";
 
-  GDTDataset(List<ChartSample> samples, String[] categories,
-      boolean categoriesAreMins, StorageProvider storage) {
+  GDTDataset(List<ChartSample> samples, String[] categories, boolean categoriesAreMins,
+      StorageProvider storage) {
     super(samples, categories, categoriesAreMins);
     this.storage = storage;
   }
@@ -56,8 +60,8 @@ public class GDTDataset extends Dataset<GDTData> {
 
     List<ChartSample> fsamples = new ArrayList<ChartSample>();
     for (ChartSample s : samples) {
-      if ((probe == null || s.probe().equals(probe)) && 
-          SampleClassUtils.strictCompatible(filter, s)) {
+      if ((probe == null || s.probe().equals(probe))
+          && SampleClassUtils.strictCompatible(filter, s)) {
         fsamples.add(s);
       }
     }
@@ -85,7 +89,8 @@ public class GDTDataset extends Dataset<GDTData> {
         final int col = valCount[categoryIndex] * 2 + 1;
         dataTable.setValue(categoryIndex, col, sample.value());
         if (sample.sample() != null) {
-          dataTable.setProperty(categoryIndex, col, "barcode", storage.samplePacker.pack(sample.sample()));
+          dataTable.setProperty(categoryIndex, col, SAMPLE_ID_PROP,
+              storage.samplePacker.pack(sample.sample()));
         }
         dataTable.setFormattedValue(categoryIndex, col, sample.formattedValue());
         String style = "fill-color:" + sample.color() + "; stroke-width:1px; ";
@@ -97,9 +102,9 @@ public class GDTDataset extends Dataset<GDTData> {
   }
 
   protected native void addStyleColumn(DataTable dt) /*-{
-    dt.addColumn({
-      type : 'string',
-      role : 'style'
-    });
+		dt.addColumn({
+			type : 'string',
+			role : 'style'
+		});
   }-*/;
 }
