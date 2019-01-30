@@ -28,6 +28,7 @@ import otg.model.sample.OTGAttribute;
 import otg.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.components.OTGScreen;
+import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.Series;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SeriesType;
@@ -38,6 +39,7 @@ import t.viewer.client.components.PendingAsyncCallback;
  * Entry point for making charts based on series data.
  */
 public class SeriesCharts extends Charts {
+  protected final SeriesServiceAsync seriesService;
 
   /**
    * Callback for a client that expects to receive a chart.
@@ -49,6 +51,7 @@ public class SeriesCharts extends Charts {
   public SeriesCharts(OTGScreen screen, SampleClass[] sampleClasses) {
     super(screen);
     this.sampleClasses = sampleClasses;
+    this.seriesService = screen.manager().seriesService();
   }
 
   public void make(final SeriesType seriesType, final List<Series> series,

@@ -22,11 +22,9 @@ import java.util.logging.Logger;
 
 import otg.viewer.client.charts.google.GVizFactory;
 import otg.viewer.client.components.OTGScreen;
-import otg.viewer.client.rpc.SeriesServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
-import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.StorageProvider;
 
 /**
@@ -39,10 +37,6 @@ abstract class Charts {
   final static int DEFAULT_CHART_GRID_WIDTH = 600;
 
   protected final Logger logger = SharedUtils.getLogger("charts");
-
-  protected final SampleServiceAsync sampleService;
-  protected final SeriesServiceAsync seriesService;
-
 
   final protected DataSchema schema;
   protected StorageProvider storageProvider;
@@ -57,7 +51,5 @@ abstract class Charts {
     schema = screen.manager().schema();
     storageProvider = screen.getStorage();
     this.screen = screen;
-    this.sampleService = screen.manager().sampleService();
-    this.seriesService = screen.manager().seriesService();
   }
 }

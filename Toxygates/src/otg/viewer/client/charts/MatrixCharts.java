@@ -30,6 +30,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * Entry point for constructing charts based on matrix data.
@@ -43,6 +44,7 @@ public class MatrixCharts extends Charts {
     void accept(AdjustableGrid<?, ?> cg);
   }
 
+  protected final SampleServiceAsync sampleService;
   private List<Group> groups;
 
   /**
@@ -62,6 +64,7 @@ public class MatrixCharts extends Charts {
   public MatrixCharts(OTGScreen screen, List<Group> groups) {
     super(screen);
     this.groups = groups;
+    this.sampleService = screen.manager().sampleService();
 
     List<SampleClass> scs = new ArrayList<SampleClass>();
     for (Group g : groups) {
