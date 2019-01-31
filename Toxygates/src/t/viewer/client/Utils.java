@@ -34,7 +34,6 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 
@@ -147,7 +146,7 @@ public class Utils {
     }));
 
     dialogBox.add(panel);
-    dialogBox.setPopupPositionAndShow(displayInCenter(dialogBox));
+    displayInCenter(dialogBox);
   }
 
   private static int lastX = -1, lastY = -1;
@@ -189,9 +188,9 @@ public class Utils {
     dialogBox.setWidget(dockPanel);
 
     if (trackLocation) {
-      dialogBox.setPopupPositionAndShow(displayAt(dialogBox, dockPanel, widget, lastX, lastY, pos));
+      deferredPositionAndShow(dialogBox, dockPanel, widget, lastX, lastY, pos, true);
     } else {
-      dialogBox.setPopupPositionAndShow(displayAt(dialogBox, dockPanel, widget, -1, -1, pos));
+      deferredPositionAndShow(dialogBox, dockPanel, widget, -1, -1, pos, true);
     }
     return dialogBox;
   }
@@ -209,41 +208,56 @@ public class Utils {
     }
   }
 
-  public static PositionCallback displayInCenter(final PopupPanel panel) {
-    return displayAt(panel, null, null, -1, -1, DialogPosition.Center);
+  /**
+   * Immediately shows a panel, and then schedules a deferred event that will
+   * center it. 
+   */
+  public static void displayInCenter(final PopupPanel panel) {
+    deferredPositionAndShow(panel, null, null, -1, -1, DialogPosition.Center, false);
   }
 
   /**
    * @param panel
-   * @param dialogPosition
-   * @param center
+   * @param dockPanel
+   * @param dockPanelCenter
    * @param atX If not -1, this is the coordinate that is used
    * @param atY If not -1, this is the coordinate that is used
-   * @param pos Used to compute coordinates if atX or atY is -1
+   * @param dialogPosition Used to compute coordinates if atX or atY is -1
+   * @param deferShow If false, panel will be shown immediately. This is desirable
+   * in cases where deferring panel.show() could result in race conditions.
    * @return
    */
-  private static PositionCallback displayAt(final PopupPanel panel, final DockPanel dialogPosition,
-      final Widget center, final int atX, final int atY, final DialogPosition pos) {
-    return new PositionCallback() {
+  private static void deferredPositionAndShow(final PopupPanel panel, final DockPanel dockPanel,
+      final Widget dockPanelCenter, final int atX, final int atY, final DialogPosition dialogPosition,
+      boolean deferShow) {
+    if (!deferShow) {
+      panel.show();
+    }
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
-      public void setPosition(int width, int height) {
+      public void execute() {
+        if (deferShow) {
+          panel.show();
+        }
+        int width =  panel.getOffsetWidth();
+        int height = panel.getOffsetHeight();
         if (DialogPosition.isTallDialog(height)) {
           // Have to make it scrolled, too tall
           panel.setHeight((Window.getClientHeight() - 100) + "px");
-          if (center != null && dialogPosition != null) {
-            dialogPosition.remove(center);
-            Widget scrolled = makeScrolled(center);
+          if (dockPanelCenter != null && dockPanel != null) {
+            dockPanel.remove(dockPanelCenter);
+            Widget scrolled = makeScrolled(dockPanelCenter);
             scrolled.setHeight((Window.getClientHeight() - 120) + "px");
-            dialogPosition.add(scrolled, DockPanel.CENTER);
+            dockPanel.add(scrolled, DockPanel.CENTER);
           } else {
             Widget widget = panel.getWidget();
             panel.setWidget(makeScrolled(widget));
           }
         }
-        panel.setPopupPosition(atX != -1 ? atX : pos.computeX(width), atY != -1 ? atY : pos.computeY(height));
+        panel.setPopupPosition(atX != -1 ? atX : dialogPosition.computeX(width), atY != -1 ? atY : dialogPosition.computeY(height));
         panel.setWidth("auto");
       }
-    };
+    });  
   }
 
   public static void showHelp(TextResource helpText, ImageResource helpImage) {
@@ -322,7 +336,6 @@ public class Utils {
   public static DialogBox waitDialog() {
     DialogBox waitDialog = new DialogBox(false, true);
     waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));
-    waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
     return waitDialog;
   }
   
