@@ -60,6 +60,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private static int lastType = -1;
   private static String lastSubtype = null;
   private List<String> chartSubtypes = new ArrayList<String>();
+  
+  private String chartsTitle;
 
   private final DataSchema schema;
   private final StorageProvider storageProvider;
@@ -70,6 +72,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     this.groups = params.groups;
     this.screen = params.screen;
     this.factory = factory;
+    chartsTitle = params.title;
     schema = screen.manager().schema();
     storageProvider = screen.getStorage();
 
@@ -232,7 +235,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
                 }
               }
               for (ChartGrid<D> gr : intoList) {
-                gr.adjustAndDisplay(new ChartStyle(0, false, null, false), maxCols, minVal, maxVal);
+                gr.adjustAndDisplay(new ChartStyle(0, false, null, false), maxCols, minVal, maxVal, chartsTitle);
               }
             }
           }

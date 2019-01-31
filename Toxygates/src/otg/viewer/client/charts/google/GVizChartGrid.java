@@ -65,7 +65,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
    */
   @Override
   protected Widget chartFor(final GDTData gdata, ChartStyle style, double minVal, double maxVal,
-      int column, int columnCount) {
+      int column, int columnCount, String chartTitle) {
     final DataTable dataTable = gdata.data();
     AxisOptions axisOptions = AxisOptions.create();
 
@@ -119,7 +119,8 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
       @Override
       public void onReady(ReadyEvent event) {
         String URI = imageURI(coreChart.getJso());
-        style.downloadLink.setHTML("<a target=_blank href=\"" + URI + "\">Download</a>");
+        style.downloadLink.setHTML("<a target=_blank href=\"" + URI + "\" download = \"" 
+            + "chart_" + chartTitle + "\">Download</a>");
       }
     });
     return coreChart;

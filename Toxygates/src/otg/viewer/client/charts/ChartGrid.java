@@ -145,7 +145,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     return max;
   }
 
-  void adjustAndDisplay(ChartStyle style, int tableColumnCount, double minVal, double maxVal) {
+  void adjustAndDisplay(ChartStyle style, int tableColumnCount, double minVal, double maxVal,
+      String gridTitle) {
     int width = totalWidth / minsOrMeds.length; // width of each individual chart
     int osize = organisms.size();
     ChartStyle innerStyle = style.withWidth(width);
@@ -153,7 +154,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
       for (int row = 0; row < rowFilters.size(); ++row) {
         for (int org = 0; org < osize; ++org) {
           String label = organisms.get(org) + ":" + rowFilters.get(row);
-          displayAt(innerStyle, row * osize + org, col, minVal, maxVal, tableColumnCount, label);
+          displayAt(innerStyle, row * osize + org, col, minVal, maxVal, tableColumnCount, label, gridTitle);
         }
       }
     }
@@ -164,7 +165,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * charts to have equally wide bars. (To the greatest extent possible)
    */
   private void displayAt(final ChartStyle style, final int row, final int column,
-      final double minVal, final double maxVal, final int columnCount, String label) {
+      final double minVal, final double maxVal, final int columnCount, String label, String gridTitle) {
     final D dataTable = tables[row][column];
 
     if (dataTable.numberOfColumns() == 1) {
@@ -178,13 +179,15 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     VerticalPanel vp = new VerticalPanel();
     final ChartStyle innerStyle = style.withDownloadLink(downloadLink);
 
-    vp.add(chartFor(dataTable, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount));
+    String chartTitle = gridTitle + "_" + label + "_" + minsOrMeds[column];
+    vp.add(chartFor(dataTable, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount, chartTitle));    
+    
     Anchor a = new Anchor("Download");
     a.addClickHandler(e -> {
       // Larger chart
       VerticalPanel vpl = new VerticalPanel();
       Widget w =
-          chartFor(dataTable, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount);
+          chartFor(dataTable, innerStyle.withBigMode(true), minVal, maxVal, column, columnCount, chartTitle);
       vpl.add(w);
       vpl.add(downloadLink);
       Utils.displayInPopup("Large chart", vpl, DialogPosition.Center);
@@ -196,5 +199,5 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   }
 
   abstract protected Widget chartFor(final D dataTable, ChartStyle style, double minVal,
-      double maxVal, int column, int columnCount);
+      double maxVal, int column, int columnCount, String chartTitle);
 }

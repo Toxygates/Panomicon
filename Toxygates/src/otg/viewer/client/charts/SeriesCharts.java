@@ -55,20 +55,23 @@ public class SeriesCharts extends Charts {
   }
 
   public void make(final SeriesType seriesType, final List<Series> series,
-      final String highlightDoseOrTime, final Acceptor acceptor, final OTGScreen screen) {
+      final String highlightDoseOrTime, final Acceptor acceptor, final OTGScreen screen,
+      final String compoundName) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain independent points for series.") {
 
           @Override
           public void handleSuccess(String[] result) {
-            finish(seriesType, series, result, highlightDoseOrTime, acceptor, screen);
+            finish(seriesType, series, result, highlightDoseOrTime, acceptor, screen,
+                compoundName);
           }
         });
   }
 
   private void finish(SeriesType seriesType, final List<Series> series, final String[] indepPoints,
-      final String highlightFixed, final Acceptor acceptor, final OTGScreen screen) {
+      final String highlightFixed, final Acceptor acceptor, final OTGScreen screen,
+      final String compoundName) {
     try {
       final String[] fixedVals = series.stream().map(s -> s.get(seriesType.fixedAttribute()))
           .distinct().toArray(String[]::new);
@@ -93,7 +96,7 @@ public class SeriesCharts extends Charts {
       ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, false, fixedVals,
           columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
       cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(), ds.getMin(),
-          ds.getMax());
+                  ds.getMax(), compoundName);
       acceptor.acceptCharts(cg);
 
     } catch (Exception e) {
