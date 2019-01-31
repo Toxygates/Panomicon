@@ -1,5 +1,6 @@
+
 /**
- * Initialize style for network components,
+ * Initialize style for network components
  */
 function initStyle(){
   this.resize();
@@ -20,62 +21,18 @@ function initStyle(){
 }
 
 /**
- * Apply two different layouts, defined by innerName and outerName respectively,
- * to two subsets of nodes within a collection. The inner layout is applied to
- * the nodes in eles, while the outer layout is applied to the remainder of the
- * nodes in the collection.
- * @param {collection} eles The elements to which the layout defined by
- * innerName will be applied. The intersection of two networks.
- * @param {string} innerName The name of the inner layout
- * @param {function} callback A callback function to be executed once the
- * positioning of the nodes has been completed
- * @param {string} outerName The name of the outer layout, the layout applied to
- * the remainder nodes in the collection
- */
-function compositeLayout(eles, innerName, callback, outerName="grid"){
-  // select the nodes to which the outer layout should be applied
-  let outer = eles.absoluteComplement();
-  // remove outer elements from current collection
-  let removed = this.remove(outer);
-  // define the layout for the inner nodes
-  let innerLayout = this.layout({name: innerName});
-  // define the positioning of outer nodes should be done once the layout for
-  // the inner nodes is completed
-  innerLayout.promiseOn('layoutstop').then(function(evt){
-    // restore removed (outer) nodes to the collection
-    removed.restore();
-    // define a layout for the outer nodes
-    let outerLayout = removed.layout({name: outerName});
-    // apply the layout
-    outerLayout.run();
-    // move the outer nodes below the inner nodes in the display
-    removed.shift('y', evt.cy.height());
-    // fit the viewport so that all nodes are displayed
-    evt.cy.fit();
-
-    if( callback ){
-      callback();
-    }
-  });
-  // apply layout to inner nodes
-  innerLayout.run()
-}
-
-
-
-/**
  * Generate the options Object needed to define the layout for a cytoscape
  * network.
  * @param {string} name The identifier used by cytoscape to define a default
  * layout type.
  */
-function updateLayout(type="null", bb=undefined){
+function updateLayout(name="null"){
   window.addPendingRequest();
   return this.layout({
-    name: type,
+    name: name,
     fit: true, // whether to fit to viewport
     padding: 0, // fit padding
-    boundingBox: bb, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+    boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
     animate: false, // whether to transition the node positions
     animationDuration: 500, // duration of animation in ms if enabled
     animationEasing: undefined, // easing of animation if enabled
@@ -88,18 +45,92 @@ function updateLayout(type="null", bb=undefined){
 }
 
 /**
- * Hide nodes in the network that have no edges connecting them to other
- * node
- * @return a collection of nodes that are unconnected to the remainder of the
- * network
+ * Apply two different layouts, defined by innerName and outerName respectively,
+ * to two subsets of nodes within a collection. The inner layout is applied to
+ * the nodes in eles, while the outer layout is applied to the remainder of the
+ * nodes in the collection.
+ * @param {graph} cy The cytoscape for which we are trying to find an
+ * intersection. The intersection on both graphs will be given the same layout,
+ * whilst other elements will be layed out separately for each graph.
+ * @param {string} innerName The name of the layout used for the intersection
+ * @param {string} outerName The name of the layout applied to the remainder
+ * nodes in both graphs
  */
-function hideUnconnected(){
-  // first we find all nodes whose degree (number of edges) is zero
-  var select = this.nodes().filter(function(ele){
-    return ele.degree(false) === 0;
-  });
-  // we remove the unconnected nodes from the network, and return the collection
-  return select.remove();
+function dualLayout(cy, innerName, outerName="grid"){
+  /* get the intersection between this network and cy */
+  let intersection = this.elements().intersection(cy.elements());
+
+  /* the remainder elements are the absolute complement to the intersection, we
+   * remove them from the graph, in order to apply the inner layout only to the
+   * intersecting nodes */
+  let outer = this.remove(intersection.absoluteComplement());
+
+  /* define the layouts for intersecting nodes on both graphs */
+  let innerlay = this.updateLayout(innerName);
+  /* once the positioning of the intersecting nodes in the current graph is
+   * finished, we used them to also position the intersecting nodes in the cy
+   * graph */
+  innerlay.promiseOn('layoutstop').then(function(eles){
+    /* we copy the position of each node in the current graph */
+    eles.forEach(function(node){
+      cy.$("#"+node.id())
+        .position(node.position());
+    });
+  }.bind(null, this.nodes()));
+  /* run the layout for intersecting nodes */
+  innerlay.run();
+
+  /* define the layout for nodes outside the intersection on the current graph */
+  let outerlay = outer.updateLayout(outerName);
+  /* once the layout is finished, shift the position of the nodes down by the
+   * size of the bounding box of the intersecting nodes and fit all the elements
+   * to the viewport */
+  outerlay.promiseOn('layoutstop').then(function(graph){
+    /* shift the nodes down */
+    outer.shift('y', graph.elements().boundingBox().y2);
+    /* restore the nodes into the graph for display */
+    outer.restore();
+    /* fit the whole graph to the viewport */
+    graph.fit();
+  }.bind(null, this));
+  /* run the layout */
+  outerlay.run();
+
+  /* Define a layout for nodes of cy outside the intersection */
+  let dif = cy.elements().difference(intersection);
+  let diflay = dif.updateLayout(outerName);
+  /* shift and fit the graph after the layout has finished its positioning */
+  diflay.promiseOn('layoutstop').then(function(eles){
+    dif.shift('y', eles.boundingBox().y2);//cy.height());
+    cy.fit();
+
+  }.bind(null, this.elements()));
+  /* run the layout */
+  diflay.run();
+}
+
+/**
+ * Hide/Show nodes that have the class "hidden" added to their names. By default
+ * all unconnected nodes are flagged as hidden on load of a network.
+ * @param {boolean} showHidden Whether the nodes should be shown or not as part
+ * of the visualization
+ * @param {collection} eles The list of hidden elements
+ * @return The collection of currently hidden nodes. Note that, even when nodes
+ * might have the class "hidden" among their properties, this does not mean they
+ * are hidden from the visualization.
+ * When "hidden" nodes are shown, null is returned
+ */
+function showHiddenNodes(showHidden=false, eles=null){
+  let hidden = this.elements(".hidden");
+  if( showHidden ){
+    if( eles !== null ){
+      eles.restore();
+    }
+    return this.collection();
+  }
+  else {
+    return hidden.remove();
+  }
 }
 
 /**
@@ -110,14 +141,14 @@ function hideUnconnected(){
  * @return true if an insertion was performed, regardless of the redundance
  * produced when elements are already part of the graph, false in any other case
  */
-function showUnconnected(eles){
-  if( eles !== null ){
-    // we need to show everything
-    eles.restore();
-    // this.nodes().style('display', 'element');
-    return true;
-  }
-  return false;
+function hideUnconnected(){
+  let unconnected = this.nodes().filter(function(ele){
+    return ele.degree(false) === 0;
+  });
+  unconnected.forEach(function(ele){
+    ele.addClass("hidden");
+  });
+
 }
 
 /**
@@ -356,11 +387,12 @@ function onSearchNode(event){
 
 // add functions to cytoscape prototype
 cytoscape("core", "initStyle", initStyle);
-// cytoscape("core", "mergeTo", mergeTo);
-cytoscape("core", "compositeLayout", compositeLayout);
-cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "updateLayout", updateLayout);
+cytoscape("collection", "updateLayout", updateLayout);
+// cytoscape("core", "mergeTo", mergeTo);
+cytoscape("core", "dualLayout", dualLayout);
+cytoscape("core", "initContextMenu", initContextMenu);
+cytoscape("core", "showHiddenNodes", showHiddenNodes);
 cytoscape("core", "hideUnconnected", hideUnconnected);
-cytoscape("core", "showUnconnected", showUnconnected);
 cytoscape("core", "getToxyNodes", getToxyNodes);
 cytoscape("core", "getToxyInteractions", getToxyInteractions);
