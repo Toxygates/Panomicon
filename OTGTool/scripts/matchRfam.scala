@@ -26,8 +26,21 @@ val mirnaDNA = Source.fromFile(args(0)).getLines.grouped(2).
 
 println(s"Loaded ${mirnaDNA.size} miRNA entries from ${args(0)}")
 
-def bestMatches(dnaSeq: String) = {
-  mirnaDNA.getOrElse(dnaSeq, Seq()).map(_._2)
+//Look up mirBase entries for the probe having sequence dnaSeq
+def bestMatches(dnaSeq: String): Seq[String] = {
+  //Exact match
+  val exact = mirnaDNA.get(dnaSeq).map(_.map(_._2))
+  exact match {
+    case Some(e) => e
+    case None =>
+      //Look up entries where one sequence is fully contained in the other
+      val partial = mirnaDNA.filter(mirna => 
+        mirna._1.contains(dnaSeq) || dnaSeq.contains(mirna._1))
+      if (!partial.isEmpty) {
+        println(s"Partial match: $dnaSeq -> ${partial.map(_._1)}")
+      }
+      partial.toSeq.flatMap(_._2.map(_._2))
+  }
 }
 
 val rfamPlatform = Source.fromFile(args(1)).getLines
