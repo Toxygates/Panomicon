@@ -23,9 +23,6 @@ import java.util.logging.Logger;
 import otg.viewer.client.components.ImportingScreen;
 import otg.viewer.client.components.ItemListsStoreHelper;
 import t.clustering.shared.ClusteringList;
-import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.InputDialog;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
@@ -43,14 +40,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   protected void onSaveSuccess(String name, StringList items) {}
 
   /**
-   * Save simple string list to local storage. An input box which asks the list's title will be
-   * shown.
-   */
-  public void save(Collection<String> list) {
-    saveAction(list, "Name entry", "Please enter a name for the list.");
-  }
-
-  /**
    * Save gene set with specified title. No input box will be shown.
    * @return true iff the save action was successful
    */
@@ -60,22 +49,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
 
   public boolean saveAs(Collection<String> list, String name, boolean overwrite) {
     return saveAction(list, name, overwrite);
-  }
-
-  private void saveAction(final Collection<String> list, String caption, String message) {
-    InputDialog entry = new InputDialog(message) {
-      @Override
-      protected void onChange(String value) {
-        if (value == null) { // on Cancel clicked
-          inputDialog.setVisible(false);
-          return;
-        }
-
-        saveAction(list, value, false);
-        inputDialog.setVisible(false);
-      }
-    };
-    inputDialog = Utils.displayInPopup(caption, entry, DialogPosition.Center);
   }
 
   private boolean saveAction(Collection<String> list, String name, boolean overwrite) {
