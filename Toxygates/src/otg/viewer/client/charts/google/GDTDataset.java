@@ -18,18 +18,15 @@
 
 package otg.viewer.client.charts.google;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-
-import otg.viewer.client.charts.ChartSample;
-import otg.viewer.client.charts.Dataset;
-
 import com.google.gwt.visualization.client.DataTable;
 
+import otg.viewer.client.charts.DataPoint;
+import otg.viewer.client.charts.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleClassUtils;
 import t.model.SampleClass;
@@ -42,9 +39,9 @@ public class GDTDataset extends Dataset<GDTData> {
   private StorageProvider storage;
   static final String SAMPLE_ID_PROP = "sample";
 
-  GDTDataset(List<ChartSample> samples, String[] categories, boolean categoriesAreMins,
+  GDTDataset(List<DataPoint> points, String[] categories, boolean categoriesAreMins,
       StorageProvider storage) {
-    super(samples, categories, categoriesAreMins);
+    super(points, categories, categoriesAreMins);
     this.storage = storage;
   }
 
@@ -58,26 +55,22 @@ public class GDTDataset extends Dataset<GDTData> {
       dataTable.setValue(i, 0, categories[i]);
     }
 
-    List<ChartSample> fsamples = new ArrayList<ChartSample>();
-    for (ChartSample s : samples) {
-      if ((probe == null || s.probe().equals(probe))
-          && SampleClassUtils.strictCompatible(filter, s)) {
-        fsamples.add(s);
-      }
-    }
+    DataPoint[] passedPoints =
+        points.stream().filter(p -> ((probe == null || p.probe().equals(probe))
+            && SampleClassUtils.strictCompatible(filter, p))).toArray(DataPoint[]::new);
 
     GDTData gdtData = new GDTData(dataTable);
-    makeColumns(gdtData, fsamples);
+    makeColumns(gdtData, passedPoints);
     return gdtData;
   }
 
   @Override
-  protected void makeColumns(GDTData gdt, List<ChartSample> samples) {
+  protected void makeColumns(GDTData gdt, DataPoint[] samples) {
     int colCount = 0;
     int[] valCount = new int[categories.length];
     DataTable dataTable = gdt.data();
 
-    for (ChartSample sample : samples) {
+    for (DataPoint sample : samples) {
       int categoryIndex = SharedUtils.indexOf(categories, categoryForSample(sample));
       if (categoryIndex != -1) {
         if (colCount < valCount[categoryIndex] + 1) {

@@ -33,7 +33,7 @@ abstract public class Factory<D extends Data, DS extends Dataset<D>> {
 
   abstract public D[][] dataArray(int rows, int cols);
 
-  abstract public DS dataset(List<ChartSample> samples, String[] categories,
+  abstract public DS dataset(List<DataPoint> samples, String[] categories,
       boolean categoriesAreMins, StorageProvider storage);
 
   abstract public ChartGrid<D> grid(OTGScreen screen, DS table, final List<String> rowFilters,

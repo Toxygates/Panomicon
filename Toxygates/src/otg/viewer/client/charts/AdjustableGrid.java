@@ -147,15 +147,15 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     return computedWidth;
   }
 
-  private List<ChartSample> allSamples = new ArrayList<ChartSample>();
+  private List<DataPoint> allPoints = new ArrayList<DataPoint>();
 
   final private String SELECTION_ALL = "All";
 
   private double findMinValue() {
     Double min = null;
-    for (ChartSample s : allSamples) {
-      if (min == null || (s.value < min && s.value != Double.NaN)) {
-        min = s.value;
+    for (DataPoint p : allPoints) {
+      if (min == null || (p.value < min && p.value != Double.NaN)) {
+        min = p.value;
       }
     }
     return min;
@@ -163,9 +163,9 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
   private double findMaxValue() {
     Double max = null;
-    for (ChartSample s : allSamples) {
-      if (max == null || (s.value > max && s.value != Double.NaN)) {
-        max = s.value;
+    for (DataPoint p : allPoints) {
+      if (max == null || (p.value > max && p.value != Double.NaN)) {
+        max = p.value;
       }
     }
     return max;
@@ -206,20 +206,20 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       setWidth(computedWidth + "px");
     }
 
-    source.getSamplesAsync(valueTypeSel.value(), smf, makeGroupPolicy(),
-        new ExpressionRowSource.SampleAcceptor() {
+    source.getPointsAsync(valueTypeSel.value(), smf, makeGroupPolicy(),
+        new ExpressionRowSource.DataPointAcceptor() {
           @Override
-          public void accept(List<ChartSample> samples) {
-            allSamples.addAll(samples);
-            DS ct = factory.dataset(samples, vsMinor ? source.minorVals() : source.mediumVals(),
+          public void accept(List<DataPoint> points) {
+            allPoints.addAll(points);
+            DS ct = factory.dataset(points, vsMinor ? source.minorVals() : source.mediumVals(),
                 vsMinor, storageProvider);
 
-            ChartGrid<D> cg =
+            ChartGrid<D> grid =
                 factory.grid(screen, ct, useMajors == null ? majorVals : Arrays.asList(useMajors),
                     organisms, true, useColumns, !vsMinor, TOTAL_WIDTH);
 
-            intoList.add(cg);
-            intoPanel.add(cg);
+            intoList.add(grid);
+            intoPanel.add(grid);
             intoPanel.setHeight("");
 
             expectedGrids -= 1;
@@ -270,7 +270,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
       final List<ChartGrid<D>> grids = new ArrayList<ChartGrid<D>>();
       expectedGrids = 0;
-      allSamples.clear();
+      allPoints.clear();
 
       final boolean vsTime = chartCombo.getSelectedIndex() == 0;
       if (groups != null) {

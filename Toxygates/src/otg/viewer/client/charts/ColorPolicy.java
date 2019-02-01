@@ -26,14 +26,14 @@ import t.common.shared.DataSchema;
 import t.common.shared.sample.Sample;
 
 /**
- * A ColorPolicy is a way of coloring samples in a chart.
+ * A ColorPolicy is a way of coloring data points in a chart.
  */
 class ColorPolicy {
 
   final String defaultColor = "grey";
 
   @Nullable
-  String colorFor(ChartSample sample) {
+  String colorFor(DataPoint sample) {
     return defaultColor;
   }
 
@@ -47,12 +47,12 @@ class ColorPolicy {
     }
 
     @Override
-    String colorFor(ChartSample sample) {
-      DataSchema schema = sample.schema();
-      if (schema.getMinor(sample).equals(timeDose) || schema.getMedium(sample).equals(timeDose)) {
+    String colorFor(DataPoint point) {
+      DataSchema schema = point.schema();
+      if (schema.getMinor(point).equals(timeDose) || schema.getMedium(point).equals(timeDose)) {
         return color;
       }
-      return super.colorFor(sample);
+      return super.colorFor(point);
     }
   }
 
@@ -64,11 +64,11 @@ class ColorPolicy {
     }
 
     @Override
-    String colorFor(ChartSample sample) {
-      if (colors.containsKey(sample.sample)) {
-        return colors.get(sample.sample);
+    String colorFor(DataPoint point) {
+      if (colors.containsKey(point.sample)) {
+        return colors.get(point.sample);
       }
-      return super.colorFor(sample);
+      return super.colorFor(point);
     }
   }
 }

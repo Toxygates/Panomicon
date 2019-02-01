@@ -81,11 +81,11 @@ public class SeriesCharts extends Charts {
       DataSource cds = new DataSource.SeriesSource(schema, series,
           seriesType.independentAttribute(), indepPoints);
 
-      List<ChartSample> samples = cds.getSamples(null, new SampleMultiFilter(),
+      List<DataPoint> points = cds.getPoints(null, new SampleMultiFilter(),
           new TimeDoseColorPolicy(highlightFixed, "SkyBlue"));
 
       boolean categoriesAreMinors = seriesType == SeriesType.Time;
-      GDTDataset ds = factory.dataset(samples, indepPoints, categoriesAreMinors, storageProvider);
+      GDTDataset ds = factory.dataset(points, indepPoints, categoriesAreMinors, storageProvider);
       List<String> filters =
           series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
 

@@ -68,8 +68,8 @@ public class MatrixCharts extends Charts {
     this.sampleService = screen.manager().sampleService();
 
     List<SampleClass> scs = new ArrayList<SampleClass>();
-    for (Group g : groups) {
-      for (Unit unit : g.getUnits()) {
+    for (Group group : groups) {
+      for (Unit unit : group.getUnits()) {
         SampleClass unitClass = unit.getSamples()[0].sampleClass();
         SampleClass sc = SampleClassUtils.asMacroClass(unitClass, schema);
         sc.put(CoreParameter.ControlGroup, unitClass.get(CoreParameter.ControlGroup));

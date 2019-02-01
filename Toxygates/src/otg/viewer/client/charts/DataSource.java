@@ -41,7 +41,7 @@ abstract public class DataSource {
 
   private static Logger logger = SharedUtils.getLogger("chartdata");
 
-  protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
+  protected List<DataPoint> chartPoints = new ArrayList<DataPoint>();
 
   protected String[] minorVals;
   protected String[] mediumVals;
@@ -85,20 +85,20 @@ abstract public class DataSource {
   }
 
   /**
-   * Obtain ChartSample datapoints for the chart.
+   * Obtain datapoints for the chart.
    */
-  List<ChartSample> getSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy) {
-    List<ChartSample> useSamples;
+  List<DataPoint> getPoints(ValueType vt, SampleMultiFilter smf, ColorPolicy policy) {
+    List<DataPoint> usePoints;
     if (smf.contains(schema.majorParameter())) {
-      useSamples =
-          chartSamples.stream().filter(s -> smf.accepts(s)).distinct().collect(Collectors.toList());
+      usePoints =
+          chartPoints.stream().filter(s -> smf.accepts(s)).distinct().collect(Collectors.toList());
     } else {
-      useSamples = chartSamples;
+      usePoints = chartPoints;
     }
-    for (ChartSample s : useSamples) {
+    for (DataPoint s : usePoints) {
       s.color = policy.colorFor(s);
     }
-    return useSamples;
+    return usePoints;
   }
 
   static class SeriesSource extends DataSource {
@@ -108,14 +108,14 @@ abstract public class DataSource {
       for (Series s : series) {
         for (int i = 0; i < s.values().length; ++i) {
           ExpressionValue ev = s.values()[i];
-          String point = indepPoints[i];
-          SampleClass sc = s.sampleClass().copyWith(indepAttribute, point);
-          ChartSample cs =
-              new ChartSample(sc, schema, ev.getValue(), null, s.probe(), ev.getCall(), null);
-          chartSamples.add(cs);
+          String indep = indepPoints[i];
+          SampleClass sc = s.sampleClass().copyWith(indepAttribute, indep);
+          DataPoint p =
+              new DataPoint(sc, schema, ev.getValue(), null, s.probe(), ev.getCall(), null);
+          chartPoints.add(p);
         }
       }
-      initParams(chartSamples, false);
+      initParams(chartPoints, false);
     }
   }
 
@@ -126,34 +126,34 @@ abstract public class DataSource {
   public static class ExpressionRowSource extends DataSource {
     protected Sample[] samples;
 
-    interface SampleAcceptor {
-      void accept(List<ChartSample> samples);
+    interface DataPointAcceptor {
+      void accept(List<DataPoint> points);
     }
 
     /**
-     * Obtain ChartSample datapoints, making an asynchronous call if necessary, and pass them on to
+     * Obtain datapoints, making an asynchronous call if necessary, and pass them on to
      * the sample acceptor when they are available.
      */
-    void getSamplesAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
-        SampleAcceptor acceptor) {
-      acceptor.accept(getSamples(vt, smf, policy));
+    void getPointsAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+        DataPointAcceptor acceptor) {
+      acceptor.accept(getPoints(vt, smf, policy));
     }
 
     ExpressionRowSource(DataSchema schema, Sample[] samples, List<ExpressionRow> rows) {
       super(schema);
       this.samples = samples;
-      addSamplesFromBarcodes(samples, rows);
+      addPointsFromSamples(samples, rows);
       initParams(Arrays.asList(samples), true);
     }
 
-    protected void addSamplesFromBarcodes(Sample[] samples, List<ExpressionRow> rows) {
+    protected void addPointsFromSamples(Sample[] samples, List<ExpressionRow> rows) {
       logger.info("Add samples from " + samples.length + " samples and " + rows.size() + " rows");
       for (int i = 0; i < samples.length; ++i) {
         for (ExpressionRow er : rows) {
           ExpressionValue ev = er.getValue(i);
-          ChartSample cs = new ChartSample(samples[i], schema, ev.getValue(), er.getProbe(),
+          DataPoint cs = new DataPoint(samples[i], schema, ev.getValue(), er.getProbe(),
               ev.getCall(), schema.chartLabel(samples[i]));
-          chartSamples.add(cs);
+          chartPoints.add(cs);
         }
       }
     }
@@ -177,14 +177,14 @@ abstract public class DataSource {
     }
 
     void loadData(final ValueType vt, final SampleMultiFilter smf, final ColorPolicy policy,
-        final SampleAcceptor acceptor) {
+        final DataPointAcceptor acceptor) {
       logger.info("Dynamic source: load for " + smf + " " + vt);
 
 
       Sample[] useSamples =
           Arrays.stream(samples).filter(s -> smf.accepts(s)).toArray(Sample[]::new);
 
-      chartSamples.clear();
+      chartPoints.clear();
       Group g = new Group(schema, "temporary", useSamples);
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
@@ -193,8 +193,8 @@ abstract public class DataSource {
 
             @Override
             public void handleSuccess(final FullMatrix mat) {
-              addSamplesFromBarcodes(useSamples, mat.rows());
-              getLoadedSamples(vt, smf, policy, acceptor);
+              addPointsFromSamples(useSamples, mat.rows());
+              getLoadedPoints(vt, smf, policy, acceptor);
             }
           });
 
@@ -203,14 +203,14 @@ abstract public class DataSource {
     // TODO think about the way these methods interact with superclass
     // - bad design
     @Override
-    void getSamplesAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
-        SampleAcceptor acceptor) {
+    void getPointsAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+        DataPointAcceptor acceptor) {
       loadData(vt, smf, policy, acceptor);
     }
 
-    protected void getLoadedSamples(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
-        SampleAcceptor acceptor) {
-      super.getSamplesAsync(vt, smf, policy, acceptor);
+    protected void getLoadedPoints(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,
+        DataPointAcceptor acceptor) {
+      super.getPointsAsync(vt, smf, policy, acceptor);
     }
   }
 
@@ -227,7 +227,7 @@ abstract public class DataSource {
 
     @Override
     void loadData(final ValueType vt, final SampleMultiFilter smf, final ColorPolicy policy,
-        final SampleAcceptor acceptor) {
+        final DataPointAcceptor acceptor) {
       logger.info("Dynamic unit source: load for " + smf + " " + vt);
 
       final List<Group> groups = new ArrayList<Group>();
@@ -243,26 +243,26 @@ abstract public class DataSource {
         }
       }
 
-      chartSamples.clear();
+      chartPoints.clear();
       matrixService.getFullData(groups, probes, false, vt,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data") {
 
             @Override
             public void handleSuccess(final FullMatrix mat) {
-              addSamplesFromUnits(useUnits, mat.rows());
-              getLoadedSamples(vt, smf, policy, acceptor);
+              addPointsFromUnits(useUnits, mat.rows());
+              getLoadedPoints(vt, smf, policy, acceptor);
             }
           });
     }
 
-    protected void addSamplesFromUnits(List<Unit> units, List<ExpressionRow> rows) {
+    protected void addPointsFromUnits(List<Unit> units, List<ExpressionRow> rows) {
       logger.info("Add samples from " + units.size() + " units and " + rows.size() + " rows");
       for (int i = 0; i < units.size(); ++i) {
         for (ExpressionRow er : rows) {
           ExpressionValue ev = er.getValue(i);
-          ChartSample cs =
-              new ChartSample(units.get(i), schema, ev.getValue(), er.getProbe(), ev.getCall());
-          chartSamples.add(cs);
+          DataPoint cs =
+              new DataPoint(units.get(i), schema, ev.getValue(), er.getProbe(), ev.getCall());
+          chartPoints.add(cs);
         }
       }
     }

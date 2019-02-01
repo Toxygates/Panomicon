@@ -34,7 +34,7 @@ import t.model.SampleClass;
  */
 abstract public class Dataset<D extends Data> {
 
-  protected List<ChartSample> samples;
+  protected List<DataPoint> points;
   protected String[] categories;
   protected boolean categoriesAreMins;
 
@@ -43,16 +43,16 @@ abstract public class Dataset<D extends Data> {
 
   protected Logger logger = SharedUtils.getLogger("ChartDataset");
 
-  protected Dataset(List<ChartSample> samples, String[] categories,
+  protected Dataset(List<DataPoint> points, String[] categories,
       boolean categoriesAreMins) {
-    this.samples = samples;
+    this.points = points;
     this.categoriesAreMins = categoriesAreMins;
     this.categories = categories;
     init();
   }
 
   protected void init() {
-    for (ChartSample s : samples) {
+    for (DataPoint s : points) {
       if (s.value < min || Double.isNaN(min)) {
         min = s.value;
       }
@@ -91,18 +91,18 @@ abstract public class Dataset<D extends Data> {
    */
   abstract public D makeData(SampleClass filter, @Nullable String probe);
 
-  protected String categoryForSample(ChartSample sample) {
+  protected String categoryForSample(DataPoint sample) {
     DataSchema schema = sample.schema();
-    for (String c : categories) {
-      if (categoriesAreMins && schema.getMinor(sample).equals(c)) {
-        return c;
-      } else if (!categoriesAreMins && schema.getMedium(sample).equals(c)) {
-        return c;
+    for (String category : categories) {
+      if (categoriesAreMins && schema.getMinor(sample).equals(category)) {
+        return category;
+      } else if (!categoriesAreMins && schema.getMedium(sample).equals(category)) {
+        return category;
       }
     }
     return null;
   }
 
-  abstract protected void makeColumns(D dt, List<ChartSample> samples);
+  abstract protected void makeColumns(D dt, DataPoint[] samples);
 
 }

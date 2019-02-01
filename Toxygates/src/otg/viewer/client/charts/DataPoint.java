@@ -30,9 +30,9 @@ import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 /**
- * A ChartSample is a single data point in a chart.
+ * A single data point in a chart.
  */
-public class ChartSample implements HasClass {
+public class DataPoint implements HasClass {
   final SampleClass sc;
   final DataSchema schema;
 
@@ -43,7 +43,7 @@ public class ChartSample implements HasClass {
   String color = "grey";
   final String label;
 
-  ChartSample(SampleClass sc, DataSchema schema, double value, Sample sample, String probe,
+  DataPoint(SampleClass sc, DataSchema schema, double value, Sample sample, String probe,
       char call, @Nullable String label) {
 
     this.sc = sc.copyOnly(Arrays.asList(schema.chartParameters()));
@@ -55,12 +55,12 @@ public class ChartSample implements HasClass {
     this.label = label;
   }
 
-  ChartSample(Sample sample, DataSchema schema, double value, String probe, char call,
+  DataPoint(Sample sample, DataSchema schema, double value, String probe, char call,
       @Nullable String label) {
     this(sample.sampleClass(), schema, value, sample, probe, call, label);
   }
 
-  ChartSample(Unit u, DataSchema schema, double value, String probe, char call) {
+  DataPoint(Unit u, DataSchema schema, double value, String probe, char call) {
     this(u, schema, value, u.getSamples()[0], // representative sample only
         probe, call, "");
   }
