@@ -60,7 +60,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private static int lastType = -1;
   private static String lastSubtype = null;
   private List<String> chartSubtypes = new ArrayList<String>();
-  
+
   private String chartsTitle;
 
   private final DataSchema schema;
@@ -206,42 +206,37 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       setWidth(computedWidth + "px");
     }
 
-    source.getPointsAsync(valueTypeSel.value(), smf, makeGroupPolicy(),
-        new ExpressionRowSource.DataPointAcceptor() {
-          @Override
-          public void accept(List<DataPoint> points) {
-            allPoints.addAll(points);
-            DS ct = factory.dataset(points, vsMinor ? source.minorVals() : source.mediumVals(),
-                vsMinor, storageProvider);
+    source.getPointsAsync(valueTypeSel.value(), smf, makeGroupPolicy(), points -> {
+      allPoints.addAll(points);
+      DS ct = factory.dataset(points, vsMinor ? source.minorVals() : source.mediumVals(), vsMinor,
+          storageProvider);
 
-            List<String> rowFilters = useMajors == null ? majorVals : Arrays.asList(useMajors);
-            ChartGrid<D> grid =
-                factory.grid(screen, ct, rowFilters, rowFilters,
-                    organisms, true, useColumns, !vsMinor, TOTAL_WIDTH);
+      List<String> rowFilters = useMajors == null ? majorVals : Arrays.asList(useMajors);
+      ChartGrid<D> grid = factory.grid(screen, ct, rowFilters, rowFilters, organisms, true,
+          useColumns, !vsMinor, TOTAL_WIDTH);
 
-            intoList.add(grid);
-            intoPanel.add(grid);
-            intoPanel.setHeight("");
+      intoList.add(grid);
+      intoPanel.add(grid);
+      intoPanel.setHeight("");
 
-            expectedGrids -= 1;
-            if (expectedGrids == 0) {
-              double minVal = findMinValue();
-              double maxVal = findMaxValue();
-              // got all the grids
-              // harmonise the column count across all grids
-              int maxCols = 0;
-              for (ChartGrid<D> gr : intoList) {
-                if (gr.getMaxColumnCount() > maxCols) {
-                  maxCols = gr.getMaxColumnCount();
-                }
-              }
-              for (ChartGrid<D> gr : intoList) {
-                gr.adjustAndDisplay(new ChartStyle(0, false, null, false), maxCols, minVal, maxVal, chartsTitle);
-              }
-            }
+      expectedGrids -= 1;
+      if (expectedGrids == 0) {
+        double minVal = findMinValue();
+        double maxVal = findMaxValue();
+        // got all the grids
+        // harmonise the column count across all grids
+        int maxCols = 0;
+        for (ChartGrid<D> gr : intoList) {
+          if (gr.getMaxColumnCount() > maxCols) {
+            maxCols = gr.getMaxColumnCount();
           }
-        });
-
+        }
+        for (ChartGrid<D> gr : intoList) {
+          gr.adjustAndDisplay(new ChartStyle(0, false, null, false), maxCols, minVal, maxVal,
+              chartsTitle);
+        }
+      }
+    });
   }
 
   int expectedGrids;
@@ -254,7 +249,6 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   }
 
   public void redraw(boolean fromUpdate) {
-
     if (chartSubtypeCombo.getItemCount() == 0 && !fromUpdate) {
       updateSeriesSubtypes(); // will redraw for us later
     } else {

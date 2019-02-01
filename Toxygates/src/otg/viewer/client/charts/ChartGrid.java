@@ -108,7 +108,6 @@ abstract public class ChartGrid<D extends Data> extends Composite {
         grid.setWidget(i * 2 + 1, 0, Utils.mkEmphLabel(rowLabels.get(i)));
       }
     }
-
   }
 
   public int computedTotalWidth() {
@@ -121,7 +120,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   }
 
   /**
-   * Obtain the largest number of data columns used in any of our backing tables.@return
+   * Obtain the largest number of data columns used in any of our backing tables.
    */
   public int getMaxColumnCount() {
     int max = 0;
@@ -143,8 +142,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     for (int col = 0; col < minsOrMeds.length; ++col) {
       for (int row = 0; row < rowFilters.size(); ++row) {
         for (int org = 0; org < osize; ++org) {
-          String label = organisms.get(org) + ":" + rowFilters.get(row);
-          displayAt(innerStyle, row * osize + org, col, minVal, maxVal, tableColumnCount, label, gridTitle);
+          String fallbackLabel = organisms.get(org) + ":" + rowFilters.get(row);
+          displayAt(innerStyle, row * osize + org, col, minVal, maxVal, tableColumnCount, fallbackLabel, gridTitle);
         }
       }
     }
@@ -155,15 +154,17 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * charts to have equally wide bars. (To the greatest extent possible)
    */
   private void displayAt(final ChartStyle style, final int row, final int column,
-      final double minVal, final double maxVal, final int columnCount, String label, String gridTitle) {
+      final double minVal, final double maxVal, final int columnCount, String fallbackLabel,
+      String gridTitle) {
     final D dataTable = tables[row][column];
 
     if (dataTable.numberOfColumns() == 1) {
       return; // no data columns -> no data to show
     }
     if (grid.getWidget(row * 2 + 1, 0) == null) {
-      // add the label if this is the first chart for the rowFilter
-      grid.setWidget(row * 2 + 1, 0, Utils.mkEmphLabel(label));
+      // add the label if none has been set so far
+      // (currently used in the case of orthologous charts only)
+      grid.setWidget(row * 2 + 1, 0, Utils.mkEmphLabel(fallbackLabel));
     }
     final HTML downloadLink = new HTML();
     VerticalPanel vp = new VerticalPanel();
