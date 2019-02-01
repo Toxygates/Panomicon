@@ -45,10 +45,11 @@ public class Series implements HasClass, Serializable {
    * @param sc Sample class parameters
    * @param values Data points
    */
-  public Series(String title, String probe, Attribute independentParam, SampleClass sc,
-      ExpressionValue[] values) {
+  public Series(String title, String probe, String geneSym, Attribute independentParam,
+      SampleClass sc, ExpressionValue[] values) {
     _values = values;
     _title = title;
+    _geneSym = geneSym;
     _probe = probe;
     _independentParam = independentParam;
     _sc = sc;
@@ -65,6 +66,12 @@ public class Series implements HasClass, Serializable {
 
   public String probe() {
     return _probe;
+  }
+
+  private String _geneSym;
+
+  public String geneSym() {
+    return _geneSym;
   }
 
   private Attribute _independentParam;

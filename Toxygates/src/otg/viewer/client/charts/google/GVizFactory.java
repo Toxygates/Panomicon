@@ -42,9 +42,10 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
 
   @Override
   public GVizChartGrid grid(OTGScreen screen, GDTDataset table, List<String> rowFilters,
+      List<String> rowLabels,
       List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses, boolean columnsAreTimes,
       int totalWidth) {
-    return new GVizChartGrid(this, screen, table, rowFilters, organisms, rowsAreMajors,
+    return new GVizChartGrid(this, screen, table, rowFilters, rowLabels, organisms, rowsAreMajors,
         timesOrDoses, columnsAreTimes, totalWidth);
   }
 

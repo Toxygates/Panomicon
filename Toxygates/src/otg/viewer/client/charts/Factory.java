@@ -36,8 +36,8 @@ abstract public class Factory<D extends Data, DS extends Dataset<D>> {
   abstract public DS dataset(List<DataPoint> samples, String[] categories,
       boolean categoriesAreMins, StorageProvider storage);
 
-  abstract public ChartGrid<D> grid(OTGScreen screen, DS table, final List<String> rowFilters,
-      final List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
+  abstract public ChartGrid<D> grid(OTGScreen screen, DS table, List<String> rowFilters,
+      List<String> rowLabels, List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
       boolean columnsAreTimes, int totalWidth);
 
   abstract public int gridMaxWidth();

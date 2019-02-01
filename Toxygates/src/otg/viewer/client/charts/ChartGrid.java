@@ -26,24 +26,20 @@ import otg.model.sample.OTGAttribute;
 import otg.viewer.client.charts.google.GVizChartGrid;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.ProbeServiceAsync;
 
 /**
  * A grid to display time (or dose) series charts for a number of probes and doses (or times).
  */
 abstract public class ChartGrid<D extends Data> extends Composite {
 
-  protected final ProbeServiceAsync probeService;
-
   Grid grid;
 
+  List<String> rowLabels;
   List<String> rowFilters;
   List<String> organisms;
   String[] minsOrMeds;
@@ -57,19 +53,21 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   /**
    * @param rowFilters major parameter values or gene symbols, depending on the chart type.
    * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
+   * @param rowLabels labels to be displayed at each row in the chart grid. 
    */
   public ChartGrid(Factory<D, ?> factory, OTGScreen screen, Dataset<D> dataset,
-      final List<String> rowFilters, final List<String> organisms, boolean rowsAreMajors,
+      final List<String> rowFilters, final List<String> rowLabels,
+      final List<String> organisms, boolean rowsAreMajors,
       String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
     super();
     this.factory = factory;
     this.organisms = organisms;
     this.rowFilters = rowFilters;
+    this.rowLabels = rowLabels;
     this.minsOrMeds = minsOrMeds;
     this.dataset = dataset;
     this.totalWidth = totalWidth;
     this.screen = screen;
-    probeService = screen.manager().probeService();
 
     if (organisms.size() == 0) {
       organisms.add(NO_ORGANISM);
@@ -81,7 +79,6 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     initWidget(grid);
 
     DataSchema schema = screen.manager().schema();
-
 
     tables = factory.dataArray(rfsize * osize, minsOrMeds.length);
     for (int col = 0; col < minsOrMeds.length; ++col) {
@@ -107,16 +104,9 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     }
 
     if (!rowsAreMajors) {
-      probeService.geneSyms(rowFilters.toArray(new String[0]),
-          new PendingAsyncCallback<String[][]>(screen) {
-            @Override
-            public void handleSuccess(String[][] results) {
-              for (int i = 0; i < results.length; ++i) {
-                grid.setWidget(i * 2 + 1, 0,
-                    Utils.mkEmphLabel(SharedUtils.mkString(results[i]) + "/" + rowFilters.get(i)));
-              }
-            }
-          });
+      for (int i = 0; i < rowLabels.size(); ++i) {
+        grid.setWidget(i * 2 + 1, 0, Utils.mkEmphLabel(rowLabels.get(i)));
+      }
     }
 
   }
@@ -179,7 +169,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     VerticalPanel vp = new VerticalPanel();
     final ChartStyle innerStyle = style.withDownloadLink(downloadLink);
 
-    String chartTitle = gridTitle + "_" + label + "_" + minsOrMeds[column];
+    String chartTitle = gridTitle + "_" + rowLabels.get(row) + "_" + minsOrMeds[column];
     vp.add(chartFor(dataTable, innerStyle.withBigMode(false), minVal, maxVal, column, columnCount, chartTitle));    
     
     Anchor a = new Anchor("Download");

@@ -58,7 +58,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S]
 
-  implicit protected def asShared(s: S): SSeries
+  implicit def asShared(s: S): SSeries = asShared(s, "")
+  protected def asShared(s: S, geneSym: String): SSeries
   implicit protected def fromShared(s: SSeries): S
 
   protected def builder(s: SeriesType): SeriesBuilder[S]
@@ -118,7 +119,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     })
 
     withDB(seriesType, db => {
-      val key: S = new SSeries("", probesRules.head._1,
+      val key: S = new SSeries("", probesRules.head._1, "",
           OTGAttribute.ExposureTime, sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
@@ -149,7 +150,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       sc: SampleClass, probe: String, timeDose: String,
       compound: String): SSeries = {
     withDB(seriesType, db => {
-      val key: S = new SSeries("", probe, seriesType.independentAttribute, sc, Array.empty)
+      val key: S = new SSeries("", probe, "", seriesType.independentAttribute, sc, Array.empty)
       db.read(key).head
     })
   }
@@ -160,12 +161,15 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     compounds: Array[String]): JList[SSeries] = {
     val validated = context.probes.identifiersToProbes(
       mcontext.probeMap,
-      probes, true, true).map(_.identifier)
+      probes, true, true)
+    val lookup = Map() ++ context.probes.withAttributes(validated).
+      map(p => p.identifier -> p.symbols.head)
 
     val preFilter = withDB(seriesType, db => {
       validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p, seriesType.independentAttribute,
+          db.read(fromShared(new SSeries("", p.identifier, "",
+              seriesType.independentAttribute,
             sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
     })
 
@@ -177,7 +181,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       !schema.isControlValue(s.constraints(seriesType.fixedAttribute())))
 
     println(s"Read ${preFilter.size} series, filtered to ${filtered.size}")
-    val jss = filtered.map(asShared)
+    val jss = filtered.map(s => asShared(s, lookup(s.probeStr)))
     jss.asGWT
   }
 

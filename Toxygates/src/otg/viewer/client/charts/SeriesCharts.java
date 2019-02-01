@@ -30,8 +30,7 @@ import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.Series;
-import t.common.shared.SampleMultiFilter;
-import t.common.shared.SeriesType;
+import t.common.shared.*;
 import t.model.SampleClass;
 import t.viewer.client.components.PendingAsyncCallback;
 
@@ -86,14 +85,21 @@ public class SeriesCharts extends Charts {
 
       boolean categoriesAreMinors = seriesType == SeriesType.Time;
       GDTDataset ds = factory.dataset(points, indepPoints, categoriesAreMinors, storageProvider);
-      List<String> filters =
-          series.stream().map(s -> s.probe()).distinct().collect(Collectors.toList());
+      List<Pair<String, String>> filtersLabels =
+          series.stream().map(s -> new FirstKeyedPair<String, String>(s.probe(), s.geneSym()))
+              .distinct().collect(Collectors.toList());
+
+      List<String> rowFilters =
+          filtersLabels.stream().map(s -> s.first()).collect(Collectors.toList());
+      List<String> rowLabels =
+          filtersLabels.stream().map(s -> s.second() + "/" + s.first())
+              .collect(Collectors.toList());
 
       List<String> organisms = new ArrayList<String>(
           SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
       boolean columnsAreTimes = seriesType == SeriesType.Dose;
-      ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, false, fixedVals,
+      ChartGrid<?> cg = factory.grid(screen, ds, rowFilters, rowLabels, organisms, false, fixedVals,
           columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
       cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(), ds.getMin(),
                   ds.getMax(), compoundName);

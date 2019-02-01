@@ -64,7 +64,7 @@ object Conversions {
       p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
   }
 
-  implicit def asJava(series: OTGSeries)(implicit context: OTGContext): Series = {
+  def asJava(series: OTGSeries, geneSym: String)(implicit context: OTGContext): Series = {
     implicit val mc = context.matrix
     val name = series.compound + " " + series.doseOrTime
     val sc = new t.model.SampleClass
@@ -74,8 +74,12 @@ object Conversions {
     sc.put(TestType, series.testType)
     sc.put(Organ, series.organ)
     sc.put(Repeat, series.repeat)
-    new Series(name, series.probeStr, series.seriesType.independentVariable, sc,
-      series.values.map(t.viewer.server.Conversions.asJava).toArray)
+    new Series(name, series.probeStr, geneSym, series.seriesType.independentVariable,
+        sc, series.values.map(t.viewer.server.Conversions.asJava).toArray)
+  }
+
+  implicit def asJava(series: OTGSeries)(implicit context: OTGContext): Series = {
+    asJava(series, "")
   }
 
   implicit def asScala(rr: RankRule): SeriesRanking.RankType = {

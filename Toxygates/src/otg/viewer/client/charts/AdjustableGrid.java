@@ -214,8 +214,9 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
             DS ct = factory.dataset(points, vsMinor ? source.minorVals() : source.mediumVals(),
                 vsMinor, storageProvider);
 
+            List<String> rowFilters = useMajors == null ? majorVals : Arrays.asList(useMajors);
             ChartGrid<D> grid =
-                factory.grid(screen, ct, useMajors == null ? majorVals : Arrays.asList(useMajors),
+                factory.grid(screen, ct, rowFilters, rowFilters,
                     organisms, true, useColumns, !vsMinor, TOTAL_WIDTH);
 
             intoList.add(grid);

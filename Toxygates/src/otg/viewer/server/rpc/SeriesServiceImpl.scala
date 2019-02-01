@@ -37,8 +37,8 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
   protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) =
     new otg.SeriesRanking(db, key)
 
-  override protected def asShared(s: OTGSeries): SSeries =
-    Conversions.asJava(s)
+  override protected def asShared(s: OTGSeries, geneSym: String): SSeries =
+    Conversions.asJava(s, geneSym)
 
   override protected def fromShared(s: SSeries): OTGSeries =
     Conversions.asScala(s)
