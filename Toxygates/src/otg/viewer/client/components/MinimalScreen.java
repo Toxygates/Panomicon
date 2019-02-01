@@ -444,9 +444,12 @@ public abstract class MinimalScreen implements OTGScreen {
     if (numPendingRequests == 1) {
       if (waitDialog == null) {
         waitDialog = Utils.waitDialog();
-      } else {
-        waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
       }
+      /* Utils.displayInCenter immediately shows the dialog, and centers it in a
+       * deferred command. If showing the dialog is deferred as well, like with
+       * many other dialogs, this can cause a race condition that results in the
+       * dialog not being hidden even when all pending requests are done. */ 
+      Utils.displayInCenter(waitDialog);
     }
   }
 

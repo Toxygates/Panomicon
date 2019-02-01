@@ -56,6 +56,10 @@ public class Groups {
   }
 
   public void put(String key, Group value, boolean chosen) {
+    Group oldGroup = groups.get(key);
+    if (oldGroup != null) {
+      activeGroups.remove(oldGroup);
+    }
     groups.put(key, value);
     if (chosen) {
       activeGroups.add(value);
