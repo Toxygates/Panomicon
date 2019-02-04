@@ -435,8 +435,10 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     Group group = groups.get(name);
     SampleClass macroClass = 
         SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
+    if (!macroClass.equals(chosenSampleClass)) {
+      delegate.groupInspectorSampleClassChanged(macroClass);
+    }
     sampleClassChanged(macroClass);
-    delegate.groupInspectorSampleClassChanged(macroClass);
 
     List<String> compounds = 
         SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).

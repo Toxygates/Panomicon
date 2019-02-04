@@ -143,19 +143,19 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     compoundSelector.fetchCompounds();
     chosenSampleClass = newSampleClass;
   }
+  
+  @Override
+  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+    getStorage().datasetsStorage.store(datasets);
+    groupInspector.datasetsChanged(datasets);
+    compoundSelector.fetchCompounds();
+  }
 
   // GroupInspector.Delegate methods
   @Override
   public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
     filterTools.datasetsChanged(datasets);
-    compoundSelector.fetchCompounds();
-  }
-
-  @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
-    getStorage().datasetsStorage.store(datasets);
-    groupInspector.datasetsChanged(datasets);
     compoundSelector.fetchCompounds();
   }
 
