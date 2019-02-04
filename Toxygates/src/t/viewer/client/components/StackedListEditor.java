@@ -266,7 +266,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     if (listChooser != null) {
       listChooser.setItems(new ArrayList<String>(items));
     }
-    triggerChange();
+    if (from != null) {
+      triggerChange();
+    }
   }
 
   @Override
@@ -286,10 +288,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   // Ditto
   protected void listsChanged(List<ItemList> itemLists) {}
 
-  public void clearSelection() {
-    setSelection(new HashSet<String>());
-  }
-  
   public void scrollBrowseCheckToTop() {
     browseCheck.scrollToTop();
   }

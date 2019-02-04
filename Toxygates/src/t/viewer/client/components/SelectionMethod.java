@@ -28,7 +28,6 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 import t.common.client.components.SetEditor;
 
-
 /**
  * A selection method is a particular user interface for editing the list.
  * It calls back to the StackedListEditor when the selection changes.

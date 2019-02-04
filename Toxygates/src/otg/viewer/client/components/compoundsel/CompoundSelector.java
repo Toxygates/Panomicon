@@ -60,7 +60,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   protected SampleClass chosenSampleClass;
-  protected List<String> chosenCompounds = new ArrayList<String>();
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
 
   public Delegate delegate() {
@@ -165,12 +164,9 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   public void setSelection(List<String> compounds) {
     compoundEditor.setSelection(compounds);
-    Collections.sort(compounds);
-    setCompounds(compounds);
   }
 
   private void setCompounds(List<String> compounds) {
-    chosenCompounds = compounds;
     delegate.compoundSelectorCompoundsChanged(compounds);
   }
 
@@ -187,7 +183,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public void setChosenCompounds(List<String> compounds) {
-    chosenCompounds = compounds;
     setSelection(compounds);
   }
 
