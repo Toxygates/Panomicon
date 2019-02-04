@@ -432,9 +432,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   @Override
   public void displayGroup(String name) {
     setHeading("editing " + name);
-    Group g = groups.get(name);
+    Group group = groups.get(name);
     SampleClass macroClass = 
-        SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(), schema);
+        SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
     sampleClassChanged(macroClass);
     delegate.groupInspectorSampleClassChanged(macroClass);
 
@@ -447,7 +447,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     onGroupNameInputChanged();
     nameIsAutoGen = false;
 
-    multiSelectionGrid.setSelection(g.getUnits());
+    multiSelectionGrid.setSelection(group.getUnits());
 
     setEditMode(true);
   }

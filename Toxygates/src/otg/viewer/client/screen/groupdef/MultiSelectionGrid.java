@@ -163,8 +163,8 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     for (SampleClass sc : lcompounds.keySet()) {
       List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
       Collections.sort(compounds);
-      SelectionTDGrid g = findOrCreateSection(sc, true);
-      g.compoundsChanged(compounds, selection);
+      SelectionTDGrid grid = findOrCreateSection(sc, true);
+      grid.compoundsChanged(compounds, selection);
     }
   }
 
