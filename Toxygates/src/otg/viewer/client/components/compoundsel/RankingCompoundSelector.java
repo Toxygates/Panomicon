@@ -135,7 +135,7 @@ public class RankingCompoundSelector extends CompoundSelector {
                 rnk++;
               }
               compoundEditor.setItems(sortedCompounds, false, false);
-              compoundEditor.displayPicker();
+              compoundEditor.scrollBrowseCheckToTop();
             }
 
             @Override

@@ -25,7 +25,6 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
@@ -53,8 +52,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   protected Collection<StringList> predefinedLists;
 
   protected StringSelectionTable selTable = null;
-  protected DockLayoutPanel dlp;
-  protected StackLayoutPanel slp;
+  protected DockLayoutPanel dockLayoutPanel;
+  protected StackLayoutPanel stackLayoutPanel;
+  private BrowseCheck browseCheck;
 
   protected VerticalPanel northVp;
 
@@ -68,8 +68,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       String listType, String itemTitle,
       int maxAutoSel, Collection<StringList> predefinedLists,
       boolean withListSelector, boolean withFreeEdit) {
-    dlp = new DockLayoutPanel(Unit.PX);
-    initWidget(dlp);
+    dockLayoutPanel = new DockLayoutPanel(Unit.PX);
+    initWidget(dockLayoutPanel);
 
     this.predefinedLists = predefinedLists;
 
@@ -93,18 +93,19 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       };
       listChooser.addStyleName("colored");
       northVp.add(listChooser);
-      dlp.addNorth(northVp, 37);
+      dockLayoutPanel.addNorth(northVp, 37);
     }
 
     createSelectionMethods(methods, itemTitle, maxAutoSel, withFreeEdit);
     if (methods.size() == 1) {
-      dlp.add(methods.get(0));
+      dockLayoutPanel.add(methods.get(0));
     } else {
-      slp = new StackLayoutPanel(Unit.PX);
-      dlp.add(slp);
+      stackLayoutPanel = new StackLayoutPanel(Unit.PX);
+      dockLayoutPanel.add(stackLayoutPanel);
       for (SelectionMethod<String> m : methods) {
-        slp.add(m, m.getTitle(), 30);
+        stackLayoutPanel.add(m, m.getTitle(), 30);
       }
+      stackLayoutPanel.showWidget(browseCheck);
     }
   }
 
@@ -119,9 +120,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     if (withFreeEdit) {
       methods.add(new FreeEdit(this));
     }
-    BrowseCheck bc = new BrowseCheck(this, itemTitle, maxAutoSel);
-    methods.add(bc);
-    this.selTable = bc.selTable;
+    browseCheck = new BrowseCheck(this, itemTitle, maxAutoSel);
+    methods.add(browseCheck);
+    this.selTable = browseCheck.selTable;
   }
 
   /**
@@ -288,23 +289,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   public void clearSelection() {
     setSelection(new HashSet<String>());
   }
-
-  /**
-   * Display the picker method, if one exists.
-   */
-  public void displayPicker() {
-    if (methods.size() == 1 || slp == null) {
-      return;
-    }
-    for (SelectionMethod<String> m : methods) {
-      if (m instanceof BrowseCheck) {
-        slp.showWidget(m);
-        ((BrowseCheck) m).scrollToTop();
-        return;
-      }
-    }
-    // Should not get here!
-    Window.alert("Technical error: no such selection method in StackedListEditor");
+  
+  public void scrollBrowseCheckToTop() {
+    browseCheck.scrollToTop();
   }
 
   @Override

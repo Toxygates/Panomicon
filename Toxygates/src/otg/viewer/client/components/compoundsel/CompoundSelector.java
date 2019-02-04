@@ -124,7 +124,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
           }          
         };
 
-    compoundEditor.displayPicker();
     dp.add(compoundEditor);
     compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());
   }
