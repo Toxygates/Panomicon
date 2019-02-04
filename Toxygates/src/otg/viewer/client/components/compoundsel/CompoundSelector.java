@@ -58,6 +58,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   protected Logger logger;
 
+  List<String> chosenCompounds = new ArrayList<String>();
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   protected SampleClass chosenSampleClass;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
@@ -167,7 +168,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   private void setCompounds(List<String> compounds) {
-    delegate.compoundSelectorCompoundsChanged(compounds);
+    if (!chosenCompounds.equals(compounds)) {
+      chosenCompounds = compounds;
+      delegate.compoundSelectorCompoundsChanged(compounds);
+    }
   }
 
   public void sampleClassChanged(SampleClass sc) {
