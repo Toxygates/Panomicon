@@ -57,15 +57,12 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
 
-  private SelectionTDGrid findOrCreateSection(SampleClass sampleClass, boolean noCompounds) {
+  private SelectionTDGrid findOrCreateSection(SampleClass sampleClass) {
     SelectionTDGrid grid = sections.get(sampleClass);
     if (grid == null) {
       grid = screen.factory().selectionTDGrid(screen, this);
-      grid.sampleClassChanged(sampleClass);
+      grid.setSampleClass(sampleClass);
       sections.put(sampleClass, grid);
-      if (!noCompounds) {
-        grid.compoundsChanged(chosenCompounds);
-      }
       Label label = new Label(SampleClassUtils.label(sampleClass, screen.schema()));
       label.addStyleName("selectionGridSectionHeading");
       verticalPanel.add(label);
@@ -95,6 +92,19 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
       listener.availableUnitsChanged(fullAvailability);
     }
   }
+  
+  public void sampleClassChanged(SampleClass sc) {
+    SelectionTDGrid g = findOrCreateSection(sc);
+    if (g != currentGrid) {
+      currentGrid = g;
+      clearEmptySections();
+    }
+  }
+
+  public void compoundsChanged(List<String> compounds) {
+    chosenCompounds = compounds;
+    currentGrid.compoundsChanged(compounds);
+  }
 
   List<Unit> fullSelection(boolean treatedOnly) {
     List<Unit> r = new ArrayList<Unit>();
@@ -116,19 +126,6 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     for (SelectionTDGrid g : sections.values()) {
       g.setAll(false, true);
     }
-  }
-
-  public void sampleClassChanged(SampleClass sc) {
-    SelectionTDGrid g = findOrCreateSection(sc, false);
-    if (g != currentGrid) {
-      currentGrid = g;
-      clearEmptySections();
-    }
-  }
-
-  public void compoundsChanged(List<String> compounds) {
-    chosenCompounds = compounds;
-    currentGrid.compoundsChanged(compounds);
   }
 
   @SuppressWarnings("deprecation")
@@ -163,7 +160,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     for (SampleClass sc : lcompounds.keySet()) {
       List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
       Collections.sort(compounds);
-      SelectionTDGrid grid = findOrCreateSection(sc, true);
+      SelectionTDGrid grid = findOrCreateSection(sc);
       grid.compoundsChanged(compounds, selection);
     }
   }

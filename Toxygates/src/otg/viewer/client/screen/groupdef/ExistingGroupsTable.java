@@ -20,7 +20,7 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
     void makeGroupColumns(CellTable<Group> table);
     void displayGroup(String name);
     void deleteGroup(String name);
-    void selectionChanged(Set<Group> selected);
+    void existingGroupsTableSelectionChanged(Set<Group> selected);
   }
   
   public ExistingGroupsTable(Delegate delegate) {
@@ -90,6 +90,6 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
 
   @Override
   protected void selectionChanged(Set<Group> selected) {
-    delegate.selectionChanged(selected);
+    delegate.existingGroupsTableSelectionChanged(selected);
   }
 }

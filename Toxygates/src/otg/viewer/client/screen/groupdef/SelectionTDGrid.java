@@ -157,10 +157,6 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
   }
 
-  protected void setSelected(Unit unit, boolean v) {
-    setSelected(unit, v, true);
-  }
-
   protected void setSelected(Unit unit, boolean v, boolean fire) {
     UnitUI ui = unitUis.get(unit);
     if (ui != null) {
@@ -386,11 +382,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 //        logger.warning("No UI for unit " + u);
         continue;
       }
-      unitUis.remove(u);
       ui.setUnit(u);
-      // Remove the key and replace it since the ones from availableUnits
-      // will be populated with concrete Barcodes (getSamples)
-      unitUis.put(u, ui);
 
       int cIdx = chosenCompounds.indexOf(u.get(schema.majorParameter()));
       int dIdx = mediumValues.indexOf(u.get(schema.mediumParameter()));

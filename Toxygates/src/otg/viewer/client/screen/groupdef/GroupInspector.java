@@ -154,6 +154,16 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     splitPanel.add(t.common.client.Utils.makeScrolled(verticalPanel));
   }
+  
+  public void loadGroups() {
+    groups.loadGroups(screen.getStorage());
+    updateConfigureStatus(false);
+
+    // Reflect loaded group information in UI
+    updateTableData();
+    existingGroupsTable.table().redraw();
+    clearUiForNewGroup();
+  }
 
   private void onGroupNameInputChanged() {
     if (groups.containsKey(txtbxGroup.getValue())) {
@@ -162,9 +172,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       saveButton.setText("Save");
     }
   }
-
-  @Override
-  abstract public void makeGroupColumns(CellTable<Group> table);
 
   /**
    * Callback from SelectionTDGrid
@@ -185,13 +192,30 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public void availableUnitsChanged(List<Pair<Unit, Unit>> units) {
     availableUnits = units;
   }
-
-  @Override
-  public void deleteGroup(String name) {
-    groups.remove(name);
-    reflectGroupChanges(true); // stores columns
-    clearUiForNewGroup();
+  
+  public void sampleClassChanged(SampleClass sc) {
+    // This needs to happen before compoundsChanged, so that multiSelectionGrid.currentGrid
+    // will get a value before being used in multiSelectionGrid.compoundsChanged
+    multiSelectionGrid.sampleClassChanged(sc);
+    
+    chosenSampleClass = sc;
   }
+
+  public void datasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
+    disableGroupsIfNeeded(datasets);
+  }
+  
+  public void compoundsChanged(List<String> compounds) {
+    chosenCompounds = compounds;
+    if (compounds.size() == 0) {
+      setEditMode(false);
+    } else {
+      setEditMode(true);
+    }
+    multiSelectionGrid.compoundsChanged(compounds);
+  }
+
 
   public void confirmDeleteAllGroups() {
     if (Window.confirm("Delete " + groups.size() + " groups?")) {
@@ -248,22 +272,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     if (triggeredByUserAction) {
       screen.manager().resetWorkflowLinks();
     }
-  }
-
-  public void sampleClassChanged(SampleClass sc) {
-    // This needs to happen before compoundsChanged, so that multiSelectionGrid.currentGrid
-    // will get a value before being used in multiSelectionGrid.compoundsChanged
-    multiSelectionGrid.sampleClassChanged(sc);
-    
-    if (!sc.equals(chosenSampleClass)) {
-      compoundsChanged(new ArrayList<String>());
-    }
-    chosenSampleClass = sc;
-  }
-
-  public void datasetsChanged(List<Dataset> datasets) {
-    chosenDatasets = datasets;
-    disableGroupsIfNeeded(datasets);
   }
 
   protected void disableGroupsIfNeeded(List<Dataset> datasets) {
@@ -323,26 +331,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     existingGroupsTable.setItems(groups.allGroups(), false);
     existingGroupsTable.setSelection(groups.activeGroups());
     existingGroupsTable.setVisible(groups.size() > 0);
-  }
-
-  public void loadGroups() {
-    groups.loadGroups(screen.getStorage());
-    updateConfigureStatus(false);
-
-    // Reflect loaded group information in UI
-    updateTableData();
-    existingGroupsTable.table().redraw();
-    clearUiForNewGroup();
-  }
-
-  public void compoundsChanged(List<String> compounds) {
-    chosenCompounds = compounds;
-    if (compounds.size() == 0) {
-      setEditMode(false);
-    } else {
-      setEditMode(true);
-    }
-    multiSelectionGrid.compoundsChanged(compounds);
   }
 
   private void makeAutoGroups() {
@@ -430,6 +418,23 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   @Override
+  public void onResize() {
+    splitPanel.onResize();
+  }
+
+  private class GroupColouring implements RowStyles<Group> {
+    @Override
+    public String getStyleNames(Group g, int rowIndex) {
+      return g.getStyleName();
+    }
+  }
+  
+  // ExistingGroupsTable.Delegate methods
+
+  @Override
+  abstract public void makeGroupColumns(CellTable<Group> table);
+  
+  @Override
   public void displayGroup(String name) {
     setHeading("editing " + name);
     Group group = groups.get(name);
@@ -453,21 +458,16 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     setEditMode(true);
   }
-
+  
   @Override
-  public void onResize() {
-    splitPanel.onResize();
+  public void deleteGroup(String name) {
+    groups.remove(name);
+    reflectGroupChanges(true); // stores columns
+    clearUiForNewGroup();
   }
-
-  private class GroupColouring implements RowStyles<Group> {
-    @Override
-    public String getStyleNames(Group g, int rowIndex) {
-      return g.getStyleName();
-    }
-  }
-
+  
   @Override
-  public void selectionChanged(Set<Group> selected) {
+  public void existingGroupsTableSelectionChanged(Set<Group> selected) {
     groups.setActiveGroups(selected);
     groups.saveToLocalStorage(screen.getStorage());
     updateConfigureStatus(true);

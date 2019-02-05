@@ -103,7 +103,7 @@ abstract public class TimeDoseGrid extends Composite {
     mainPanel.add(grid);
   }
 
-  public void sampleClassChanged(SampleClass sc) {
+  public void setSampleClass(SampleClass sc) {
     chosenSampleClass = sc;
     if (!sc.equals(chosenSampleClass)) {
       minorValues = new ArrayList<String>();

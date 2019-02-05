@@ -192,7 +192,7 @@ public class SampleDetailScreen extends MinimalScreen {
       public void onClick(ClickEvent event) {
         List<String> compounds = chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).distinct()
             .collect(Collectors.toList());
-        atd.sampleClassChanged(chosenSampleClass);
+        atd.setSampleClass(chosenSampleClass);
         atd.compoundsChanged(compounds);
         Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
       }
