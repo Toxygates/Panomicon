@@ -20,19 +20,52 @@ package t.viewer.client.components;
 
 import java.util.logging.Level;
 
+import javax.annotation.Nullable;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * Callback that interacts with a screen to display a "please wait" popup.
+ */
 public class PendingAsyncCallback<T> implements AsyncCallback<T> {
+
+  public interface SuccessAction<T> {
+    void run(T t);
+  }
 
   private Screen screen;
   private String onErrorMessage;
+  private @Nullable SuccessAction<T> success = null;
 
-  public PendingAsyncCallback(Screen _widget, String _onErrorMessage) {
-    screen = _widget;
+  /**
+   * Construct a PendingAsyncCallback. If no SuccessAction is passed in, handleSuccess should be
+   * overridden.
+   * 
+   * @param _screen Used to display wait popup
+   * @param _onErrorMessage
+   */
+  public PendingAsyncCallback(Screen _screen, String _onErrorMessage) {
+    screen = _screen;
     onErrorMessage = _onErrorMessage;
     screen.addPendingRequest();
   }
+
+  /**
+   * Construct a PendingAsyncCallback. As a syntactic convenience, this constructor allows a lambda
+   * to be used.
+   * 
+   * @param _screen Used to display wait popup
+   * @param _onErrorMessage
+   * @param onSuccess callback to run on successful completion.
+   */
+  public PendingAsyncCallback(Screen _screen, String _onErrorMessage, SuccessAction<T> onSuccess) {
+    screen = _screen;
+    onErrorMessage = _onErrorMessage;
+    success = onSuccess;
+    screen.addPendingRequest();
+  }
+
 
   public PendingAsyncCallback(Screen _widget) {
     this(_widget, "There was a server-side error.");
@@ -45,7 +78,9 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
   }
 
   public void handleSuccess(T t) {
-    // Quiet success
+    if (success != null) {
+      success.run(t);
+    }
   }
 
   @Override

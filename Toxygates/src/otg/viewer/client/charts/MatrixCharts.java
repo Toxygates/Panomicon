@@ -19,19 +19,16 @@
 package otg.viewer.client.charts;
 
 import java.util.*;
-import java.util.logging.Level;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otg.model.sample.OTGAttribute;
+import otg.viewer.client.charts.DataSource.*;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
-import static otg.viewer.client.charts.DataSource.*;
 
 /**
  * Entry point for constructing charts based on matrix data.
@@ -97,36 +94,17 @@ public class MatrixCharts extends Charts {
     if (organisms.length > 1) {
       logger.info("Get rows for chart based on units");
       sampleService.units(sampleClasses, schema.majorParameter().id(), majorVals,
-          new AsyncCallback<Pair<Unit, Unit>[]>() {
+          new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "Unable to obtain chart data",
+              result -> finish(params, probes, result, acceptor)));
 
-            @Override
-            public void onFailure(Throwable caught) {
-              Window.alert("Unable to obtain chart data.");
-              logger.log(Level.WARNING, "Unable to obtain chart data.", caught);
-            }
-
-            @Override
-            public void onSuccess(Pair<Unit, Unit>[] result) {
-              finish(params, probes, result, acceptor);
-            }
-          });
     } else if (samples == null) {
       logger.info("Get rows for chart based on sample classes");
       sampleService.samples(sampleClasses, schema.majorParameter().id(), majorVals,
-          new AsyncCallback<Sample[]>() {
-
-            @Override
-            public void onFailure(Throwable caught) {
-              Window.alert("Unable to obtain chart data.");
-              logger.log(Level.WARNING, "Unable to obtain chart data.", caught);
-            }
-
-            @Override
-            public void onSuccess(final Sample[] samples) {
-              finish(params, probes, samples, acceptor);
-              MatrixCharts.this.samples = samples;
-            }
-          });
+          new PendingAsyncCallback<Sample[]>(screen, "Unable to obtain chart data",
+              samples -> {
+                finish(params, probes, samples, acceptor);
+                MatrixCharts.this.samples = samples;
+              }));
     } else {
       logger.info("Already had samples for chart");
       // We already have the necessary samples, can finish immediately

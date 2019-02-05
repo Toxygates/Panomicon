@@ -58,14 +58,8 @@ public class SeriesCharts extends Charts {
       final String compoundName) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0),
         new PendingAsyncCallback<String[]>(screen,
-            "Unable to obtain independent points for series.") {
-
-          @Override
-          public void handleSuccess(String[] result) {
-            finish(seriesType, series, result, highlightDoseOrTime, acceptor, screen,
-                compoundName);
-          }
-        });
+            "Unable to obtain independent points for series.", result -> finish(seriesType, series,
+                result, highlightDoseOrTime, acceptor, screen, compoundName)));
   }
 
   private void finish(SeriesType seriesType, final List<Series> series, final String[] indepPoints,

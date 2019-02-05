@@ -189,15 +189,10 @@ abstract public class DataSource {
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
       matrixService.getFullData(gs, probes, false, vt,
-          new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data.") {
-
-            @Override
-            public void handleSuccess(final FullMatrix mat) {
-              addPointsFromSamples(useSamples, mat.rows());
-              getLoadedPoints(vt, smf, policy, acceptor);
-            }
-          });
-
+          new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data.", mat -> {
+            addPointsFromSamples(useSamples, mat.rows());
+            getLoadedPoints(vt, smf, policy, acceptor);
+          }));
     }
 
     // TODO think about the way these methods interact with superclass
@@ -245,14 +240,11 @@ abstract public class DataSource {
 
       chartPoints.clear();
       matrixService.getFullData(groups, probes, false, vt,
-          new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data") {
-
-            @Override
-            public void handleSuccess(final FullMatrix mat) {
+          new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data",
+              mat -> {
               addPointsFromUnits(useUnits, mat.rows());
               getLoadedPoints(vt, smf, policy, acceptor);
-            }
-          });
+          }));
     }
 
     protected void addPointsFromUnits(List<Unit> units, List<ExpressionRow> rows) {
