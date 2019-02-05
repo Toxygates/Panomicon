@@ -508,13 +508,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     if (lastChartDialog != null) {
       lastChartDialog.startedOpeningNewCharts();
     }
-    grid.redrawRow(highlightedRow);
-    Utils.ensureVisualisationAndThen(new Runnable() {
-      @Override
-      public void run() {
-        displayCharts();
-      }
-    });
+    grid.redrawRow(highlightedRow + grid.getPageStart());
+    Utils.ensureVisualisationAndThen(() -> displayCharts());
   }
 
   // ETHeaderBuilder.Delegate methods
