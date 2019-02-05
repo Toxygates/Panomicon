@@ -402,7 +402,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
           highlightedRow = -1;
           lastChartDialog = null;
         }
-        grid.redrawRow(chartRow);
+        grid.redrawRow(chartRow + grid.getPageStart());
       }
     }
 
