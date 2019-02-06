@@ -71,14 +71,14 @@ public class SeriesCharts extends Charts {
       schema.sort(seriesType.fixedAttribute(), fixedVals);
 
       schema.sort(seriesType.independentAttribute(), indepPoints);
-      DataSource cds = new DataSource.SeriesSource(schema, series,
+      DataSource dataSource = new DataSource.SeriesSource(schema, series,
           seriesType.independentAttribute(), indepPoints);
 
-      List<DataPoint> points = cds.getPoints(null, new SampleMultiFilter(),
+      List<DataPoint> points = dataSource.getPoints(null, new SampleMultiFilter(),
           new TimeDoseColorPolicy(highlightFixed, "SkyBlue"));
 
       boolean categoriesAreMinors = seriesType == SeriesType.Time;
-      GDTDataset ds = factory.dataset(points, indepPoints, categoriesAreMinors, storageProvider);
+      GDTDataset dataSet = factory.dataset(points, indepPoints, categoriesAreMinors, storageProvider);
       List<Pair<String, String>> filtersLabels =
           series.stream().map(s -> new FirstKeyedPair<String, String>(s.probe(), s.geneSym()))
               .distinct().collect(Collectors.toList());
@@ -93,10 +93,10 @@ public class SeriesCharts extends Charts {
           SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
       boolean columnsAreTimes = seriesType == SeriesType.Dose;
-      ChartGrid<?> cg = factory.grid(screen, ds, rowFilters, rowLabels, organisms, false, fixedVals,
+      ChartGrid<?> cg = factory.grid(screen, dataSet, rowFilters, rowLabels, organisms, false, fixedVals,
           columnsAreTimes, DEFAULT_CHART_GRID_WIDTH);
-      cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(), ds.getMin(),
-                  ds.getMax(), compoundName);
+      cg.adjustAndDisplay(new ChartStyle(0, true, null, false), cg.getMaxColumnCount(), dataSet.getMin(),
+                  dataSet.getMax(), compoundName);
       acceptor.acceptCharts(cg);
 
     } catch (Exception e) {

@@ -91,7 +91,7 @@ abstract public class Dataset<D extends Data> {
    */
   abstract public D makeData(SampleClass filter, @Nullable String probe);
 
-  protected String categoryForSample(DataPoint sample) {
+  protected String categoryForPoint(DataPoint sample) {
     DataSchema schema = sample.schema();
     for (String category : categories) {
       if (categoriesAreMins && schema.getMinor(sample).equals(category)) {

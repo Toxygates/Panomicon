@@ -65,13 +65,13 @@ public class GDTDataset extends Dataset<GDTData> {
   }
 
   @Override
-  protected void makeColumns(GDTData gdt, DataPoint[] samples) {
+  protected void makeColumns(GDTData gdt, DataPoint[] points) {
     int colCount = 0;
     int[] valCount = new int[categories.length];
     DataTable dataTable = gdt.data();
 
-    for (DataPoint sample : samples) {
-      int categoryIndex = SharedUtils.indexOf(categories, categoryForSample(sample));
+    for (DataPoint point : points) {
+      int categoryIndex = SharedUtils.indexOf(categories, categoryForPoint(point));
       if (categoryIndex != -1) {
         if (colCount < valCount[categoryIndex] + 1) {
           dataTable.addColumn(ColumnType.NUMBER);
@@ -80,13 +80,16 @@ public class GDTDataset extends Dataset<GDTData> {
         }
 
         final int col = valCount[categoryIndex] * 2 + 1;
-        dataTable.setValue(categoryIndex, col, sample.value());
-        if (sample.sample() != null) {
+        dataTable.setValue(categoryIndex, col, point.value());
+        if (point.sample() != null) {
+          /*
+           * Tag the data point with its sample ID so that we can link to the sample later
+           */
           dataTable.setProperty(categoryIndex, col, SAMPLE_ID_PROP,
-              storage.samplePacker.pack(sample.sample()));
+              storage.samplePacker.pack(point.sample()));
         }
-        dataTable.setFormattedValue(categoryIndex, col, sample.formattedValue());
-        String style = "fill-color:" + sample.color() + "; stroke-width:1px; ";
+        dataTable.setFormattedValue(categoryIndex, col, point.formattedValue());
+        String style = "fill-color:" + point.color() + "; stroke-width:1px; ";
 
         dataTable.setValue(categoryIndex, col + 1, style);
         valCount[categoryIndex]++;
