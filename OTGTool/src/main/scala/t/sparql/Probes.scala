@@ -149,7 +149,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       pr = Probe(probeId, genes = entrez.distinct,
         platform = platform,
         transcripts = transcripts.distinct,
-        symbols = symbols)
+        symbols = symbols.distinct)
     ) yield (platform, pr)
 
     Map() ++ all.groupBy(_._1).mapValues(_.map(_._2))
