@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
-import t.viewer.shared.ColumnSet;
+import t.viewer.shared.ManagedMatrixInfo;
 
 @SuppressWarnings("serial")
 public class Node implements Serializable {
@@ -22,13 +22,16 @@ public class Node implements Serializable {
   //Note: it is probably desirable to maintain symbols consistently inside each ExpressionRow,
   //removing the need to pass them in from outside here.
   //This may be done as part of removing/refactoring RowAnnotation
-  public static Node fromRow(ExpressionRow row, List<String> geneSymbols,
-		  String type, ColumnSet columnNames) {
+  public static Node fromRow(ExpressionRow row, List<String> geneSymbols, String type,
+      ManagedMatrixInfo matrixInfo) {
 	  
 //    String[] geneSymbols = row.getGeneSyms();
     ExpressionValue[] values = row.getValues();
-    Map<String, Double> weights = IntStream.range(0, values.length).boxed()
-        .collect(Collectors.toMap(i -> columnNames.columnName(i), i -> values[i].getValue()));
+
+    // Exclude synthetic columns (e.g. the count column for side matrices)
+    int numDataColumns = matrixInfo.numDataColumns();
+    Map<String, Double> weights = IntStream.range(0, numDataColumns).boxed()
+        .collect(Collectors.toMap(i -> matrixInfo.columnName(i), i -> values[i].getValue()));
 
     if (geneSymbols == null) {
       geneSymbols = new ArrayList<String>();
