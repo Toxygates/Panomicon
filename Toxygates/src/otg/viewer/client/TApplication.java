@@ -120,7 +120,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   @Override
   public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
     final Logger l = SharedUtils.getLogger();
-    final DialogBox wait = Utils.waitDialog();
+    final DialogBox waitDialog = Utils.waitDialog();
+    Utils.displayInCenter(waitDialog);
 
     // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
     @Nullable
@@ -129,14 +130,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       @Override
       public void onSuccess(AppInfo result) {
         l.info("Got appInfo");
-        wait.hide();
+        waitDialog.hide();
         appInfo = result;
         handler.onSuccess(result);
       }
 
       @Override
       public void onFailure(Throwable caught) {
-        wait.hide();
+        waitDialog.hide();
         l.log(Level.WARNING, "Failed to obtain appInfo", caught);
         handler.onFailure(caught);
       }
