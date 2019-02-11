@@ -187,7 +187,7 @@
 	</context-param>
 	<context-param>
 		<param-name>intermine.rat.userurl</param-name>
-		<param-value>http://www.ratmine.org</param-value>
+		<param-value>http://ratmine.mcw.edu</param-value>
 	</context-param>
 	
 	<context-param>
