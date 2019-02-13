@@ -57,6 +57,13 @@ abstract public class BioParamValue implements Serializable, Comparable<BioParam
 
   public boolean isPathological() { return false; }
   
+  /**
+   * Undefined values are specifically recorded as "undefined" in the database,
+   * since a measurement attempt was made but the result was recorded as undefined.
+   * This is distinct from a NaN or missing value.
+   */
+  public boolean isDefined() { return true; }
+  
   public @Nullable String section() { return section; }
   
   public int compareTo(BioParamValue other) {
