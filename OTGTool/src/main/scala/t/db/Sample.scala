@@ -80,7 +80,8 @@ object Sample {
     if (key.isNumerical) {
       Option(sample.get(key)) match {
         case Some(v) => try {
-          v match {
+          v.toLowerCase() match {
+            case Attribute.NOT_AVAILABLE => None
             case Attribute.UNDEFINED_VALUE => None
             case _ => Some(v.toDouble)
           }

@@ -101,9 +101,6 @@ with ProbeService {
     new AppInfoLoader(probeStore, configuration, baseConfig,
       appName).load
 
-  /**
-   * "shared" datasets
-   */
   private def sDatasets(userKey: String): Array[Dataset] = {
     val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
     var r = (instanceURI match {

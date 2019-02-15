@@ -94,7 +94,7 @@ class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends
 
   def varAndMean(param: Attribute): Option[(Double, Double)] = {
     val vs = paramVals.flatMap(_.get(param))
-    val nvs = vs.flatMap(BioParameter.convert)
+    val nvs = vs.flatMap(BioParameter.tryParseDouble)
 
     if (nvs.size < 2) {
       None
@@ -106,8 +106,9 @@ class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends
 
 object BioParameter {
 
-  def convert(x: String) = x match {
-      case "NA" | "na" => None
+  def tryParseDouble(x: String) = x.toLowerCase match {
+      case Attribute.NOT_AVAILABLE => None
+      case Attribute.UNDEFINED_VALUE => None
       case _    => Some(x.toDouble)
     }
 
@@ -130,7 +131,7 @@ object BioParameter {
            out += attr -> Seq()
          }
 
-        val rawdata = rawValues.map(_.find( _._1 == attr).get).map(x => convert(x._2))
+        val rawdata = rawValues.map(_.find( _._1 == attr).get).map(x => tryParseDouble(x._2))
         if (!rawdata.isEmpty) {
           val v = variance(rawdata.flatten.toArray)
           val m = mean(rawdata.flatten.toArray)

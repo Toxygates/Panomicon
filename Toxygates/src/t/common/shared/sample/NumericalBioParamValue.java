@@ -33,7 +33,7 @@ import t.model.sample.Attribute;
 public class NumericalBioParamValue extends BioParamValue {
 
   protected @Nullable Double lowerBound, upperBound;
-  protected double value;
+  protected @Nullable Double value;
   protected boolean isDefined = true;
   
   // GWT constructor
@@ -62,26 +62,31 @@ public class NumericalBioParamValue extends BioParamValue {
     super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
+
+    /*
+     * Note: the logic for parsing and representing these values might eventually be moved to e.g.
+     * t.model
+     */
     if (value != null) {
       try {
         if (isUndefinedNumericalValue(value)) {
           this.isDefined = false;
-        } else {
+        } else if (!value.toLowerCase().equals(Attribute.NOT_AVAILABLE)) {
           this.value = Double.parseDouble(value);
         }
       } catch (NumberFormatException e) {
-        this.value = Double.NaN;
+        this.value = null;
       }      
     } else {
-      this.value = Double.NaN;
+      this.value = null;
     }
   }
-  
+
   public static boolean isUndefinedNumericalValue(String representation) {
     return representation.toLowerCase().equals(Attribute.UNDEFINED_VALUE);
   }
 
-  public double value() {
+  public @Nullable Double value() {
     return value;
   }
   
@@ -112,10 +117,11 @@ public class NumericalBioParamValue extends BioParamValue {
   @Override
   public String displayValue() {
     if (isDefined) {
-      if (Double.isNaN(value)) {
+      if (value != null) {
+        return formatNumber(value);
+      } else {
         return "N/A";
       }
-      return formatNumber(value);
     } else {
       return "(Undefined)";
     }

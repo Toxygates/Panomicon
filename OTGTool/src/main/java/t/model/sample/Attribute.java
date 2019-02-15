@@ -47,5 +47,7 @@ public interface Attribute {
    */
   public @Nullable String section();
 
+  public final String NOT_AVAILABLE = "na";
+
   public final String UNDEFINED_VALUE = "undef";
 }
