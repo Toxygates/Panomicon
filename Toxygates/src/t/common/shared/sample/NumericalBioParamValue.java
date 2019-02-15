@@ -24,6 +24,8 @@ import static t.common.client.Utils.formatNumber;
 
 import javax.annotation.Nullable;
 
+import t.model.sample.Attribute;
+
 /**
  * A numerical biological parameter with a pathological range and a healthy range.
  */
@@ -32,8 +34,9 @@ public class NumericalBioParamValue extends BioParamValue {
 
   protected @Nullable Double lowerBound, upperBound;
   protected double value;
-  protected boolean isDefined;
+  protected boolean isDefined = true;
   
+  // GWT constructor
   public NumericalBioParamValue() {}
 
   /**
@@ -44,8 +47,7 @@ public class NumericalBioParamValue extends BioParamValue {
    * @param value Observed value
    */
   public NumericalBioParamValue(String id, String label, @Nullable String section,
-      @Nullable Double lowerBound,
-      @Nullable Double upperBound, double value, boolean defined) {
+      @Nullable Double lowerBound, @Nullable Double upperBound, double value, boolean defined) {
     super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
@@ -66,7 +68,6 @@ public class NumericalBioParamValue extends BioParamValue {
           this.isDefined = false;
         } else {
           this.value = Double.parseDouble(value);
-          this.isDefined = true;
         }
       } catch (NumberFormatException e) {
         this.value = Double.NaN;
@@ -76,10 +77,8 @@ public class NumericalBioParamValue extends BioParamValue {
     }
   }
   
-  //Note: this may not be the appopriate place - possibly better to place
-  //in OTGTool
   public static boolean isUndefinedNumericalValue(String representation) {
-    return representation.toLowerCase().equals("undef");
+    return representation.toLowerCase().equals(Attribute.UNDEFINED_VALUE);
   }
 
   public double value() {
@@ -113,6 +112,9 @@ public class NumericalBioParamValue extends BioParamValue {
   @Override
   public String displayValue() {
     if (isDefined) {
+      if (Double.isNaN(value)) {
+        return "N/A";
+      }
       return formatNumber(value);
     } else {
       return "(Undefined)";

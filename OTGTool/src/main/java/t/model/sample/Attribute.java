@@ -46,4 +46,6 @@ public interface Attribute {
    * The section that the attribute belongs to, if any.
    */
   public @Nullable String section();
+
+  public final String UNDEFINED_VALUE = "undef";
 }
