@@ -32,7 +32,8 @@ public class NumericalBioParamValue extends BioParamValue {
 
   protected @Nullable Double lowerBound, upperBound;
   protected double value;
-
+  protected boolean isDefined;
+  
   public NumericalBioParamValue() {}
 
   /**
@@ -44,11 +45,12 @@ public class NumericalBioParamValue extends BioParamValue {
    */
   public NumericalBioParamValue(String id, String label, @Nullable String section,
       @Nullable Double lowerBound,
-      @Nullable Double upperBound, double value) {
+      @Nullable Double upperBound, double value, boolean defined) {
     super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
     this.value = value;
+    this.isDefined = defined;
   }
 
   public NumericalBioParamValue(String id, String label,
@@ -60,7 +62,12 @@ public class NumericalBioParamValue extends BioParamValue {
     this.upperBound = upperBound;
     if (value != null) {
       try {
-        this.value = Double.parseDouble(value);
+        if (isUndefinedNumericalValue(value)) {
+          this.isDefined = false;
+        } else {
+          this.value = Double.parseDouble(value);
+          this.isDefined = true;
+        }
       } catch (NumberFormatException e) {
         this.value = Double.NaN;
       }      
@@ -68,11 +75,22 @@ public class NumericalBioParamValue extends BioParamValue {
       this.value = Double.NaN;
     }
   }
+  
+  //Note: this may not be the appopriate place - possibly better to place
+  //in OTGTool
+  public static boolean isUndefinedNumericalValue(String representation) {
+    return representation.toLowerCase().equals("undef");
+  }
 
   public double value() {
     return value;
   }
   
+  @Override
+  public boolean isDefined() {
+    return isDefined;
+  }
+
   public boolean isAbove() {
     if (upperBound == null) {
       return false;
@@ -94,7 +112,11 @@ public class NumericalBioParamValue extends BioParamValue {
 
   @Override
   public String displayValue() {
-    return formatNumber(value);
+    if (isDefined) {
+      return formatNumber(value);
+    } else {
+      return "(Undefined)";
+    }
   }
 
   @Override
