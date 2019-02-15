@@ -125,7 +125,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
     @Nullable
-    String existingKey = tryGetStorage().getItem(storagePrefix() + "userDataKey");
+    String existingKey = tryGetStorage().getItem(storagePrefix() + ".userDataKey");
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
