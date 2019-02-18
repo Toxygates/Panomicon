@@ -9,6 +9,7 @@
 	<inherits name="t.common.Common" />	
 	<inherits name="t.clustering.Clustering" />	 
 	<inherits name="com.google.gwt.logging.Logging"/>
+	<inherits name='com.ekotrope.gwt.CompletableFuture'/>
 		
 	<source path="client"/>
 	<source path="shared"/>	
