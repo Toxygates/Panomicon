@@ -19,17 +19,17 @@ import t.platform.mirna._
  */
 class MiRNATargets(conn: Connector) extends Query(conn) {
 
-  def makeQuery: PathQuery = {    
+  def makeQuery: PathQuery = {
     val pq = new PathQuery(model)
-    
+
     val synonymsView = "MiRNA.miRNAInteractions.targetGene.synonyms.value"
 
     pq.addViews("MiRNA.secondaryIdentifier", "MiRNA.miRNAInteractions.supportType",
       synonymsView)
-    
+
     //NM is to match RefSeq IDs like NM_000389
     pq.addConstraint(Constraints.contains(synonymsView, "NM"))
-        
+
     println(s"Intermine query: ${pq.toXml}")
     pq
   }
@@ -62,12 +62,15 @@ class MiRNATargets(conn: Connector) extends Query(conn) {
 }
 
 object MiRNATargets {
+  val supportLevels = Map(
+    "Functional MTI" -> 3,
+    "Functional MTI (Weak)" -> 2,
+    "Non-Functional MTI" -> 1,
+    "Non-Functional MTI (Weak)" -> 0)
+
   def scoreForSupportType(st: String) = {
-    st match {
-      case "Functional MTI"            => 3
-      case "Functional MTI (Weak)"     => 2
-      case "Non-Functional MTI"        => 1
-      case "Non-Functional MTI (Weak)" => 0
+    supportLevels.get(st) match {
+      case Some(l) => l
       case _                           => throw new Exception(s"Unexpected support type '$st' in file")
     }
   }

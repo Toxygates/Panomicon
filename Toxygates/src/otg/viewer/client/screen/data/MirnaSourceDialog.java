@@ -1,9 +1,11 @@
 package otg.viewer.client.screen.data;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.OTGScreen;
@@ -54,7 +56,13 @@ public class MirnaSourceDialog extends InteractionDialog {
   
   @Override
   protected void userProceed() {
-    delegate.mirnaSourceDialogMirnaSourcesChanged(selector.getSelection().toArray(new MirnaSource[0]));
-    MirnaSourceDialog.super.userProceed();    
+    try {
+      Collection<MirnaSource> selection = selector.getSelection();
+
+      delegate.mirnaSourceDialogMirnaSourcesChanged(selection.toArray(new MirnaSource[0]));
+      MirnaSourceDialog.super.userProceed();
+    } catch (NumberFormatException e) {
+      Window.alert("Please enter a numerical value as the score cutoff.");
+    }
   }
 }

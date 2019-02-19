@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -25,9 +25,12 @@ import otg.sparql.OTGProbes
 import otg.viewer.server.AppInfoLoader._
 import t.viewer.server.Configuration
 import t.viewer.shared.mirna.MirnaSource
+import t.intermine.MiRNATargets
+import t.common.server.GWTUtils._
+import t.viewer.server.Conversions._
 
 object AppInfoLoader {
-  val TARGETMINE_SOURCE = "TargetMine"
+  val TARGETMINE_SOURCE: String = "TargetMine"
 }
 
 class AppInfoLoader(probeStore: OTGProbes,
@@ -53,17 +56,22 @@ class AppInfoLoader(probeStore: OTGProbes,
   override protected def staticMirnaSources: Seq[MirnaSource] = {
     /*
      * Size obtained via the following TargetMine query:
-     * 
-     * <query name="" model="genomic" view="MiRNA.primaryIdentifier MiRNA.secondaryIdentifier 
-     * MiRNA.organism.name MiRNA.miRNAInteractions.supportType 
-     * MiRNA.miRNAInteractions.targetGene.synonyms.value" longDescription="" 
+     *
+     * <query name="" model="genomic" view="MiRNA.primaryIdentifier MiRNA.secondaryIdentifier
+     * MiRNA.organism.name MiRNA.miRNAInteractions.supportType
+     * MiRNA.miRNAInteractions.targetGene.synonyms.value" longDescription=""
      * sortOrder="MiRNA.primaryIdentifier asc" constraintLogic="A">
-     *  <constraint path="MiRNA.miRNAInteractions.targetGene.synonyms.value" 
+     *  <constraint path="MiRNA.miRNAInteractions.targetGene.synonyms.value"
      *    code="A" op="CONTAINS" value="NM"/>
      * </query>
      */
     val size = 2390806
+
+    val mtbLevels = t.intermine.MiRNATargets.supportLevels.map(x =>
+      (x._1 -> asJDouble(x._2))).asGWT
+
     Seq(
-      new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, true, 0.5, size))
+      new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3, size,
+        "Experimentally verified", mtbLevels))
   }
 }

@@ -21,6 +21,7 @@
 package t.viewer.shared.mirna;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -30,9 +31,11 @@ public class MirnaSource implements Serializable  {
   MirnaSource() {}
   
   private String title, id;
-  private boolean hasScores, experimental;
-  private Double limit;
+  private boolean hasScores;
+  private @Nullable Double limit;
   private int size;
+  private @Nullable String comment;
+  private @Nullable Map<String, Double> scoreLevels;
   
   /**
    * Construct a new MiRNA source (mRNA-miRNA associations) information object.
@@ -42,23 +45,26 @@ public class MirnaSource implements Serializable  {
    * @param experimental Whether the source is experimentally validated
    * @param hasScoresWhether the associations have numerical scores
    * @param limit The cutoff limit, if any (if there are numerical scores)
+   * @param comment
+   * @param scoreLevels If given, the user will be asked to select from these 
+   * labelled score levels from a drop-down box.
    */
-  public MirnaSource(String id, String title, boolean experimental, 
+  public MirnaSource(String id, String title,  
       boolean hasScores, @Nullable Double limit,
-      int size) {
+      int size, @Nullable String comment,
+      @Nullable Map<String, Double> scoreLevels) {
     this.id = id;
-    this.title = title;
-    this.experimental = experimental;
+    this.title = title;    
     this.hasScores = hasScores;
     this.limit = limit;
     this.size = size;
+    this.comment = comment;
+    this.scoreLevels = scoreLevels;
   }
   
   public String title() { return title; }
   
   public boolean hasScores() { return hasScores; }
-  
-  public boolean experimental() { return experimental; }
   
   public @Nullable Double limit() { return limit; }
   
@@ -67,6 +73,10 @@ public class MirnaSource implements Serializable  {
   public String id() { return id; }
   
   public int size() { return size; }
+  
+  public @Nullable String comment() { return comment; }
+  
+  public @Nullable Map<String, Double> scoreLevels() { return scoreLevels; }
   
   @Override
   public boolean equals(Object other) {
