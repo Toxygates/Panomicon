@@ -21,9 +21,11 @@
 package t.viewer.shared.mirna;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nullable;
+
+import t.common.shared.Pair;
 
 @SuppressWarnings("serial")
 public class MirnaSource implements Serializable  {
@@ -35,7 +37,7 @@ public class MirnaSource implements Serializable  {
   private @Nullable Double limit;
   private int size;
   private @Nullable String comment;
-  private @Nullable Map<String, Double> scoreLevels;
+  private @Nullable List<? extends Pair<String, Double>> scoreLevels;
   
   /**
    * Construct a new MiRNA source (mRNA-miRNA associations) information object.
@@ -46,13 +48,13 @@ public class MirnaSource implements Serializable  {
    * @param hasScoresWhether the associations have numerical scores
    * @param limit The cutoff limit, if any (if there are numerical scores)
    * @param comment
-   * @param scoreLevels If given, the user will be asked to select from these 
-   * labelled score levels from a drop-down box.
+   * @param scoreLevels If given, the user will be asked to select from these. 
+   * labelled score levels from a drop-down box. The sort order will be preserved.
    */
   public MirnaSource(String id, String title,  
       boolean hasScores, @Nullable Double limit,
       int size, @Nullable String comment,
-      @Nullable Map<String, Double> scoreLevels) {
+      @Nullable List<? extends Pair<String, Double>> scoreLevels) {
     this.id = id;
     this.title = title;    
     this.hasScores = hasScores;
@@ -76,7 +78,18 @@ public class MirnaSource implements Serializable  {
   
   public @Nullable String comment() { return comment; }
   
-  public @Nullable Map<String, Double> scoreLevels() { return scoreLevels; }
+  public @Nullable List<? extends Pair<String, Double>> scoreLevels() { return scoreLevels; }
+  
+  public @Nullable Map<String, Double> scoreLevelMap() {
+    if (scoreLevels == null) {
+      return null;
+    }
+    Map<String, Double> r = new HashMap<String, Double>();
+    for (Pair<String,Double> p : scoreLevels) {
+      r.put(p.first(), p.second());
+    }
+    return r;
+  }
   
   @Override
   public boolean equals(Object other) {

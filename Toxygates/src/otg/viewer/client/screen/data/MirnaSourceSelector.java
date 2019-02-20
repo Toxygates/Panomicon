@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
+import t.common.shared.Pair;
 import t.viewer.client.Utils;
 import t.viewer.shared.mirna.MirnaSource;
 
@@ -50,10 +51,19 @@ public class MirnaSourceSelector extends Composite {
       for (MirnaSource s: availableSources) {
         if (preferred.containsKey(s.id())) {
           active.get(s).setValue(true);
+          Double preferredLimit = preferred.get(s.id());
           if (s.scoreLevels() == null) {
-            limits.get(s).setValue("" + preferred.get(s.id()));
+            limits.get(s).setValue("" + preferredLimit);
+          } else {
+            int selIdx = 0;
+            for (Pair<String, Double> l: s.scoreLevels()) {
+              if (l.second() == preferredLimit) {
+                break;
+              }
+              selIdx++;
+            }                           
+            levelSelectors.get(s).setSelectedIndex(selIdx);            
           }
-          //TODO restoring preferred level value
         }
       }
     }    
@@ -70,12 +80,12 @@ public class MirnaSourceSelector extends Composite {
     Label comment = new Label(source.comment());
     grid.setWidget(row, 2, comment);
     
-    Map<String,Double> levels = source.scoreLevels();
+    List<? extends Pair<String,Double>> levels = source.scoreLevels();
     //If the source has levels, we offer a discrete selection of values.
     if (levels != null) {
       ListBox limitInput = new ListBox();
-      for (String level: levels.keySet()) {
-        limitInput.addItem(level);
+      for (Pair<String, Double> level: levels) {
+        limitInput.addItem(level.first());
       }
       levelSelectors.put(source, limitInput);
       grid.setWidget(row, 3, limitInput);
@@ -97,7 +107,7 @@ public class MirnaSourceSelector extends Composite {
     for (MirnaSource source: result) {
       if (source.scoreLevels() != null) {
         String selectedLevel = levelSelectors.get(source).getSelectedItemText();
-        Double selectedValue = source.scoreLevels().get(selectedLevel);
+        Double selectedValue = source.scoreLevelMap().get(selectedLevel);
         source.setLimit(selectedValue);
       } else if (source.hasScores()) {
         String selectedLimit = limits.get(source).getValue();        

@@ -28,6 +28,7 @@ import t.viewer.shared.mirna.MirnaSource
 import t.intermine.MiRNATargets
 import t.common.server.GWTUtils._
 import t.viewer.server.Conversions._
+import t.common.shared.FirstKeyedPair
 
 object AppInfoLoader {
   val TARGETMINE_SOURCE: String = "TargetMine"
@@ -67,8 +68,8 @@ class AppInfoLoader(probeStore: OTGProbes,
      */
     val size = 2390806
 
-    val mtbLevels = t.intermine.MiRNATargets.supportLevels.map(x =>
-      (x._1 -> asJDouble(x._2))).asGWT
+    val mtbLevels = t.intermine.MiRNATargets.supportLevels.toSeq.sortBy(_._2).reverse.map(x =>
+      new FirstKeyedPair(x._1, asJDouble(x._2))).asGWT
 
     Seq(
       new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3, size,
