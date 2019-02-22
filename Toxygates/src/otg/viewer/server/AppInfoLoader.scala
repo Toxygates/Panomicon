@@ -32,6 +32,7 @@ import t.common.shared.FirstKeyedPair
 
 object AppInfoLoader {
   val TARGETMINE_SOURCE: String = "TargetMine"
+  val MIRDB_SOURCE: String = "http://level-five.jp/t/mapping/mirdb"
 }
 
 class AppInfoLoader(probeStore: OTGProbes,
@@ -55,24 +56,19 @@ class AppInfoLoader(probeStore: OTGProbes,
   }
 
   override protected def staticMirnaSources: Seq[MirnaSource] = {
-    /*
-     * Size obtained via the following TargetMine query:
-     *
-     * <query name="" model="genomic" view="MiRNA.primaryIdentifier MiRNA.secondaryIdentifier
-     * MiRNA.organism.name MiRNA.miRNAInteractions.supportType
-     * MiRNA.miRNAInteractions.targetGene.synonyms.value" longDescription=""
-     * sortOrder="MiRNA.primaryIdentifier asc" constraintLogic="A">
-     *  <constraint path="MiRNA.miRNAInteractions.targetGene.synonyms.value"
-     *    code="A" op="CONTAINS" value="NM"/>
-     * </query>
-     */
-    val size = 2390806
-
     val mtbLevels = t.intermine.MiRNATargets.supportLevels.toSeq.sortBy(_._2).reverse.map(x =>
       new FirstKeyedPair(x._1, asJDouble(x._2))).asGWT
 
+    /*
+     * Sizes obtained through:
+     * $wc -l tm_mirtarbase.txt
+     * $wc -l mirdb_filter.txt
+     */
     Seq(
-      new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3, size,
-        "Experimentally verified", mtbLevels))
+      new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3,
+          1188967, "Experimentally verified", mtbLevels),
+        new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90, 3117189,
+            "Predicted, score 0-100", null)
+        )
   }
 }

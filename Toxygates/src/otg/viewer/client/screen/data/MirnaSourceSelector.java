@@ -30,14 +30,15 @@ public class MirnaSourceSelector extends Composite {
   public MirnaSourceSelector(MirnaSource[] availableSources,
                              @Nullable List<MirnaSource> preferredSources) {
     grid = new Grid(availableSources.length + 1, 5);
-    initWidget(grid);    
+    initWidget(grid);
+    grid.setCellSpacing(5);
     this.availableSources = availableSources;
     
     grid.setWidget(0, 0, Utils.mkEmphLabel("Active"));
     grid.setWidget(0, 1, Utils.mkEmphLabel("Title"));
     grid.setWidget(0, 2, Utils.mkEmphLabel("Comment"));
     grid.setWidget(0, 3, Utils.mkEmphLabel("Score cutoff"));
-    grid.setWidget(0, 4, Utils.mkEmphLabel("Size"));
+    grid.setWidget(0, 4, Utils.mkEmphLabel("Interactions"));
     
     int row = 1;
     for (MirnaSource m: availableSources) {
