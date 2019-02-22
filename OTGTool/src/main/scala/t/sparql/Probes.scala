@@ -474,20 +474,14 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
         )
   }
 
-  //TODO do not hardcode platform graph names here
-
-  private def mirnaAssociationGraphsAllSpecies =
-    """|FROM <http://level-five.jp/t/mapping/mirdb>
-       |""".stripMargin
-
-  private def mirnaAssociationGraphs(platform: Option[String]) = {
+  private def mirnaQueryGraphs(platform: Option[String], mirnaSourceGraph: String) = {
     val r = platform match {
       case Some(s)   => s"FROM <${Platforms.context(s)}>"
       case _ =>
         Species.knownPlatforms.map(p => s"FROM <${Platforms.context(p)}>").mkString("\n")
     }
     s"""|$r
-       |$mirnaAssociationGraphsAllSpecies""".stripMargin
+       |$mirnaSourceGraph""".stripMargin
   }
 
   private def mirnaToMrnaQuery(queryForFilter: Iterable[String],
@@ -516,6 +510,9 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def mirnaAssociations(probes: Iterable[Probe], scoreLimit: Option[Double],
                         queryFromMirna: Boolean,
                         maxCount: Option[Int],
+                        mirnaSourceGraph: String,
+                        experimental: Boolean,
+                        mirnaSourceName: String,
                         platform: Option[String] = None): MMap[Probe, DefaultBio] = {
 
     val queryVar = if(queryFromMirna) "mirna" else "mrna"
@@ -528,7 +525,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
     val q = s"""$tPrefixes
     |SELECT DISTINCT *
-    |${mirnaAssociationGraphs(platform)}
+    |${mirnaQueryGraphs(platform, mirnaSourceGraph)}
     |${ if (queryFromMirna)
       mirnaToMrnaQuery(queryForFilter, scoreLimit) else
       mrnaToMirnaQuery(queryForFilter, scoreLimit)}
@@ -538,12 +535,10 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     val r = triplestore.mapQuery(q, 30000).map(x => {
       val score = x("score")
       val refseq = x("trn")
-      val experimental = false
-      val mapping = "miRDB 5.0"
       val query = x(queryVar)
       val target = x(targetVar)
 
-      val extraInfo = s"${Probe.unpackOnly(target)} ($mapping) experimental: $experimental score: ${"%.3f".format(score.toDouble)} via: $refseq"
+      val extraInfo = s"${Probe.unpackOnly(target)} ($mirnaSourceName) experimental: $experimental score: ${"%.3f".format(score.toDouble)} via: $refseq"
 
       Probe.unpack(query) ->
         DefaultBio(Probe.unpackOnly(target),
