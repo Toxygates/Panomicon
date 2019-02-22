@@ -64,29 +64,26 @@ class AssociationResolver(probeStore: Probes,
   def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
     import t.common.shared.AType._
     at match {
-      // The type annotation :BBMap is needed on at least one (!) match pattern
-      // to make the match statement compile. TODO: research this
+      // The type annotation :BBMap is needed on at least one match pattern
+      // to make the match statement compile.
       case Uniprot => proteins: BBMap
       case GO      => probeStore.goTerms(probes)
       case KEGG =>
         toBioMap(probes, (_: Probe).genes) combine
           b2rKegg.forGenes(probes.flatMap(_.genes))
-//      case Enzymes =>
-//        val sp = asSpecies(sc)
-//        b2rKegg.enzymes(probes.flatMap(_.genes), sp)
       case _ => throw new Exception("Unexpected annotation type")
     }
   }
 
   val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
   val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))
-  def errorAssoc(t: AType) = new Association(t, 
+  def errorAssoc(t: AType) = new Association(t,
     convertAssociations(standardMapping(errorVals)), false, false)
 
   def queryOrEmpty[T](t: AType, f: => BBMap): Association = {
-    gracefully( 
-      new Association(t, 
-        convertAssociations(standardMapping(f)), 
+    gracefully(
+      new Association(t,
+        convertAssociations(standardMapping(f)),
         sizeLimitExceeded, true), errorAssoc(t))
   }
 

@@ -101,22 +101,6 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
   }
 
   /**
-   * Obtain all enzymes associated with each of a set of genes.
-   * TODO: remove or upgrade
-   */
-//  def enzymes(genes: Iterable[Gene], species: Species): MMap[Gene, DefaultBio] = {
-//    val r = multiQuery(prefixes +
-//      """SELECT DISTINCT ?g ?ident ?url where {
-//    	?pw kv:xReaction/kv:xEnzyme ?en;
-//           rdf:type kv:Pathway ;
-//    	   kv:xTaxon <http://bio2rdf.org/kegg_taxon:""" + species.shortCode + "> . " +
-//      " ?en kv:xGene ?g ; rdfs:label ?ident ; bio2rdf:url ?url . " +
-//      multiFilter("?g", genes.map(g => bracket(g.packKegg))) + " . }" //TODO
-//      ).map(x => Gene.unpackKegg(unbracket(x(2))) -> DefaultBio(x(0), x(1)))
-//    makeMultiMap(r)
-//  }
-
-  /**
    * Obtain all pathways associated with each of a set of genes.
    */
   def forGenes(genes: Iterable[Gene]): MMap[Gene, Pathway] = {

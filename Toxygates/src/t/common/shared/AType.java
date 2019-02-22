@@ -121,9 +121,6 @@ public enum AType {
   },
   //mRNA-microRNA association
   MRNA("mRNA"),    
-  // Enzymes("Kegg Enzymes") {
-  // public String formLink(String value) { return value; }
-  // },
   
   //Was used in Tritigate
   EnsemblOSA("O.Sativa orth. genes") {
