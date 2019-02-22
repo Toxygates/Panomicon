@@ -153,7 +153,6 @@ with ProbeService {
   def pathways(pattern: String): Array[String] =
     b2rKegg.forPattern(pattern).toArray
 
-  //TODO: return a map instead
   @throws[TimeoutException]
   def geneSyms(_probes: Array[String]): Array[Array[String]] = {
     //Don't look up more than 500 probes

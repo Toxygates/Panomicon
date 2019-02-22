@@ -25,7 +25,6 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
   }
 
   def nodeWeight(node: Node): Double = {
-    // TODO stop using these magic strings
     if (node.`type` == Network.mrnaType) {
       node.weights().get(messengerWeightColumn);
     } else {

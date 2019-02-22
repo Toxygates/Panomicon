@@ -129,7 +129,6 @@ class UnitsHelper(schema: DataSchema) {
   import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
   type ControlGroupKey = (String, String, String)
 
-  //TODO try to simplify, share code with the above
   def byControlGroup(raw: Iterable[Unit]): Map[ControlGroupKey, Iterable[Unit]] =
     raw.groupBy(controlGroupKey)
 
