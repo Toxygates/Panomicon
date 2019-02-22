@@ -19,16 +19,18 @@
 package otg.viewer.client.components;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.components.PACFuture;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
@@ -102,25 +104,79 @@ abstract public class TimeDoseGrid extends Composite {
     grid.setBorderWidth(0);
     mainPanel.add(grid);
   }
-
-  public void setSampleClass(SampleClass sc) {
-    chosenSampleClass = sc;
-    if (!sc.equals(chosenSampleClass)) {
-      minorValues = new ArrayList<String>();
-      logger.info("SC change trigger minor " + sc);
-      lazyFetchMinor();
-    } 
+  
+  public void initializeState(SampleClass sampleClass, List<String> compounds) {
+    boolean shouldFetchMinors = prepareToFetchMinors(sampleClass);
+    boolean shouldFetchSamples = prepareToFetchSamples(compounds);
+ 
+    CompletableFuture<String[]> minorsFuture = shouldFetchMinors ? 
+        fetchMinorFuture().future : CompletableFuture.completedFuture(null);
+        
+    CompletableFuture<Pair<Unit, Unit>[]> samplesFuture = shouldFetchSamples ?
+        fetchSamplesFuture().future : CompletableFuture.completedFuture(null);
+        
+    minorsFuture.thenCombine(samplesFuture, (minors, samples) -> {
+      if (shouldFetchSamples) {
+        availableUnits = Arrays.asList(samples);
+        samplesAvailable(); // danger here
+      }
+      if (shouldFetchMinors) {
+        try {
+          schema.sort(schema.minorParameter(), minors);
+        } catch (Exception e) {
+          logger.log(Level.WARNING, "Unable to sort times", e);
+        }
+        minorValues = Arrays.asList(minors);
+        drawGridInner(grid);
+        onMinorsDone(); // also danger here
+      }
+      return null;
+    }).handle((r, exception) -> {
+      if (exception != null) {
+        Window.alert("Exception: " + exception.getMessage());
+      }
+      return null;
+    });
   }
-
-  public void compoundsChanged(List<String> compounds) {
+  
+  public void changeCompounds(List<String> compounds) {
+    boolean shouldFetchSamples = prepareToFetchSamples(compounds);
+         
+    CompletableFuture<Pair<Unit, Unit>[]> samplesFuture = shouldFetchSamples ?
+        fetchSamplesFuture().future : CompletableFuture.completedFuture(null);
+        
+    samplesFuture.handle((samples, exception) -> {
+      if (samples != null) {
+        if (shouldFetchSamples) {
+          availableUnits = Arrays.asList(samples);
+          samplesAvailable(); // danger here
+        }
+      } else {
+        Window.alert("Exception: " + exception.getMessage());
+      }
+      return null;
+    });
+  }
+  
+  private boolean prepareToFetchMinors(SampleClass sampleClass) {
+    if (!sampleClass.equals(chosenSampleClass)) {
+      chosenSampleClass = sampleClass;
+      minorValues = new ArrayList<String>();
+      return true;
+    }
+    return false;
+  }
+  
+  private boolean prepareToFetchSamples(List<String> compounds) {
     chosenCompounds = compounds;
     rootPanel.clear();
     if (compounds.isEmpty()) {
       setEmptyMessage(emptyMessage);
+      return false;
     } else {
       rootPanel.add(mainPanel);
       redrawGrid();
-      fetchSamples();
+      return true; 
     }
   }
 
@@ -133,84 +189,32 @@ abstract public class TimeDoseGrid extends Composite {
       rootPanel.add(Utils.mkEmphLabel(emptyMessage));
     }
   }
-
-  protected boolean fetchingMinor;
-
-  private void lazyFetchMinor() {
-    if (fetchingMinor) {
-      return;   
-    }
-    fetchMinor();    
+  
+  private PACFuture<String[]> fetchMinorFuture() {
+    PACFuture<String[]> minorsFuture = new PACFuture<String[]>(screen, 
+        "Unable to fetch minor parameter for samples"); 
+    sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
+        minorsFuture.callback);
+    return minorsFuture;
   }
-
-  private void fetchMinor() {
-    fetchingMinor = true;
-    sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(),
-        new PendingAsyncCallback<String[]>(screen,
-            "Unable to fetch minor parameter for samples") {
-          @Override
-          public void handleSuccess(String[] times) {
-            try {
-              // logger.info("Sort " + times.length + " times");
-              schema.sort(schema.minorParameter(), times);
-              minorValues = Arrays.asList(times);
-              drawGridInner(grid);
-              fetchingMinor = false;
-              onMinorsDone();
-            } catch (Exception e) {
-              logger.log(Level.WARNING, "Unable to sort times", e);
-            }
-          }
-
-          @Override
-          public void handleFailure(Throwable caught) {
-            super.handleFailure(caught);
-            fetchingMinor = false;
-          }
-        });
+  
+  private PACFuture<Pair<Unit, Unit>[]> fetchSamplesFuture() {
+    PACFuture<Pair<Unit, Unit>[]> samplesFuture = new PACFuture<Pair<Unit, Unit>[]>(screen,
+        "Unable to obtain samples.");
+    String[] compounds = chosenCompounds.toArray(new String[0]);
+    //removing mechanism to make sure compounds haven't changed during this process;
+    //it shouldn't be necessary because we block user input during these requests
+    sampleService.units(chosenSampleClass, schema.majorParameter().id(), compounds,
+        samplesFuture.callback);
+    return samplesFuture;
   }
 
   protected void onMinorsDone() {}
-
+  protected void samplesAvailable() {}
+  
   protected String keyFor(Sample b) {
     return SampleClassUtils.tripleString(b.sampleClass(), schema);
   }
-
-  private boolean fetchingSamples = false;
-
-  protected void fetchSamples() {
-    if (fetchingSamples) {
-      return;
-    }
-    fetchingSamples = true;
-    availableUnits = new ArrayList<Pair<Unit, Unit>>();
-    String[] compounds = chosenCompounds.toArray(new String[0]);
-    final String[] fetchingForCompounds = compounds;
-    sampleService.units(chosenSampleClass, schema.majorParameter().id(), compounds,
-        new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "Unable to obtain samples.") {
-
-          @Override
-          public void handleFailure(Throwable caught) {
-            super.handleFailure(caught);
-            fetchingSamples = false;
-          }
-
-          @Override
-          public void handleSuccess(Pair<Unit, Unit>[] result) {
-            fetchingSamples = false;
-            if (!Arrays.equals(fetchingForCompounds, chosenCompounds.toArray(new String[0]))) {
-              // Fetch again - the compounds changed while we were loading data
-              fetchSamples();
-            } else {
-              availableUnits = Arrays.asList(result);
-              // logger.info("Got " + result.length + " units");
-              samplesAvailable();
-            }
-          }
-        });
-  }
-
-  protected void samplesAvailable() {}
 
   private void redrawGrid() {
     final int numRows = chosenCompounds.size() + 1 + (hasDoseTimeGUIs ? 1 : 0);
@@ -232,9 +236,6 @@ abstract public class TimeDoseGrid extends Composite {
       grid.setWidget(r, 0, Utils.mkEmphLabel(chosenCompounds.get(i - 1)));
       r++;
     }
-
-    // This will eventually draw the unit UIs
-    lazyFetchMinor();
   }
 
   /**

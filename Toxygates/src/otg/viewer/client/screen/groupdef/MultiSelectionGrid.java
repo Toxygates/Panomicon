@@ -61,7 +61,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     SelectionTDGrid grid = sections.get(sampleClass);
     if (grid == null) {
       grid = screen.factory().selectionTDGrid(screen, this);
-      grid.setSampleClass(sampleClass);
+      grid.initializeState(sampleClass, new ArrayList<String>());
       sections.put(sampleClass, grid);
       Label label = new Label(SampleClassUtils.label(sampleClass, screen.schema()));
       label.addStyleName("selectionGridSectionHeading");
@@ -103,7 +103,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
 
   public void compoundsChanged(List<String> compounds) {
     chosenCompounds = compounds;
-    currentGrid.compoundsChanged(compounds);
+    currentGrid.changeCompounds(compounds);
   }
 
   List<Unit> fullSelection(boolean treatedOnly) {
