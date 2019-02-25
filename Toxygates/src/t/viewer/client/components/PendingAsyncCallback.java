@@ -38,6 +38,9 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
   private String onErrorMessage;
   private @Nullable SuccessAction<T> success = null;
 
+  private T result;
+  private boolean completedSuccessfully = false;
+  
   /**
    * Construct a PendingAsyncCallback. If no SuccessAction is passed in, handleSuccess should be
    * overridden.
@@ -73,8 +76,18 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
 
   @Override
   public void onSuccess(T t) {
+    completedSuccessfully = true;
+    result = t;
     handleSuccess(t);
     screen.removePendingRequest();
+  }
+  
+  public boolean wasSuccessful() {
+    return completedSuccessfully;
+  }
+  
+  public T result() {
+    return result;
   }
 
   public void handleSuccess(T t) {
