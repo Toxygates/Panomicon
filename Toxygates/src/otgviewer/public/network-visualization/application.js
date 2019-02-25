@@ -15,25 +15,28 @@ var toxyNet = [null, null];
  * Hide nodes classed as 'hidden'
  */
 $(document).on("change", "#panelSelect", function(){
-  // Capture the value of the option selected by the user
+  /* Capture the panel selected by the user */
   let id = parseInt($("#panelSelect").val());
   switch(id){
+    /* single panel selection */
     case MAIN_ID:
     case SIDE_ID:
-      // Display the appropriate layout for a single panel
+      /* Display the appropriate layout */
       let layout = (toxyNet[id].layout !== "null" ? toxyNet[id].layout.options.name : "null");
       $("#layoutSelect").val(layout);
 
+      /* Enable checkbox and toggle to the appropriate display of hidden nodes */
       $("#showHiddenNodesCheckbox").attr("disabled",false);
       if( toxyNet[id].hidden.length > 0 )
         $("#showHiddenNodesCheckbox").prop("checked",false);
       else
         $("#showHiddenNodesCheckbox").prop("checked",true);
       break;
-
+    /* dual panel selection */
     case BOTH_ID:
-      // If both panels are selected show, None as default layout
+      /* Default layout set to None */
       $("#layoutSelect").val('null');
+      /* Disable use of checkbox for hidden nodes */
       $("#showHiddenNodesCheckbox").attr("disabled",true);
       break;
   }
@@ -45,31 +48,27 @@ $(document).on("change", "#panelSelect", function(){
  * intersection of the networks.
  */
 $(document).on("change", "#layoutSelect", function (){
-  // Determine which panel is currently active
+  /* Capture the panel selected by the user */
   let id = parseInt($("#panelSelect").val());
-
-  // Retrieve the name of the selected layout
+  /* Retrieve the name of the selected layout */
   let name = $("#layoutSelect").find(":selected").val();
+  /* We only apply a layout if an option different to None has been selected*/
   if( name !== "null" ){
     switch(id){
-      // Apply layout to the selected panel
+      /* Apply layout to all nodes in a single panel */
       case MAIN_ID:
       case SIDE_ID:
         toxyNet[id].layout = vizNet[id].updateLayout(name);
         toxyNet[id].layout.run();
         break;
-
-      // If Both panels are selected, apply the selected layout only to the
-      // intersection and, arrange other nodes as a grid beneath them
+      /* Apply layout to intersecting nodes in both panels */
       case BOTH_ID:
-        /* apply a dual layout, with a default grid layout for nodes outside the
-         * intersection */
+        /* Selected layout is applied to intersecting nodes, whilst a
+         * complementary layout is applied to other nodes in both panels */
         vizNet[MAIN_ID].dualLayout(vizNet[SIDE_ID], name, "grid");
-
-        /* set the layout for both networks as a default 'preset' */
+        /* set the layout for both networks as a default 'None' */
         toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].layout({name: 'null'});
         toxyNet[SIDE_ID].layout = vizNet[MAIN_ID].layout({name: 'null'});
-
         break;
     }
   }
@@ -81,21 +80,23 @@ $(document).on("change", "#layoutSelect", function (){
  * TODO - Provide the user with a way to hide nodes of the graph.
  */
 $(document).on("change", "#showHiddenNodesCheckbox", function(){
-  /* Determine the currently active panel */
+  /* Capture the panel selected by the user */
   let id = parseInt($("#panelSelect").val());
-  /* Determine if the the hidden nodes should be shown or not */
+  /* Determine if the hidden nodes should be shown or not */
   let showHidden = $("#showHiddenNodesCheckbox").is(":checked");
+  console.log("hiddennodes", id, showHidden);
   switch(id){
+    /* Hide/show 'hidden' nodes of a single panel */
     case MAIN_ID:
     case SIDE_ID:
       toxyNet[id].hidden = vizNet[id].showHiddenNodes(showHidden, toxyNet[id].hidden);
-
+      console.log("en showhidden", toxyNet[id].hidden);
+      /* Fit the visualization to the current viewport */
       vizNet[id].fit();
       break;
+    /* Dual panel operation should be unavailable */
     case BOTH_ID:
-      // Hide/show nodes on both networks according to selection
-      toxyNet[MAIN_ID].hidden = vizNet[MAIN_ID].showHiddenNodes(showHidden, toxyNet[MAIN_ID].hidden);
-      toxyNet[SIDE_ID].hidden = vizNet[SIDE_ID].showHiddenNodes(showHidden, toxyNet[SIDE_ID].hidden);
+      /* nothing to be done */
       break;
   }
   /* trigger the change in layout, as the network potentially changed */
@@ -107,81 +108,43 @@ $(document).on("change", "#showHiddenNodesCheckbox", function(){
  * currently on display
  */
 $(document).on("change", "#showIntersectionCheckbox", function(){
-  // If any of the displays is empty, there is no need to do an intersection
-  if( vizNet[MAIN_ID] === null || vizNet[SIDE_ID] === null ) return;
-
-  // Check whether the display of the intersections needs to be enabled or
-  // disabled
-  if( $("#showIntersectionCheckbox").is(":checked") ){
-    // create a headless (unshown) copy of the left-side network, this is done
-    // to prevent the redraw of intersected nodes, as they are added to the pool
-    // with information regarding its parent container
-    let clone = cytoscape({headless: true});
-    clone.add(vizNet[MAIN_ID].nodes());
-    // calculate the intersection of both networks
-    let inter = clone.nodes().intersection(vizNet[SIDE_ID].nodes());
-    // select each node found to be part of the intersection
-    inter.forEach(function(node){
-      vizNet[MAIN_ID].$('#'+node.id())
-        .data("color", nodeColor.HIGHLIGHT)
-        .style('background-color', nodeColor.HIGHLIGHT);
-      vizNet[SIDE_ID].$('#'+node.id())
-          .data("color", nodeColor.HIGHLIGHT)
-          .style('background-color', nodeColor.HIGHLIGHT);
-    });
-  }
-  // Repaint with default color, depending on the type of node
+  let hlgh = $("#showIntersectionCheckbox").is(":checked");
+  if( hlgh )
+    vizNet[MAIN_ID].toogleHighlight(vizNet[SIDE_ID], hlgh, nodeColor.HIGHLIGHT);
   else{
-    vizNet[MAIN_ID].nodes().forEach(function(n){
-      let c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
-      n.style("background-color", c);
-      n.data("color", c);
-    });
-    vizNet[SIDE_ID].nodes().forEach(function(n){
-      let c = n.data('type')==="mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
-      n.style("background-color", c);
-      n.data("color", c);
-    });
+    vizNet[MAIN_ID].setDefaultStyle(vizNet[MAIN_ID].elements());
+    vizNet[SIDE_ID].setDefaultStyle(vizNet[SIDE_ID].elements());
   }
-
 });
 
 /**
- * Handle the merging of two networks,
+ * Merge the graphs shown on left and right panels to a single structure,
+ * keeping a single copy of elements that intersect.
  */
 $(document).on("click", "#mergeNetworkButton", function(){
+  /* Remove DOM elements for the right SIDE_ID */
+  removeRightDisplay();
+
+  /* The hidden nodes in the merging network is simply the union of the hidden
+  * nodes in the original networks */
+  toxyNet[MAIN_ID].hidden = toxyNet[MAIN_ID].hidden.union(toxyNet[SIDE_ID].hidden);
+  /* Trigger an event to show hidden nodes if required */
+  /* Make sure "hidden" nodes remain hidden */
+  let showHidden = $("#showHiddenNodesCheckbox").prop("checked", false);
+  $("#showHiddenNodesCheckbox").trigger("change");
+
   let layout = $("#layoutSelect").find(":selected").val();
 
-  // create collections for each part of the new graph
-  let inter = vizNet[MAIN_ID].elements().intersection(vizNet[SIDE_ID].elements());
-  let compLeft = inter.absoluteComplement();
-  let compRight = vizNet[SIDE_ID].elements().difference(inter);
+  /* Perform the merge of the networks */
+  vizNet[MAIN_ID].mergeWith(vizNet[SIDE_ID].elements(), layout);
+  /* Set a default preset layout for the merged network */
+  toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].layout({name: 'null'});
 
-  let interLayout = inter.layout({ name: "concentric" });
-  interLayout.run();
-  let compLeftLayout = compLeft.layout({ name: "grid" });
-  compLeftLayout.run();
-  compLeft.shift('x', -vizNet[MAIN_ID].width());
-  let compRightLayout = compRight.layout({ name: "grid" });
-  compRightLayout.run();
-  compRight.shift('x', vizNet[MAIN_ID].width());
-
-  // Clear unused variables
-  let mrg = cytoscape().collection();
-  mrg.merge(inter);
-  mrg.merge(compLeft);
-  mrg.merge(compRight);
-
-  vizNet[MAIN_ID].elements().remove();
-  vizNet[MAIN_ID].add(mrg);
-
-  // Remove DOM elements for the right SIDE_ID
+  /* Clean un-required variables */
   vizNet[SIDE_ID] = null;
   toxyNet[SIDE_ID] = null;
 
-  // modify the left-display, so that it takes all available display space
-  // re-layout the elements within the visualization panel
-  removeRightDisplay();
+  /* Fit the new network to the viewport */
   vizNet[MAIN_ID].resize();
   vizNet[MAIN_ID].fit();
 });
@@ -300,6 +263,15 @@ $(document).on("click", ".modal-cancel", function(event){
 /**          Required methods for toxygates integration                **/
 /** ------------------------------------------------------------------ **/
 
+/**
+ * Initialize a DOM element to contain a Cytoscape object, that we can later use
+ * to display the networks generated by toxygates. This method should handle
+ * only the values MAIN_ID or SIDE_ID. Any other value will be ignored.
+ * @param {int} id The id of the graph being initialized.
+ * @param {DOM Node} container The DOM element (usually a <div>) that will be
+ * used as container for a cytoscape element.
+ */
+
 function initCytoscapeGraph(id, container){
   vizNet[id] = cytoscape({
     container: container,
@@ -349,10 +321,6 @@ function onReadyForVisualization(){
 * is not already there, before creating it.
 */
 function showNetworkOnRight() {
-
-  /* set interface controls for dual panel visualization */
-  updateInterfaceControls(2);
-
   /* Check if there is already a right panel */
   let right = $("#rightDisplay");
   if( right.length !== 0 ){
@@ -365,13 +333,17 @@ function showNetworkOnRight() {
   // Define the new right-side panel, together with its elements, and add it
   // to the DOM
   $("#display")
-  .append('<div id="rightDisplay" class="sub-viz"></div>')
-  .ready(function(){
-    let right = $("#rightDisplay");
-    initCytoscapeGraph(SIDE_ID, right);
+    .append('<div id="rightDisplay" class="sub-viz"></div>')
+    .ready(function(){
+      let right = $("#rightDisplay");
+      initCytoscapeGraph(SIDE_ID, right);
 
-    vizNet[MAIN_ID].resize();
-    vizNet[MAIN_ID].fit();
+      /* set interface controls for dual panel visualization */
+      updateInterfaceControls(2);
+
+      /* Fit the left graph to the smaller viewport */
+      vizNet[MAIN_ID].resize();
+      vizNet[MAIN_ID].fit();
   });
 }
 
@@ -465,10 +437,10 @@ function onNodeUnselection(event){
  * node on the display.
  */
 function onNodeEnter(event){
-  console.log("event", event);
+  // console.log("event", event);
   // retrieve the node element that triggered the event
   let node = event.cy.$(event.target);
-  console.log("node", node);
+  // console.log("node", node);
   let popup = node.popper({
     content: ()=>{
       let div = document.createElement('div');

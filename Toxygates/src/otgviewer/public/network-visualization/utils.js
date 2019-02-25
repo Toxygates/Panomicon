@@ -17,14 +17,11 @@ $.getScript("toxygates/network-visualization/lib/cytoscape-popper.js", function(
 function updateInterfaceControls(panels=1){
   // single display visualization
   if( panels === 1 ){
-  // if( $("#rightDisplay").length === 0 ){
     // only left panel is available for selection
     $("#panelSelect option[value=0]").prop("selected", true);
     $("#panelSelect option[value=0]").attr("disabled", false);
     $("#panelSelect option[value=1]").attr("disabled", true);
     $("#panelSelect option[value=2]").attr("disabled", true);
-    // Hidden nodes
-    $("#hideUnconnectedCheckbox").trigger("change");
     // Intersection highlighting
     $("#showIntersectionCheckbox").prop("checked", false);
     $("#showIntersectionCheckbox").attr("disabled", true);
@@ -36,13 +33,11 @@ function updateInterfaceControls(panels=1){
   }
   // double display visualization
   else{
-    // only left panel is available for selection
-    // $("#panelSelect option[value=0]").prop("selected", true);
+    // left, right and intersection options are available for selection
     $("#panelSelect option[value=0]").attr("disabled", false);
+    $("#panelSelect option[value=1]").prop("selected", true);
     $("#panelSelect option[value=1]").attr("disabled", false);
     $("#panelSelect option[value=2]").attr("disabled", false);
-    // Hidden nodes
-    // $("#hideUnconnectedCheckbox").trigger("change");
     // Intersection highlighting
     $("#showIntersectionCheckbox").prop("checked", false);
     $("#showIntersectionCheckbox").attr("disabled", false);
@@ -64,18 +59,7 @@ function removeRightDisplay(){
   // Remove need for side-panel consideration in left panel
   $("#leftDisplay").removeClass("with-side");
 
-  /* Disable interface components that are only of use when a dual display of
-   * networks is available */
-  // Options from panel selection
-  $("#panelSelect option[value=0]").prop("selected", true);
-  $("#panelSelect option[value=1]").attr("disabled", true);
-  $("#panelSelect option[value=2]").attr("disabled", true);
-  // Intersection highlighting
-  $("#showIntersectionCheckbox").prop("checked", false);
-  $("#showIntersectionCheckbox").attr("disabled", true);
-  $("#showIntersectionCheckbox").trigger("change");
-  // Merge network button
-  $("#mergeNetworkButton").attr("disabled", true);
+  updateInterfaceControls(1);
 }
 
 

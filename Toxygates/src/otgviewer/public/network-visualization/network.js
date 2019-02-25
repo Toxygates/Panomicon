@@ -14,6 +14,12 @@ const nodeColor = Object.freeze({
 
 });
 
+/** default colours for lines in the graph */
+const edgeColor = Object.freeze({
+  REGULAR: '#989898',
+  HIGHLIGHT: '#ffde4c',
+});
+
 /** list of shapes that can be used to draw a node */
 const nodeShape = Object.freeze({
   MSG_RNA: "ellipse",
@@ -171,6 +177,7 @@ class Network{
           label: label,
           color: color,
           type: e.type,
+          shape: shape,
           weight: e.weight,
         },
         style:{
@@ -191,7 +198,8 @@ class Network{
         data:{
           id: e.from+e.to,
           source: e.from,
-          target: e.to
+          target: e.to,
+          color: edgeColor.REGULAR,
         }
       });
     });
