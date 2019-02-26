@@ -138,14 +138,14 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   @Override
-  public void changeCompounds(List<String> compounds) {
+  public void setCompounds(List<String> compounds) {
     preSelection = getSelectedCombinations();
-    super.changeCompounds(compounds);
+    super.setCompounds(compounds);
   }
 
-  public void compoundsChanged(List<String> compounds, Unit[] initSel) {
+  public void setCompoundsAndSelectedUnits(List<String> compounds, Unit[] initSel) {
     preSelection = initSel;
-    super.changeCompounds(compounds);
+    super.setCompounds(compounds);
   }
 
   public void setAll(boolean val, boolean fire) {

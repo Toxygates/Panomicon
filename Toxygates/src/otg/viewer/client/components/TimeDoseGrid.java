@@ -145,7 +145,7 @@ abstract public class TimeDoseGrid extends Composite {
     }
   }
   
-  public void changeCompounds(List<String> compounds) {
+  public void setCompounds(List<String> compounds) {
     if (prepareToFetchSamples(compounds)) {
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
           chosenCompounds.toArray(new String[0]),

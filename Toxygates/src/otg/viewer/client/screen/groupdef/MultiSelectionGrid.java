@@ -101,9 +101,9 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     }
   }
 
-  public void compoundsChanged(List<String> compounds) {
+  public void setCompounds(List<String> compounds) {
     chosenCompounds = compounds;
-    currentGrid.changeCompounds(compounds);
+    currentGrid.setCompounds(compounds);
   }
 
   List<Unit> fullSelection(boolean treatedOnly) {
@@ -134,7 +134,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     return schema.isMajorParamSharedControl(value);
   }
 
-  void setSelection(Unit[] selection) {
+  void setVisibleUnits(Unit[] selection) {
     logger.info("Set selection: " + selection.length + " units" + 
         (selection.length > 0 ? ("\n1st selection: " + selection[0]) : ""));
     final DataSchema schema = screen.schema();
@@ -161,7 +161,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
       List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
       Collections.sort(compounds);
       SelectionTDGrid grid = findOrCreateSection(sc);
-      grid.compoundsChanged(compounds, selection);
+      grid.setCompoundsAndSelectedUnits(compounds, selection);
     }
   }
 

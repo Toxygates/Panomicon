@@ -206,14 +206,14 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     disableGroupsIfNeeded(datasets);
   }
   
-  public void compoundsChanged(List<String> compounds) {
+  public void setCompounds(List<String> compounds) {
     chosenCompounds = compounds;
     if (compounds.size() == 0) {
       setEditMode(false);
     } else {
       setEditMode(true);
     }
-    multiSelectionGrid.compoundsChanged(compounds);
+    multiSelectionGrid.setCompounds(compounds);
   }
 
 
@@ -454,7 +454,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     onGroupNameInputChanged();
     nameIsAutoGen = false;
 
-    multiSelectionGrid.setSelection(group.getUnits());
+    multiSelectionGrid.setVisibleUnits(group.getUnits());
 
     setEditMode(true);
   }

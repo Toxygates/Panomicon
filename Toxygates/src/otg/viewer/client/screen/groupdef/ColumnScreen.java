@@ -66,7 +66,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     chosenSampleClass = newSampleClass;
 
     List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
-    groupInspector.compoundsChanged(chosenCompounds);
+    groupInspector.setCompounds(chosenCompounds);
     groupInspector.loadGroups();
     // This needs to happen after groupInspector.loadGroups, which causes
     // the compound selector's selection to be cleared.
@@ -182,7 +182,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void compoundSelectorCompoundsChanged(List<String> compounds) {
-    groupInspector.compoundsChanged(compounds);
+    groupInspector.setCompounds(compounds);
     getStorage().compoundsStorage.store(compounds);
   }
 }
