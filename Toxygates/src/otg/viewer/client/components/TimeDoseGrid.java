@@ -151,6 +151,7 @@ abstract public class TimeDoseGrid extends Composite {
           chosenCompounds.toArray(new String[0]),
           new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "", result -> {
             availableUnits = Arrays.asList(result);
+            drawGridInner(grid);
             samplesAvailable(); // danger here
           }));
     }
