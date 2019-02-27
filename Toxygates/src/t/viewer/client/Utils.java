@@ -56,13 +56,13 @@ public class Utils {
 
   public static HorizontalPanel mkWidePanel() {
     HorizontalPanel panel = mkHorizontalPanel(false);
-    panel.setWidth("100%");
+    panel.addStyleName("widePanel");
     return panel;
   }
 
   public static VerticalPanel mkTallPanel() {
     VerticalPanel panel = mkVerticalPanel(false);
-    panel.setHeight("100%");
+    panel.addStyleName("tallPanel");
     return panel;
   }
 
@@ -139,7 +139,7 @@ public class Utils {
     dialogBox.setHTML(message);
     VerticalPanel panel = new VerticalPanel();
     panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    panel.setWidth("100%");
+    panel.addStyleName("widePanel");
     panel.add(linkTo(url, url));
     
     panel.add(new Button("Close", new ClickHandler() {
@@ -274,12 +274,8 @@ public class Utils {
     SimplePanel simplePanel = new SimplePanel();
     simplePanel.setWidget(new HTML(helpText.getText()));
     verticalPanel.add(simplePanel);
-    simplePanel.setWidth("600px");
-    if (helpImage != null) {
-      verticalPanel.setWidth((helpImage.getWidth() + 50) + "px");
-    } else {
-      verticalPanel.setWidth("650px");
-    }
+    simplePanel.addStyleName("helpPanelInner");
+    verticalPanel.addStyleName("helpPanelOuter");    
     Utils.displayInPopup("Help", verticalPanel, DialogPosition.Center);
   }
 

@@ -30,7 +30,7 @@ public class MirnaSourceSelector extends Composite {
   public MirnaSourceSelector(MirnaSource[] availableSources,
                              @Nullable List<MirnaSource> preferredSources) {
     grid = new Grid(availableSources.length + 1, 6);
-    initWidget(grid);
+    initWidget(grid);    
     grid.setCellSpacing(5);
     this.availableSources = availableSources;
     
