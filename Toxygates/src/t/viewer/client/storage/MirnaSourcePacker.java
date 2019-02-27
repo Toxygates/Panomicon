@@ -17,7 +17,7 @@ public class MirnaSourcePacker extends Packer<MirnaSource> {
     if (splits.length == 2) {
       try {
         limit = Double.parseDouble(splits[1]);
-        return new MirnaSource(splits[0], "", false, limit, 0, null, null);
+        return new MirnaSource(splits[0], "", false, limit, 0, null, null, null);
       } catch (NumberFormatException e) {
         throw new UnpackInputException("Could not parse miRNA source limit: " + splits[1]);
       }

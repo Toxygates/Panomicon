@@ -66,9 +66,11 @@ class AppInfoLoader(probeStore: OTGProbes,
      */
     Seq(
       new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3,
-          1188967, "Experimentally verified", mtbLevels),
+          1188967, "Experimentally verified", mtbLevels,
+          "http://mirtarbase.mbc.nctu.edu.tw/php/index.php"),
         new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90, 3117189,
-            "Predicted, score 0-100", null)
+            "Predicted, score 0-100", null,
+            "http://mirdb.org")
         )
   }
 }

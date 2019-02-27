@@ -123,6 +123,12 @@ public class Utils {
     floatLeft(widget);
     panel.add(widget);
   }
+  
+  public static HTML linkTo(String url, String text) {
+    HTML html = new HTML();
+    html.setHTML("<a target=_blank href=\"" + url + "\">" + text + "</a>");
+    return html;
+  }
 
   /**
    * Open an URL 
@@ -134,9 +140,7 @@ public class Utils {
     VerticalPanel panel = new VerticalPanel();
     panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     panel.setWidth("100%");
-    HTML html = new HTML();
-    html.setHTML("<a target=_blank href=\"" + url + "\">" + url + "</a>");
-    panel.add(html);
+    panel.add(linkTo(url, url));
     
     panel.add(new Button("Close", new ClickHandler() {
       @Override

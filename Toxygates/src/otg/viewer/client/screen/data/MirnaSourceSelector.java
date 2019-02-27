@@ -29,7 +29,7 @@ public class MirnaSourceSelector extends Composite {
    */
   public MirnaSourceSelector(MirnaSource[] availableSources,
                              @Nullable List<MirnaSource> preferredSources) {
-    grid = new Grid(availableSources.length + 1, 5);
+    grid = new Grid(availableSources.length + 1, 6);
     initWidget(grid);
     grid.setCellSpacing(5);
     this.availableSources = availableSources;
@@ -39,6 +39,7 @@ public class MirnaSourceSelector extends Composite {
     grid.setWidget(0, 2, Utils.mkEmphLabel("Comment"));
     grid.setWidget(0, 3, Utils.mkEmphLabel("Score cutoff"));
     grid.setWidget(0, 4, Utils.mkEmphLabel("Interactions"));
+    grid.setWidget(0, 5, Utils.mkEmphLabel("Information"));
     
     int row = 1;
     for (MirnaSource m: availableSources) {
@@ -99,6 +100,12 @@ public class MirnaSourceSelector extends Composite {
     
     Label size = new Label("" + source.size());
     grid.setWidget(row, 4, size);
+    
+    String url = source.infoURL();
+    if (url != null) {
+      grid.setWidget(row, 5, Utils.linkTo(url, "Official page"));
+    }
+    
   }
   
   public Collection<MirnaSource> getSelection() throws NumberFormatException {
