@@ -11,6 +11,7 @@ import otg.viewer.client.screen.data.NetworkMenu;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.network.*;
@@ -38,6 +39,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   private NetworkVisualizationDialog netvizDialog;
 
+  protected MenuItem sideDownloadGrouped, sideDownloadSingle;
+  
   public static enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
@@ -170,6 +173,22 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   @Override
   protected void setupMenus() {
     super.setupMenus();
+    
+    fileMenu.addSeparator();    
+    sideDownloadGrouped =
+        new MenuItem("Download side table CSV (grouped samples)...", false, () -> {          
+            sideExpressionTable.downloadCSV(false);
+            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+                Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_GROUPED_SAMPLES);
+        });
+    fileMenu.addItem(sideDownloadGrouped);
+    sideDownloadSingle = new MenuItem("Download side table CSV (individual samples)...", false, () -> {      
+        sideExpressionTable.downloadCSV(true);
+        Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+            Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);      
+    });
+    fileMenu.addItem(sideDownloadSingle);  
+    
     networkMenu = new NetworkMenu(this);
     topLevelMenus.add(networkMenu.menuItem());
   }
@@ -220,6 +239,9 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     logger.info("Dual table mode: " + mode);
 
     splitLayout.setWidgetSize(sideExpressionTable, mode.sideTableWidth());
+    
+    sideDownloadGrouped.setText("Download " + mode.sideType + " CSV (grouped)...");
+    sideDownloadSingle.setText("Download " + mode.sideType + " CSV (individual)...");
   }  
   
   @Override
