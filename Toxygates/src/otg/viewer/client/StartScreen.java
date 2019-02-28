@@ -44,14 +44,14 @@ public class StartScreen extends MinimalScreen {
 
   @Override
   protected Widget content() {
-    VerticalPanel vp = Utils.mkTallPanel();
-    vp.setWidth("100%");
+    VerticalPanel vp = Utils.mkTallPanel();    
+    vp.addStyleName("widePanel");
    
     HorizontalPanel hp = Utils.mkWidePanel();
     vp.add(hp);
     
     hp.add(welcomeHtml);
-    welcomeHtml.setWidth("40em");
+    welcomeHtml.addStyleName("welcomeText");
     Utils.loadHTML(manager.appInfo().welcomeHtmlURL(), new Utils.HTMLCallback() {
       @Override
       protected void setHTML(String html) {
