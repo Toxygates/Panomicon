@@ -325,14 +325,23 @@ function getToxyInteractions(){
 }
 
 /**
- * Initialize the components of the context menu that will be presented to the
- * user. These options vary depending on whether there is an active selection
- * of nodes and/or edges or not (coreAsWell option).
+ * Initialize the visualization context menu
+ * A context menu associated to each of the visualization panels is provided to
+ * help the user interact and modify some aspects of the representation of the
+ * network.
+ * The options provided depend on whether the user request the context menu
+ * while on top of a graph element (node or edge) or not.
+ *
+ * @param {number} id Numeric identifier for the panel to which the context menu
+ * is being added.
  */
-function initContextMenu(){
+function initContextMenu(id){
   // self is the viz container that is currently initializing a context menu
   var self = this; // save context to use within annonymous functions
   var contextMenu = this.contextMenus({
+    contextMenuClasses:[
+      'ctx-menu-'+id
+    ],
     menuItems: [
       //---------------------------------------------------------
       // Options shown when clicking on a selected node
@@ -342,7 +351,7 @@ function initContextMenu(){
          * add an interaction between the currently selected node, and a next
          * selected element
          */
-        id: "add-edge",
+        id: "add-edge-"+id,
         content: "Add Edge",
         tooltipText: "Add an edge",
         selector: "node",
@@ -352,7 +361,7 @@ function initContextMenu(){
         /**
          * update data or visual properties of a given node
          */
-         id: "update-node",
+         id: "update-node-"+id,
          content: "Properties",
          tooltip: "View and modify node's properties",
          selector: "node",
@@ -367,7 +376,7 @@ function initContextMenu(){
        * nodes
        */
       {
-        id: "color-scale",
+        id: "color-scale-"+id,
         content: "Scale coloring",
         tooltipText: "Color nodes according to a give property",
         coreAsWell: true,
@@ -379,7 +388,7 @@ function initContextMenu(){
        * the network with the given label or ID.
        */
       {
-        id: "search-node",
+        id: "search-node-"+id,
         content: "Search Node",
         tooltipText: "Search a node by label",
         coreAsWell: true,
@@ -432,6 +441,7 @@ function onAddEdge(event){
  * menu is pressed
  */
 function onUpdateNode(event){
+  console.log(event);
   $("#updateNodeModal").show();
   /* container for the current node's data */
   var trg = event.target.data();
