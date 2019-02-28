@@ -129,7 +129,6 @@ abstract public class TimeDoseGrid extends Composite {
           }
           minorValues = Arrays.asList(minorsCallback.result());
           drawGridInner(grid);
-          onMinorsDone(); // also danger here
         }
       }
     });
@@ -189,7 +188,6 @@ abstract public class TimeDoseGrid extends Composite {
     }
   }
   
-  protected void onMinorsDone() {}
   protected void samplesAvailable() {}
   
   protected String keyFor(Sample b) {

@@ -348,15 +348,9 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
     super.drawGridInner(grid);
   }
-
-  private boolean samplesWaiting = false;
   
   @Override
   protected void samplesAvailable() {
-//    if (fetchingMinor) {
-//      samplesWaiting = true;
-//      return; //wait
-//    }
     //logger.info("Samples available: " + availableUnits.size() + " units.");
 //    if (availableUnits.size() > 0 && availableUnits.get(0) != null) {
 //      logger.info("1st: " + availableUnits.get(0));
@@ -408,14 +402,6 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
     if (listener != null) {
       listener.availableUnitsChanged(availableUnits);
-    }
-  }
-  
-  @Override
-  protected void onMinorsDone() {    
-    if (samplesWaiting) {
-      samplesAvailable();
-      samplesWaiting = false;
     }
   }
 }
