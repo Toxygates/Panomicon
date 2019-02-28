@@ -82,9 +82,11 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     //Re-retrieve user data here (in case user key has changed) and re-populate
     //datasets
     
+    logger.info("fetching app info");
     screen.manager().reloadAppInfo(new AsyncCallback<AppInfo>() {      
       @Override
       public void onSuccess(AppInfo result) {
+        logger.info("app info fetched");
         proceedShowSelector(result);
       }
       
@@ -126,10 +128,12 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
 
   protected void getSampleClasses() {
     logger.info("Request sample classes for " + chosenDatasets.size() + " datasets");
+    logger.info("fetching sample classes");
     sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), new PendingAsyncCallback<SampleClass[]>(screen,
         "Unable to choose datasets") {
       @Override
       public void handleSuccess(SampleClass[] sampleClasses) {
+        logger.info("sample classes fetched");
         dfe.setAvailable(sampleClasses);
       }
     });

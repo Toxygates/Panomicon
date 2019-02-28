@@ -111,6 +111,7 @@ abstract public class TimeDoseGrid extends Composite {
     CallbackWaiter.MultiCallback<String[]> minorsCallback = shouldFetchMinors ? 
         waiter.makeCallback("Unable to fetch minor parameter for samples") : null;
     if (shouldFetchMinors) {
+      logger.info("fetching minors");
       sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
           minorsCallback);
     }
@@ -119,6 +120,7 @@ abstract public class TimeDoseGrid extends Composite {
     CallbackWaiter.MultiCallback<Pair<Unit, Unit>[]> samplesCallback = shouldFetchSamples ?
         waiter.makeCallback("Unable to obtain samples.") : null;
     if (shouldFetchSamples) {
+      logger.info("fetching samples");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
           chosenCompounds.toArray(new String[0]),
           samplesCallback);
@@ -126,11 +128,8 @@ abstract public class TimeDoseGrid extends Composite {
         
     waiter.setFinalAction(successful -> {
       if (successful) {
-        if (shouldFetchSamples) {
-          availableUnits = Arrays.asList(samplesCallback.result());
-          samplesAvailable(); // danger here
-        }
         if (shouldFetchMinors) {
+          logger.info("minors fetched");
           try {
             schema.sort(schema.minorParameter(), minorsCallback.result());
           } catch (Exception e) {
@@ -139,15 +138,22 @@ abstract public class TimeDoseGrid extends Composite {
           minorValues = Arrays.asList(minorsCallback.result());
           drawGridInner(grid);
         }
+        if (shouldFetchSamples) {
+          logger.info("samples fetched");
+          availableUnits = Arrays.asList(samplesCallback.result());
+          samplesAvailable(); // danger here
+        }
       }
     });
   }
   
   public void setCompounds(List<String> compounds) {
     if (prepareToFetchSamples(compounds)) {
+      logger.info("fetching samples");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
           chosenCompounds.toArray(new String[0]),
           new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "", result -> {
+            logger.info("samples fetched");
             availableUnits = Arrays.asList(result);
             drawGridInner(grid);
             samplesAvailable(); // danger here
