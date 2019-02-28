@@ -38,6 +38,7 @@ public class MirnaSource implements Serializable  {
   private int size;
   private @Nullable String comment;
   private @Nullable List<? extends Pair<String, Double>> scoreLevels;
+  private @Nullable String infoURL;
   
   /**
    * Construct a new MiRNA source (mRNA-miRNA associations) information object.
@@ -54,7 +55,8 @@ public class MirnaSource implements Serializable  {
   public MirnaSource(String id, String title,  
       boolean hasScores, @Nullable Double limit,
       int size, @Nullable String comment,
-      @Nullable List<? extends Pair<String, Double>> scoreLevels) {
+      @Nullable List<? extends Pair<String, Double>> scoreLevels,
+      @Nullable String infoURL) {
     this.id = id;
     this.title = title;    
     this.hasScores = hasScores;
@@ -62,6 +64,7 @@ public class MirnaSource implements Serializable  {
     this.size = size;
     this.comment = comment;
     this.scoreLevels = scoreLevels;
+    this.infoURL = infoURL;
   }
   
   public String title() { return title; }
@@ -79,6 +82,8 @@ public class MirnaSource implements Serializable  {
   public @Nullable String comment() { return comment; }
   
   public @Nullable List<? extends Pair<String, Double>> scoreLevels() { return scoreLevels; }
+  
+  public @Nullable String infoURL() { return infoURL; }
   
   public @Nullable Map<String, Double> scoreLevelMap() {
     if (scoreLevels == null) {
@@ -103,5 +108,5 @@ public class MirnaSource implements Serializable  {
   @Override
   public int hashCode() {
     return id.hashCode();
-  }
+  }  
 }

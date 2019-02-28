@@ -101,7 +101,7 @@ class AppInfoLoader(probeStore: Probes,
   protected def getMirnaSourceInfo: Array[MirnaSource] = {
     val dynamic = probeStore.mirnaSources.map(s =>
       new MirnaSource(s._1, s._2, s._3, asJDouble(s._4), s._5.getOrElse(0),
-        s._6.getOrElse(null), null))
+        s._6.getOrElse(null), null, null))
 
     //Currently, triplestore-provided "dynamic" miRNA sources cannot have
     //cutoff levels with labels. Such levels can only be set in static sources.
