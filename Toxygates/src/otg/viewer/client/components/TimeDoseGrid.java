@@ -136,12 +136,12 @@ abstract public class TimeDoseGrid extends Composite {
             logger.log(Level.WARNING, "Unable to sort times", e);
           }
           minorValues = Arrays.asList(minorsCallback.result());
-          drawGridInner(grid);
         }
+        drawGridInner(grid);
         if (shouldFetchSamples) {
           logger.info("samples fetched");
           availableUnits = Arrays.asList(samplesCallback.result());
-          samplesAvailable(); // danger here
+          samplesAvailable();          
         }
       }
     });
@@ -156,7 +156,7 @@ abstract public class TimeDoseGrid extends Composite {
             logger.info("samples fetched");
             availableUnits = Arrays.asList(result);
             drawGridInner(grid);
-            samplesAvailable(); // danger here
+            samplesAvailable();
           }));
     }
   }
