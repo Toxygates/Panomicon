@@ -57,6 +57,14 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
  
+  public void activateSection(SampleClass sampleClass) {
+    SelectionTDGrid grid = sections.get(sampleClass);
+    if (grid != currentGrid) {
+      currentGrid = grid;
+      clearEmptySections();
+    }
+  }
+  
   private SelectionTDGrid findOrCreateSection(SampleClass sampleClass, 
       List<String> compounds, Unit[] unitSelection) {
     SelectionTDGrid grid = sections.get(sampleClass);
@@ -73,7 +81,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
       verticalPanel.add(label);
       verticalPanel.add(grid);
     } else {
-      grid.setCompounds(compounds);
+      grid.setCompoundsAndSelectedUnits(compounds, unitSelection);
     }
     return grid;
   }

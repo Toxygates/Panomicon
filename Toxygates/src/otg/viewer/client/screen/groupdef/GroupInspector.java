@@ -452,7 +452,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     if (!macroClass.equals(chosenSampleClass)) {
       delegate.groupInspectorSampleClassChanged(macroClass);
     }
-    sampleClassChanged(macroClass);
+    multiSelectionGrid.activateSection(macroClass);
 
     List<String> compounds = 
         SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).

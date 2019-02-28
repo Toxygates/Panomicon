@@ -158,6 +158,13 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     preSelection = getSelectedCombinations();
     super.setCompounds(compounds);
   }
+  
+  public void setCompoundsAndSelectedUnits(List<String> compounds, Unit[] initSel) {
+    logger.info("preselection = initsel");
+    assert(preSelection == null);
+    preSelection = initSel;
+    super.setCompounds(compounds);
+  }
 
   public void setAll(boolean val, boolean fire) {
     for (UnitUI ui : unitUis.values()) {
