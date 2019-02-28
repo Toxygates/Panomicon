@@ -162,7 +162,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     // Reflect loaded group information in UI
     updateTableData();
     existingGroupsTable.table().redraw();
-    clearUiForNewGroup();
   }
 
   private void onGroupNameInputChanged() {
