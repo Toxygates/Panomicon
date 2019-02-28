@@ -27,7 +27,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otg.viewer.client.components.*;
+import otg.viewer.client.components.OTGScreen;
+import otg.viewer.client.components.TimeDoseGrid;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
@@ -122,7 +123,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
   private double doubleValueFor(Annotation a, String key) throws IllegalArgumentException {
     for (BioParamValue e : a.getAnnotations()) {      
-      if (e.label().equals(key) && e instanceof NumericalBioParamValue) {
+      if (e.label().equals(key) && e instanceof NumericalBioParamValue && 
+          ((NumericalBioParamValue)e).value() != null) {
         return ((NumericalBioParamValue) e).value();
       }
     }
