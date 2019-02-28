@@ -192,11 +192,21 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     availableUnits = units;
   }
   
+  public void initializeState(List<Dataset> datasets, SampleClass sc, 
+      List<String> compounds) {
+    chosenDatasets = datasets;
+    chosenSampleClass = sc;
+    chosenCompounds = compounds;
+    if (compounds.size() == 0) {
+      setEditMode(false);
+    } else {
+      setEditMode(true);
+    }
+    multiSelectionGrid.initializeState(sc, compounds);
+  }
+  
   public void sampleClassChanged(SampleClass sc) {
-    // This needs to happen before compoundsChanged, so that multiSelectionGrid.currentGrid
-    // will get a value before being used in multiSelectionGrid.compoundsChanged
     multiSelectionGrid.sampleClassChanged(sc);
-    
     chosenSampleClass = sc;
   }
 

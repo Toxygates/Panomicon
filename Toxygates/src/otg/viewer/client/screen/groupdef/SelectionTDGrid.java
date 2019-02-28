@@ -136,15 +136,26 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     super(screen, true);
     this.listener = listener;
   }
+  
+  @Override
+  public void initializeState(SampleClass sampleClass, List<String> compounds) {
+    logger.info("leaving preselection null");
+    assert(preSelection == null);
+    super.initializeState(sampleClass, compounds);
+  }
+  
+  public void initializeState(SampleClass sampleClass, List<String> compounds, Unit[] unitSelection) {
+    logger.info("preselection = unitsel");
+    assert(preSelection == null);
+    preSelection = unitSelection;
+    super.initializeState(sampleClass, compounds);
+  }
 
   @Override
   public void setCompounds(List<String> compounds) {
+    logger.info("preselection = getselectedcomb");
+    assert(preSelection == null);
     preSelection = getSelectedCombinations();
-    super.setCompounds(compounds);
-  }
-
-  public void setCompoundsAndSelectedUnits(List<String> compounds, Unit[] initSel) {
-    preSelection = initSel;
     super.setCompounds(compounds);
   }
 
@@ -394,7 +405,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       cmpDoseCheckboxes[cIdx * mediumValues.size() + dIdx].setEnabled(true);
       doseTimeCheckboxes[dIdx * minorValues.size() + tIdx].setEnabled(true);
     }
+    logger.info("clearing preselection");
+    assert(preSelection != null);
     if (preSelection != null) {
+      
       //logger.info("Set preselection " + preSelection.length);
       setSelection(preSelection);
       preSelection = null;

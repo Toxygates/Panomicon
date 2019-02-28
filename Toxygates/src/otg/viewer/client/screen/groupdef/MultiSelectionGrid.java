@@ -56,17 +56,24 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   }
 
   private Unit[] expectedSelection = new Unit[] {}; // waiting for units (grid count)
-
-  private SelectionTDGrid findOrCreateSection(SampleClass sampleClass) {
+ 
+  private SelectionTDGrid findOrCreateSection(SampleClass sampleClass, 
+      List<String> compounds, Unit[] unitSelection) {
     SelectionTDGrid grid = sections.get(sampleClass);
     if (grid == null) {
       grid = screen.factory().selectionTDGrid(screen, this);
-      grid.initializeState(sampleClass, new ArrayList<String>());
+      if (unitSelection != null) {
+        grid.initializeState(sampleClass, compounds, unitSelection);
+      } else {
+        grid.initializeState(sampleClass, compounds); 
+      }
       sections.put(sampleClass, grid);
       Label label = new Label(SampleClassUtils.label(sampleClass, screen.schema()));
       label.addStyleName("selectionGridSectionHeading");
       verticalPanel.add(label);
       verticalPanel.add(grid);
+    } else {
+      grid.setCompounds(compounds);
     }
     return grid;
   }
@@ -93,8 +100,17 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     }
   }
   
+  public void initializeState(SampleClass sc, List<String> compounds) {
+    chosenCompounds = compounds;
+    SelectionTDGrid g = findOrCreateSection(sc, compounds, null);
+    if (g != currentGrid) {
+      currentGrid = g;
+      clearEmptySections();
+    }
+  }
+  
   public void sampleClassChanged(SampleClass sc) {
-    SelectionTDGrid g = findOrCreateSection(sc);
+    SelectionTDGrid g = findOrCreateSection(sc, chosenCompounds, null);
     if (g != currentGrid) {
       currentGrid = g;
       clearEmptySections();
@@ -160,8 +176,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     for (SampleClass sc : lcompounds.keySet()) {
       List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
       Collections.sort(compounds);
-      SelectionTDGrid grid = findOrCreateSection(sc);
-      grid.setCompoundsAndSelectedUnits(compounds, selection);
+      SelectionTDGrid grid = findOrCreateSection(sc, compounds, selection);
     }
   }
 

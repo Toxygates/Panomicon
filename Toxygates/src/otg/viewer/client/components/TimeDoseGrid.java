@@ -108,13 +108,22 @@ abstract public class TimeDoseGrid extends Composite {
     CallbackWaiter waiter = new CallbackWaiter(screen);
     
     boolean shouldFetchMinors = prepareToFetchMinors(sampleClass);
-    boolean shouldFetchSamples = prepareToFetchSamples(compounds);
- 
     CallbackWaiter.MultiCallback<String[]> minorsCallback = shouldFetchMinors ? 
         waiter.makeCallback("Unable to fetch minor parameter for samples") : null;
+    if (shouldFetchMinors) {
+      sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
+          minorsCallback);
+    }
+    
+    boolean shouldFetchSamples = prepareToFetchSamples(compounds);
     CallbackWaiter.MultiCallback<Pair<Unit, Unit>[]> samplesCallback = shouldFetchSamples ?
         waiter.makeCallback("Unable to obtain samples.") : null;
-    
+    if (shouldFetchSamples) {
+      sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
+          chosenCompounds.toArray(new String[0]),
+          samplesCallback);
+    }
+        
     waiter.setFinalAction(successful -> {
       if (successful) {
         if (shouldFetchSamples) {
@@ -132,16 +141,6 @@ abstract public class TimeDoseGrid extends Composite {
         }
       }
     });
-    
-    if (shouldFetchMinors) {
-      sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
-          minorsCallback);
-    }
-    if (shouldFetchSamples) {
-      sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
-          chosenCompounds.toArray(new String[0]),
-          samplesCallback);
-    }
   }
   
   public void setCompounds(List<String> compounds) {

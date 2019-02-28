@@ -52,11 +52,9 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void loadState(AttributeSet attributes) {
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     filterTools.datasetsChanged(newChosenDatasets);
-    groupInspector.datasetsChanged(newChosenDatasets);
 
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(newSampleClass);
-    groupInspector.sampleClassChanged(newSampleClass);
     compoundSelector.sampleClassChanged(newSampleClass);
     
     if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
@@ -66,7 +64,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     chosenSampleClass = newSampleClass;
 
     List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
-    groupInspector.setCompounds(chosenCompounds);
+    groupInspector.initializeState(newChosenDatasets, newSampleClass, new ArrayList<String>());
     groupInspector.loadGroups();
 
     compoundSelector.setChosenCompounds(chosenCompounds);
