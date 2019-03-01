@@ -450,6 +450,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     SampleClass macroClass = 
         SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
     if (!macroClass.equals(chosenSampleClass)) {
+      chosenSampleClass = macroClass;
       delegate.groupInspectorSampleClassChanged(macroClass);
     }
     multiSelectionGrid.activateSection(macroClass);
