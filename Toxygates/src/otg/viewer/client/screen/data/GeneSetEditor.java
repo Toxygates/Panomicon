@@ -45,6 +45,19 @@ import t.viewer.shared.StringList;
 
 public class GeneSetEditor extends Composite {
 
+  interface SaveActionHandler {
+
+    /*
+     * Override this function to handle post save event and what genes were saved
+     */
+    void onSaved(String title, List<String> items);
+
+    /*
+     * Override this function to handle what genes were saved
+     */
+    void onCanceled();
+  }
+
   private static final String NEW_TITLE_PREFIX = "NewGeneSet";
 
   public static final int SAVE_FAILURE = -1;

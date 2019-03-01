@@ -21,6 +21,7 @@ package otg.viewer.client.screen.data;
 
 import java.util.*;
 
+import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -34,6 +35,10 @@ public class TermSuggestOracle extends SuggestOracle {
   private final ProbeServiceAsync probeService;
 
   private String lastRequest = "";
+
+  interface ExactMatchHandler<T> extends EventHandler {
+    void onExactMatchFound(List<T> exactMatches);
+  }
 
   private List<ExactMatchHandler<Term>> handlers =
       new ArrayList<ExactMatchHandler<Term>>();
