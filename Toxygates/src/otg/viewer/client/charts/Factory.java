@@ -29,14 +29,21 @@ import t.viewer.client.storage.StorageProvider;
  * @param <D> the underlying Data implementation
  * @param <DS> the underlying Dataset implementation
  */
-abstract public class Factory<D extends Data, DS extends Dataset<D>> {
+abstract public class Factory<DS extends Dataset<?>> {
 
-  abstract public D[][] dataArray(int rows, int cols);
-
+  /**
+   * Construct a new dataset that can back a number of charts
+   * @return
+   */
   abstract public DS dataset(List<DataPoint> samples, String[] categories,
       boolean categoriesAreMins, StorageProvider storage);
 
-  abstract public ChartGrid<D> grid(OTGScreen screen, DS table, List<String> rowFilters,
+  /**
+   * Construct a new grid of individual charts.
+   * 
+   * @return
+   */
+  abstract public ChartGrid<?> grid(OTGScreen screen, DS table, List<String> rowFilters,
       List<String> rowLabels, List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
       boolean columnsAreTimes, int totalWidth);
 

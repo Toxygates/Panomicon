@@ -27,17 +27,12 @@ import t.viewer.client.storage.StorageProvider;
 /**
  * Concrete factory methods that use Google Visualizations to display charts.
  */
-public class GVizFactory extends Factory<GDTData, GDTDataset> {
+public class GVizFactory extends Factory<GDTDataset> {
 
   @Override
-  public GDTData[][] dataArray(int rows, int cols) {
-    return new GDTData[rows][cols];
-  }
-
-  @Override
-  public GDTDataset dataset(List<DataPoint> POINTS, String[] categories,
+  public GDTDataset dataset(List<DataPoint> points, String[] categories,
       boolean categoriesAreMins, StorageProvider storage) {
-    return new GDTDataset(POINTS, categories, categoriesAreMins, storage);
+    return new GDTDataset(points, categories, categoriesAreMins, storage);
   }
 
   @Override
@@ -45,13 +40,13 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
       List<String> rowLabels,
       List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses, boolean columnsAreTimes,
       int totalWidth) {
-    return new GVizChartGrid(this, screen, table, rowFilters, rowLabels, organisms, rowsAreMajors,
+    return new GVizChartGrid(screen, table, rowFilters, rowLabels, organisms, rowsAreMajors,
         timesOrDoses, columnsAreTimes, totalWidth);
   }
 
-  public AdjustableGrid<GDTData, GDTDataset> adjustableGrid(ChartParameters params,
+  public AdjustableGrid<GDTDataset> adjustableGrid(ChartParameters params,
       DataSource.ExpressionRowSource source) {
-    return new AdjustableGrid<GDTData, GDTDataset>(this, params, source);
+    return new AdjustableGrid<GDTDataset>(this, params, source);
   }
 
   @Override
