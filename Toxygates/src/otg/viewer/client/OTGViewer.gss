@@ -194,8 +194,26 @@ App elements
 	height: 100%;
 }
 
+.tallAndWidePanel {
+	width: 100%;
+	height: 100%;
+}
+
+.geneSetManualPanelItem {
+	width: 95%;
+}
+
 .welcomeText {
 	width: 40em;
+}
+
+.stackLP {
+	width:350px;
+}
+
+.stackLPItem {
+	width: 350px;
+	height: 29px;
 }
 
 /**************************************	
@@ -359,6 +377,7 @@ Gene set editor
 	padding: 5px;
 	border: grey solid 1px;
 	margin: 2px;
+	width: 100%;
 }
 
 /**************************************	
