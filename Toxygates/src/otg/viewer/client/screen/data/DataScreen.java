@@ -238,6 +238,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
       addMenu(mi);
     }
     
+    analysisMenu.addSeparator();
+    
     for (MenuItem mi: intermineMenuItems(appInfo())) {
       addAnalysisMenuItem(mi);
     }
