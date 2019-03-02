@@ -24,7 +24,6 @@ class ManagedNetwork(mainParams: LoadParams,
     var currentPageSize: Int,
     sideIsMRNA: Boolean) extends ManagedMatrix(mainParams) {
 
-  //TODO check if this is called in the correct places
   override protected def currentViewChanged() {
     super.currentViewChanged()
     updateSideMatrix()

@@ -97,6 +97,10 @@ public class GDTDataset extends Dataset<GDTData> {
     }
   }
 
+  protected GDTData[][] makeDataArray(int rows, int cols) {
+    return new GDTData[rows][cols];
+  }
+
   protected native void addStyleColumn(DataTable dt) /*-{
 		dt.addColumn({
 			type : 'string',

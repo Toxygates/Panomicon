@@ -105,4 +105,6 @@ abstract public class Dataset<D extends Data> {
 
   abstract protected void makeColumns(D dt, DataPoint[] samples);
 
+  abstract protected D[][] makeDataArray(int rows, int cols);
+
 }

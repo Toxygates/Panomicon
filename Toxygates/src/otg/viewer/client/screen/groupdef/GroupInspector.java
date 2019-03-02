@@ -229,7 +229,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public void confirmDeleteAllGroups() {
     if (Window.confirm("Delete " + groups.size() + " groups?")) {
       groups.clear();
-      reflectGroupChanges(true);
+      reflectGroupChanges();
       clearUiForNewGroup();
     }
   }
@@ -263,10 +263,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * @param store whether changes to the active and inactive group sets should be
    *          saved to local storage
    */
-  private void reflectGroupChanges(boolean store) {
-    if (store) {
-      groups.saveToLocalStorage(screen.getStorage());
-    }
+  private void reflectGroupChanges() {
+    groups.saveToLocalStorage(screen.getStorage());
     txtbxGroup.setText("");
     updateConfigureStatus(true);
     updateTableData();
@@ -300,7 +298,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       }
     }
     if (disableCount > 0) {
-      reflectGroupChanges(true);
+      reflectGroupChanges();
       Window
           .alert(disableCount + " group(s) were deactivated " + "because of your dataset choice.");
     }
@@ -347,7 +345,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     for (Group g : gs) {
       addGroup(g, true);
     }
-    reflectGroupChanges(true);
+    reflectGroupChanges();
     clearUiForNewGroup();
   }
 
@@ -411,7 +409,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     Group newGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
     addGroup(newGroup, true);
-    reflectGroupChanges(true);
+    reflectGroupChanges();
     return newGroup;
   }
 
@@ -472,7 +470,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   @Override
   public void deleteGroup(String name) {
     groups.remove(name);
-    reflectGroupChanges(true); // stores columns
+    reflectGroupChanges();
     clearUiForNewGroup();
   }
   

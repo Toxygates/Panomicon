@@ -129,25 +129,13 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
 
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    if (sources.length == 1) {
-      //This special case is not strictly needed, but
-      //reduces peak memory usage
-      for {
-        t <- mirnaTargetTable(sources(0))
-      } {
-
-        getState().mirnaSources = sources
-        getState().targetTable = t
-      }
-    } else {
-      var r = new TargetTableBuilder
-      for (s <- sources; t <- mirnaTargetTable(s)) {
-        r.addAll(t)
-      }
-
-      getState().mirnaSources = sources
-      getState().targetTable = r.build
+    var r = new TargetTableBuilder
+    for (s <- sources; t <- mirnaTargetTable(s)) {
+      r.addAll(t)
     }
+
+    getState().mirnaSources = sources
+    getState().targetTable = r.build
     println(s"Session targetTable filtered to size ${getState().targetTable.size}")
   }
 
