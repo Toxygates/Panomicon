@@ -66,11 +66,6 @@ public class OTGFactory implements UIFactory {
   public GeneSetEditor geneSetEditor(ImportingScreen screen) {
     return new GeneSetEditor(screen);
   }  
-  
-  @Override
-  public boolean hasHeatMapMenu() {
-    return true;
-  }
 
   @Override
   public GeneSetsMenu geneSetsMenu(DataScreen screen) {
@@ -78,14 +73,14 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public void enrichment(ImportingScreen screen, StringList probes,
+  public void displayEnrichmentDialog(ImportingScreen screen, StringList probes,
       @Nullable IntermineInstance preferredInst) {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.enrich(probes);
   }
 
   @Override
-  public void multiEnrichment(ImportingScreen screen, StringList[] lists,
+  public void displayMultiEnrichmentDialog(ImportingScreen screen, StringList[] lists,
       @Nullable IntermineInstance preferredInst) {
     InterMineData tm = new InterMineData(screen, preferredInst);
     tm.multiEnrich(lists);    

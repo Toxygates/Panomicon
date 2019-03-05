@@ -45,11 +45,6 @@ public class ClassicOTGFactory extends OTGFactory {
   }
 
   @Override
-  public boolean hasHeatMapMenu() {
-    return true;
-  }
-  
-  @Override
   public GeneSetsMenu geneSetsMenu(DataScreen screen) {
     return new GeneSetsMenu(screen) {
       @Override

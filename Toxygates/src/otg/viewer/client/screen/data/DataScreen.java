@@ -266,7 +266,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     StringList genes = 
         new StringList(StringList.PROBES_LIST_TYPE, 
             "temp", DataScreen.this.displayedAtomicProbes());
-    DataScreen.this.factory().enrichment(DataScreen.this, genes, preferredInstance);
+    DataScreen.this.factory().displayEnrichmentDialog(DataScreen.this, genes, preferredInstance);
   }
 
   @Override
