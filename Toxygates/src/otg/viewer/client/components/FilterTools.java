@@ -104,7 +104,8 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
             chosenDatasets) {
           @Override
           public void onOK() {
-            datasetsChanged(new ArrayList<Dataset>(getSelected()));
+            setDatasets(new ArrayList<Dataset>(getSelected()));
+            getSampleClasses();
             delegate.filterToolsDatasetsChanged(chosenDatasets);
             db.hide();
           }
@@ -121,12 +122,11 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     db.show();
   }
 
-  public void datasetsChanged(List<Dataset> datasets) {
+  public void setDatasets(List<Dataset> datasets) {
     chosenDatasets = datasets;
-    getSampleClasses();
   }
 
-  protected void getSampleClasses() {
+  public void getSampleClasses() {
     logger.info("Request sample classes for " + chosenDatasets.size() + " datasets");
     logger.info("fetching sample classes");
     sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), new PendingAsyncCallback<SampleClass[]>(screen,

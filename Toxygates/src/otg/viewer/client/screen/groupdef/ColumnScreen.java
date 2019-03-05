@@ -51,7 +51,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void loadState(AttributeSet attributes) {
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
-    filterTools.datasetsChanged(newChosenDatasets);
+    filterTools.setDatasets(newChosenDatasets);
+    filterTools.getSampleClasses();
 
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(newSampleClass);
@@ -151,7 +152,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
-    filterTools.datasetsChanged(datasets);
+    filterTools.setDatasets(datasets);
+    filterTools.getSampleClasses();
     compoundSelector.fetchCompounds();
   }
 

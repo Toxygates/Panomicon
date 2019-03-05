@@ -49,7 +49,8 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   @Override
   public void loadState(AttributeSet attributes) {
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
-    filterTools.datasetsChanged(newChosenDatasets);
+    filterTools.setDatasets(newChosenDatasets);
+    filterTools.getSampleClasses();
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.sampleClassChanged(newSampleClass);
     compoundSelector.datasetsChanged(newChosenDatasets);
