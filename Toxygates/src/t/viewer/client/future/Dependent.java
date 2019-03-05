@@ -12,7 +12,15 @@ public interface Dependent {
    * Dependable's addDependent implementation.
    * @param dependable the Dependable to start depending on
    */
-  void startDepending(Dependable dependable);
+  void onStartDepending(Dependable dependable);
+  
+  /**
+   * Start depending on a Dependable. Implementations should merely call the
+   * Dependable's addDependent method, passing itself as the argument.
+   * @param dependable the Dependable to start depending on
+   * @return this object itself, for method chaining
+   */
+  Dependent dependOn(Dependable dependable);
   
   /**
    * Called by a Dependable that this object is depending on, when it has

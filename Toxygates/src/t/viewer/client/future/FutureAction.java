@@ -1,6 +1,7 @@
 package t.viewer.client.future;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class FutureAction implements Dependent, Dependable {
   public interface CompletionAction {
@@ -10,29 +11,44 @@ public class FutureAction implements Dependent, Dependable {
   private CompletionAction action;
   private int dependableCount = 0;
   private int completedCount = 0;
-  private ArrayList<Dependent> dependants = new ArrayList<Dependent>();
+  private ArrayList<Dependent> dependents = new ArrayList<Dependent>();
+  
+  public FutureAction() {}
   
   public FutureAction(CompletionAction action) {
     this.action = action;
   }
   
-  @Override
-  public Dependable addDependent(Dependent dependant) {
-    dependants.add(dependant);
-    dependant.startDepending(this);
+  public FutureAction setCompletionAction(CompletionAction action) {
+    this.action = action;
     return this;
   }
   
   @Override
-  public void startDepending(Dependable dependable) {
+  public Dependable addDependent(Dependent dependant) {
+    dependents.add(dependant);
+    dependant.onStartDepending(this);
+    return this;
+  }
+  
+  @Override
+  public FutureAction dependOn(Dependable dependable) {
+    dependable.addDependent(this);
+    return this;
+  }
+  
+  @Override
+  public void onStartDepending(Dependable dependable) {
     dependableCount++;
   }
   
   @Override
   public void dependableCompleted(Dependable dependable) {
+    Logger.getLogger("aou").info("compcount = " + completedCount + 
+        "; dependableCount = " + dependableCount);
     if (++completedCount == dependableCount) {
       action.run();
-      dependants.forEach(d -> d.dependableCompleted(this));
+      dependents.forEach(d -> d.dependableCompleted(this));
     }
   }
 }

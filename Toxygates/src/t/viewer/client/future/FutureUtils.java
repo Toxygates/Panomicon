@@ -24,11 +24,11 @@ public class FutureUtils {
   
   public static <T> Future<T> newPendingRequestFuture(Screen screen, String errorMessage) {
     Future<T> future = new Future<T>();
-    addPendingRequestHandling(future, screen, errorMessage);
+    beginPendingRequestHandling(future, screen, errorMessage);
     return future;
   }
   
-  public static void addPendingRequestHandling(Future<?> future, Screen screen, String errorMessage) {
+  public static void beginPendingRequestHandling(Future<?> future, Screen screen, String errorMessage) {
     new PendingRequestHandler(future, screen, errorMessage);
   }
   
@@ -42,11 +42,18 @@ public class FutureUtils {
       this.screen = screen;
       this.errorMessage = errorMessage;
       future.addDependent(this);
+      screen.addPendingRequest();
     }
 
     @Override
-    public void startDepending(Dependable dependable) {
+    public void onStartDepending(Dependable dependable) {
       assert(dependable == future);
+    }
+    
+    @Override
+    public Dependent dependOn(Dependable dependable) {
+      dependable.addDependent(this);
+      return this;
     }
 
     @Override

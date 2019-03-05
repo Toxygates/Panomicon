@@ -37,10 +37,14 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
     return done;
   }
   
+  public boolean doneAndSuccessful() {
+    return done() && wasSuccessful();
+  }
+  
   @Override
   public Dependable addDependent(Dependent dependent) {
     dependents.add(dependent);
-    dependent.startDepending(this);
+    dependent.onStartDepending(this);
     return this;
   }
   

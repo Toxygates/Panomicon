@@ -28,8 +28,8 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.components.CallbackWaiter;
 import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.future.*;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
@@ -105,44 +105,41 @@ abstract public class TimeDoseGrid extends Composite {
   }
   
   public void initializeState(SampleClass sampleClass, List<String> compounds) {
-    CallbackWaiter waiter = new CallbackWaiter(screen);
+    FutureAction finalAction = new FutureAction();
     
-    boolean shouldFetchMinors = prepareToFetchMinors(sampleClass);
-    CallbackWaiter.MultiCallback<String[]> minorsCallback = shouldFetchMinors ? 
-        waiter.makeCallback("Unable to fetch minor parameter for samples") : null;
-    if (shouldFetchMinors) {
+    Future<String[]> minorsFuture = new Future<String[]>(); 
+    if (prepareToFetchMinors(sampleClass)) {
       logger.info("fetching minors");
+      finalAction.dependOn(minorsFuture);
+      FutureUtils.beginPendingRequestHandling(minorsFuture, screen, "Unable to fetch minor parameter for samples");
       sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
-          minorsCallback);
+          minorsFuture);
     }
     
-    boolean shouldFetchSamples = prepareToFetchSamples(compounds);
-    CallbackWaiter.MultiCallback<Pair<Unit, Unit>[]> samplesCallback = shouldFetchSamples ?
-        waiter.makeCallback("Unable to obtain samples.") : null;
-    if (shouldFetchSamples) {
+    Future<Pair<Unit, Unit>[]> samplesFuture = new Future<Pair<Unit, Unit>[]>(); 
+    if (prepareToFetchSamples(compounds)) {
       logger.info("fetching samples");
+      finalAction.dependOn(samplesFuture);
+      FutureUtils.beginPendingRequestHandling(samplesFuture, screen, "Unable to obtain samples.");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
-          chosenCompounds.toArray(new String[0]),
-          samplesCallback);
+          chosenCompounds.toArray(new String[0]), samplesFuture);
     }
-        
-    waiter.setFinalAction(successful -> {
-      if (successful) {
-        if (shouldFetchMinors) {
-          logger.info("minors fetched");
-          try {
-            schema.sort(schema.minorParameter(), minorsCallback.result());
-          } catch (Exception e) {
-            logger.log(Level.WARNING, "Unable to sort times", e);
-          }
-          minorValues = Arrays.asList(minorsCallback.result());
+    
+    finalAction.setCompletionAction(() -> {
+      if (minorsFuture.doneAndSuccessful()) {
+        logger.info("minors fetched");
+        try {
+          schema.sort(schema.minorParameter(), minorsFuture.result());
+        } catch (Exception e) {
+          logger.log(Level.WARNING, "Unable to sort times", e);
         }
-        drawGridInner(grid);
-        if (shouldFetchSamples) {
-          logger.info("samples fetched");
-          availableUnits = Arrays.asList(samplesCallback.result());
-          samplesAvailable();          
-        }
+        minorValues = Arrays.asList(minorsFuture.result());
+      }
+      drawGridInner(grid);
+      if (samplesFuture.doneAndSuccessful()) {
+        logger.info("samples fetched");
+        availableUnits = Arrays.asList(samplesFuture.result());
+        samplesAvailable();          
       }
     });
   }
