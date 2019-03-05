@@ -153,9 +153,11 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   @Override
   public void setCompounds(List<String> compounds) {
-    logger.info("preselection = getselectedcomb");
-    assert(preSelection == null);
-    preSelection = getSelectedCombinations();
+    if (!compounds.isEmpty()) {
+      logger.info("preselection = getselectedcomb");
+      assert(preSelection == null);
+      preSelection = getSelectedCombinations();
+    }
     super.setCompounds(compounds);
   }
   
