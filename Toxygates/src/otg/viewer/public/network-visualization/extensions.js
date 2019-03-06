@@ -27,6 +27,15 @@ function initStyle(){
     .style({
       "border-width": "5px",
     })
+    .selector('node.highlighted')
+    .style({
+      'background-color': nodeColor.HIGHLIGHT,
+      'border-color': nodeColor.HIGHLIGHT,
+    })
+    .selector('edge.highlighted')
+    .style({
+      'line-color': edgeColor.HIGHLIGHT,
+    })
     .update();
 }
 
@@ -250,40 +259,35 @@ function setDefaultStyle(eles){
   }
 
 /**
- * Use the given color to highlight the elements (nodes and edges) that form the
- * intersection between the current graph and the elements of cy. When the
- * parameter 'highlight' is set to false, default colors are used to remove the
- * highlighting of elements in both graphs.
- * @param {graph} cy The graph to which the elements of the current graph are to
- * be compared with.
- * @param {boolean} highlight Wether the intersecting nodes should be
- * highlighed (true) or returned to their default color (false)
- * @param {string} color The color used to hightlight the intersecting elements
- * on both graphs.
+ * Toggle the 'highlighted' class on selected nodes.
+ * A different display color is specified for nodes that have been highlighted
+ * by the user. This change in appearence is handled through the toogle class
+ * 'highlighted', defined in the default stylesheet used for graphs (see method
+ * initStyle).
+ * Here, we toogle on or off (depending on the provided parameter) the highlight
+ * class for the nodes found in the intersection between the current graph and
+ * the given other graph.
+ *
+ * @param {graph} other The graph to which the elements of the current graph are
+ * to be compared with.
+ * @param {boolean} toogle Indicates if the 'highlighted' class for the
+ * intersecting nodes should be turned on (true) or off (false)
+ *
  * EXTENSION TO CYTOSCAPE - CORE
  */
-function toogleHighlight(cy, highlight, color){
-    /* create a headless copy of the current network */
-    let clone = cytoscape({headless:true});
-    clone.add(this.elements());
+function toogleIntersectionHighlight(other, toggle){
+  /* create a headless copy of the current network */
+  let clone = cytoscape({headless:true});
+  clone.add(this.elements());
 
-    /* determine the intersecting elements between the current and the other
-     * collection */
-    let intersection = clone.elements().intersection(cy.elements());
-    intersection.forEach(function(ele){
-      color = highlight ?
-        color :
-        ele.isEdge()?
-          edgeColor.REGULAR :
-          ele.data('type') === "mRNA" ?
-            nodeColor.MSG_RNA:
-            nodeColor.MICRO_RNA;
-      this.$("#"+ele.id())
-        .data("color", color);
-      cy.$("#"+ele.id())
-        .data("color", color);
-    },this);
-  }
+  /* determine the intersecting elements between both collections */
+  let intersection = clone.elements().intersection(other.elements());
+  /* toggle the 'highlighted' class for the elements on both graphs */
+  intersection.forEach(function(ele){
+      this.$("#"+ele.id()).toggleClass('highlighted', toggle);
+      other.$("#"+ele.id()).toggleClass('highlighted', toggle);
+  },this);
+}
 
 /**
  * Generate the options Object needed to define the layout for a cytoscape
@@ -455,7 +459,7 @@ function onSearchNode(event){
 cytoscape("core", "hideUnconnected", hideUnconnected);
 cytoscape("core", "mergeWith", mergeWith);
 cytoscape("core", "setDefaultStyle", setDefaultStyle);
-cytoscape("core", "toogleHighlight", toogleHighlight);
+cytoscape("core", "toogleIntersectionHighlight", toogleIntersectionHighlight);
 
 cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "updateLayout", updateLayout);

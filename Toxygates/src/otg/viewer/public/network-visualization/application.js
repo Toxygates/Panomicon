@@ -168,17 +168,13 @@ $(document).on("change", "#showHiddenNodesCheckbox", function(){
 });
 
 /**
- * Highlight, on both panels, the intersection (equal nodes) of both networks
+ * Highlight the intersection between networks.
+ * , on both panels, the intersection (equal nodes) of both networks
  * currently on display
  */
 $(document).on("change", "#showIntersectionCheckbox", function(){
   let hlgh = $("#showIntersectionCheckbox").is(":checked");
-  if( hlgh )
-    vizNet[MAIN_ID].toogleHighlight(vizNet[SIDE_ID], hlgh, nodeColor.HIGHLIGHT);
-  else{
-    vizNet[MAIN_ID].setDefaultStyle(vizNet[MAIN_ID].elements());
-    vizNet[SIDE_ID].setDefaultStyle(vizNet[SIDE_ID].elements());
-  }
+  vizNet[MAIN_ID].toogleIntersectionHighlight(vizNet[SIDE_ID], hlgh);
 });
 
 /**
@@ -345,21 +341,21 @@ $(document).on("change", "#updateNodeModal #nodeWeights", function(evt){
 /**
  * Handle the search of a particular node within the network.
  */
-$(document).on("click", "#searchNodeModal #searchNodes", function(evt){
-  // nothing to do if there is no network
-  var id = $("#panelSelect").val();
-  if( vizNet[id] === null ) return;
-
-  // retrieve the search string
-  var label = $("#searchNodeModal #nodeLabel").val();
-  // select the corresponding nodes within the graph
-  var selection = vizNet[id].nodes('[label*="'+label+'"]');
-  selection.select();
-
-  // once all nodes with matching labels have been selected, hide the modal
-  var modal = $(event.target).data().modal;
-  $("#"+modal).hide();
-});
+// $(document).on("click", "#searchNodeModal #searchNodes", function(evt){
+//   // nothing to do if there is no network
+//   var id = $("#panelSelect").val();
+//   if( vizNet[id] === null ) return;
+//
+//   // retrieve the search string
+//   var label = $("#searchNodeModal #nodeLabel").val();
+//   // select the corresponding nodes within the graph
+//   var selection = vizNet[id].nodes('[label*="'+label+'"]');
+//   selection.select();
+//
+//   // once all nodes with matching labels have been selected, hide the modal
+//   var modal = $(event.target).data().modal;
+//   $("#"+modal).hide();
+// });
 
 
 
