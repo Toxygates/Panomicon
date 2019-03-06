@@ -24,11 +24,8 @@ public class ImmediateValueChangeTextBox extends TextBox {
   }
 
   private void fireDeferredValueChangeEvent() {
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        ValueChangeEvent.fire(ImmediateValueChangeTextBox.this, getText());
-      }
+    Scheduler.get().scheduleDeferred(() -> {
+      ValueChangeEvent.fire(ImmediateValueChangeTextBox.this, getText());
     });
   }
 
