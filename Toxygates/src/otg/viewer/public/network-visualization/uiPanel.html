@@ -80,113 +80,55 @@
 
   </tbody>
 </table>
+
 <!-- ***************************************************************  -->
-<!-- Modal Components - only to be shown on user request -->
+<!-- Modal Dialogs - only to be shown on user request -->
 
-<!-- Window used to update node properties -->
-<div id="updateNodeModal" class="modal">
-  <div class="modal-content">
-    <span class="modal-close" data-modal="updateNodeModal">&times;</span>
-    <h1>Node Properties</h1>
-    <h3>Data</h3>
-      <!-- id of the current node -->
-      <label for="nodeID">ID:</label>
-      <input id="nodeID" type="text" readonly>
-      <br />
-      <!-- label for the node used in the visualization -->
-      <label for="nodeLabel">Label:</label>
-      <input id="nodeLabel" type="text">
-      <br />
-      <!-- change the type of node -->
-      <label for="nodeType">Type:</label>
-      <select id="nodeType">
-      </select>
-      <br />
-      <!-- list the different properties associated with the node -->
-      <label for="nodeWeights">Weights:</label>
-      <select id="nodeWeights">
-      </select>
-      <input id="weightValue" type="number">
-      <br />
-
-    <h3>Visualization</h3>
-      <!-- the color used to represent the node -->
-      <label for="nodeColor">Color: </label>
-      <input type="color" id="nodeColor" >
-      <br />
-      <!-- the shape used for the node -->
-      <label for="nodeShape">Shape:</label>
-      <select id="nodeShape">
-        <option value="ellipse">Ellipse</option>
-        <option value="triangle">Triangle</option>
-        <option value="rectangle">Rectangle</option>
-        <option value="barrel">Barrel</option>
-        <option value="rhomboid">Rhomboid</option>
-        <option value="diamond">Diamond</option>
-        <option value="pentagon">Pentagon</option>
-        <option value="hexagon">Hexagon</option>
-        <option value="heptagon">Heptagon</option>
-        <option value="octagon">Octagon</option>
-        <option value="star">Star</option>
-        <option value="tag">Tag</option>
-        <option value="vee">Vee</option>
-      </select>
-      <br />
-    <!-- Button used to apply changes to the nodes -->
-    <span id="updateNode" class="modal-button" data-modal="updateNodeModal">
-      Update
-    </span>
-    <span class="modal-button modal-cancel" data-modal="updateNodeModal">Cancel</span>
-  </div>
-</div>
-
-<!-- Window used to color nodes based on a specific property -->
-<div id="graphColorModal" class="modal">
-  <div class="modal-content">
-    <span class="modal-close" data-modal="graphColorModal">&times;</span>
-    <h1>Color Nodes</h1>
-
-    <h3>Select expression value</h3>
-      <label for="graphColorTo">Apply color to:</label>
-      <select id="graphColorTo">
-      </select>
-      <br />
-      <label for="graphColorBy">Apply color by:</label>
-      <select id="graphColorBy">
-      </select>
-
-    <h3>Define color scale</h3>
-      <p>A color scale that fades linearly to white from both ends (min and
-        max) will be used to color all nodes of a specific type.
-      </p>
-      <p>You can use the slider to select where, within the range of values,
-        white should be positioned. If either min or max values are selected,
-        the color scale will use a single color.
-      </p>
-      <!-- minimum end of the scale -->
-      <label for="minRange">Min:</label>
-      <input id="minRange" type="number" step="0.01">
-      <input id="minColor" type="color" value="#FF0000">
-      <!-- slider for white color positioning -->
-      <input id="colorRange" type="range">
-      <!-- maximum end of the scale -->
-      <label for="maxRange">Max:</label>
-      <input id="maxRange" type="number" step="0.01">
-      <input id="maxColor" type="color" value="#0000FF" >
-      <br />
-      <!-- display of white color information  -->
-      <label for="whiteRange">White at:</label>
-      <input id="whiteRange" type="number" readonly style="color:#f6931f;">
-
-    <!-- Button used to apply the color scale to the selected components of
-         the graph -->
-    <span id="colorGraph" class="modal-button" data-modal="graphColorModal">
-      Apply
-    </span>
-    <span class="modal-button modal-cancel" data-modal="graphColorModal">
-      Cancel
-    </span>
-  </div>
+<div id='colorScaleDialog' class='gwt-DialogBox modal'>
+  <table cellspacing='0' cellpadding='0'>
+    <tbody>
+      <tr class='dialogTop'>
+        <td class='dialogTopLeft'><div class='dialogTopLeftInner'></div></td>
+        <td class='dialogTopCenter'>
+          <div class='dialogTopCenterInner'>
+            <div class='Caption'>Define Color Scale</div>
+          </div>
+        </td>
+        <td class='dialogTopRight'><div class='dialogTopRightInner'></div></td>
+      </tr>
+      <tr class='dialogMiddle'>
+        <td class='dialogMiddleLeft'><div class='dialogMiddleLeftInner'></div></td>
+        <td class='dialogMiddleCenter'>
+          <div class='dialogMiddleCenterInner dialogContent'>
+            <div class='gwt-Label'>msgRNA:</div>
+            <select id='msgRNAWeight' class='gwt-ListBox'>
+              <option value='null'>Select:</option>
+            </select>
+            <div class='gwt-Label'>microRNA:</div>
+            <select id='microRNAWeight' class='gwt-ListBox'>
+              <option value='null'>Select:</option>
+            </select>
+            <div class='gwt-Label'>Color:</div>
+            <input id='scaleColor' type='color' value='#0000FF' />
+            <br />
+            <button id='okColorScaleDialog' class='gwt-Button' type='button'>
+              OK
+            </button>
+            <button id='cancelColorScaleDialog' class='gwt-Button cancelBtn' type='button'
+            data-dialog='colorScaleDialog'>
+              Cancel
+            </button>
+          </div>
+        </td>
+        <td class='dialogMiddleRight'><div class='dialogMiddleRightInner'></div></td>
+      </tr>
+      <tr class='dialogBottom'>
+        <td class='dialogBottomLeft'><div class='dialogBottomLeftInner'></div></td>
+        <td class='dialogBottomCenter'><div class='dialogBottomCenterInner'></div></td>
+        <td class='dialogBottomRight'><div class='dialogBottomRightInner'></div></td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- Window used to search for a node within the network -->

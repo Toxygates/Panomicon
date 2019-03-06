@@ -1,4 +1,68 @@
 /**
+ * Initialize style for network components
+ * Set the default style for each type of element within a cytoscape network,
+ * i.e. nodes and edges. Also set up a special display to appy to currently
+ * selected nodes.
+ *
+ * This function is declared as an extension to Cytoscape's core
+ */
+function initStyle(){
+  this.resize();
+  this.style()
+    .selector("node")
+    .style({
+      "label": "data(label)",  // use the node's label
+      "text-valign": "center",
+      "text-halign": "center",
+      'background-color': "data(color)", // use the node's color
+      'shape': 'data(shape)',  // use the node's shape
+      'border-width': '1px',
+      'border-color': 'data(borderColor)',
+    })
+    .selector("edge")
+    .style({
+      "line-color": "data(color)",
+    })
+    .selector("node:selected")
+    .style({
+      "border-width": "5px",
+    })
+    .update();
+}
+
+/**
+ * Initialize the visualization context menu
+ * A context menu associated to each visualization panel is provided to help the
+ * user interact and modify some aspects of the representation of the network.
+ * The options provided depend on whether the user request the context menu
+ * while on top of a graph element (node or edge) or not.
+ *
+ * @param {number} id Numeric identifier for the panel to which the context menu
+ * is being added.
+ */
+function initContextMenu(id){
+  /* use the default way to provide all the options to be added to the menu */
+  this.contextMenus({
+    /* class that helps identifying the corresponding memu items in the
+     * applications DOM */
+    contextMenuClasses:[
+      'ctx-menu-'+id
+    ],
+    /* the actual contentes of the menu */
+    menuItems: [
+    { /* change the color of the graph according to a color scale */
+      id: "color-scale-"+id,
+      content: "Apply color scale",
+      tooltip: "Apply color scale",
+      selector: "node",
+      coreAsWell: true,
+      onClickFunction: showColorScaleDialog,
+    }
+    ] // menuItems
+  });
+}
+
+/**
  * Apply two different layouts, defined by innerName and outerName respectively,
  * to two subsets of nodes within a collection. The inner layout is applied to
  * the nodes in eles, while the outer layout is applied to the remainder of the
@@ -77,31 +141,7 @@ function hideUnconnected(){
   });
 }
 
-/**
- * Initialize style for network components
- * EXTENSION TO CYTOSCAPE - CORE
- */
-function initStyle(){
-  this.resize();
-  this.style()
-    .selector("node")
-    .style({
-      "label": "data(label)",
-      "text-valign": "center",
-      "text-halign": "center",
-      'background-color': "data(color)",
-      'shape': 'data(shape)',
-    })
-    .selector("edge")
-    .style({
-      "line-color": "data(color)",
-    })
-    .selector("node:selected")
-    .style({
-      "border-width": "5px",
-    })
-    .update();
-}
+
 
 /**
  * Merge the current collection with the collection of elements provided,
@@ -175,6 +215,7 @@ function setDefaultStyle(eles){
 
     this.$("#"+ele.id())
       .data("color", color)
+      .data('borderColor', color)
       .data("shape", shp);
   },this);
   this.endBatch();
@@ -236,7 +277,7 @@ function toogleHighlight(cy, highlight, color){
           edgeColor.REGULAR :
           ele.data('type') === "mRNA" ?
             nodeColor.MSG_RNA:
-            nodeColor. MICRO_RNA;
+            nodeColor.MICRO_RNA;
       this.$("#"+ele.id())
         .data("color", color);
       cy.$("#"+ele.id())
@@ -268,10 +309,6 @@ function updateLayout(name="null", boundingBox=undefined){
     weaver: weaver
   });
 }
-
-
-
-
 
 /**
  * Return the list of nodes in the current network, using the ToxyNode data
@@ -324,80 +361,7 @@ function getToxyInteractions(){
   return toxyInter;
 }
 
-/**
- * Initialize the visualization context menu
- * A context menu associated to each of the visualization panels is provided to
- * help the user interact and modify some aspects of the representation of the
- * network.
- * The options provided depend on whether the user request the context menu
- * while on top of a graph element (node or edge) or not.
- *
- * @param {number} id Numeric identifier for the panel to which the context menu
- * is being added.
- */
-function initContextMenu(id){
-  // self is the viz container that is currently initializing a context menu
-  var self = this; // save context to use within annonymous functions
-  var contextMenu = this.contextMenus({
-    contextMenuClasses:[
-      'ctx-menu-'+id
-    ],
-    menuItems: [
-      //---------------------------------------------------------
-      // Options shown when clicking on a selected node
-      //---------------------------------------------------------
-      {
-        /**
-         * add an interaction between the currently selected node, and a next
-         * selected element
-         */
-        id: "add-edge-"+id,
-        content: "Add Edge",
-        tooltipText: "Add an edge",
-        selector: "node",
-        onClickFunction: onAddEdge,
-      },
-      {
-        /**
-         * update data or visual properties of a given node
-         */
-         id: "update-node-"+id,
-         content: "Properties",
-         tooltip: "View and modify node's properties",
-         selector: "node",
-         onClickFunction: onUpdateNode,
-      },
-      //---------------------------------------------------------
-      // Options shown when clicking on a selected node
-      //---------------------------------------------------------
-      /**
-       * color the whole graph based on the selection made by the user.
-       * Typically this will be related to the level of expresion on messegerRNA
-       * nodes
-       */
-      {
-        id: "color-scale-"+id,
-        content: "Scale coloring",
-        tooltipText: "Color nodes according to a give property",
-        coreAsWell: true,
-        onClickFunction: onColorScale,
-      },
-      /**
-       * Search a node.
-       * The user is allowed to enter free text and search for a node within
-       * the network with the given label or ID.
-       */
-      {
-        id: "search-node-"+id,
-        content: "Search Node",
-        tooltipText: "Search a node by label",
-        coreAsWell: true,
-        onClickFunction: onSearchNode,
-      },
 
-    ] // menuItems
-  });
-}
 
 /**
  * Adds a new interaction to the graph, if the next clicked item corresponds to
@@ -441,7 +405,6 @@ function onAddEdge(event){
  * menu is pressed
  */
 function onUpdateNode(event){
-  console.log(event);
   $("#updateNodeModal").show();
   /* container for the current node's data */
   var trg = event.target.data();
@@ -473,35 +436,6 @@ function onUpdateNode(event){
   $("#updateNodeModal #nodeColor").val(trg["color"]);
   // select the correct shape for the current node - available options listed
   $("#updateNodeModal #nodeShape").val(event.target.style("shape"));
-}
-
-/**
- * Define the initial set-up and options for selection of coloring application
- * to entire sections of the graph.
- * @param {}event the event triggered when the corresponding item in the context
- * menu is pressed
- */
-function onColorScale(event){
-  /* display the corresponding color interface */
-  $("#graphColorModal").show();
-
-  /* add options to select the type of node on which to apply color */
-  var types = Object.keys(nodeType);
-  $("#graphColorModal #graphColorTo").empty();
-  $("#graphColorModal #graphColorTo").append(new Option("Select...", null));
-  for(var i=0; i<types.length; ++i){
-    $("#graphColorModal #graphColorTo").append(new Option(types[i], nodeType[types[i]]));
-  }
-
-  /* initialize an empty color by select component */
-  $("#graphColorModal #graphColorBy").empty();
-  $("#graphColorModal #graphColorBy").append(new Option("Select...", null));
-
-  /* initialize color scale values */
-  $("#graphColorModal #minRange").val("");
-  $("#graphColorModal #maxRange").val("");
-  $("#graphColorModal #colorRange").val(50);
-  $("#graphColorModal #whiteRange").val("");
 }
 
 /**
