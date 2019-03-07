@@ -21,7 +21,7 @@ function onReadyForVisualization(){
     /* add a new panel to display a graph */
     .append('<div id="leftDisplay" class="sub-viz"></div>')
     .ready(function(){
-      var left = $("#leftDisplay");
+      let left = $("#leftDisplay");
       /* set a data field for the element */
       left.data("idx", MAIN_ID);
       /* add a new cytoscape element to the <div> */
@@ -29,7 +29,14 @@ function onReadyForVisualization(){
     })
     /* Append modal dialogs to the visualization panel in the DOM */
     .append($('#colorScaleDialog'))
+    /* Listener to hide pop-ups when leaving the display area */
+    .on('mouseout', function(){
+      $('#nodePopper').css('display', 'none');
+    });
     ;
+  /* move the DOM elements associated to pop-ups to the document body for proper
+   * display */
+  document.body.appendChild($('#nodePopper')[0])
 }
 
 /**
@@ -39,8 +46,9 @@ function onReadyForVisualization(){
  * Each cytoscape is also associated listeners to handle the display of pop-up
  * information and context menus.
  *
- * @param {int} id The id of the display panel being initialized.
- * @param {DOM Node} container The DOM element (usually a <div>) that will be
+ * @type {HTMLElement}
+ * @param {Number} id The id of the display panel being initialized.
+ * @param {HTMLElement} container The DOM element (usually a <div>) that will be
  * used as container for a cytoscape element.
  */
 function initCytoscapeGraph(id, container){
@@ -53,9 +61,8 @@ function initCytoscapeGraph(id, container){
   /* set default style for nodes and edges in the network */
   vizNet[id].initStyle();
 
-  /* set default behaviour for mouse hover on nodes */
+  /* bind functions used to handle the display and hiding of pop-ups */
   vizNet[id].on("mouseover", "node", onNodeEnter);
-  /* set default behaviour for mouse hovering out of nodes */
   vizNet[id].on("mouseout", "node", onNodeExit);
 
   /* add a context menu to the panel, and position it within the DOM at a level
@@ -392,7 +399,8 @@ function showNetworkOnRight() {
       /* Fit the left graph to the smaller viewport */
       vizNet[MAIN_ID].resize();
       vizNet[MAIN_ID].fit();
-  });
+    })
+    ;
 }
 
 /**
@@ -477,60 +485,9 @@ function onNodeUnselection(event){
   }
 }
 
-/**
- * Handle the definition of a pop-up div element, to be shown whenever the user
- * hovers over a node on the network.
- *
- * @param{any} event The mouseover event triggered when the user hovers over a
- * node on the display.
- */
-function onNodeEnter(event){
-  // console.log("event", event);
-  // retrieve the node element that triggered the event
-  let node = event.cy.$(event.target);
-  // console.log("node", node);
-  let popup = node.popper({
-    content: ()=>{
-      let div = document.createElement('div');
-      div.classList.add('popper');
 
-      let t = document.createElement('table');
-      let idRow = t.insertRow();
-      let cell = idRow.insertCell(0);
-      cell.appendChild(document.createTextNode('Probe'))
-      cell = idRow.insertCell(1);
-      cell.appendChild(document.createTextNode(node.data("id")));
 
-      idRow = t.insertRow();
-      cell = idRow.insertCell(0);
-      cell.appendChild(document.createTextNode('Type'))
-      cell = idRow.insertCell(1);
-      cell.appendChild(document.createTextNode(node.data("type")));
 
-      idRow = t.insertRow();
-      cell = idRow.insertCell(0);
-      cell.appendChild(document.createTextNode('Symbol'))
-      cell = idRow.insertCell(1);
-      // cell.appendChild(document.createTextNode(node.data("symbol")[0]));
-
-      div.appendChild(t);
-      document.body.appendChild(div);
-      return div;
-    },
-    popper: {},
-  });
-
-  node.on('position', function(){popup.scheduleUpdate();});
-}
-
-/**
- * Handle the removal of the pop-up for a node
- */
-function onNodeExit(event){
-  let node = event.target;
-  node.removeListener('position');
-  $(".popper").remove();
-}
 
 /**
  * Called by Toxygates to get the desired height, in pixels, of the user

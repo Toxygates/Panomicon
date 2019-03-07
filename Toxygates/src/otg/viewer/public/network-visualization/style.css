@@ -42,9 +42,14 @@
  * CSS for pop-ups
  * ---------------------------------------------------------- */
   .popper{
-    background: rgba(255,193,7,1);
+    background: rgba(179,179,179,0.9);
     padding: 5px;
-    text-align: center;
+    text-align: left;
+    color: black;
+    display: none;
+
+    border-style: outset;
+    border-radius: 5px;
   }
 
 /* ----------------------------------------------------------

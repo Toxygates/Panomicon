@@ -1,3 +1,6 @@
+/* Functions that are applied to, or are defined to handle aspects of the
+ * network instances, in cytoscape's format */
+
 /**
  * Initialize style for network components
  * Set the default style for each type of element within a cytoscape network,
@@ -9,34 +12,90 @@
 function initStyle(){
   this.resize();
   this.style()
-    .selector("node")
+    /* default style for node elements */
+    .selector('node')
     .style({
-      "label": "data(label)",  // use the node's label
-      "text-valign": "center",
-      "text-halign": "center",
-      'background-color': "data(color)", // use the node's color
-      'shape': 'data(shape)',  // use the node's shape
+      'label': 'data(label)',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'shape': 'data(shape)',
+      'background-color': 'data(color)',
       'border-width': '1px',
       'border-color': 'data(borderColor)',
     })
-    .selector("edge")
+    .selector('node:selected')
     .style({
-      "line-color": "data(color)",
-    })
-    .selector("node:selected")
-    .style({
-      "border-width": "5px",
+      'border-width': '5px',
+      'background-color': nodeColor.HIGHLIGHT,
+      'border-color': nodeColor.HIGHLIGHT,
     })
     .selector('node.highlighted')
     .style({
       'background-color': nodeColor.HIGHLIGHT,
       'border-color': nodeColor.HIGHLIGHT,
     })
+    /* default style for edges */
+    .selector("edge")
+    .style({
+      "line-color": "data(color)",
+    })
     .selector('edge.highlighted')
     .style({
       'line-color': edgeColor.HIGHLIGHT,
     })
     .update();
+
+}
+
+/**
+ * Display a node's Pop-up
+ * Handle the display of a pop-up div element, to be shown whenever the user
+ * hovers over a node on the network.
+ *
+ * @type{Event}
+ * @param{Event} event The mouseover event triggered when the user hovers over a
+ * node on the display.
+ */
+function onNodeEnter(event){
+  /* retrieve the node that has been entered by the user */
+  let node = event.target;
+
+  /* update the display content for the pop-up DOM, based on the node's data */
+  $('#nodePopper').css('display', 'block');
+  let div = document.createElement('div');
+  $('#nodePopper #label').html(node.data("label"));
+  $('#nodePopper #type').html(node.data("type"));
+  $('#nodePopper #probe').html(node.data("id"));
+
+  /* create a new pop-up element and bind it to the corresponding node */
+  let popup = node.popper({
+    content: $('#nodePopper')[0],
+    popper: { },
+  });
+  /* bind a listener to node's position, to keep pop-up in sync */
+  node.on('position', function(){popup.scheduleUpdate();});
+  /* bind a listener to viewport (zoom and pan), to keep pop-up position in sync */
+  event.cy.on('viewport', function(){popup.scheduleUpdate();});
+}
+
+/**
+ * Remove the display of a node's pop-up
+ * Handle the removal of the pop-up for a node
+ *
+ * @type{Event}
+ * @param{Event} event The mouse out event triggered when the user moves the
+ * pointer outside of a given node
+ */
+function onNodeExit(event){
+  let node = event.target;
+
+
+  node.removeListener('position');
+  event.cy.removeListener('viewport');
+
+  $('#nodePopper').css('display', 'none');
+
+
 }
 
 /**
@@ -70,6 +129,8 @@ function initContextMenu(id){
     ] // menuItems
   });
 }
+
+
 
 /**
  * Apply two different layouts, defined by innerName and outerName respectively,
