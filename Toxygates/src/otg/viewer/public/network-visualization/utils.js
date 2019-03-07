@@ -1,6 +1,54 @@
 "use strict";
 
 /**
+ * Display color scale modal dialog
+ * A dialog window needs to be display when the user wants to appply a color
+ * scale to the nodes in the network based on the values associated to nodes.
+ * Upon display of the dialog, values to fill up the select fields are loaded,
+ * based on the data currently on display.
+ *
+ * @param {event} evt The click evented captured from the user interaction with
+ * the graph's context menu
+ */
+function showColorScaleDialog(evt){
+
+  /* Set the position for dialog display and identify the target graph depending
+   * on the panel where the interaction was triggered by the user */
+  let left = '0%';
+  let id = MAIN_ID;
+  if( evt.cy.container().id === 'rightDisplay' ){
+    left = '50%';
+    id = SIDE_ID;
+  }
+
+  /* append modal dialogs to canvas */
+  $('#colorScaleDialog')
+    .css('visibility', 'visible')
+    .css('left', left) // define the position of the dialog window
+    .css('color', 'black')
+    .data('id', id) // identify the target graph
+    ;
+
+  /* re-construct the list of weights available for msgRNA nodes, as this
+   * changes from graph to graph */
+  let msg = Object.keys(evt.cy.nodes('[type="'+nodeType.MSG_RNA+'"]')[0].data('weight'));
+  $('#msgRNAWeight').empty();
+  $.each(msg, function (i, item) {
+    $('#msgRNAWeight').append($('<option>', {value: item, text: item}));
+  });
+
+  /* add the list of weights available for microRNA nodes */
+  let mic = Object.keys(evt.cy.nodes('[type="'+nodeType.MICRO_RNA+'"]')[0].data('weight'));
+  $('#microRNAWeight').empty();
+  $.each(mic, function (i, item) {
+    $('#microRNAWeight').append($('<option>', {value: item, text: item}));
+  });
+
+}
+
+
+
+/**
  * Enable/Disable interface elements depending on whether we are using a single
  * or double panel visualization.
  * @param {number} panels The numer of panels that are currently being available

@@ -176,6 +176,7 @@ class Network{
           id: e.id,
           label: label,
           color: color,
+          borderColor: color,
           type: e.type,
           shape: shape,
           weight: e.weight,
