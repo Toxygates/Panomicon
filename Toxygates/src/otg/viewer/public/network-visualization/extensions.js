@@ -136,14 +136,14 @@ function initContextMenu(id){
           evt.cy.setDefaultStyle(evt.target);
       },
     },
-    // { /* change the label of a single node */
-    //   id: 'change-label'+id,
-    //   content:
-    //   tooltip:
-    //   selector: 'node',
-    //   coreAsWell: false,
-    //   onClickFunction:
-    // }
+    { /* change the label of a single node */
+      id: 'change-label'+id,
+      content: "Change label",
+      tooltip: "Change the label of a single node",
+      selector: 'node',
+      coreAsWell: false,
+      onClickFunction: showChangeLabelDialog,
+    }
     ] // menuItems
   });
 }

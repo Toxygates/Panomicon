@@ -43,9 +43,39 @@ function showColorScaleDialog(evt){
   $.each(mic, function (i, item) {
     $('#microRNAWeight').append($('<option>', {value: item, text: item}));
   });
-
 }
 
+/**
+ * Display label change modal dialog
+ * A dialog window needs to be displayed when the user wants to change the label
+ * used to identify a node in the graph visualization.
+ *
+ * @param {event} evt The click evented captured from the user interaction with
+ * the graph's context menu
+ */
+function showChangeLabelDialog(evt){
+
+  /* Set the position for dialog display and identify the target graph depending
+   * on the panel where the interaction was triggered by the user */
+  let left = '0%';
+  let id = MAIN_ID;
+  if( evt.cy.container().id === 'rightDisplay' ){
+    left = '50%';
+    id = SIDE_ID;
+  }
+
+  /* append modal dialogs to canvas */
+  $('#changeLabelDialog')
+    .css('visibility', 'visible')
+    .css('left', left) // define the position of the dialog window
+    .css('color', 'black')
+    .data('id', id) // identify the target graph
+    .data('nodeid', evt.target.data('id'))
+    ;
+
+  /* capture the node's current label and use it to fill the input field */
+  $('#nodeLabel').val(evt.target.data('label'));
+}
 
 
 /**

@@ -29,6 +29,7 @@ function onReadyForVisualization(){
     })
     /* Append modal dialogs to the visualization panel in the DOM */
     .append($('#colorScaleDialog'))
+    .append($('#changeLabelDialog'))
     /* Listener to hide pop-ups when leaving the display area */
     .on('mouseout', function(){
       $('#nodePopper').css('display', 'none');
@@ -265,6 +266,29 @@ $(document).on("click", "#okColorScaleDialog", function (event){
 
   /* hide the modal after color has been applied to nodes */
   $("#colorScaleDialog").css('visibility', 'hidden');
+});
+
+/**
+ * Change the label of a node
+ * Use the user defined string as label for the selected node and include in the
+ * display.
+ */
+$(document).on("click", "#okChangeLabelDialog", function (event){
+  /* identify the graph on to appply the color scale */
+  let id  = $("#changeLabelDialog").data('id');
+  let nodeid = '#'+$('#changeLabelDialog').data('nodeid');
+
+  /* retrieve the selected label from the user */
+  let label = $("#nodeLabel").val();
+
+  label = label.replace(/([^a-z0-9\-]+)/gi, '-');
+  // ^[a-zA-Z0-9._-]+$/
+
+  /* apply the new label to the corresponding node in the graph */
+  vizNet[id].nodes(nodeid).data('label', label);
+
+  /* hide the modal after color has been applied to nodes */
+  $("#changeLabelDialog").css('visibility', 'hidden');
 });
 
 /**
