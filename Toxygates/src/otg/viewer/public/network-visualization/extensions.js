@@ -89,13 +89,10 @@ function onNodeEnter(event){
 function onNodeExit(event){
   let node = event.target;
 
-
   node.removeListener('position');
   event.cy.removeListener('viewport');
 
   $('#nodePopper').css('display', 'none');
-
-
 }
 
 /**
@@ -125,7 +122,28 @@ function initContextMenu(id){
       selector: "node",
       coreAsWell: true,
       onClickFunction: showColorScaleDialog,
-    }
+    },
+    { /* return the color of a single node or the graph to its default */
+      id: 'default-color'+id,
+      content: "Apply default color",
+      tooltip: "Use the default color for a node or the whole graph",
+      selector: 'node',
+      coreAsWell: true,
+      onClickFunction: function(evt){
+        if( evt.cy === evt.target ) // click on the background
+          evt.cy.setDefaultStyle(evt.cy.elements());
+        else
+          evt.cy.setDefaultStyle(evt.target);
+      },
+    },
+    // { /* change the label of a single node */
+    //   id: 'change-label'+id,
+    //   content:
+    //   tooltip:
+    //   selector: 'node',
+    //   coreAsWell: false,
+    //   onClickFunction:
+    // }
     ] // menuItems
   });
 }
@@ -427,94 +445,6 @@ function getToxyInteractions(){
 }
 
 
-
-/**
- * Adds a new interaction to the graph, if the next clicked item corresponds to
- * a different node from the originally selected
- * @param {}event the event triggered when the corresponding item in the context
- * menu is clicked
- */
-function onAddEdge(event){
-  // the initial node for the new interaction
-  var source = event.target || event.cyTarget;
-  // change cursor type to cue the user on the need to select a target node
-  document.body.style.cursor = "crosshair";
-  // handle the next click of the mouse
-  event.cy.promiseOn("click").then(function(evt){
-    var to = evt.target;
-    console.log(to);
-    // a new interaction is only added if the user clicks on a node different
-    // from the one used as source for the interaction
-    if( to !== self && typeof to.isNode === 'function' && to.isNode() ){
-      event.cy.add({
-        group: "edges",
-        data: {
-          id: "#"+source.id()+to.id(),
-          source: source.id(),
-          target: to.id()
-        }
-      });
-    }
-    else{
-      window.alert("Edge not added");
-    }
-    // return cursor to its default value, regardless of the previous result
-    document.body.style.cursor = "default";
-  });
-}
-
-/**
- * Configure and display the modal used to update the properties of a single
- * node within the graph
- * @param {}event the event triggered when the corresponding item in the context
- * menu is pressed
- */
-function onUpdateNode(event){
-  $("#updateNodeModal").show();
-  /* container for the current node's data */
-  var trg = event.target.data();
-  // set the ID of the current node
-  $("#updateNodeModal #nodeID").val(trg["id"]);
-  // set the node's label (the text shown on the visualization)
-  $("#updateNodeModal #nodeLabel").val(trg["label"]);
-  // set the node's type and provide options for user to change it to any of the
-  // currently available types
-  var types = Object.keys(nodeType);
-  $("#updateNodeModal #nodeType").empty();
-  for(var i=0; i<types.length; ++i){
-    // (text, value)
-    $("#updateNodeModal #nodeType").append(new Option(types[i], nodeType[types[i]]));
-  }
-  $("#updateNodeModal #nodeType").val(trg["type"]);
-
-  // set the available options for weights and add them to a list for display
-  $("#updateNodeModal #weightValue").val("");
-  var weights = Object.keys(trg["weight"]);
-  if( weights !== null && weights !== undefined ){
-    $("#updateNodeModal #nodeWeights").empty();
-    $("#updateNodeModal #nodeWeights").append(new Option("Select...", null));
-    for(var i=0; i<weights.length; ++i)
-      $("#updateNodeModal #nodeWeights").append(new Option(weights[i], weights[i]));
-  }
-
-  // the node's current background color
-  $("#updateNodeModal #nodeColor").val(trg["color"]);
-  // select the correct shape for the current node - available options listed
-  $("#updateNodeModal #nodeShape").val(event.target.style("shape"));
-}
-
-/**
- * Define the initial set-up and options to be displayed when searching for a
- * particular node within the network.
- * @param {any} event the event triggered when the corresponding item in the
- * context menu is pressed.
- */
-function onSearchNode(event){
-  $("#searchNodeModal").show();
-
-  /* initialize search text */
-  $("#searchNodeModal #nodeLabel").val("");
-}
 
 // add functions to cytoscape prototype
 cytoscape("core", "hideUnconnected", hideUnconnected);
