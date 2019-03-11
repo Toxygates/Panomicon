@@ -45,6 +45,19 @@ import t.viewer.shared.StringList;
 
 public class GeneSetEditor extends Composite {
 
+  interface SaveActionHandler {
+
+    /*
+     * Override this function to handle post save event and what genes were saved
+     */
+    void onSaved(String title, List<String> items);
+
+    /*
+     * Override this function to handle what genes were saved
+     */
+    void onCanceled();
+  }
+
   private static final String NEW_TITLE_PREFIX = "NewGeneSet";
 
   public static final int SAVE_FAILURE = -1;
@@ -151,7 +164,7 @@ public class GeneSetEditor extends Composite {
 
   private void initWindow() {
     StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);
-    probeSelStack.setWidth(STACK_WIDTH + "px");
+    probeSelStack.addStyleName("stackLP");
     addProbeSelectionTools(probeSelStack);
 
     Label l = new Label("Selected probes");
@@ -230,7 +243,7 @@ public class GeneSetEditor extends Composite {
     HorizontalPanel bottomContainer = new HorizontalPanel();
     bottomContainer.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     // To ensure that child elements are right-aligned
-    bottomContainer.setWidth("100%");
+    bottomContainer.addStyleName("widePanel");
     bottomContainer.add(bottomContent);
 
     l = new Label("Title:");
@@ -241,7 +254,7 @@ public class GeneSetEditor extends Composite {
     titleText.setWidth("100%");
 
     FlowPanel p = new FlowPanel();
-    p.setWidth("100%");
+    p.addStyleName("widePanel");
     p.addStyleName("table-cell width-fix");
     p.add(titleText);
 
@@ -340,7 +353,6 @@ public class GeneSetEditor extends Composite {
 
   private VerticalPanel innerVP(String l) {
     VerticalPanel vpii = Utils.mkVerticalPanel();
-    vpii.setWidth("100%");
     vpii.addStyleName("geneSetInnerPanel");
 
     Label label = new Label(l);
@@ -354,11 +366,11 @@ public class GeneSetEditor extends Composite {
 
   private Widget manualSelection() {
     VerticalPanel vp = new VerticalPanel();
-    vp.setSize("100%", "100%");
+    vp.addStyleName("tallAndWidePanel");
     vp.setSpacing(5);
     vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
     VerticalPanel vpi = Utils.mkVerticalPanel();
-    vpi.setWidth("100%");
+    vpi.addStyleName("widePanel");
     vp.add(vpi);
 
     VerticalPanel vpii = innerVP(freeLookupMessage());
@@ -367,7 +379,7 @@ public class GeneSetEditor extends Composite {
     customProbeText = new TextArea();
     vpii.add(customProbeText);
     customProbeText.setVisibleLines(10);
-    customProbeText.setWidth("95%");
+    customProbeText.addStyleName("geneSetManualPanelItem");
 
     vpii.add(makeButton("Add manual list", () -> {
       String text = customProbeText.getText();
@@ -387,7 +399,7 @@ public class GeneSetEditor extends Composite {
 
       final SuggestBox sb = new SuggestBox(oracle);
       vpii.add(sb);
-      sb.setWidth("95%");
+      sb.addStyleName("geneSetManualPanelItem");
       vpii.add(makeButton("Add gene", () -> {
         String[] gs = new String[1];
         if (sb.getText().length() == 0) {
@@ -406,7 +418,7 @@ public class GeneSetEditor extends Composite {
       //in addition to "add" (which is effectively a union)
       final TextBox tb = new TextBox();
       vpii.add(tb);
-      tb.setWidth("95%");
+      tb.addStyleName("geneSetManualPanelItem");
       vpii.add(makeButton("Add", () -> {
         String[] gs = new String[1];
         if (tb.getText().length() == 0) {
@@ -509,7 +521,7 @@ public class GeneSetEditor extends Composite {
 
   private Widget makeTargetLookupPanel(String label) {
     VerticalPanel vp = new VerticalPanel();
-    vp.setSize("100%", "100%");
+    vp.addStyleName("tallAndWidePanel");
     vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 
     VerticalPanel vpi = Utils.mkVerticalPanel(true);

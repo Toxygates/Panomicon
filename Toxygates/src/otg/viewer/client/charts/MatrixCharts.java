@@ -39,7 +39,7 @@ public class MatrixCharts extends Charts {
    * Callback for a client that expects to receive an adjustable (interactive) chart.
    */
   public static interface Acceptor {
-    void accept(AdjustableGrid<?, ?> cg);
+    void accept(AdjustableGrid<?> cg);
   }
 
   protected final SampleServiceAsync sampleService;
@@ -121,7 +121,7 @@ public class MatrixCharts extends Charts {
     ExpressionRowSource dataSource =
         new DynamicExpressionRowSource(schema, probes, samples, params.screen);
     logger.info("Finish charts with " + dataSource);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
+    AdjustableGrid<?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.accept(acg);
   }
 
@@ -135,7 +135,7 @@ public class MatrixCharts extends Charts {
     ExpressionRowSource dataSource =
         new DynamicUnitSource(schema, probes, treated.toArray(new Unit[0]), params.screen);
     logger.info("Finish charts with " + dataSource);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(params, dataSource);
+    AdjustableGrid<?> acg = factory.adjustableGrid(params, dataSource);
     acceptor.accept(acg);
   }
 }

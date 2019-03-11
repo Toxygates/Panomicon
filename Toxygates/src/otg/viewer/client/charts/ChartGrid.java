@@ -44,7 +44,6 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   List<String> organisms;
   String[] minsOrMeds;
   protected Dataset<D> dataset;
-  protected Factory<?, ?> factory;
   protected OTGScreen screen;
   protected D[][] tables;
   final int totalWidth;
@@ -55,12 +54,12 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
    * @param rowLabels labels to be displayed at each row in the chart grid. 
    */
-  public ChartGrid(Factory<D, ?> factory, OTGScreen screen, Dataset<D> dataset,
+
+  public ChartGrid(OTGScreen screen, Dataset<D> dataset,
       final List<String> rowFilters, final List<String> rowLabels,
       final List<String> organisms, boolean rowsAreMajors,
       String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
     super();
-    this.factory = factory;
     this.organisms = organisms;
     this.rowFilters = rowFilters;
     this.rowLabels = rowLabels;
@@ -80,7 +79,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 
     DataSchema schema = screen.manager().schema();
 
-    tables = factory.dataArray(rfsize * osize, minsOrMeds.length);
+    tables = (D[][]) dataset.makeDataArray(rfsize * osize, minsOrMeds.length);
+
     for (int col = 0; col < minsOrMeds.length; ++col) {
       grid.setWidget(0, col, Utils.mkEmphLabel(minsOrMeds[col]));
       for (int row = 0; row < rfsize; ++row) {

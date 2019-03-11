@@ -9,6 +9,77 @@ var vizNet = [null, null];
 /* these are also the Graphs - using Network structure */
 var toxyNet = [null, null];
 
+/**   API USED BY TOXYGATES TO HANDLE THE CONNECTION TO VISUALIZATION **/
+/**
+ * Initialize the visualization display.
+ * Method called by Toxygates to start the visualization of a graph. A single
+ * panel is added to applications DOM and a cytoscape object is associated to it
+ */
+function onReadyForVisualization(){
+  /* capture the parent node for the visualization panel */
+  $("#display")
+    /* add a new panel to display a graph */
+    .append('<div id="leftDisplay" class="sub-viz"></div>')
+    .ready(function(){
+      let left = $("#leftDisplay");
+      /* set a data field for the element */
+      left.data("idx", MAIN_ID);
+      /* add a new cytoscape element to the <div> */
+      initCytoscapeGraph(MAIN_ID, left);
+    })
+    /* Append modal dialogs to the visualization panel in the DOM */
+    .append($('#colorScaleDialog'))
+    /* Listener to hide pop-ups when leaving the display area */
+    .on('mouseout', function(){
+      $('#nodePopper').css('display', 'none');
+    });
+    ;
+  /* move the DOM elements associated to pop-ups to the document body for proper
+   * display */
+  document.body.appendChild($('#nodePopper')[0])
+}
+
+/**
+ * Initialize a cytoscape object
+ * Init a new instance of cytoscape graph with default display properties for
+ * nodes and edges, and associates it with the specified DOM container.
+ * Each cytoscape is also associated listeners to handle the display of pop-up
+ * information and context menus.
+ *
+ * @type {HTMLElement}
+ * @param {Number} id The id of the display panel being initialized.
+ * @param {HTMLElement} container The DOM element (usually a <div>) that will be
+ * used as container for a cytoscape element.
+ */
+function initCytoscapeGraph(id, container){
+  /* init the object as a cytoscape instance, and associate it to the provided
+   * container */
+  vizNet[id] = cytoscape({
+    container: container,
+    styleEnabled: true,
+  });
+  /* set default style for nodes and edges in the network */
+  vizNet[id].initStyle();
+
+  /* bind functions used to handle the display and hiding of pop-ups */
+  vizNet[id].on("mouseover", "node", onNodeEnter);
+  vizNet[id].on("mouseout", "node", onNodeExit);
+
+  /* add a context menu to the panel, and position it within the DOM at a level
+   * where events will be captured */
+  vizNet[id].initContextMenu(id);
+  $(".ctx-menu-"+id)
+    .appendTo($(".gwt-DialogBox")[0])
+    .hide();
+
+  /* add behaviour to the selection and unselections of nodes */
+  vizNet[id].on("select", "node", onNodeSelection);
+  vizNet[id].on("unselect", "node", onNodeUnselection);
+
+  /* assign graph data to the cystocape object */
+  changeNetwork(id);
+}
+
 /**
  * Show the appropriate layout depending on the panel selected by the user. If
  * both panels are selected, a null layout is selected.
@@ -104,17 +175,13 @@ $(document).on("change", "#showHiddenNodesCheckbox", function(){
 });
 
 /**
- * Highlight, on both panels, the intersection (equal nodes) of both networks
+ * Highlight the intersection between networks.
+ * , on both panels, the intersection (equal nodes) of both networks
  * currently on display
  */
 $(document).on("change", "#showIntersectionCheckbox", function(){
   let hlgh = $("#showIntersectionCheckbox").is(":checked");
-  if( hlgh )
-    vizNet[MAIN_ID].toogleHighlight(vizNet[SIDE_ID], hlgh, nodeColor.HIGHLIGHT);
-  else{
-    vizNet[MAIN_ID].setDefaultStyle(vizNet[MAIN_ID].elements());
-    vizNet[SIDE_ID].setDefaultStyle(vizNet[SIDE_ID].elements());
-  }
+  vizNet[MAIN_ID].toogleIntersectionHighlight(vizNet[SIDE_ID], hlgh);
 });
 
 /**
@@ -150,6 +217,67 @@ $(document).on("click", "#mergeNetworkButton", function(){
 });
 
 /** ---------------------- UPDATE NODE MODAL ---------------------------- **/
+/**
+ * Apply a color scale to a network
+ * Once the user has selected the relevant options from the corresponding dialog,
+ * the color coming from a linear transformation of white to color is used to
+ * update the display of all nodes in the network.
+ */
+$(document).on("click", "#okColorScaleDialog", function (event){
+  /* identify the graph on to appply the color scale */
+  let id  = $("#colorScaleDialog").data('id');
+
+  /* retrieve the selected weights for both msgRNA and microRNA */
+  let msgWgt = $("#msgRNAWeight").val();
+  let micWgt = $('#microRNAWeight').val();
+
+  /* find the minimum and maximum values for the selected weights */
+  let min = vizNet[id].nodes().min(function(node){
+    if (node.data('type') === nodeType.MSG_RNA )
+      return node.data('weight')[msgWgt];
+    return node.data('weight')[micWgt];
+  }).value;
+  let max = vizNet[id].nodes().max(function(node){
+    if (node.data('type') === nodeType.MSG_RNA )
+      return node.data('weight')[msgWgt];
+    return node.data('weight')[micWgt];
+  }).value;
+
+  /* apply a color to each node in the dataset that is linearly interpolated
+   * between white (min) and user selected color (max) */
+  let baseColor = $("#scaleColor").val();
+  vizNet[id].nodes().forEach(function(ele){
+    /* retrieve the current node's weight value */
+    let val = ele.data('weight')[msgWgt];
+    if (ele.data('type') === nodeType.MICRO_RNA )
+      val = ele.data('weight')[micWgt];
+
+    if (val !== NaN){
+      /* define the color for the node's weight value */
+      let c = valueToColor(val, min, max, min, "#FFFFFF", baseColor);
+      /* assing the color to the node, using the base color for the node's border */
+      if( c !== "#aNaNaN" ){
+        ele.data("color", c);
+        ele.data('borderColor', baseColor);
+      }
+    }
+  });
+
+  /* hide the modal after color has been applied to nodes */
+  $("#colorScaleDialog").css('visibility', 'hidden');
+});
+
+/**
+ * Hide a modal dialog.
+ * the corresponding modal when the close option is selected.
+ * No changes are applied and whatever information the user added to the modal
+ * components is lost.
+ */
+$(document).on("click", ".cancelBtn", function(event){
+  let dialog = $(event.target).data().dialog;
+  $("#"+dialog).css('visibility', 'hidden');
+});
+
 /**
  * Handle updates made on a node through the corresponding modal. Once the user
  * selects to update, we check each of the node's properties, and whenever we
@@ -220,100 +348,27 @@ $(document).on("change", "#updateNodeModal #nodeWeights", function(evt){
 /**
  * Handle the search of a particular node within the network.
  */
-$(document).on("click", "#searchNodeModal #searchNodes", function(evt){
-  // nothing to do if there is no network
-  var id = $("#panelSelect").val();
-  if( vizNet[id] === null ) return;
+// $(document).on("click", "#searchNodeModal #searchNodes", function(evt){
+//   // nothing to do if there is no network
+//   var id = $("#panelSelect").val();
+//   if( vizNet[id] === null ) return;
+//
+//   // retrieve the search string
+//   var label = $("#searchNodeModal #nodeLabel").val();
+//   // select the corresponding nodes within the graph
+//   var selection = vizNet[id].nodes('[label*="'+label+'"]');
+//   selection.select();
+//
+//   // once all nodes with matching labels have been selected, hide the modal
+//   var modal = $(event.target).data().modal;
+//   $("#"+modal).hide();
+// });
 
-  // retrieve the search string
-  var label = $("#searchNodeModal #nodeLabel").val();
-  // select the corresponding nodes within the graph
-  var selection = vizNet[id].nodes('[label*="'+label+'"]');
-  selection.select();
 
-  // once all nodes with matching labels have been selected, hide the modal
-  var modal = $(event.target).data().modal;
-  $("#"+modal).hide();
-});
-
-/** ------------------------------------------------------------------ **/
-/**                    Other MODAL Functions                           **/
-/** ------------------------------------------------------------------ **/
-/**
-* Hide the corresponding modal when the close option is selected.
-* No changes are applied and whatever information the user added to the modal
-* components is lost.
-*/
-$(document).on("click", ".modal-close", function(event){
-  var modal = $(event.target).data().modal;
-  $("#"+modal).hide();
-});
-
-/**
-* Hide the corresponding modal when the cancel option is selected.
-* No changes are applied and whatever information the user added to the modal
-* components is lost.
-*/
-$(document).on("click", ".modal-cancel", function(event){
-  var modal = $(event.target).data().modal;
-  $("#"+modal).hide();
-});
 
 /** ------------------------------------------------------------------ **/
 /**          Required methods for toxygates integration                **/
 /** ------------------------------------------------------------------ **/
-
-/**
- * Initialize a DOM element to contain a Cytoscape object, that we can later use
- * to display the networks generated by toxygates. This method should handle
- * only the values MAIN_ID or SIDE_ID. Any other value will be ignored.
- * @param {int} id The id of the graph being initialized.
- * @param {DOM Node} container The DOM element (usually a <div>) that will be
- * used as container for a cytoscape element.
- */
-
-function initCytoscapeGraph(id, container){
-  vizNet[id] = cytoscape({
-    container: container,
-    styleEnabled: true,
-  });
-  vizNet[id].initStyle();        // default style for network elements
-  vizNet[id].on("mouseover", "node", onNodeEnter);
-  vizNet[id].on("mouseout", "node", onNodeExit);
-
-  switch (id) {
-    case MAIN_ID:
-      vizNet[id].initContextMenu();  // default context menu
-      vizNet[id].on("select", "node", onNodeSelection);
-      vizNet[id].on("unselect", "node", onNodeUnselection);
-      break;
-  }
-  changeNetwork(id);
-}
-
-/**
- * Method called by Toxygates to initialize a graph visualization. Initially, a
- * single display panel is shown, that displays either the current view from the
- * user, or a previously saved network.
- * The contents of the structure to be displayed are stored in convertedNetwork.
- */
-function onReadyForVisualization(){
-  // mainDisplay initialization - the one currently being used by the user to
-  // work, and currently linked with the background options of toxygates
-  $("#display")
-    .append('<div id="leftDisplay" class="sub-viz"></div>')
-    .ready(function(){
-      var left = $("#leftDisplay");
-      left.data("idx", MAIN_ID);
-
-      initCytoscapeGraph(MAIN_ID, left);
-
-      /* Move the Cytoscape context menu into the modal GWT network visualiaztion
-       * dialog, because otherwise input to it will be intercepted */
-      $(".cy-context-menus-cxt-menu").appendTo($(".gwt-DialogBox"));
-      $(".cy-context-menus-cxt-menu").hide();
-    });
-}
 
 /**
 * Enable a dual panel visualization, by adding an extra DOM component. The
@@ -344,7 +399,8 @@ function showNetworkOnRight() {
       /* Fit the left graph to the smaller viewport */
       vizNet[MAIN_ID].resize();
       vizNet[MAIN_ID].fit();
-  });
+    })
+    ;
 }
 
 /**
@@ -429,59 +485,9 @@ function onNodeUnselection(event){
   }
 }
 
-/**
- * Handle the definition of a pop-up div element, to be shown whenever the user
- * hovers over a node on the network.
- *
- * @param{any} event The mouseover event triggered when the user hovers over a
- * node on the display.
- */
-function onNodeEnter(event){
-  // console.log("event", event);
-  // retrieve the node element that triggered the event
-  let node = event.cy.$(event.target);
-  // console.log("node", node);
-  let popup = node.popper({
-    content: ()=>{
-      let div = document.createElement('div');
-      div.classList.add('popper');
 
-      let t = document.createElement('table');
-      let idRow = t.insertRow();
-      let cell = idRow.insertCell(0);
-      cell.appendChild(document.createTextNode('Probe'))
-      cell = idRow.insertCell(1);
-      cell.appendChild(document.createTextNode(node.data("id")));
 
-      idRow = t.insertRow();
-      cell = idRow.insertCell(0);
-      cell.appendChild(document.createTextNode('Type'))
-      cell = idRow.insertCell(1);
-      cell.appendChild(document.createTextNode(node.data("type")));
 
-      idRow = t.insertRow();
-      cell = idRow.insertCell(0);
-      cell.appendChild(document.createTextNode('Symbol'))
-      cell = idRow.insertCell(1);
-      // cell.appendChild(document.createTextNode(node.data("symbol")[0]));
-
-      div.appendChild(t);
-      document.body.appendChild(div);
-      return div;
-    },
-    popper: {},
-  });
-
-  node.on('position', function(){popup.scheduleUpdate();});
-}
-
-/**
- * Handle the removal of the pop-up for a node
- */
-function onNodeExit(event){
-  let node = event.target;
-  node.removeListener('position');
-  $(".popper").remove(); }
 
 /**
  * Called by Toxygates to get the desired height, in pixels, of the user

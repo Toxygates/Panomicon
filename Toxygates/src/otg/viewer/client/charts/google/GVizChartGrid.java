@@ -43,11 +43,11 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 
   public static final int MAX_WIDTH = 400;
 
-  public GVizChartGrid(Factory<GDTData, GDTDataset> factory, OTGScreen screen, GDTDataset table,
+  public GVizChartGrid(OTGScreen screen, GDTDataset table,
       List<String> rowFilters, List<String> rowLabels, List<String> organisms,
       boolean rowsAreMajors,
       String[] timesOrDoses, boolean columnsAreTimes, int totalWidth) {
-    super(factory, screen, table, rowFilters, rowLabels, organisms, rowsAreMajors, timesOrDoses,
+    super(screen, table, rowFilters, rowLabels, organisms, rowsAreMajors, timesOrDoses,
         columnsAreTimes, totalWidth);
   }
 

@@ -39,7 +39,7 @@ import static otg.viewer.client.charts.DataSource.*;
  * vs. time or vs. dose, and what particular times or doses to focus on). The grid fetches data
  * dynamically from the underlying data source in response to such choices.
  */
-public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Composite {
+public class AdjustableGrid<DS extends Dataset<?>> extends Composite {
   public static final int TOTAL_WIDTH = 780;
 
   private ItemSelector<ValueType> valueTypeSel;
@@ -52,7 +52,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private VerticalPanel vp;
   private VerticalPanel chartsVerticalPanel;
   private OTGScreen screen;
-  private Factory<D, DS> factory;
+  private Factory<DS> factory;
   private int computedWidth;
 
   private Logger logger = SharedUtils.getLogger("chart");
@@ -66,7 +66,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private final DataSchema schema;
   private final StorageProvider storageProvider;
 
-  public AdjustableGrid(Factory<D, DS> factory, ChartParameters params,
+  public AdjustableGrid(Factory<DS> factory, ChartParameters params,
       ExpressionRowSource source) {
     this.source = source;
     this.groups = params.groups;
@@ -184,7 +184,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   // vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will
   // be vs. dose in its columns) if each sub-chart is vs.minor.
   private void gridFor(final boolean vsMinor, final String[] columns, final String[] useMajors,
-      final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
+      final List<ChartGrid<?>> intoList, final SimplePanel intoPanel) {
 
     Attribute columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
     String[] preColumns =
@@ -208,11 +208,11 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
     source.getPointsAsync(valueTypeSel.value(), smf, makeGroupPolicy(), points -> {
       allPoints.addAll(points);
-      DS ct = factory.dataset(points, vsMinor ? source.minorVals() : source.mediumVals(), vsMinor,
+      DS dataset = factory.dataset(points, vsMinor ? source.minorVals() : source.mediumVals(), vsMinor,
           storageProvider);
 
       List<String> rowFilters = useMajors == null ? majorVals : Arrays.asList(useMajors);
-      ChartGrid<D> grid = factory.grid(screen, ct, rowFilters, rowFilters, organisms, true,
+      ChartGrid<?> grid = factory.grid(screen, dataset, rowFilters, rowFilters, organisms, true,
           useColumns, !vsMinor, TOTAL_WIDTH);
 
       intoList.add(grid);
@@ -226,13 +226,13 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
         // got all the grids
         // harmonise the column count across all grids
         int maxCols = 0;
-        for (ChartGrid<D> gr : intoList) {
-          if (gr.getMaxColumnCount() > maxCols) {
-            maxCols = gr.getMaxColumnCount();
+        for (ChartGrid<?> chartGrid : intoList) {
+          if (chartGrid.getMaxColumnCount() > maxCols) {
+            maxCols = chartGrid.getMaxColumnCount();
           }
         }
-        for (ChartGrid<D> gr : intoList) {
-          gr.adjustAndDisplay(new ChartStyle(0, false, null, false), maxCols, minVal, maxVal,
+        for (ChartGrid<?> chartGrid : intoList) {
+          chartGrid.adjustAndDisplay(new ChartStyle(0, false, null, false), maxCols, minVal, maxVal,
               chartsTitle);
         }
       }
@@ -263,7 +263,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
       final String[] columns = (subtype.equals(SELECTION_ALL) ? null : new String[] {subtype});
 
-      final List<ChartGrid<D>> grids = new ArrayList<ChartGrid<D>>();
+      final List<ChartGrid<?>> grids = new ArrayList<ChartGrid<?>>();
       expectedGrids = 0;
       allPoints.clear();
 

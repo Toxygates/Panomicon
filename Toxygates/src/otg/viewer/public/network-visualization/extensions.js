@@ -1,3 +1,137 @@
+/* Functions that are applied to, or are defined to handle aspects of the
+ * network instances, in cytoscape's format */
+
+/**
+ * Initialize style for network components
+ * Set the default style for each type of element within a cytoscape network,
+ * i.e. nodes and edges. Also set up a special display to appy to currently
+ * selected nodes.
+ *
+ * This function is declared as an extension to Cytoscape's core
+ */
+function initStyle(){
+  this.resize();
+  this.style()
+    /* default style for node elements */
+    .selector('node')
+    .style({
+      'label': 'data(label)',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'shape': 'data(shape)',
+      'background-color': 'data(color)',
+      'border-width': '1px',
+      'border-color': 'data(borderColor)',
+    })
+    .selector('node:selected')
+    .style({
+      'border-width': '5px',
+      'background-color': nodeColor.HIGHLIGHT,
+      'border-color': nodeColor.HIGHLIGHT,
+    })
+    .selector('node.highlighted')
+    .style({
+      'background-color': nodeColor.HIGHLIGHT,
+      'border-color': nodeColor.HIGHLIGHT,
+    })
+    /* default style for edges */
+    .selector("edge")
+    .style({
+      "line-color": "data(color)",
+    })
+    .selector('edge.highlighted')
+    .style({
+      'line-color': edgeColor.HIGHLIGHT,
+    })
+    .update();
+
+}
+
+/**
+ * Display a node's Pop-up
+ * Handle the display of a pop-up div element, to be shown whenever the user
+ * hovers over a node on the network.
+ *
+ * @type{Event}
+ * @param{Event} event The mouseover event triggered when the user hovers over a
+ * node on the display.
+ */
+function onNodeEnter(event){
+  /* retrieve the node that has been entered by the user */
+  let node = event.target;
+
+  /* update the display content for the pop-up DOM, based on the node's data */
+  $('#nodePopper').css('display', 'block');
+  let div = document.createElement('div');
+  $('#nodePopper #label').html(node.data("label"));
+  $('#nodePopper #type').html(node.data("type"));
+  $('#nodePopper #probe').html(node.data("id"));
+
+  /* create a new pop-up element and bind it to the corresponding node */
+  let popup = node.popper({
+    content: $('#nodePopper')[0],
+    popper: { },
+  });
+  /* bind a listener to node's position, to keep pop-up in sync */
+  node.on('position', function(){popup.scheduleUpdate();});
+  /* bind a listener to viewport (zoom and pan), to keep pop-up position in sync */
+  event.cy.on('viewport', function(){popup.scheduleUpdate();});
+}
+
+/**
+ * Remove the display of a node's pop-up
+ * Handle the removal of the pop-up for a node
+ *
+ * @type{Event}
+ * @param{Event} event The mouse out event triggered when the user moves the
+ * pointer outside of a given node
+ */
+function onNodeExit(event){
+  let node = event.target;
+
+
+  node.removeListener('position');
+  event.cy.removeListener('viewport');
+
+  $('#nodePopper').css('display', 'none');
+
+
+}
+
+/**
+ * Initialize the visualization context menu
+ * A context menu associated to each visualization panel is provided to help the
+ * user interact and modify some aspects of the representation of the network.
+ * The options provided depend on whether the user request the context menu
+ * while on top of a graph element (node or edge) or not.
+ *
+ * @param {number} id Numeric identifier for the panel to which the context menu
+ * is being added.
+ */
+function initContextMenu(id){
+  /* use the default way to provide all the options to be added to the menu */
+  this.contextMenus({
+    /* class that helps identifying the corresponding memu items in the
+     * applications DOM */
+    contextMenuClasses:[
+      'ctx-menu-'+id
+    ],
+    /* the actual contentes of the menu */
+    menuItems: [
+    { /* change the color of the graph according to a color scale */
+      id: "color-scale-"+id,
+      content: "Apply color scale",
+      tooltip: "Apply color scale",
+      selector: "node",
+      coreAsWell: true,
+      onClickFunction: showColorScaleDialog,
+    }
+    ] // menuItems
+  });
+}
+
+
+
 /**
  * Apply two different layouts, defined by innerName and outerName respectively,
  * to two subsets of nodes within a collection. The inner layout is applied to
@@ -77,31 +211,7 @@ function hideUnconnected(){
   });
 }
 
-/**
- * Initialize style for network components
- * EXTENSION TO CYTOSCAPE - CORE
- */
-function initStyle(){
-  this.resize();
-  this.style()
-    .selector("node")
-    .style({
-      "label": "data(label)",
-      "text-valign": "center",
-      "text-halign": "center",
-      'background-color': "data(color)",
-      'shape': 'data(shape)',
-    })
-    .selector("edge")
-    .style({
-      "line-color": "data(color)",
-    })
-    .selector("node:selected")
-    .style({
-      "border-width": "5px",
-    })
-    .update();
-}
+
 
 /**
  * Merge the current collection with the collection of elements provided,
@@ -175,6 +285,7 @@ function setDefaultStyle(eles){
 
     this.$("#"+ele.id())
       .data("color", color)
+      .data('borderColor', color)
       .data("shape", shp);
   },this);
   this.endBatch();
@@ -209,40 +320,35 @@ function setDefaultStyle(eles){
   }
 
 /**
- * Use the given color to highlight the elements (nodes and edges) that form the
- * intersection between the current graph and the elements of cy. When the
- * parameter 'highlight' is set to false, default colors are used to remove the
- * highlighting of elements in both graphs.
- * @param {graph} cy The graph to which the elements of the current graph are to
- * be compared with.
- * @param {boolean} highlight Wether the intersecting nodes should be
- * highlighed (true) or returned to their default color (false)
- * @param {string} color The color used to hightlight the intersecting elements
- * on both graphs.
+ * Toggle the 'highlighted' class on selected nodes.
+ * A different display color is specified for nodes that have been highlighted
+ * by the user. This change in appearence is handled through the toogle class
+ * 'highlighted', defined in the default stylesheet used for graphs (see method
+ * initStyle).
+ * Here, we toogle on or off (depending on the provided parameter) the highlight
+ * class for the nodes found in the intersection between the current graph and
+ * the given other graph.
+ *
+ * @param {graph} other The graph to which the elements of the current graph are
+ * to be compared with.
+ * @param {boolean} toogle Indicates if the 'highlighted' class for the
+ * intersecting nodes should be turned on (true) or off (false)
+ *
  * EXTENSION TO CYTOSCAPE - CORE
  */
-function toogleHighlight(cy, highlight, color){
-    /* create a headless copy of the current network */
-    let clone = cytoscape({headless:true});
-    clone.add(this.elements());
+function toogleIntersectionHighlight(other, toggle){
+  /* create a headless copy of the current network */
+  let clone = cytoscape({headless:true});
+  clone.add(this.elements());
 
-    /* determine the intersecting elements between the current and the other
-     * collection */
-    let intersection = clone.elements().intersection(cy.elements());
-    intersection.forEach(function(ele){
-      color = highlight ?
-        color :
-        ele.isEdge()?
-          edgeColor.REGULAR :
-          ele.data('type') === "mRNA" ?
-            nodeColor.MSG_RNA:
-            nodeColor. MICRO_RNA;
-      this.$("#"+ele.id())
-        .data("color", color);
-      cy.$("#"+ele.id())
-        .data("color", color);
-    },this);
-  }
+  /* determine the intersecting elements between both collections */
+  let intersection = clone.elements().intersection(other.elements());
+  /* toggle the 'highlighted' class for the elements on both graphs */
+  intersection.forEach(function(ele){
+      this.$("#"+ele.id()).toggleClass('highlighted', toggle);
+      other.$("#"+ele.id()).toggleClass('highlighted', toggle);
+  },this);
+}
 
 /**
  * Generate the options Object needed to define the layout for a cytoscape
@@ -268,10 +374,6 @@ function updateLayout(name="null", boundingBox=undefined){
     weaver: weaver
   });
 }
-
-
-
-
 
 /**
  * Return the list of nodes in the current network, using the ToxyNode data
@@ -324,71 +426,7 @@ function getToxyInteractions(){
   return toxyInter;
 }
 
-/**
- * Initialize the components of the context menu that will be presented to the
- * user. These options vary depending on whether there is an active selection
- * of nodes and/or edges or not (coreAsWell option).
- */
-function initContextMenu(){
-  // self is the viz container that is currently initializing a context menu
-  var self = this; // save context to use within annonymous functions
-  var contextMenu = this.contextMenus({
-    menuItems: [
-      //---------------------------------------------------------
-      // Options shown when clicking on a selected node
-      //---------------------------------------------------------
-      {
-        /**
-         * add an interaction between the currently selected node, and a next
-         * selected element
-         */
-        id: "add-edge",
-        content: "Add Edge",
-        tooltipText: "Add an edge",
-        selector: "node",
-        onClickFunction: onAddEdge,
-      },
-      {
-        /**
-         * update data or visual properties of a given node
-         */
-         id: "update-node",
-         content: "Properties",
-         tooltip: "View and modify node's properties",
-         selector: "node",
-         onClickFunction: onUpdateNode,
-      },
-      //---------------------------------------------------------
-      // Options shown when clicking on a selected node
-      //---------------------------------------------------------
-      /**
-       * color the whole graph based on the selection made by the user.
-       * Typically this will be related to the level of expresion on messegerRNA
-       * nodes
-       */
-      {
-        id: "color-scale",
-        content: "Scale coloring",
-        tooltipText: "Color nodes according to a give property",
-        coreAsWell: true,
-        onClickFunction: onColorScale,
-      },
-      /**
-       * Search a node.
-       * The user is allowed to enter free text and search for a node within
-       * the network with the given label or ID.
-       */
-      {
-        id: "search-node",
-        content: "Search Node",
-        tooltipText: "Search a node by label",
-        coreAsWell: true,
-        onClickFunction: onSearchNode,
-      },
 
-    ] // menuItems
-  });
-}
 
 /**
  * Adds a new interaction to the graph, if the next clicked item corresponds to
@@ -466,35 +504,6 @@ function onUpdateNode(event){
 }
 
 /**
- * Define the initial set-up and options for selection of coloring application
- * to entire sections of the graph.
- * @param {}event the event triggered when the corresponding item in the context
- * menu is pressed
- */
-function onColorScale(event){
-  /* display the corresponding color interface */
-  $("#graphColorModal").show();
-
-  /* add options to select the type of node on which to apply color */
-  var types = Object.keys(nodeType);
-  $("#graphColorModal #graphColorTo").empty();
-  $("#graphColorModal #graphColorTo").append(new Option("Select...", null));
-  for(var i=0; i<types.length; ++i){
-    $("#graphColorModal #graphColorTo").append(new Option(types[i], nodeType[types[i]]));
-  }
-
-  /* initialize an empty color by select component */
-  $("#graphColorModal #graphColorBy").empty();
-  $("#graphColorModal #graphColorBy").append(new Option("Select...", null));
-
-  /* initialize color scale values */
-  $("#graphColorModal #minRange").val("");
-  $("#graphColorModal #maxRange").val("");
-  $("#graphColorModal #colorRange").val(50);
-  $("#graphColorModal #whiteRange").val("");
-}
-
-/**
  * Define the initial set-up and options to be displayed when searching for a
  * particular node within the network.
  * @param {any} event the event triggered when the corresponding item in the
@@ -511,7 +520,7 @@ function onSearchNode(event){
 cytoscape("core", "hideUnconnected", hideUnconnected);
 cytoscape("core", "mergeWith", mergeWith);
 cytoscape("core", "setDefaultStyle", setDefaultStyle);
-cytoscape("core", "toogleHighlight", toogleHighlight);
+cytoscape("core", "toogleIntersectionHighlight", toogleIntersectionHighlight);
 
 cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "updateLayout", updateLayout);

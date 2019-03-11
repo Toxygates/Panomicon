@@ -67,8 +67,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   }
 
   @Override
-  public void initializeState(SampleClass sampleClass, List<String> compounds) {
-    super.initializeState(sampleClass, compounds);
+  public void compoundsChanged(List<String> compounds) {
+    super.compoundsChanged(compounds);
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
