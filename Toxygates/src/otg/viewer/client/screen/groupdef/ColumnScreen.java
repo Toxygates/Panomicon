@@ -33,7 +33,6 @@ import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
-import t.viewer.client.future.FutureAction;
 import t.viewer.client.future.FutureUtils;
 import t.viewer.shared.ItemList;
 
@@ -53,6 +52,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void loadState(AttributeSet attributes) {
+    logger.info("columnScreen.loadState");
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     
@@ -63,7 +63,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       
       manager().sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), sampleClassesFuture);
       FutureUtils.beginPendingRequestHandling(sampleClassesFuture, this, "Unable to choose datasets");
-      FutureUtils.addSimpleSuccessCallback(sampleClassesFuture, sampleClasses -> {
+      sampleClassesFuture.addSuccessCallback(sampleClasses -> {
         logger.info("sample classes fetched");
         filterTools.dataFilterEditor.setAvailable(sampleClasses);
       });
@@ -74,7 +74,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     
     // After we have sampleclasses, load sampleclass and fetch compounds if necessary
     Future<String[]> compoundsFuture = new Future<String[]>();
-    FutureAction afterSampleClassesAction = new FutureAction(() -> {
+    sampleClassesFuture.addSuccessCallback(result -> {
       logger.info("processing sampleclasses");
       //TODO: handle the case where sample class is not valid for dataset choice
       filterTools.sampleClassChanged(newSampleClass);
@@ -95,9 +95,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         sampleClassesFuture.onSuccess(null); // TODO better syntax
       }
     });
-    sampleClassesFuture.addDependent(afterSampleClassesAction);
     
-    FutureUtils.addSimpleSuccessCallback(compoundsFuture, compounds -> {
+    compoundsFuture.addSuccessCallback(compounds -> {
       logger.info("processing compounds");
       List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
       groupInspector.initializeState(chosenDatasets, chosenSampleClass, new ArrayList<String>());

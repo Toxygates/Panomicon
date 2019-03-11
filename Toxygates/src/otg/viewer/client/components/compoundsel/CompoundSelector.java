@@ -153,7 +153,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
           @Override
           public void handleSuccess(String[] result) {
-            logger.info("compounds fetched");
             Arrays.sort(result);
             List<String> r = new ArrayList<String>((Arrays.asList(result)));
             compoundEditor.setItems(r, false, true);

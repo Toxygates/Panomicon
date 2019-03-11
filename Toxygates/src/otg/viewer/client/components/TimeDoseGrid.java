@@ -105,6 +105,7 @@ abstract public class TimeDoseGrid extends Composite {
   }
   
   public void initializeState(SampleClass sampleClass, List<String> compounds) {
+    logger.info("tdgrid initializeState");
     FutureAction finalAction = new FutureAction();
     
     Future<String[]> minorsFuture = new Future<String[]>(); 

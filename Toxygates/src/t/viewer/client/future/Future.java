@@ -1,7 +1,9 @@
 package t.viewer.client.future;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -14,7 +16,7 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
   private boolean done = false;
   private T result;
   private Throwable caught;
-  private ArrayList<Dependent> dependents = new ArrayList<Dependent>();
+  private ArrayList<Consumer<Future<T>>> callbacks = new ArrayList<Consumer<Future<T>>>();
   
   public Future() {}
   
@@ -41,10 +43,30 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
     return done() && wasSuccessful();
   }
   
+  public void addCallback(Consumer<Future<T>> callback) {
+    if (!done) {
+      callbacks.add(callback);
+    } else {
+      Scheduler.get().scheduleDeferred(() -> {
+        callback.accept(this);
+      });
+    }
+  }
+  
+  public void addSuccessCallback(Consumer<T> callback) {
+    addCallback(future -> {
+      if (future.wasSuccessful()) {
+        callback.accept(future.result());
+      }
+    });
+  }
+  
   @Override
   public Dependable addDependent(Dependent dependent) {
-    dependents.add(dependent);
     dependent.onStartDepending(this);
+    addCallback((future) -> {
+      dependent.dependableCompleted(this);
+    });
     return this;
   }
   
@@ -52,13 +74,13 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
   public void onSuccess(T t) {
     done = true;
     result = t;
-    dependents.forEach(d -> d.dependableCompleted(this));
+    callbacks.forEach(c -> c.accept(this));
   }
 
   @Override
   public void onFailure(Throwable caught) {
     done = false;
     this.caught = caught;
-    dependents.forEach(d -> d.dependableCompleted(this));
+    callbacks.forEach(c -> c.accept(this));
   }
 }
