@@ -37,7 +37,8 @@ public class DataFilterEditor extends Composite {
   protected final Logger logger;
   private Delegate delegate;
   
-  protected SampleClass chosenSampleClass;
+  // This default value is necessary to prevent null pointer exceptions
+  protected SampleClass chosenSampleClass = new SampleClass();
   
   public interface Delegate {
     void dataFilterEditorSampleClassChanged(SampleClass sc);

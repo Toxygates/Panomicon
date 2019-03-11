@@ -28,6 +28,13 @@ public class FutureUtils {
     return future;
   }
   
+  public static <T> Future<T> pendingRequestCallback(Screen screen, String errorMessage, 
+      SuccessAction<T> action) {
+    Future<T> future = newPendingRequestFuture(screen, errorMessage);
+    addSimpleSuccessCallback(future, action);
+    return future;
+  }
+  
   public static void beginPendingRequestHandling(Future<?> future, Screen screen, String errorMessage) {
     new PendingRequestHandler(future, screen, errorMessage);
   }

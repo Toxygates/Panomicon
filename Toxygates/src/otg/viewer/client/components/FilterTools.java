@@ -40,7 +40,7 @@ import t.viewer.shared.AppInfo;
  */
 public class FilterTools extends Composite implements DataFilterEditor.Delegate {
   private HorizontalPanel filterTools;
-  private DataFilterEditor dfe;
+  public DataFilterEditor dataFilterEditor;
   final OTGScreen screen;
   final Delegate delegate;
   final SampleServiceAsync sampleService;
@@ -74,8 +74,8 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     b.addStyleName("lightButton");
     filterTools.add(b);
 
-    dfe = new DataFilterEditor(screen, this);
-    filterTools.add(dfe);
+    dataFilterEditor = new DataFilterEditor(screen, this);
+    filterTools.add(dataFilterEditor);
   }
 
   protected void showDatasetSelector() {    
@@ -134,13 +134,13 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
       @Override
       public void handleSuccess(SampleClass[] sampleClasses) {
         logger.info("sample classes fetched");
-        dfe.setAvailable(sampleClasses);
+        dataFilterEditor.setAvailable(sampleClasses);
       }
     });
   }
   
   public void sampleClassChanged(SampleClass sc) {
-    dfe.sampleClassChanged(sc);
+    dataFilterEditor.sampleClassChanged(sc);
   }
   
   

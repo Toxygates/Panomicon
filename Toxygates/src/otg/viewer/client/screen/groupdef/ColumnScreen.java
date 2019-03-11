@@ -32,6 +32,9 @@ import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
+import t.viewer.client.future.Future;
+import t.viewer.client.future.FutureAction;
+import t.viewer.client.future.FutureUtils;
 import t.viewer.shared.ItemList;
 
 /**
@@ -51,24 +54,56 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void loadState(AttributeSet attributes) {
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
-    filterTools.setDatasets(newChosenDatasets);
-    filterTools.getSampleClasses();
-
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
-    filterTools.sampleClassChanged(newSampleClass);
-    compoundSelector.sampleClassChanged(newSampleClass);
     
-    if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
-      compoundSelector.fetchCompounds();
+    // Fetch sampleclasses if necessary
+    Future<SampleClass[]> sampleClassesFuture = new Future<SampleClass[]>();    
+    if (!newChosenDatasets.equals(chosenDatasets)) {
+      filterTools.setDatasets(newChosenDatasets);
+      
+      manager().sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), sampleClassesFuture);
+      FutureUtils.beginPendingRequestHandling(sampleClassesFuture, this, "Unable to choose datasets");
+      FutureUtils.addSimpleSuccessCallback(sampleClassesFuture, sampleClasses -> {
+        logger.info("sample classes fetched");
+        filterTools.dataFilterEditor.setAvailable(sampleClasses);
+      });
+    } else {
+      logger.info("bypassing sampleclass fetching");
+      sampleClassesFuture.onSuccess(null); // TODO better syntax
     }
-    chosenDatasets = newChosenDatasets;
-    chosenSampleClass = newSampleClass;
-
-    List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
-    groupInspector.initializeState(newChosenDatasets, newSampleClass, new ArrayList<String>());
-    groupInspector.loadGroups();
-
-    compoundSelector.setChosenCompounds(chosenCompounds);
+    
+    // After we have sampleclasses, load sampleclass and fetch compounds if necessary
+    Future<String[]> compoundsFuture = new Future<String[]>();
+    FutureAction afterSampleClassesAction = new FutureAction(() -> {
+      logger.info("processing sampleclasses");
+      //TODO: handle the case where sample class is not valid for dataset choice
+      filterTools.sampleClassChanged(newSampleClass);
+      compoundSelector.sampleClassChanged(newSampleClass);
+      
+      if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
+        manager().sampleService().parameterValues(chosenSampleClass, schema().majorParameter().id(),
+            compoundsFuture);
+        chosenDatasets = newChosenDatasets;
+        chosenSampleClass = newSampleClass;
+        FutureUtils.beginPendingRequestHandling(compoundsFuture, this, "Unable to retrieve values for parameter: ");
+        FutureUtils.addSimpleSuccessCallback(compoundsFuture, compounds -> {
+          logger.info("compounds fetched");
+          // the logic from CompoundSelector.fetchCompounds callback goes here
+        });
+      } else {
+        logger.info("bypassing compounds fetching");
+        sampleClassesFuture.onSuccess(null); // TODO better syntax
+      }
+    });
+    sampleClassesFuture.addDependent(afterSampleClassesAction);
+    
+    FutureUtils.addSimpleSuccessCallback(compoundsFuture, compounds -> {
+      logger.info("processing compounds");
+      List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
+      groupInspector.initializeState(chosenDatasets, chosenSampleClass, new ArrayList<String>());
+      groupInspector.loadGroups();
+      compoundSelector.setChosenCompounds(chosenCompounds);
+    });
   }
 
   public ColumnScreen(ScreenManager man) {
