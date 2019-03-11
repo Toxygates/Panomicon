@@ -138,14 +138,14 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   @Override
-  public void changeCompounds(List<String> compounds) {
+  public void compoundsChanged(List<String> compounds) {
     preSelection = getSelectedCombinations();
-    super.changeCompounds(compounds);
+    super.compoundsChanged(compounds);
   }
 
   public void compoundsChanged(List<String> compounds, Unit[] initSel) {
     preSelection = initSel;
-    super.changeCompounds(compounds);
+    super.compoundsChanged(compounds);
   }
 
   public void setAll(boolean val, boolean fire) {
@@ -353,10 +353,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   
   @Override
   protected void samplesAvailable() {
-//    if (fetchingMinor) {
-//      samplesWaiting = true;
-//      return; //wait
-//    }
+    if (fetchingMinor) {
+      samplesWaiting = true;
+      return; //wait
+    }
     //logger.info("Samples available: " + availableUnits.size() + " units.");
 //    if (availableUnits.size() > 0 && availableUnits.get(0) != null) {
 //      logger.info("1st: " + availableUnits.get(0));
