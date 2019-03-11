@@ -109,7 +109,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     MenuItem mColumns = new MenuItem("View", false, expressionTable.createColumnVisibilityMenu());
     addTopLevelMenu(mColumns);
     
-    // TODO: this is effectively a tick menu item without the tick.
+    // TODO: this is secretly a (stateful) tick menu item, but without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
  
@@ -128,10 +128,8 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
       showMirnaSourceDialog();
     }));
 
-    if (factory.hasHeatMapMenu()) {
-      MenuItem heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());        
-      addAnalysisMenuItem(heatMapMenu);
-    }
+    MenuItem heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());
+    addAnalysisMenuItem(heatMapMenu);
   }
   
   protected void showMirnaSourceDialog() {

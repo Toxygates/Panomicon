@@ -205,20 +205,27 @@ class CoreMatrix(val params: LoadParams) {
     updateRowInfo()
   }
 
+  /**
+   * Returns true if v1 should be prior to v2 in the ordering.
+   */
   private final def sortRows(col: Int, ascending: Boolean)(v1: RowData, v2: RowData): Boolean = {
+    import java.lang.{Double => JDouble}
+
     val ev1 = v1(col)
     val ev2 = v2(col)
-    if (ev1.call == 'A' && ev2.call != 'A') {
+
+    def lowPriority(x: ExpressionValue) =
+      !x.present || JDouble.isNaN(x.value)
+
+    if (lowPriority(ev1) && !lowPriority(ev2)) {
       false
-    } else if (ev1.call != 'A' && ev2.call == 'A') {
+    } else if (!lowPriority(ev1) && lowPriority(ev2)) {
       true
     } else {
-      //Use this to handle NaN correctly (comparison method MUST be transitive)
-      def cmp(x: Double, y: Double) = java.lang.Double.compare(x, y)
       if (ascending) {
-        cmp(ev1.value, ev2.value) < 0
+        JDouble.compare(ev1.value, ev2.value) < 0
       } else {
-        cmp(ev1.value, ev2.value) > 0
+        JDouble.compare(ev1.value, ev2.value) > 0
       }
     }
   }

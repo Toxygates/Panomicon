@@ -54,25 +54,38 @@ public interface UIFactory {
   
   public GeneSetEditor geneSetEditor(ImportingScreen screen);
   
-  public boolean hasHeatMapMenu();
-  
   public GeneSetsMenu geneSetsMenu(DataScreen screen);
 
   /**
-   * Enrichment for a gene set
+   * Perform enrichment for a single gene set.
+   * This will display a dialog that lets the user select enrichment parameters before
+   * performing the enrichment.
+   *   
+   * @param screen The screen that displays the enrichment dialog
+   * @param list The gene set to enrich (as a probes list)
+   * @param preferredInstance The preferred intermine instance that is
+   * to compute the enrichment results.
    */
-  void enrichment(ImportingScreen screen, StringList list,
+  void displayEnrichmentDialog(ImportingScreen screen, StringList list,
       @Nullable IntermineInstance preferredInstance);
 
   /**
    * Enrichment for multiple gene sets
+   * This will display a dialog that lets the user select enrichment parameters before
+   * performing the enrichment.
+   * 
+   * @param screen The screen that displays the enrichment dialog
+   * @param lists The gene sets to enrich (as a probes list)
+   * @param preferredInstance The preferred intermine instance that is
+   * to compute the enrichment results.
    */
-  void multiEnrichment(ImportingScreen screen, StringList[] lists,
+  void displayMultiEnrichmentDialog(ImportingScreen screen, StringList[] lists,
       @Nullable IntermineInstance preferredInstance);
 
   /**
-   * Call back with a summary of samples for display on the start screen, if appropriate. The call
-   * will not be made if the table should not be displayed.
+   * Asynchronously construct a summary of samples for display on the start screen, if appropriate.
+   * The resulting summary table will be sent to the provided callback. 
+   * The call will not be made if the table should not be displayed.
    */
   default void sampleSummaryTable(OTGScreen screen, 
                                   ValueAcceptor<StringArrayTable> acceptor) {    
