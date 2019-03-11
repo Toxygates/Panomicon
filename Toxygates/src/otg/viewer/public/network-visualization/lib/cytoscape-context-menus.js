@@ -225,7 +225,6 @@
         // Create and append menu item
         var $menuItemComponent = createMenuItemComponent(menuItem);
         appendComponentToCxtMenu($menuItemComponent);
-
         performBindings($menuItemComponent, menuItem.onClickFunction, menuItem.selector, menuItem.coreAsWell);
       }//insertComponentBeforeExistingItem(component, existingItemID)
 
