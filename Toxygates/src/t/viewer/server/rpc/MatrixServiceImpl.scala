@@ -58,6 +58,10 @@ object MatrixState {
   def stateKey = "matrix"
 }
 
+/**
+ * The MatrixState tracks a number of managed matrices, each identified by a
+ * unique ID string.
+ */
 class MatrixState {
   var controllers: Map[String, MatrixController] = Map()
 
@@ -70,6 +74,10 @@ class MatrixState {
   def matrixOption(id: String): Option[MatrixController#Mat] =
     controllers.get(id).map(_.managedMatrix)
 
+  /**
+   * Given the requested groups and value type, is it necessary to reload
+   * the given matrix?
+   */
   def needsReload(id: String, groups: Iterable[Group], typ: ValueType): Boolean = {
     if (id == null) {
       return true
@@ -82,7 +90,8 @@ class MatrixState {
 }
 
 /**
- * This servlet is responsible for obtaining and manipulating microarray data.
+ * This servlet is responsible for obtaining and manipulating matrices
+ * with gene expression data.
  */
 abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService {
   import scala.collection.JavaConverters._
