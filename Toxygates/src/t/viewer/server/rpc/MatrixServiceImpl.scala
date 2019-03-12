@@ -179,7 +179,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       val grouped = mm.getPageView(offset, size)
 
       val rowNames = grouped.map(_.getProbe)
-      val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data
+      val rawData = mm.rawUngrouped.selectNamedRows(rowNames).data
 
       for (
         (gr, rr) <- grouped zip rawData;
@@ -213,7 +213,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
     val raw = if (groups.size == 1) {
       //break out each individual sample if it's only one group
       val samples = groups(0).getSamples().map(_.id)
-      mm.finalTransform(mm.rawUngrouped.selectNamedColumns(samples)).asRows
+      mm.rawUngrouped.selectNamedColumns(samples).asRows
     } else {
       val cols = groups.map(_.getName)
       mm.current.selectNamedColumns(cols).asRows
@@ -260,7 +260,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       //Individual samples
       val info = mm.info
       val keys = mm.current.rowKeys.toSeq
-      val ungrouped = mm.finalTransform(mm.rawUngrouped.selectNamedRows(keys))
+      val ungrouped = mm.rawUngrouped.selectNamedRows(keys)
       val parts = (0 until info.numDataColumns).map(g => {
         if (!info.isPValueColumn(g)) {
           //Sample data.

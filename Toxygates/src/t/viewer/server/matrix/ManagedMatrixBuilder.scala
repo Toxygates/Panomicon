@@ -108,7 +108,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
     val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
 
-    val ungrouped = ExprMatrix.withRows(data,
+    var ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 
     val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
@@ -117,16 +117,17 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
       (i -> sampleIdxs)
     })
 
+    ungrouped = finaliseUngrouped(ungrouped)
+
     new ManagedMatrix(
       LoadParams(sortedProbes, info,
         ungrouped.copyWithAnnotations(annotations),
         grouped.copyWithAnnotations(annotations),
-        baseColumns,
-        log2transform)
+        baseColumns)
       )
   }
-
-  protected def log2transform: Boolean = false
+  
+  protected def finaliseUngrouped(ungr: ExprMatrix): ExprMatrix = ungr
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
@@ -251,7 +252,8 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
-  override protected def log2transform = true
+  override protected def finaliseUngrouped(ungr: ExprMatrix) = 
+    ungr.map(e => ManagedMatrix.log2(e)) 
 
   override protected def shortName(g: Group) = "Log2-fold"
 
