@@ -13,15 +13,19 @@ import t.viewer.shared.network.Network
 /**
  * A MatrixController that turns the main matrix into a ManagedNetwork
  * instead of a ManagedMatrix.
+ *
+ * @param targets target table for the initial network load.
+ * Will not be used for subsequent calls to makeNetwork, as we expect the
+ * ManagedNetwork (managedMatrix) to contain the latest updated targets.
  */
-class NetworkController(params: ControllerParams,  
+class NetworkController(params: ControllerParams,
     val sideMatrix: ManagedMatrix, targets: TargetTable,
     platforms: Platforms,
     initMainPageSize: Int,
     sideIsMRNA: Boolean) extends MatrixController(params) {
 
   type Mat = ManagedNetwork
-  
+
   override def finish(mm: ManagedMatrix): Mat = {
     new ManagedNetwork(mm.params, sideMatrix, targets, platforms, initMainPageSize, sideIsMRNA)
   }
@@ -30,6 +34,6 @@ class NetworkController(params: ControllerParams,
    * Produce a network object that reflects the current view.
    */
   def makeNetwork: Network =
-    new NetworkBuilder(targets, platforms, managedMatrix, sideMatrix).build
+    new NetworkBuilder(managedMatrix.targets, platforms, managedMatrix, sideMatrix).build
 
 }
