@@ -231,39 +231,30 @@ $(document).on("click", "#okColorScaleDialog", function (event){
   /* retrieve the selected weights for both msgRNA and microRNA */
   let msgWgt = $("#msgRNAWeight").val();
   let micWgt = $('#microRNAWeight').val();
-
-  /* find the minimum and maximum values for the selected weights */
-  let min = vizNet[id].nodes().min(function(node){
-    if (node.data('type') === nodeType.MSG_RNA )
-      return node.data('weight')[msgWgt];
-    return node.data('weight')[micWgt];
-  }).value;
-  let max = vizNet[id].nodes().max(function(node){
-    if (node.data('type') === nodeType.MSG_RNA )
-      return node.data('weight')[msgWgt];
-    return node.data('weight')[micWgt];
-  }).value;
-
-  /* apply a color to each node in the dataset that is linearly interpolated
-   * between white (min) and user selected color (max) */
-  let baseColor = $("#scaleColor").val();
+  /* retrieve colors used for negative and positive values of the scale */
+  let negColor = $("#negColor").val();
+  let posColor = $('#posColor').val();
+  /* retrieve cap values for negative and positive ends of the scale */
+  let min = $('#negCap').val();
+  let max = $('#posCap').val();
+  /* apply the linearly interpolated color to each node in the graph */
   vizNet[id].nodes().forEach(function(ele){
     /* retrieve the current node's weight value */
     let val = ele.data('weight')[msgWgt];
     if (ele.data('type') === nodeType.MICRO_RNA )
       val = ele.data('weight')[micWgt];
 
-    if (val !== NaN){
-      /* define the color for the node's weight value */
-      let c = valueToColor(val, min, max, min, "#FFFFFF", baseColor);
-      /* assing the color to the node, using the base color for the node's border */
-      if( c !== "#aNaNaN" ){
-        ele.data("color", c);
-        ele.data('borderColor', baseColor);
-      }
+    /* calculate the color for the current node */
+    let c = valueToColor(val, min, max, negColor, posColor);
+    /* if the color is valid, assign it to the node */
+    if( c !== "#aNaNaN" ){
+      ele.data("color", c);
+      val <= 0 ? ele.data('borderColor', negColor) : ele.data('borderColor', posColor);
     }
+    /* else, revert the node to default color */
+    else
+      ele.setDefaultStyle();
   });
-
   /* hide the modal after color has been applied to nodes */
   $("#colorScaleDialog").css('visibility', 'hidden');
 });

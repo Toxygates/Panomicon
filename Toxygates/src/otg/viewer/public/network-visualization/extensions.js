@@ -131,9 +131,9 @@ function initContextMenu(id){
       coreAsWell: true,
       onClickFunction: function(evt){
         if( evt.cy === evt.target ) // click on the background
-          evt.cy.setDefaultStyle(evt.cy.elements());
+          evt.cy.elements().setDefaultStyle();
         else
-          evt.cy.setDefaultStyle(evt.target);
+          evt.target.setDefaultStyle();
       },
     },
     { /* change the label of a single node */
@@ -287,26 +287,25 @@ function mergeWith(eles, innerName="concentric", outerName="grid"){
 /**
  * Returns elements in the collection to their default style, in terms of color
  * and shape of its components
- * @param {collection} eles The elements we want to return to their original
- * style
  */
-function setDefaultStyle(eles){
-  this.startBatch();
-  eles.forEach(function(ele){
+function setDefaultStyle(){//eles){
+  // this.startBatch();
+  // eles.forEach(function(ele){
+  this.forEach(function(ele){
     if ( ele.isEdge() ){
-      this.$("#"+ele.id())
-        .data("color", edgeColor.REGULAR);
-        return;
+      // this.$("#"+ele.id())
+      ele.data("color", edgeColor.REGULAR);
+      return;
     }
     let color = ele.data('type') === "mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
     let shp = ele.data('type') === "mRNA"? nodeShape.MSG_RNA : nodeShape.MICRO_RNA;
 
-    this.$("#"+ele.id())
-      .data("color", color)
-      .data('borderColor', color)
-      .data("shape", shp);
-  },this);
-  this.endBatch();
+    // this.$("#"+ele.id())
+    ele.data("color", color)
+    ele.data('borderColor', color)
+    ele.data("shape", shp);
+  });//,this);
+  // this.endBatch();
 }
 
 
@@ -444,19 +443,17 @@ function getToxyInteractions(){
   return toxyInter;
 }
 
-
-
 // add functions to cytoscape prototype
 cytoscape("core", "hideUnconnected", hideUnconnected);
 cytoscape("core", "mergeWith", mergeWith);
-cytoscape("core", "setDefaultStyle", setDefaultStyle);
+// cytoscape("core", "setDefaultStyle", setDefaultStyle);
+cytoscape('collection', 'setDefaultStyle', setDefaultStyle);
 cytoscape("core", "toogleIntersectionHighlight", toogleIntersectionHighlight);
 
 cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "updateLayout", updateLayout);
 cytoscape("collection", "updateLayout", updateLayout);
 
-// cytoscape("core", "mergeTo", mergeTo);
 cytoscape("core", "dualLayout", dualLayout);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "showHiddenNodes", showHiddenNodes);
