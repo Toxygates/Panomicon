@@ -86,7 +86,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         chosenDatasets = newChosenDatasets;
         chosenSampleClass = newSampleClass;
         FutureUtils.beginPendingRequestHandling(compoundsFuture, this, "Unable to retrieve values for parameter: ");
-        FutureUtils.addSimpleSuccessCallback(compoundsFuture, compounds -> {
+        compoundsFuture.addSuccessCallback(compounds -> {
           logger.info("compounds fetched");
           // the logic from CompoundSelector.fetchCompounds callback goes here
         });
