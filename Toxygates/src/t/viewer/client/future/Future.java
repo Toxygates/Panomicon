@@ -79,7 +79,7 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
 
   @Override
   public void onFailure(Throwable caught) {
-    done = false;
+    done = true;
     this.caught = caught;
     callbacks.forEach(c -> c.accept(this));
   }

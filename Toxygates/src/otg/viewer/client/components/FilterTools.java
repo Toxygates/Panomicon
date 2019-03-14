@@ -134,7 +134,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
       @Override
       public void handleSuccess(SampleClass[] sampleClasses) {
         logger.info("sample classes fetched");
-        dataFilterEditor.setAvailable(sampleClasses);
+        dataFilterEditor.setAvailable(sampleClasses, true);
       }
     });
   }

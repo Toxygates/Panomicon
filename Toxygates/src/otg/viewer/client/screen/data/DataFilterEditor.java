@@ -119,6 +119,7 @@ public class DataFilterEditor extends Composite {
       }
 
       if (allSet && emitChange) {
+        logger.info("propagating...");
 //        logger.info("Propagate change to " + r.toString());
         chosenSampleClass = sampleClass;
         delegate.dataFilterEditorSampleClassChanged(sampleClass);
@@ -147,7 +148,7 @@ public class DataFilterEditor extends Composite {
     }
   }
 
-  public void setAvailable(SampleClass[] sampleClasses) {
+  public void setAvailable(SampleClass[] sampleClasses, boolean emit) {
     this.sampleClasses = Arrays.asList(sampleClasses);
     selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
     
@@ -164,7 +165,7 @@ public class DataFilterEditor extends Composite {
     // If the above fails, we start at the top and generate a fresh set of values
     // that match the constraints.
     if (!oldSampleClassMatchesConstraints) {
-      changeFrom(0, true); 
+      changeFrom(0, emit); 
     }
   }
 

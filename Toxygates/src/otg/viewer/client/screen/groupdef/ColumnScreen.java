@@ -65,7 +65,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       FutureUtils.beginPendingRequestHandling(sampleClassesFuture, this, "Unable to choose datasets");
       sampleClassesFuture.addSuccessCallback(sampleClasses -> {
         logger.info("sample classes fetched");
-        filterTools.dataFilterEditor.setAvailable(sampleClasses);
+        filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
       });
     } else {
       logger.info("bypassing sampleclass fetching");
@@ -82,7 +82,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       
       // We only need to fetch compounds if sample class or datasets have changed
       if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
-        manager().sampleService().parameterValues(chosenSampleClass, schema().majorParameter().id(),
+        manager().sampleService().parameterValues(newSampleClass, schema().majorParameter().id(),
             compoundsFuture);
         chosenDatasets = newChosenDatasets;
         chosenSampleClass = newSampleClass;

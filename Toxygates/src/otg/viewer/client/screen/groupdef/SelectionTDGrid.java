@@ -137,18 +137,14 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     this.listener = listener;
   }
   
-  @Override
-  public void initializeState(SampleClass sampleClass, List<String> compounds) {
-    logger.info("leaving preselection null");
-    assert(preSelection == null);
-    super.initializeState(sampleClass, compounds);
-  }
-  
   public void initializeState(SampleClass sampleClass, List<String> compounds, Unit[] unitSelection) {
-    logger.info("preselection = unitsel");
-    assert(unitSelection != null);
+    logger.info("initializing stdgrid state");
     assert(preSelection == null);
-    preSelection = unitSelection;
+    if (!compounds.isEmpty()) {
+      logger.info("compounds not empty");
+      assert(unitSelection != null);
+      preSelection = unitSelection;
+    }
     super.initializeState(sampleClass, compounds);
   }
 

@@ -69,18 +69,17 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
       List<String> compounds, Unit[] unitSelection) {
     SelectionTDGrid grid = sections.get(sampleClass);
     if (grid == null) {
+      logger.info("creating section");
       grid = screen.factory().selectionTDGrid(screen, this);
-      if (unitSelection != null) {
-        grid.initializeState(sampleClass, compounds, unitSelection);
-      } else {
-        grid.initializeState(sampleClass, compounds); 
-      }
+      grid.initializeState(sampleClass, compounds, unitSelection != null ?
+          unitSelection : new Unit[0]);
       sections.put(sampleClass, grid);
       Label label = new Label(SampleClassUtils.label(sampleClass, screen.schema()));
       label.addStyleName("selectionGridSectionHeading");
       verticalPanel.add(label);
       verticalPanel.add(grid);
     } else {
+      logger.info("only setting compounds and selected units");
       grid.setCompoundsAndSelectedUnits(compounds, unitSelection);
     }
     return grid;
