@@ -144,6 +144,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       logger.info("compounds not empty");
       assert(unitSelection != null);
       preSelection = unitSelection;
+    } else {
+      logger.info("leaving preselection empty");
     }
     super.initializeState(sampleClass, compounds);
   }
