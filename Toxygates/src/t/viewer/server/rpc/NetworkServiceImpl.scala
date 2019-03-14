@@ -19,11 +19,8 @@
  */
 
 package t.viewer.server.rpc
-import java.lang.{ Double => JDouble }
-import java.util.{ HashMap => JHMap }
 import java.util.{ List => JList }
 
-import otg.viewer.server.rpc.Conversions._
 import scala.collection.JavaConverters._
 
 import t.common.shared.GroupUtils
@@ -37,7 +34,6 @@ import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ControllerParams
-import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.server.matrix.MatrixController
 import t.viewer.server.network.NetworkController
 import t.viewer.server.network.Serializer
@@ -47,40 +43,9 @@ import t.viewer.shared.mirna.MirnaSource
 import t.viewer.shared.network.Format
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.NetworkInfo
-import t.viewer.server.matrix.ExprMatrix
-import t.viewer.shared.ManagedMatrixInfo
 
 object NetworkState {
   val stateKey = "network"
-
-  //Temporary location for this
-  def buildCountMap(
-    info:         ManagedMatrixInfo,
-    mat:          ExprMatrix,
-    targetTable:  TargetTable,
-    platforms:    t.viewer.server.Platforms,
-    sidePlatform: String,
-    fromMiRNA:    Boolean): Map[String, JDouble] = {
-    val lookup = mat.rowKeys.toSeq
-
-    //TODO filter by species etc
-    if (fromMiRNA) {
-      if (info.numColumns() < 1) {
-        Console.err.println("Cannot construct count map - no columns available!")
-        return Map()
-      }
-      val gr = info.columnGroup(0)
-      val sp = t.viewer.server.Conversions.groupSpecies(gr)
-
-      val all = platforms.data(sidePlatform)
-      val targets = targetTable.targets(lookup.map(MiRNA(_)), all)
-      targets.groupBy(_._2).map(x => (x._1.identifier, new JDouble(x._2.size)))
-    } else {
-      val resolved = platforms.resolve(lookup)
-      val targets = targetTable.reverseTargets(resolved)
-      targets.groupBy(_._2).map(x => (x._1.id, new JDouble(x._2.size)))
-    }
-  }
 }
 
 class NetworkState extends MatrixState {
