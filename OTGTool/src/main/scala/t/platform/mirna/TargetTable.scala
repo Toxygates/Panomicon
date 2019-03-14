@@ -14,7 +14,11 @@ object TargetTable {
 }
 
 /**
- * Memory-efficient table for transcription factor targets.
+ * Memory-efficient table for transcription factor targets. This contains all possible
+ * interactions, respecting the user's current source selection and filtering, and is
+ * the basis for network construction.
+ * As much as possible we filter this table eagerly, to control the size and speed up
+ * subsequent operations.
  *
  * Convention: origins are miRNAs such as hsa-let-7a-2-3p,
  * targets are mRNAs (identified by refSeq transcripts
@@ -73,12 +77,12 @@ class TargetTable(
       if (allMicro.contains(origin))
     } yield (origin, target, score, db)
   }
-  
+
   /**
    * Efficient miRNA to mRNA lookup for a specific mRNA platform.
    * mRNA probes in the platform must have transcripts populated.
    */
-  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {    
+  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {
     val allTrn = targets(miRNAs)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     allTrn.flatMap(x => probeLookup.get(x._2) match {
@@ -129,7 +133,7 @@ class TargetTable(
         case None => targets(probes.map(p => MiRNA(p.identifier))).map(x =>
           (x._1.asProbe, DefaultBio(x._2.id, x._2.id, Some(label(x)))))
       }
-      
+
       makeMultiMap(limitSize(targetRes,sizeLimit))
     } else {
       makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
@@ -152,7 +156,7 @@ class TargetTableBuilder() {
     dbs ::= db
   }
 
-  def addAll(other: TargetTable) {    
+  def addAll(other: TargetTable) {
     for ((o, t, sc, db) <- other) {
       add(o, t, sc, db)
     }

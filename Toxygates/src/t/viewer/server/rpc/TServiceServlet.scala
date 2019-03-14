@@ -45,11 +45,11 @@ abstract class TServiceServlet extends RemoteServiceServlet {
     }
   }
 
-  //This method should initialise Factory and Context.
-  //Public for test purposes
+  /**
+   * Perform any necessary initialisation of this servlet
+   * once the Configuration object is available.
+   */
   def localInit(config: Configuration): Unit = {}
-
-  protected def makeFactory(): Factory
 
   protected def baseConfig = context.config
 
@@ -65,7 +65,11 @@ abstract class TServiceServlet extends RemoteServiceServlet {
   /**
    * Obtain an in-session object that can be used for synchronizing session state between servlet threads.
    * Code that expects to read from another thread or publish to another thread via the session
-   * should lock on this.
+   * should lock on this. (This could happen, for example, if the session manages transactional state.)
+   * The servlet container will ensure that different requests from the same client see an up-to-date
+   * session object, so this mutex is not needed for that purpose.
+   *
+   * This is not currently used.
    *
    * Inspired by: https://stackoverflow.com/questions/616601/is-httpsession-thread-safe-are-set-get-attribute-thread-safe-operations
    * And http://web.archive.org/web/20110806042745/http://www.ibm.com/developerworks/java/library/j-jtp09238/index.html
@@ -89,14 +93,14 @@ abstract class TServiceServlet extends RemoteServiceServlet {
   protected def hasSession: Boolean = (getThreadLocalRequest.getSession(false) != null)
 
   /**
-   * Set state that may be shared between two servlet threads.
+   * Set session state.
    */
   def setSessionAttr[T](key: String, t: T) = {
     getThreadLocalRequest.getSession.setAttribute(key, t)
   }
 
   /**
-   * Get state that may be shared between two servlet threads.
+   * Get session state.
    */
   def getSessionAttr[T >: Null](key: String): T = {
     if (hasSession) {
@@ -121,6 +125,10 @@ abstract class StatefulServlet[State >: Null] extends TServiceServlet {
    */
   protected def newState: State
 
+  /**
+   * Get this service's main session state object, or initialise
+   * it if it is missing.
+   */
   protected def getState(): State = {
     val r = getSessionAttr[State](stateKey)
     if (r == null) {

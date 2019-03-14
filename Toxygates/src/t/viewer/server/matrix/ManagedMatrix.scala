@@ -60,8 +60,7 @@ case class LoadParams(val initProbes: Seq[String],
     val currentInfo: ManagedMatrixInfo,
     val rawUngrouped: ExprMatrix,
     var rawGrouped: ExprMatrix,
-    val baseColumnMap: Map[Int, Seq[Int]],
-    val log2Transform: Boolean = false) {
+    val baseColumnMap: Map[Int, Seq[Int]]) {
 
   def platform = GroupUtils.groupPlatform(currentInfo.columnGroup(0))
   def typ = GroupUtils.groupType(currentInfo.columnGroup(0))
@@ -76,6 +75,10 @@ case class LoadParams(val initProbes: Seq[String],
  * "request columns" but may insert additional columns with extra information.
  * The info object should be used to query what columns have actually been
  * constructed.
+ *
+ * The CoreMatrix also tracks the current page being displayed by the user, if any.
+ * This can be used to compute derived views downstream (e.g. the side table for
+ * the network/dual table display)
  */
 class CoreMatrix(val params: LoadParams) {
 
@@ -254,18 +257,6 @@ class CoreMatrix(val params: LoadParams) {
    * Obtain the current info for this matrix.
    */
   def info: ManagedMatrixInfo = currentInfo
-
-  /**
-   * Obtain a view of a matrix with the log-2 transform
-   * potentially applied.
-   */
-  private[server] def finalTransform(m: ExprMatrix): ExprMatrix = {
-    if (params.log2Transform) {
-      m.map(e => ManagedMatrix.log2(e))
-    } else {
-      m
-    }
-  }
 }
 
 /**
@@ -323,7 +314,7 @@ trait Synthetics extends CoreMatrix {
 
         val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat
-        val rawData = finalTransform(rawUngrouped).selectNamedRows(currentRows)
+        val rawData = rawUngrouped.selectNamedRows(currentRows)
 
         current = test match {
           case ut: Synthetic.UTest =>

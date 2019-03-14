@@ -33,17 +33,18 @@ trait OTGServiceServlet extends TServiceServlet {
   protected var _context: OTGContext = _
   protected var _factory: OTGFactory = _
 
+  /**
+   * Subclasses that override localInit can assume that factory and context are available.
+   */
   override abstract def localInit(config: Configuration) {
-    _factory = makeFactory()
+    _factory = new OTGFactory
     _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
     super.localInit(config)
   }
-
-  protected def makeFactory() = new OTGFactory
 
   override protected def baseConfig: OTGBConfig = context.config
 
   protected val schema: OTGSchema = new OTGSchema()
 
-  def appName = "Toxygates"
+  def appName: String = "Toxygates"
 }

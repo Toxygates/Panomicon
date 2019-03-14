@@ -58,6 +58,10 @@ object MatrixState {
   def stateKey = "matrix"
 }
 
+/**
+ * The MatrixState tracks a number of managed matrices, each identified by a
+ * unique ID string.
+ */
 class MatrixState {
   var controllers: Map[String, MatrixController] = Map()
 
@@ -70,6 +74,10 @@ class MatrixState {
   def matrixOption(id: String): Option[MatrixController#Mat] =
     controllers.get(id).map(_.managedMatrix)
 
+  /**
+   * Given the requested groups and value type, is it necessary to reload
+   * the given matrix?
+   */
   def needsReload(id: String, groups: Iterable[Group], typ: ValueType): Boolean = {
     if (id == null) {
       return true
@@ -82,14 +90,15 @@ class MatrixState {
 }
 
 /**
- * This servlet is responsible for obtaining and manipulating microarray data.
+ * This servlet is responsible for obtaining and manipulating matrices
+ * with gene expression data.
  */
 abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService {
   import scala.collection.JavaConverters._
   import t.viewer.server.Conversions._
   import t.common.server.GWTUtils._
   import ScalaUtils._
-import MatrixServiceImpl._
+  import MatrixServiceImpl._
 
   protected implicit var mcontext: MatrixContext = _
   private def probes = context.probes
@@ -112,11 +121,12 @@ import MatrixServiceImpl._
     typ: ValueType,
     initFilters: JList[ColumnFilter]): ManagedMatrixInfo = {
 
-    //Always load the empty probe set(all probes), to be able to revert to this view.
-    //We optionally filter probes below.
+    val allProbes = Seq()
+    //Always load the empty probe set(all probes), to be able to revert to this view
+    //later.
     getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
-          groups.asScala, Seq(), typ, false))
+          groups.asScala, allProbes, typ, false))
     val mat = getState.matrix(id)
 
     if (!probes.isEmpty) {
@@ -127,6 +137,9 @@ import MatrixServiceImpl._
     mat.info
   }
 
+  /**
+   * Obtain MatrixState (or NetworkState) for the named matrix.
+   */
   protected def stateFor(id: String) = {
     val r = if (id.startsWith(NetworkService.tablePrefix)) {
       getOtherServiceState[NetworkState](NetworkState.stateKey)
@@ -175,7 +188,7 @@ import MatrixServiceImpl._
       val grouped = mm.getPageView(offset, size)
 
       val rowNames = grouped.map(_.getProbe)
-      val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data
+      val rawData = mm.rawUngrouped.selectNamedRows(rowNames).data
 
       for (
         (gr, rr) <- grouped zip rawData;
@@ -201,26 +214,26 @@ import MatrixServiceImpl._
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
-    val sgs = Vector() ++ gs.asScala
+    val groups = Vector() ++ gs.asScala
     val controller = MatrixController(context, () => getOrthologs(context),
-        sgs, rprobes, typ, true)
+        groups, rprobes, typ, true)
     val mm = controller.managedMatrix
 
-    val raw = if (sgs.size == 1) {
+    val raw = if (groups.size == 1) {
       //break out each individual sample if it's only one group
-      val ss = sgs(0).getSamples().map(_.id)
-      mm.finalTransform(mm.rawUngrouped.selectNamedColumns(ss)).asRows
+      val samples = groups(0).getSamples().map(_.id)
+      mm.rawUngrouped.selectNamedColumns(samples).asRows
     } else {
-      val ss = sgs.map(_.getName)
-      mm.current.selectNamedColumns(ss).asRows
+      val cols = groups.map(_.getName)
+      mm.current.selectNamedColumns(cols).asRows
     }
 
     val rows = if (withSymbols) {
       insertAnnotations(controller, raw)
     } else {
       val ps = raw.flatMap(or => or.getAtomicProbes.map(Probe(_)))
-      val ats = probes.withAttributes(ps)
-      val giMap = Map() ++ ats.map(x =>
+      val attrs = probes.withAttributes(ps)
+      val giMap = Map() ++ attrs.map(x =>
         (x.identifier -> x.genes.map(_.identifier).toArray))
 
       //Only insert geneIDs.
@@ -256,7 +269,7 @@ import MatrixServiceImpl._
       //Individual samples
       val info = mm.info
       val keys = mm.current.rowKeys.toSeq
-      val ug = mm.finalTransform(mm.rawUngrouped.selectNamedRows(keys))
+      val ungrouped = mm.rawUngrouped.selectNamedRows(keys)
       val parts = (0 until info.numDataColumns).map(g => {
         if (!info.isPValueColumn(g)) {
           //Sample data.
@@ -267,9 +280,9 @@ import MatrixServiceImpl._
           //except for single unit columns in the normalized intensity case,
           // only treated will be present in ug.
           val ids = info.samples(g).map(_.id)
-          val sel = ug.selectNamedColumns(ids)
-          val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
-          sel.copyWith(sel.data, sel.rowMap, newNames)
+          val ungroupedSel = ungrouped.selectNamedColumns(ids)
+          val newNames = Map() ++ ungroupedSel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
+          ungroupedSel.copyWith(ungroupedSel.data, ungroupedSel.rowMap, newNames)
         } else {
           //p-value column, present as it is
           mm.current.selectNamedColumns(List(info.columnName(g)))

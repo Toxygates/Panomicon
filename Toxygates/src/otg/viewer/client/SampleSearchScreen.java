@@ -311,16 +311,12 @@ public class SampleSearchScreen extends MinimalScreen
    */
   @Override
   public void searchStarted(Search<?, ?> search) {
-    if (waitDialog == null) {
-      waitDialog = Utils.waitDialog();
-    } else {
-      waitDialog.show();
-    }
+    addPendingRequest();
   }
 
   @Override
   public void searchEnded(Search<?, ?> search, String resultCountText) {
-    waitDialog.hide();
+    removePendingRequest();
     hideTables();
     resultCountLabel.setText(resultCountText);
     currentSearch = search;
