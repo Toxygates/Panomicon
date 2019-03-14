@@ -9,6 +9,7 @@ import t.viewer.shared.network.NetworkInfo
 import t.viewer.shared.network.Network
 import t.viewer.server.Platforms
 import scala.collection.JavaConverters._
+import t.common.shared.sample.ExpressionRow
 
 /**
  * Extended version of ManagedMatrix to preserve
@@ -25,11 +26,14 @@ class ManagedNetwork(mainParams: LoadParams,
     var currentPageSize: Int,
     sideIsMRNA: Boolean) extends ManagedMatrix(mainParams) {
 
-  override protected def currentViewChanged() {
-    super.currentViewChanged()
-    updateSideMatrix()
-  }
+  protected var currentPageRows: Option[(Int, Int)] = None
 
+  override def getPageView(offset: Int, length: Int): Seq[ExpressionRow] = {
+    val r = super.getPageView(offset, length)
+    currentPageRows = Some((offset, r.size))
+    updateSideMatrix()
+    r
+  }
 
   /**
    * To be called when the superclass' current view has changed.
