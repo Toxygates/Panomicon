@@ -18,8 +18,8 @@
 
 package otg.viewer.client.screen.groupdef;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -80,6 +80,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       filterTools.sampleClassChanged(newSampleClass);
       compoundSelector.sampleClassChanged(newSampleClass);
       
+      // We only need to fetch compounds if sample class or datasets have changed
       if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
         manager().sampleService().parameterValues(chosenSampleClass, schema().majorParameter().id(),
             compoundsFuture);
@@ -88,7 +89,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         FutureUtils.beginPendingRequestHandling(compoundsFuture, this, "Unable to retrieve values for parameter: ");
         compoundsFuture.addSuccessCallback(compounds -> {
           logger.info("compounds fetched");
-          // the logic from CompoundSelector.fetchCompounds callback goes here
+          compoundSelector.acceptCompounds(compounds);
         });
       } else {
         logger.info("bypassing compounds fetching");
@@ -98,8 +99,13 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     
     compoundsFuture.addSuccessCallback(compounds -> {
       logger.info("processing compounds");
-      List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException();
-      groupInspector.initializeState(chosenDatasets, chosenSampleClass, new ArrayList<String>());
+      HashSet<String> compoundsSet = new HashSet<String>(Arrays.asList(compounds));
+      // Filter chosen compounds to valid choices
+      List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException()
+          .stream().filter(c -> compoundsSet.contains(c)).collect(Collectors.toList());
+      getStorage().compoundsStorage.store(chosenCompounds);    
+      
+      groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds);
       groupInspector.loadGroups();
       compoundSelector.setChosenCompounds(chosenCompounds);
     });

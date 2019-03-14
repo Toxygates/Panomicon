@@ -140,7 +140,7 @@ abstract public class TimeDoseGrid extends Composite {
       if (samplesFuture.doneAndSuccessful()) {
         logger.info("samples fetched");
         availableUnits = Arrays.asList(samplesFuture.result());
-        samplesAvailable();          
+        samplesAvailable();
       }
     });
   }

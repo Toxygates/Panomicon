@@ -146,6 +146,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   
   public void initializeState(SampleClass sampleClass, List<String> compounds, Unit[] unitSelection) {
     logger.info("preselection = unitsel");
+    assert(unitSelection != null);
     assert(preSelection == null);
     preSelection = unitSelection;
     super.initializeState(sampleClass, compounds);
@@ -163,6 +164,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   
   public void setCompoundsAndSelectedUnits(List<String> compounds, Unit[] initSel) {
     logger.info("preselection = initsel");
+    assert(initSel != null);
     assert(preSelection == null);
     preSelection = initSel;
     super.setCompounds(compounds);
@@ -416,8 +418,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
     logger.info("clearing preselection");
     assert(preSelection != null);
-    if (preSelection != null) {
-      
+    if (preSelection != null) {   
       //logger.info("Set preselection " + preSelection.length);
       setSelection(preSelection);
       preSelection = null;

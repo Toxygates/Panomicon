@@ -110,7 +110,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
   
   public void initializeState(SampleClass sc, List<String> compounds) {
     chosenCompounds = compounds;
-    SelectionTDGrid g = findOrCreateSection(sc, compounds, null);
+    SelectionTDGrid g = findOrCreateSection(sc, compounds, new Unit[0]);
     if (g != currentGrid) {
       currentGrid = g;
       clearEmptySections();

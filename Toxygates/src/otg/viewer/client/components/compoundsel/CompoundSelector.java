@@ -144,13 +144,25 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     Collections.sort(r);
     return r;
   }
+  
+  public void acceptCompounds(String[] compounds) {
+    Arrays.sort(compounds);
+    List<String> allCompounds = new ArrayList<String>((Arrays.asList(compounds)));
+    compoundEditor.setItems(allCompounds, false, true);
+    availableCompoundsChanged(Arrays.asList(compounds));
+    if (!compoundEditor.getSelection().isEmpty()) {
+      chosenCompounds = new ArrayList<String>();
+      chosenCompounds.addAll(compoundEditor.getSelection());
+      Collections.sort(chosenCompounds);
+    }
+  }
 
+  @Deprecated
   public void fetchCompounds() {
     logger.info("fetching compounds");
     sampleService.parameterValues(chosenSampleClass, majorParameter,
         new PendingAsyncCallback<String[]>(screen, "Unable to retrieve values for parameter: "
             + majorParameter) {
-
           @Override
           public void handleSuccess(String[] result) {
             Arrays.sort(result);
@@ -161,7 +173,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
               compoundEditor.triggerChange();
             }
           }
-        });
+    });
   }
 
   public void setSelection(List<String> compounds) {
@@ -176,9 +188,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public void sampleClassChanged(SampleClass sc) {
-      //Window.alert("sc = " + sc + "; chosen = " + chosenSampleClass);
-      chosenSampleClass = sc;
-      //Window.alert("loading majors compoundSeletor");
+    chosenSampleClass = sc;
   }
 
   @Override
