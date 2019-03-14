@@ -100,22 +100,103 @@
         <td class='dialogMiddleLeft'><div class='dialogMiddleLeftInner'></div></td>
         <td class='dialogMiddleCenter'>
           <div class='dialogMiddleCenterInner dialogContent'>
-            <div class='gwt-Label'>msgRNA:</div>
-            <select id='msgRNAWeight' class='gwt-ListBox'>
-              <option value='null'>Select:</option>
-            </select>
-            <div class='gwt-Label'>microRNA:</div>
-            <select id='microRNAWeight' class='gwt-ListBox'>
-              <option value='null'>Select:</option>
-            </select>
-            <div class='gwt-Label'>Color:</div>
-            <input id='scaleColor' type='color' value='#0000FF' />
+            <table cellspacing="4" cellpadding="0">
+              <tbody>
+                <th>
+                  <div class='gwt-Label'>Weights mapped to color:</div>
+                </th>
+                <tr>
+                  <td align='left' style ='vertical-aligh: middle;'>
+                    <div class='gwt-Label'>msgRNA:</div>
+                  </td>
+                  <td align='left' style ='vertical-aligh: middle;'>
+                    <select id='msgRNAWeight' class='gwt-ListBox'>
+                      <option value='null'>Select:</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td align='left' style ='vertical-aligh: middle;'>
+                    <div class='gwt-Label'>microRNA:</div>
+                  </td>
+                  <td align='left' style ='vertical-aligh: middle;'>
+                    <select id='microRNAWeight' class='gwt-ListBox'>
+                      <option value='null'>Select:</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table cellspacing="4" cellpadding="0">
+              <tbody>
+                <th>Color definition:</th>
+                <tr>
+                  <td align='left' style='vertical-align: middle;'>Negative color: </td>
+                  <td><input id='negColor' type='color' value='#FF0000' /></td>
+                  <td align='left' style='vertical-align: middle;'>Neg. Cap : </td>
+                  <td><input id='negCap' type='number' max='-1' step='0.01' value='-1' style='max-width: 4em; text-align:right;' oninput="validity.valid||(value='-1');"></td>
+                </tr>
+                <tr>
+                  <td align='left' style='vertical-align: middle;'>Positive color: </td>
+                  <td><input id='posColor' type='color' value='#0000FF' /></td>
+                  <td align='left' style='vertical-align: middle;'>Pos. Cap : </td>
+                  <td><input id='posCap' type='number' min='1' step='0.01' value='1' style='max-width: 4em; text-align:right;' oninput="validity.valid||(value='1');"></td>
+                </tr>
+              </tbody>
+            </table>
+
+
             <br />
             <button id='okColorScaleDialog' class='gwt-Button' type='button'>
               OK
             </button>
             <button id='cancelColorScaleDialog' class='gwt-Button cancelBtn' type='button'
             data-dialog='colorScaleDialog'>
+              Cancel
+            </button>
+          </div>
+        </td>
+        <td class='dialogMiddleRight'><div class='dialogMiddleRightInner'></div></td>
+      </tr>
+      <tr class='dialogBottom'>
+        <td class='dialogBottomLeft'><div class='dialogBottomLeftInner'></div></td>
+        <td class='dialogBottomCenter'><div class='dialogBottomCenterInner'></div></td>
+        <td class='dialogBottomRight'><div class='dialogBottomRightInner'></div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div id='changeLabelDialog' class='gwt-DialogBox modal'>
+  <table cellspacing='0' cellpadding='0'>
+    <tbody>
+      <tr class='dialogTop'>
+        <td class='dialogTopLeft'><div class='dialogTopLeftInner'></div></td>
+        <td class='dialogTopCenter'>
+          <div class='dialogTopCenterInner'>
+            <div class='Caption'>Change a node's label</div>
+          </div>
+        </td>
+        <td class='dialogTopRight'><div class='dialogTopRightInner'></div></td>
+      </tr>
+      <tr class='dialogMiddle'>
+        <td class='dialogMiddleLeft'><div class='dialogMiddleLeftInner'></div></td>
+        <td class='dialogMiddleCenter'>
+          <div class='dialogMiddleCenterInner dialogContent'>
+            <div class="gwt-Label" style="white-space: initial;">
+              Please choose a new label for the node. Only letters, numbers and
+              hyphen (-) characters are allowed. Any other characters will be
+              replaced before assignation.
+            </div>
+            <div class='gwt-Label'>Label:</div>
+            <input id='nodeLabel' type="text" class="gwt-TextBox">
+            <br />
+            <button id='okChangeLabelDialog' class='gwt-Button' type='button'>
+              OK
+            </button>
+            <button id='cancelChangeLabelDialog' class='gwt-Button cancelBtn' type='button'
+            data-dialog='changeLabelDialog'>
               Cancel
             </button>
           </div>
