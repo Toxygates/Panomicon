@@ -204,11 +204,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
     multiSelectionGrid.initializeState(sc, compounds);
   }
-  
-  public void sampleClassChanged(SampleClass sc) {
-    multiSelectionGrid.sampleClassChanged(sc);
-    chosenSampleClass = sc;
-  }
 
   public void datasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
@@ -437,7 +432,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
   
   // ExistingGroupsTable.Delegate methods
-
   @Override
   abstract public void makeGroupColumns(CellTable<Group> table);
   

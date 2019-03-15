@@ -1,7 +1,6 @@
 package t.viewer.client.future;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 public class FutureAction implements Dependent, Dependable {
   public interface CompletionAction {
@@ -44,8 +43,6 @@ public class FutureAction implements Dependent, Dependable {
   
   @Override
   public void dependableCompleted(Dependable dependable) {
-    Logger.getLogger("aou").info("compcount = " + completedCount + 
-        "; dependableCount = " + dependableCount);
     if (++completedCount == dependableCount) {
       action.run();
       dependents.forEach(d -> d.dependableCompleted(this));
