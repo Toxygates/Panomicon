@@ -106,7 +106,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   protected def stateKey = "sparql"
   protected def newState = {
     //Initialise the selected datasets by selecting all, except shared user data.
-    val defaultVisible = appInfo.datasets.filter(ds =>
+    val defaultVisible = appInfo.datasets.asScala.filter(ds =>
       Dataset.isInDefaultSelection(ds.getId))
 
     val s = new SampleState(instanceURI)
@@ -125,7 +125,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     "%x%x".format(time, random)
   }
 
-  private def sampleFilterFor(ds: Array[Dataset], base: Option[SampleFilter]) = {
+  private def sampleFilterFor(ds: Iterable[Dataset], base: Option[SampleFilter]) = {
      val ids = ds.toList.map(_.getId)
      val URIs = ids.map(Datasets.packURI(_))
      base match {

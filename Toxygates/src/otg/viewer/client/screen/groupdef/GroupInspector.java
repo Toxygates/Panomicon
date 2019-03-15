@@ -299,7 +299,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     List<String> neededDatasets = Group.collectAll(gs, OTGAttribute.Dataset).collect(Collectors.toList());
     logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasets, ", "));
 
-    Dataset[] allDatasets = screen.appInfo().datasets();
+    List<Dataset> allDatasets = screen.appInfo().datasets();
     Set<String> enabled = new HashSet<String>();
     for (Dataset d : chosenDatasets) {
       enabled.add(d.getId());

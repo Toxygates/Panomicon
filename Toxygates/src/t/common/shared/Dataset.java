@@ -19,6 +19,7 @@
 package t.common.shared;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @SuppressWarnings("serial")
@@ -98,9 +99,8 @@ public class Dataset extends ManagedItem {
     return !isSharedDataset(title);
   }
 
-  public static Dataset[] defaultSelection(Dataset[] from) {
-    return Arrays.stream(from).
-        filter(x -> isInDefaultSelection(x.getId())).toArray(Dataset[]::new);
+  public static List<Dataset> defaultSelection(List<Dataset> from) {
+    return from.stream().filter(x -> isInDefaultSelection(x.getId())).collect(Collectors.toList());
   }
   
   public static boolean isSharedDataset(String id) {

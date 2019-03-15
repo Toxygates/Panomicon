@@ -42,6 +42,8 @@ import t.util.Refreshable
 
 import t.viewer.client.rpc.ProbeService
 import t.viewer.server._
+import t.viewer.server.Conversions._
+import t.common.server.GWTUtils._
 import t.viewer.server.Configuration
 import t.viewer.shared.AppInfo
 import t.viewer.shared.TimeoutException
@@ -101,15 +103,14 @@ with ProbeService {
     new AppInfoLoader(probeStore, configuration, baseConfig,
       appName).load
 
-  private def sDatasets(userKey: String): Array[Dataset] = {
+  private def sDatasets(userKey: String): Iterable[Dataset] = {
     val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
     var r = (instanceURI match {
       case Some(u) => datasets.sharedListForInstance(u)
       case None => datasets.sharedList
     })
 
-    r = r.filter(ds => Dataset.isDataVisible(ds.getId, userKey))
-    r.toArray
+    r.filter(ds => Dataset.isDataVisible(ds.getId, userKey))
   }
 
   /**
@@ -126,7 +127,7 @@ with ProbeService {
      * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
-    appInfo.setDatasets(sDatasets(userKey))
+    appInfo.setDatasets(sDatasets(userKey).toSeq.asGWT)
 
     val sess = getThreadLocalRequest.getSession
 

@@ -98,7 +98,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
   protected void proceedShowSelector(AppInfo info) {    
     final DialogBox db = new DialogBox(false, true);    
     DatasetSelector dsel =
-        new DatasetSelector(Arrays.asList(info.datasets()),
+        new DatasetSelector(info.datasets(),
             chosenDatasets) {
           @Override
           public void onOK() {

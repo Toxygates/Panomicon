@@ -20,7 +20,6 @@ package otg.viewer.client.screen.ranking;
 
 import static t.common.client.Utils.makeScrolled;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.user.client.ui.*;
@@ -68,7 +67,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     super("Compound ranking", key, man,
         man.resources().compoundRankingHTML(),
         man.resources().compoundRankingHelp());
-    chosenDatasets = Arrays.asList(appInfo().datasets());
+    chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
 
     compoundRanker = factory().compoundRanker(this);
