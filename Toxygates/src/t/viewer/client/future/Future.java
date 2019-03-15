@@ -43,7 +43,7 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
     return done() && wasSuccessful();
   }
   
-  public void addCallback(Consumer<Future<T>> callback) {
+  public Future<T> addCallback(Consumer<Future<T>> callback) {
     if (!done) {
       callbacks.add(callback);
     } else {
@@ -51,14 +51,16 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
         callback.accept(this);
       });
     }
+    return this;
   }
   
-  public void addSuccessCallback(Consumer<T> callback) {
+  public Future<T> addSuccessCallback(Consumer<T> callback) {
     addCallback(future -> {
       if (future.wasSuccessful()) {
         callback.accept(future.result());
       }
     });
+    return this;
   }
   
   @Override

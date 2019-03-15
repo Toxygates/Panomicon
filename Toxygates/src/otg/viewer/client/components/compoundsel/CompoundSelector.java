@@ -52,7 +52,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   private Widget north;
   protected final OTGScreen screen;
   protected final Delegate delegate;
-  private final String majorParameter;
 
   private final static int MAX_AUTO_SEL = 20;
 
@@ -84,7 +83,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     this.delegate = delegate;
     this.sampleService = screen.manager().sampleService();
     dp = new DockLayoutPanel(Unit.PX);
-    this.majorParameter = screen.schema().majorParameter().id();
 
     initWidget(dp);
     Label lblCompounds = new Label(heading);
@@ -155,25 +153,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
       chosenCompounds.addAll(compoundEditor.getSelection());
       Collections.sort(chosenCompounds);
     }
-  }
-
-  @Deprecated
-  public void fetchCompounds() {
-    logger.info("fetching compounds");
-    sampleService.parameterValues(chosenSampleClass, majorParameter,
-        new PendingAsyncCallback<String[]>(screen, "Unable to retrieve values for parameter: "
-            + majorParameter) {
-          @Override
-          public void handleSuccess(String[] result) {
-            Arrays.sort(result);
-            List<String> r = new ArrayList<String>((Arrays.asList(result)));
-            compoundEditor.setItems(r, false, true);
-            availableCompoundsChanged(Arrays.asList(result));
-            if (!compoundEditor.getSelection().isEmpty()) {
-              compoundEditor.triggerChange();
-            }
-          }
-    });
   }
 
   public void setSelection(List<String> compounds) {

@@ -49,6 +49,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   private SampleClass chosenSampleClass;
+  private List<String> chosenCompounds;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -60,13 +61,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     Future<SampleClass[]> sampleClassesFuture = new Future<SampleClass[]>();    
     if (!newChosenDatasets.equals(chosenDatasets)) {
       filterTools.setDatasets(newChosenDatasets);
-      
-      manager().sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), sampleClassesFuture);
-      FutureUtils.beginPendingRequestHandling(sampleClassesFuture, this, "Unable to choose datasets");
-      sampleClassesFuture.addSuccessCallback(sampleClasses -> {
-        logger.info("sample classes fetched");
-        filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
-      });
+      fetchSampleClasses(sampleClassesFuture);
     } else {
       logger.info("bypassing sampleclass fetching");
       sampleClassesFuture.onSuccess(null); // TODO better syntax
@@ -82,33 +77,45 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       
       // We only need to fetch compounds if sample class or datasets have changed
       if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
-        manager().sampleService().parameterValues(newSampleClass, schema().majorParameter().id(),
-            compoundsFuture);
-        chosenDatasets = newChosenDatasets;
-        chosenSampleClass = newSampleClass;
-        FutureUtils.beginPendingRequestHandling(compoundsFuture, this, "Unable to retrieve values for parameter: ");
-        compoundsFuture.addSuccessCallback(compounds -> {
-          logger.info("compounds fetched");
-          compoundSelector.acceptCompounds(compounds);
-        });
+        fetchCompounds(compoundsFuture, newSampleClass);
       } else {
         logger.info("bypassing compounds fetching");
         sampleClassesFuture.onSuccess(null); // TODO better syntax
       }
+      chosenDatasets = newChosenDatasets;
+      chosenSampleClass = newSampleClass;
     });
     
-    compoundsFuture.addSuccessCallback(compounds -> {
+    compoundsFuture.addSuccessCallback(allCompounds -> {
       logger.info("processing compounds");
-      HashSet<String> compoundsSet = new HashSet<String>(Arrays.asList(compounds));
       // Filter chosen compounds to valid choices
-      List<String> chosenCompounds = getStorage().compoundsStorage.getIgnoringException()
-          .stream().filter(c -> compoundsSet.contains(c)).collect(Collectors.toList());
+      chosenCompounds = filterCompounds(getStorage().compoundsStorage.getIgnoringException(), allCompounds);
       getStorage().compoundsStorage.store(chosenCompounds);    
       
       groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds);
       groupInspector.loadGroups();
       compoundSelector.setChosenCompounds(chosenCompounds);
     });
+  }
+  
+  public Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future) {
+    manager().sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
+    FutureUtils.beginPendingRequestHandling(future, this, "Unable to choose datasets");
+    future.addSuccessCallback(sampleClasses -> {
+      logger.info("sample classes fetched");
+      filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
+    });
+    return future;
+  }
+  
+  public Future<String[]> fetchCompounds(Future<String[]> future, SampleClass sampleClass) {
+    manager().sampleService().parameterValues(sampleClass, schema().majorParameter().id(), future);
+    FutureUtils.beginPendingRequestHandling(future, this, "Unable to retrieve values for parameter: ");
+    future.addSuccessCallback(compounds -> {
+      logger.info("compounds fetched");
+      compoundSelector.acceptCompounds(compounds);
+    });
+    return future;
   }
 
   public ColumnScreen(ScreenManager man) {
@@ -170,22 +177,33 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public String getGuideText() {
     return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
   }
+  
+  private List<String> filterCompounds(List<String> chosenList, String[] bigList) {
+    HashSet<String> compoundsSet = new HashSet<String>(Arrays.asList(bigList));
+    return chosenList.stream().filter(c -> compoundsSet.contains(c)).collect(Collectors.toList());
+  }
 
   // FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
     getStorage().sampleClassStorage.store(newSampleClass);
-    compoundSelector.sampleClassChanged(newSampleClass);
-    groupInspector.sampleClassChanged(newSampleClass);
-    compoundSelector.fetchCompounds();
+    compoundSelector.sampleClassChanged(newSampleClass);  
+    fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
+      chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
+      getStorage().compoundsStorage.store(chosenCompounds);
+      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
+    });
     chosenSampleClass = newSampleClass;
   }
   
   @Override
   public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
     getStorage().datasetsStorage.store(datasets);
     groupInspector.datasetsChanged(datasets);
-    compoundSelector.fetchCompounds();
+    //TODO: sampleclass might change here; either that's not being handled or compounds are being
+    //fetched twice
+    fetchCompounds(new Future<String[]>(), chosenSampleClass);
   }
 
   // GroupInspector.Delegate methods
@@ -194,7 +212,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     chosenDatasets = datasets;
     filterTools.setDatasets(datasets);
     filterTools.getSampleClasses();
-    compoundSelector.fetchCompounds();
+    //same todo as filter tools version
+    fetchCompounds(new Future<String[]>(), chosenSampleClass);
   }
 
   @Override
@@ -202,14 +221,18 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     getStorage().sampleClassStorage.store(newSampleClass);
     filterTools.sampleClassChanged(newSampleClass);
     compoundSelector.sampleClassChanged(newSampleClass);
-    compoundSelector.fetchCompounds();
+    fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
+      chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
+      getStorage().compoundsStorage.store(chosenCompounds);
+      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
+    });
     chosenSampleClass = newSampleClass;
   }
   
   @Override
   public void groupInspectorCompoundsChanged(List<String> compounds) {
     compoundSelector.setChosenCompounds(compounds);
-    getStorage().compoundsStorage.store(compounds);
+    chosenCompounds = getStorage().compoundsStorage.store(compounds);
   }
   
   // CompoundSelector.Delegate methods
@@ -221,6 +244,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void compoundSelectorCompoundsChanged(List<String> compounds) {
     groupInspector.setCompounds(compounds);
-    getStorage().compoundsStorage.store(compounds);
+    chosenCompounds = getStorage().compoundsStorage.store(compounds);
   }
 }

@@ -48,13 +48,14 @@ public class Storage<T> {
     return value;
   }
 
-  public void store(T value) {
+  public T store(T value) {
     if (value == null) {
       storageProvider.clearItem(key);
     } else {
       String string = packer.pack(value);
       storageProvider.setItem(key, string);
     }
+    return value;
   }
 
   /**
