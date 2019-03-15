@@ -73,7 +73,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   override def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = {
     val cmp = Compound.make(compound)
-    val sp = asSpecies(sc)
+    val sp = asSpecies(sc).get
     val proteins = service match {
       case "CHEMBL" => chembl.targetsFor(cmp)
       case "DrugBank" => drugBank.targetsFor(cmp)
@@ -98,8 +98,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     //    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
     val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
-    
-    
+
     new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
         platformsCache,
         b2rKegg, uniprot, chembl, drugBank,

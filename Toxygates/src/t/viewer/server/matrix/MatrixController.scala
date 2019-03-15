@@ -100,7 +100,7 @@ abstract class MatrixController(params: ControllerParams) {
 
   private implicit val mcontext = params.matrixContext
 
-  def groupSpecies = groups.headOption.map(g => asSpecies(g.getSamples()(0).sampleClass()))
+  def groupSpecies = groups.headOption.flatMap(g => asSpecies(g.getSamples()(0).sampleClass()))
 
   lazy val filteredProbes =
     platforms.filterProbes(initProbes, groupPlatforms, groupSpecies)

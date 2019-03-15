@@ -102,7 +102,7 @@ class AssociationResolver(probeStore: OTGProbes,
       Console.err.println("Target table is empty; no mRNA-miRNA associations will be found")
     }
     //Note: we might perform this filtering once and store it in the matrix state
-    val filtTable = mirnaTable.speciesFilter(species)
+    val filtTable = species.map(mirnaTable.speciesFilter(_)).getOrElse(mirnaTable)
     println(s"Lookup from miRNA table of size ${filtTable.size}, species: $species")
 
     //Note: we might unify this lookup with the "aprobes" mechanism
