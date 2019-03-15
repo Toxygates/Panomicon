@@ -263,57 +263,10 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
   @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(id: String, individualSamples: Boolean): String = {
-    val mm = stateFor(id).matrix(id)
-    var mat = if (individualSamples &&
-      mm.rawUngrouped != null && mm.current != null) {
-      //Individual samples
-      val info = mm.info
-      val keys = mm.current.rowKeys.toSeq
-      val ungrouped = mm.rawUngrouped.selectNamedRows(keys)
-      val parts = (0 until info.numDataColumns).map(g => {
-        if (!info.isPValueColumn(g)) {
-          //Sample data.
-          //Help the user by renaming the columns.
-          //Prefix sample IDs by group IDs.
-
-          //Here we get both treated and control samples from cg, but
-          //except for single unit columns in the normalized intensity case,
-          // only treated will be present in ug.
-          val ids = info.samples(g).map(_.id)
-          val ungroupedSel = ungrouped.selectNamedColumns(ids)
-          val newNames = Map() ++ ungroupedSel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
-          ungroupedSel.copyWith(ungroupedSel.data, ungroupedSel.rowMap, newNames)
-        } else {
-          //p-value column, present as it is
-          mm.current.selectNamedColumns(List(info.columnName(g)))
-        }
-      })
-
-      parts.reduce(_ adjoinRight _)
-    } else {
-      //Grouped
-      mm.current
-    }
-
-    val colNames = mat.sortedColumnMap.map(_._1)
-    val rows = mat.asRows
-    //TODO move into RowLabels if possible
-    val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
-
-    //May be slow!
-    val gis = probes.allGeneIds.mapInnerValues(_.identifier)
-    val atomics = rows.map(_.getAtomicProbes())
-    val geneIds = atomics.map(row =>
-      row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
-
-    val aux = List((("Gene"), geneIds))
-    CSVHelper.writeCSV("toxygates", config.csvDirectory, config.csvUrlBase,
-      aux ++ csvAuxColumns(mat),
-      rowNames, colNames,
-      mat.data.map(_.map(_.getValue)))
+    val managedMat = stateFor(id).matrix(id)
+    config.csvUrlBase + "/" +
+      CSVDownload.generate(managedMat, probes, config.csvDirectory, individualSamples)
   }
-
-  protected def csvAuxColumns(mat: ExprMatrix): Seq[(String, Seq[String])] = Seq()
 
   @throws(classOf[NoDataLoadedException])
   def getGenes(id: String, limit: Int): Array[String] = {

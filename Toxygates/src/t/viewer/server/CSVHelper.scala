@@ -84,7 +84,7 @@ object CSVHelper {
    * @param textCols Extra columns to be inserted to the left
    * @param expr Row-major data
    */
-  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+  def writeCSV(namePrefix: String, dir: String,
       textCols: Seq[(String, Seq[String])],
       rowTitles: Seq[String], colTitles: Seq[String],
       expr: Seq[Seq[Any]]): String = {
@@ -118,21 +118,20 @@ object CSVHelper {
       }
     }.write(fullName)
 
-    urlbase + "/" + name
+    name
   }
 
-  def writeCSV(namePrefix: String, dir: String, urlbase: String,
-    csvFile: CSVFile): String = {
+  def writeCSV(namePrefix: String, dir: String, csvFile: CSVFile): String = {
     val name = filename(namePrefix, "csv")
     val fullName = dir + "/" + name
     csvFile.write(fullName)
-    urlbase + "/" + name
+    name
   }
 
-  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+  def writeCSV(namePrefix: String, dir: String,
     rowTitles: Seq[String], colTitles: Seq[String],
     data: Seq[Seq[Any]]): String =
-    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
+    writeCSV(namePrefix, dir, Seq(), rowTitles, colTitles,
       data)
 
   /**
