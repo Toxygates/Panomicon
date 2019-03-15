@@ -59,8 +59,6 @@ public class SampleSearchScreen extends MinimalScreen
   private Button saveGroupButton;
   private Label resultCountLabel;
 
-  private DialogBox waitDialog;
-
   private ResultTable<Sample> sampleTableHelper = new SampleTable(this);
   private ResultTable<Unit> unitTableHelper = new UnitTable(this);
 
