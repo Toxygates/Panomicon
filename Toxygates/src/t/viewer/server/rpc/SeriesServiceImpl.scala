@@ -90,23 +90,12 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     }
   }
 
-//  import SeriesType._
-//  protected def fixedAttribute(st: SeriesType) = st match {
-//    case Time => DoseLevel
-//    case Dose => ExposureTime
-//  }
-//
-//  protected def independentAttribute(st: SeriesType) = st match {
-//    case Time => ExposureTime
-//    case Dose => DoseLevel
-//  }
-
   def rankedCompounds(seriesType: SeriesType,
-      ds: Array[Dataset], sc: SampleClass,
+      datasets: Array[Dataset], sc: SampleClass,
       rules: Array[RankRule]): Array[MatchResult] = {
-    val nnr = rules.takeWhile(_ != null)
-    var srs = nnr.map(asScala(_))
-    var probesRules = nnr.map(_.probe).zip(srs)
+    val nrules = rules.takeWhile(_ != null)
+    var srules = nrules.map(asScala(_))
+    var probesRules = nrules.map(_.probe).zip(srules)
 
     //Convert the input probes (which may actually be gene symbols) into definite probes
     probesRules = probesRules.flatMap(pr => {
@@ -127,13 +116,13 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       val byName = ranked.toSeq.sortBy(_._1)
 
        /*
-       * Since the sort is stable, equal scores will retain the by name ordering from above
+        * Since the sort is stable, equal scores will retain the by name ordering from above
         */
       val byScore = byName.sortWith((x1, x2) =>
         SafeMath.safeIsGreater(x1._3, x2._3)
       )
 
-      val allowedMajorVals = allowedMajors(ds, sc)
+      val allowedMajorVals = allowedMajors(datasets, sc)
       val fixedAttrVals = schema.sortedValues(seriesType.fixedAttribute)
 
       val r = byScore.map(p => new MatchResult(p._1, p._3, p._2)).
@@ -157,11 +146,10 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   def getSeries(
     seriesType: SeriesType,
-    sc:         SampleClass, probes: Array[String], timeDose: String,
+    sc: SampleClass, probes: Array[String], timeDose: String,
     compounds: Array[String]): JList[SSeries] = {
     val validated = context.probes.identifiersToProbes(
-      mcontext.probeMap,
-      probes, true, true)
+      mcontext.probeMap, probes, true, true)
     val lookup = Map() ++ context.probes.withAttributes(validated).
       map(p => p.identifier -> p.symbols.head)
 
@@ -181,8 +169,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       !schema.isControlValue(s.constraints(seriesType.fixedAttribute())))
 
     println(s"Read ${preFilter.size} series, filtered to ${filtered.size}")
-    val jss = filtered.map(s => asShared(s, lookup(s.probeStr)))
-    jss.asGWT
+    val javaSeries = filtered.map(s => asShared(s, lookup(s.probeStr)))
+    javaSeries.asGWT
   }
 
 }

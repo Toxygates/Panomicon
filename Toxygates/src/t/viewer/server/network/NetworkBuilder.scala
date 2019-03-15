@@ -104,8 +104,8 @@ class NetworkBuilder(targets: TargetTable,
           .filter(i => sideNodes.contains(i.to))
     }
 
-    //In case there are too many interactions (highly likely),
-    //we prioritise by weight here and limit the number
+    //In case there are too many interactions,
+    //we might prioritise by weight here and limit the number
     val interactions = rawInt //.toSeq.sortBy(_.weight()) take Network.MAX_EDGES
     new Network("Network", nodes.asGWT, interactions.asGWT)
   }
