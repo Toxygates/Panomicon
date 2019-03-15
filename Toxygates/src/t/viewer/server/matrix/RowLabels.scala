@@ -28,18 +28,30 @@ import t.platform.Probe
 class RowLabels(context: Context, schema: DataSchema) {
   val probes = context.probes
 
+  private def loadProbes(rows: Iterable[ExpressionRow]) =
+    probes.withAttributes(rows.flatMap(r => r.getAtomicProbes.map(Probe(_))))
+
   /**
    * Dynamically obtain annotations such as probe titles, gene IDs and gene symbols,
    * appending them to the rows just before sending them back to the client.
    * Unsuitable for large amounts of data.
    */
-  def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val allAtomics = rows.flatMap(_.getAtomicProbes)
-    val attribs = probes.withAttributes(allAtomics.map(Probe(_)))
-    val pm = Map() ++ attribs.map(a => (a.identifier -> a))
-    println(pm.take(5))
+  def insertAnnotations(rows: Seq[ExpressionRow], withSymbols: Boolean): Seq[ExpressionRow] = {
+    if (!withSymbols) {
+      val giMap = Map() ++ loadProbes(rows).map(x =>
+        (x.identifier -> x.genes.map(_.identifier).toArray))
 
-    rows.map(or => processRow(pm, or))
+      //Only insert geneIDs, leave other data intact.
+      rows.map(or => {
+        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
+          or.getAtomicProbes.flatMap(giMap(_)),
+          or.getGeneSyms, or.getValues)
+      })
+    } else {
+      val pm = Map() ++ loadProbes(rows).map(a => (a.identifier -> a))
+      println(pm.take(5))
+      rows.map(or => processRow(pm, or))
+    }
   }
 
   def processRow(pm: Map[String, Probe], r: ExpressionRow): ExpressionRow = {
@@ -49,7 +61,6 @@ class RowLabels(context: Context, schema: DataSchema) {
     val p = atomics(0)
     val pr = pm.get(p)
     new ExpressionRow(p,
-        //TODO make sure to pass all titles into ExpressionRow
       pr.toArray.flatMap(_.titles),
       pr.toArray.flatMap(_.genes.map(_.identifier)),
       pr.toArray.flatMap(_.symbols),

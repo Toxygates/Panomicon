@@ -204,13 +204,9 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
         gv.setTooltip(tooltip)
       }
 
-      insertAnnotations(cont, grouped).asGWT
+      cont.insertAnnotations(context, schema, grouped, true).asGWT
     }
   }
-
-  private def insertAnnotations(controller: MatrixController,
-      rows: Seq[ExpressionRow]): Seq[ExpressionRow] =
-    controller.insertAnnotations(context, schema, rows)
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
@@ -228,22 +224,8 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
       mm.current.selectNamedColumns(cols).asRows
     }
 
-    val rows = if (withSymbols) {
-      insertAnnotations(controller, raw)
-    } else {
-      val ps = raw.flatMap(or => or.getAtomicProbes.map(Probe(_)))
-      val attrs = probes.withAttributes(ps)
-      val giMap = Map() ++ attrs.map(x =>
-        (x.identifier -> x.genes.map(_.identifier).toArray))
-
-      //Only insert geneIDs.
-      //TODO: some clients need neither "symbols"/annotations nor geneIds
-      raw.map(or => {
-        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
-          or.getAtomicProbes.flatMap(p => giMap(p)),
-          or.getGeneSyms, or.getValues)
-      })
-    }
+    val rows =
+      controller.insertAnnotations(context, schema, raw, withSymbols)
     new FullMatrix(mm.info, rows.asGWT)
   }
 

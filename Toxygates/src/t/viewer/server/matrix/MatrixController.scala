@@ -63,8 +63,8 @@ object MatrixController {
 object ControllerParams {
   def apply(context: Context, groups: Seq[Group],
     initProbes: Seq[String], groupPlatforms: Iterable[String],
-    typ: ValueType, fullLoad: Boolean): ControllerParams = 
-      ControllerParams(context.matrix, 
+    typ: ValueType, fullLoad: Boolean): ControllerParams =
+      ControllerParams(context.matrix,
       Platforms(context.probes), groups, initProbes, groupPlatforms, typ,
       fullLoad)
 }
@@ -90,7 +90,7 @@ abstract class MatrixController(params: ControllerParams) {
   val initProbes = params.initProbes
   val groupPlatforms = params.groupPlatforms
   val typ = params.typ
-  
+
   /**
    * The type of the matrix that is managed.
    */
@@ -151,7 +151,7 @@ abstract class MatrixController(params: ControllerParams) {
   }
 
   lazy val managedMatrix = _managedMatrix
-  
+
   def _managedMatrix: Mat = {
 
     val mm = if (filteredProbes.size > 0) {
@@ -163,13 +163,13 @@ abstract class MatrixController(params: ControllerParams) {
         ))
     }
     mm.info.setPlatforms(groupPlatforms.toArray)
-    mm    
+    mm
   }
 
   /**
    * Construct the expected matrix type from a ManagedMatrix.
-   */  
-  protected def finish(mm: ManagedMatrix): Mat 
+   */
+  protected def finish(mm: ManagedMatrix): Mat
 
   /**
    * Select probes and update the current managed matrix
@@ -205,9 +205,10 @@ abstract class MatrixController(params: ControllerParams) {
   protected def rowLabels(context: Context, schema: DataSchema): RowLabels = new RowLabels(context, schema)
 
   def insertAnnotations(context: Context, schema: DataSchema,
-      rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
+      rows: Seq[ExpressionRow],
+      withSymbols: Boolean): Seq[ExpressionRow] = {
     val rl = rowLabels(context, schema)
-    rl.insertAnnotations(rows)
+    rl.insertAnnotations(rows, withSymbols)
   }
 }
 
@@ -217,7 +218,7 @@ abstract class MatrixController(params: ControllerParams) {
 class DefaultMatrixController(params: ControllerParams) extends MatrixController(params) {
   type Mat = ManagedMatrix
   def finish(mm: ManagedMatrix) = mm
-  
+
   protected def mapper: Option[MatrixMapper] = None
 
   protected def applyMapper(mm: ManagedMatrix, mapper: Option[MatrixMapper]): ManagedMatrix = {
@@ -230,9 +231,9 @@ class DefaultMatrixController(params: ControllerParams) extends MatrixController
         mm
     }
   }
-  
+
   override def _managedMatrix = {
-    applyMapper(super._managedMatrix, mapper)    
+    applyMapper(super._managedMatrix, mapper)
   }
 }
 
