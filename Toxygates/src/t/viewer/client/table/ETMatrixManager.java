@@ -331,6 +331,8 @@ public class ETMatrixManager {
               .toArray(String[]::new);
           displayedProbes = result.stream().map(r -> r.getProbe()).toArray(String[]::new);
           delegate.onGetRows();
+        } else {
+          setRows(0);
         }
       }
     };
