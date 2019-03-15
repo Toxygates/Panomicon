@@ -29,6 +29,7 @@ import otg.viewer.client.components.*;
 import otg.viewer.client.components.compoundsel.CompoundSelector;
 import otg.viewer.client.screen.data.DataScreen;
 import t.common.shared.Dataset;
+import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
@@ -217,6 +218,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   }
 
   @Override
+  public void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds) {
+    getStorage().sampleClassStorage.store(sampleClass);
+    filterTools.sampleClassChanged(sampleClass);
+    // more tbd
+  }
+
   public void groupInspectorSampleClassChanged(SampleClass newSampleClass) {
     getStorage().sampleClassStorage.store(newSampleClass);
     filterTools.sampleClassChanged(newSampleClass);

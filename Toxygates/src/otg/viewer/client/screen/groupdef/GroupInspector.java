@@ -78,6 +78,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   protected List<String> chosenCompounds = new ArrayList<String>();
 
   public interface Delegate {
+    void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds);
     void groupInspectorDatasetsChanged(List<Dataset> ds);
     void groupInspectorSampleClassChanged(SampleClass sc);
     void groupInspectorCompoundsChanged(List<String> compounds);
@@ -438,27 +439,22 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   @Override
   public void displayGroup(String name) {
     setHeading("editing " + name);
-    Group group = groups.get(name);
-    SampleClass macroClass = 
-        SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
-    if (!macroClass.equals(chosenSampleClass)) {
-      chosenSampleClass = macroClass;
-      delegate.groupInspectorSampleClassChanged(macroClass);
-    }
-    multiSelectionGrid.activateSection(macroClass);
-
-    List<String> compounds = 
-        SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).
-        collect(Collectors.toList());
-
-    delegate.groupInspectorCompoundsChanged(compounds);
     txtbxGroup.setValue(name);
     onGroupNameInputChanged();
     nameIsAutoGen = false;
-
-    multiSelectionGrid.setVisibleUnits(group.getUnits());
-
+    
+    Group group = groups.get(name);
+    chosenSampleClass = 
+        SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
+    chosenCompounds = 
+        SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).
+        collect(Collectors.toList());
     setEditMode(true);
+    
+    delegate.groupInspectorLoadGroup(group, chosenSampleClass, chosenCompounds);
+    
+    multiSelectionGrid.activateSection(chosenSampleClass);
+    multiSelectionGrid.setVisibleUnits(group.getUnits());
   }
   
   @Override
