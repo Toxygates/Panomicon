@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -198,7 +198,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     val helpRowTitles = Seq("Section") ++ rr.flatMap(_._1)
     val helpRowData = Seq(bps.map(extracts(_, _.section))) ++ rr.flatMap(_._2)
 
-    CSVHelper.writeCSV("toxygates", csvDir: String, csvUrlBase: String,
+    csvUrlBase + "/" +
+      CSVHelper.writeCSV("toxygates", csvDir,
       helpRowTitles ++ samples.map(_.id), colNames, helpRowData ++ data)
   }
 }

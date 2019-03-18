@@ -38,10 +38,15 @@ import otg.model.sample.OTGAttribute
 import t.viewer.shared.AssociationValue
 import t.common.shared.GroupUtils
 import t.common.shared.sample.Group
+import java.util.NoSuchElementException
 
 object Conversions {
-	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
-	  Species.withName(sc.get(OTGAttribute.Organism))
+	implicit def asSpecies(sc: t.model.SampleClass): Option[Species.Species] =
+	  try {
+	    Some(Species.withName(sc.get(OTGAttribute.Organism)))
+	  } catch {
+	    case nse: NoSuchElementException => None
+	  }
 
 	  //Note: it might become necessary to rebuild the sampleClass here if the map type
 	  //is not serializable

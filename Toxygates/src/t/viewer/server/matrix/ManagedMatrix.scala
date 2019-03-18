@@ -95,12 +95,6 @@ class CoreMatrix(val params: LoadParams) {
 
   protected var requestProbes: Seq[String] = initProbes
 
-  /**
-   * Integer offsets of rows in the current page, if any.
-   * Offset and size.
-   */
-  protected var currentPageRows: Option[(Int, Int)] = None
-
   updateRowInfo()
 
   /**
@@ -122,14 +116,11 @@ class CoreMatrix(val params: LoadParams) {
   final def min(a: Int, b: Int) = if (a < b) a else b
 
   /**
-   * Efficiently obtain a page as ExpressionRow objects.
-   * Downstream state changes may also occur as a result of the current view changing.
+   * Obtain a page as ExpressionRow objects.
    */
   def getPageView(offset: Int, length: Int): Seq[ExpressionRow] = {
     val max = current.rows
     val selectedRows = offset until min((offset + length), max)
-    currentPageRows = Some((offset, selectedRows.size))
-    currentViewChanged()
     current.selectRows(selectedRows).asRows
   }
 
@@ -173,13 +164,6 @@ class CoreMatrix(val params: LoadParams) {
     resetSortAndFilter()
     filterAndSort()
   }
-
-  /**
-   * Called when the order or selection of rows in the current matrix changes.
-   * May be overridden to add behaviour.
-   * TODO review the sites calling this
-   */
-  protected def currentViewChanged() { }
 
   protected def filterAndSort(): Unit = {
     def f(r: RowData): Boolean = {

@@ -25,21 +25,40 @@ import t.common.shared.DataSchema
 import t.common.shared.sample.ExpressionRow
 import t.platform.Probe
 
+/**
+ * Row labels for normal, single-species matrices.
+ */
 class RowLabels(context: Context, schema: DataSchema) {
   val probes = context.probes
 
+  private def loadProbes(rows: Iterable[ExpressionRow]) =
+    if (rows.isEmpty) {
+      Seq()
+    } else {
+      probes.withAttributes(rows.flatMap(r => r.getAtomicProbes.map(Probe(_))))
+    }
+
   /**
-   * Dynamically obtain annotations such as probe titles, gene IDs and gene symbols,
+   * Dynamically obtains annotations such as probe titles, gene IDs and gene symbols,
    * appending them to the rows just before sending them back to the client.
    * Unsuitable for large amounts of data.
    */
-  def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val allAtomics = rows.flatMap(_.getAtomicProbes)
-    val attribs = probes.withAttributes(allAtomics.map(Probe(_)))
-    val pm = Map() ++ attribs.map(a => (a.identifier -> a))
-    println(pm.take(5))
+  def insertAnnotations(rows: Seq[ExpressionRow], withSymbols: Boolean): Seq[ExpressionRow] = {
+    if (!withSymbols) {
+      val giMap = Map() ++ loadProbes(rows).map(x =>
+        (x.identifier -> x.genes.map(_.identifier).toArray))
 
-    rows.map(or => processRow(pm, or))
+      //Only insert geneIDs, leave other data intact.
+      rows.map(or => {
+        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
+          or.getAtomicProbes.flatMap(giMap(_)),
+          or.getGeneSyms, or.getValues)
+      })
+    } else {
+      val pm = Map() ++ loadProbes(rows).map(a => (a.identifier -> a))
+      println(pm.take(5))
+      rows.map(or => processRow(pm, or))
+    }
   }
 
   def processRow(pm: Map[String, Probe], r: ExpressionRow): ExpressionRow = {
@@ -47,25 +66,25 @@ class RowLabels(context: Context, schema: DataSchema) {
     val ps = atomics.flatMap(pm.get(_))
     assert(ps.size == 1)
     val p = atomics(0)
-    val pr = pm.get(p)
-    new ExpressionRow(p,
-        //TODO make sure to pass all titles into ExpressionRow
-      pr.toArray.flatMap(_.titles),
-      pr.toArray.flatMap(_.genes.map(_.identifier)),
-      pr.toArray.flatMap(_.symbols),
+    val pr = pm.get(p).toArray
+    new ExpressionRow(p, pr.flatMap(_.titles),
+      pr.flatMap(_.genes.map(_.identifier)), pr.flatMap(_.symbols),
       r.getValues)
   }
 
 }
 
+/**
+ * Row labels for orthologous matrices.
+ */
 class MergedRowLabels(context: Context, schema: DataSchema) extends RowLabels(context, schema) {
 
-  private def repeatStrings[T](xs: Seq[T]): Iterable[String] =
+  private def repeatStrings[T](xs: Array[T]) =
     withCount(xs).map(x => s"${x._1} (${prbCount(x._2)})")
 
-  //this is probably quite inefficient
-  private def withCount[T](xs: Seq[T]): Iterable[(T, Int)] =
-    xs.distinct.map(x => (x, xs.count(_ == x)))
+  //Count the occurrences of each item
+  private def withCount[T](xs: Array[T]) =
+    xs.groupBy(x => x).toArray.map(x => (x._1, x._2.size))
 
   private def prbCount(n: Int) = {
     if (n == 0) {
@@ -86,14 +105,13 @@ class MergedRowLabels(context: Context, schema: DataSchema) extends RowLabels(co
       p.symbols.map(schema.platformSpecies(p.platform) + ":" + _))
 
     val nr = new ExpressionRow(atomics.mkString("/"),
-      atomics,
-      repeatStrings(ps.map(p => p.name)).toArray,
+      atomics, repeatStrings(ps.map(p => p.name)),
       expandedGenes.map(_._2).distinct,
-      repeatStrings(expandedSymbols).toArray,
+      repeatStrings(expandedSymbols),
       r.getValues)
 
     val gils = withCount(expandedGenes).map(x =>
-      s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
+      s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})")
     nr.setGeneIdLabels(gils)
     nr
   }
