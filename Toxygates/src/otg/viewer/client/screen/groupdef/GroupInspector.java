@@ -80,7 +80,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public interface Delegate {
     void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds);
     void groupInspectorDatasetsChanged(List<Dataset> ds);
-    void groupInspectorCompoundsChanged(List<String> compounds);
+    void groupInspectorClearCompounds();
   }
 
   public interface ButtonCellResources extends ButtonCellBase.DefaultAppearance.Resources {
@@ -246,7 +246,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     txtbxGroup.setText("");
     onGroupNameInputChanged();
     multiSelectionGrid.clearSelection();
-    delegate.groupInspectorCompoundsChanged(new ArrayList<String>());
+    delegate.groupInspectorClearCompounds();
     setHeading("new group");
     setEditMode(true);
   }

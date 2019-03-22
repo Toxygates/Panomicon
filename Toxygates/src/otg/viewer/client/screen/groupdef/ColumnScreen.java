@@ -219,8 +219,11 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds) {
     chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
     filterTools.sampleClassChanged(sampleClass);
+    //TODO: only fetch compounds when necessary
     fetchCompounds(new Future<String[]>(), sampleClass).addSuccessCallback(allCompounds ->  {
+      compoundSelector.acceptCompounds(allCompounds);
       chosenCompounds = filterCompounds(compounds, allCompounds);
+      compoundSelector.setChosenCompounds(chosenCompounds);
       getStorage().compoundsStorage.store(chosenCompounds);
       if (chosenCompounds.size() < compounds.size()) {
         Window.alert("chosenCompounds = " + chosenCompounds + "; compounds = " + compounds);
@@ -234,9 +237,9 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   }
   
   @Override
-  public void groupInspectorCompoundsChanged(List<String> compounds) {
-    compoundSelector.setChosenCompounds(compounds);
-    chosenCompounds = getStorage().compoundsStorage.store(compounds);
+  public void groupInspectorClearCompounds() {
+    compoundSelector.setChosenCompounds(new ArrayList<String>());
+    chosenCompounds = getStorage().compoundsStorage.store(new ArrayList<String>());
   }
   
   // CompoundSelector.Delegate methods

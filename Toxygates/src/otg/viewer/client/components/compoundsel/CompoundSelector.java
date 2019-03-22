@@ -103,7 +103,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
             List<String> r = new ArrayList<String>();
             r.addAll(selected);
             Collections.sort(r);
-            setCompounds(r);
+            if (!chosenCompounds.equals(r)) {
+              chosenCompounds = r;
+              delegate.compoundSelectorCompoundsChanged(r);
+            }
           }
 
           @Override
@@ -156,13 +159,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   public void setSelection(List<String> compounds) {
     compoundEditor.setSelection(compounds);
-  }
-
-  private void setCompounds(List<String> compounds) {
-    if (!chosenCompounds.equals(compounds)) {
-      chosenCompounds = compounds;
-      delegate.compoundSelectorCompoundsChanged(compounds);
-    }
   }
 
   @Override
