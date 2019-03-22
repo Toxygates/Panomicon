@@ -23,6 +23,9 @@ public class Network implements Serializable {
   private List<Interaction> interactions = new ArrayList<Interaction>();
   private List<Node> nodes = new ArrayList<Node>();
   private String title;
+  
+  private int trueSize;
+  private boolean wasTruncated;
   /*
    * Stores the JSON representation of the JavaScript version of this network, so that it doesn't
    * need to be computed more than once.
@@ -31,8 +34,20 @@ public class Network implements Serializable {
   
   Network() {}
   
-  public Network(String title, List<Node> nodes, List<Interaction> interactions) {
+  /**
+   * Construct a network.
+   * @param title
+   * @param nodes
+   * @param interactions
+   * @param wasTruncated Was the network truncated during construction due to being too large?
+   * @param trueSize The true number of nodes of the main node type in the network. 
+   * Only defined if wasTruncated is true.
+   */
+  public Network(String title, List<Node> nodes, List<Interaction> interactions,
+                 boolean wasTruncated, int trueSize) {
     this(title, nodes, interactions, "");
+    this.wasTruncated = wasTruncated;
+    this.trueSize = trueSize;
   }
 
   public Network(String title,
@@ -65,6 +80,9 @@ public class Network implements Serializable {
   
   public List<Interaction> interactions() { return interactions; }
 
+  public int trueSize() { return trueSize; }
+  public boolean wasTruncated() { return wasTruncated; }
+  
   public String jsonString() {
     return jsonString;
   }

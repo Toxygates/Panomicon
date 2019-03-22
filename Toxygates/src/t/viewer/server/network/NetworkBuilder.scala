@@ -90,10 +90,12 @@ class NetworkBuilder(targets: TargetTable,
   import java.util.{ ArrayList => JList }
   def build: Network = {
     if (main.info.numColumns() == 0) {
-      return new Network("Network", new JList(), new JList())
+      return new Network("Network", new JList(), new JList(), false, 0)
     }
 
+    val trueSize = main.current.rows
     val probes = platforms.resolve(main.current.orderedRowKeys take Network.MAX_NODES)
+    val truncated = (trueSize > Network.MAX_NODES)
 
     val rawInt = mainType match {
       case Network.mrnaType =>
@@ -107,6 +109,7 @@ class NetworkBuilder(targets: TargetTable,
     //In case there are too many interactions,
     //we might prioritise by weight here and limit the number
     val interactions = rawInt //.toSeq.sortBy(_.weight()) take Network.MAX_EDGES
-    new Network("Network", nodes.asGWT, interactions.asGWT)
+    new Network("Network", nodes.asGWT, interactions.asGWT,
+      truncated, trueSize)
   }
 }
