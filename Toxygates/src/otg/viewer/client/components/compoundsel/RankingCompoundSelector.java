@@ -49,6 +49,8 @@ public class RankingCompoundSelector extends CompoundSelector {
   private boolean hasRankColumns = false;
   private final Resources resources;
 
+  protected SampleClass chosenSampleClass;
+  
   public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen, String heading) {
     this(screen, screen, heading);
   }
@@ -103,9 +105,8 @@ public class RankingCompoundSelector extends CompoundSelector {
 
   private SampleClass lastClass;
 
-  @Override
   public void sampleClassChanged(SampleClass sc) {
-    super.sampleClassChanged(sc);
+    chosenSampleClass = sc;
     if (lastClass == null || !sc.equals(lastClass)) {
       removeRankColumns();
     }

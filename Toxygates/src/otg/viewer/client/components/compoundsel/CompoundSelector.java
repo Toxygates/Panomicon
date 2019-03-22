@@ -30,9 +30,9 @@ import com.google.gwt.view.client.NoSelectionModel;
 import otg.viewer.client.components.OTGScreen;
 import t.common.client.components.SetEditor;
 import t.common.shared.Dataset;
-import t.model.SampleClass;
 import t.viewer.client.Analytics;
-import t.viewer.client.components.*;
+import t.viewer.client.components.FreeEdit;
+import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
@@ -59,7 +59,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   List<String> chosenCompounds = new ArrayList<String>();
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
-  protected SampleClass chosenSampleClass;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
 
   public Delegate delegate() {
@@ -164,10 +163,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
       chosenCompounds = compounds;
       delegate.compoundSelectorCompoundsChanged(compounds);
     }
-  }
-
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
   }
 
   @Override

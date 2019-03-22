@@ -55,7 +55,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   public final Groups groups = new Groups();
 
-  private MultiSelectionGrid multiSelectionGrid;
+  public MultiSelectionGrid multiSelectionGrid;
   private final OTGScreen screen;
   private final Delegate delegate;
   private final DataSchema schema;
@@ -80,7 +80,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public interface Delegate {
     void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds);
     void groupInspectorDatasetsChanged(List<Dataset> ds);
-    void groupInspectorSampleClassChanged(SampleClass sc);
     void groupInspectorCompoundsChanged(List<String> compounds);
   }
 
@@ -454,7 +453,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     delegate.groupInspectorLoadGroup(group, chosenSampleClass, chosenCompounds);
     
     multiSelectionGrid.activateSection(chosenSampleClass);
-    multiSelectionGrid.setVisibleUnits(group.getUnits());
   }
   
   @Override

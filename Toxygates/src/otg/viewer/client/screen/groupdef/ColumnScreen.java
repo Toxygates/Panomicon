@@ -74,7 +74,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       logger.info("processing sampleclasses");
       //TODO: handle the case where sample class is not valid for dataset choice
       filterTools.sampleClassChanged(newSampleClass);
-      compoundSelector.sampleClassChanged(newSampleClass);
       
       // We only need to fetch compounds if sample class or datasets have changed
       if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
@@ -188,7 +187,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
     getStorage().sampleClassStorage.store(newSampleClass);
-    compoundSelector.sampleClassChanged(newSampleClass);  
     fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
       chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
       getStorage().compoundsStorage.store(chosenCompounds);
@@ -219,21 +217,20 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds) {
-    getStorage().sampleClassStorage.store(sampleClass);
+    chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
     filterTools.sampleClassChanged(sampleClass);
-    // more tbd
-  }
-
-  public void groupInspectorSampleClassChanged(SampleClass newSampleClass) {
-    getStorage().sampleClassStorage.store(newSampleClass);
-    filterTools.sampleClassChanged(newSampleClass);
-    compoundSelector.sampleClassChanged(newSampleClass);
-    fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
-      chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
+    fetchCompounds(new Future<String[]>(), sampleClass).addSuccessCallback(allCompounds ->  {
+      chosenCompounds = filterCompounds(compounds, allCompounds);
       getStorage().compoundsStorage.store(chosenCompounds);
-      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
+      if (chosenCompounds.size() < compounds.size()) {
+        Window.alert("chosenCompounds = " + chosenCompounds + "; compounds = " + compounds);
+      }
+      groupInspector.multiSelectionGrid.setVisibleUnits(group.getUnits());
+      groupInspector.initializeState(chosenDatasets, sampleClass, chosenCompounds);
     });
-    chosenSampleClass = newSampleClass;
+    // also, a dataset change should get worked in here too
+    // so enable datasets if needed should instead be a thing that lists any 
+    // disabled but necessary datasets. done.
   }
   
   @Override
