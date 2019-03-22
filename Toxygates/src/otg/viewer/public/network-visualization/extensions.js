@@ -347,58 +347,57 @@ function hideUnconnected(){
   });
 }
 
-
-
 /**
- * Merge the current collection with the collection of elements provided,
- * keeping a single copy of intersecting elements, and defining a dual layout
- * that positions the intersection at the center of the viewport, with elements
- * coming from the left panel at the left of the intersection, and elements
- * coming from the right panel at the right of the intesection.
+ * Merge the current collection with the collection of elements provided.
+ * The merge is performed in such a way as to keep a single copy of intersecting
+ * elements, and defining a dual layout that positions the intersecting elements
+ * at the center of the viewport, with elements coming from the left panel at
+ * the left of the intersection, and elements coming from the right panel at the
+ * right of the intesection.
  * @param {collection} eles The elements we are to merge with the current graph.
- * @param {string} innerName The name of the layout used for the intersection.
- * Use concentric layout as default.
- * @param {string} outerName The name of the layout used for both sets of
- * elements not in the intersection. Use grid layout as default.
- * EXTENSION TO CYTOSCAPE - CORE
+ * @param {string} innerLyt Layout used for intersecting elements.
+ * @param {string} outerLyt Layout used for non-intersecting elements, both at
+ * the left and right sides of the display
  */
-function mergeWith(eles, innerName="concentric", outerName="grid"){
+function mergeWith(eles, innerLyt="concentric", outerLyt="grid"){
   /* Define the collections that represent the three components of the new graph,
    * intersecting nodes, left-side nodes and right-side nodes */
   let inter = this.elements().intersection(eles);
   let left = inter.absoluteComplement();
   let right = eles.difference(inter);
-
-  /* Layout each component of the new graph */
-  innerName = innerName === "null" ? "concentric" : innerName;
-  outerName = outerName === "null" ? "grid" : outerName;
-
+  /* capture the dimensions of the viewport, to use them as constrains for the
+   * layout positioning algorithms */
   let w = this.container().parentElement.clientWidth/3;
   let h = this.container().parentElement.clientHeight;
+  /* define the layout algorithm for each part of the merged network */
+  let interLyt = inter.updateLayout(innerLyt, {x1:w,y1:0,w:w,h:h} );
+  let leftLyt = left.updateLayout(outerLyt, {x1:0,y1:0,w:w,h:h} );
+  let rightLyt = right.updateLayout(outerLyt, {x1:2*w,y1:0,w:w,h:h} );
 
-  let interLyt = inter.updateLayout(innerName, {x1:w,y1:0,w:w,h:h} );
-  let leftLyt = left.updateLayout(outerName, {x1:0,y1:0,w:w,h:h} );
-  let rightLyt = right.updateLayout(outerName, {x1:2*w,y1:0,w:w,h:h} );
-
+  /* set a promise to run the layout of the 2nd element of the merged network */
   leftLyt.promiseOn('layoutstop').then(function(){
     interLyt.run();
   });
+  /* set a promise to run the layout of the 3rd element of the merged network */
   interLyt.promiseOn('layoutstop').then(function(){
     rightLyt.run();
   });
+  /* once each part of the merged graph has been positioned, place them together
+   * in a single cytoscape instance, and use it to replace the contents of the
+   * current structure */
   rightLyt.promiseOn('layoutstop').then(function(cy){
     /* Define the merged collection of elements */
     let mrg = cytoscape();
     mrg.add(inter);
     mrg.add(left);
     mrg.add(right);
-
-    /* Update the contentes of the current graph with the ones computed */
+    /* Update the contents of the current graph with the ones computed */
     cy.elements().remove();
     cy.add(mrg.elements());
     cy.fit();
-  }.bind(null, this));
+  }.bind(null, this)); // this is bounded to the inner function as the cy parameter
 
+  /* run the layout on the left (first) section of the merged network */
   leftLyt.run();
 }
 
@@ -409,18 +408,16 @@ function mergeWith(eles, innerName="concentric", outerName="grid"){
 function setDefaultStyle(){//eles){
   this.forEach(function(ele){
     if ( ele.isEdge() ){
-      // this.$("#"+ele.id())
       ele.data("color", edgeColor.REGULAR);
       return;
     }
-    let color = ele.data('type') === "mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
-    let shp = ele.data('type') === "mRNA"? nodeShape.MSG_RNA : nodeShape.MICRO_RNA;
+    let color = ele.data('type') === nodeType.mRNA ? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
+    let shp = ele.data('type') === nodeType.mRNA ? nodeShape.MSG_RNA : nodeShape.MICRO_RNA;
 
-    // this.$("#"+ele.id())
     ele.data("color", color)
     ele.data('borderColor', color)
     ele.data("shape", shp);
-  });//,this);
+  });
 }
 
 
@@ -455,14 +452,11 @@ function setDefaultStyle(){//eles){
  * to be compared with.
  * @param {boolean} toogle Indicates if the 'highlighted' class for the
  * intersecting nodes should be turned on (true) or off (false)
- *
- * EXTENSION TO CYTOSCAPE - CORE
  */
 function toggleIntersectionHighlight(other, toggle){
   /* create a headless copy of the current network */
   let clone = cytoscape({headless:true});
   clone.add(this.elements());
-
   /* determine the intersecting elements between both collections */
   let intersection = clone.elements().intersection(other.elements());
   /* toggle the 'highlighted' class for the elements on both graphs */
