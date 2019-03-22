@@ -74,7 +74,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private final SampleServiceAsync sampleService;
 
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
-  protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
 
   public interface Delegate {
@@ -195,7 +194,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public void initializeState(List<Dataset> datasets, SampleClass sc, 
       List<String> compounds) {
     chosenDatasets = datasets;
-    chosenSampleClass = sc;
     chosenCompounds = compounds;
     if (compounds.size() == 0) {
       setEditMode(false);
@@ -298,34 +296,44 @@ abstract public class GroupInspector extends Composite implements RequiresResize
           .alert(disableCount + " group(s) were deactivated " + "because of your dataset choice.");
     }
   }
-
-  protected void enableDatasetsIfNeeded(Collection<Group> gs) {
-    List<String> neededDatasets = Group.collectAll(gs, OTGAttribute.Dataset).collect(Collectors.toList());
-    logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasets, ", "));
-
-    List<Dataset> allDatasets = screen.appInfo().datasets();
-    Set<String> enabled = new HashSet<String>();
-    for (Dataset d : chosenDatasets) {
-      enabled.add(d.getId());
-    }
-    logger.info("Enabled: " + SharedUtils.mkString(enabled, ", "));
-    if (!enabled.containsAll(neededDatasets)) {
-      HashSet<String> missing = new HashSet<String>(neededDatasets);
-      missing.removeAll(enabled);
-
-      List<Dataset> newEnabledList = new ArrayList<Dataset>();
-      for (Dataset d : allDatasets) {
-        if (enabled.contains(d.getId()) || neededDatasets.contains(d.getId())) {
-          newEnabledList.add(d);
+  
+  public List<Dataset> additionalNeededDatasets(Collection<Group> groups, List<Dataset> currentDatasets) {
+    List<String> neededDatasetNames = Group.collectAll(groups, OTGAttribute.Dataset)
+         .collect(Collectors.toList());
+    logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasetNames, ", "));
+    
+    Set<String> enabledDatasetNames = currentDatasets.stream()
+        .map(d -> d.getId()).collect(Collectors.toSet());
+    logger.info("Enabled: " + SharedUtils.mkString(enabledDatasetNames, ", "));
+    
+    List<Dataset> additionalNeededDatasets = new ArrayList<Dataset>();
+    if (!enabledDatasetNames.containsAll(neededDatasetNames)) {
+      HashSet<String> missing = new HashSet<String>(neededDatasetNames);
+      missing.removeAll(enabledDatasetNames);
+      
+      for (Dataset d : screen.appInfo().datasets()) {
+        if (missing.contains(d.getId())) {
+          additionalNeededDatasets.add(d);
         }
       }
+    }   
+    return additionalNeededDatasets;
+  }
+
+  protected void enableDatasetsIfNeeded(Collection<Group> groups) {
+    List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
+    
+    if (additionalNeededDatasets.size() > 0) {
+      List<Dataset> newEnabledList = new ArrayList<Dataset>(additionalNeededDatasets);
+      newEnabledList.addAll(chosenDatasets);
+      
       datasetsChanged(newEnabledList);
       delegate.groupInspectorDatasetsChanged(newEnabledList);
       sampleService.chooseDatasets(newEnabledList.toArray(new Dataset[0]), 
           new PendingAsyncCallback<SampleClass[]>(screen));
       screen.getStorage().datasetsStorage.store(chosenDatasets);
-      Window
-          .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
+      Window.alert(newEnabledList.size() + " dataset(s) were activated " + 
+          "because of your group choice.");
     }
   }
 
@@ -443,16 +451,16 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     nameIsAutoGen = false;
     
     Group group = groups.get(name);
-    chosenSampleClass = 
+    SampleClass sampleClass = 
         SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
     chosenCompounds = 
-        SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).
+        SampleClassUtils.getMajors(schema, groups.get(name), sampleClass).
         collect(Collectors.toList());
     setEditMode(true);
     
-    delegate.groupInspectorLoadGroup(group, chosenSampleClass, chosenCompounds);
+    delegate.groupInspectorLoadGroup(group, sampleClass, chosenCompounds);
     
-    multiSelectionGrid.activateSection(chosenSampleClass);
+    multiSelectionGrid.activateSection(sampleClass);
   }
   
   @Override

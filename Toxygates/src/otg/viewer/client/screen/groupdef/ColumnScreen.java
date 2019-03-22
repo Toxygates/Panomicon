@@ -25,14 +25,17 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
+import otg.model.sample.OTGAttribute;
 import otg.viewer.client.components.*;
 import otg.viewer.client.components.compoundsel.CompoundSelector;
 import otg.viewer.client.screen.data.DataScreen;
 import t.common.shared.Dataset;
+import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
 import t.viewer.shared.ItemList;
@@ -183,6 +186,61 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return chosenList.stream().filter(c -> compoundsSet.contains(c)).collect(Collectors.toList());
   }
 
+  public List<Dataset> additionalNeededDatasets(Collection<Group> groups, 
+      List<Dataset> currentDatasets) {
+    List<String> neededDatasetNames = Group.collectAll(groups, OTGAttribute.Dataset)
+         .collect(Collectors.toList());
+    logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasetNames, ", "));
+    
+    Set<String> enabledDatasetNames = currentDatasets.stream()
+        .map(d -> d.getId()).collect(Collectors.toSet());
+    logger.info("Enabled: " + SharedUtils.mkString(enabledDatasetNames, ", "));
+    
+    List<Dataset> additionalNeededDatasets = new ArrayList<Dataset>();
+    if (!enabledDatasetNames.containsAll(neededDatasetNames)) {
+      HashSet<String> missing = new HashSet<String>(neededDatasetNames);
+      missing.removeAll(enabledDatasetNames);
+      
+      for (Dataset d : appInfo().datasets()) {
+        if (missing.contains(d.getId())) {
+          additionalNeededDatasets.add(d);
+        }
+      }
+    }   
+    return additionalNeededDatasets;
+  }
+  
+  private Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups) {
+    List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
+    
+    Future<SampleClass[]> future = new Future<SampleClass[]>();
+    
+    if (additionalNeededDatasets.size() > 0) {
+      List<Dataset> newEnabledList = new ArrayList<Dataset>(additionalNeededDatasets);
+      newEnabledList.addAll(chosenDatasets);
+      chosenDatasets = newEnabledList;
+      getStorage().datasetsStorage.store(chosenDatasets);
+      filterTools.setDatasets(chosenDatasets);
+      
+      manager.sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
+      FutureUtils.beginPendingRequestHandling(future, this, 
+          "Unable to fetch sampleclasses");
+      
+      Window.alert(newEnabledList.size() + " dataset(s) were activated " + 
+          "because of your group choice.");
+    } else {
+      future.onSuccess(null);
+    }
+    
+    future.addSuccessCallback(sampleClasses -> {
+      if (sampleClasses != null) {
+        filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
+      }
+    });
+    
+    return future;
+  }
+  
   // FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
@@ -217,10 +275,29 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds) {
-    chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
-    filterTools.sampleClassChanged(sampleClass);
-    //TODO: only fetch compounds when necessary
-    fetchCompounds(new Future<String[]>(), sampleClass).addSuccessCallback(allCompounds ->  {
+    Future<SampleClass[]> sampleClassesFuture =  enableDatasetsIfNeeded(groupInspector.groups.activeGroups());
+    Future<String[]> compoundsFuture = new Future<String[]>();
+    
+    sampleClassesFuture.addSuccessCallback(sampleClasses -> {
+      if (sampleClasses != null && // should use better syntax for this
+          !Arrays.stream(sampleClasses).anyMatch(chosenSampleClass::equals)) {
+        Window.alert("Sampleclass and dataset mismatch for group " + group.getName() + 
+            "; this could be due to changes in backend data. Application may now be in an "
+            + "inconsistent state.");
+      }
+      
+      filterTools.sampleClassChanged(sampleClass);
+      
+      if (sampleClassesFuture.actuallyRan() || 
+          !sampleClass.equals(chosenSampleClass)) {
+        fetchCompounds(compoundsFuture, sampleClass);
+      } else {
+        compoundsFuture.fakeSuccess(null);
+      }
+      chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
+    });
+    
+    compoundsFuture.addSuccessCallback(allCompounds ->  {
       compoundSelector.acceptCompounds(allCompounds);
       chosenCompounds = filterCompounds(compounds, allCompounds);
       compoundSelector.setChosenCompounds(chosenCompounds);
@@ -229,11 +306,9 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
         Window.alert("chosenCompounds = " + chosenCompounds + "; compounds = " + compounds);
       }
       groupInspector.multiSelectionGrid.setVisibleUnits(group.getUnits());
-      groupInspector.initializeState(chosenDatasets, sampleClass, chosenCompounds);
+      // is there information that is not being transmitted by not initializing state here?
+      //groupInspector.initializeState(chosenDatasets, sampleClass, chosenCompounds);
     });
-    // also, a dataset change should get worked in here too
-    // so enable datasets if needed should instead be a thing that lists any 
-    // disabled but necessary datasets. done.
   }
   
   @Override

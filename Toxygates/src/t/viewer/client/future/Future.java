@@ -14,6 +14,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class Future<T> implements AsyncCallback<T>, Dependable {
   private boolean done = false;
+  private boolean fakeSuccess = false;
   private T result;
   private Throwable caught;
   private ArrayList<Consumer<Future<T>>> callbacks = new ArrayList<Consumer<Future<T>>>();
@@ -43,6 +44,10 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
     return done() && wasSuccessful();
   }
   
+  public boolean actuallyRan() {
+    return done && !fakeSuccess;
+  }
+  
   public Future<T> addCallback(Consumer<Future<T>> callback) {
     if (!done) {
       callbacks.add(callback);
@@ -70,6 +75,11 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
       dependent.dependableCompleted(this);
     });
     return this;
+  }
+  
+  public void fakeSuccess(T t) {
+    fakeSuccess = true;
+    onSuccess(t);
   }
   
   @Override
