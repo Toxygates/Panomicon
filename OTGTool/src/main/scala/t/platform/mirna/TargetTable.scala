@@ -70,7 +70,7 @@ class TargetTable(
   /**
    * miRNA to mRNA lookup without a platform. Simple RefSeq IDs will be returned.
    */
-  def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, String)] = {
+  def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, DatabaseID)] = {
     val allMicro = miRNAs.toSet
     for {
       (origin, target, score, db) <- this;
@@ -82,7 +82,7 @@ class TargetTable(
    * Efficient miRNA to mRNA lookup for a specific mRNA platform.
    * mRNA probes in the platform must have transcripts populated.
    */
-  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {
+  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, DatabaseID)] = {
     val allTrn = targets(miRNAs)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     allTrn.flatMap(x => probeLookup.get(x._2) match {
@@ -95,7 +95,7 @@ class TargetTable(
    * Efficient mRNA to miRNA lookup.
    * Probes must have transcripts populated.
    */
-  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA, Double, String)] = {
+  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA, Double, DatabaseID)] = {
     val allTrns = mRNAs.flatMap(p => p.transcripts.map(tr => (tr, p)))
     val allTrLookup = allTrns.groupBy(_._1)
     val allTrKeys = allTrLookup.keySet
@@ -146,10 +146,10 @@ class TargetTableBuilder() {
   var origins = List[String]()
   var targets = List[String]()
   var scores = List[Double]()
-  var dbs = List[String]()
+  var dbs = List[DatabaseID]()
 
   def add(origin: MiRNA, target: RefSeq, score: Double,
-    db: String) {
+    db: DatabaseID) {
     origins ::= origin.id
     targets ::= target.id
     scores ::= score

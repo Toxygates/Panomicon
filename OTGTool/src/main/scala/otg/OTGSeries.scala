@@ -26,7 +26,14 @@ import t.db._
 import t.db.{ Series => TSeries }
 import t.model.sample.Attribute
 
-// all parameters are nullable - consider using options
+/**
+ * A series of points (either expression vs time, or expression vs dose).
+ * If the series is partially specified (some parameters missing),
+ * it can be used to match on or specify a range in the space of all series.
+ *
+ * The following parameters are nullable: repeat, organ, organism,
+ * probe, compound, doseOrTime, testType
+ */
 case class OTGSeries(seriesType: OTGSeriesType, repeat: String, organ: String, organism: String,
     override val probe: Int, compound: String, doseOrTime: String, testType: String,
   override val points: Seq[SeriesPoint] = Seq()) extends TSeries[OTGSeries](probe, points) {
@@ -35,6 +42,10 @@ case class OTGSeries(seriesType: OTGSeriesType, repeat: String, organ: String, o
 
   def asSingleProbeKey = copy(probe = probe, compound = null, doseOrTime = null)
 
+  /**
+   * Obtain the attribute constraints encoded by this series or
+   * partially specified series
+   */
   override def constraints: Map[Attribute, String] = {
     val map: Map[Attribute, String] = Map(TestType -> testType,
        Organ -> organ,
@@ -161,76 +172,46 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
     OTGSeries(seriesType, attribs(Repeat), attribs(Organ), attribs(Organism), 0,
       attribs(Compound), attribs(seriesType.lastConstraint), attribs(TestType), Vector())
   }
-  
+
   /**
    * Group samples that belong to the same series together.
    */
-  def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(OTGSeries, Iterable[Sample])] = 
+  def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(OTGSeries, Iterable[Sample])] =
     xs.groupBy(buildEmpty(_, md))
 
   def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     val timeOrDoseMap = seriesType.independentVariableMap
-    
+
     val grouped = groupSamples(samples, md)
     var r = Vector[OTGSeries]()
 
     for ((series, xs) <- grouped) {
       //Construct the series s for all probes, using the samples xs
-     
+
       val repSample = xs.head
       val probes = from.sortProbes(mc.expectedProbes(repSample))
       val indepPoints = xs.groupBy(x => md.sampleAttribute(x, seriesType.independentVariable).get)
-      
-      val spoints = (for (                
+
+      val spoints = (for (
         (point, pointSamples) <- indepPoints.toSeq.par;
         samples = from.sortSamples(pointSamples);
         exprs = from.valuesForSamplesAndProbes(samples, probes, false, false);
         (pr, data) <- (probes zip exprs);
         nonPadded = data.filter(!_.isPadding);
-        if (!nonPadded.isEmpty);        
+        if (!nonPadded.isEmpty);
         mean = meanPoint(nonPadded);
-        spoint = SeriesPoint(timeOrDoseMap(point), mean)) 
+        spoint = SeriesPoint(timeOrDoseMap(point), mean))
         yield (pr, spoint))
-        
-      
+
       for ((pr, points) <- spoints.seq.groupBy(_._1)) {
-        r :+= series.copy(probe = pr, points = points.map(_._2))        
-      }     
+        r :+= series.copy(probe = pr, points = points.map(_._2))
+      }
     }
     println(s"Constructed ${r.size} series including: ${r.head}")
     r
   }
-
-//  private def isBefore(time1: String, time2: String): Boolean = {
-//    val units = List("min", "hr", "day", "week", "month")
-//
-//    def split(t: String) = {
-//      val s = t.split(" ")
-//      if (s.length != 2) {
-//        throw new Exception("Invalid time format: " + t + " (example: 9 hr)")
-//      }
-//      if (!units.contains(s(1))) {
-//        throw new Exception("Invalid time unit: " + s(1) +
-//          " (valid: " + units.mkString(" ") + ")")
-//      }
-//      (s(0).toInt, s(1))
-//    }
-//
-//    val (q1, u1) = split(time1)
-//    val (q2, u2) = split(time2)
-//    if (units.indexOf(u2) > units.indexOf(u1)) {
-//      true
-//    } else if (units.indexOf(u1) > units.indexOf(u2)) {
-//      false
-//    } else {
-//      q1 < q2
-//    }
-//  }
-
-//  def sortTimes(items: Iterable[String]): Seq[String] =
-//    items.toList.sortWith(isBefore)
 
   def standardEnumValues = seriesType.standardEnumValues
 

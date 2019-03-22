@@ -63,7 +63,7 @@ class NetworkState extends MatrixState {
       network.targets = tt
 
       //Make the count map in ManagedNetwork recalculate
-      network.updateRowInfo()
+      network.currentRowsChanged()
       //Make the count column update
       network.sideMatrix.reapplySynthetics()
       network.updateSideMatrix()

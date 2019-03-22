@@ -1,16 +1,6 @@
 /* -------------------------------------------
  * CSS for general elements
  * ------------------------------------------- */
-/* #netvizdiv h1,
-#netvizdiv h3{
-	color: #84c754;
-}
-
-#netvizdiv div{
-	width: 20%;
-	display: inline-block;
-} */
-
 #display.visualization{
   border-style: dashed;
   position: relative;
@@ -62,46 +52,6 @@
   overflow: visible;
   z-index: 1;
 }
-
-#netvizdiv div.modal-content{
-	background-color: #fefefe;
-	margin: 0;
-	padding: 0px 20px;
-	width: 80%;
-}
-
-#netvizdiv span.modal-close{
-	color: #aaaaaa;
-	float: right;
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-#netvizdiv span.modal-close:hover,
-#netvizdiv span.modal-close:focus{
-	color: #000;
-	text-decoration: none;
-}
-
-#netvizdiv span.modal-add,
-#netvizdiv span.modal-remove{
-	color: #aaaaaa;
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-#netvizdiv span.modal-button{
-	background-color: green;
-	font-size: 1em;
-	margin: 5px;
-	color: white;
-	padding: 10px 10px;
-	cursor: pointer;
-	float: right;
-}
-
 /* -----------------------------------------------------------------
  * CSS for context menus - as implemented on the library
  * ----------------------------------------------------------------- */

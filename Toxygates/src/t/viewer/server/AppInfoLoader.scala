@@ -33,6 +33,8 @@ import t.util.PeriodicRefresh
 import t.util.Refreshable
 import t.viewer.shared.mirna.MirnaSource
 import t.viewer.server.Conversions._
+import java.util.ArrayList
+import java.util.Collections
 
 class AppInfoLoader(probeStore: Probes,
     configuration: Configuration,
@@ -45,7 +47,7 @@ class AppInfoLoader(probeStore: Probes,
   def load(): AppInfo = {
     val probeLists = predefProbeLists()
 
-    new AppInfo(configuration.instanceName, Array(),
+    new AppInfo(configuration.instanceName, new ArrayList(),
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
       probeClusterings(probeLists.asScala), appName,

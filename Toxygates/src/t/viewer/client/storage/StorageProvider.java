@@ -19,16 +19,13 @@
 package t.viewer.client.storage;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
 
-import t.common.shared.DataSchema;
-import t.common.shared.Dataset;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.network.PackedNetwork;
@@ -131,7 +128,7 @@ public class StorageProvider implements Storage.StorageProvider {
     customColumnStorage = new Storage<Group>("customColumn", groupPacker, this);
     
     datasetsStorage = new Storage<List<Dataset>>("datasets", datasetsPacker, this,
-        () -> Arrays.asList(Dataset.defaultSelection(info.datasets())));
+        () -> Dataset.defaultSelection(info.datasets()));
   }
 
   @Override

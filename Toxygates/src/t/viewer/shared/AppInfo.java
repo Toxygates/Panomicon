@@ -40,7 +40,7 @@ public class AppInfo implements Serializable {
 
   private Platform[] platforms = new Platform[0];
   private Group[] predefGroups = new Group[0];
-  private Dataset[] datasets = new Dataset[0];
+  private List<Dataset> datasets;
   private List<StringList> predefProbeLists = new ArrayList<StringList>();
   private List<ProbeClustering> probeClusterings = new ArrayList<ProbeClustering>();
 
@@ -57,7 +57,7 @@ public class AppInfo implements Serializable {
   
   public AppInfo() {}
 
-  public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
+  public AppInfo(String instanceName_, List<Dataset> datasets, Platform[] platforms,
       List<StringList> probeLists, IntermineInstance[] instances,
       List<ProbeClustering> probeClusterings, String appName,
       String userKey,
@@ -105,11 +105,11 @@ public class AppInfo implements Serializable {
     predefGroups = gs;
   }
 
-  public Dataset[] datasets() {
+  public List<Dataset> datasets() {
     return datasets;
   }
   
-  public void setDatasets(Dataset[] ds) {
+  public void setDatasets(List<Dataset> ds) {
     this.datasets = ds;
   }
   

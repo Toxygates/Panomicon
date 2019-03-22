@@ -25,15 +25,16 @@ import t.db._
 import friedrich.data.Statistics
 
 abstract class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit context: MatrixContext) {
-  protected def getScores(mt: SeriesRanking.RankType): Iterable[(S, Double)] = {
-    mt.matchOneProbe(this, key.probe)
+  protected def getScores(rt: SeriesRanking.RankType): Iterable[(S, Double)] = {
+    rt.matchOneProbe(this, key.probe)
   }
 
   /**
    * This method is currently the only entry point used by the web application.
+   * Identifies the best matching dose level (in case of time series).
    * Returns (compound, dose, score)
    */
-  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)]
+  def rankCompoundsCombined(probesAndRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)]
 
 }
 
