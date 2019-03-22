@@ -95,7 +95,7 @@ class CoreMatrix(val params: LoadParams) {
 
   protected var requestProbes: Seq[String] = initProbes
 
-  updateRowInfo()
+  currentRowsChanged()
 
   /**
    * For the given column in the grouped matrix,
@@ -189,7 +189,7 @@ class CoreMatrix(val params: LoadParams) {
       case Some(sc) => sort(sc, _sortAscending)
       case _ => //not sorting
     }
-    updateRowInfo()
+    currentRowsChanged()
   }
 
   /**
@@ -221,7 +221,7 @@ class CoreMatrix(val params: LoadParams) {
     _sortColumn = Some(col)
     _sortAscending = ascending
     current = current.sortRows(sortRows(col, ascending))
-    updateRowInfo()
+    currentRowsChanged()
   }
 
   /**
@@ -229,10 +229,13 @@ class CoreMatrix(val params: LoadParams) {
    */
   def resetSortAndFilter(): Unit = {
     current = rawGrouped
-    updateRowInfo()
+    currentRowsChanged()
   }
 
-  private[server] def updateRowInfo() {
+  /**
+   * Called when the rows of the current matrix may have changed.
+   */
+  private[server] def currentRowsChanged() {
     currentInfo.setNumRows(current.rows)
     currentInfo.setAtomicProbes(current.annotations.flatMap(_.atomics).toArray)
   }

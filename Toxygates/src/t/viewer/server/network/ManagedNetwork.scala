@@ -15,6 +15,8 @@ import t.common.shared.sample.ExpressionRow
  * Extended version of ManagedMatrix to preserve
  * the relationship between the main and the side matrices in a network,
  * when sorting, filtering, etc. happens to the former.
+ * Each time a new page of the main matrix is displayed, or when any of the above changes happens,
+ * the side matrix is updated accordingly.
  *
  * For best performance, the target table should be kept as small as possible
  * (i.e. pre-filtered for species, platform etc)
@@ -69,6 +71,7 @@ class ManagedNetwork(mainParams: LoadParams,
   import java.util.{HashMap => JHMap}
   import java.lang.{Double => JDouble}
 
+  // THe use of JHMap ensures that this map is ready for GWT serialisation.
   private[this] var currentCountMap: JHMap[ProbeId, JDouble] =
     new JHMap[ProbeId, JDouble]
 
@@ -76,6 +79,7 @@ class ManagedNetwork(mainParams: LoadParams,
    * A mutable count map that will be updated as the current gene set changes,
    * to reflect the counts in that set (counting the number of times each
    * miRNA occurs in a mRNA table, or vice versa)
+   * This map is GWT-serialisable.
    */
   def currentViewCountMap: JHMap[ProbeId, JDouble] = currentCountMap
 
@@ -93,8 +97,8 @@ class ManagedNetwork(mainParams: LoadParams,
     }
   }
 
-  override private[server] def updateRowInfo() = synchronized {
-    super.updateRowInfo
+  override private[server] def currentRowsChanged() = synchronized {
+    super.currentRowsChanged
     if (currentCountMap != null) {
       currentCountMap.clear()
       currentCountMap.putAll(filteredCountMap(current).asJava)
