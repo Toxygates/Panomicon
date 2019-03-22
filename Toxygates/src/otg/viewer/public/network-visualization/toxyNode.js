@@ -1,41 +1,30 @@
 "use strict";
 
 /**
- * Class that defines the structure of the Nodes that make up a Toxygates
- * network <br>
- * A node will have the following parameters, based on the original Toxygates
- * Class Model <br>
- * id = String - a unique identifier for the node - non empty<br>
- * type = nodeType - the type of node, from the list of available options <br>
- * symbols = [String] - a list of all the symbols used as names for the node <br>
- * weights = {string: float} - a set of numerical attributes for the node,
- * usually associated to gene expression
- *
+ * @class ToxyNode
+ * @classdesc Define the structure of nodes within a toxygates graph.
  * @author Rodolfo Allendes
  * @version 0.1
+ *
+ * @param {String} id A unique identifier for th nodes
+ * @param {String} type The type of node. Takes one of two values: 'msgRNA' or
+ * 'microRNA'
+ * @param {Array<String>} symbol List of gene symbols used to identify a node.
+ *
+ * @property {{String: float}} weight Set of numerical attributes associated to
+ * a node. Usually related to expression or p values.
+ * @property {int} x the x coordinate (in pixels) that represents the point in
+ * the display where the center of the node is located
+ * @property {int} y the y coordinate (in pixels) that represents the point in
+ * the display where the center of the node is located
+ * @property {String} shape indicates the shape (within the list of possibilities
+ * given by cytoscape) used to display the node
+ * @property {String} color a string, in RGB Hex format, used to store the
+ * background color that should be used to draw the node
  */
 class ToxyNode{
 
-  /**
-   * Constructor
-   * STRUCTURAL PROPERTIES
-   * @param {string} id: unique identifier for this node - non empty
-   * @param {nodeType} type: type of node, currently limited to messengerRNA and
-   * microRNA
-   * @param {[string]} symbol: list of gene symbols used to identify a node
-   * @param {{string: float}}weight: set of numerical attributes associated to
-   * a node
-   * VISUAL PROPERTIES
-   * @param {int} x the x coordinate (in pixels) that represents the point in
-   * the display where the center of the node is located
-   * @param {int} y the y coordinate (in pixels) that represents the point in
-   * the display where the center of the node is located
-   * @param {string} shape indicates the shape (within the list of possibilities
-   * given by cytoscape) used to display the node
-   * @param {string} color a string, in RGB Hex format, used to store the
-   * background color that should be used to draw the node
-   */
-  constructor(id, type, symbol){//}, x=undefined, y=undefined, shape=undefined, color=undefined){
+  constructor(id, type, symbol){
     this.id = id;
     this.type = type;
     this.symbol = symbol;
@@ -117,7 +106,7 @@ class ToxyNode{
  * Convenience function used to access the Node class from within GWT
  * @param {string} id: the id of the node
  * @param {nodeType} type: the type given to the node
- * @param {[string]} symbols: a list of symbols used to identify the node
+ * @param {Array<string>} symbols: a list of symbols used to identify the node
  * @return the newly created Node
  */
 function makeNode(id, type, symbols){
