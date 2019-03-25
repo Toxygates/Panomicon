@@ -33,6 +33,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.future.Future;
 
 /**
  * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a
@@ -68,8 +69,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   }
 
   @Override
-  public void initializeState(SampleClass sampleClass, List<String> compounds) {
-    super.initializeState(sampleClass, compounds);
+  public Future<Void> initializeState(SampleClass sampleClass, List<String> compounds) {
+    Future<Void> future = super.initializeState(sampleClass, compounds);
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
@@ -93,6 +94,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
         }
       });
     }
+    
+    return future;
   }
 
   private void setColour(int r, int c, int rr, int gg, int bb) {

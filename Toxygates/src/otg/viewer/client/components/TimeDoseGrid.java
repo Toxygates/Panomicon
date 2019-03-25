@@ -28,7 +28,6 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.future.*;
 import t.viewer.client.rpc.SampleServiceAsync;
 
@@ -104,7 +103,7 @@ abstract public class TimeDoseGrid extends Composite {
     mainPanel.add(grid);
   }
   
-  public void initializeState(SampleClass sampleClass, List<String> compounds) {
+  public Future<Void> initializeState(SampleClass sampleClass, List<String> compounds) {
     logger.info("tdgrid initializeState");
     FutureAction finalAction = new FutureAction();
     
@@ -126,6 +125,8 @@ abstract public class TimeDoseGrid extends Composite {
           chosenCompounds.toArray(new String[0]), samplesFuture);
     }
     
+    Future<Void> future = new Future<Void>();
+    
     finalAction.setCompletionAction(() -> {
       if (minorsFuture.doneAndSuccessful()) {
         logger.info("minors fetched");
@@ -140,23 +141,30 @@ abstract public class TimeDoseGrid extends Composite {
       if (samplesFuture.doneAndSuccessful()) {
         logger.info("samples fetched");
         availableUnits = Arrays.asList(samplesFuture.result());
-        samplesAvailable();
       }
+      future.onSuccess(null);
     });
+    
+    return future;
   }
   
-  public void setCompounds(List<String> compounds) {
+  public Future<Pair<Unit, Unit>[]> setCompounds(List<String> compounds) {
+    Future<Pair<Unit, Unit>[]> future = new Future<Pair<Unit, Unit>[]>(); 
     if (prepareToFetchSamples(compounds)) {
       logger.info("fetching samples - setCompounds");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
-          chosenCompounds.toArray(new String[0]),
-          new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "", result -> {
-            logger.info("samples fetched");
-            availableUnits = Arrays.asList(result);
-            drawGridInner(grid);
-            samplesAvailable();
-          }));
+          chosenCompounds.toArray(new String[0]), future);
+      FutureUtils.beginPendingRequestHandling(future, screen,
+          "Unable to obtain samples");
+      future.addSuccessCallback(units -> {
+        logger.info("samples fetched");
+        availableUnits = Arrays.asList(units);
+        drawGridInner(grid);
+      });
+    } else {
+      future.onSuccess(null);
     }
+    return future;
   }
   
   private boolean prepareToFetchMinors(SampleClass sampleClass) {
@@ -190,9 +198,7 @@ abstract public class TimeDoseGrid extends Composite {
       rootPanel.add(Utils.mkEmphLabel(emptyMessage));
     }
   }
-  
-  protected void samplesAvailable() {}
-  
+
   protected String keyFor(Sample b) {
     return SampleClassUtils.tripleString(b.sampleClass(), schema);
   }

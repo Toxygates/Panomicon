@@ -218,7 +218,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     selectionGrid.setCompounds(compounds);
   }
 
-
   public void confirmDeleteAllGroups() {
     if (Window.confirm("Delete " + groups.size() + " groups?")) {
       groups.clear();

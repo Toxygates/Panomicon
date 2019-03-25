@@ -36,6 +36,7 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.future.Future;
 
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for
@@ -49,7 +50,6 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
    */
   private CheckBox[] cmpDoseCheckboxes; // selecting all samples for a cmp/dose combo
   private CheckBox[] doseTimeCheckboxes; // selecting all samples for a dose/time combo
-  private Unit[] preSelection;
 
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
@@ -137,35 +137,27 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     this.listener = listener;
   }
   
-  public void initializeState(SampleClass sampleClass, List<String> compounds, Unit[] unitSelection) {
-    logger.info("initializing stdgrid state");
-    assert(preSelection == null);
+  public Future<Void> initializeState(SampleClass sampleClass, List<String> compounds, 
+      Unit[] unitSelection) {
+    Future<Void> future = super.initializeState(sampleClass, compounds);
     if (!compounds.isEmpty()) {
-      logger.info("compounds not empty");
-      assert(unitSelection != null);
-      preSelection = unitSelection;
-    } else {
-      logger.info("leaving preselection empty");
-    }
-    super.initializeState(sampleClass, compounds);
+      future.addSuccessCallback(r -> {
+          samplesAvailable(unitSelection);
+      });
+    }    
+    return future;
   }
 
   @Override
-  public void setCompounds(List<String> compounds) {
+  public Future<Pair<Unit, Unit>[]> setCompounds(List<String> compounds) {
+    Future<Pair<Unit, Unit>[]> future = super.setCompounds(compounds);
     if (!compounds.isEmpty()) {
-      logger.info("preselection = getselectedcomb");
-      assert(preSelection == null);
-      preSelection = getSelectedCombinations();
+      Unit[] selection = getSelectedCombinations();
+      future.addSuccessCallback(r -> {
+        samplesAvailable(selection);
+      });
     }
-    super.setCompounds(compounds);
-  }
-  
-  public void setCompoundsAndSelectedUnits(List<String> compounds, Unit[] initSel) {
-    logger.info("preselection = initsel");
-    assert(initSel != null);
-    assert(preSelection == null);
-    preSelection = initSel;
-    super.setCompounds(compounds);
+    return future;
   }
 
   public void setAll(boolean val, boolean fire) {
@@ -371,8 +363,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     super.drawGridInner(grid);
   }
   
-  @Override
-  protected void samplesAvailable() {
+  protected void samplesAvailable(Unit[] selection) {
     //logger.info("Samples available: " + availableUnits.size() + " units.");
 //    if (availableUnits.size() > 0 && availableUnits.get(0) != null) {
 //      logger.info("1st: " + availableUnits.get(0));
@@ -416,13 +407,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       cmpDoseCheckboxes[cIdx * mediumValues.size() + dIdx].setEnabled(true);
       doseTimeCheckboxes[dIdx * minorValues.size() + tIdx].setEnabled(true);
     }
-    logger.info("clearing preselection");
-    assert(preSelection != null);
-    if (preSelection != null) {   
-      //logger.info("Set preselection " + preSelection.length);
-      setSelection(preSelection);
-      preSelection = null;
-    }
+    setSelection(selection);
 
     if (listener != null) {
       listener.availableUnitsChanged(availableUnits);
