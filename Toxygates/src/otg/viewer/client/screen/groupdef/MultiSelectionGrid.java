@@ -92,7 +92,6 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     if (listener != null) {
       listener.unitsChanged(fullSel);
     }
-    //logger.info("U.Chgd. Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
     if (fullSelAll.size() == expectedSelection.length && expectedSelection.length > 0) {
       clearEmptySections();
       expectedSelection = new Unit[] {};
@@ -183,6 +182,9 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     int count = verticalPanel.getWidgetCount();
     for (int i = 1; i < count; i += 2) {
       SelectionTDGrid tg = (SelectionTDGrid) verticalPanel.getWidget(i);
+      logger.info("processing grid " +
+          (tg == currentGrid ? "=" : "!=") + "currentGrid; units = " +
+          tg.getSelectedUnits(true));
       if (tg != currentGrid && tg.getSelectedUnits(true).size() == 0) {
         verticalPanel.remove(i);
         verticalPanel.remove(i - 1);

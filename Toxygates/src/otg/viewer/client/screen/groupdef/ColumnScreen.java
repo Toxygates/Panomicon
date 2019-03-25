@@ -35,7 +35,6 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
-import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
 import t.viewer.shared.ItemList;
@@ -275,7 +274,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
 
   @Override
   public void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds) {
-    Future<SampleClass[]> sampleClassesFuture =  enableDatasetsIfNeeded(groupInspector.groups.activeGroups());
+    Future<SampleClass[]> sampleClassesFuture =  enableDatasetsIfNeeded(Collections.singletonList(group));
     Future<String[]> compoundsFuture = new Future<String[]>();
     
     sampleClassesFuture.addSuccessCallback(sampleClasses -> {
