@@ -33,12 +33,9 @@ object ExprValue {
     }
 
   def presentMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
-    val nps = vs.filter(_.call != 'A')
-    if (nps.size > 0) {
-      apply(safeMean(nps.map(_.value)), 'P', probe)
-    } else {
-      apply(0, 'A', probe)
-    }
+    val present = vs.filter(_.call != 'A')
+    val call = if (present.size > 0) 'P' else 'A'      
+    apply(safeMean(present.map(_.value)), call, probe)    
   }
 
   def allMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {

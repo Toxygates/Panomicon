@@ -274,13 +274,15 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   public List<Unit> getSelectedUnits(boolean treatedOnly) {
     List<Unit> r = new ArrayList<Unit>();
+    HashSet<Unit> alreadyAddedControls = new HashSet<Unit>();
     for (Unit k : unitUis.keySet()) {
       if (unitUis.get(k).getValue()) {
         r.add(k);
         if (!treatedOnly) {
           Unit control = controlUnits.get(k);
-          if (control != null) {
+          if (control != null && !alreadyAddedControls.contains(control)) {
             r.add(control);
+            alreadyAddedControls.add(control);
           }
         }
       }

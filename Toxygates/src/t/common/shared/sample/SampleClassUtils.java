@@ -90,7 +90,8 @@ public class SampleClassUtils {
       DataSchema schema, HS hasSamples, @Nullable SampleClass sc) {
     List<S> sList = Arrays.asList(hasSamples.getSamples());
     List<S> filtered = (sc != null) ? filter(sc, sList) : sList;
-    return collectInner(filtered, schema.majorParameter());
+    return collectInner(filtered, schema.majorParameter())
+        .filter(v -> !schema.isMajorParamSharedControl(v));
   }
   
   public static <T extends HasClass> List<T> filter(SampleClass sc, List<T> from) {

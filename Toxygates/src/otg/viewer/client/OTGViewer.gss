@@ -216,6 +216,11 @@ App elements
 	height: 29px;
 }
 
+.popupMessage {
+	width: 400px;
+	text-align: left;
+}
+
 /**************************************	
 Menu bar
 **************************************/
