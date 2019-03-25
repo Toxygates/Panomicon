@@ -128,12 +128,6 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
     }
   }
 
-  @SuppressWarnings("deprecation")
-  private boolean isMajorParamSharedControl(DataSchema schema, String value) {
-    // TODO: stop using deprecated isMajorParamSharedControl
-    return schema.isMajorParamSharedControl(value);
-  }
-
   void setSelection(Unit[] selection) {
     logger.info("Set selection: " + selection.length + " units" + 
         (selection.length > 0 ? ("\n1st selection: " + selection[0]) : ""));
@@ -152,7 +146,7 @@ public class MultiSelectionGrid extends Composite implements SelectionTDGrid.Uni
         lcompounds.put(sc, new HashSet<String>());
       }
       String majorVal = unit.get(majorParam);
-      if (majorVal != null && !isMajorParamSharedControl(schema, majorVal)) {
+      if (majorVal != null && !schema.isMajorParamSharedControl(majorVal)) {
         lcompounds.get(sc).add(majorVal);
       }
     }
