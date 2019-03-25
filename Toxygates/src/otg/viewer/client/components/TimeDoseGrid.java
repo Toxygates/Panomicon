@@ -28,7 +28,8 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.future.*;
+import t.viewer.client.future.Future;
+import t.viewer.client.future.FutureUtils;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
@@ -103,14 +104,13 @@ abstract public class TimeDoseGrid extends Composite {
     mainPanel.add(grid);
   }
   
-  public Future<Void> initializeState(SampleClass sampleClass, List<String> compounds) {
+  public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(SampleClass 
+      sampleClass, List<String> compounds) {
     logger.info("tdgrid initializeState");
-    FutureAction finalAction = new FutureAction();
     
     Future<String[]> minorsFuture = new Future<String[]>(); 
     if (prepareToFetchMinors(sampleClass)) {
       logger.info("fetching minors - initializeState");
-      finalAction.dependOn(minorsFuture);
       FutureUtils.beginPendingRequestHandling(minorsFuture, screen, "Unable to fetch minor parameter for samples");
       sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
           minorsFuture);
@@ -119,15 +119,15 @@ abstract public class TimeDoseGrid extends Composite {
     Future<Pair<Unit, Unit>[]> samplesFuture = new Future<Pair<Unit, Unit>[]>(); 
     if (prepareToFetchSamples(compounds)) {
       logger.info("fetching samples - initializeState");
-      finalAction.dependOn(samplesFuture);
       FutureUtils.beginPendingRequestHandling(samplesFuture, screen, "Unable to obtain samples.");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
           chosenCompounds.toArray(new String[0]), samplesFuture);
     }
     
-    Future<Void> future = new Future<Void>();
+    Future<Pair<String[], Pair<Unit, Unit>[]>> combinedFuture = 
+        Future.combine(minorsFuture, samplesFuture);
     
-    finalAction.setCompletionAction(() -> {
+    combinedFuture.addCallback(pair -> {
       if (minorsFuture.doneAndSuccessful()) {
         logger.info("minors fetched");
         try {
@@ -142,10 +142,9 @@ abstract public class TimeDoseGrid extends Composite {
         logger.info("samples fetched");
         availableUnits = Arrays.asList(samplesFuture.result());
       }
-      future.onSuccess(null);
     });
     
-    return future;
+    return combinedFuture;
   }
   
   public Future<Pair<Unit, Unit>[]> setCompounds(List<String> compounds) {

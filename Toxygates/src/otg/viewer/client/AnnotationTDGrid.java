@@ -29,6 +29,7 @@ import com.google.gwt.user.client.ui.*;
 import otg.model.sample.OTGAttribute;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.TimeDoseGrid;
+import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
@@ -69,8 +70,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   }
 
   @Override
-  public Future<Void> initializeState(SampleClass sampleClass, List<String> compounds) {
-    Future<Void> future = super.initializeState(sampleClass, compounds);
+  public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(
+      SampleClass sampleClass, List<String> compounds) {
+    Future<Pair<String[], Pair<Unit, Unit>[]>> future = 
+        super.initializeState(sampleClass, compounds);
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();

@@ -6,13 +6,15 @@ import java.util.function.Consumer;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.common.shared.Pair;
+
 /**
  * Represents an operation that will be completed in the future, either resulting 
  * in a value of some type or an exception.
  * 
  * @param <T> The type of result the operation will result in.
  */
-public class Future<T> implements AsyncCallback<T>, Dependable {
+public class Future<T> implements AsyncCallback<T> {
   private boolean done = false;
   private boolean fakeSuccess = false;
   private T result;
@@ -68,15 +70,6 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
     return this;
   }
   
-  @Override
-  public Dependable addDependent(Dependent dependent) {
-    dependent.onStartDepending(this);
-    addCallback((future) -> {
-      dependent.dependableCompleted(this);
-    });
-    return this;
-  }
-  
   public void fakeSuccess(T t) {
     fakeSuccess = true;
     onSuccess(t);
@@ -94,5 +87,37 @@ public class Future<T> implements AsyncCallback<T>, Dependable {
     done = true;
     this.caught = caught;
     callbacks.forEach(c -> c.accept(this));
+  }
+  
+  public static <T,U> Future<Pair<T,U>> combine(Future<T> future1, Future<U> future2) {
+    Future<Pair<T,U>> combinedFuture = new Future<Pair<T,U>>();
+    
+    future1.addCallback(f -> {
+      if (future2.done()) {
+        combineResults(combinedFuture, future1, future2);
+      }
+    });
+    
+    future2.addCallback(f -> {
+      if (future1.done()) {
+        combineResults(combinedFuture, future1, future2);
+      }
+    });
+    
+    return combinedFuture;
+  }
+  
+  /**
+   * Precondition: both future1 and future2 done.
+   */
+  private static <T,U> void combineResults(Future<Pair<T,U>> 
+      combinedFuture, Future<T> future1, Future<U> future2) {
+    if (!future1.wasSuccessful()) {
+      combinedFuture.onFailure(future1.caught());
+    } else if (!future2.wasSuccessful()) {
+      combinedFuture.onFailure(future2.caught());
+    } else {
+      combinedFuture.onSuccess(new Pair<T, U>(future1.result(), future2.result()));
+    }
   }
 }
