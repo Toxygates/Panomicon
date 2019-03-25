@@ -41,8 +41,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.*;
 import t.viewer.client.components.ImmediateValueChangeTextBox;
-import t.viewer.client.components.PendingAsyncCallback;
-import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.future.Future;
 import t.viewer.client.storage.StorageProvider;
 
 /**
@@ -71,13 +70,13 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private List<Pair<Unit, Unit>> availableUnits;
 
   protected final Logger logger = SharedUtils.getLogger("group");
-  private final SampleServiceAsync sampleService;
 
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   protected List<String> chosenCompounds = new ArrayList<String>();
 
   public interface Delegate {
-    void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds);
+    Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups);
+    void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds);
     void groupInspectorDatasetsChanged(List<Dataset> ds);
     void groupInspectorClearCompounds();
   }
@@ -92,7 +91,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     this.screen = scr;
     this.delegate = delegate;
     schema = scr.schema();
-    sampleService = scr.manager().sampleService();
     splitPanel = new SplitLayoutPanel();
     initWidget(splitPanel);
 
@@ -156,6 +154,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   
   public void loadGroups() {
     groups.loadGroups(screen.getStorage());
+    enableDatasetsIfNeeded();
     updateConfigureStatus(false);
 
     // Reflect loaded group information in UI
@@ -268,7 +267,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * after each change to the set of active groups.
    */
   private void updateConfigureStatus(boolean triggeredByUserAction) {
-    enableDatasetsIfNeeded(groups.activeGroups());
     if (triggeredByUserAction) {
       screen.manager().resetWorkflowLinks();
     }
@@ -296,45 +294,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
           .alert(disableCount + " group(s) were deactivated " + "because of your dataset choice.");
     }
   }
-  
-  public List<Dataset> additionalNeededDatasets(Collection<Group> groups, List<Dataset> currentDatasets) {
-    List<String> neededDatasetNames = Group.collectAll(groups, OTGAttribute.Dataset)
-         .collect(Collectors.toList());
-    logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasetNames, ", "));
-    
-    Set<String> enabledDatasetNames = currentDatasets.stream()
-        .map(d -> d.getId()).collect(Collectors.toSet());
-    logger.info("Enabled: " + SharedUtils.mkString(enabledDatasetNames, ", "));
-    
-    List<Dataset> additionalNeededDatasets = new ArrayList<Dataset>();
-    if (!enabledDatasetNames.containsAll(neededDatasetNames)) {
-      HashSet<String> missing = new HashSet<String>(neededDatasetNames);
-      missing.removeAll(enabledDatasetNames);
-      
-      for (Dataset d : screen.appInfo().datasets()) {
-        if (missing.contains(d.getId())) {
-          additionalNeededDatasets.add(d);
-        }
-      }
-    }   
-    return additionalNeededDatasets;
-  }
 
-  protected void enableDatasetsIfNeeded(Collection<Group> groups) {
-    List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
-    
-    if (additionalNeededDatasets.size() > 0) {
-      List<Dataset> newEnabledList = new ArrayList<Dataset>(additionalNeededDatasets);
-      newEnabledList.addAll(chosenDatasets);
-      
-      datasetsChanged(newEnabledList);
-      delegate.groupInspectorDatasetsChanged(newEnabledList);
-      sampleService.chooseDatasets(newEnabledList.toArray(new Dataset[0]), 
-          new PendingAsyncCallback<SampleClass[]>(screen));
-      screen.getStorage().datasetsStorage.store(chosenDatasets);
-      Window.alert(newEnabledList.size() + " dataset(s) were activated " + 
-          "because of your group choice.");
-    }
+  protected void enableDatasetsIfNeeded() {
+    delegate.enableDatasetsIfNeeded(groups.activeGroups());
   }
 
   private void updateTableData() {
@@ -348,6 +310,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     for (Group g : gs) {
       addGroup(g, true);
     }
+    // TODO investigate whether this enableDatasetsIfNeeded call can be removed
+    enableDatasetsIfNeeded(); 
     reflectGroupChanges();
     clearUiForNewGroup();
   }
@@ -412,6 +376,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     Group newGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
     addGroup(newGroup, true);
+    // TODO: investigate if this enableDatasetsIfNeeded call is necessary
+    enableDatasetsIfNeeded();
     reflectGroupChanges();
     return newGroup;
   }
@@ -444,7 +410,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   abstract public void makeGroupColumns(CellTable<Group> table);
   
   @Override
-  public void displayGroup(String name) {
+  public void displayGroupForEditing(String name) {
     setHeading("editing " + name);
     txtbxGroup.setValue(name);
     onGroupNameInputChanged();
@@ -458,7 +424,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         collect(Collectors.toList());
     setEditMode(true);
     
-    delegate.groupInspectorLoadGroup(group, sampleClass, chosenCompounds);
+    delegate.groupInspectorEditGroup(group, sampleClass, chosenCompounds);
     
     multiSelectionGrid.activateSection(sampleClass);
   }
@@ -474,6 +440,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public void existingGroupsTableSelectionChanged(Set<Group> selected) {
     groups.setActiveGroups(selected);
     groups.saveToLocalStorage(screen.getStorage());
+    enableDatasetsIfNeeded();
     updateConfigureStatus(true);
   }
 }

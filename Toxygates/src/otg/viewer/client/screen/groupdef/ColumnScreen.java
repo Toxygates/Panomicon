@@ -209,7 +209,31 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return additionalNeededDatasets;
   }
   
-  private Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups) {
+  // FilterTools.Delegate method
+  @Override
+  public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
+    getStorage().sampleClassStorage.store(newSampleClass);
+    fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
+      chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
+      getStorage().compoundsStorage.store(chosenCompounds);
+      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
+    });
+    chosenSampleClass = newSampleClass;
+  }
+  
+  @Override
+  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+    chosenDatasets = datasets;
+    getStorage().datasetsStorage.store(datasets);
+    groupInspector.datasetsChanged(datasets);
+    //TODO: sampleclass might change here; either that's not being handled or compounds are being
+    //fetched twice
+    fetchCompounds(new Future<String[]>(), chosenSampleClass);
+  }
+
+  // GroupInspector.Delegate methods  
+  @Override
+  public Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups) {
     List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
     
     Future<SampleClass[]> future = new Future<SampleClass[]>();
@@ -240,29 +264,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return future;
   }
   
-  // FilterTools.Delegate method
-  @Override
-  public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
-    getStorage().sampleClassStorage.store(newSampleClass);
-    fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
-      chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
-      getStorage().compoundsStorage.store(chosenCompounds);
-      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
-    });
-    chosenSampleClass = newSampleClass;
-  }
-  
-  @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
-    chosenDatasets = datasets;
-    getStorage().datasetsStorage.store(datasets);
-    groupInspector.datasetsChanged(datasets);
-    //TODO: sampleclass might change here; either that's not being handled or compounds are being
-    //fetched twice
-    fetchCompounds(new Future<String[]>(), chosenSampleClass);
-  }
-
-  // GroupInspector.Delegate methods
   @Override
   public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
     chosenDatasets = datasets;
@@ -273,7 +274,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   }
 
   @Override
-  public void groupInspectorLoadGroup(Group group, SampleClass sampleClass, List<String> compounds) {
+  public void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds) {
     Future<SampleClass[]> sampleClassesFuture =  enableDatasetsIfNeeded(Collections.singletonList(group));
     Future<String[]> compoundsFuture = new Future<String[]>();
     

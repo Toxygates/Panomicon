@@ -18,7 +18,7 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
   
   public interface Delegate {
     void makeGroupColumns(CellTable<Group> table);
-    void displayGroup(String name);
+    void displayGroupForEditing(String name);
     void deleteGroup(String name);
     void existingGroupsTableSelectionChanged(Set<Group> selected);
   }
@@ -60,7 +60,7 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
     editColumn.setFieldUpdater(new FieldUpdater<Group, String>() {
       @Override
       public void update(int index, Group object, String value) {
-        delegate.displayGroup(object.getName());
+        delegate.displayGroupForEditing(object.getName());
       }
     });
     table.addColumn(editColumn, "");
