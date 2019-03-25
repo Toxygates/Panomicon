@@ -160,7 +160,6 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  @Deprecated
   public String[] majorParamSharedControl() {
     return new String[] {"Shared_control"};
   }

@@ -146,7 +146,6 @@ public abstract class DataSchema implements Serializable {
     return isControlValue(s.get(mediumParameter()));
   }
 
-  @Deprecated
   public boolean isMajorParamSharedControl(String value) {
     String[] mpvs = majorParamSharedControl();
     if (mpvs == null) {
