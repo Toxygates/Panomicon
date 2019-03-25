@@ -71,9 +71,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   protected final Logger logger = SharedUtils.getLogger("group");
 
-  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
-  protected List<String> chosenCompounds = new ArrayList<String>();
-
   public interface Delegate {
     Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups);
     void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds);
@@ -193,28 +190,16 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   
   public void initializeState(List<Dataset> datasets, SampleClass sc, 
       List<String> compounds) {
-    chosenDatasets = datasets;
-    chosenCompounds = compounds;
-    if (compounds.size() == 0) {
-      setEditMode(false);
-    } else {
-      setEditMode(true);
-    }
+    setEditMode(true);
     selectionGrid.initializeState(sc, compounds, new Unit[0]);
   }
 
   public void datasetsChanged(List<Dataset> datasets) {
-    chosenDatasets = datasets;
     disableGroupsIfNeeded(datasets);
   }
   
   public void setCompounds(List<String> compounds) {
-    chosenCompounds = compounds;
-    if (compounds.size() == 0) {
-      setEditMode(false);
-    } else {
-      setEditMode(true);
-    }
+    setEditMode(true);
     selectionGrid.setCompounds(compounds);
   }
 
@@ -227,7 +212,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   private void setEditMode(boolean editing) {
-    boolean val = editing && (chosenCompounds.size() > 0);
+    boolean val = editing && (selectionGrid.chosenCompounds().size() > 0);
     toolPanel.setVisible(val);
   }
 
@@ -420,7 +405,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     Group group = groups.get(name);
     SampleClass sampleClass = 
         SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
-    chosenCompounds = 
+    List<String> chosenCompounds = 
         SampleClassUtils.getMajors(schema, groups.get(name), sampleClass).
         collect(Collectors.toList());
     setEditMode(true);

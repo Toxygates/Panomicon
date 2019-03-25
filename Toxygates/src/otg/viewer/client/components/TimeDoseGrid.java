@@ -104,6 +104,10 @@ abstract public class TimeDoseGrid extends Composite {
     mainPanel.add(grid);
   }
   
+  public List<String> chosenCompounds() {
+    return new ArrayList<String>(chosenCompounds);
+  }
+  
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(SampleClass 
       sampleClass, List<String> compounds) {
     logger.info("tdgrid initializeState");
