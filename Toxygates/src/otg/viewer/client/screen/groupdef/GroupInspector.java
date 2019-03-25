@@ -245,6 +245,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     onGroupNameInputChanged();
     selectionGrid.setAll(false, true);
     delegate.groupInspectorClearCompounds();
+    selectionGrid.setCompounds(new ArrayList<String>());
     setHeading("new group");
     setEditMode(true);
   }
