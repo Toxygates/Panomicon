@@ -195,7 +195,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
   }
 
-  protected void setSelection(Unit[] units) {
+  public void setSelection(Unit[] units) {
     setAll(false, false);
     for (Unit u : units) {
       if (!schema.isSelectionControl(u)) {

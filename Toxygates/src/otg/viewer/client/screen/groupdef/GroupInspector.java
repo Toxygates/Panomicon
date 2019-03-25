@@ -54,7 +54,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
   public final Groups groups = new Groups();
 
-  public MultiSelectionGrid multiSelectionGrid;
+  public SelectionTDGrid selectionGrid;
   private final OTGScreen screen;
   private final Delegate delegate;
   private final DataSchema schema;
@@ -100,8 +100,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     titleLabel.addStyleName("heading");
     verticalPanel.add(titleLabel);
 
-    multiSelectionGrid = new MultiSelectionGrid(scr, this);
-    verticalPanel.add(multiSelectionGrid);
+    selectionGrid = screen.factory().selectionTDGrid(screen, null);
+    
+    verticalPanel.add(selectionGrid);
 
     verticalPanel.setWidth("440px");
 
@@ -199,7 +200,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     } else {
       setEditMode(true);
     }
-    multiSelectionGrid.initializeState(sc, compounds);
+    selectionGrid.initializeState(sc, compounds, new Unit[0]);
   }
 
   public void datasetsChanged(List<Dataset> datasets) {
@@ -214,7 +215,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     } else {
       setEditMode(true);
     }
-    multiSelectionGrid.setCompounds(compounds);
+    selectionGrid.setCompounds(compounds);
   }
 
 
@@ -242,7 +243,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private void clearUiForNewGroup() {
     txtbxGroup.setText("");
     onGroupNameInputChanged();
-    multiSelectionGrid.clearSelection();
+    selectionGrid.setAll(false, true);
     delegate.groupInspectorClearCompounds();
     setHeading("new group");
     setEditMode(true);
@@ -328,7 +329,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       return;
     }
 
-    List<Unit> units = multiSelectionGrid.fullSelection(false);
+    List<Unit> units = selectionGrid.getSelectedUnits(false);
 
     if (units.size() == 0) {
       Window.alert("No samples found.");
@@ -425,8 +426,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     setEditMode(true);
     
     delegate.groupInspectorEditGroup(group, sampleClass, chosenCompounds);
-    
-    multiSelectionGrid.activateSection(sampleClass);
   }
   
   @Override

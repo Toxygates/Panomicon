@@ -304,9 +304,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       if (chosenCompounds.size() < compounds.size()) {
         Window.alert("chosenCompounds = " + chosenCompounds + "; compounds = " + compounds);
       }
-      groupInspector.multiSelectionGrid.setVisibleUnits(group.getUnits());
-      // is there information that is not being transmitted by not initializing state here?
-      //groupInspector.initializeState(chosenDatasets, sampleClass, chosenCompounds);
+      groupInspector.selectionGrid.initializeState(chosenSampleClass,
+          chosenCompounds, group.getUnits());
     });
   }
   
