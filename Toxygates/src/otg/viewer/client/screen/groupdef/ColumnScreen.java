@@ -248,9 +248,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       manager.sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
       FutureUtils.beginPendingRequestHandling(future, this, 
           "Unable to fetch sampleclasses");
-      
-      Window.alert(newEnabledList.size() + " dataset(s) were activated " + 
-          "because of your group choice.");
     } else {
       future.onSuccess(null);
     }
@@ -258,6 +255,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     future.addSuccessCallback(sampleClasses -> {
       if (sampleClasses != null) {
         filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
+        Window.alert(additionalNeededDatasets.size() + " dataset(s) were activated " + 
+            "because of your group choice.");
       }
     });
     
