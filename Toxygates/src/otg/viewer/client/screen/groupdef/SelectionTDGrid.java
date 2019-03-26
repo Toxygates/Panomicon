@@ -20,8 +20,6 @@ package otg.viewer.client.screen.groupdef;
 
 import java.util.*;
 
-import javax.annotation.Nullable;
-
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
@@ -48,12 +46,18 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
    * Note: like many other classes in otg.viewer, this is probably too general 
    * and could be moved to t.viewer
    */
+  private Delegate delegate;
+  
   private CheckBox[] cmpDoseCheckboxes; // selecting all samples for a cmp/dose combo
   private CheckBox[] doseTimeCheckboxes; // selecting all samples for a dose/time combo
 
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
-
+  
+  public interface Delegate {
+    void selectedUnitsChanged(List<Unit> units);
+  }
+  
   public SampleClass sampleClass() {
     return chosenSampleClass.copy();
   }
@@ -115,26 +119,11 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
   }
 
-  public static interface UnitListener {
-    /**
-     * Indicates that the selection has changed.
-     */
-    void unitsChanged(List<Unit> units);
-
-    /**
-     * Indicates that the available units have changed. Passed as pairs of treated and control
-     * units.
-     */
-    void availableUnitsChanged(List<Pair<Unit, Unit>> units);
-  }
-
   protected abstract UnitUI makeUnitUI(final Unit unit);
 
-  private UnitListener listener;
-
-  public SelectionTDGrid(OTGScreen screen, @Nullable UnitListener listener) {
+  public SelectionTDGrid(OTGScreen screen, Delegate delegate) {
     super(screen, true);
-    this.listener = listener;
+    this.delegate = delegate;
   }
   
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(
@@ -143,7 +132,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
         super.initializeState(sampleClass, compounds);
     if (!compounds.isEmpty()) {
       future.addSuccessCallback(r -> {
-          samplesAvailable(unitSelection);
+        samplesAvailable(unitSelection);
       });
     }    
     return future;
@@ -183,9 +172,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   private void fireUnitsChanged() {
-    if (listener != null) {
-      listener.unitsChanged(getSelectedUnits(true));
-    }
+    delegate.selectedUnitsChanged(getSelectedUnits(true));
   }
 
   public void setSelection(Unit[] units) {
@@ -410,8 +397,5 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
     setSelection(selection);
 
-    if (listener != null) {
-      listener.availableUnitsChanged(availableUnits);
-    }
   }
 }

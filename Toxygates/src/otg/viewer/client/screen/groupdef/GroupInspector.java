@@ -50,7 +50,7 @@ import t.viewer.client.storage.StorageProvider;
  * in the SelectionTDGrid. The rest is in this class.
  */
 abstract public class GroupInspector extends Composite implements RequiresResize,
-    SelectionTDGrid.UnitListener, ExistingGroupsTable.Delegate {
+    SelectionTDGrid.Delegate, ExistingGroupsTable.Delegate {
 
   public final Groups groups = new Groups();
 
@@ -66,8 +66,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private SplitLayoutPanel splitPanel;
   private VerticalPanel verticalPanel;
   private boolean nameIsAutoGen = false;
-
-  private List<Pair<Unit, Unit>> availableUnits;
 
   protected final Logger logger = SharedUtils.getLogger("group");
 
@@ -97,7 +95,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     titleLabel.addStyleName("heading");
     verticalPanel.add(titleLabel);
 
-    selectionGrid = screen.factory().selectionTDGrid(screen, null);
+    selectionGrid = screen.factory().selectionTDGrid(screen, this);
     
     verticalPanel.add(selectionGrid);
 
@@ -172,7 +170,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * Callback from SelectionTDGrid
    */
   @Override
-  public void unitsChanged(List<Unit> selectedUnits) {
+  public void selectedUnitsChanged(List<Unit> selectedUnits) {
     if (selectedUnits.isEmpty() && nameIsAutoGen) {
       //retract the previous suggestion
       txtbxGroup.setText("");
@@ -181,11 +179,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       nameIsAutoGen = true;
     }
     onGroupNameInputChanged();
-  }
-
-  @Override
-  public void availableUnitsChanged(List<Pair<Unit, Unit>> units) {
-    availableUnits = units;
   }
   
   public void initializeState(List<Dataset> datasets, SampleClass sc, 
@@ -292,7 +285,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   private void makeAutoGroups() {
-    List<Group> gs = GroupMaker.autoGroups(this, schema, availableUnits);
+    List<Group> gs = GroupMaker.autoGroups(this, schema, selectionGrid.getAvailableUnits());
     for (Group g : gs) {
       addGroup(g, true);
     }

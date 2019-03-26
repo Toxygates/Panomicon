@@ -27,7 +27,6 @@ import otg.viewer.client.components.*;
 import otg.viewer.client.screen.data.*;
 import otg.viewer.client.screen.groupdef.GroupInspector;
 import otg.viewer.client.screen.groupdef.SelectionTDGrid;
-import otg.viewer.client.screen.groupdef.SelectionTDGrid.UnitListener;
 import otg.viewer.client.screen.ranking.CompoundRanker;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
@@ -43,7 +42,7 @@ import t.viewer.shared.intermine.IntermineInstance;
  */
 public interface UIFactory {
 
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr, @Nullable UnitListener listener);
+  public SelectionTDGrid selectionTDGrid(OTGScreen scr, SelectionTDGrid.Delegate delegate);
 
   public CompoundRanker compoundRanker(OTGScreen _screen);
   

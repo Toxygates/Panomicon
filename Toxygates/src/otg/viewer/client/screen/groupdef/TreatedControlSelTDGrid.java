@@ -27,8 +27,8 @@ import t.common.shared.sample.Unit;
  */
 public class TreatedControlSelTDGrid extends SelectionTDGrid {
 
-  public TreatedControlSelTDGrid(OTGScreen screen, UnitListener listener) {
-    super(screen, listener);
+  public TreatedControlSelTDGrid(OTGScreen screen, SelectionTDGrid.Delegate delegate) {
+    super(screen, delegate);
   }
 
   protected class TreatedControlUnit extends UnitUI {

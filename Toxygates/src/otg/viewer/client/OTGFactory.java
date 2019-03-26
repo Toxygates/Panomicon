@@ -27,7 +27,6 @@ import otg.viewer.client.components.*;
 import otg.viewer.client.intermine.InterMineData;
 import otg.viewer.client.screen.data.*;
 import otg.viewer.client.screen.groupdef.*;
-import otg.viewer.client.screen.groupdef.SelectionTDGrid.UnitListener;
 import otg.viewer.client.screen.ranking.CompoundRanker;
 import otg.viewer.client.screen.ranking.SimpleCompoundRanker;
 import t.common.shared.DataSchema;
@@ -42,8 +41,8 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr, @Nullable UnitListener listener) {
-    return new TreatedControlSelTDGrid(scr, listener);
+  public SelectionTDGrid selectionTDGrid(OTGScreen scr, SelectionTDGrid.Delegate delegate) {
+    return new TreatedControlSelTDGrid(scr, delegate);
   }
 
   @Override
