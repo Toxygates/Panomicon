@@ -160,6 +160,8 @@ public class DataFilterEditor extends Composite {
           selectors[i].trySelect(chosenSampleClass.get(parameters[i]));
       if (oldSampleClassMatchesConstraints) {
         changeFrom(i, false);
+      } else {
+        break;
       }
     }
     // If the above fails, we start at the top and generate a fresh set of values

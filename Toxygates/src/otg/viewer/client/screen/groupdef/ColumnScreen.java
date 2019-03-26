@@ -66,6 +66,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     // Fetch sampleclasses if necessary
     if (!newChosenDatasets.equals(chosenDatasets)) {
       filterTools.setDatasets(newChosenDatasets);
+      chosenDatasets = newChosenDatasets;
       fetchSampleClasses(sampleClassesFuture);
     } else {
       logger.info("bypassing sampleclass fetching");
@@ -76,7 +77,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     warnIfSampleClassInvalid(sampleClassesFuture);
     processSampleClasses(sampleClassesFuture, compoundsFuture, newSampleClass,
         !newSampleClass.equals(chosenSampleClass));
-    chosenDatasets = newChosenDatasets;
     chosenSampleClass = newSampleClass;
     
     processCompounds(compoundsFuture, getStorage().compoundsStorage.getIgnoringException());   
