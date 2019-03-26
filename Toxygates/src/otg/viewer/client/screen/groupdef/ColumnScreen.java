@@ -234,14 +234,14 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return additionalNeededDatasets;
   }
   
-  // FilterTools.Delegate method
+  // FilterTools.Delegate methods
   @Override
   public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
     getStorage().sampleClassStorage.store(newSampleClass);
-    fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
-      compoundSelector.acceptCompounds(allCompounds);
-      chosenCompounds = filterCompounds(chosenCompounds, compoundSelector.allCompounds());
-      getStorage().compoundsStorage.store(chosenCompounds);
+    Future<String[]> compoundsFuture = new Future<String[]>();
+    fetchCompounds(compoundsFuture, newSampleClass);
+    processCompounds(compoundsFuture, chosenCompounds);
+    compoundsFuture.addSuccessCallback(r ->  {
       groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
     });
     chosenSampleClass = newSampleClass;
