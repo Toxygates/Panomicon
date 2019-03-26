@@ -16,12 +16,16 @@ import t.common.shared.Pair;
  */
 public class Future<T> implements AsyncCallback<T> {
   private boolean done = false;
-  private boolean fakeSuccess = false;
+  private boolean bypassed = false;
   private T result;
   private Throwable caught;
   private ArrayList<Consumer<Future<T>>> callbacks = new ArrayList<Consumer<Future<T>>>();
   
   public Future() {}
+  
+  public interface Action {
+    void execute();
+  }
   
   public T result() {
     assert(done);
@@ -35,7 +39,7 @@ public class Future<T> implements AsyncCallback<T> {
   
   public boolean wasSuccessful() {
     assert(done);
-    return caught == null;
+    return !bypassed && caught == null;
   }
   
   public boolean done() {
@@ -47,7 +51,11 @@ public class Future<T> implements AsyncCallback<T> {
   }
   
   public boolean actuallyRan() {
-    return done && !fakeSuccess;
+    return done && !bypassed;
+  }
+  
+  public boolean bypassed() {
+    return done && bypassed;
   }
   
   public Future<T> addCallback(Consumer<Future<T>> callback) {
@@ -70,9 +78,19 @@ public class Future<T> implements AsyncCallback<T> {
     return this;
   }
   
-  public void fakeSuccess(T t) {
-    fakeSuccess = true;
-    onSuccess(t);
+  public Future<T> addNonErrorCallback(Action callback) {
+    addCallback(future -> {
+      if (future.done() && future.caught() == null) {
+        callback.execute();
+      }
+    });
+    return this;
+  }
+  
+  
+  public void bypass() {
+    bypassed = true;
+    onSuccess(null);
   }
   
   @Override
@@ -116,6 +134,8 @@ public class Future<T> implements AsyncCallback<T> {
       combinedFuture.onFailure(future1.caught());
     } else if (!future2.wasSuccessful()) {
       combinedFuture.onFailure(future2.caught());
+    } else if (future1.bypassed() || future2.bypassed()) {
+      combinedFuture.bypass();
     } else {
       combinedFuture.onSuccess(new Pair<T, U>(future1.result(), future2.result()));
     }

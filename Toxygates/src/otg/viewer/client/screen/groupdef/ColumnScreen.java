@@ -67,12 +67,12 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       fetchSampleClasses(sampleClassesFuture);
     } else {
       logger.info("bypassing sampleclass fetching");
-      sampleClassesFuture.onSuccess(null); // TODO better syntax
+      sampleClassesFuture.bypass();
     }
     
     // After we have sampleclasses, load sampleclass and fetch compounds if necessary
     Future<String[]> compoundsFuture = new Future<String[]>();
-    sampleClassesFuture.addSuccessCallback(result -> {
+    sampleClassesFuture.addNonErrorCallback(() -> {
       logger.info("processing sampleclasses");
       //TODO: handle the case where sample class is not valid for dataset choice
       filterTools.sampleClassChanged(newSampleClass);
@@ -81,8 +81,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
         fetchCompounds(compoundsFuture, newSampleClass);
       } else {
-        logger.info("bypassing compounds fetching");
-        sampleClassesFuture.onSuccess(null); // TODO better syntax
+        logger.info("bypassing compounds fetching - loadstate");
+        compoundsFuture.bypass();
       }
       chosenDatasets = newChosenDatasets;
       chosenSampleClass = newSampleClass;
@@ -91,12 +91,15 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     compoundsFuture.addSuccessCallback(allCompounds -> {
       logger.info("processing compounds");
       // Filter chosen compounds to valid choices
-      chosenCompounds = filterCompounds(getStorage().compoundsStorage.getIgnoringException(), allCompounds);
+      compoundSelector.acceptCompounds(allCompounds);
+      chosenCompounds = filterCompounds(getStorage().compoundsStorage.getIgnoringException(), 
+          compoundSelector.allCompounds());
       getStorage().compoundsStorage.store(chosenCompounds);    
-      
+      compoundSelector.setChosenCompounds(chosenCompounds);
+    });
+    compoundsFuture.addNonErrorCallback(() -> {
       groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds);
       groupInspector.loadGroups();
-      compoundSelector.setChosenCompounds(chosenCompounds);
     });
   }
   
@@ -180,8 +183,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
   }
   
-  private List<String> filterCompounds(List<String> chosenList, String[] bigList) {
-    HashSet<String> compoundsSet = new HashSet<String>(Arrays.asList(bigList));
+  private List<String> filterCompounds(List<String> chosenList, List<String> bigList) {
+    HashSet<String> compoundsSet = new HashSet<String>(bigList);
     return chosenList.stream().filter(c -> compoundsSet.contains(c)).collect(Collectors.toList());
   }
 
@@ -214,7 +217,8 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
     getStorage().sampleClassStorage.store(newSampleClass);
     fetchCompounds(new Future<String[]>(), newSampleClass).addSuccessCallback(allCompounds ->  {
-      chosenCompounds = filterCompounds(chosenCompounds, allCompounds);
+      compoundSelector.acceptCompounds(allCompounds);
+      chosenCompounds = filterCompounds(chosenCompounds, compoundSelector.allCompounds());
       getStorage().compoundsStorage.store(chosenCompounds);
       groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
     });
@@ -249,7 +253,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       FutureUtils.beginPendingRequestHandling(future, this, 
           "Unable to fetch sampleclasses");
     } else {
-      future.onSuccess(null);
+      future.bypass();
     }
     
     future.addSuccessCallback(sampleClasses -> {
@@ -278,27 +282,30 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     Future<String[]> compoundsFuture = new Future<String[]>();
     
     sampleClassesFuture.addSuccessCallback(sampleClasses -> {
-      if (sampleClasses != null && // should use better syntax for this
-          !Arrays.stream(sampleClasses).anyMatch(chosenSampleClass::equals)) {
+      if (!Arrays.stream(sampleClasses).anyMatch(chosenSampleClass::equals)) {
         Window.alert("Sampleclass and dataset mismatch for group " + group.getName() + 
             "; this could be due to changes in backend data. Application may now be in an "
             + "inconsistent state.");
       }
-      
+    });
+    sampleClassesFuture.addNonErrorCallback(()-> {
       filterTools.sampleClassChanged(sampleClass);
       
-      if (sampleClassesFuture.actuallyRan() || 
-          !sampleClass.equals(chosenSampleClass)) {
+      if (sampleClassesFuture.actuallyRan() || !sampleClass.equals(chosenSampleClass)) {
         fetchCompounds(compoundsFuture, sampleClass);
       } else {
-        compoundsFuture.fakeSuccess(null);
+        logger.info("bypassing compounds fetching - edit group");
+        compoundsFuture.bypass();
       }
       chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
     });
     
     compoundsFuture.addSuccessCallback(allCompounds ->  {
       compoundSelector.acceptCompounds(allCompounds);
-      chosenCompounds = filterCompounds(compounds, allCompounds);
+    });
+    
+    compoundsFuture.addNonErrorCallback(() ->  {
+      chosenCompounds = filterCompounds(compounds, compoundSelector.allCompounds());
       compoundSelector.setChosenCompounds(chosenCompounds);
       getStorage().compoundsStorage.store(chosenCompounds);
       if (chosenCompounds.size() < compounds.size()) {
