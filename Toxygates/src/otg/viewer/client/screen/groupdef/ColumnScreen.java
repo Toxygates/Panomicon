@@ -109,10 +109,9 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     });
     compoundsFuture.addNonErrorCallback(() -> {
       chosenCompounds = filterCompounds(newChosenCompounds, compoundSelector.allCompounds());
-      getStorage().compoundsStorage.store(newChosenCompounds);    
-      compoundSelector.setChosenCompounds(newChosenCompounds);
+      getStorage().compoundsStorage.store(chosenCompounds);    
+      compoundSelector.setChosenCompounds(chosenCompounds);
     });
-    
   }
   
   private void warnIfSampleClassInvalid(Future<SampleClass[]> sampleClassesFuture) {
