@@ -16,6 +16,8 @@ import t.viewer.shared.TimeoutException
 import t.viewer.server.rpc.NetworkState
 import t.platform.mirna.TargetTable
 import otg.viewer.server.AppInfoLoader
+import otg.viewer.server.DrugTargetResolver
+import otg.viewer.server.MirnaResolver
 
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otg.viewer.client.rpc.ProbeService {
@@ -99,10 +101,10 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
 
+    val resolvers = Seq(new DrugTargetResolver(sampleStore, chembl, drugBank).lookup,
+      new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform).lookup)
+
     new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
-        platformsCache,
-        b2rKegg, uniprot, chembl, drugBank,
-        targetTable, sidePlatform,
-        sc, types, _probes).resolve
+        b2rKegg).resolve(types, sc, sf, _probes, resolvers)
   }
 }

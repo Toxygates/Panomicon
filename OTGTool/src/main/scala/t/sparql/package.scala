@@ -31,10 +31,10 @@ package object sparql {
   import scala.language.implicitConversions
 
   type DSampleId = t.db.SampleId
-  
-  type SMMap = CMap[String, CSet[String]]
-  type SMPMap = CMap[String, CSet[(String, String)]]
+
   type MMap[K, T] = CMap[K, CSet[T]]
+
+  //Multimap of BioObjects.
   type BBMap = MMap[_ <: BioObject, _ <: BioObject]
 
   def emptySMMap() = emptyMMap[String, String]()
