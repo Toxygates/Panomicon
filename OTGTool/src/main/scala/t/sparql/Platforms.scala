@@ -87,6 +87,10 @@ class Platforms(baseConfig: BaseConfig) extends
       x
     }
 
+  /**
+   * Create those attributes in AttributeSet that did not already exist there,
+   * but that are referenced by the triplestore.
+   */
   def populateAttributes(into: AttributeSet): Unit = {
     val timeout: Int = 60000
      val attribs = triplestore.mapQuery(s"""$tPrefixes
@@ -134,7 +138,7 @@ class Platforms(baseConfig: BaseConfig) extends
       |    OPTIONAL { ?probe t:section ?sec. }
       |   }
       |}""".stripMargin, timeout)
-     
+
     val attribSet = otg.model.sample.AttributeSet.getDefault
 
     val bpcons = bps.map(x => BioParameter(
