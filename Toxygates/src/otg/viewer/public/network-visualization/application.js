@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 /* identifiers for cystoscape display panels */
 const MAIN_ID = 0; // left-side
 const SIDE_ID = 1; // right-side
@@ -6,8 +6,6 @@ const BOTH_ID = 2; // both panels, used for intersection
 
 /* these are the main and side graphs - as Cytoscape objects */
 var vizNet = [null, null];
-
-/**   API USED BY TOXYGATES TO HANDLE THE CONNECTION TO VISUALIZATION **/
 
 /**
  * Initialize the main visualization display.
@@ -45,7 +43,6 @@ function onReadyForVisualization(){
       $('#nodePopper').css('display', 'none');
     })
   ;
-
 }
 
 /**

@@ -3,8 +3,6 @@
  * Set the default style for each type of element within a cytoscape network,
  * i.e. nodes and edges. Also set up a special display to appy to currently
  * selected nodes.
- *
- * This function is declared as an extension to Cytoscape's core
  */
 function initStyle(){
   this.resize();
@@ -264,69 +262,69 @@ function loadElements(network){
 }
 
 /**
- * Apply two different layouts, defined by innerName and outerName respectively,
- * to two subsets of nodes within a collection. The inner layout is applied to
- * the nodes in eles, while the outer layout is applied to the remainder of the
- * nodes in the collection.
- * @param {graph} cy The cytoscape for which we are trying to find an
- * intersection. The intersection on both graphs will be given the same layout,
- * whilst other elements will be layed out separately for each graph.
- * @param {string} innerName The name of the layout used for the intersection
- * @param {string} outerName The name of the layout applied to the remainder
- * nodes in both graphs
- * EXTENSION TO CYTOSCAPE - CORE
+ * Apply a composite layout to both panels simultaneously.
+ * Two different layout options are applied to both networks, the first layout,
+ * identified by inLyt is applied only to elements that are part of the
+ * intersection of both networks. The second layout, identified by outLyt, is
+ * applied to all remainder elements on both networks.
+ * @param {graph} cy The second cytoscape element, where we will look for
+ * intersecting elements
+ * @param {string} inLyt Identifier for the layout used on the intersection
+ * @param {string} outLyt Identifier for the layout used on remainder elements
  */
-function dualLayout(cy, innerName, outerName="grid"){
-  /* get the intersection between this network and cy */
-  let intersection = this.elements().intersection(cy.elements());
-
-  /* the remainder elements are the absolute complement to the intersection, we
-  * remove them from the graph, in order to apply the inner layout only to the
-  * intersecting nodes */
-  let outer = this.remove(intersection.absoluteComplement());
-
-  /* define the layouts for intersecting nodes on both graphs */
-  let innerlay = this.updateLayout(innerName);
-  /* once the positioning of the intersecting nodes in the current graph is
-  * finished, we used them to also position the intersecting nodes in the cy
-  * graph */
-  innerlay.promiseOn('layoutstop').then(function(eles){
-    /* we copy the position of each node in the current graph */
-    eles.forEach(function(node){
-      cy.$("#"+node.id())
-      .position(node.position());
-    });
-  }.bind(null, this.nodes()));
+function dualLayout(cy, inLyt, outLyt="grid"){
+  /* get the intersection between this network and cy, resulting elements are
+   * part of cy (the second collection) */
+  let intersection = this.elements(':visible').intersection(cy.elements(':visible'));
+  /* define the layout for the intersecting elements */
+  let innerlay = intersection.updateLayout(inLyt);
+  /* since running the layout will only change the position of the nodes in the
+   * second graph, we need to assign the same position to the nodes in the first
+   * graph */
+  innerlay.promiseOn('layoutstop').then(function(){
+    intersection.forEach(function(ele,i,eles){
+      if (ele.cy().container().id === 'leftDisplay'){
+        cy.$('#'+ele.id())[0]
+        .position(ele.position())
+        ;
+      }
+      else{
+        this.$('#'+ele.id())[0]
+          .position(ele.position())
+        ;
+      }
+    },this);
+  }.bind(this));
   /* run the layout for intersecting nodes */
   innerlay.run();
 
-  /* define the layout for nodes outside the intersection on the current graph */
-  let outerlay = outer.updateLayout(outerName);
+  /* we select the elements within the current graph that are not part of the
+   * intersection, so we can apply a second layout to them */
+  let thisDif = this.elements(':visible').difference(intersection);
+  /* define the layout for these elements */
+  let thisDifLay = thisDif.updateLayout(outLyt);
   /* once the layout is finished, shift the position of the nodes down by the
-  * size of the bounding box of the intersecting nodes and fit all the elements
-  * to the viewport */
-  outerlay.promiseOn('layoutstop').then(function(graph){
-    /* shift the nodes down */
-    outer.shift('y', graph.elements().boundingBox().y2);
-    /* restore the nodes into the graph for display */
-    outer.restore();
-    /* fit the whole graph to the viewport */
-    graph.fit();
-  }.bind(null, this));
+   * size of the bounding box of the intersecting nodes and fit all the elements
+   * to the viewport */
+  thisDifLay.promiseOn('layoutstop').then(function(){
+    thisDif.shift('y', intersection.boundingBox().y2);
+    this.fit();
+  }.bind(this));
   /* run the layout */
-  outerlay.run();
+  thisDifLay.run();
 
-  /* Define a layout for nodes of cy outside the intersection */
-  let dif = cy.elements().difference(intersection);
-  let diflay = dif.updateLayout(outerName);
+  /* We do the same for the nodes of the other graph that are not part of the
+   * intersection */
+  let cyDif = cy.elements(':visible').difference(intersection);
+  let cyDifLay = cyDif.updateLayout(outLyt);
   /* shift and fit the graph after the layout has finished its positioning */
-  diflay.promiseOn('layoutstop').then(function(eles){
-    dif.shift('y', eles.boundingBox().y2);//cy.height());
+  cyDifLay.promiseOn('layoutstop').then(function(){
+    cyDif.shift('y', intersection.boundingBox().y2);
     cy.fit();
 
-  }.bind(null, this.elements()));
+  });
   /* run the layout */
-  diflay.run();
+  cyDifLay.run();
 }
 
 /**
@@ -491,8 +489,6 @@ function updateLayout(name="null", boundingBox=undefined){
   });
 }
 
-
-
 /**
  * Return the list of nodes in the current network, using the ToxyNode data
  * structure.
@@ -545,17 +541,15 @@ function getToxyInteractions(){
 }
 
 // add functions to cytoscape prototype
+cytoscape('collection', 'setDefaultStyle', setDefaultStyle);
+cytoscape("collection", "updateLayout", updateLayout);
+
 cytoscape("core", "hideUnconnected", hideUnconnected);
 cytoscape("core", "mergeWith", mergeWith);
-// cytoscape("core", "setDefaultStyle", setDefaultStyle);
-cytoscape('collection', 'setDefaultStyle', setDefaultStyle);
 cytoscape("core", "toggleIntersectionHighlight", toggleIntersectionHighlight);
-
 cytoscape("core", "initStyle", initStyle);
 cytoscape("core", "updateLayout", updateLayout);
-cytoscape("collection", "updateLayout", updateLayout);
 cytoscape('core', 'loadElements', loadElements);
-
 cytoscape("core", "dualLayout", dualLayout);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "toggleHiddenNodes", toggleHiddenNodes);

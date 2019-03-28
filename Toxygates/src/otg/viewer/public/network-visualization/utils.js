@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 /** types of nodes that can be added to the visualization */
 const nodeType = Object.freeze({
@@ -24,7 +24,6 @@ const edgeColor = Object.freeze({
   REGULAR: '#989898',
   HIGHLIGHT: '#ffde4c',
 });
-
 
 /**
  * Display color scale modal dialog
