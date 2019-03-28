@@ -109,11 +109,9 @@ class MirnaResolver(probeStore: OTGProbes, platforms: t.viewer.server.Platforms,
   }
 }
 
-
 /**
  * The association resolver looks up probe associations based on the AType enum.
- * Subresolvers provide partial functions that perform the resolution task.
- *
+ * Subresolvers provide partial functions that perform the resolution.
  */
 class AssociationResolver(probeStore: OTGProbes,
     sampleStore: OTGSamples,
@@ -138,36 +136,35 @@ class AssociationResolver(probeStore: OTGProbes,
 
   /**
    * Resolve associations for a single type.
+   * @param at The association being resolved
+   * @param sc SampleClass that associations are being resolved for
+   * @param sf SampleFilter that the user currently can view
+   * @param probes Probes whose associations are being obtained
+   * @param extraResolvers Additional resolvers to also use
    */
   def associationLookup(at: AType,  sc: SampleClass, sf: SampleFilter,
                         probes: Iterable[Probe], extraResolvers: Iterable[AssociationLookup]): BBMap = {
     val resolvers = (Seq(mainResolver) ++ extraResolvers).reduce(_ orElse _)
 
-    if (resolvers.isDefinedAt(at, sc, sf, probes)) {
-      resolvers(at, sc, sf, probes)
-    } else {
-      throw new Exception("Unexpected annotation type")
+    resolvers.lift(at, sc, sf, probes) match {
+      case Some(r) => r
+      case None =>  throw new Exception("Unexpected annotation type")
     }
   }
-
 
   val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
   def errorVals(probes: Iterable[Probe]) = Map() ++
     probes.map(p => (Probe(p.identifier) -> emptyVal))
 
-  def errorAssoc(t: AType, probes: Iterable[Probe]) = new Association(t,
-    convertAssociations(standardMapping(errorVals(probes))), false, false)
+  def errorAssoc(t: AType, probes: Iterable[Probe]) =
+    new Association(t,
+    convertAssociations(errorVals(probes)), false, false)
 
   def queryOrEmpty[T](t: AType, probes: Iterable[Probe], f: => BBMap): Association = {
-    gracefully(
-      new Association(t,
-        convertAssociations(standardMapping(f)),
+    gracefully(new Association(t,
+        convertAssociations(f),
         sizeLimitExceeded, true), errorAssoc(t, probes))
   }
-
-  //Convert a BBMap into the type we can use for building Java collections
-  def standardMapping(m: BBMap): MMap[String, (String, String, Option[String])] =
-    m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier, p.additionalInfo))
 
   def resolve(types: Iterable[AType], sc: SampleClass, sf: SampleFilter,
     probes: Iterable[String],

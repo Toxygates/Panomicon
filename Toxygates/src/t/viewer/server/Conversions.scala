@@ -39,6 +39,7 @@ import t.viewer.shared.AssociationValue
 import t.common.shared.GroupUtils
 import t.common.shared.sample.Group
 import java.util.NoSuchElementException
+import t.db.BioObject
 
 object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Option[Species.Species] =
@@ -64,12 +65,13 @@ object Conversions {
   def asJavaPair[T,U](v: (T, U)) = new t.common.shared.FirstKeyedPair(v._1, v._2)
 
    //Convert from scala coll types to serialization-safe java coll types.
-	def convertAssociations(m: CMap[String, CSet[(String, String, Option[String])]]):
+	def convertAssociations(m: CMap[_ <: BioObject, CSet[_ <: BioObject]]):
 	  JHMap[String, JHSet[AssociationValue]] = {
 	  val r = new JHMap[String, JHSet[AssociationValue]]
 	    val mm: CMap[String, CSet[AssociationValue]] =
 	      m.map(k =>
-	        (k._1 -> k._2.map(x => new AssociationValue(x._1, x._2, x._3.getOrElse(null))))
+	        (k._1.identifier -> k._2.map(x =>
+	          new AssociationValue(x.name, x.identifier, x.additionalInfo.getOrElse(null))))
 	          )
     addJMultiMap(r, mm)
     r

@@ -92,8 +92,10 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 
+  private lazy val drugTargetResolver = new DrugTargetResolver(sampleStore, chembl, drugBank).lookup
+
   override def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] = {
+    probes: Array[String]): Array[Association] = {
     implicit val sf = getState.sampleFilter
 
     val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
@@ -101,10 +103,10 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
 
-    val resolvers = Seq(new DrugTargetResolver(sampleStore, chembl, drugBank).lookup,
+    val resolvers = Seq(drugTargetResolver,
       new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform).lookup)
 
     new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
-        b2rKegg).resolve(types, sc, sf, _probes, resolvers)
+        b2rKegg).resolve(types, sc, sf, probes, resolvers)
   }
 }

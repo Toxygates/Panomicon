@@ -7,8 +7,9 @@ import t.model.SampleClass
 
 package object server {
   /**
-   * An association resolver function defined for some combinations of association types
+   * An association resolver partial function defined for some combinations of association types
    * and probes.
+   * Different AssociationLookups are chained together to form the final resolution mechanism.
    */
   type AssociationLookup = PartialFunction[(AType, SampleClass, SampleFilter, Iterable[Probe]), BBMap]
 }
