@@ -212,7 +212,8 @@ function loadElements(network){
     let id = e.id;
     let type = nodeType[e.type];
     let weight = e.weight;
-    let label = (e.symbol.length > 0) ? e.symbol[0] : id;
+    let symbol = (e.symbol.length > 0) ? e.symbol : [id];
+    let label = symbol[0];
     let color = e.color !== undefined ? e.color : nodeColor[nodeType[e.type]];
     let shape = e.shape !== undefined ? e.shape : nodeShape[nodeType[e.type]] ;
     /* use the properties to create a new cytoscape node element */
@@ -222,6 +223,7 @@ function loadElements(network){
       data:{
         id: id,
         label: label,
+        symbol: symbol,
         color: color,
         borderColor: color,
         type: type,
@@ -490,54 +492,48 @@ function updateLayout(name="null", boundingBox=undefined){
 }
 
 /**
- * Return the list of nodes in the current network, using the ToxyNode data
- * structure.
- * Required functionality for the persistance of the graphic network within the
- * Toxygates system.
- * @return The list of nodes that comprise the network.
- */
-function getToxyNodes(){
-  // create an empty list of nodes
-  var toxyNodes = [];
-
-  this.nodes().forEach(function(node){
-    var data = node.data();
-    // for each node, we create a new instance of ToxyNodes and initialize it
-    // with the corresponding values
-    var tn = new ToxyNode(data["id"], data["type"], [data["label"]]);
-    tn.setWeights(data["weight"]);
-
-    var position = node.position();
-    tn.x = position["x"];
-    tn.y = position["y"];
-
-    tn.color = data["color"];
-    tn.shape = node.style()["shape"];
-    // once its ready, we add the node to our return list
-    toxyNodes.push(tn);
-  });
-
-  return toxyNodes;
+* Return the name of the network
+*/
+function getName(){
+  return this.options().container.data('title');
 }
 
 /**
- * Return the list of interactions, using the Interactions data structure from
- * Toxygates.
- * Required functionality for the persistance of the graphic network within the
- * Toxygates system.
- * @return The list of interactions that comprise the network.
+ * Return the current cytoscape network as ToxyGates Network.
+ * Method used to provide persistance to networks being developed using the
+ * visualization functionalities.
+ * @return A Network object that entails the whole contents of the current
+ * cytoscape graph.
  */
-function getToxyInteractions(){
-  // create an empty list of interactions
-  var toxyInter = [];
+function getNetwork(){
+  /* A network is defined by three elements, a title, a list of nodes, and a
+   * list of interactions */
+  let title = this.options().container.data('title');
+  let nodes = [];
+  let interactions = [];
 
-  this.edges().forEach(function(edge){
-    var data = edge.data();
-    var te = new Interaction(data["source"], data["target"]);
-    toxyInter.push(te);
+  /* Add the nodes to the defined list */
+  this.nodes().forEach(function(node){
+    let data = node.data();
+    let pos = node.position();
+    let shape = node.style().shape;
+    /* define a new instance of ToxyNode, with all the corresponding fields */
+    let tn = new ToxyNode(data.id, data.type, data.symbol);
+    tn.setWeights(data.weight);
+    tn.setPosition(pos.x, pos.y);
+    tn.color = data.color;
+    tn.shape = shape;
+    /* add the node to the list */
+    nodes.push(tn);
   });
 
-  return toxyInter;
+  /* Add the interactions to the defined list */
+  this.edges().forEach(function(edge){
+    let data = edge.data();
+    interactions.push(new Interaction(data.source, data.target));
+  });
+  /* return the list defined by all elements */
+  return new Network(title, interactions, nodes);
 }
 
 // add functions to cytoscape prototype
@@ -553,5 +549,5 @@ cytoscape('core', 'loadElements', loadElements);
 cytoscape("core", "dualLayout", dualLayout);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "toggleHiddenNodes", toggleHiddenNodes);
-cytoscape("core", "getToxyNodes", getToxyNodes);
-cytoscape("core", "getToxyInteractions", getToxyInteractions);
+cytoscape('core', 'getName', getName);
+cytoscape('core', 'getNetwork', getNetwork);
