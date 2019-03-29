@@ -492,10 +492,18 @@ function updateLayout(name="null", boundingBox=undefined){
 }
 
 /**
-* Return the name of the network
-*/
+ * Return the name of the network
+ */
 function getName(){
   return this.options().container.data('title');
+}
+
+/**
+ * Set the title of the network
+ * @param {string} title
+ */
+function setName(title){
+  this.options().container.data('title', title);
 }
 
 /**
@@ -550,4 +558,5 @@ cytoscape("core", "dualLayout", dualLayout);
 cytoscape("core", "initContextMenu", initContextMenu);
 cytoscape("core", "toggleHiddenNodes", toggleHiddenNodes);
 cytoscape('core', 'getName', getName);
+cytoscape('core', 'setName', setName);
 cytoscape('core', 'getNetwork', getNetwork);
