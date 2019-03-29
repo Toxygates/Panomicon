@@ -72,10 +72,9 @@ class NetworkBuilder(targets: TargetTable,
 
   def interactions(ints: Iterable[(MiRNA, Probe, Double, String)]) = {
     for {
-      iact <- ints;
-      (mirna, probe, score, db) = iact;
-      miLookup <- lookup(mirna); pLookup <- lookup(probe);
-      label = TargetTable.interactionLabel(iact);
+      iact <- ints
+      (mirna, probe, score, label) = iact
+      miLookup <- lookup(mirna); pLookup <- lookup(probe)
       int = new Interaction(miLookup, pLookup, label, score)
     } yield int
   }

@@ -7,8 +7,21 @@ import t.platform.Species.Species
 import scala.collection.immutable.DefaultMap
 
 object TargetTable {
-  def interactionLabel(intn: (Any, Any, Double, String)) =
-    s"${intn._4} (score: ${"%.3f".format(intn._3)})"
+  def interactionLabel(score: Double, database: String, levels: Option[Map[Double, String]]) = {
+    levels match {
+      case Some(ls) =>
+        ls.get(score) match {
+          case Some(lev) => supportLabel(lev, database)
+          case None => scoreLabel(score, database)
+        }
+      case None => scoreLabel(score, database)
+    }
+  }
+  def scoreLabel(score: Double, database: String) =
+    s"$database (score: ${"%.3f".format(score)})"
+
+  def supportLabel(support: String, database: String) =
+    s"$database ($support)"
 
   def empty = (new TargetTableBuilder).build
 }
@@ -23,25 +36,23 @@ object TargetTable {
  * Convention: origins are miRNAs such as hsa-let-7a-2-3p,
  * targets are mRNAs (identified by refSeq transcripts
  * such as NM_133594)
- *
- * The database array identifies the source of a particular origin-target pair.
  */
 class TargetTable(
   val origins: Array[String],
   val targets: Array[String],
   val scores: Array[Double],
-  val database: Array[String]) extends IndexedSeq[Interaction] {
+  val labels: Array[String]) extends IndexedSeq[Interaction] {
 
   override val length: Int = origins.length
 
-  def apply(i: Int) = (MiRNA(origins(i)), RefSeq(targets(i)), scores(i), database(i))
+  def apply(i: Int) = (MiRNA(origins(i)), RefSeq(targets(i)), scores(i), labels(i))
 
   def filterWith(test: Int => Boolean): TargetTable = {
-    val builder = new TargetTableBuilder
+    val builder = new TargetTableBuilder()
     for {
       i <- 0 until size;
       if test(i)
-    } builder.add(MiRNA(origins(i)), RefSeq(targets(i)), scores(i), database(i))
+    } builder.add(MiRNA(origins(i)), RefSeq(targets(i)), scores(i), labels(i))
 
     builder.build
   }
@@ -57,7 +68,8 @@ class TargetTable(
   /**
    * Find probes in the platform that match the given transcripts.
    */
-  def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]): Iterable[(RefSeq, Iterable[Probe])] = {
+  def probesForTranscripts(platform: Iterable[Probe], transcripts: Iterable[RefSeq]):
+    Iterable[(RefSeq, Iterable[Probe])] = {
     // Note: this function could be a static lookup map?
     val allTrn = transcripts.toSet
     val r = for {
@@ -70,19 +82,19 @@ class TargetTable(
   /**
    * miRNA to mRNA lookup without a platform. Simple RefSeq IDs will be returned.
    */
-  def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, DatabaseID)] = {
+  def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, String)] = {
     val allMicro = miRNAs.toSet
     for {
-      (origin, target, score, db) <- this;
+      (origin, target, score, label) <- this;
       if (allMicro.contains(origin))
-    } yield (origin, target, score, db)
+    } yield (origin, target, score, label)
   }
 
   /**
    * Efficient miRNA to mRNA lookup for a specific mRNA platform.
    * mRNA probes in the platform must have transcripts populated.
    */
-  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, DatabaseID)] = {
+  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {
     val allTrn = targets(miRNAs)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     allTrn.flatMap(x => probeLookup.get(x._2) match {
@@ -95,7 +107,7 @@ class TargetTable(
    * Efficient mRNA to miRNA lookup.
    * Probes must have transcripts populated.
    */
-  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA, Double, DatabaseID)] = {
+  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA, Double, String)] = {
     val allTrns = mRNAs.flatMap(p => p.transcripts.map(tr => (tr, p)))
     val allTrLookup = allTrns.groupBy(_._1)
     val allTrKeys = allTrLookup.keySet
@@ -112,8 +124,6 @@ class TargetTable(
     case None    => data
   }
 
-  final def label(x: (Any, Any, Double, String)) = TargetTable.interactionLabel(x)
-
   /**
    * Convenience method.
    * If not from MiRNA, then probes must have transcripts populated.
@@ -128,40 +138,40 @@ class TargetTable(
       val targetRes = platform match {
         //Return probes in the requested mRNA platform
         case Some(p) => targets(probes.map(p => MiRNA(p.identifier)), p).map(x =>
-          (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some(label(x)))))
+          (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some(x._4))))
         //Return plain RefSeq IDs
         case None => targets(probes.map(p => MiRNA(p.identifier))).map(x =>
-          (x._1.asProbe, DefaultBio(x._2.id, x._2.id, Some(label(x)))))
+          (x._1.asProbe, DefaultBio(x._2.id, x._2.id, Some(x._4))))
       }
 
       makeMultiMap(limitSize(targetRes,sizeLimit))
     } else {
       makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
-        (x._1, DefaultBio(x._2.id, x._2.id, Some(label(x))))))
+        (x._1, DefaultBio(x._2.id, x._2.id, Some(x._4)))))
     }
   }
 }
 
-class TargetTableBuilder() {
+class TargetTableBuilder {
   var origins = List[String]()
   var targets = List[String]()
   var scores = List[Double]()
-  var dbs = List[DatabaseID]()
+  var labels = List[String]()
 
   def add(origin: MiRNA, target: RefSeq, score: Double,
-    db: DatabaseID) {
+    label: String) {
     origins ::= origin.id
     targets ::= target.id
     scores ::= score
-    dbs ::= db
+    labels ::= label
   }
 
   def addAll(other: TargetTable) {
-    for ((o, t, sc, db) <- other) {
-      add(o, t, sc, db)
+    for ((o, t, sc, label) <- other) {
+      add(o, t, sc, label)
     }
   }
 
   def build =
-    new TargetTable(origins.toArray, targets.toArray, scores.toArray, dbs.toArray)
+    new TargetTable(origins.toArray, targets.toArray, scores.toArray, labels.toArray)
 }

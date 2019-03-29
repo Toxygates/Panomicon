@@ -26,7 +26,9 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       s"$mirnaDir/mirdb_filter.txt",
       new MiRDBConverter(_, "MiRDB 5.0").makeTable)
 
-  lazy val targetmineTable =
+  def reverse[A,B](xs: Map[A,B]) = xs.map(x => (x._2 -> x._1))
+
+  lazy val mirtarbaseTable =
     tryReadTargetTable(
       s"$mirnaDir/tm_mirtarbase.txt",
       MiRNATargets.tableFromFile(_))
@@ -34,7 +36,7 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
   protected def mirnaTargetTable(source: MirnaSource) = {
     val table = source.id match {
       case MiRDBConverter.mirdbGraph       => mirdbTable
-      case AppInfoLoader.TARGETMINE_SOURCE => targetmineTable
+      case AppInfoLoader.TARGETMINE_SOURCE => mirtarbaseTable
       case _                               => throw new Exception("Unexpected MiRNA source")
     }
     table match {
@@ -44,5 +46,5 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
         Console.err.println(s"MirnaSource target table unavailable for ${source.id}")
         None
     }
-  } 
+  }
 }
