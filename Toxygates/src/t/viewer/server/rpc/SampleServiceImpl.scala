@@ -42,31 +42,15 @@ import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
 import t.viewer.shared._
 
-object SampleServiceImpl {
-  var inited = false
-
-  //TODO update mechanism for this
-  var platforms: Map[String, Iterable[Probe]] = _
-
-  def staticInit(c: t.Context) = synchronized {
-    if (!inited) {
-      platforms = c.probes.platformsAndProbes
-      inited = true
-    }
-  }
-}
-
 class SampleState(instanceURI: Option[String]) {
   var sampleFilter: SampleFilter = SampleFilter(instanceURI = instanceURI)
 }
 
 /**
- * SPARQL query servlet.
+ * Servlet for querying sample related information.
  */
 abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   SampleService {
-
-  import SampleServiceImpl._
   import ScalaUtils._
 
   type DataColumn = t.common.shared.sample.DataColumn[Sample]
@@ -90,10 +74,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     val platforms = new t.sparql.Platforms(baseConfig)
     platforms.populateAttributes(baseConfig.attributes)
 
-    /* Note: if staticInit does not read platformsAndProbes, some sparql queries
-     * fail on startup (probably due to a race condition). Reasons unclear at the moment.
-     */
-    staticInit(context)
     this.configuration = conf
     this.instanceURI = conf.instanceURI
   }

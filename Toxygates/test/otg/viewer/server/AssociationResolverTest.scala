@@ -65,19 +65,11 @@ class AssociationResolverTest extends TTestSuite {
   val sampleStore = new OTGSamples(baseConf)
   val b2rKegg = new B2RKegg(tsc.triplestore)
   val uniprot = new LocalUniprot(tsc.triplestore)
-  val chembl = new ChEMBL()
-  val drugBank = new DrugBank()
 
-  def ar(types: Array[AType]) = new AssociationResolver(probeStore,
-      sampleStore,
-      new t.viewer.server.Platforms(Map()),
-      b2rKegg, uniprot, chembl, drugBank,
-      TargetTable.empty, None,
-      sc, types, probes
-      )(SampleFilter())
+  val ar = new AssociationResolver(probeStore, sampleStore, b2rKegg)
 
   private def testAssociation(typ: AType) = {
-    val as = ar(Array(typ)).resolve
+    val as = ar.resolve(Seq(typ), sc, SampleFilter(), probes)
     assert (as.size == 1)
     assert(as(0).`type`() == typ)
     assert(as(0).data.size > 0)
@@ -101,17 +93,5 @@ class AssociationResolverTest extends TTestSuite {
 
   test ("UniProt") {
     testAssociation(AType.Uniprot)
-  }
-//
-//  test ("OrthProts") {
-//    testAssociation(AType.OrthProts)
-//  }
-
-  test ("CHEMBL") {
-    testAssociation(AType.Chembl)
-  }
-
-  test ("DrugBank") {
-    testAssociation(AType.Drugbank)
   }
 }

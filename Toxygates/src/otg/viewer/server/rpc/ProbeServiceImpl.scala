@@ -16,6 +16,8 @@ import t.viewer.shared.TimeoutException
 import t.viewer.server.rpc.NetworkState
 import t.platform.mirna.TargetTable
 import otg.viewer.server.AppInfoLoader
+import otg.viewer.server.DrugTargetResolver
+import otg.viewer.server.MirnaResolver
 
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otg.viewer.client.rpc.ProbeService {
@@ -90,8 +92,10 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 
+  private lazy val drugTargetResolver = new DrugTargetResolver(sampleStore, chembl, drugBank).lookup
+
   override def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] = {
+    probes: Array[String]): Array[Association] = {
     implicit val sf = getState.sampleFilter
 
     val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
@@ -99,10 +103,10 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
 
+    val resolvers = Seq(drugTargetResolver,
+      new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform).lookup)
+
     new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
-        platformsCache,
-        b2rKegg, uniprot, chembl, drugBank,
-        targetTable, sidePlatform,
-        sc, types, _probes).resolve
+        b2rKegg).resolve(types, sc, sf, probes, resolvers)
   }
 }

@@ -61,6 +61,9 @@ object ProbeServiceImpl {
   val APPINFO_KEY = "appInfo"
 }
 
+/**
+ * Servlet for querying probe related information.
+ */
 abstract class ProbeServiceImpl extends StatefulServlet[ProbeState]
 with ProbeService {
   import ProbeServiceImpl._

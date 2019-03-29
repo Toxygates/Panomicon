@@ -20,80 +20,57 @@
 
 package otg.viewer.server
 
+import scala.collection.{ Set => CSet }
+
 import otg.sparql._
-import otg.viewer.server.rpc.Conversions._
 import t._
+import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
+import t.common.shared.AType._
 import t.db.DefaultBio
 import t.model.SampleClass
 import t.platform.Probe
-import t.platform.Species._
 import t.platform.mirna.TargetTable
 import t.sparql._
 import t.sparql.secondary._
 import t.sparql.toBioMap
+import t.viewer.server._
 import t.viewer.server.Conversions._
-import t.viewer.server.intermine.IntermineConnector
-import t.viewer.server.intermine.TargetmineColumns
-import t.viewer.shared.mirna.MirnaSource
-import t.platform.mirna.MiRDBConverter
+import t.viewer.shared.Association
 
-/**
- * Association resolver for Open TG-GATEs-specific associations.
- * TODO: this is a little complex, should be split up or arranged differently
- */
-class AssociationResolver(probeStore: OTGProbes,
-    sampleStore: OTGSamples,
-    platforms: t.viewer.server.Platforms,
-    b2rKegg: B2RKegg,
-    uniprot: Uniprot,
-    chembl: ChEMBL,
-    drugBank: DrugBank,
-    mirnaTable: TargetTable,
-    sidePlatform: Option[String], //Needed for MiRNA resolution
-    sc: SampleClass, types: Array[AType],
-     _probes: Iterable[String])(implicit sf: SampleFilter) extends
-     t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
 
-      //    val sp = asSpecies(sc)
-    //orthologous proteins if needed
-    lazy val oproteins = {
+class DrugTargetResolver(sampleStore: OTGSamples, chembl: ChEMBL,
+                         drugBank: DrugBank) {
 
-      val r = if ((types.contains(AType.Chembl) ||
-        types.contains(AType.Drugbank) ||
-        types.contains(AType.OrthProts))
-        //      && (sp != Human)
-        && false // Not used currently due to performance issues!
-        ) {
-        // This always maps to Human proteins as they are assumed to contain the most targets
-        val r = proteins combine ((ps: Iterable[Protein]) => uniprot.orthologsFor(ps, Human))
-        r
-      } else {
-        emptyMMap[Probe, Protein]()
-      }
-      println(r.allValues.size + " oproteins")
-      r
-    }
+  def lookup: AssociationLookup = {
+    case (Drugbank, sc, sf, probes) => getTargeting(sc, drugBank, probes)(sf)
+    case (Chembl, sc, sf, probes)   => getTargeting(sc, chembl, probes)(sf)
+  }
 
-    def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
-      val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll).map(Compound.make(_))
+  def getTargeting(sc: SampleClass, from: CompoundTargets, probes: Iterable[Probe])
+    (implicit sf: SampleFilter): MMap[Probe, Compound] = {
+    val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll).map(Compound.make(_))
 
-      //strictly orthologous
-      val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet
-      val allProteins = proteins union oproteins
-      val allTargets = from.targetingFor(allProteins.allValues, expected)
+    val proteins = toBioMap(probes, (_: Probe).proteins)
 
-      allProteins combine allTargets.map(x => if (oproteinVs.contains(x._1)) {
-        (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)")))
-      } else {
-        x
-      })
-    }
+    val allTargets = from.targetingFor(proteins.allValues, expected)
+    proteins combine allTargets
+  }
+}
+
+class MirnaResolver(probeStore: OTGProbes, platforms: t.viewer.server.Platforms, mirnaTable: TargetTable,
+  sidePlatform: Option[String]) {
+  @volatile var sizeLimitExceeded = false
+
+  def lookup: AssociationLookup = {
+      case (MiRNA, sc, _, probes)      => resolveMiRNA(sc, probes, false)
+      case (MRNA, sc, _, probes)       => resolveMiRNA(sc, probes, true)
+  }
 
   /**
    * Look up miRNA-mRNA associations (by default from mRNA)
    */
-  def resolveMiRNAInner(probes: Iterable[Probe],
+  def resolveMiRNAInner(sc: SampleClass, probes: Iterable[Probe],
     fromMirna: Boolean): MMap[Probe, DefaultBio] = {
     val species = asSpecies(sc)
     val sizeLimit = Some(1000)
@@ -118,36 +95,86 @@ class AssociationResolver(probeStore: OTGProbes,
     data
   }
 
-  def resolveMiRNA(probes: Iterable[Probe], fromMirna: Boolean): BBMap = {
+  def resolveMiRNA(sc: SampleClass, probes: Iterable[Probe], fromMirna: Boolean): BBMap = {
     import t.platform.mirna._
     val (isMirna, isNotMirna) = probes.partition(isMiRNAProbe)
 
     if (!fromMirna) {
       val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)
-      val resolved = resolveMiRNAInner(isNotMirna, false)
+      val resolved = resolveMiRNAInner(sc, isNotMirna, false)
       immediateLookup ++ resolved
     } else {
-      resolveMiRNAInner(isMirna, true)
+      resolveMiRNAInner(sc, isMirna, true)
+    }
+  }
+}
+
+/**
+ * The association resolver looks up probe associations based on the AType enum.
+ * Subresolvers provide partial functions that perform the resolution.
+ */
+class AssociationResolver(probeStore: OTGProbes,
+    sampleStore: OTGSamples,
+    b2rKegg: B2RKegg) {
+
+  @volatile protected var sizeLimitExceeded = false
+
+  val mainResolver: AssociationLookup = {
+    case (GOMF, _, _, probes)       => probeStore.mfGoTerms(probes)
+    case (GOBP, _, _, probes)       => probeStore.bpGoTerms(probes)
+    case (GOCC, _, _, probes)       => probeStore.ccGoTerms(probes)
+    case (RefseqTrn, _, _, probes)  => probeStore.refseqTrnLookup(probes)
+    case (RefseqProt, _, _, probes) => probeStore.refseqProtLookup(probes)
+    case (Ensembl, _, _, probes)    => probeStore.ensemblLookup(probes)
+    case (EC, _, _, probes)         => probeStore.ecLookup(probes)
+    case (Unigene, _, _, probes)    => probeStore.unigeneLookup(probes)
+    case (Uniprot, _, _, probes)    => toBioMap(probes, (_: Probe).proteins)
+    case (KEGG, _, _, probes) =>
+      toBioMap(probes, (_: Probe).genes) combine
+        b2rKegg.forGenes(probes.flatMap(_.genes))
+  }
+
+  /**
+   * Resolve associations for a single type.
+   * @param at The association being resolved
+   * @param sc SampleClass that associations are being resolved for
+   * @param sf SampleFilter that the user currently can view
+   * @param probes Probes whose associations are being obtained
+   * @param extraResolvers Additional resolvers to also use
+   */
+  def associationLookup(at: AType,  sc: SampleClass, sf: SampleFilter,
+                        probes: Iterable[Probe], extraResolvers: Iterable[AssociationLookup]): BBMap = {
+    val resolvers = (Seq(mainResolver) ++ extraResolvers).reduce(_ orElse _)
+
+    resolvers.lift(at, sc, sf, probes) match {
+      case Some(r) => r
+      case None =>  throw new Exception("Unexpected annotation type")
     }
   }
 
-  override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
-    import t.common.shared.AType._
-    at match {
-      case GOMF       => probeStore.mfGoTerms(probes)
-      case GOBP       => probeStore.bpGoTerms(probes)
-      case GOCC       => probeStore.ccGoTerms(probes)
-      case OrthProts  => oproteins
-      case Chembl     => getTargeting(sc, chembl)
-      case Drugbank   => getTargeting(sc, drugBank)
-      case RefseqTrn  => probeStore.refseqTrnLookup(probes)
-      case RefseqProt => probeStore.refseqProtLookup(probes)
-      case Ensembl    => probeStore.ensemblLookup(probes)
-      case EC         => probeStore.ecLookup(probes)
-      case Unigene    => probeStore.unigeneLookup(probes)
-      case MiRNA      => resolveMiRNA(probes, false)
-      case MRNA       => resolveMiRNA(probes, true)
-      case _          => super.associationLookup(at, sc, probes)
-    }
-    }
+  val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
+  def errorVals(probes: Iterable[Probe]) = Map() ++
+    probes.map(p => (Probe(p.identifier) -> emptyVal))
+
+  def errorAssoc(t: AType, probes: Iterable[Probe]) =
+    new Association(t,
+    convertAssociations(errorVals(probes)), false, false)
+
+  def queryOrEmpty[T](t: AType, probes: Iterable[Probe], f: => BBMap): Association = {
+    gracefully(new Association(t,
+        convertAssociations(f),
+        sizeLimitExceeded, true), errorAssoc(t, probes))
   }
+
+  def resolve(types: Iterable[AType], sc: SampleClass, sf: SampleFilter,
+    probes: Iterable[String],
+    extraResolvers: Iterable[AssociationLookup] = Seq()): Array[Association] = {
+
+    //Look up all core associations first.
+    //TODO this might not be needed - platformsCache might do a better job
+    val aprobes = probeStore.withAttributes(probes.map(Probe(_)))
+
+    types.par.map(t => queryOrEmpty(t, aprobes,
+      associationLookup(t, sc, sf, aprobes, extraResolvers))).seq.toArray
+  }
+}
