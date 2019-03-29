@@ -1,13 +1,8 @@
-/* Functions that are applied to, or are defined to handle aspects of the
- * network instances, in cytoscape's format */
-
 /**
  * Initialize style for network components
  * Set the default style for each type of element within a cytoscape network,
  * i.e. nodes and edges. Also set up a special display to appy to currently
  * selected nodes.
- *
- * This function is declared as an extension to Cytoscape's core
  */
 function initStyle(){
   this.resize();
@@ -20,8 +15,9 @@ function initStyle(){
       'text-halign': 'center',
       'shape': 'data(shape)',
       'background-color': 'data(color)',
-      'border-width': '1px',
       'border-color': 'data(borderColor)',
+      'border-width': '1px',
+      'display': 'element',
     })
     .selector('node:selected')
     .style({
@@ -34,6 +30,10 @@ function initStyle(){
       'background-color': nodeColor.HIGHLIGHT,
       'border-color': nodeColor.HIGHLIGHT,
     })
+    .selector('node.hidden')
+    .style({
+      'display': 'none',
+    })
     /* default style for edges */
     .selector("edge")
     .style({
@@ -44,17 +44,16 @@ function initStyle(){
       'line-color': edgeColor.HIGHLIGHT,
     })
     .update();
-
 }
 
 /**
- * Display a node's Pop-up
+ * Display a node's Pop-up on hover
  * Handle the display of a pop-up div element, to be shown whenever the user
  * hovers over a node on the network.
  *
- * @type{Event}
- * @param{Event} event The mouseover event triggered when the user hovers over a
- * node on the display.
+ * @type {Event}
+ * @param {Event} event The mouseover event triggered when the user hovers over
+ * a node on the display.
  */
 function onNodeEnter(event){
   /* retrieve the node that has been entered by the user */
@@ -62,7 +61,6 @@ function onNodeEnter(event){
 
   /* update the display content for the pop-up DOM, based on the node's data */
   $('#nodePopper').css('display', 'block');
-  let div = document.createElement('div');
   $('#nodePopper #label').html(node.data("label"));
   $('#nodePopper #type').html(node.data("type"));
   $('#nodePopper #probe').html(node.data("id"));
@@ -79,20 +77,64 @@ function onNodeEnter(event){
 }
 
 /**
- * Remove the display of a node's pop-up
- * Handle the removal of the pop-up for a node
+ * Hide a node's pop-up on leave
+ * Whenever the user leaves a node or the visualization area, whatever pop-up
+ * that was active needs to be hidden from the display
  *
- * @type{Event}
- * @param{Event} event The mouse out event triggered when the user moves the
- * pointer outside of a given node
+ * @type {Event}
+ * @param {Event} event The mouseout event triggered when the user moves the
+ * pointer outside of a given node or outside the visualization area
  */
 function onNodeExit(event){
+  /* retrieve the element that triggered the event */
   let node = event.target;
-
+  /* remove the listeners, both on node position and on viewport interaction */
   node.removeListener('position');
   event.cy.removeListener('viewport');
-
+  /* hide the pop-up */
   $('#nodePopper').css('display', 'none');
+}
+
+/**
+ * Handle selection of nodes on the complementary display, in order to provide
+ * a paired visualization.
+ * @param {any} event the selection event triggered on the original display.
+ * Notice that in the event of multiple selection, an event is triggered for
+ * each newly selected element.
+ */
+function onNodeSelection(event){
+  // The id of the DOM element where the selection was triggered
+  var dpl = event.cy.container().id;
+  // Definition of the complementary display panel
+  var otherID = (dpl === "leftDisplay") ? 1 : 0;
+  // If the complementary display is empty, we don't need to do anything
+  if( vizNet[otherID] !== null ){
+    // Target node - the node that was selected
+    var n = event.target;
+    // Select the corresponding node on the complementary display (element with
+    // the same id). If no such node exists, the nothing will happen
+    vizNet[otherID].nodes('[id="'+n.id()+'"]').select();
+  }
+}
+
+/**
+ * Handle the de-selection of nodes on the complementary display, in order to
+ * provide a paired visualization.
+ * @param {any} event the un-selection event triggered on the original display.
+ */
+function onNodeUnselection(event){
+  // The id of the DOM element where the unselection was triggered
+  var dpl = event.cy.container().id;
+  // Definition of the complementary display panel
+  var otherID = (dpl === "leftDisplay") ? 1 : 0;
+  // If the complementary display is empty, we don't need to do anything
+  if( vizNet[otherID] !== null ){
+    // Target node - the node that was unselected
+    var n = event.target;
+    // Un-select the corresponding node on the complementary display (element
+    // with the same id)
+    vizNet[otherID].nodes('[id="'+n.id()+'"]').unselect();
+  }
 }
 
 /**
@@ -148,139 +190,214 @@ function initContextMenu(id){
   });
 }
 
-
-
 /**
- * Apply two different layouts, defined by innerName and outerName respectively,
- * to two subsets of nodes within a collection. The inner layout is applied to
- * the nodes in eles, while the outer layout is applied to the remainder of the
- * nodes in the collection.
- * @param {graph} cy The cytoscape for which we are trying to find an
- * intersection. The intersection on both graphs will be given the same layout,
- * whilst other elements will be layed out separately for each graph.
- * @param {string} innerName The name of the layout used for the intersection
- * @param {string} outerName The name of the layout applied to the remainder
- * nodes in both graphs
- * EXTENSION TO CYTOSCAPE - CORE
+ * Load elements into the graph
+ * Internal toxygates data is provided through a JSON style dictionary, including
+ * interactions and nodes that need to be loaded to the cytoscape instance in
+ * order to be displayed
+ *
+ * @type {JSONNetwork}
+ * @param {JSONNetwork} network The network received from the table display in
+ * toxygates, as stored in the variable 'convertedNetwork'
+ *
+ * @return true if the nodes in the given network had a predefined position, or
+ * false otherwise
  */
-function dualLayout(cy, innerName, outerName="grid"){
-  /* get the intersection between this network and cy */
-  let intersection = this.elements().intersection(cy.elements());
+function loadElements(network){
+  /* nodes and interactions are added as Elements to cytoscape */
+  let eles = [];
+  /* handle the nodes from the provided network */
+  network.nodes.forEach(function(e){
+    /* define all the node's properties */
+    let id = e.id;
+    let type = nodeType[e.type];
+    let weight = e.weight;
+    let symbol = (e.symbol.length > 0) ? e.symbol : [id];
+    let label = symbol[0];
+    let color = e.color !== undefined ? e.color : nodeColor[nodeType[e.type]];
+    let shape = e.shape !== undefined ? e.shape : nodeShape[nodeType[e.type]] ;
+    /* use the properties to create a new cytoscape node element */
+    let node = {
+      group: 'nodes',
+      classes: type,
+      data:{
+        id: id,
+        label: label,
+        symbol: symbol,
+        color: color,
+        borderColor: color,
+        type: type,
+        shape: shape,
+        weight: weight,
+        display: 'element',
+      },
+      position: {
+        x: e.x,
+        y: e.y,
+      },
+    };
+    /* add the node to the list of elements */
+    eles.push( node );
+  });
 
-  /* the remainder elements are the absolute complement to the intersection, we
-  * remove them from the graph, in order to apply the inner layout only to the
-  * intersecting nodes */
-  let outer = this.remove(intersection.absoluteComplement());
-
-  /* define the layouts for intersecting nodes on both graphs */
-  let innerlay = this.updateLayout(innerName);
-  /* once the positioning of the intersecting nodes in the current graph is
-  * finished, we used them to also position the intersecting nodes in the cy
-  * graph */
-  innerlay.promiseOn('layoutstop').then(function(eles){
-    /* we copy the position of each node in the current graph */
-    eles.forEach(function(node){
-      cy.$("#"+node.id())
-      .position(node.position());
+  /* handle the list of interactions from the provided network */
+  network.interactions.forEach(function(e){
+    eles.push({
+      group: 'edges',
+      data:{
+        id: e.from+e.to,
+        source: e.from,
+        target: e.to,
+        color: edgeColor.REGULAR,
+      }
     });
-  }.bind(null, this.nodes()));
-  /* run the layout for intersecting nodes */
-  innerlay.run();
+  });
+  /* add the whole list of elements (nodes and interactions) to the current
+   * cytoscape graph */
+  this.add(eles);
 
-  /* define the layout for nodes outside the intersection on the current graph */
-  let outerlay = outer.updateLayout(outerName);
-  /* once the layout is finished, shift the position of the nodes down by the
-  * size of the bounding box of the intersecting nodes and fit all the elements
-  * to the viewport */
-  outerlay.promiseOn('layoutstop').then(function(graph){
-    /* shift the nodes down */
-    outer.shift('y', graph.elements().boundingBox().y2);
-    /* restore the nodes into the graph for display */
-    outer.restore();
-    /* fit the whole graph to the viewport */
-    graph.fit();
-  }.bind(null, this));
-  /* run the layout */
-  outerlay.run();
-
-  /* Define a layout for nodes of cy outside the intersection */
-  let dif = cy.elements().difference(intersection);
-  let diflay = dif.updateLayout(outerName);
-  /* shift and fit the graph after the layout has finished its positioning */
-  diflay.promiseOn('layoutstop').then(function(eles){
-    dif.shift('y', eles.boundingBox().y2);//cy.height());
-    cy.fit();
-
-  }.bind(null, this.elements()));
-  /* run the layout */
-  diflay.run();
+  /* return true if there was a position associated to the first node */
+  let positioned = network.nodes[0].x !== undefined;
+  if( positioned )
+    this.options().layout.name = 'custom';
+  return positioned;
 }
 
 /**
- * Add the class 'hidden' to all unconnected nodes in the network.
- * EXTENSION TO CYTOSCAPE - CORE
+ * Apply a composite layout to both panels simultaneously.
+ * Two different layout options are applied to both networks, the first layout,
+ * identified by inLyt is applied only to elements that are part of the
+ * intersection of both networks. The second layout, identified by outLyt, is
+ * applied to all remainder elements on both networks.
+ * @param {graph} cy The second cytoscape element, where we will look for
+ * intersecting elements
+ * @param {string} inLyt Identifier for the layout used on the intersection
+ * @param {string} outLyt Identifier for the layout used on remainder elements
+ */
+function dualLayout(cy, inLyt, outLyt="grid"){
+  /* get the intersection between this network and cy, resulting elements are
+   * part of cy (the second collection) */
+  let intersection = this.elements(':visible').intersection(cy.elements(':visible'));
+  /* define the layout for the intersecting elements */
+  let innerlay = intersection.updateLayout(inLyt);
+  /* since running the layout will only change the position of the nodes in the
+   * second graph, we need to assign the same position to the nodes in the first
+   * graph */
+  innerlay.promiseOn('layoutstop').then(function(){
+    intersection.forEach(function(ele,i,eles){
+      if (ele.cy().container().id === 'leftDisplay'){
+        cy.$('#'+ele.id())[0]
+        .position(ele.position())
+        ;
+      }
+      else{
+        this.$('#'+ele.id())[0]
+          .position(ele.position())
+        ;
+      }
+    },this);
+  }.bind(this));
+  /* run the layout for intersecting nodes */
+  innerlay.run();
+
+  /* we select the elements within the current graph that are not part of the
+   * intersection, so we can apply a second layout to them */
+  let thisDif = this.elements(':visible').difference(intersection);
+  /* define the layout for these elements */
+  let thisDifLay = thisDif.updateLayout(outLyt);
+  /* once the layout is finished, shift the position of the nodes down by the
+   * size of the bounding box of the intersecting nodes and fit all the elements
+   * to the viewport */
+  thisDifLay.promiseOn('layoutstop').then(function(){
+    thisDif.shift('y', intersection.boundingBox().y2);
+    this.fit();
+  }.bind(this));
+  /* run the layout */
+  thisDifLay.run();
+
+  /* We do the same for the nodes of the other graph that are not part of the
+   * intersection */
+  let cyDif = cy.elements(':visible').difference(intersection);
+  let cyDifLay = cyDif.updateLayout(outLyt);
+  /* shift and fit the graph after the layout has finished its positioning */
+  cyDifLay.promiseOn('layoutstop').then(function(){
+    cyDif.shift('y', intersection.boundingBox().y2);
+    cy.fit();
+
+  });
+  /* run the layout */
+  cyDifLay.run();
+}
+
+/**
+ * Set default hidden nodes.
+ * In any given network it is possible to have nodes that do not interact with
+ * any other element. This unconnected nodes are, by default, hidden from the
+ * display.
+ * On network load, this method adds the class 'hidden' to all unconnected nodes,
+ * used to determing whether they should be displayed or not.
  */
 function hideUnconnected(){
   let unconnected = this.nodes().filter(function(ele){
     return ele.degree(false) === 0;
   });
   unconnected.forEach(function(ele){
-    ele.addClass("hidden");
+    ele.data('hidden', true);
+    ele.toggleClass('hidden', true);
   });
 }
 
-
-
 /**
- * Merge the current collection with the collection of elements provided,
- * keeping a single copy of intersecting elements, and defining a dual layout
- * that positions the intersection at the center of the viewport, with elements
- * coming from the left panel at the left of the intersection, and elements
- * coming from the right panel at the right of the intesection.
+ * Merge the current collection with the collection of elements provided.
+ * The merge is performed in such a way as to keep a single copy of intersecting
+ * elements, and defining a dual layout that positions the intersecting elements
+ * at the center of the viewport, with elements coming from the left panel at
+ * the left of the intersection, and elements coming from the right panel at the
+ * right of the intesection.
  * @param {collection} eles The elements we are to merge with the current graph.
- * @param {string} innerName The name of the layout used for the intersection.
- * Use concentric layout as default.
- * @param {string} outerName The name of the layout used for both sets of
- * elements not in the intersection. Use grid layout as default.
- * EXTENSION TO CYTOSCAPE - CORE
+ * @param {string} innerLyt Layout used for intersecting elements.
+ * @param {string} outerLyt Layout used for non-intersecting elements, both at
+ * the left and right sides of the display
  */
-function mergeWith(eles, innerName="concentric", outerName="grid"){
+function mergeWith(eles, innerLyt="concentric", outerLyt="grid"){
   /* Define the collections that represent the three components of the new graph,
    * intersecting nodes, left-side nodes and right-side nodes */
   let inter = this.elements().intersection(eles);
   let left = inter.absoluteComplement();
   let right = eles.difference(inter);
-
-  /* Layout each component of the new graph */
-  innerName = innerName === "null" ? "concentric" : innerName;
-  outerName = outerName === "null" ? "grid" : outerName;
-
+  /* capture the dimensions of the viewport, to use them as constrains for the
+   * layout positioning algorithms */
   let w = this.container().parentElement.clientWidth/3;
   let h = this.container().parentElement.clientHeight;
+  /* define the layout algorithm for each part of the merged network */
+  let interLyt = inter.updateLayout(innerLyt, {x1:w,y1:0,w:w,h:h} );
+  let leftLyt = left.updateLayout(outerLyt, {x1:0,y1:0,w:w,h:h} );
+  let rightLyt = right.updateLayout(outerLyt, {x1:2*w,y1:0,w:w,h:h} );
 
-  let interLyt = inter.updateLayout(innerName, {x1:w,y1:0,w:w,h:h} );
-  let leftLyt = left.updateLayout(outerName, {x1:0,y1:0,w:w,h:h} );
-  let rightLyt = right.updateLayout(outerName, {x1:2*w,y1:0,w:w,h:h} );
-
+  /* set a promise to run the layout of the 2nd element of the merged network */
   leftLyt.promiseOn('layoutstop').then(function(){
     interLyt.run();
   });
+  /* set a promise to run the layout of the 3rd element of the merged network */
   interLyt.promiseOn('layoutstop').then(function(){
     rightLyt.run();
   });
+  /* once each part of the merged graph has been positioned, place them together
+   * in a single cytoscape instance, and use it to replace the contents of the
+   * current structure */
   rightLyt.promiseOn('layoutstop').then(function(cy){
     /* Define the merged collection of elements */
     let mrg = cytoscape();
     mrg.add(inter);
     mrg.add(left);
     mrg.add(right);
-
-    /* Update the contentes of the current graph with the ones computed */
+    /* Update the contents of the current graph with the ones computed */
     cy.elements().remove();
     cy.add(mrg.elements());
     cy.fit();
-  }.bind(null, this));
+  }.bind(null, this)); // this is bounded to the inner function as the cy parameter
 
+  /* run the layout on the left (first) section of the merged network */
   leftLyt.run();
 }
 
@@ -289,51 +406,36 @@ function mergeWith(eles, innerName="concentric", outerName="grid"){
  * and shape of its components
  */
 function setDefaultStyle(){//eles){
-  // this.startBatch();
-  // eles.forEach(function(ele){
   this.forEach(function(ele){
     if ( ele.isEdge() ){
-      // this.$("#"+ele.id())
       ele.data("color", edgeColor.REGULAR);
       return;
     }
-    let color = ele.data('type') === "mRNA"? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
-    let shp = ele.data('type') === "mRNA"? nodeShape.MSG_RNA : nodeShape.MICRO_RNA;
+    let color = ele.data('type') === nodeType.mRNA ? nodeColor.MSG_RNA : nodeColor.MICRO_RNA;
+    let shp = ele.data('type') === nodeType.mRNA ? nodeShape.MSG_RNA : nodeShape.MICRO_RNA;
 
-    // this.$("#"+ele.id())
     ele.data("color", color)
     ele.data('borderColor', color)
     ele.data("shape", shp);
-  });//,this);
-  // this.endBatch();
+  });
 }
 
 
 /**
- * Hide/Show nodes that have the class "hidden" added to their names. By default
- * all unconnected nodes are flagged as hidden on load of a network.
- * @param {boolean} showHidden Whether the nodes should be shown or not as part
- * of the visualization
- * @param {collection} eles The list of currently hidden elements (nodes removed
- * from the network to prevent its display and consideration in layout
- * operations)
- * @return The updated collection of hidden nodes. Note that, even when nodes
- * might have the class "hidden" among their properties, this does not mean they
- * are hidden from the visualization.
- * When "hidden" nodes are shown, en empty collection is returned.
- * EXTENSION TO CYTOSCAPE - CORE
+ * Hide/Show nodes
+ * @param {boolean} show Boolean value that indicates whether the hidden nodes
+ * should be displayed or not. If they are to be displayed, then their 'hidden'
+ * needs to be set to OFF (false), otherwise, it turned ON (true).
  */
-  function showHiddenNodes(showHidden=false, eles=null){
-    let hidden = this.elements(".hidden");
-    if( showHidden ){
-      if( eles !== null ){
-        this.add(eles);//.restore();
-      }
-      return this.collection();
-    }
-    else {
-      return hidden.remove();
-    }
+  function toggleHiddenNodes(show){
+    this.options().layout['showHidden'] = show;
+    /* find all nodes in the graph that have a data element hidden set to true */
+    let hiddenNodes = this.nodes('[?hidden]');
+    /* for each element turn the class 'hidden' ON or OFF depending on the value
+     * of show */
+    hiddenNodes.forEach(function(ele){
+      this.$('#'+ele.id()).toggleClass('hidden', !show);
+    }, this);
   }
 
 /**
@@ -350,14 +452,11 @@ function setDefaultStyle(){//eles){
  * to be compared with.
  * @param {boolean} toogle Indicates if the 'highlighted' class for the
  * intersecting nodes should be turned on (true) or off (false)
- *
- * EXTENSION TO CYTOSCAPE - CORE
  */
-function toogleIntersectionHighlight(other, toggle){
+function toggleIntersectionHighlight(other, toggle){
   /* create a headless copy of the current network */
   let clone = cytoscape({headless:true});
   clone.add(this.elements());
-
   /* determine the intersecting elements between both collections */
   let intersection = clone.elements().intersection(other.elements());
   /* toggle the 'highlighted' class for the elements on both graphs */
@@ -393,69 +492,62 @@ function updateLayout(name="null", boundingBox=undefined){
 }
 
 /**
- * Return the list of nodes in the current network, using the ToxyNode data
- * structure.
- * Required functionality for the persistance of the graphic network within the
- * Toxygates system.
- * @return The list of nodes that comprise the network.
- */
-function getToxyNodes(){
-  // create an empty list of nodes
-  var toxyNodes = [];
-
-  this.nodes().forEach(function(node){
-    var data = node.data();
-    // for each node, we create a new instance of ToxyNodes and initialize it
-    // with the corresponding values
-    var tn = new ToxyNode(data["id"], data["type"], [data["label"]]);
-    tn.setWeights(data["weight"]);
-
-    var position = node.position();
-    tn.x = position["x"];
-    tn.y = position["y"];
-
-    tn.color = data["color"];
-    tn.shape = node.style()["shape"];
-    // once its ready, we add the node to our return list
-    toxyNodes.push(tn);
-  });
-
-  return toxyNodes;
+* Return the name of the network
+*/
+function getName(){
+  return this.options().container.data('title');
 }
 
 /**
- * Return the list of interactions, using the Interactions data structure from
- * Toxygates.
- * Required functionality for the persistance of the graphic network within the
- * Toxygates system.
- * @return The list of interactions that comprise the network.
+ * Return the current cytoscape network as ToxyGates Network.
+ * Method used to provide persistance to networks being developed using the
+ * visualization functionalities.
+ * @return A Network object that entails the whole contents of the current
+ * cytoscape graph.
  */
-function getToxyInteractions(){
-  // create an empty list of interactions
-  var toxyInter = [];
+function getNetwork(){
+  /* A network is defined by three elements, a title, a list of nodes, and a
+   * list of interactions */
+  let title = this.options().container.data('title');
+  let nodes = [];
+  let interactions = [];
 
-  this.edges().forEach(function(edge){
-    var data = edge.data();
-    var te = new Interaction(data["source"], data["target"]);
-    toxyInter.push(te);
+  /* Add the nodes to the defined list */
+  this.nodes().forEach(function(node){
+    let data = node.data();
+    let pos = node.position();
+    let shape = node.style().shape;
+    /* define a new instance of ToxyNode, with all the corresponding fields */
+    let tn = new ToxyNode(data.id, data.type, data.symbol);
+    tn.setWeights(data.weight);
+    tn.setPosition(pos.x, pos.y);
+    tn.color = data.color;
+    tn.shape = shape;
+    /* add the node to the list */
+    nodes.push(tn);
   });
 
-  return toxyInter;
+  /* Add the interactions to the defined list */
+  this.edges().forEach(function(edge){
+    let data = edge.data();
+    interactions.push(new Interaction(data.source, data.target));
+  });
+  /* return the list defined by all elements */
+  return new Network(title, interactions, nodes);
 }
 
 // add functions to cytoscape prototype
-cytoscape("core", "hideUnconnected", hideUnconnected);
-cytoscape("core", "mergeWith", mergeWith);
-// cytoscape("core", "setDefaultStyle", setDefaultStyle);
 cytoscape('collection', 'setDefaultStyle', setDefaultStyle);
-cytoscape("core", "toogleIntersectionHighlight", toogleIntersectionHighlight);
-
-cytoscape("core", "initStyle", initStyle);
-cytoscape("core", "updateLayout", updateLayout);
 cytoscape("collection", "updateLayout", updateLayout);
 
+cytoscape("core", "hideUnconnected", hideUnconnected);
+cytoscape("core", "mergeWith", mergeWith);
+cytoscape("core", "toggleIntersectionHighlight", toggleIntersectionHighlight);
+cytoscape("core", "initStyle", initStyle);
+cytoscape("core", "updateLayout", updateLayout);
+cytoscape('core', 'loadElements', loadElements);
 cytoscape("core", "dualLayout", dualLayout);
 cytoscape("core", "initContextMenu", initContextMenu);
-cytoscape("core", "showHiddenNodes", showHiddenNodes);
-cytoscape("core", "getToxyNodes", getToxyNodes);
-cytoscape("core", "getToxyInteractions", getToxyInteractions);
+cytoscape("core", "toggleHiddenNodes", toggleHiddenNodes);
+cytoscape('core', 'getName', getName);
+cytoscape('core', 'getNetwork', getNetwork);
