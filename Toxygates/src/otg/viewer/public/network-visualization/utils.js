@@ -1,4 +1,29 @@
-"use strict";
+// "use strict";
+
+/** types of nodes that can be added to the visualization */
+const nodeType = Object.freeze({
+  mRNA: 'MSG_RNA',//: "mRNA",
+  microRNA: 'MICRO_RNA', //: "microRNA",
+});
+
+/** default colours for nodes in the graph */
+const nodeColor = Object.freeze({
+  MSG_RNA: '#007f7f',
+  MICRO_RNA: '#827f00',
+  HIGHLIGHT: '#ffde4c',
+});
+
+/** list of shapes that can be used to draw a node */
+const nodeShape = Object.freeze({
+  MSG_RNA: "ellipse",
+  MICRO_RNA: "pentagon",
+});
+
+/** default colours for lines in the graph */
+const edgeColor = Object.freeze({
+  REGULAR: '#989898',
+  HIGHLIGHT: '#ffde4c',
+});
 
 /**
  * Display color scale modal dialog
@@ -31,14 +56,14 @@ function showColorScaleDialog(evt){
 
   /* re-construct the list of weights available for msgRNA nodes, as this
    * changes from graph to graph */
-  let msg = Object.keys(evt.cy.nodes('[type="'+nodeType.MSG_RNA+'"]')[0].data('weight'));
+  let msg = Object.keys(evt.cy.nodes('[type="'+nodeType.mRNA+'"]')[0].data('weight'));
   $('#msgRNAWeight').empty();
   $.each(msg, function (i, item) {
     $('#msgRNAWeight').append($('<option>', {value: item, text: item}));
   });
 
   /* add the list of weights available for microRNA nodes */
-  let mic = Object.keys(evt.cy.nodes('[type="'+nodeType.MICRO_RNA+'"]')[0].data('weight'));
+  let mic = Object.keys(evt.cy.nodes('[type="'+nodeType.microRNA+'"]')[0].data('weight'));
   $('#microRNAWeight').empty();
   $.each(mic, function (i, item) {
     $('#microRNAWeight').append($('<option>', {value: item, text: item}));
@@ -77,48 +102,73 @@ function showChangeLabelDialog(evt){
   $('#nodeLabel').val(evt.target.data('label'));
 }
 
+/**
+ * Add Pop-up div element to DOM
+ * In order to display pop-up information associated to the nodes in the graph,
+ * we need to make available the corresponding DOM structures. These are added
+ * or modified whenever the network visualization module is called within
+ * toxygates
+ */
+function addPopperDiv(){
+  /* create the main div container for the pop-up display */
+  let divPopper = $('<div />',{
+    id: 'nodePopper',
+    class: 'popper'
+  });
+  /* add contents to the pop-up display */
+  let table = $('<table/>');
+  table.append('<tr><td>Label</td><td id="label"></td></tr>');
+  table.append('<tr><td>Type</td><td id="type"></td></tr>');
+  table.append('<tr><td>Probe</td><td id="probe"></td></tr>');
+  divPopper.append(table);
+  /* add the structure to the body of the application */
+  $('body').append(divPopper);
+}
 
 /**
- * Enable/Disable interface elements depending on whether we are using a single
- * or double panel visualization.
- * @param {number} panels The numer of panels that are currently being available
- * within the visualization 1 - single panel visualization; 2 - double panel
- * visualization
+ * Enable interface controls for single panel visualization
+ * Controls available to users are different depending on whether they are using
+ * a single or a dual panel visualization. This method makes available the
+ * controls for SINGLE panel visualization
  */
-function updateInterfaceControls(panels=1){
-  // single display visualization
-  if( panels === 1 ){
-    // only left panel is available for selection
-    $("#panelSelect option[value=0]").prop("selected", true);
-    $("#panelSelect option[value=0]").attr("disabled", false);
-    $("#panelSelect option[value=1]").attr("disabled", true);
-    $("#panelSelect option[value=2]").attr("disabled", true);
-    // Intersection highlighting
-    $("#showIntersectionCheckbox").prop("checked", false);
-    $("#showIntersectionCheckbox").attr("disabled", true);
-    $("#showIntersectionCheckbox").trigger("change");
-    // Merging networks
-    $("#mergeNetworkButton").attr("disabled", true);
-    // Close right panel
-    $("#closeRightPanelButton").attr("disabled", true);
-  }
-  // double display visualization
-  else{
-    // left, right and intersection options are available for selection
-    $("#panelSelect option[value=0]").attr("disabled", false);
-    $("#panelSelect option[value=1]").prop("selected", true);
-    $("#panelSelect option[value=1]").attr("disabled", false);
-    $("#panelSelect option[value=2]").attr("disabled", false);
-    // Intersection highlighting
-    $("#showIntersectionCheckbox").prop("checked", false);
-    $("#showIntersectionCheckbox").attr("disabled", false);
-    $("#showIntersectionCheckbox").trigger("change");
-    // Merging networks
-    $("#mergeNetworkButton").attr("disabled", false);
-    // Close right panel
-    $("#closeRightPanelButton").attr("disabled", false);
-  }
+function setSinglePanelInterface(){
+  /* disable right and both panel selection, and select main panel */
+  $('#panelSelect option[value='+SIDE_ID+']').attr('disabled', true);
+  $('#panelSelect option[value='+BOTH_ID+']').attr('disabled', true);
+  $('#panelSelect option[value='+MAIN_ID+']').prop("selected", true);
+  /* disable intersection controls */
+  $("#showIntersectionCheckbox").prop("checked", false);
+  $("#showIntersectionCheckbox").attr("disabled", true);
+  $("#showIntersectionCheckbox").trigger("change");
+  /* disable merging controls */
+  $("#mergeNetworkButton").attr("disabled", true);
+  /* disable panel closing controls */
+  $("#closeRightPanelButton").attr("disabled", true);
 }
+
+/**
+ * Enable interface controls for dual panel visualization
+ * Controls available to users are different depending on whether they are using
+ * a single or a dual panel visualization. This method makes available the
+ * controls for DUAL panel visualization
+ *
+ * @param {int} id The id of the panel that will be selected after the controls
+ * are made available
+ */
+function setDualPanelInterface(id=SIDE_ID){
+  /* enable all options for panel selection and set the current one as selected */
+  $('#panelSelect option[value='+SIDE_ID+']').attr("disabled", false);
+  $('#panelSelect option[value='+BOTH_ID+']').attr("disabled", false);
+  $('#panelSelect option[value='+id+']').prop("selected", true);
+  /* make intersection controls available */
+  $("#showIntersectionCheckbox").prop("checked", false);
+  $("#showIntersectionCheckbox").attr("disabled", false);
+  /* make merging controls available */
+  $("#mergeNetworkButton").attr("disabled", false);
+  /* make panel closing controls available */
+  $("#closeRightPanelButton").attr("disabled", false);
+}
+
 
 /**
  * Remove the right display (DOM element) from the interface and handle the
@@ -130,7 +180,7 @@ function removeRightDisplay(){
   // Remove need for side-panel consideration in left panel
   $("#leftDisplay").removeClass("with-side");
 
-  updateInterfaceControls(1);
+  setSinglePanelInterface();
 }
 
 
@@ -149,13 +199,14 @@ function removeRightDisplay(){
  * @param {RGB} negColor the html color used for the negative side of the scale
  * @param {RGB} posColor the html color used for the positive side of the scale
  * @return a representation of the input value, as a color in RGB representation
+ * or undefined if the target value is not a number (as defined by isNaN() )
  */
 function valueToColor(val, min=-1, max=1, negColor='#FF0000', posColor='#0000FF'){
   /* Handle all the extreme cases first. This also handle the cases when min
    * and max have the same value */
   /* 0. the value is not a valid number */
-  if ( val === NaN )
-    return "#aNaNaN";
+  if (isNaN(val))
+    return undefined;
   /* 1. value is at or below the min */
   if( val <= min ) return negColor;
   /* 2. value is at or above the max */

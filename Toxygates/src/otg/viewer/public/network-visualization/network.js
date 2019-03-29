@@ -1,31 +1,5 @@
 "use strict";
 
-/** types of nodes that can be added to the visualization */
-const nodeType = Object.freeze({
-  MSG_RNA: "mRNA",
-  MICRO_RNA: "microRNA",
-});
-
-/** default colours for nodes in the graph */
-const nodeColor = Object.freeze({
-  MSG_RNA: '#007f7f',
-  MICRO_RNA: '#827f00',
-  HIGHLIGHT: '#ffde4c',
-
-});
-
-/** default colours for lines in the graph */
-const edgeColor = Object.freeze({
-  REGULAR: '#989898',
-  HIGHLIGHT: '#ffde4c',
-});
-
-/** list of shapes that can be used to draw a node */
-const nodeShape = Object.freeze({
-  MSG_RNA: "ellipse",
-  MICRO_RNA: "pentagon",
-});
-
 /**
  * Class that defines a Network <br>
  * Based on Toxygates Class Model <br>
@@ -53,13 +27,6 @@ class Network{
     this.title = title;
     this.interactions = interactions;
     this.nodes = nodes;
-
-    /* a list of hidden nodes, that even when not part of the visualization, are
-      still considered part of the network */
-    this.hidden = null;
-    /* the name of the layout algorithm using for positioning the nodes in the
-      network */
-    this.layout = "null";
   }
 
   /**
@@ -236,9 +203,11 @@ class Network{
 /**
  * Convenience function used to access the Node class from within GWT
  * @param {String} title - the name given to a network
- * @param {[Interaction]} interactions - the array of interactions that exist
+ * @type {Interaction}
+ * @param {Array<Interaction>} interactions - the array of interactions that exist
  * between nodes
- * @param {[ToxyNode]} nodes - the nodes that comprise the newtwork
+ * @type {ToxyNode}
+ * @param {Array<ToxyNode>} nodes - the nodes that comprise the newtwork
  @ return the newly created network object
  */
 function makeNetwork(title="", interactions=[], nodes=[]){

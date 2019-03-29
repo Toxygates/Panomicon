@@ -230,7 +230,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   }-*/;
 
   public static native String currentNetworkName() /*-{
-    return $wnd.toxyNet.title;
+    return $wnd.vizNet[0].getName();
   }-*/;
 
   /**
@@ -238,9 +238,8 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
    * storage.
    */
   public native void saveCurrentNetwork(String title) /*-{
-    $wnd.updateToxyNet();
-    $wnd.toxyNet[0].title = title;
-    this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.toxyNet[0]);
+    $wnd.vizNet[0].setName(title);
+    this.@t.viewer.client.network.NetworkVisualizationDialog::saveNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)($wnd.vizNet[0].getNetwork());
   }-*/;
 
   /**
