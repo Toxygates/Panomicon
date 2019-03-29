@@ -46,6 +46,16 @@ class ToxyNode{
   }
 
   /**
+   * Set the position of the node
+   * @param {number} x
+   * @param {number} y
+   */
+  setPosition(x, y){
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
    * Search for a specific weight, within the node definition, and it updates
    * the corresponding value. If the key value is not found, then a new weight
    * is added to the list

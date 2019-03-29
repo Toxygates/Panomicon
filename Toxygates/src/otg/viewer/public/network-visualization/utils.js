@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 /** types of nodes that can be added to the visualization */
 const nodeType = Object.freeze({
@@ -24,7 +24,6 @@ const edgeColor = Object.freeze({
   REGULAR: '#989898',
   HIGHLIGHT: '#ffde4c',
 });
-
 
 /**
  * Display color scale modal dialog
@@ -133,17 +132,17 @@ function addPopperDiv(){
  * controls for SINGLE panel visualization
  */
 function setSinglePanelInterface(){
-  $("#panelSelect option[value=0]").prop("selected", true);
-  $("#panelSelect option[value=0]").attr("disabled", false);
-  $("#panelSelect option[value=1]").attr("disabled", true);
-  $("#panelSelect option[value=2]").attr("disabled", true);
-  // Intersection highlighting
+  /* disable right and both panel selection, and select main panel */
+  $('#panelSelect option[value='+SIDE_ID+']').attr('disabled', true);
+  $('#panelSelect option[value='+BOTH_ID+']').attr('disabled', true);
+  $('#panelSelect option[value='+MAIN_ID+']').prop("selected", true);
+  /* disable intersection controls */
   $("#showIntersectionCheckbox").prop("checked", false);
   $("#showIntersectionCheckbox").attr("disabled", true);
   $("#showIntersectionCheckbox").trigger("change");
-  // Merging networks
+  /* disable merging controls */
   $("#mergeNetworkButton").attr("disabled", true);
-  // Close right panel
+  /* disable panel closing controls */
   $("#closeRightPanelButton").attr("disabled", true);
 }
 
@@ -157,13 +156,10 @@ function setSinglePanelInterface(){
  * are made available
  */
 function setDualPanelInterface(id=SIDE_ID){
-  /* enable all options for panel selection */
-  $('#panelSelect option[value='+MAIN_ID+']').attr("disabled", false);
+  /* enable all options for panel selection and set the current one as selected */
   $('#panelSelect option[value='+SIDE_ID+']').attr("disabled", false);
   $('#panelSelect option[value='+BOTH_ID+']').attr("disabled", false);
-  /* select the corresponding panel */
   $('#panelSelect option[value='+id+']').prop("selected", true);
-
   /* make intersection controls available */
   $("#showIntersectionCheckbox").prop("checked", false);
   $("#showIntersectionCheckbox").attr("disabled", false);
@@ -184,7 +180,7 @@ function removeRightDisplay(){
   // Remove need for side-panel consideration in left panel
   $("#leftDisplay").removeClass("with-side");
 
-  updateInterfaceControls(1);
+  setSinglePanelInterface();
 }
 
 
@@ -203,13 +199,14 @@ function removeRightDisplay(){
  * @param {RGB} negColor the html color used for the negative side of the scale
  * @param {RGB} posColor the html color used for the positive side of the scale
  * @return a representation of the input value, as a color in RGB representation
+ * or undefined if the target value is not a number (as defined by isNaN() )
  */
 function valueToColor(val, min=-1, max=1, negColor='#FF0000', posColor='#0000FF'){
   /* Handle all the extreme cases first. This also handle the cases when min
    * and max have the same value */
   /* 0. the value is not a valid number */
-  if ( val === NaN )
-    return "#aNaNaN";
+  if (isNaN(val))
+    return undefined;
   /* 1. value is at or below the min */
   if( val <= min ) return negColor;
   /* 2. value is at or above the max */

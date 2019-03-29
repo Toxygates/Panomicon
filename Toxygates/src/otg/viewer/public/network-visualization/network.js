@@ -27,13 +27,6 @@ class Network{
     this.title = title;
     this.interactions = interactions;
     this.nodes = nodes;
-
-    /* a list of hidden nodes, that even when not part of the visualization, are
-      still considered part of the network */
-    this.hidden = null;
-    /* the name of the layout algorithm using for positioning the nodes in the
-      network */
-    this.layout = "null";
   }
 
   /**

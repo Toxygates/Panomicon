@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 /* identifiers for cystoscape display panels */
 const MAIN_ID = 0; // left-side
 const SIDE_ID = 1; // right-side
@@ -6,8 +6,6 @@ const BOTH_ID = 2; // both panels, used for intersection
 
 /* these are the main and side graphs - as Cytoscape objects */
 var vizNet = [null, null];
-
-/**   API USED BY TOXYGATES TO HANDLE THE CONNECTION TO VISUALIZATION **/
 
 /**
  * Initialize the main visualization display.
@@ -45,7 +43,6 @@ function onReadyForVisualization(){
       $('#nodePopper').css('display', 'none');
     })
   ;
-
 }
 
 /**
@@ -150,7 +147,7 @@ function changeNetwork(id=MAIN_ID){
   /* remove all previous data */
   vizNet[id].elements().remove();
   /* store the name of the graph as data field in the container */
-  /* TODO */
+  vizNet[id].options().container.data('title', convertedNetwork.title);
   /* load the content of 'convertedNetwork' as elements for the graph */
   let positioned = vizNet[id].loadElements(convertedNetwork);
   /* mark unconnected nodes as hidden */
@@ -265,8 +262,8 @@ $(document).on("change", "#showHiddenNodesCheckbox", function(){
 
 /**
  * Highlight the intersection between networks.
- * , on both panels, the intersection (equal nodes) of both networks
- * currently on display
+ * Only when visualizing two networks simultaneously, the user can choose to
+ * highlight the intersecting elements between both structures.
  */
 $(document).on("change", "#showIntersectionCheckbox", function(){
   let hlgh = $("#showIntersectionCheckbox").is(":checked");
@@ -274,32 +271,25 @@ $(document).on("change", "#showIntersectionCheckbox", function(){
 });
 
 /**
- * Merge the graphs shown on left and right panels to a single structure,
- * keeping a single copy of elements that intersect.
+ * Merge into a single structure both currently displayed networks.
+ * Only when visualizing two networks simultaneously, the user is able to merge
+ * them into a single structure. This resulting structure is visualized using
+ * a single display panel.
  */
 $(document).on("click", "#mergeNetworkButton", function(){
   /* Remove DOM elements for the right SIDE_ID */
   removeRightDisplay();
-
-  /* The hidden nodes in the merging network is simply the union of the hidden
-  * nodes in the original networks */
-  toxyNet[MAIN_ID].hidden = toxyNet[MAIN_ID].hidden.union(toxyNet[SIDE_ID].hidden);
-  /* Trigger an event to show hidden nodes if required */
-  /* Make sure "hidden" nodes remain hidden */
+  /* Perform the merge of the networks */
+  vizNet[MAIN_ID].mergeWith(vizNet[SIDE_ID].elements());
+  /* Set a default custom layout for the merged network and update the select
+   * component accordingly */
+  vizNet[MAIN_ID].options().layout['name'] = 'custom';
+  $("#layoutSelect").val(vizNet[MAIN_ID].options().layout['name']);
+  /* Set a default hiding of hidden nodes and update the checkbox accordingly */
   let showHidden = $("#showHiddenNodesCheckbox").prop("checked", false);
   $("#showHiddenNodesCheckbox").trigger("change");
-
-  let layout = $("#layoutSelect").find(":selected").val();
-
-  /* Perform the merge of the networks */
-  vizNet[MAIN_ID].mergeWith(vizNet[SIDE_ID].elements(), layout);
-  /* Set a default preset layout for the merged network */
-  toxyNet[MAIN_ID].layout = vizNet[MAIN_ID].layout({name: 'null'});
-
   /* Clean un-required variables */
   vizNet[SIDE_ID] = null;
-  toxyNet[SIDE_ID] = null;
-
   /* Fit the new network to the viewport */
   vizNet[MAIN_ID].resize();
   vizNet[MAIN_ID].fit();
@@ -355,7 +345,7 @@ $(document).on("click", "#okColorScaleDialog", function (event){
     /* calculate the color for the current node */
     let c = valueToColor(val, min, max, negColor, posColor);
     /* if the color is valid, assign it to the node */
-    if( c !== "#aNaNaN" ){
+    if( c !== undefined ){
       ele.data("color", c);
       val <= 0 ? ele.data('borderColor', negColor) : ele.data('borderColor', posColor);
     }
