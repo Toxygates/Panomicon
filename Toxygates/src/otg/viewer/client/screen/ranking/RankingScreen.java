@@ -20,25 +20,29 @@ package otg.viewer.client.screen.ranking;
 
 import static t.common.client.Utils.makeScrolled;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.*;
 import otg.viewer.client.components.compoundsel.RankingCompoundSelector;
-import t.common.shared.Dataset;
+import otg.viewer.shared.MatchResult;
+import otg.viewer.shared.RankRule;
+import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
+import t.viewer.client.future.FutureUtils;
 import t.viewer.shared.ItemList;
 
-public class RankingScreen extends FilterScreen implements FilterTools.Delegate,
+public class RankingScreen extends FilterAndSelectorScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {
 
   public static final String key = "rank";
 
-  private RankingCompoundSelector compoundSelector;
+  private RankingCompoundSelector rankingSelector;
   private CompoundRanker compoundRanker;
   private ScrollPanel sp;
 
@@ -47,21 +51,7 @@ public class RankingScreen extends FilterScreen implements FilterTools.Delegate,
 
   @Override
   public void loadState(AttributeSet attributes) {
-    List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
-    filterTools.setDatasets(newChosenDatasets);
-    fetchSampleClasses(new Future<SampleClass[]>(), newChosenDatasets);
-    SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
-    filterTools.setSampleClass(newSampleClass);
-    compoundSelector.datasetsChanged(newChosenDatasets);
-    compoundSelector.sampleClassChanged(newSampleClass);
-    
-    if (!newSampleClass.equals(chosenSampleClass) || !newChosenDatasets.equals(chosenDatasets)) {
-      //compoundSelector.fetchCompounds();
-    }
-    chosenDatasets = newChosenDatasets;
-    chosenSampleClass = newSampleClass;
-    
-    compoundSelector.setChosenCompounds(getStorage().compoundsStorage.getIgnoringException());
+    loadDatasetsAndSampleClass(attributes);
   }
 
   public RankingScreen(ScreenManager man) {
@@ -73,7 +63,7 @@ public class RankingScreen extends FilterScreen implements FilterTools.Delegate,
 
     compoundRanker = factory().compoundRanker(this);
 
-    compoundSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
+    rankingSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
       public void itemListsChanged(List<ItemList> lists) {
         super.itemListsChanged(lists);
@@ -86,9 +76,10 @@ public class RankingScreen extends FilterScreen implements FilterTools.Delegate,
         compoundRanker.availableCompoundsChanged(compounds);
       }
     };
+    compoundSelector = rankingSelector;
     compoundSelector.addStyleName("compoundSelector");
 
-    compoundRanker.setSelector(compoundSelector);
+    compoundRanker.setSelector(rankingSelector);
   }
 
   @Override
@@ -121,34 +112,41 @@ public class RankingScreen extends FilterScreen implements FilterTools.Delegate,
   public String getGuideText() {
     return "Specify at least one gene symbol to rank compounds according to their effect.";
   }
+  
+  @Override
+  public Future<MatchResult[]> getRankedCompounds(SeriesType seriesType, 
+      RankRule[] rules) {
+    logger.info("Ranking compounds for datasets: "
+        + SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
+    Future<MatchResult[]> future = new Future<MatchResult[]>();    
+    manager().seriesService().rankedCompounds(seriesType, 
+        chosenDatasets.toArray(new Dataset[0]),
+        chosenSampleClass, rules, future);
+    FutureUtils.beginPendingRequestHandling(future, this, "Unable to rank compounds");
+    
+    future.addSuccessCallback(result -> {
+      rankingSelector.acceptRankedCompounds(result);
+    });
+    return future;
+  }
 
   // CompoundSelector.Delegate methods
   @Override
-  public void compoundSelectorItemListsChanged(List<ItemList> itemLists) {
-    getStorage().itemListsStorage.store(itemLists);
-  }
-
-  @Override
   public void compoundSelectorCompoundsChanged(List<String> compounds) {
-    RankingScreen.this.getStorage().compoundsStorage.store(compounds);
+    super.compoundSelectorCompoundsChanged(compounds);
     compoundRanker.compoundsChanged(compounds);
   }
 
-  // FilterTools.Delegate method
+  // FilterTools.Delegate methods
   @Override
   public void filterToolsSampleClassChanged(SampleClass sampleClass) {
-    chosenSampleClass = sampleClass;
-    getStorage().sampleClassStorage.store(sampleClass);
-    compoundSelector.sampleClassChanged(sampleClass);
-    //compoundSelector.fetchCompounds();
+    super.filterToolsSampleClassChanged(sampleClass);
+    rankingSelector.removeRankColumns();
   }
 
   @Override
   public void filterToolsDatasetsChanged(List<Dataset> datasets,
       Future<SampleClass[]> future) {
-    chosenDatasets = datasets;
-    getStorage().datasetsStorage.store(chosenDatasets);
-    compoundSelector.datasetsChanged(chosenDatasets);
-    //compoundSelector.fetchCompounds();
+    super.filterToolsDatasetsChanged(datasets, future);
   }
 }

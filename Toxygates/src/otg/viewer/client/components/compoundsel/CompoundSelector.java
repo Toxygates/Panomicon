@@ -29,7 +29,6 @@ import com.google.gwt.view.client.NoSelectionModel;
 
 import otg.viewer.client.components.OTGScreen;
 import t.common.client.components.SetEditor;
-import t.common.shared.Dataset;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.FreeEdit;
 import t.viewer.client.components.StackedListEditor;
@@ -58,7 +57,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   protected Logger logger;
 
   List<String> chosenCompounds = new ArrayList<String>();
-  protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
   
   private List<String> allCompounds;
@@ -149,11 +147,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     allCompounds = new ArrayList<String>((Arrays.asList(compounds)));
     compoundEditor.setItems(allCompounds, false, true);
     availableCompoundsChanged(Arrays.asList(compounds));
-    if (!compoundEditor.getSelection().isEmpty()) {
-      chosenCompounds = new ArrayList<String>();
-      chosenCompounds.addAll(compoundEditor.getSelection());
-      Collections.sort(chosenCompounds);
-    }
   }
 
   public void setSelection(List<String> compounds) {
@@ -168,10 +161,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   public void setChosenCompounds(List<String> compounds) {
     setSelection(compounds);
-  }
-
-  public void datasetsChanged(List<Dataset> datasets) {
-    chosenDatasets = datasets;
   }
 
   protected void availableCompoundsChanged(List<String> compounds) {

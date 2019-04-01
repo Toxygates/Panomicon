@@ -15,6 +15,7 @@ import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
+import t.viewer.shared.ItemList;
 
 public abstract class FilterAndSelectorScreen extends FilterScreen {
   protected CompoundSelector compoundSelector;
@@ -107,4 +108,36 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     return future;
   }
 
+  // FilterTools.Delegate methods
+  public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
+    setSampleClassAndFetchCompounds(newSampleClass);
+  }
+  
+  public Future<String[]> setSampleClassAndFetchCompounds(SampleClass newSampleClass) {
+    getStorage().sampleClassStorage.store(newSampleClass);
+    Future<String[]> future = new Future<String[]>();
+    fetchCompounds(future, newSampleClass);
+    processCompounds(future, chosenCompounds);
+    chosenSampleClass = newSampleClass;
+    return future;
+  }
+  
+  public void filterToolsDatasetsChanged(List<Dataset> datasets, 
+      Future<SampleClass[]> future) {
+    chosenDatasets = getStorage().datasetsStorage.store(datasets);
+    future.addSuccessCallback(sampleClasses -> {
+      chosenSampleClass = getStorage().sampleClassStorage
+          .store(filterTools.dataFilterEditor.currentSampleClassShowing());
+      fetchCompounds(new Future<String[]>(), chosenSampleClass);
+    });
+  }
+  
+  // CompoundSelector.Delegate methods
+  public void compoundSelectorItemListsChanged(List<ItemList> itemLists) {
+    getStorage().itemListsStorage.store(itemLists);
+  }
+
+  public void compoundSelectorCompoundsChanged(List<String> compounds) {
+    chosenCompounds = getStorage().compoundsStorage.store(compounds);
+  }
 }

@@ -30,12 +30,13 @@ import otg.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.common.shared.*;
+import t.common.shared.SeriesType;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.future.Future;
 
 public class RankingCompoundSelector extends CompoundSelector {
 
@@ -48,8 +49,14 @@ public class RankingCompoundSelector extends CompoundSelector {
   private SeriesType rankedType = SeriesType.Time;
   private boolean hasRankColumns = false;
   private final Resources resources;
+  
+  private Delegate delegate;
 
   protected SampleClass chosenSampleClass;
+  
+  public interface Delegate extends CompoundSelector.Delegate {
+    Future<MatchResult[]> getRankedCompounds(SeriesType seriesType, RankRule[] rules);
+  }
   
   public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen, String heading) {
     this(screen, screen, heading);
@@ -57,6 +64,7 @@ public class RankingCompoundSelector extends CompoundSelector {
 
   public RankingCompoundSelector(final OTGScreen screen, Delegate delegate, String heading) {
     super(screen, delegate, heading, false, false);
+    this.delegate = delegate;
     this.seriesService = screen.manager().seriesService();
     this.resources = screen.resources();
   }
@@ -91,7 +99,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
   }
 
-  private void removeRankColumns() {
+  public void removeRankColumns() {
     if (hasRankColumns) {
       CellTable<String> table = compoundEditor.table();
       table.removeColumn(3); // chart icons
@@ -102,48 +110,28 @@ public class RankingCompoundSelector extends CompoundSelector {
       hasRankColumns = false;
     }
   }
-
-  private SampleClass lastClass;
-
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
-    if (lastClass == null || !sc.equals(lastClass)) {
-      removeRankColumns();
+  
+  public void acceptRankedCompounds(MatchResult[] result) {
+    ranks.clear();
+    int rnk = 1;
+    List<String> sortedCompounds = new ArrayList<String>();
+    for (MatchResult r : result) {
+      scores.put(r.compound(), r);
+      sortedCompounds.add(r.compound());
+      ranks.put(r.compound(), rnk);
+      rnk++;
     }
-    lastClass = sc;
+    compoundEditor.setItems(sortedCompounds, false, false);
+    compoundEditor.scrollBrowseCheckToTop();
   }
 
   public void performRanking(SeriesType seriesType, List<String> rankProbes, List<RankRule> rules) {
     this.rankProbes = rankProbes;
     this.rankedType = seriesType;
     addRankColumns();
-    logger.info("Ranking compounds for datasets: "
-        + SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
 
-    if (rules.size() > 0) { // do we have at least 1 rule?
-      seriesService.rankedCompounds(seriesType, chosenDatasets.toArray(new Dataset[0]),
-          chosenSampleClass, rules.toArray(new RankRule[0]),
-          new PendingAsyncCallback<MatchResult[]>(screen) {
-            @Override
-            public void handleSuccess(MatchResult[] res) {
-              ranks.clear();
-              int rnk = 1;
-              List<String> sortedCompounds = new ArrayList<String>();
-              for (MatchResult r : res) {
-                scores.put(r.compound(), r);
-                sortedCompounds.add(r.compound());
-                ranks.put(r.compound(), rnk);
-                rnk++;
-              }
-              compoundEditor.setItems(sortedCompounds, false, false);
-              compoundEditor.scrollBrowseCheckToTop();
-            }
-
-            @Override
-            public void handleFailure(Throwable caught) {
-              Window.alert("Unable to rank compounds: " + caught.getMessage());
-            }
-          });
+    if (rules.size() > 0) { 
+      delegate.getRankedCompounds(seriesType, rules.toArray(new RankRule[0]));
     } else {
       Window.alert("Please specify and enable at least one rule to perform the ranking.");
     }

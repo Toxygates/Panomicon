@@ -36,7 +36,6 @@ import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
-import t.viewer.shared.ItemList;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
@@ -141,27 +140,19 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   
   // FilterTools.Delegate methods 
   @Override
-  public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
-    getStorage().sampleClassStorage.store(newSampleClass);
-    Future<String[]> compoundsFuture = new Future<String[]>();
-    fetchCompounds(compoundsFuture, newSampleClass);
-    processCompounds(compoundsFuture, chosenCompounds);
-    compoundsFuture.addSuccessCallback(r ->  {
+  public Future<String[]> setSampleClassAndFetchCompounds(SampleClass newSampleClass) {
+    Future<String[]> future = super.setSampleClassAndFetchCompounds(newSampleClass);
+    future.addSuccessCallback(r ->  {
       groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
     });
-    chosenSampleClass = newSampleClass;
+    return future;
   }
   
   @Override
   public void filterToolsDatasetsChanged(List<Dataset> datasets, 
       Future<SampleClass[]> future) {
-    chosenDatasets = getStorage().datasetsStorage.store(datasets);
+    super.filterToolsDatasetsChanged(datasets, future);
     groupInspector.datasetsChanged(datasets);
-    future.addSuccessCallback(sampleClasses -> {
-      chosenSampleClass = getStorage().sampleClassStorage
-          .store(filterTools.dataFilterEditor.currentSampleClassShowing());
-      fetchCompounds(new Future<String[]>(), chosenSampleClass);
-    });
   }
 
   // GroupInspector.Delegate methods  
@@ -215,13 +206,8 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   
   // CompoundSelector.Delegate methods
   @Override
-  public void compoundSelectorItemListsChanged(List<ItemList> itemLists) {
-    getStorage().itemListsStorage.store(itemLists);
-  }
-
-  @Override
   public void compoundSelectorCompoundsChanged(List<String> compounds) {
+    super.compoundSelectorCompoundsChanged(compounds);
     groupInspector.setCompounds(compounds);
-    chosenCompounds = getStorage().compoundsStorage.store(compounds);
   }
 }
