@@ -47,9 +47,6 @@ public class SampleSearchScreen extends FilterScreen
 
   private SampleServiceAsync sampleService;
 
-  private FilterTools filterTools;
-
-  protected SampleClass chosenSampleClass;
   protected List<Group> chosenColumns = new ArrayList<Group>();
 
   private Widget tools;
@@ -76,9 +73,8 @@ public class SampleSearchScreen extends FilterScreen
   public void loadState(AttributeSet attributes) {
     List<Dataset> chosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     filterTools.setDatasets(chosenDatasets);
+    filterTools.setSampleClass(getStorage().sampleClassStorage.getIgnoringException());
     fetchSampleClasses(new Future<SampleClass[]>(), chosenDatasets);
-    chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
-    filterTools.setSampleClass(chosenSampleClass);
     chosenColumns = getStorage().getChosenColumns();
   }
 
@@ -112,6 +108,7 @@ public class SampleSearchScreen extends FilterScreen
     conditionEditor = new ConditionEditor(searchParameters);
 
     Button searchButton = new Button("Search", (ClickHandler) e -> {
+      SampleClass chosenSampleClass = filterTools.dataFilterEditor.currentSampleClassShowing();
         if (individualSearchRadioButton.getValue()) {
           sampleSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
         } else if (unitSearchRadioButton.getValue()) {
@@ -382,14 +379,15 @@ public class SampleSearchScreen extends FilterScreen
   //FilterTools.Delegate method
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
     getStorage().sampleClassStorage.store(sc);
   }
 
   @Override
   public void filterToolsDatasetsChanged(List<Dataset> datasets,
       Future<SampleClass[]> future) {
-    //TODO: get new sampleclass if necessary
     getStorage().datasetsStorage.store(datasets);
+    future.addSuccessCallback(sampleClasses -> {
+      getStorage().sampleClassStorage.store(filterTools.dataFilterEditor.currentSampleClassShowing());
+    });
   }
 }
