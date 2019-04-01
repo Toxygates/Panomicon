@@ -90,7 +90,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       SampleClass sampleClass, boolean foo) {
     sampleClassesFuture.addNonErrorCallback(() -> {
       logger.info("processing sampleclasses");
-      filterTools.sampleClassChanged(sampleClass);
+      filterTools.setSampleClass(sampleClass);
       
       // We only need to fetch compounds if sample class or datasets have changed
       if (sampleClassesFuture.actuallyRan() || foo) {
@@ -130,7 +130,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     FutureUtils.beginPendingRequestHandling(future, this, "Unable to choose datasets");
     future.addSuccessCallback(sampleClasses -> {
       logger.info("sample classes fetched");
-      filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
+      filterTools.dataFilterEditor.setAvailable(sampleClasses);
     });
     return future;
   }
@@ -248,13 +248,15 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   }
   
   @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
-    chosenDatasets = datasets;
-    getStorage().datasetsStorage.store(datasets);
+  public void filterToolsDatasetsChanged(List<Dataset> datasets, 
+      Future<SampleClass[]> future) {
+    chosenDatasets = getStorage().datasetsStorage.store(datasets);
     groupInspector.datasetsChanged(datasets);
-    //TODO: sampleclass might change here; either that's not being handled or compounds are being
-    //fetched twice
-    fetchCompounds(new Future<String[]>(), chosenSampleClass);
+    future.addSuccessCallback(sampleClasses -> {
+      chosenSampleClass = getStorage().sampleClassStorage
+          .store(filterTools.dataFilterEditor.currentSampleClassShowing());
+      fetchCompounds(new Future<String[]>(), chosenSampleClass);
+    });
   }
 
   // GroupInspector.Delegate methods  
@@ -280,7 +282,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     
     future.addSuccessCallback(sampleClasses -> {
       if (sampleClasses != null) {
-        filterTools.dataFilterEditor.setAvailable(sampleClasses, false);
+        filterTools.dataFilterEditor.setAvailable(sampleClasses);
         Window.alert(additionalNeededDatasets.size() + " dataset(s) were activated " + 
             "because of your group choice.");
       }
@@ -289,14 +291,16 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return future;
   }
   
-  @Override
-  public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
-    chosenDatasets = datasets;
-    filterTools.setDatasets(datasets);
-    filterTools.getSampleClasses();
-    //same todo as filter tools version
-    fetchCompounds(new Future<String[]>(), chosenSampleClass);
-  }
+//  @Override
+//  public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
+//    chosenDatasets = getStorage().datasetsStorage.store(datasets);
+//    filterTools.setDatasets(datasets);
+//    filterTools.getSampleClasses().addSuccessCallback(sampleClasses -> {
+//      chosenSampleClass = getStorage().sampleClassStorage
+//          .store(filterTools.dataFilterEditor.currentSampleClassShowing());
+//      fetchCompounds(new Future<String[]>(), chosenSampleClass);
+//    });
+//  }
 
   @Override
   public void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds) {

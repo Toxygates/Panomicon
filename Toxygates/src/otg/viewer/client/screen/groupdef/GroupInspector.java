@@ -72,7 +72,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public interface Delegate {
     Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups);
     void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds);
-    void groupInspectorDatasetsChanged(List<Dataset> ds);
     void groupInspectorClearCompounds();
   }
 

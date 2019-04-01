@@ -37,9 +37,6 @@ public class DataFilterEditor extends Composite {
   protected final Logger logger;
   private Delegate delegate;
   
-  // This default value is necessary to prevent null pointer exceptions
-  protected SampleClass chosenSampleClass = new SampleClass();
-  
   public interface Delegate {
     void dataFilterEditorSampleClassChanged(SampleClass sc);
   }
@@ -89,7 +86,7 @@ public class DataFilterEditor extends Composite {
     }
   }
 
-  void changeFrom(int sel, boolean emitChange) {
+  void changeFrom(int sel) {
     List<SampleClass> selected = sampleClasses;
     // Get the selected values on the left of, and including, this one
     for (int i = 0; i <= sel; ++i) {
@@ -105,26 +102,21 @@ public class DataFilterEditor extends Composite {
     }
 
     if (sel < selectors.length - 1) {
-      changeFrom(sel + 1, emitChange);
-    } else if (sel == selectors.length - 1) {
-      SampleClass sampleClass = new SampleClass();
-      boolean allSet = true;
-      for (int i = 0; i < selectors.length; ++i) {
-        String x = selectors[i].getSelected();
-        if (x == null) {
-          allSet = false;
-        } else {
-          sampleClass.put(parameters[i], x);
-        }
-      }
-
-      if (allSet && emitChange) {
-        logger.info("propagating...");
-//        logger.info("Propagate change to " + r.toString());
-        chosenSampleClass = sampleClass;
-        delegate.dataFilterEditorSampleClassChanged(sampleClass);
+      changeFrom(sel + 1);
+    } 
+    // removing assignment to chosenSampleClass
+    // and notification through dataFiltereEditorSampleClassChanged
+  }
+  
+  public SampleClass currentSampleClassShowing() {
+    SampleClass sampleClass = new SampleClass();
+    for (int i = 0; i < selectors.length; ++i) {
+      String x = selectors[i].getSelected();
+      if (x != null) {
+        sampleClass.put(parameters[i], x);
       }
     }
+    return sampleClass;
   }
 
   public DataFilterEditor(OTGScreen screen, Delegate delegate) {
@@ -142,13 +134,15 @@ public class DataFilterEditor extends Composite {
       selectors[i].addChangeHandler(new ChangeHandler() {
         @Override
         public void onChange(ChangeEvent event) {
-          changeFrom(sel, true);
+          changeFrom(sel);
+          DataFilterEditor.this.delegate.dataFilterEditorSampleClassChanged(currentSampleClassShowing());
         }
       });
     }
   }
 
-  public void setAvailable(SampleClass[] sampleClasses, boolean emit) {
+  public void setAvailable(SampleClass[] sampleClasses) {
+    SampleClass oldSampleClass = currentSampleClassShowing();
     this.sampleClasses = Arrays.asList(sampleClasses);
     selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
     
@@ -157,9 +151,9 @@ public class DataFilterEditor extends Composite {
     boolean oldSampleClassMatchesConstraints = true;
     for (int i = 0; i < selectors.length; ++i) {
       oldSampleClassMatchesConstraints = 
-          selectors[i].trySelect(chosenSampleClass.get(parameters[i]));
+          selectors[i].trySelect(oldSampleClass.get(parameters[i]));
       if (oldSampleClassMatchesConstraints) {
-        changeFrom(i, false);
+        changeFrom(i);
       } else {
         break;
       }
@@ -167,17 +161,15 @@ public class DataFilterEditor extends Composite {
     // If the above fails, we start at the top and generate a fresh set of values
     // that match the constraints.
     if (!oldSampleClassMatchesConstraints) {
-      changeFrom(0, emit); 
+      changeFrom(0); 
     }
   }
 
   // Incoming message from FilterTools
-  public void sampleClassChanged(SampleClass sc) {
-    chosenSampleClass = sc;
-
+  public void setSampleClass(SampleClass sc) {
     for (int i = 0; i < selectors.length; ++i) {
       selectors[i].trySelect(sc.get(parameters[i]));      
-      changeFrom(i, false);
+      changeFrom(i);
     }
   }
 }

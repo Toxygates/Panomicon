@@ -30,7 +30,8 @@ import t.common.client.Utils;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.components.DatasetSelector;
-import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.future.Future;
+import t.viewer.client.future.FutureUtils;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
 
@@ -51,7 +52,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
-    void filterToolsDatasetsChanged(List<Dataset> ds);
+    void filterToolsDatasetsChanged(List<Dataset> ds, Future<SampleClass[]> future);
   }
 
   public <T extends OTGScreen & Delegate> FilterTools(T screen) {
@@ -105,8 +106,8 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
           @Override
           public void onOK() {
             setDatasets(new ArrayList<Dataset>(getSelected()));
-            getSampleClasses();
-            delegate.filterToolsDatasetsChanged(chosenDatasets);
+            delegate.filterToolsDatasetsChanged(chosenDatasets,
+                getSampleClasses());
             db.hide();
           }
 
@@ -126,21 +127,20 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     chosenDatasets = datasets;
   }
 
-  public void getSampleClasses() {
+  public Future<SampleClass[]> getSampleClasses() {
     logger.info("Request sample classes for " + chosenDatasets.size() + " datasets");
-    logger.info("fetching sample classes");
-    sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), new PendingAsyncCallback<SampleClass[]>(screen,
-        "Unable to choose datasets") {
-      @Override
-      public void handleSuccess(SampleClass[] sampleClasses) {
-        logger.info("sample classes fetched");
-        dataFilterEditor.setAvailable(sampleClasses, true);
-      }
+    Future<SampleClass[]> future = new Future<SampleClass[]>();
+    sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
+    FutureUtils.beginPendingRequestHandling(future, screen, "Unable to choose datasets");
+    future.addSuccessCallback(sampleClasses -> {
+      logger.info("sample classes fetched");
+      dataFilterEditor.setAvailable(sampleClasses);
     });
+    return future;
   }
   
-  public void sampleClassChanged(SampleClass sc) {
-    dataFilterEditor.sampleClassChanged(sc);
+  public void setSampleClass(SampleClass sc) {
+    dataFilterEditor.setSampleClass(sc);
   }
   
   

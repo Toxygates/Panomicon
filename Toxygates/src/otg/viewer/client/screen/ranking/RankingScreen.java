@@ -30,6 +30,7 @@ import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
+import t.viewer.client.future.Future;
 import t.viewer.shared.ItemList;
 
 public class RankingScreen extends MinimalScreen implements FilterTools.Delegate,
@@ -51,7 +52,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
     filterTools.setDatasets(newChosenDatasets);
     filterTools.getSampleClasses();
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
-    filterTools.sampleClassChanged(newSampleClass);
+    filterTools.setSampleClass(newSampleClass);
     compoundSelector.datasetsChanged(newChosenDatasets);
     compoundSelector.sampleClassChanged(newSampleClass);
     
@@ -144,7 +145,8 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   }
 
   @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+  public void filterToolsDatasetsChanged(List<Dataset> datasets,
+      Future<SampleClass[]> future) {
     chosenDatasets = datasets;
     getStorage().datasetsStorage.store(chosenDatasets);
     compoundSelector.datasetsChanged(chosenDatasets);

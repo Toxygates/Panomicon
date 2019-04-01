@@ -38,6 +38,7 @@ import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.TickMenuItem;
 import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.future.Future;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 public class SampleSearchScreen extends MinimalScreen
@@ -76,7 +77,7 @@ public class SampleSearchScreen extends MinimalScreen
     filterTools.setDatasets(getStorage().datasetsStorage.getIgnoringException());
     filterTools.getSampleClasses();
     chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
-    filterTools.sampleClassChanged(chosenSampleClass);
+    filterTools.setSampleClass(chosenSampleClass);
     chosenColumns = getStorage().getChosenColumns();
   }
 
@@ -385,7 +386,9 @@ public class SampleSearchScreen extends MinimalScreen
   }
 
   @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets) {
+  public void filterToolsDatasetsChanged(List<Dataset> datasets,
+      Future<SampleClass[]> future) {
+    //TODO: get new sampleclass if necessary
     getStorage().datasetsStorage.store(datasets);
   }
 }
