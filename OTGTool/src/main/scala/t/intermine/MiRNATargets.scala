@@ -9,7 +9,6 @@ import org.intermine.pathquery.PathQuery
 import t.platform._
 import t.platform.mirna._
 
-
 /**
  * Obtain MiRNA targets from TargetMine.
  * Currently these use MirTarBase as an upstream source.
@@ -91,7 +90,7 @@ object MiRNATargets {
       if (spl.length >= 4)
     } {
       builder.add(MiRNA(spl(1)), RefSeq(spl(3)), scoreForSupportType(spl(2)),
-        "MiRTarBase (via TargetMine)")
+          TargetTable.supportLabel(spl(2), "MiRTarBase"))
     }
     builder.build
   }

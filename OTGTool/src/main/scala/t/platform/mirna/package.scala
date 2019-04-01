@@ -8,9 +8,7 @@ package object mirna {
     def asProbe = Probe(id)
   }
 
-  type DatabaseID = String
-
-  type Interaction = (MiRNA, RefSeq, Double, DatabaseID)
+  type Interaction = (MiRNA, RefSeq, Double, String)
 
   def isMiRNAProbe(probe: Probe): Boolean = {
     probe.identifier.contains("-miR-") ||
