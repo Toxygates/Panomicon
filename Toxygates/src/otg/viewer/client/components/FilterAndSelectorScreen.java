@@ -77,6 +77,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     });
     compoundsFuture.addNonErrorCallback(() -> {
       chosenCompounds = filterCompounds(newChosenCompounds, compoundSelector.allCompounds());
+      logger.info("filtered compounds = " + chosenCompounds);
       getStorage().compoundsStorage.store(chosenCompounds);    
       compoundSelector.setChosenCompounds(chosenCompounds);
     });
@@ -122,14 +123,18 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     return future;
   }
   
-  public void filterToolsDatasetsChanged(List<Dataset> datasets, 
-      Future<SampleClass[]> future) {
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets, 
+      Future<SampleClass[]> sampleClassesFuture) {
     chosenDatasets = getStorage().datasetsStorage.store(datasets);
-    future.addSuccessCallback(sampleClasses -> {
+    Future<String[]> compoundsFuture = new Future<String[]>();
+    processCompounds(compoundsFuture, chosenCompounds);
+    sampleClassesFuture.addSuccessCallback(sampleClasses -> {
       chosenSampleClass = getStorage().sampleClassStorage
           .store(filterTools.dataFilterEditor.currentSampleClassShowing());
-      fetchCompounds(new Future<String[]>(), chosenSampleClass);
+      fetchCompounds(compoundsFuture, chosenSampleClass);
+      logger.info("just processed some compounds");
     });
+    return compoundsFuture;
   }
   
   // CompoundSelector.Delegate methods

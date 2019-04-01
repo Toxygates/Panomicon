@@ -50,7 +50,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
-    void filterToolsDatasetsChanged(List<Dataset> ds, Future<SampleClass[]> future);
+    Future<?> filterToolsDatasetsChanged(List<Dataset> ds, Future<SampleClass[]> future);
     Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future,
         List<Dataset> datasets);
   }

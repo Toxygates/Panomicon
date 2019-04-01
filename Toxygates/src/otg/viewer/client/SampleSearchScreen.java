@@ -383,11 +383,12 @@ public class SampleSearchScreen extends FilterScreen
   }
 
   @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets,
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets,
       Future<SampleClass[]> future) {
     getStorage().datasetsStorage.store(datasets);
     future.addSuccessCallback(sampleClasses -> {
       getStorage().sampleClassStorage.store(filterTools.dataFilterEditor.currentSampleClassShowing());
     });
+    return future;
   }
 }

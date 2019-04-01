@@ -147,8 +147,8 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
   }
 
   @Override
-  public void filterToolsDatasetsChanged(List<Dataset> datasets,
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets,
       Future<SampleClass[]> future) {
-    super.filterToolsDatasetsChanged(datasets, future);
+    return super.filterToolsDatasetsChanged(datasets, future);
   }
 }
