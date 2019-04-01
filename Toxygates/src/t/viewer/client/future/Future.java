@@ -88,9 +88,10 @@ public class Future<T> implements AsyncCallback<T> {
   }
   
   
-  public void bypass() {
+  public Future<T> bypass() {
     bypassed = true;
     onSuccess(null);
+    return this;
   }
   
   @Override

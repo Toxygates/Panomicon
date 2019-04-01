@@ -18,7 +18,8 @@
 
 package otg.viewer.client.components;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
@@ -131,7 +132,8 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     logger.info("Request sample classes for " + chosenDatasets.size() + " datasets");
     Future<SampleClass[]> future = new Future<SampleClass[]>();
     sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
-    FutureUtils.beginPendingRequestHandling(future, screen, "Unable to choose datasets");
+    FutureUtils.beginPendingRequestHandling(future, screen, 
+        "Unable to choose datasets and fetch sample classes");
     future.addSuccessCallback(sampleClasses -> {
       logger.info("sample classes fetched");
       dataFilterEditor.setAvailable(sampleClasses);

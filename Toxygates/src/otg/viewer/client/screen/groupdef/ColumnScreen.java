@@ -263,8 +263,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups) {
     List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
-    
-    Future<SampleClass[]> future = new Future<SampleClass[]>();
+    Future<SampleClass[]> future;
     
     if (additionalNeededDatasets.size() > 0) {
       List<Dataset> newEnabledList = new ArrayList<Dataset>(additionalNeededDatasets);
@@ -273,34 +272,18 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       getStorage().datasetsStorage.store(chosenDatasets);
       filterTools.setDatasets(chosenDatasets);
       
-      manager.sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
-      FutureUtils.beginPendingRequestHandling(future, this, 
-          "Unable to fetch sampleclasses");
+      future = filterTools.getSampleClasses().addSuccessCallback(sampleClasses -> {
+        if (sampleClasses != null) {
+          Window.alert(additionalNeededDatasets.size() + " dataset(s) were activated " + 
+              "because of your group choice.");
+        }
+      });
     } else {
-      future.bypass();
+      future = new Future<SampleClass[]>().bypass();
     }
-    
-    future.addSuccessCallback(sampleClasses -> {
-      if (sampleClasses != null) {
-        filterTools.dataFilterEditor.setAvailable(sampleClasses);
-        Window.alert(additionalNeededDatasets.size() + " dataset(s) were activated " + 
-            "because of your group choice.");
-      }
-    });
     
     return future;
   }
-  
-//  @Override
-//  public void groupInspectorDatasetsChanged(List<Dataset> datasets) {
-//    chosenDatasets = getStorage().datasetsStorage.store(datasets);
-//    filterTools.setDatasets(datasets);
-//    filterTools.getSampleClasses().addSuccessCallback(sampleClasses -> {
-//      chosenSampleClass = getStorage().sampleClassStorage
-//          .store(filterTools.dataFilterEditor.currentSampleClassShowing());
-//      fetchCompounds(new Future<String[]>(), chosenSampleClass);
-//    });
-//  }
 
   @Override
   public void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds) {
