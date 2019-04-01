@@ -47,11 +47,13 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
   private ScrollPanel sp;
 
   protected List<Dataset> chosenDatasets;
-  private SampleClass chosenSampleClass;
 
   @Override
   public void loadState(AttributeSet attributes) {
-    loadDatasetsAndSampleClass(attributes);
+    // Clear the rankings if we get new compounds as a result of dataset/sampleclass changes
+    loadDatasetsAndSampleClass(attributes).addSuccessCallback(c -> {
+      rankingSelector.removeRankColumns();
+    });
   }
 
   public RankingScreen(ScreenManager man) {
@@ -121,7 +123,7 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
     Future<MatchResult[]> future = new Future<MatchResult[]>();    
     manager().seriesService().rankedCompounds(seriesType, 
         chosenDatasets.toArray(new Dataset[0]),
-        chosenSampleClass, rules, future);
+        filterTools.dataFilterEditor.currentSampleClassShowing(), rules, future);
     FutureUtils.beginPendingRequestHandling(future, this, "Unable to rank compounds");
     
     future.addSuccessCallback(result -> {

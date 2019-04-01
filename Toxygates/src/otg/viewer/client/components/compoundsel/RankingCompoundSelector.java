@@ -126,11 +126,10 @@ public class RankingCompoundSelector extends CompoundSelector {
   }
 
   public void performRanking(SeriesType seriesType, List<String> rankProbes, List<RankRule> rules) {
-    this.rankProbes = rankProbes;
-    this.rankedType = seriesType;
-    addRankColumns();
-
-    if (rules.size() > 0) { 
+    if (rules.size() > 0) {
+      this.rankProbes = rankProbes;
+      this.rankedType = seriesType;
+      addRankColumns();
       delegate.getRankedCompounds(seriesType, rules.toArray(new RankRule[0]));
     } else {
       Window.alert("Please specify and enable at least one rule to perform the ranking.");
