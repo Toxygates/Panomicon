@@ -41,7 +41,7 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.future.Future;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-public class SampleSearchScreen extends MinimalScreen
+public class SampleSearchScreen extends FilterScreen
     implements Search.Delegate, ResultTable.Delegate, FilterTools.Delegate {
   public static final String key = "search";
 
@@ -74,8 +74,9 @@ public class SampleSearchScreen extends MinimalScreen
 
   @Override
   public void loadState(AttributeSet attributes) {
-    filterTools.setDatasets(getStorage().datasetsStorage.getIgnoringException());
-    filterTools.getSampleClasses();
+    List<Dataset> chosenDatasets = getStorage().datasetsStorage.getIgnoringException();
+    filterTools.setDatasets(chosenDatasets);
+    fetchSampleClasses(new Future<SampleClass[]>(), chosenDatasets);
     chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.setSampleClass(chosenSampleClass);
     chosenColumns = getStorage().getChosenColumns();

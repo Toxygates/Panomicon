@@ -33,14 +33,13 @@ import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
 import t.viewer.shared.ItemList;
 
-public class RankingScreen extends MinimalScreen implements FilterTools.Delegate,
+public class RankingScreen extends FilterScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {
 
   public static final String key = "rank";
 
   private RankingCompoundSelector compoundSelector;
   private CompoundRanker compoundRanker;
-  private FilterTools filterTools;
   private ScrollPanel sp;
 
   protected List<Dataset> chosenDatasets;
@@ -50,7 +49,7 @@ public class RankingScreen extends MinimalScreen implements FilterTools.Delegate
   public void loadState(AttributeSet attributes) {
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     filterTools.setDatasets(newChosenDatasets);
-    filterTools.getSampleClasses();
+    fetchSampleClasses(new Future<SampleClass[]>(), newChosenDatasets);
     SampleClass newSampleClass = getStorage().sampleClassStorage.getIgnoringException();
     filterTools.setSampleClass(newSampleClass);
     compoundSelector.datasetsChanged(newChosenDatasets);

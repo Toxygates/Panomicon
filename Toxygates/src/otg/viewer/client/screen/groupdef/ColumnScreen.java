@@ -42,13 +42,12 @@ import t.viewer.shared.ItemList;
 /**
  * This screen allows for column (group) definition as well as compound ranking.
  */
-public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
+public class ColumnScreen extends FilterScreen implements FilterTools.Delegate,
     GroupInspector.Delegate, CompoundSelector.Delegate {
   public final static String key = "columns";
 
   private GroupInspector groupInspector;
   private CompoundSelector compoundSelector;
-  private FilterTools filterTools;
 
   protected List<Dataset> chosenDatasets = new ArrayList<Dataset>();
   private SampleClass chosenSampleClass;
@@ -67,7 +66,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     if (!newChosenDatasets.equals(chosenDatasets)) {
       filterTools.setDatasets(newChosenDatasets);
       chosenDatasets = newChosenDatasets;
-      fetchSampleClasses(sampleClassesFuture);
+      fetchSampleClasses(sampleClassesFuture, newChosenDatasets);
     } else {
       logger.info("bypassing sampleclass fetching");
       sampleClassesFuture.bypass();
@@ -123,16 +122,6 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
             + "inconsistent state.");
       }
     });
-  }
-  
-  public Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future) {
-    manager().sampleService().chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
-    FutureUtils.beginPendingRequestHandling(future, this, "Unable to choose datasets");
-    future.addSuccessCallback(sampleClasses -> {
-      logger.info("sample classes fetched");
-      filterTools.dataFilterEditor.setAvailable(sampleClasses);
-    });
-    return future;
   }
   
   public Future<String[]> fetchCompounds(Future<String[]> future, SampleClass sampleClass) {
@@ -234,7 +223,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
     return additionalNeededDatasets;
   }
   
-  // FilterTools.Delegate methods
+  // FilterTools.Delegate methods 
   @Override
   public void filterToolsSampleClassChanged(SampleClass newSampleClass) {
     getStorage().sampleClassStorage.store(newSampleClass);
@@ -263,7 +252,7 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
   @Override
   public Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups) {
     List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
-    Future<SampleClass[]> future;
+    Future<SampleClass[]> future = new Future<SampleClass[]>();
     
     if (additionalNeededDatasets.size() > 0) {
       List<Dataset> newEnabledList = new ArrayList<Dataset>(additionalNeededDatasets);
@@ -272,14 +261,14 @@ public class ColumnScreen extends MinimalScreen implements FilterTools.Delegate,
       getStorage().datasetsStorage.store(chosenDatasets);
       filterTools.setDatasets(chosenDatasets);
       
-      future = filterTools.getSampleClasses().addSuccessCallback(sampleClasses -> {
+      fetchSampleClasses(future, chosenDatasets).addSuccessCallback(sampleClasses -> {
         if (sampleClasses != null) {
           Window.alert(additionalNeededDatasets.size() + " dataset(s) were activated " + 
               "because of your group choice.");
         }
       });
     } else {
-      future = new Future<SampleClass[]>().bypass();
+      future.bypass();
     }
     
     return future;

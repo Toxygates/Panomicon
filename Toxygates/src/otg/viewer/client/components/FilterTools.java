@@ -32,8 +32,6 @@ import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.components.DatasetSelector;
 import t.viewer.client.future.Future;
-import t.viewer.client.future.FutureUtils;
-import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
 
 /**
@@ -45,7 +43,6 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
   public DataFilterEditor dataFilterEditor;
   final OTGScreen screen;
   final Delegate delegate;
-  final SampleServiceAsync sampleService;
 
   private Logger logger;
 
@@ -54,6 +51,8 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
     void filterToolsDatasetsChanged(List<Dataset> ds, Future<SampleClass[]> future);
+    Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future,
+        List<Dataset> datasets);
   }
 
   public <T extends OTGScreen & Delegate> FilterTools(T screen) {
@@ -64,7 +63,6 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     this.screen = screen;
     this.delegate = delegate;
     logger = screen.getLogger();
-    sampleService = screen.manager().sampleService();
 
     filterTools = new HorizontalPanel();
     initWidget(filterTools);
@@ -108,7 +106,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
           public void onOK() {
             setDatasets(new ArrayList<Dataset>(getSelected()));
             delegate.filterToolsDatasetsChanged(chosenDatasets,
-                getSampleClasses());
+                delegate.fetchSampleClasses(new Future<SampleClass[]>(), chosenDatasets));
             db.hide();
           }
 
@@ -126,19 +124,6 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
 
   public void setDatasets(List<Dataset> datasets) {
     chosenDatasets = datasets;
-  }
-
-  public Future<SampleClass[]> getSampleClasses() {
-    logger.info("Request sample classes for " + chosenDatasets.size() + " datasets");
-    Future<SampleClass[]> future = new Future<SampleClass[]>();
-    sampleService.chooseDatasets(chosenDatasets.toArray(new Dataset[0]), future);
-    FutureUtils.beginPendingRequestHandling(future, screen, 
-        "Unable to choose datasets and fetch sample classes");
-    future.addSuccessCallback(sampleClasses -> {
-      logger.info("sample classes fetched");
-      dataFilterEditor.setAvailable(sampleClasses);
-    });
-    return future;
   }
   
   public void setSampleClass(SampleClass sc) {
