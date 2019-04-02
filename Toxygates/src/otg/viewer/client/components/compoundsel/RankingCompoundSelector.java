@@ -51,11 +51,10 @@ public class RankingCompoundSelector extends CompoundSelector {
   private final Resources resources;
   
   private Delegate delegate;
-
-  protected SampleClass chosenSampleClass;
   
   public interface Delegate extends CompoundSelector.Delegate {
     Future<MatchResult[]> getRankedCompounds(SeriesType seriesType, RankRule[] rules);
+    SampleClass currentSampleClass();
   }
   
   public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen, String heading) {
@@ -147,7 +146,7 @@ public class RankingCompoundSelector extends CompoundSelector {
       if (rankProbes.size() == 0) {
         Window.alert("These charts can only be displayed if compounds have been ranked.");
       } else {
-        seriesService.getSeries(rankedType, chosenSampleClass, rankProbes.toArray(new String[0]),
+        seriesService.getSeries(rankedType, delegate.currentSampleClass(), rankProbes.toArray(new String[0]),
             null, new String[] {compoundName}, getSeriesCallback(compoundName));
       }
       Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING_CHARTS);

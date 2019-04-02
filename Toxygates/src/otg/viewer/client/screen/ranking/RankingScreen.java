@@ -115,6 +115,8 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
     return "Specify at least one gene symbol to rank compounds according to their effect.";
   }
   
+  
+  // RankingCompoundSelector.Delegate methods
   @Override
   public Future<MatchResult[]> getRankedCompounds(SeriesType seriesType, 
       RankRule[] rules) {
@@ -130,6 +132,11 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
       rankingSelector.acceptRankedCompounds(result);
     });
     return future;
+  }
+  
+  @Override
+  public SampleClass currentSampleClass() {
+    return chosenSampleClass;
   }
 
   // CompoundSelector.Delegate methods
