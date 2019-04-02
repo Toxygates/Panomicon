@@ -199,7 +199,9 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
     processCompounds(compoundsFuture, compounds);    
     compoundsFuture.addNonErrorCallback(() ->  {
       groupInspector.selectionGrid.initializeState(chosenSampleClass,
-          chosenCompounds, group.getUnits());
+          chosenCompounds, group.getUnits()).addNonErrorCallback(() -> {
+        groupInspector.setEditMode(true);
+      });
     });
   }
   

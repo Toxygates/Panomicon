@@ -182,8 +182,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   
   public void initializeState(List<Dataset> datasets, SampleClass sc, 
       List<String> compounds) {
-    setEditMode(true);
-    selectionGrid.initializeState(sc, compounds, new Unit[0]);
+    selectionGrid.initializeState(sc, compounds, new Unit[0]).addNonErrorCallback(() -> {
+      setEditMode(true);
+    });
   }
 
   public void datasetsChanged(List<Dataset> datasets) {
@@ -191,8 +192,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
   
   public void setCompounds(List<String> compounds) {
-    setEditMode(true);
-    selectionGrid.setCompounds(compounds);
+    selectionGrid.setCompounds(compounds).addNonErrorCallback(() -> {
+      setEditMode(true);
+    });
   }
 
   public void confirmDeleteAllGroups() {
@@ -203,7 +205,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
   }
 
-  private void setEditMode(boolean editing) {
+  public void setEditMode(boolean editing) {
     boolean val = editing && (selectionGrid.chosenCompounds().size() > 0);
     toolPanel.setVisible(val);
   }
@@ -221,9 +223,10 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     onGroupNameInputChanged();
     selectionGrid.setAll(false, true);
     delegate.groupInspectorClearCompounds();
-    selectionGrid.setCompounds(new ArrayList<String>());
+    selectionGrid.setCompounds(new ArrayList<String>()).addNonErrorCallback(() -> {
+      setEditMode(true);
+    });
     setHeading("new group");
-    setEditMode(true);
   }
 
   /**
