@@ -160,6 +160,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public void setChosenCompounds(List<String> compounds) {
+    chosenCompounds = compounds;
     setSelection(compounds);
   }
 
