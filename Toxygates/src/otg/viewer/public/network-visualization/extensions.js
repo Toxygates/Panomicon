@@ -526,7 +526,7 @@ function getNetwork(){
     let pos = node.position();
     let shape = node.style().shape;
     /* define a new instance of ToxyNode, with all the corresponding fields */
-    let tn = new ToxyNode(data.id, data.type, data.symbol);
+    let tn = new ToxyNode(data.id, getNodeKey(data.type), data.symbol);
     tn.setWeights(data.weight);
     tn.setPosition(pos.x, pos.y);
     tn.color = data.color;

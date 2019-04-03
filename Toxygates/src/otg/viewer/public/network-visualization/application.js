@@ -103,14 +103,16 @@ function initCytoscapeGraph(id, container){
   vizNet[id].on("select", "node", onNodeSelection);
   vizNet[id].on("unselect", "node", onNodeUnselection);
 
-  /* add a context menu to the panel, and position it within the DOM at a level
-   * where events will be captured */
-  if ( $('.ctx-menu-'+id).length === 0 ){
-    vizNet[id].initContextMenu(id);
-    $(".ctx-menu-"+id)
-      .appendTo($(".gwt-DialogBox")[0])
-      .hide();
+  /* add a context menu to the panel (delete the previous one if still there),
+   * and position it within the DOM at a level where events will be captured */
+  if ( $('.ctx-menu-'+id).length !== 0 ){
+    $('.ctx-menu-'+id).remove();
   }
+  vizNet[id].initContextMenu(id);
+  $(".ctx-menu-"+id)
+    .appendTo($(".gwt-DialogBox")[0])
+    .hide();
+
   /* load the graph elements and add them to the display */
   let positioned = changeNetwork(id);
 
