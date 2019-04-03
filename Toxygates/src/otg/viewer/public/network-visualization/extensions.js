@@ -185,6 +185,28 @@ function initContextMenu(id){
       selector: 'node',
       coreAsWell: false,
       onClickFunction: showChangeLabelDialog,
+    },
+    { /* make a single node invisible */
+      id: 'hide-node'+id,
+      content: 'Hide node',
+      tooltip: 'Set the selected node and its connections as hidden',
+      selector: 'node[!hidden]',
+      coreAsWell: false,
+      onClickFunction: function(evt){
+        evt.target.data('hidden', true);
+        evt.target.toggleClass('hidden', true);
+      },
+    },
+    { /* make a single node visible */
+      id: 'show-node'+id,
+      content: 'Un-Hide node',
+      tooltip: 'Set the selected node and its connections as NOT hidden',
+      selector: 'node[?hidden]',
+      coreAsWell: false,
+      onClickFunction: function(evt){
+        evt.target.data('hidden', false);
+        evt.target.toggleClass('hidden', false);
+      },
     }
     ] // menuItems
   });
@@ -230,6 +252,7 @@ function loadElements(network){
         shape: shape,
         weight: weight,
         display: 'element',
+        hidden: false,
       },
       position: {
         x: e.x,
