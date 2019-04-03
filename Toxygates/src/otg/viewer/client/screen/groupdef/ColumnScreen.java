@@ -191,7 +191,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
     Future<SampleClass[]> sampleClassesFuture =  enableDatasetsIfNeeded(Collections.singletonList(group));
     Future<String[]> compoundsFuture = new Future<String[]>();
     
-    warnIfSampleClassInvalid(sampleClassesFuture);
+    warnLaterIfSampleClassInvalid(sampleClassesFuture);
     processSampleClasses(sampleClassesFuture, compoundsFuture, sampleClass,
         !sampleClass.equals(chosenSampleClass));
     chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
