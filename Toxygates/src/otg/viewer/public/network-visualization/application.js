@@ -298,6 +298,17 @@ $(document).on("click", "#mergeNetworkButton", function(){
 });
 
 /**
+ * Close the right visualization panel
+ */
+$(document).on('click', '#closeRightPanelButton', function(){
+  /* Remove DOM elements for the right panel SIDE_ID */
+  removeRightDisplay();
+  /* Fit the remaining network to the whole available space */
+  vizNet[MAIN_ID].resize();
+  vizNet[MAIN_ID].fit();
+});
+
+/**
  * Called by Toxygates to get the desired height, in pixels, of the user
  * interaction div
  */
