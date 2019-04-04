@@ -12,6 +12,9 @@ import t.model.SampleClass;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
 
+/**
+ * Contains some functionality for managing an instance of FilterTools. 
+ */
 public abstract class FilterScreen extends MinimalScreen {
   protected FilterTools filterTools;
   
@@ -20,6 +23,14 @@ public abstract class FilterScreen extends MinimalScreen {
     super(title, key, man, helpHTML, helpImage);
   }
   
+  /**
+   * Uses a provided future to make an RPC call to set chosen datasets and retrieve
+   * the sample classes valid for them, then sets the sample class selection for
+   * filterTools. 
+   * @param future the future to be used for the RPC call to fetch sampleclasses 
+   * @param datasets the set of chosen datasets to be sent to the server 
+   * @return the same future that was passed in
+   */
   public Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future,
       List<Dataset> datasets) {
     logger.info("Request sample classes for " + datasets.size() + " datasets");
