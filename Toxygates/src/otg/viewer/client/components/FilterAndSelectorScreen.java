@@ -58,7 +58,6 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     
     // After we have sampleclasses, load sampleclass, fetch compounds, and process them
     // if necessary
-    warnLaterIfSampleClassInvalid(sampleClassesFuture);
     processSampleClassesLater(sampleClassesFuture, compoundsFuture, newSampleClass,
         !newSampleClass.equals(chosenSampleClass));
     chosenSampleClass = newSampleClass;
@@ -77,7 +76,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
       if (!Arrays.stream(sampleClasses).anyMatch(chosenSampleClass::equals)) {
         Window.alert("Tried to pick a sampleclass, " + chosenSampleClass + 
             " that is not valid for te current choice of datasets. This could be "  
-            + "due to changes in backend data; Application may now be in an "
+            + "due to changes in backend data. Application may now be in an "
             + "inconsistent state.");
       }
     });
@@ -96,11 +95,15 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
       Future<String[]> compoundsFuture,  SampleClass sampleClass, 
       boolean sampleClassChanged) {
     sampleClassesFuture.addNonErrorCallback(() -> {
+      // Ensure that we have a valid sampleclass by trying to pick it in filterTools,
+      // then reading the closest match off of the filterTools.
       filterTools.setSampleClass(sampleClass);
+      chosenSampleClass = getStorage().sampleClassStorage
+          .store(filterTools.dataFilterEditor.currentSampleClassShowing());
       
       // We only need to fetch compounds if sample class or datasets have changed
       if (sampleClassesFuture.actuallyRan() || sampleClassChanged) {
-        fetchCompounds(compoundsFuture, sampleClass);
+        fetchCompounds(compoundsFuture, chosenSampleClass);
       } else {
         compoundsFuture.bypass();
       }
