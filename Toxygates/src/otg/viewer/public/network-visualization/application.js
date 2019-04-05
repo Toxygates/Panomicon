@@ -103,14 +103,16 @@ function initCytoscapeGraph(id, container){
   vizNet[id].on("select", "node", onNodeSelection);
   vizNet[id].on("unselect", "node", onNodeUnselection);
 
-  /* add a context menu to the panel, and position it within the DOM at a level
-   * where events will be captured */
-  if ( $('.ctx-menu-'+id).length === 0 ){
-    vizNet[id].initContextMenu(id);
-    $(".ctx-menu-"+id)
-      .appendTo($(".gwt-DialogBox")[0])
-      .hide();
+  /* add a context menu to the panel (delete the previous one if still there),
+   * and position it within the DOM at a level where events will be captured */
+  if ( $('.ctx-menu-'+id).length !== 0 ){
+    $('.ctx-menu-'+id).remove();
   }
+  vizNet[id].initContextMenu(id);
+  $(".ctx-menu-"+id)
+    .appendTo($(".gwt-DialogBox")[0])
+    .hide();
+
   /* load the graph elements and add them to the display */
   let positioned = changeNetwork(id);
 
@@ -291,6 +293,17 @@ $(document).on("click", "#mergeNetworkButton", function(){
   /* Clean un-required variables */
   vizNet[SIDE_ID] = null;
   /* Fit the new network to the viewport */
+  vizNet[MAIN_ID].resize();
+  vizNet[MAIN_ID].fit();
+});
+
+/**
+ * Close the right visualization panel
+ */
+$(document).on('click', '#closeRightPanelButton', function(){
+  /* Remove DOM elements for the right panel SIDE_ID */
+  removeRightDisplay();
+  /* Fit the remaining network to the whole available space */
   vizNet[MAIN_ID].resize();
   vizNet[MAIN_ID].fit();
 });

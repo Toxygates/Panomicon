@@ -183,6 +183,20 @@ function removeRightDisplay(){
   setSinglePanelInterface();
 }
 
+/**
+ * Return the key of a given node type
+ *
+ * @param {string} value the value whose key we want to know
+ * @return {string} The found key or undefined otherwise
+ */
+function getNodeKey(value){
+  for (k in nodeType){
+    if( nodeType[k] === value )
+      return k;
+  }
+  return undefined;
+}
+
 
 /**
  * Linear interpolation of color
