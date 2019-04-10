@@ -13,9 +13,14 @@ import java.util.stream.Collectors;
 public class Network implements Serializable {
   /**
    * In a network with two node types, the maximum number of nodes of either of the two types.
+   * (Currently this constant is not being used)
    */
   public static final int MAX_EDGES = 1000;
-  public static final int MAX_NODES = 250;
+
+  /**
+   * Max number of overall main type nodes in the network.
+   */
+  public static final int MAX_NODES = 100;
   
   public static final String mrnaType = "mRNA";
   public static final String mirnaType = "miRNA";

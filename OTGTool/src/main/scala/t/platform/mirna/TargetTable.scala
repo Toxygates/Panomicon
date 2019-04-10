@@ -33,6 +33,10 @@ object TargetTable {
  * As much as possible we filter this table eagerly, to control the size and speed up
  * subsequent operations.
  *
+ * Because the table can be large, access operations are based on traversing the entire table
+ * each time data is requested. It is thus more efficient to request interactions for a set of
+ * probes than to ask for a few probes at a time.
+ *
  * Convention: origins are miRNAs such as hsa-let-7a-2-3p,
  * targets are mRNAs (identified by refSeq transcripts
  * such as NM_133594)

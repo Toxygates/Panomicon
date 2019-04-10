@@ -8,6 +8,9 @@ import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.Interaction
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.Node
+import scala.collection.mutable.{Set => MSet}
+import t.viewer.server.matrix.ExprMatrix
+import t.viewer.shared.ManagedMatrixInfo
 
 object NetworkBuilder {
 
@@ -43,48 +46,76 @@ class NetworkBuilder(targets: TargetTable,
     platforms: Platforms,
     main: ManagedMatrix, side: ManagedMatrix) {
 
-  lazy val mainType = main.params.typ
-  lazy val sideType = side.params.typ
+  val mainType = main.params.typ
+  val sideType = side.params.typ
+  val mainInfo = main.info
+  val sideInfo = side.info
 
-  //TODO handling of max size and informing user of cutoff
-
-  //This respects sorting and filtering. All side nodes should have at least one interaction.
-  lazy val sideNodes = getNodes(side, sideType, Some(Network.MAX_NODES)).toSet
-  lazy val mainNodes = getNodes(main, mainType, Some(Network.MAX_NODES)).toSet
-  lazy val nodes = sideNodes.toSeq ++ mainNodes
-  lazy val nodeLookup = Map() ++ nodes.map(n => n.id -> n)
-
-  final def lookup(p: Probe) = nodeLookup.get(p.identifier)
-  final def lookup(m: MiRNA) = nodeLookup.get(m.id)
-
-   def getNodes(mat: ManagedMatrix, mtype: String, maxSize: Option[Int]): Seq[Node] = {
-    val allRows = mat.current.asRows
+  def getNodes(mat: ExprMatrix, info: ManagedMatrixInfo, mtype: String, maxSize: Option[Int]): Seq[Node] = {
+    val allRows = mat.asRows
     val useRows = maxSize match {
       case Some(n) => allRows take n
-      case None => allRows
+      case None    => allRows
     }
     useRows.map(r => {
       val probe = r.getProbe
       val symbols = platforms.identifierLookup(probe).symbols.asGWT
-      Node.fromRow(r, symbols, mtype, mat.info)
+      Node.fromRow(r, symbols, mtype, info)
     })
   }
 
-  def interactions(ints: Iterable[(MiRNA, Probe, Double, String)]) = {
-    for {
-      iact <- ints
-      (mirna, probe, score, label) = iact
-      miLookup <- lookup(mirna); pLookup <- lookup(probe)
-      int = new Interaction(miLookup, pLookup, label, score)
-    } yield int
+  def targetsForMirna(mirna: Iterable[MiRNA],
+      platform: Iterable[Probe]) =
+        targets.targets(mirna, platform)
+
+  def targetsForMrna(mrna: Iterable[Probe]) =
+    targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4))
+
+  def targetSideProbe(t: (MiRNA, Probe, _, _)) = sideType match {
+    case Network.mrnaType => t._2.identifier
+    case Network.mirnaType => t._1.id
   }
 
-  def interactionsForMirna(mirna: Iterable[MiRNA],
-      platform: Iterable[Probe]) =
-        interactions(targets.targets(mirna, platform))
+  def probeTargets(probes: Seq[Probe], allPlatforms: Seq[Probe]) = mainType match {
+     case Network.mrnaType =>
+        targetsForMrna(probes)
+      case Network.mirnaType =>
+        val pf = platforms.data.toSeq.flatMap(_._2)
+        targetsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
+  }
 
-  def interactionsForMrna(mrna: Iterable[Probe]) =
-    interactions(targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4)))
+  /**
+   * Construct a network from the given main and side sub-matrices
+   */
+  def networkFromSelection(mainSel: ExprMatrix, sideSel: ExprMatrix,
+      targets: Iterable[(MiRNA, Probe, Double, String)]) = {
+
+    val mainNodes = getNodes(mainSel, mainInfo, mainType, None)
+    val sideNodes = getNodes(sideSel, sideInfo, sideType, None)
+
+    val nodes = mainNodes ++ sideNodes
+
+    val nodeLookup = Map() ++ nodes.map(n => n.id -> n)
+    def lookup(p: Probe) = nodeLookup.get(p.identifier)
+    def lookupMicro(m: MiRNA) = nodeLookup.get(m.id)
+
+    val ints = (for {
+        iact <- targets
+        (mirna, probe, score, label) = iact
+        miLookup <- lookupMicro(mirna); pLookup <- lookup(probe)
+        int = new Interaction(miLookup, pLookup, label, score)
+      } yield int)
+
+    val truncated = (mainSel.rows < main.current.rows)
+    val trueSize = main.current.rows
+
+    //In case there are too many interactions,
+    //we might prioritise by weight here and limit the number.
+    //Currently edges/interactions are not limited.
+    //val interactions = r.flatMap(_._2) //.toSeq.sortBy(_.weight()) take Network.MAX_EDGES
+    new Network("Network", nodes.asGWT, ints.asGWT,
+      truncated, trueSize)
+  }
 
   import java.util.{ ArrayList => JList }
   def build: Network = {
@@ -92,23 +123,45 @@ class NetworkBuilder(targets: TargetTable,
       return new Network("Network", new JList(), new JList(), false, 0)
     }
 
-    val trueSize = main.current.rows
-    val probes = platforms.resolve(main.current.orderedRowKeys take Network.MAX_NODES)
-    val truncated = (trueSize > Network.MAX_NODES)
+    var haveInteractions = MSet[String]()
+    val probes = platforms.resolve(main.current.orderedRowKeys)
+    val pfs = platforms.data.toSeq.flatMap(_._2)
+    val allTargets = probeTargets(probes, pfs)
 
-    val rawInt = mainType match {
-      case Network.mrnaType =>
-        interactionsForMrna(probes).filter(i => sideNodes.contains(i.from))
-      case Network.mirnaType =>
-        val pf = platforms.data.toSeq.flatMap(_._2)
-        interactionsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
-          .filter(i => sideNodes.contains(i.to))
+    //Track which probes (on both sides) have interactions
+    for ((mirna, mrna, _, _) <- allTargets) {
+      haveInteractions += mirna.id
+      haveInteractions += mrna.identifier
     }
 
-    //In case there are too many interactions,
-    //we might prioritise by weight here and limit the number
-    val interactions = rawInt //.toSeq.sortBy(_.weight()) take Network.MAX_EDGES
-    new Network("Network", nodes.asGWT, interactions.asGWT,
-      truncated, trueSize)
+    var count = 0
+
+    //Preserve the sort order while taking at most MAX_NODES nodes with interactions
+    var keepMainNodes = Set[String]()
+    for {
+      n <- main.current.orderedRowKeys
+      if (count < Network.MAX_NODES)
+      if (haveInteractions.contains(n))
+    } {
+      count += 1
+      keepMainNodes += n
+    }
+
+    //Extend the main node set if too few nodes had interactions
+    if (keepMainNodes.size < Network.MAX_NODES) {
+      val need = Network.MAX_NODES - keepMainNodes.size
+      keepMainNodes ++= main.current.orderedRowKeys.filter(!keepMainNodes.contains(_)).take(need)
+    }
+    val mainSel = main.current.selectNamedRows(keepMainNodes.toSeq)
+    val mainTargets = probeTargets(platforms.resolve(mainSel.orderedRowKeys), pfs)
+    val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
+    val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
+      filter(sideTableProbeSet.contains(_))
+
+    //Must select from rawGrouped since sideProbes may be larger than
+    //side.current's probe set
+    val sideSel = side.rawGrouped.selectNamedRows(sideProbes.toSeq)
+
+    networkFromSelection(mainSel, sideSel, mainTargets)
   }
 }
