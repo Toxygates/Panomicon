@@ -55,6 +55,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
   
   public interface Delegate {
+    /**
+     * Notifies delegate when selected units changes
+     * @param units
+     */
     void selectedUnitsChanged(List<Unit> units);
   }
   

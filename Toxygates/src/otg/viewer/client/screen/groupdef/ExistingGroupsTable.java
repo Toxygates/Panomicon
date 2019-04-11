@@ -17,9 +17,27 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
   private Delegate delegate;
   
   public interface Delegate {
+    /**
+     * Create columns that show information about groups and add those columns
+     * to a table.
+     * @param table the table to add columns to
+     */
     void makeGroupColumns(CellTable<Group> table);
+    /**
+     * Prepare to edit a sample group , loading it into the UI so the user can 
+     * view and modify it.
+     * @param name the name of the group to be edited
+     */
     void displayGroupForEditing(String name);
+    /**
+     * Delete a sample group
+     * @param name the name of the group to be deleted
+     */
     void deleteGroup(String name);
+    /**
+     * Notify delegate that the set of selected groups has changed.
+     * @param selected the new set of selected groups
+     */
     void existingGroupsTableSelectionChanged(Set<Group> selected);
   }
   

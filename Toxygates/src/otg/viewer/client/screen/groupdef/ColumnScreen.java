@@ -153,7 +153,6 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
       Future<SampleClass[]> future) {
     Future<?> compoundsFuture = super.filterToolsDatasetsChanged(datasets, future);
     compoundsFuture.addSuccessCallback(sampleClasses -> {
-      logger.info("just initializing groupinspector with compounds " + chosenCompounds);
       groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds);
     });
     groupInspector.datasetsChanged(datasets);
@@ -200,7 +199,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
     compoundsFuture.addNonErrorCallback(() ->  {
       groupInspector.selectionGrid.initializeState(chosenSampleClass,
           chosenCompounds, group.getUnits()).addNonErrorCallback(() -> {
-        groupInspector.setEditMode(true);
+        groupInspector.setEditMode();
       });
     });
   }
