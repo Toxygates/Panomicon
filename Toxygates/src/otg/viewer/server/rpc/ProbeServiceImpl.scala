@@ -26,19 +26,11 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
-  var targetmine: Option[IntermineConnector] = None
 
   override def localInit(c: Configuration) {
     super.localInit(c)
     chembl = new ChEMBL()
     drugBank = new DrugBank()
-
-    val mines = new Intermines(c.intermineInstances)
-    mines.byTitle.get("TargetMine") match {
-      case Some(tg) =>
-        targetmine = Some(new IntermineConnector(tg, platformsCache))
-      case None =>
-    }
   }
 
   private def probeStore: OTGProbes = context.probes
