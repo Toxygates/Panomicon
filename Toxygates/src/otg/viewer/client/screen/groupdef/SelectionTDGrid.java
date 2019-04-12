@@ -169,7 +169,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     if (ui != null) {
       ui.setValue(v);
     } else {
-      logger.warning("Unable to set selection " + unit + " (missing ui)");
+      logger.info("Unable to set selection " + unit + " (missing ui)");
     }
     if (fire) {
       fireUnitsChanged();
@@ -194,7 +194,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     return unitUis.get(unit).getValue();
   }
 
-  protected Unit[] getSelectedCombinations() {
+  public Unit[] getSelectedCombinations() {
     List<Unit> r = new ArrayList<Unit>();
     for (Unit u : unitUis.keySet()) {
       UnitUI ui = unitUis.get(u);

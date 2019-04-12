@@ -193,7 +193,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    */
   public void initializeState(List<Dataset> datasets, SampleClass sc, 
       List<String> compounds, boolean datasetsChanged) {
-    selectionGrid.initializeState(sc, compounds, new Unit[0], datasetsChanged).addNonErrorCallback(() -> {
+    selectionGrid.initializeState(sc, compounds, selectionGrid.getSelectedCombinations(), 
+        datasetsChanged).addNonErrorCallback(() -> {
       setEditMode();
     });
   }
