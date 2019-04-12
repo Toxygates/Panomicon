@@ -721,9 +721,9 @@ Non-semantic
 
 .heading {
 	font-size: 1.2em;
-	color: #777;
+	color: #000;
 	margin: 5px;
-	text-align: center;
+	text-align: left;
 }
 
 .emphasized {
