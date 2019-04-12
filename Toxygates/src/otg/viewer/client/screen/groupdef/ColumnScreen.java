@@ -50,10 +50,17 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   public void loadState(AttributeSet attributes) {
     boolean datasetsChanged = chosenDatasets != null && 
         !chosenDatasets.equals(getStorage().datasetsStorage.getIgnoringException());
-    loadDatasetsAndSampleClass(attributes).addNonErrorCallback(() -> {
-      groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, 
-          datasetsChanged);
-      groupInspector.loadGroups();
+    List<String> oldCompounds = chosenCompounds;
+    loadDatasetsAndSampleClass(attributes).addCallback(future -> {
+      // update group inspector state if compounds were fetched, or if chosen compounds changed
+      if (future.doneAndSuccessful() || 
+          (future.doneWithoutError() && oldCompounds != null && !oldCompounds.equals(chosenCompounds))) {
+        groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, 
+            datasetsChanged);
+      }
+      if (future.doneWithoutError()) {
+        groupInspector.loadGroups();
+      }
     });
   }
   
