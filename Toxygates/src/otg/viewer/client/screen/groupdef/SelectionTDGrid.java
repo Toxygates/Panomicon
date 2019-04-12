@@ -131,9 +131,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
   
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(
-      SampleClass sampleClass, List<String> compounds, Unit[] unitSelection) {
+      SampleClass sampleClass, List<String> compounds, Unit[] unitSelection,
+      boolean datasetsChanged) {
     Future<Pair<String[], Pair<Unit, Unit>[]>> future = 
-        super.initializeState(sampleClass, compounds);
+        super.initializeState(sampleClass, compounds, datasetsChanged);
     if (!compounds.isEmpty()) {
       future.addSuccessCallback(r -> {
         samplesAvailable(unitSelection);
@@ -168,7 +169,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     if (ui != null) {
       ui.setValue(v);
     } else {
-      logger.warning("Unable to set selection " + unit + " (missing ui)");
+      logger.info("Unable to set selection " + unit + " (missing ui)");
     }
     if (fire) {
       fireUnitsChanged();
@@ -193,7 +194,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     return unitUis.get(unit).getValue();
   }
 
-  protected Unit[] getSelectedCombinations() {
+  public Unit[] getSelectedCombinations() {
     List<Unit> r = new ArrayList<Unit>();
     for (Unit u : unitUis.keySet()) {
       UnitUI ui = unitUis.get(u);

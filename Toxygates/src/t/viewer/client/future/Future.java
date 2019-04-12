@@ -50,6 +50,10 @@ public class Future<T> implements AsyncCallback<T> {
     return done() && wasSuccessful();
   }
   
+  public boolean doneWithoutError() {
+    return done() && caught == null;
+  }
+  
   public boolean actuallyRan() {
     return done && !bypassed;
   }

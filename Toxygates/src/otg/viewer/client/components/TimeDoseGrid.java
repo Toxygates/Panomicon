@@ -108,12 +108,22 @@ abstract public class TimeDoseGrid extends Composite {
     return new ArrayList<String>(chosenCompounds);
   }
   
+  /**
+   * Set this object's chosen sampleClass and chosen compounds, fetch minors and samples
+   * if necessary, and, after all fetching is done, process retrieved data and redraw
+   * the grid.
+   * @param sampleClass the new chosen sample class
+   * @param compounds the new chosen compounds
+   * @param datasetsChanged if true, minors will be fetched even if sample class
+   * hasn't changed 
+   * @return
+   */
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(SampleClass 
-      sampleClass, List<String> compounds) {
+      sampleClass, List<String> compounds, boolean datasetsChanged) {
     logger.info("tdgrid initializeState");
     
     Future<String[]> minorsFuture = new Future<String[]>(); 
-    if (prepareToFetchMinors(sampleClass)) {
+    if (prepareToFetchMinors(sampleClass) || datasetsChanged) {
       logger.info("fetching minors - initializeState");
       FutureUtils.beginPendingRequestHandling(minorsFuture, screen, "Unable to fetch minor parameter for samples");
       sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 

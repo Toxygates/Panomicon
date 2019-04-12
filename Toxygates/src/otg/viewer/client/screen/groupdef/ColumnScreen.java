@@ -48,9 +48,19 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
 
   @Override
   public void loadState(AttributeSet attributes) {
-    loadDatasetsAndSampleClass(attributes).addNonErrorCallback(() -> {
-      groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds);
-      groupInspector.loadGroups();
+    boolean datasetsChanged = chosenDatasets != null && 
+        !chosenDatasets.equals(getStorage().datasetsStorage.getIgnoringException());
+    List<String> oldCompounds = chosenCompounds;
+    loadDatasetsAndSampleClass(attributes).addCallback(future -> {
+      // update group inspector state if compounds were fetched, or if chosen compounds changed
+      if (future.doneAndSuccessful() || 
+          (future.doneWithoutError() && oldCompounds != null && !oldCompounds.equals(chosenCompounds))) {
+        groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, 
+            datasetsChanged);
+      }
+      if (future.doneWithoutError()) {
+        groupInspector.loadGroups();
+      }
     });
   }
   
@@ -143,7 +153,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   public Future<String[]> setSampleClassAndFetchCompounds(SampleClass newSampleClass) {
     Future<String[]> future = super.setSampleClassAndFetchCompounds(newSampleClass);
     future.addSuccessCallback(r ->  {
-      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds);
+      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds, false);
     });
     return future;
   }
@@ -153,7 +163,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
       Future<SampleClass[]> future) {
     Future<?> compoundsFuture = super.filterToolsDatasetsChanged(datasets, future);
     compoundsFuture.addSuccessCallback(sampleClasses -> {
-      groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds);
+      groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, true);
     });
     groupInspector.datasetsChanged(datasets);
     return compoundsFuture;
@@ -198,7 +208,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
     processCompoundsLater(compoundsFuture, compounds);    
     compoundsFuture.addNonErrorCallback(() ->  {
       groupInspector.selectionGrid.initializeState(chosenSampleClass,
-          chosenCompounds, group.getUnits()).addNonErrorCallback(() -> {
+          chosenCompounds, group.getUnits(), false).addNonErrorCallback(() -> {
         groupInspector.setEditMode();
       });
     });
