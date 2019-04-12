@@ -131,9 +131,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
   
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(
-      SampleClass sampleClass, List<String> compounds, Unit[] unitSelection) {
+      SampleClass sampleClass, List<String> compounds, Unit[] unitSelection,
+      boolean datasetsChanged) {
     Future<Pair<String[], Pair<Unit, Unit>[]>> future = 
-        super.initializeState(sampleClass, compounds);
+        super.initializeState(sampleClass, compounds, datasetsChanged);
     if (!compounds.isEmpty()) {
       future.addSuccessCallback(r -> {
         samplesAvailable(unitSelection);
