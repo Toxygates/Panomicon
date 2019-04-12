@@ -47,6 +47,7 @@ public class SampleSearchScreen extends FilterScreen
 
   private SampleServiceAsync sampleService;
 
+  protected List<Dataset> chosenDatasets;
   protected List<Group> chosenColumns = new ArrayList<Group>();
 
   private Widget tools;
@@ -71,10 +72,13 @@ public class SampleSearchScreen extends FilterScreen
 
   @Override
   public void loadState(AttributeSet attributes) {
-    List<Dataset> chosenDatasets = getStorage().datasetsStorage.getIgnoringException();
-    filterTools.setDatasets(chosenDatasets);
+    List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
+    filterTools.setDatasets(newChosenDatasets);
     filterTools.setSampleClass(getStorage().sampleClassStorage.getIgnoringException());
-    fetchSampleClasses(new Future<SampleClass[]>(), chosenDatasets);
+    if (!newChosenDatasets.equals(chosenDatasets)) {
+      fetchSampleClasses(new Future<SampleClass[]>(), newChosenDatasets);
+      chosenDatasets = newChosenDatasets;
+    }
     chosenColumns = getStorage().getChosenColumns();
   }
 
@@ -385,7 +389,7 @@ public class SampleSearchScreen extends FilterScreen
   @Override
   public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets,
       Future<SampleClass[]> future) {
-    getStorage().datasetsStorage.store(datasets);
+    chosenDatasets = getStorage().datasetsStorage.store(datasets);
     future.addSuccessCallback(sampleClasses -> {
       getStorage().sampleClassStorage.store(filterTools.dataFilterEditor.currentSampleClassShowing());
     });
