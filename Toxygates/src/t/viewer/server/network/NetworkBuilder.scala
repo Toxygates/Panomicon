@@ -64,8 +64,7 @@ class NetworkBuilder(targets: TargetTable,
     })
   }
 
-  def targetsForMirna(mirna: Iterable[MiRNA],
-      platform: Iterable[Probe]) =
+  def targetsForMirna(mirna: Iterable[MiRNA], platform: Iterable[Probe]) =
         targets.targets(mirna, platform)
 
   def targetsForMrna(mrna: Iterable[Probe]) =
@@ -77,8 +76,7 @@ class NetworkBuilder(targets: TargetTable,
   }
 
   def probeTargets(probes: Seq[Probe], allPlatforms: Seq[Probe]) = mainType match {
-     case Network.mrnaType =>
-        targetsForMrna(probes)
+     case Network.mrnaType => targetsForMrna(probes)
       case Network.mirnaType =>
         val pf = platforms.data.toSeq.flatMap(_._2)
         targetsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
@@ -117,30 +115,26 @@ class NetworkBuilder(targets: TargetTable,
       truncated, trueSize)
   }
 
-  import java.util.{ ArrayList => JList }
-  def build: Network = {
-    if (main.info.numColumns() == 0) {
-      return new Network("Network", new JList(), new JList(), false, 0)
-    }
+  /**
+   * Pick the top rows that have interactions from the given matrix,
+   * padding with non-interacting rows if needed
+   */
+  def topProbesWithInteractions(targets: Iterable[(MiRNA, Probe)]) = {
 
     var haveInteractions = MSet[String]()
-    val probes = platforms.resolve(main.current.orderedRowKeys)
-    val pfs = platforms.data.toSeq.flatMap(_._2)
-    val allTargets = probeTargets(probes, pfs)
-
     //Track which probes (on both sides) have interactions
-    for ((mirna, mrna, _, _) <- allTargets) {
+    for ((mirna, mrna) <- targets) {
       haveInteractions += mirna.id
       haveInteractions += mrna.identifier
     }
-
     var count = 0
+    val max = Network.MAX_NODES
 
     //Preserve the sort order while taking at most MAX_NODES nodes with interactions
     var keepMainNodes = Set[String]()
     for {
       n <- main.current.orderedRowKeys
-      if (count < Network.MAX_NODES)
+      if (count < max)
       if (haveInteractions.contains(n))
     } {
       count += 1
@@ -148,11 +142,25 @@ class NetworkBuilder(targets: TargetTable,
     }
 
     //Extend the main node set if too few nodes had interactions
-    if (keepMainNodes.size < Network.MAX_NODES) {
-      val need = Network.MAX_NODES - keepMainNodes.size
+    if (keepMainNodes.size < max) {
+      val need = max - keepMainNodes.size
       keepMainNodes ++= main.current.orderedRowKeys.filter(!keepMainNodes.contains(_)).take(need)
     }
-    val mainSel = main.current.selectNamedRows(keepMainNodes.toSeq)
+    keepMainNodes.toSeq
+  }
+
+  import java.util.{ ArrayList => JList }
+  def build: Network = {
+    if (main.info.numColumns() == 0) {
+      return new Network("Network", new JList(), new JList(), false, 0)
+    }
+
+    val probes = platforms.resolve(main.current.orderedRowKeys)
+    val pfs = platforms.data.toSeq.flatMap(_._2)
+    val allTargets = probeTargets(probes, pfs)
+
+    val keepNodes = topProbesWithInteractions(allTargets.map(x => (x._1, x._2)))
+    val mainSel = main.current.selectNamedRows(keepNodes)
     val mainTargets = probeTargets(platforms.resolve(mainSel.orderedRowKeys), pfs)
     val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
