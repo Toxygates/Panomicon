@@ -64,6 +64,17 @@ function onNodeEnter(event){
   $('#nodePopper #label').html(node.data("label"));
   $('#nodePopper #type').html(node.data("type"));
   $('#nodePopper #probe').html(node.data("id"));
+  /* remove previous weights from popper */
+  $('#nodePopper .popperRow').remove();
+  /* add weight rows to the popper */
+  let wgts = node.data('weight');
+  for( k in wgts ){
+    let row = $('<tr/>')
+      .addClass('popperRow')
+    row.append('<td>'+k+':</td>');
+    row.append('<td>'+wgts[k].toFixed(4)+'</td>');
+    $('#popperTable').append(row);
+  }
 
   /* create a new pop-up element and bind it to the corresponding node */
   let popup = node.popper({

@@ -117,9 +117,10 @@ function addPopperDiv(){
   });
   /* add contents to the pop-up display */
   let table = $('<table/>');
-  table.append('<tr><td>Label</td><td id="label"></td></tr>');
-  table.append('<tr><td>Type</td><td id="type"></td></tr>');
-  table.append('<tr><td>Probe</td><td id="probe"></td></tr>');
+  table.attr('id', 'popperTable');
+  table.append('<tr><td>Label:</td><td id="label"></td></tr>');
+  table.append('<tr><td>Type:</td><td id="type"></td></tr>');
+  table.append('<tr><td>Probe:</td><td id="probe"></td></tr>');
   divPopper.append(table);
   /* add the structure to the body of the application */
   $('body').append(divPopper);
