@@ -154,6 +154,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
               n += 1;
               sum += val;
             }
+          } catch (IllegalArgumentException e) {
+            logger.info("No value for parameter " + annotation + " for sample " + a.id());
           } catch (Exception e) {
             logger.log(Level.WARNING, "Annotation barcode processing error", e);            
           }
