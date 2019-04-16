@@ -83,7 +83,9 @@ public class SampleDetailTable extends Composite {
       BioParamValue bpv = object[i];
       if (bpv instanceof NumericalBioParamValue) {
         NumericalBioParamValue nbpv = (NumericalBioParamValue) bpv;
-        if (nbpv.isAbove()) {
+        if (nbpv.value() == null) {
+          // otherwise we get NullPointerExceptions on nbpv.isAbove() 
+        } else if (nbpv.isAbove()) {
           sb.append(TEMPLATES.startStyled("numericalParameterAbove"));                  
         } else if (nbpv.isBelow()) {
           sb.append(TEMPLATES.startStyled("numericalParameterBelow"));

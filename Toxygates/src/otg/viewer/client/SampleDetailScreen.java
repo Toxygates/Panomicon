@@ -27,7 +27,8 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.*;
+import otg.viewer.client.components.MinimalScreen;
+import otg.viewer.client.components.ScreenManager;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
@@ -65,7 +66,6 @@ public class SampleDetailScreen extends MinimalScreen {
 
   private List<Group> chosenColumns = new ArrayList<Group>();
   private SampleColumn chosenCustomColumn;
-  private SampleClass chosenSampleClass;
 
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, man);
@@ -86,7 +86,6 @@ public class SampleDetailScreen extends MinimalScreen {
     // TODO: serialize choice of displayed column, don't reload/rerender unless necessary, reconsider custom column behavior 
     //    // consume the data so the custom column isn't shown when switching back to this screen
     //    getParser().storeCustomColumn(null); 
-    chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
   }
 
   @Override
@@ -192,7 +191,19 @@ public class SampleDetailScreen extends MinimalScreen {
       public void onClick(ClickEvent event) {
         List<String> compounds = chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).distinct()
             .collect(Collectors.toList());
-        atd.initializeState(chosenSampleClass, compounds, true);
+        
+        // Determine the currently selected column, and choose a representative sample from it
+        int index = columnList.getSelectedIndex();
+        Sample representativeSample;
+        if (index < chosenColumns.size()) {
+          representativeSample = chosenColumns.get(index).getSamples()[0];
+        } else {
+          representativeSample = chosenCustomColumn.getSamples()[0];
+        }
+        
+        SampleClass sampleClass = 
+            SampleClassUtils.asMacroClass(representativeSample.sampleClass(), schema());
+        atd.initializeState(sampleClass, compounds, true);
         Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
       }
     }));
