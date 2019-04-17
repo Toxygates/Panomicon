@@ -74,7 +74,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
     UnitUI(Unit u) {
       Panel p = new HorizontalPanel();
-      p.setWidth("3.5em");
+      p.addStyleName("unitGui");
       initWidget(p);
       cb.setText("");
       cb.addClickHandler(e -> fireUnitsChanged());        
@@ -324,12 +324,16 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   @Override
   protected Widget guiForCompoundDose(int compound, int dose) {
     final int nd = mediumValues.size();
-    CheckBox all = new CheckBox("All");
-    all.setEnabled(false); // disabled by default until samples have been confirmed
-    cmpDoseCheckboxes[compound * nd + dose] = all;
-    all.addValueChangeHandler(new DualSelectHandler(schema.majorParameter(),
+    Panel panel = new HorizontalPanel();
+    CheckBox checkBox = new CheckBox();
+    checkBox.setEnabled(false); // disabled by default until samples have been confirmed
+    cmpDoseCheckboxes[compound * nd + dose] = checkBox;
+    checkBox.addValueChangeHandler(new DualSelectHandler(schema.majorParameter(),
         chosenCompounds.get(compound), schema.mediumParameter(), mediumValues.get(dose)));
-    return all;
+    panel.add(checkBox);
+    panel.add(new Label(" All"));
+    panel.addStyleName("compoundDoseGui");
+    return panel;
   }
 
   @Override

@@ -392,6 +392,14 @@ Time-dose grids
 	margin: 5px;
 }
 
+.unitGui {
+	width: 3.5em
+}
+
+.compoundDoseGui {
+	width: 3em
+}
+
 .doseTimeBox {
 	margin: 1px;
 	border: solid white 1px;
