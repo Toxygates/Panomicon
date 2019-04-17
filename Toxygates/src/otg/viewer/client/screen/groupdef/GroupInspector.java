@@ -210,6 +210,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * Called when compounds are changed in the compound selector. 
    */
   public void setCompounds(List<String> compounds) {
+    if (compounds.isEmpty()) {
+      clearUiForNewGroup();
+    }
     selectionGrid.setCompounds(compounds).addNonErrorCallback(() -> {
       setEditMode();
     });
