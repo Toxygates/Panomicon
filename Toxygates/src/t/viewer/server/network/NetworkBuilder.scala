@@ -166,10 +166,10 @@ class NetworkBuilder(targets: TargetTable,
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
       filter(sideTableProbeSet.contains(_))
 
-    //Must select from rawGrouped since sideProbes may be larger than
-    //side.current's probe set
-    val sideSel = side.rawGrouped.selectNamedRows(sideProbes.toSeq)
+    //Select as a new copy, in order to avoid affecting the current view being
+    //displayed
+    val sideSel = side.selectProbesAsCopy(sideProbes.toSeq)
 
-    networkFromSelection(mainSel, sideSel, mainTargets)
+    networkFromSelection(mainSel, sideSel.current, mainTargets)
   }
 }

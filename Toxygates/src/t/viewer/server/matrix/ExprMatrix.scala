@@ -68,10 +68,8 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
 }
 
 /**
- * Data is row-major
- *
- * TODO: need to optimise/simplify the ExpressionValue/ExprValue/ExpressionRow classes.
- * Probably, at least 1 of these can be removed.
+ * The main data matrix class. Tracks names of columns and rows.
+ * This class is immutable. The various operations produce modified copies.
  */
 class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
@@ -174,7 +172,7 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
 
     appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)
   }
-  
+
   def appendStatic(data: Seq[Double], name: String): ExprMatrix = {
     val vs = data.map(x => new BasicExprValue(x, 'P'))
     appendColumn(vs, name)

@@ -68,17 +68,14 @@ case class LoadParams(val initProbes: Seq[String],
 }
 
 /**
- * A server-side ExprMatrix and support logic for
+ * Various views of a server-side ExprMatrix and support logic for
  * sorting, filtering, data loading etc.
+ * Unlike ExprMatrix, this class is mutable and most operations modify it.
  *
  * A managed matrix is constructed on the basis of some number of
  * "request columns" but may insert additional columns with extra information.
  * The info object should be used to query what columns have actually been
  * constructed.
- *
- * The CoreMatrix also tracks the current page being displayed by the user, if any.
- * This can be used to compute derived views downstream (e.g. the side table for
- * the network/dual table display)
  */
 class CoreMatrix(val params: LoadParams) {
 
@@ -347,4 +344,18 @@ trait Synthetics extends CoreMatrix {
   }
 }
 
-class ManagedMatrix(params: LoadParams) extends CoreMatrix(params) with Synthetics
+class ManagedMatrix(params: LoadParams) extends CoreMatrix(params) with Synthetics {
+
+  /**
+   * Select probes, but produce a new copy instead of modifying the state
+   * of this matrix.
+   */
+  def selectProbesAsCopy(probes: Seq[String]): ManagedMatrix = {
+    val r = new ManagedMatrix(params.copy())
+    r._sortColumn = _sortColumn
+    r._sortAscending = _sortAscending
+    r.selectProbes(probes)
+    r
+  }
+
+}
