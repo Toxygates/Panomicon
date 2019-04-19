@@ -41,8 +41,8 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr, SelectionTDGrid.Delegate delegate) {
-    return new TreatedControlSelTDGrid(scr, delegate);
+  public SelectionTDGrid selectionTDGrid(OTGScreen scr) {
+    return new TreatedControlSelTDGrid(scr);
   }
 
   @Override

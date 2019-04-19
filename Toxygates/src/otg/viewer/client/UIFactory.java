@@ -42,7 +42,7 @@ import t.viewer.shared.intermine.IntermineInstance;
  */
 public interface UIFactory {
 
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr, SelectionTDGrid.Delegate delegate);
+  public SelectionTDGrid selectionTDGrid(OTGScreen scr);
 
   public CompoundRanker compoundRanker(OTGScreen _screen);
   

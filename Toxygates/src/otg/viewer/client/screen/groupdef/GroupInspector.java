@@ -26,8 +26,6 @@ import java.util.stream.Stream;
 import com.google.gwt.cell.client.ButtonCellBase;
 import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.Window;
@@ -40,7 +38,8 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.*;
-import t.viewer.client.components.ImmediateValueChangeTextBox;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.NameInputDialog;
 import t.viewer.client.future.Future;
 import t.viewer.client.storage.StorageProvider;
 
@@ -50,7 +49,7 @@ import t.viewer.client.storage.StorageProvider;
  * in the SelectionTDGrid. The rest is in this class.
  */
 abstract public class GroupInspector extends Composite implements RequiresResize,
-    SelectionTDGrid.Delegate, ExistingGroupsTable.Delegate {
+    ExistingGroupsTable.Delegate {
 
   public final Groups groups = new Groups();
 
@@ -62,8 +61,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * Label above the selection grid 
    */
   private Label titleLabel;
-  private TextBox groupNameTextBox;
-  private Button saveButton, autoGroupsButton;
+  private Button saveButton, saveAsButton, cancelButton, autoGroupsButton;
+ 
   private SelectionTable<Group> existingGroupsTable;
   /**
    * Panel with input for naming and saving groups 
@@ -77,12 +76,11 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * A panel for the selection grid and related widgets
    */
   private VerticalPanel verticalPanel;
-  /**
-   * Whether the name entered in groupNameTextBox is an auto-generated name
-   */
-  private boolean nameIsAutoGen = false;
 
+  protected DialogBox groupNameInputDialog;
   protected final Logger logger = SharedUtils.getLogger("group");
+  
+  private Group currentlyEditingGroup = null;
 
   public interface Delegate {
     Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups);
@@ -110,45 +108,26 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     titleLabel.addStyleName("heading");
     verticalPanel.add(titleLabel);
 
-    selectionGrid = screen.factory().selectionTDGrid(screen, this);
+    selectionGrid = screen.factory().selectionTDGrid(screen);
     verticalPanel.add(selectionGrid);
 
     toolPanel = Utils.mkHorizontalPanel(true);
     verticalPanel.add(toolPanel);
-
-    Label lblSaveGroupAs = new Label("Save group as");
-    lblSaveGroupAs.addStyleName("slightlySpaced");
-    toolPanel.add(lblSaveGroupAs);
-
-    groupNameTextBox = new ImmediateValueChangeTextBox();
-    groupNameTextBox.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        nameIsAutoGen = false;
-        onGroupNameInputChanged();
-      }
-    });
-    groupNameTextBox.addKeyDownHandler(new KeyDownHandler() {
-      // Pressing enter saves a group, but only if saving a new group rather than overwriting.
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER && !groups.containsKey(groupNameTextBox.getValue())) {
-          makeGroup(groupNameTextBox.getValue());
-        }
-      }
-    });
-    toolPanel.add(groupNameTextBox);
-
+    
     saveButton = new Button("Save", (ClickHandler) e -> {
-      makeGroup(groupNameTextBox.getValue());
+      saveOverCurrentGroup();
     });
-    toolPanel.add(saveButton);
-
+    saveAsButton = new Button("Save as...", (ClickHandler) e -> {
+      showGroupNameDialog();
+    });
+    cancelButton = new Button("Cancel", (ClickHandler) e -> {
+      stopEditingGroup();
+    });
     autoGroupsButton = new Button("Automatic groups", (ClickHandler) e -> {
       makeAutoGroups();      
     });
-    toolPanel.add(autoGroupsButton);
-
+  
+    setupToolPanel();
     setEditMode();
 
     existingGroupsTable = new ExistingGroupsTable(this);
@@ -158,6 +137,23 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     splitPanel.addSouth(t.common.client.Utils.makeScrolled(existingGroupsTable), 200);
 
     splitPanel.add(t.common.client.Utils.makeScrolled(verticalPanel));
+  }
+  
+  private void setupToolPanel() {
+    toolPanel.remove(saveButton);
+    toolPanel.remove(saveAsButton);
+    toolPanel.remove(cancelButton);
+    toolPanel.remove(autoGroupsButton);
+    
+    if (currentlyEditingGroup != null) {
+      toolPanel.add(saveButton);
+    }
+    toolPanel.add(saveAsButton);
+    if (currentlyEditingGroup != null) {
+      toolPanel.add(cancelButton);
+    } else {
+      toolPanel.add(autoGroupsButton);
+    }
   }
   
   /**
@@ -171,19 +167,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     // Reflect loaded group information in UI
     updateTableData();
     existingGroupsTable.table().redraw();
-  }
-
-  /**
-   * Called when the value in the input box for entering a group's name changes, so
-   * that the save button's text indicates whether a new group will be saved, or an
-   * existing one will be overwritten. 
-   */
-  private void onGroupNameInputChanged() {
-    if (groups.containsKey(groupNameTextBox.getValue())) {
-      saveButton.setText("Overwrite");
-    } else {
-      saveButton.setText("Save");
-    }
   }
   
   /**
@@ -210,9 +193,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * Called when compounds are changed in the compound selector. 
    */
   public void setCompounds(List<String> compounds) {
-    if (compounds.isEmpty()) {
-      clearUiForNewGroup();
-    }
     selectionGrid.setCompounds(compounds).addNonErrorCallback(() -> {
       setEditMode();
     });
@@ -241,18 +221,25 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     titleLabel.setText("Sample group definition - " + title);
   }
 
+  private void stopEditingGroup() {
+    currentlyEditingGroup = null;
+    setEditMode();
+    setupToolPanel();
+    setHeading("new group");
+  }
+  
   /**
    * Clears selections and input fields in the UI to prepare for the user entering
    * information for a new group.
    */
   private void clearUiForNewGroup() {
-    groupNameTextBox.setText("");
-    onGroupNameInputChanged();
+    currentlyEditingGroup = null;
     selectionGrid.setAll(false, true);
     delegate.groupInspectorClearCompounds();
     selectionGrid.setCompounds(new ArrayList<String>()).addNonErrorCallback(() -> {
       setEditMode();
     });
+    setupToolPanel();
     setHeading("new group");
   }
 
@@ -265,7 +252,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    */
   private void reflectGroupChanges() {
     groups.saveToLocalStorage(screen.getStorage());
-    groupNameTextBox.setText("");
     updateConfigureStatus(true);
     updateTableData();
   }
@@ -338,36 +324,73 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     reflectGroupChanges();
     clearUiForNewGroup();
   }
-
-  /**
-   * Create a group using the currently selected units in the selection grid, and 
-   * save it using the provided name, assuming it's a valid group name. 
-   * @param name
-   */
-  private void makeGroup(String name) {
-    if (name.trim().equals("")) {
-      Window.alert("Please enter a group name.");
-      return;
-    }
-    if (!StorageProvider.isAcceptableString(name, "Unacceptable group name.")) {
-      return;
-    }
-
+  
+  private void saveOverCurrentGroup() {
     List<Unit> units = selectionGrid.getSelectedUnits(false);
-
     if (units.size() == 0) {
       Window.alert("No samples found.");
-    } else {
-      Group newGroup = setGroup(name, units);
-      clearUiForNewGroup();
-      loadTimeWarningIfNeeded(newGroup);
+      return;
     }
+    
+    Group newGroup = setGroup(currentlyEditingGroup.getName(), units);
+    clearUiForNewGroup();
+    loadTimeWarningIfNeeded(newGroup);  
+  }
+
+  /**
+   * Display a dialog box to ask the user for a name under which to save a group
+   * with the currently selected units in the selection grid. 
+   * @param name
+   */
+  private void showGroupNameDialog() {
+    List<Unit> units = selectionGrid.getSelectedUnits(false);
+    if (units.size() == 0) {
+      Window.alert("No samples found.");
+      return;
+    }
+    
+    String initialText = currentlyEditingGroup == null ? 
+        groups.suggestName(selectionGrid.getSelectedUnits(true), schema) :
+        currentlyEditingGroup.getName();
+    
+    NameInputDialog entry = new NameInputDialog("Please enter a name for the group.",
+        initialText) {
+      @Override
+      protected void onChange(String value) {
+        if (value != "") { // Empty string means OK button with blank text input
+          if (value != null) { // value == null means cancel button
+            if (value.trim().equals("")) {
+              Window.alert("Please enter a group name.");
+              return;
+            }
+            if (!StorageProvider.isAcceptableString(value, "Unacceptable group name.")) {
+              Window.alert("Please enter a valid group name.");
+              return;
+            }
+            Group newGroup = setGroup(value, units);
+            clearUiForNewGroup();
+            loadTimeWarningIfNeeded(newGroup);  
+          }
+          groupNameInputDialog.hide();
+        }
+      }
+      
+      @Override
+      protected void onTextBoxValueChange(String newValue) {
+        if (groups.containsKey(newValue)) {
+          submitButton.setText("Overwrite");
+        } else {
+          submitButton.setText("Save new");
+        }
+      }
+    };
+    groupNameInputDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
   }
 
   /**
    * Warn the user if the total number of unique samples in the active groups will be 
-   * over 200 after the addition of newGroup.
-   * @param newGroup the sample group the user is about to add
+   * over 200 after the addition of a group containing newGroupUnits.
+   * @param newGroupUnits the units in the sample group the user is about to add
    */
   private void loadTimeWarningIfNeeded(Group newGroup) {
     Set<String> newIds = Stream.of(newGroup.samples())
@@ -384,7 +407,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
 
     if (allIds.size() > 200) { // just an arbitrary cutoff
       Window.alert("Warning: Your new group contains " + newIds.size() + " samples.\n"
-          + "You will now be requesting data for " + allIds.size() + " samples.\n"
+          + "Together with your other active groups you will now be requesting data for " 
+          + allIds.size() + " samples.\n"
           + "The total loading time is expected to be very long.");
     }
   }
@@ -436,19 +460,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     }
   }
   
-  //SelectionTDGrid.Delegate methods
-  @Override
-  public void selectedUnitsChanged(List<Unit> selectedUnits) {
-    if (selectedUnits.isEmpty() && nameIsAutoGen) {
-      //retract the previous suggestion
-      groupNameTextBox.setText("");
-    } else if (groupNameTextBox.getText().equals("") || nameIsAutoGen) {
-      groupNameTextBox.setText(groups.suggestName(selectedUnits, schema));
-      nameIsAutoGen = true;
-    }
-    onGroupNameInputChanged();
-  }
-  
   // ExistingGroupsTable.Delegate methods
   @Override
   abstract public void makeGroupColumns(CellTable<Group> table);
@@ -456,9 +467,6 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   @Override
   public void displayGroupForEditing(String name) {
     setHeading("editing " + name);
-    groupNameTextBox.setValue(name);
-    onGroupNameInputChanged();
-    nameIsAutoGen = false;
     
     Group group = groups.get(name);
     SampleClass sampleClass = 
@@ -467,6 +475,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         SampleClassUtils.getMajors(schema, groups.get(name), sampleClass).
         collect(Collectors.toList());
     setEditMode();
+    
+    currentlyEditingGroup = group;
+    setupToolPanel();
     
     delegate.groupInspectorEditGroup(group, sampleClass, chosenCompounds);
   }

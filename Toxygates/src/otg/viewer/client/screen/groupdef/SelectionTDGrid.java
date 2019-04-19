@@ -46,21 +46,12 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
    * Note: like many other classes in otg.viewer, this is probably too general 
    * and could be moved to t.viewer
    */
-  private Delegate delegate;
   
   private CheckBox[] cmpDoseCheckboxes; // selecting all samples for a cmp/dose combo
   private CheckBox[] doseTimeCheckboxes; // selecting all samples for a dose/time combo
 
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
-  
-  public interface Delegate {
-    /**
-     * Notifies delegate when selected units changes
-     * @param units
-     */
-    void selectedUnitsChanged(List<Unit> units);
-  }
   
   public SampleClass sampleClass() {
     return chosenSampleClass.copy();
@@ -125,9 +116,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   protected abstract UnitUI makeUnitUI(final Unit unit);
 
-  public SelectionTDGrid(OTGScreen screen, Delegate delegate) {
+  public SelectionTDGrid(OTGScreen screen) {
     super(screen, true);
-    this.delegate = delegate;
   }
   
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(
@@ -177,7 +167,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   private void fireUnitsChanged() {
-    delegate.selectedUnitsChanged(getSelectedUnits(true));
+    
   }
 
   public void setSelection(Unit[] units) {
