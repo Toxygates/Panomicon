@@ -243,7 +243,6 @@ public class Utils {
         if (deferShow) {
           panel.show();
         }
-        int width =  panel.getOffsetWidth();
         int height = panel.getOffsetHeight();
         if (DialogPosition.isTallDialog(height)) {
           // Have to make it scrolled, too tall
@@ -258,10 +257,20 @@ public class Utils {
             panel.setWidget(makeScrolled(widget));
           }
         }
-        panel.setPopupPosition(atX != -1 ? atX : dialogPosition.computeX(width), atY != -1 ? atY : dialogPosition.computeY(height));
-        panel.setWidth("auto");
+        positionPanel(panel, dialogPosition, atX, atY);
       }
     });  
+  }
+  
+  public static void positionPanel(PopupPanel panel, DialogPosition dialogPosition, int atX, int atY) {
+    int width =  panel.getOffsetWidth();
+    int height = panel.getOffsetHeight();
+    panel.setPopupPosition(atX != -1 ? atX : dialogPosition.computeX(width), atY != -1 ? atY : dialogPosition.computeY(height));
+    panel.setWidth("auto");
+  }
+  
+  public static void positionPanel(PopupPanel panel, DialogPosition dialogPosition) {
+    positionPanel(panel, dialogPosition, -1, -1);
   }
 
   public static void showHelp(TextResource helpText, ImageResource helpImage) {

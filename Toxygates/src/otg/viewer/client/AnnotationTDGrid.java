@@ -42,13 +42,20 @@ import t.viewer.client.future.Future;
  */
 public class AnnotationTDGrid extends TimeDoseGrid {
 
+  private Delegate delegate;
+  
   private HTML[][] labels;
 
   private ListBox annotationSelector;
   private Button annotationButton;
+  
+  public interface Delegate {
+    void finishedFetchingAnnotations();
+  }
 
-  public AnnotationTDGrid(OTGScreen screen) {
+  public AnnotationTDGrid(OTGScreen screen, Delegate delegate) {
     super(screen, false);
+    this.delegate = delegate;
   }
 
   @Override
@@ -191,8 +198,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
             }
           }
         }
+        delegate.finishedFetchingAnnotations();
       }
-
     });
   }
 

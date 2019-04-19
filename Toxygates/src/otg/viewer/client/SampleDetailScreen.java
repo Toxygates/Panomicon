@@ -46,8 +46,11 @@ import t.viewer.client.storage.Packer.UnpackInputException;
  * screen (the "custom column") to make it display samples that are not in the configured groups.
  */
 
-public class SampleDetailScreen extends MinimalScreen {
+public class SampleDetailScreen extends MinimalScreen
+    implements AnnotationTDGrid.Delegate {
   private SampleServiceAsync sampleService;
+  
+  private DialogBox heatmapDialog;
 
   public static final String key = "ad";
 
@@ -70,7 +73,7 @@ public class SampleDetailScreen extends MinimalScreen {
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, man);
     sampleService = man.sampleService();
-    atd = new AnnotationTDGrid(this);
+    atd = new AnnotationTDGrid(this, this);
     mkTools();
   }
 
@@ -204,7 +207,7 @@ public class SampleDetailScreen extends MinimalScreen {
         SampleClass sampleClass = 
             SampleClassUtils.asMacroClass(representativeSample.sampleClass(), schema());
         atd.initializeState(sampleClass, compounds, true);
-        Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
+        heatmapDialog = Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
       }
     }));
 
@@ -268,5 +271,11 @@ public class SampleDetailScreen extends MinimalScreen {
       }
     }
     Window.alert("Error: no display column selected.");
+  }
+  
+  // AnnotationTDGrid.Delegate method
+  @Override
+  public void finishedFetchingAnnotations() {
+    Utils.positionPanel(heatmapDialog, DialogPosition.Center);
   }
 }
