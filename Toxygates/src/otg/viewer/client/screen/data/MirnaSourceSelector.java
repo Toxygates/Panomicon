@@ -51,7 +51,7 @@ public class MirnaSourceSelector extends Composite {
       Map<String, Double> preferred = 
           preferredSources.stream().collect(Collectors.toMap(ms -> ms.id(), ms -> ms.limit()));
       for (MirnaSource s: availableSources) {
-        if (preferred.containsKey(s.id())) {
+        if (preferred.containsKey(s.id()) && s.hasScores()) {
           active.get(s).setValue(true);
           Double preferredLimit = preferred.get(s.id());
           if (s.scoreLevels() == null) {
