@@ -109,6 +109,14 @@ abstract class TServiceServlet extends RemoteServiceServlet {
       null
     }
   }
+
+  /**
+   * Attempts to get another service's state, but does not initialise it if
+   * it is missing.
+   */
+  protected def getOtherServiceState[OState >: Null](key: String): Option[OState] =
+    Option(getSessionAttr[OState](key))
+
 }
 
 object ServletSessions
@@ -142,12 +150,4 @@ abstract class StatefulServlet[State >: Null] extends TServiceServlet {
 
   protected def setState(m: State) =
     getThreadLocalRequest.getSession.setAttribute(stateKey, m)
-
-  /**
-   * Attempts to get another service's state, but does not initialise it if
-   * it is missing.
-   */
-  protected def getOtherServiceState[OState >: Null](key: String): Option[OState] =
-    Option(getSessionAttr[OState](key))
-
 }

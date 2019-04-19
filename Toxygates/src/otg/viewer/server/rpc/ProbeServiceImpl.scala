@@ -88,7 +88,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
 
   override def associations(sc: SampleClass, types: Array[AType],
     probes: Array[String]): Array[Association] = {
-    implicit val sf = getState.sampleFilter
+    implicit val sf = defaultSampleFilter
 
     val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
     //    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())

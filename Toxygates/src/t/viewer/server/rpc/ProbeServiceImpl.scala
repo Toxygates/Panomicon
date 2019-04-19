@@ -49,14 +49,6 @@ import t.viewer.shared.AppInfo
 import t.viewer.shared.TimeoutException
 import t.viewer.shared.mirna.MirnaSource
 
-class ProbeState {
-  /*
-   * Currently, the only use of this is in the association resolver,
-   * which needs it for chembl/drugbank target lookup.
-   */
-  var sampleFilter: SampleFilter = _
-}
-
 object ProbeServiceImpl {
   val APPINFO_KEY = "appInfo"
 }
@@ -64,8 +56,7 @@ object ProbeServiceImpl {
 /**
  * Servlet for querying probe related information.
  */
-abstract class ProbeServiceImpl extends StatefulServlet[ProbeState]
-with ProbeService {
+abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
   import ProbeServiceImpl._
   import ScalaUtils._
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
@@ -99,9 +90,6 @@ with ProbeService {
     appInfoLoader.latest
   }
 
-  protected def stateKey = "probes"
-  protected def newState = new ProbeState
-
   protected def reloadAppInfo =
     new AppInfoLoader(probeStore, configuration, baseConfig,
       appName).load
@@ -116,14 +104,14 @@ with ProbeService {
     r.filter(ds => Dataset.isDataVisible(ds.getId, userKey))
   }
 
+  protected def defaultSampleFilter = SampleFilter(instanceURI = instanceURI)
+
   /**
    * Get the latest AppInfo and adjust it w.r.t. the given user key.
    * Care must be taken not to expose sensitive data.
    * This call must be made before any other call to ProbeServiceImpl or SampleServiceImpl.
    */
   def appInfo(@Nullable userKey: String): AppInfo = {
-    getState.sampleFilter = SampleFilter(instanceURI = instanceURI)
-
     val appInfo = appInfoLoader.latest
 
     /*
