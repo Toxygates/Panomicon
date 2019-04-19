@@ -90,7 +90,7 @@ object MiRNATargets {
 
     for {
       l <- lines;
-      spl = l.split("\\t");
+      spl = l.split("\t");
       if (spl.length >= 4)
     } {
       builder.add(MiRNA(spl(1)), RefSeq(spl(3)), scoreForSupportType(spl(2)),

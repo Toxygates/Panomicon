@@ -45,18 +45,18 @@ class TargetTable(
   val origins: Array[String],
   val targets: Array[String],
   val scores: Array[Double],
-  val info: Array[TargetSourceInfo]) extends IndexedSeq[Interaction] {
+  val infos: Array[TargetSourceInfo]) extends IndexedSeq[Interaction] {
 
   override val length: Int = origins.length
 
-  def apply(i: Int) = (MiRNA(origins(i)), RefSeq(targets(i)), scores(i), info(i))
+  def apply(i: Int) = (MiRNA(origins(i)), RefSeq(targets(i)), scores(i), infos(i))
 
   def filterWith(test: Int => Boolean): TargetTable = {
     val builder = new TargetTableBuilder()
     for {
       i <- 0 until size;
       if test(i)
-    } builder.add(MiRNA(origins(i)), RefSeq(targets(i)), scores(i), info(i))
+    } builder.add(MiRNA(origins(i)), RefSeq(targets(i)), scores(i), infos(i))
 
     builder.build
   }
@@ -171,9 +171,10 @@ class TargetTableBuilder {
   }
 
   def addAll(other: TargetTable) {
-    for ((o, t, sc, info) <- other) {
-      add(o, t, sc, info)
-    }
+    origins ++= other.origins
+    targets ++= other.targets
+    scores ++= other.scores
+    infos ++= other.infos
   }
 
   def build =

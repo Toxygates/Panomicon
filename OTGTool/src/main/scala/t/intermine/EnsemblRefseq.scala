@@ -72,7 +72,7 @@ object MiRawImporter {
     val builder = new TargetTableBuilder
 
     for (l <- lines) {
-      val spl = l.split("\\s+")
+      val spl = l.split("\\t")
       builder.add(MiRNA(spl(1)), RefSeq(spl(2)), 100.0,
           info)
     }

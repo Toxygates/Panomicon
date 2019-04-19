@@ -22,7 +22,7 @@ class MiRDBConverter(inputFile: String, dbName: String) {
     val builder = new TargetTableBuilder
 
     for (l <- lines) {
-      val spl = l.split("\\s+")
+      val spl = l.split("\t")
       builder.add(MiRNA(spl(0)), RefSeq(spl(1)), spl(2).toDouble,
           info)
     }
