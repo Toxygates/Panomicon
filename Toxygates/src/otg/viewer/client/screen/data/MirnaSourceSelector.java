@@ -51,20 +51,22 @@ public class MirnaSourceSelector extends Composite {
       Map<String, Double> preferred = 
           preferredSources.stream().collect(Collectors.toMap(ms -> ms.id(), ms -> ms.limit()));
       for (MirnaSource s: availableSources) {
-        if (preferred.containsKey(s.id()) && s.hasScores()) {
+        if (preferred.containsKey(s.id())) {
           active.get(s).setValue(true);
-          Double preferredLimit = preferred.get(s.id());
-          if (s.scoreLevels() == null) {
-            limits.get(s).setValue("" + preferredLimit);
-          } else {
-            int selIdx = 0;
-            for (Pair<String, Double> l: s.scoreLevels()) {
-              if (l.second() == preferredLimit) {
-                break;
+          if (s.hasScores()) {
+            Double preferredLimit = preferred.get(s.id());
+            if (s.scoreLevels() == null) {
+              limits.get(s).setValue("" + preferredLimit);
+            } else {
+              int selIdx = 0;
+              for (Pair<String, Double> l : s.scoreLevels()) {
+                if (l.second() == preferredLimit) {
+                  break;
+                }
+                selIdx++;
               }
-              selIdx++;
-            }                           
-            levelSelectors.get(s).setSelectedIndex(selIdx);            
+              levelSelectors.get(s).setSelectedIndex(selIdx);
+            }
           }
         }
       }
