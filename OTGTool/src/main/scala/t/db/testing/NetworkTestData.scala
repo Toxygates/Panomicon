@@ -32,8 +32,8 @@ object NetworkTestData {
        score = Math.random() * maxScore;
        frac = Math.random();
        if frac < fraction;
-       database = "pseudo") {
-       builder.add(mirna, refseq, score, database)
+       info = new ScoreSourceInfo("pseudo")) {
+       builder.add(mirna, refseq, score, info)
      }
      builder.build
   }

@@ -7,23 +7,19 @@ import t.platform.Species.Species
 import scala.collection.immutable.DefaultMap
 
 object TargetTable {
-  def interactionLabel(score: Double, database: String, levels: Option[Map[Double, String]]) = {
-    levels match {
-      case Some(ls) =>
-        ls.get(score) match {
-          case Some(lev) => supportLabel(lev, database)
-          case None => scoreLabel(score, database)
-        }
-      case None => scoreLabel(score, database)
-    }
-  }
-  def scoreLabel(score: Double, database: String) =
-    s"$database (score: ${"%.3f".format(score)})"
-
-  def supportLabel(support: String, database: String) =
-    s"$database ($support)"
-
   def empty = (new TargetTableBuilder).build
+}
+
+sealed trait TargetSourceInfo {
+  def label(score: Double): String
+}
+
+case class ScoreSourceInfo(name: String) extends TargetSourceInfo {
+  def label(score: Double): String = s"$name (score: ${"%.3f".format(score)})"
+}
+
+case class SupportSourceInfo(name: String, support: String) extends TargetSourceInfo {
+   def label(score: Double) = s"$name ($support)"
 }
 
 /**
@@ -45,18 +41,18 @@ class TargetTable(
   val origins: Array[String],
   val targets: Array[String],
   val scores: Array[Double],
-  val labels: Array[String]) extends IndexedSeq[Interaction] {
+  val info: Array[TargetSourceInfo]) extends IndexedSeq[Interaction] {
 
   override val length: Int = origins.length
 
-  def apply(i: Int) = (MiRNA(origins(i)), RefSeq(targets(i)), scores(i), labels(i))
+  def apply(i: Int) = (MiRNA(origins(i)), RefSeq(targets(i)), scores(i), info(i))
 
   def filterWith(test: Int => Boolean): TargetTable = {
     val builder = new TargetTableBuilder()
     for {
       i <- 0 until size;
       if test(i)
-    } builder.add(MiRNA(origins(i)), RefSeq(targets(i)), scores(i), labels(i))
+    } builder.add(MiRNA(origins(i)), RefSeq(targets(i)), scores(i), info(i))
 
     builder.build
   }
@@ -89,9 +85,9 @@ class TargetTable(
   def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, String)] = {
     val allMicro = miRNAs.toSet
     for {
-      (origin, target, score, label) <- this;
+      (origin, target, score, info) <- this;
       if (allMicro.contains(origin))
-    } yield (origin, target, score, label)
+    } yield (origin, target, score, info.label(score))
   }
 
   /**
@@ -117,10 +113,10 @@ class TargetTable(
     val allTrKeys = allTrLookup.keySet
     println(s"Size ${allTrKeys.size} transcript key set")
     for {
-      (origin, target, score, db) <- this;
+      (origin, target, score, info) <- this;
       if allTrKeys contains target;
       (refSeq, probe) <- allTrLookup(target)
-    } yield (probe, origin, score, db)
+    } yield (probe, origin, score, info.label(score))
   }
 
   final def limitSize[T](data: Iterable[T], limit: Option[Int]) = limit match {
@@ -160,22 +156,22 @@ class TargetTableBuilder {
   var origins = List[String]()
   var targets = List[String]()
   var scores = List[Double]()
-  var labels = List[String]()
+  var infos = List[TargetSourceInfo]()
 
   def add(origin: MiRNA, target: RefSeq, score: Double,
-    label: String) {
+    info: TargetSourceInfo) {
     origins ::= origin.id
     targets ::= target.id
     scores ::= score
-    labels ::= label
+    infos ::= info
   }
 
   def addAll(other: TargetTable) {
-    for ((o, t, sc, label) <- other) {
-      add(o, t, sc, label)
+    for ((o, t, sc, info) <- other) {
+      add(o, t, sc, info)
     }
   }
 
   def build =
-    new TargetTable(origins.toArray, targets.toArray, scores.toArray, labels.toArray)
+    new TargetTable(origins.toArray, targets.toArray, scores.toArray, infos.toArray)
 }

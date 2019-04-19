@@ -47,9 +47,10 @@ class MiRNATargets(conn: Connector) extends Query(conn) {
 
   def makeTable: TargetTable = {
     val builder = new TargetTableBuilder
+    val info = new SupportSourceInfo("MiRTarBase", "testing")
     var n = 0
     for ((mir, support, ref) <- results) {
-      builder.add(mir, ref, 100, "MiRTarBase (via TargetMine)")
+      builder.add(mir, ref, 100, info)
       //      Progress check for debugging
       n += 1
       if (n % 10000 == 0) {
@@ -66,6 +67,9 @@ object MiRNATargets {
     "Functional MTI (Weak)" -> 2,
     "Non-Functional MTI" -> 1,
     "Non-Functional MTI (Weak)" -> 0)
+
+  val infos = supportLevels.map(x =>
+    (x._1 -> new SupportSourceInfo("MiRTarBase", x._1)))
 
   def scoreForSupportType(st: String) = {
     supportLevels.get(st) match {
@@ -90,7 +94,7 @@ object MiRNATargets {
       if (spl.length >= 4)
     } {
       builder.add(MiRNA(spl(1)), RefSeq(spl(3)), scoreForSupportType(spl(2)),
-          TargetTable.supportLabel(spl(2), "MiRTarBase"))
+          infos(spl(2)))
     }
     builder.build
   }
