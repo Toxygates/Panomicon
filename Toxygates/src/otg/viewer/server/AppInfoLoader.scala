@@ -29,10 +29,12 @@ import t.intermine.MiRNATargets
 import t.common.server.GWTUtils._
 import t.viewer.server.Conversions._
 import t.common.shared.FirstKeyedPair
+import t.platform.mirna.MiRDBConverter
 
 object AppInfoLoader {
   val TARGETMINE_SOURCE: String = "TargetMine"
-  val MIRDB_SOURCE: String = "http://level-five.jp/t/mapping/mirdb"
+  val MIRDB_SOURCE: String = MiRDBConverter.mirdbGraph
+  val MIRAW_SOURCE: String = "MiRAW"
 }
 
 class AppInfoLoader(probeStore: OTGProbes,
@@ -68,9 +70,12 @@ class AppInfoLoader(probeStore: OTGProbes,
       new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3,
           1188967, "Experimentally verified", mtbLevels,
           "http://mirtarbase.mbc.nctu.edu.tw/php/index.php"),
-        new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90, 3117189,
-            "Predicted, score 0-100", null,
-            "http://mirdb.org")
-        )
+        new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90,
+            3117189, "Predicted, score 0-100", null,
+            "http://mirdb.org"),
+        new MirnaSource(MIRAW_SOURCE, "MiRAW 6_1_10_AE10 NLL", false, null,
+            1557789, "Predicted", null,
+            "https://bitbucket.org/bipous/miraw_data")
+      )
   }
 }

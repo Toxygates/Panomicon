@@ -14,6 +14,10 @@ sealed trait TargetSourceInfo {
   def label(score: Double): String
 }
 
+case class BlankSourceInfo(name: String) extends TargetSourceInfo {
+  def label(score: Double) = name
+}
+
 case class ScoreSourceInfo(name: String) extends TargetSourceInfo {
   def label(score: Double): String = s"$name (score: ${"%.3f".format(score)})"
 }
