@@ -1,10 +1,13 @@
 package t.viewer.client;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
 
 import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
 import t.viewer.client.storage.StorageProvider;
@@ -17,6 +20,7 @@ import t.viewer.client.storage.StorageProvider;
 public class Groups {
   private Map<String, Group> groups = new LinkedHashMap<String, Group>();
   private List<Group> activeGroups = new ArrayList<Group>();
+  private Logger logger = SharedUtils.getLogger("groups");
 
   public void loadGroups(StorageProvider storage) {
     clear();
@@ -34,7 +38,7 @@ public class Groups {
         groups.put(g.getName(), g);
       }
     } catch (Exception e) {
-      //logger.log(Level.WARNING, "Unable to load inactive columns", e);
+      logger.log(Level.WARNING, "Unable to load inactive columns", e);
       Window.alert("Unable to load inactive columns.");
     }
   }
