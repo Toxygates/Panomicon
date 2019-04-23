@@ -37,7 +37,7 @@ import t.viewer.client.rpc.SampleServiceAsync;
  * position in the grid, an arbitrary widget can be displayed.
  */
 abstract public class TimeDoseGrid extends Composite {
-  private Grid grid = new Grid();
+  protected Grid grid = new Grid();
 
   protected VerticalPanel rootPanel;
   protected VerticalPanel mainPanel;

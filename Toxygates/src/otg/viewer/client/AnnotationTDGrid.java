@@ -79,8 +79,12 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   @Override
   public Future<Pair<String[], Pair<Unit, Unit>[]>> initializeState(
       SampleClass sampleClass, List<String> compounds, boolean datasetsChanged) {
+    
     Future<Pair<String[], Pair<Unit, Unit>[]>> future = 
         super.initializeState(sampleClass, compounds, datasetsChanged);
+      
+    // Clear labels from previous groups
+    drawGridInner(grid);
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
