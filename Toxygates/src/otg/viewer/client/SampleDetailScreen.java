@@ -192,11 +192,13 @@ public class SampleDetailScreen extends MinimalScreen
     hp.add(new Button("Mini-heatmap...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        List<String> compounds = chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).distinct()
+        int index = columnList.getSelectedIndex();
+        
+        // Get compounds for currently selected group
+        List<String> compounds = SampleClassUtils.getMajors(schema(), chosenColumns.get(index))
             .collect(Collectors.toList());
         
         // Determine the currently selected column, and choose a representative sample from it
-        int index = columnList.getSelectedIndex();
         Sample representativeSample;
         if (index < chosenColumns.size()) {
           representativeSample = chosenColumns.get(index).getSamples()[0];
