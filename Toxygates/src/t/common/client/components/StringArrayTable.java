@@ -19,6 +19,7 @@
 package t.common.client.components;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -47,7 +48,13 @@ public class StringArrayTable extends Composite {
     }
 
     String[][] disp = Arrays.copyOfRange(data, 1, data.length);
-    table.setRowData(Arrays.asList(disp));
+    if (disp.length > 0) {
+      table.setRowData(Arrays.asList(disp));
+    } else {
+      String[] fakeRow = new String[data[0].length];
+      fakeRow[0] = "0 results found";
+      table.setRowData(Collections.singletonList(fakeRow));
+    }
     // table.setPageSize(100);
   }
 
