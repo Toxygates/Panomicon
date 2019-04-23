@@ -202,10 +202,9 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
     
     warnLaterIfSampleClassInvalid(sampleClassesFuture);
     processSampleClassesLater(sampleClassesFuture, compoundsFuture, sampleClass,
-        !sampleClass.equals(chosenSampleClass));
+        !sampleClass.equals(chosenSampleClass), compounds);
     chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
-    
-    processCompoundsLater(compoundsFuture, compounds);    
+  
     compoundsFuture.addNonErrorCallback(() ->  {
       groupInspector.selectionGrid.initializeState(chosenSampleClass,
           chosenCompounds, group.getUnits(), false).addNonErrorCallback(() -> {

@@ -59,9 +59,8 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     // After we have sampleclasses, load sampleclass, fetch compounds, and process them
     // if necessary
     processSampleClassesLater(sampleClassesFuture, compoundsFuture, newSampleClass,
-        !newSampleClass.equals(chosenSampleClass));
+        !newSampleClass.equals(chosenSampleClass), getStorage().compoundsStorage.getIgnoringException());
     chosenSampleClass = newSampleClass;
-    processCompoundsLater(compoundsFuture, getStorage().compoundsStorage.getIgnoringException());
     
     return compoundsFuture;
   }
@@ -90,10 +89,11 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * @param compoundsFuture compounds will be fetched with this future
    * @param sampleClass the sample class to be treated as the chosen sampleclass
    * @param sampleClassChanged whether chosen sample class has changed
+   * @param newChosenCompounds the new chosen compounds that should be selected
    */
   protected void processSampleClassesLater(Future<SampleClass[]> sampleClassesFuture, 
       Future<String[]> compoundsFuture,  SampleClass sampleClass, 
-      boolean sampleClassChanged) {
+      boolean sampleClassChanged, List<String> newChosenCompounds) {
     sampleClassesFuture.addNonErrorCallback(() -> {
       // Ensure that we have a valid sampleclass by trying to pick it in filterTools,
       // then reading the closest match off of the filterTools.
@@ -108,20 +108,22 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
         compoundsFuture.bypass();
       }
     });
+    filterChosenCompoundsLater(compoundsFuture, newChosenCompounds);
   }
   
   /**
-   * Add callbacks to a Future<String[]> to process compounds retrieved from the server 
-   * and, afterwards, process a new set of chosen compounds.
+   * Add callbacks to a Future<String[]> (presumably one that fetched and processed compounds)
+   * to filter chosen compounds on the current set of available compounds, and process the new
+   * result. 
    * 
    * @param compoundsFuture Caller should ensure that this future will complete compounds; 
    * this method will add callbacks to this future.
    * @param newChosenCompounds A new set of compounds to be selected in the compound selector
    */
-  protected void processCompoundsLater(Future<String[]> compoundsFuture, 
+  protected void filterChosenCompoundsLater(Future<String[]> compoundsFuture, 
       List<String> newChosenCompounds) {
-    compoundsFuture.addSuccessCallback(allCompounds ->  {
-      compoundSelector.acceptCompounds(allCompounds);
+    compoundsFuture.addSuccessCallback(compounds -> {
+      compoundSelector.acceptCompounds(compounds);
     });
     compoundsFuture.addNonErrorCallback(() -> {
       chosenCompounds = filterCompounds(newChosenCompounds, compoundSelector.allCompounds());
@@ -150,9 +152,6 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
   public Future<String[]> fetchCompounds(Future<String[]> future, SampleClass sampleClass) {
     manager().sampleService().parameterValues(sampleClass, schema().majorParameter().id(), future);
     FutureUtils.beginPendingRequestHandling(future, this, "Unable to retrieve values for parameter: ");
-    future.addSuccessCallback(compounds -> {
-      compoundSelector.acceptCompounds(compounds);
-    });
     return future;
   }
 
@@ -166,7 +165,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     getStorage().sampleClassStorage.store(newSampleClass);
     Future<String[]> future = new Future<String[]>();
     fetchCompounds(future, newSampleClass);
-    processCompoundsLater(future, chosenCompounds);
+    filterChosenCompoundsLater(future, chosenCompounds);
     chosenSampleClass = newSampleClass;
     return future;
   }
@@ -197,12 +196,12 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
       Future<SampleClass[]> sampleClassesFuture) {
     chosenDatasets = getStorage().datasetsStorage.store(datasets);
     Future<String[]> compoundsFuture = new Future<String[]>();
-    processCompoundsLater(compoundsFuture, chosenCompounds);
     sampleClassesFuture.addSuccessCallback(sampleClasses -> {
       chosenSampleClass = getStorage().sampleClassStorage
           .store(filterTools.dataFilterEditor.currentSampleClassShowing());
       fetchCompounds(compoundsFuture, chosenSampleClass);
     });
+    filterChosenCompoundsLater(compoundsFuture, chosenCompounds);
     return compoundsFuture;
   }
   
