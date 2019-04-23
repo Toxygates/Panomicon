@@ -40,7 +40,7 @@ import t.viewer.client.future.Future;
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for
  * particular compounds.
  */
-abstract public class SelectionTDGrid extends TimeDoseGrid {
+abstract public class SelectionTDGrid extends TimeDoseGrid implements SampleDetailTable.Delegate {
 
   /*
    * Note: like many other classes in otg.viewer, this is probably too general 
@@ -52,6 +52,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
+  
+  private DialogBox sampleDetailTableDialog;
   
   public SampleClass sampleClass() {
     return chosenSampleClass.copy();
@@ -285,15 +287,17 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   private void displaySampleTable(Unit unit) {
-    SampleDetailTable st = new SampleDetailTable(screen, "Experiment detail", false);
+    SampleDetailTable sampleDetailTable = new SampleDetailTable(screen, "Experiment detail", false);
+    sampleDetailTable.delegate = this;
     Unit finalUnit = getFinalUnit(unit);
     if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
       Unit controlUnit = controlUnits.get(finalUnit);
       Unit[] units =
           (controlUnit != null ? new Unit[] {finalUnit, controlUnit} : new Unit[] {finalUnit});
       Group g = new Group(schema, "data", units);
-      st.loadFrom(g, true);
-      Utils.displayInPopup("Unit details", st, DialogPosition.Center);
+      sampleDetailTable.loadFrom(g, true);
+      sampleDetailTableDialog = Utils.displayInPopup("Unit details", sampleDetailTable, 
+          DialogPosition.Center);
     } else {
       Window.alert("No samples available for " + unit.toString());
     }
@@ -395,6 +399,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       doseTimeCheckboxes[dIdx * minorValues.size() + tIdx].setEnabled(true);
     }
     setSelection(selection);
-
+  }
+  
+  @Override
+  public void sampleDetailTableFinishedSettingData() {
+    Utils.positionPanel(sampleDetailTableDialog, DialogPosition.Center);
   }
 }

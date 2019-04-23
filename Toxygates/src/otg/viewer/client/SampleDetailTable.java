@@ -50,8 +50,13 @@ public class SampleDetailTable extends Composite {
   private final @Nullable String title;
   private final boolean isSection;
   private final OTGScreen waitListener;
+  public Delegate delegate;
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
+  
+  public interface Delegate {
+    void sampleDetailTableFinishedSettingData();
+  }
   
   public interface Resources extends CellTable.Resources {
     @Override
@@ -208,6 +213,9 @@ public class SampleDetailTable extends Composite {
         }        
       });
       table.setRowData(processed);
+    }
+    if (delegate != null) {
+      delegate.sampleDetailTableFinishedSettingData();
     }
   }
 }
