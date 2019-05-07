@@ -181,13 +181,26 @@ public class SampleDetailTable extends Composite {
     }
   }
 
-  private BioParamValue[] makeAnnotItem(int i, Annotation[] as) {
+  /**
+   * For a single parameter, make a row containing its value for all the samples.
+   * 
+   * @return The row, or null if no samples had a display value for the parameter.
+   */
+  private @Nullable BioParamValue[] makeAnnotItem(int i, Annotation[] as) {
     BioParamValue[] item = new BioParamValue[barcodes.length];
 
+    boolean hasDisplayValue = false;
     for (int j = 0; j < as.length && j < barcodes.length; ++j) {
       item[j] = as[j].getAnnotations().get(i);
+      if (item[j].displayValue() != null) {
+        hasDisplayValue = true;
+      }
     }
-    return item;
+    if (hasDisplayValue) {
+      return item;
+    } else {
+      return null;
+    }
   }
   
   void setData(HasSamples<Sample> c, Annotation[] annotations) {
@@ -197,10 +210,15 @@ public class SampleDetailTable extends Composite {
       Annotation a = annotations[0];
       final int numEntries = a.getAnnotations().size();
       for (int i = 0; i < numEntries; i++) {
-        String sec = a.getAnnotations().get(i).section();
+        BioParamValue value = a.getAnnotations().get(i);
+        String sec = value.section();
         if (!isSection || (sec == null && title.equals(DEFAULT_SECTION_TITLE))
             || (sec != null && sec.equals(title))) {
-          processed.add(makeAnnotItem(i, annotations));
+
+          BioParamValue[] row = makeAnnotItem(i, annotations);
+          if (row != null) {
+            processed.add(row);
+          }
         }
       }
       Collections.sort(processed, new Comparator<BioParamValue[]>() {

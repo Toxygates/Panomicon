@@ -20,20 +20,22 @@
 
 package t.common.shared.sample;
 
+import javax.annotation.Nullable;
+
 @SuppressWarnings("serial")
 public class StringBioParamValue extends BioParamValue {
 
-  protected String value;
+  protected @Nullable String value;
   
   public StringBioParamValue() { }
 
-  public StringBioParamValue(String id, String label, String section, String value) {
+  public StringBioParamValue(String id, String label, String section, @Nullable String value) {
     super(id, label, section);
     this.value = value;
   }
 
   @Override
-  public String displayValue() {
+  public @Nullable String displayValue() {
     return value;
   }
 

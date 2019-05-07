@@ -58,7 +58,7 @@ public class NumericalBioParamValue extends BioParamValue {
   public NumericalBioParamValue(String id, String label,
       @Nullable String section,
       @Nullable Double lowerBound, @Nullable Double upperBound, 
-      String value) {
+      @Nullable String value) {
     super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;

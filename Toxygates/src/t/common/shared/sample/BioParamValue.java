@@ -48,10 +48,11 @@ abstract public class BioParamValue implements Serializable, Comparable<BioParam
   public String id() { return id; }
   
   /**
-   * Human-readable observed value.
+   * Human-readable observed value, or null if this value is absent.
+   * 
    * @return
    */
-  abstract public String displayValue();
+  abstract public @Nullable String displayValue();
   
   public String tooltip() { return displayValue(); } 
 

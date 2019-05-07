@@ -115,16 +115,16 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * Construct a shared API bio parameter object (numerical)
    */
   private def numericalAsShared(bp: BioParameter, lower: JDouble,
-      upper: JDouble, value: String) =
+      upper: JDouble, value: Option[String]) =
     new NumericalBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
-        lower, upper, value)
+        lower, upper, value.getOrElse(null))
 
   /**
    * Construct a shared API bio parameter object (string)
    */
-  private def stringAsShared(bp: BioParameter, value: String) =
+  private def stringAsShared(bp: BioParameter, value: Option[String]) =
     new StringBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
-        value)
+        value.getOrElse(null))
 
   /**
    * Construct an Annotation from sample attributes
@@ -144,7 +144,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     def asJDouble(d: Option[Double]) =
       d.map(new java.lang.Double(_)).getOrElse(null)
 
-    def bioParamValue(bp: BioParameter, dispVal: String) = {
+    def bioParamValue(bp: BioParameter, dispVal: Option[String]) = {
       bp.kind match {
         case "numerical" =>
           val t = sample.get(schema.timeParameter())
@@ -156,12 +156,11 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
       }
     }
 
-    val params = for (
-      x <- attribs.toSeq;
-      bp <- bioParameters.get(x._1);
-      p = (bp.label, x._2.getOrElse("N/A"));
-      bpv = bioParamValue(bp, p._2)
-    ) yield bpv
+    val params = for {
+      x <- attribs.toSeq
+      bp <- bioParameters.get(x._1)
+      bpv = bioParamValue(bp, x._2)
+    } yield bpv
 
     new Annotation(sample.id, new java.util.ArrayList(params.asJava))
   }
