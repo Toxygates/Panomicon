@@ -115,14 +115,18 @@ public class Future<T> implements AsyncCallback<T> {
   public static <T,U> Future<Pair<T,U>> combine(Future<T> future1, Future<U> future2) {
     Future<Pair<T,U>> combinedFuture = new Future<Pair<T,U>>();
     
+    final AtomicBoolean combinedCallbackRan = new AtomicBoolean(false);
+    
     future1.addCallback(f -> {
-      if (future2.done()) {
+      if (future2.done() && !combinedCallbackRan.get()) {
+        combinedCallbackRan.set(true);
         combineResults(combinedFuture, future1, future2);
       }
     });
     
     future2.addCallback(f -> {
-      if (future1.done()) {
+      if (future1.done() && !combinedCallbackRan.get()) {
+        combinedCallbackRan.set(true);
         combineResults(combinedFuture, future1, future2);
       }
     });
