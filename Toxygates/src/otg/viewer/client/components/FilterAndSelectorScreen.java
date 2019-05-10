@@ -94,7 +94,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
   protected void processSampleClassesLater(Future<SampleClass[]> sampleClassesFuture, 
       Future<String[]> compoundsFuture,  SampleClass sampleClass, 
       boolean sampleClassChanged, List<String> newChosenCompounds) {
-    sampleClassesFuture.addNonErrorCallback(() -> {
+    sampleClassesFuture.addNonErrorCallback(f -> {
       // Ensure that we have a valid sampleclass by trying to pick it in filterTools,
       // then reading the closest match off of the filterTools.
       filterTools.setSampleClass(sampleClass);
@@ -125,7 +125,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
     compoundsFuture.addSuccessCallback(compounds -> {
       compoundSelector.acceptCompounds(compounds);
     });
-    compoundsFuture.addNonErrorCallback(() -> {
+    compoundsFuture.addNonErrorCallback(f -> {
       chosenCompounds = filterCompounds(newChosenCompounds, compoundSelector.allCompounds());
       getStorage().compoundsStorage.store(chosenCompounds);    
       compoundSelector.setChosenCompounds(chosenCompounds);

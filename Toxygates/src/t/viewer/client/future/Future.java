@@ -1,6 +1,7 @@
 package t.viewer.client.future;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.google.gwt.core.client.Scheduler;
@@ -22,10 +23,6 @@ public class Future<T> implements AsyncCallback<T> {
   private ArrayList<Consumer<Future<T>>> callbacks = new ArrayList<Consumer<Future<T>>>();
   
   public Future() {}
-  
-  public interface Action {
-    void execute();
-  }
   
   public T result() {
     assert(done);
@@ -54,6 +51,10 @@ public class Future<T> implements AsyncCallback<T> {
     return done() && caught == null;
   }
   
+  public boolean doneWithError() {
+    return done() && caught != null;
+  }
+  
   public boolean actuallyRan() {
     return done && !bypassed;
   }
@@ -73,6 +74,11 @@ public class Future<T> implements AsyncCallback<T> {
     return this;
   }
   
+  /**
+   * 
+   * @param callback
+   * @return
+   */
   public Future<T> addSuccessCallback(Consumer<T> callback) {
     addCallback(future -> {
       if (future.wasSuccessful()) {
@@ -82,10 +88,10 @@ public class Future<T> implements AsyncCallback<T> {
     return this;
   }
   
-  public Future<T> addNonErrorCallback(Action callback) {
+  public Future<T> addNonErrorCallback(Consumer<Future<T>> callback) {
     addCallback(future -> {
       if (future.done() && future.caught() == null) {
-        callback.execute();
+        callback.accept(future);
       }
     });
     return this;

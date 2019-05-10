@@ -205,9 +205,9 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
         !sampleClass.equals(chosenSampleClass), compounds);
     chosenSampleClass = getStorage().sampleClassStorage.store(sampleClass);
   
-    compoundsFuture.addNonErrorCallback(() ->  {
+    compoundsFuture.addNonErrorCallback(f1 ->  {
       groupInspector.selectionGrid.initializeState(chosenSampleClass,
-          chosenCompounds, group.getUnits(), false).addNonErrorCallback(() -> {
+          chosenCompounds, group.getUnits(), false).addNonErrorCallback(f2 -> {
         groupInspector.setEditMode();
       });
     });

@@ -177,7 +177,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public void initializeState(List<Dataset> datasets, SampleClass sc, 
       List<String> compounds, boolean datasetsChanged) {
     selectionGrid.initializeState(sc, compounds, selectionGrid.getSelectedCombinations(), 
-        datasetsChanged).addNonErrorCallback(() -> {
+        datasetsChanged).addNonErrorCallback(f -> {
       setEditMode();
     });
   }
@@ -193,7 +193,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * Called when compounds are changed in the compound selector. 
    */
   public void setCompounds(List<String> compounds) {
-    selectionGrid.setCompounds(compounds).addNonErrorCallback(() -> {
+    selectionGrid.setCompounds(compounds).addNonErrorCallback(f -> {
       setEditMode();
     });
   }
@@ -236,7 +236,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     currentlyEditingGroup = null;
     selectionGrid.setAll(false, true);
     delegate.groupInspectorClearCompounds();
-    selectionGrid.setCompounds(new ArrayList<String>()).addNonErrorCallback(() -> {
+    selectionGrid.setCompounds(new ArrayList<String>()).addNonErrorCallback(f -> {
       setEditMode();
     });
     setupToolPanel();
