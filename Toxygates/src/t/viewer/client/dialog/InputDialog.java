@@ -25,8 +25,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.Utils;
+import t.viewer.client.components.ImmediateValueChangeTextBox;
 
+/**
+ * Dialog box for getting a string input from the user. Can also
+ * react every time the content of the text box changes.
+ */
 public class InputDialog extends Composite {
+  public TextBox input;
+  public Button submitButton, cancelButton;
 
   public InputDialog(String message) {
     this(message, "");
@@ -38,32 +45,47 @@ public class InputDialog extends Composite {
     vp.add(new Label(message));
     initWidget(vp);
 
-    final TextBox input = new TextBox();
+    input = new ImmediateValueChangeTextBox();
     input.setText(initialText);
     vp.add(input);
+    input.addValueChangeHandler(event -> {
+      onTextBoxValueChange(input.getValue());
+    });
 
-    Button b = new Button("OK");
-    b.addClickHandler(new ClickHandler() {
-
+    submitButton = new Button("Save");
+    submitButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         onChange(input.getText());
       }
     });
 
-    Button b2 = new Button("Cancel");
-    b2.addClickHandler(new ClickHandler() {
-
+    cancelButton = new Button("Cancel");
+    cancelButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         onChange(null);
       }
     });
-    HorizontalPanel hp = Utils.mkHorizontalPanel(true, b, b2);
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true, submitButton, cancelButton);
     hp.setWidth("100%");
     vp.add(hp);
+    onTextBoxValueChange(initialText);
   }
 
+  /**
+   * Called every time the value in the text box changes
+   * @param newValue the new text box value
+   */
+  protected void onTextBoxValueChange(String newValue) {
+    
+  }
+  
+  /**
+   * Called when the user submits or cancels the dialog
+   * @param result either the value in the text box, or null if the
+   * dialog was canceled
+   */
   protected void onChange(@Nullable String result) {
 
   }

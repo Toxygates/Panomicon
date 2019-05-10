@@ -39,7 +39,7 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.NameInputDialog;
+import t.viewer.client.dialog.InputDialog;
 import t.viewer.client.future.Future;
 import t.viewer.client.storage.StorageProvider;
 
@@ -353,7 +353,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         groups.suggestName(selectionGrid.getSelectedUnits(true), schema) :
         currentlyEditingGroup.getName();
     
-    NameInputDialog entry = new NameInputDialog("Please enter a name for the group.",
+    InputDialog entry = new InputDialog("Please enter a name for the group.",
         initialText) {
       @Override
       protected void onChange(String value) {
