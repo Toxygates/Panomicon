@@ -145,9 +145,9 @@ public class Future<T> implements AsyncCallback<T> {
    */
   private static <T,U> void combineResults(Future<Pair<T,U>> 
       combinedFuture, Future<T> future1, Future<U> future2) {
-    if (!future1.wasSuccessful()) {
+    if (future1.doneWithError()) {
       combinedFuture.onFailure(future1.caught());
-    } else if (!future2.wasSuccessful()) {
+    } else if (future2.doneWithError()) {
       combinedFuture.onFailure(future2.caught());
     } else if (future1.bypassed() || future2.bypassed()) {
       combinedFuture.bypass();

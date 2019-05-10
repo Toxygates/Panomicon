@@ -128,7 +128,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid implements SampleDeta
     Future<Pair<String[], Pair<Unit, Unit>[]>> future = 
         super.initializeState(sampleClass, compounds, datasetsChanged);
     if (!compounds.isEmpty()) {
-      future.addSuccessCallback(r -> {
+      future.addNonErrorCallback(r -> {
         samplesAvailable(unitSelection);
       });
     }    
