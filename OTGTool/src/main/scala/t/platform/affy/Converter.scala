@@ -44,17 +44,27 @@ object Converter {
       throw new Exception("Please specify the input file name (.csv)")
     }
     val input = args(0)
-    val output = if (args.size > 1) args(1) else 
+    val output = if (args.size > 1) args(1) else
       args(0).replace(".csv", "_platform.tsv")
     convert(input, output)
   }
 
-  def convert(input: String, output: String): Unit = {
-    val data =
+  def loadColumns(input: String, requestColumns: Seq[AffyColumn]): Seq[Seq[String]] = {
+    val (columns, rawData) = loadRaw(input)
+    val offsets = requestColumns.map(r => columns.indexOf(r.title))
+    rawData.map(d => offsets.map(d(_)))
+  }
+
+  def loadRaw(input: String) = {
+     val data =
       Source.fromFile(input).getLines.toVector.dropWhile(_.startsWith("#")).
         map(l => rejoin(l.split(",").toList))
     val columns = data(0).map(procItem)
-    val pdata = data.drop(1).map(_.map(procItem))
+    (columns, data.drop(1).map(_.map(procItem)))
+  }
+
+  def convert(input: String, output: String): Unit = {
+    val (columns, rawData) = loadRaw(input)
     val idColumnOffset = columns.indexOf(ProbeID.title)
     if (idColumnOffset == -1) {
       throw new Exception(s"ID column '${ProbeID.title}' not found in data")
@@ -63,7 +73,7 @@ object Converter {
     println(s"Writing output to $output")
     val ps = new java.io.PrintStream(new java.io.FileOutputStream(output))
     Console.withOut(ps) {
-      for (pline <- pdata) {
+      for (pline <- rawData) {
         procLine(pline, columns, idColumnOffset)
       }
     }
