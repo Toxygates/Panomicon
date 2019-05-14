@@ -27,22 +27,22 @@ import scala.collection.{ Map => CMap }
  * For some methods, values are returned in the order specified by the probes sequence.
  */
 trait ColumnExpressionData {
-  def probes: Seq[ProbeId] 
+  def probes: Seq[ProbeId]
   def samples: Iterable[Sample]
-  
+
   /**
    * Pre-cache data for efficiency, if the implementation supports it.
    * Calling this method is optional.
    */
   def loadData(ss: Iterable[Sample]) {}
-  
+
   def data(s: Sample): CMap[ProbeId, FoldPExpr]
-  
+
   def data(ss: Iterable[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
     loadData(ss)
     Map() ++ ss.map(s => s -> data(s))
   }
- 
+
   /**
    * Obtain calls for all probes.
    * Default implementation for convenience, may be overridden
@@ -51,7 +51,7 @@ trait ColumnExpressionData {
     val d = data(x)
     probes.map(p => d.get(p).map(_._2))
   }
-  
+
   /**
    * Obtain expression values for all probes.
    * Default implementation for convenience, may be overridden
@@ -60,20 +60,20 @@ trait ColumnExpressionData {
     val d = data(x)
     probes.map(p => d.get(p).map(_._1))
   }
- 
+
   /**
    * Release the resource after use.
    */
   def release() {}
-  
+
   /**
    * Used mainly by tests
    */
-  def asExtValue(s: Sample, probe: ProbeId) = { 
+  def asExtValue(s: Sample, probe: ProbeId) = {
     val v = data(s).get(probe)
     v.map(v => PExprValue(v._1, v._3, v._2, probe))
   }
-  
+
   /**
    * Used mainly by tests
    */
@@ -87,8 +87,66 @@ trait ColumnExpressionData {
  */
 class Log2Data(raw: ColumnExpressionData) extends ColumnExpressionData {
   def probes = raw.probes
-  
+
   override def data(s: Sample) = raw.data(s).mapValues(x => (ExprValue.log2(x._1), x._2, x._3))
 
   def samples = raw.samples
+}
+
+/**
+ * ColumnExpressionData that converts probe IDs on the fly.
+ * The supplied conversion map should map from the foreign ID space into the Toxygates space.
+ *
+ * In the case of a many-to-one mapping, one of the results will be selected in an undefined way.
+ */
+class IDConverter(raw: ColumnExpressionData, conversion: Map[ProbeId, Iterable[ProbeId]]) extends
+  ColumnExpressionData {
+
+  IDConverter.checkDuplicates(conversion)
+
+  lazy val probes = raw.probes.flatMap(p => conversion(p)).distinct
+  def convert(p: ProbeId) = conversion(p)
+
+  def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
+    val r = raw.data(s)
+    r.flatMap(p => convert(p._1).map( (_ -> p._2) ))
+  }
+
+  def samples = raw.samples
+
+  override def loadData(ss: Iterable[Sample]) {
+    raw.loadData(ss)
+  }
+
+  override def release() {
+    raw.release()
+  }
+}
+
+object IDConverter {
+  def checkDuplicates(map: Map[ProbeId, Iterable[ProbeId]]) {
+    val pairs = map.toSeq.flatMap(x => (x._2.map(y => (x._1, y))))
+    val bySnd = pairs.groupBy(_._2)
+    val manyToOne = bySnd.filter(_._2.size > 1)
+    if (!manyToOne.isEmpty) {
+      Console.err.println("Error: The following keys have multiple incoming mappings in an ID conversion:")
+      println(manyToOne.keys)
+      throw new Exception("Invalid ID conversion map")
+    }
+  }
+
+  def identity(raw: ColumnExpressionData): ColumnExpressionData = raw
+
+  def convert(conversion: Map[ProbeId, Iterable[ProbeId]])(raw: ColumnExpressionData): ColumnExpressionData =
+    new IDConverter(raw, conversion)
+
+  /**
+   * Create an IDConverter from an affymetrix annotation file and a specified
+   * "foreign" (non-probe ID) column.
+   */
+  def fromAffy(file: String, column: String) = {
+    import t.platform.affy._
+    val conv = new t.platform.affy.IDConverter(file, Converter.columnLookup(column))
+    convert(conv.foreignToAffy)(_)
+  }
 }

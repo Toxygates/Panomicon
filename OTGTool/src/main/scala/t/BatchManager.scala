@@ -56,6 +56,7 @@ object BatchManager extends ManagerTool {
           val append = booleanOption(args, "-append")
           val cached = booleanOption(args, "-cached")
           val comment = stringOption(args, "-comment").getOrElse("")
+          val idConversion = resolveConversion(stringOption(args, "-idConversion"))
 
           val bm = new BatchManager(context)
 
@@ -77,7 +78,9 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 val task = bm.add(Batch(title, comment, None, None),
                   metadata, dataFile, callFile,
-                  if (first) append else true, cached = cached)
+                  if (first) append else true, cached = cached,
+                  conversion = idConversion)
+
                 first = false
                 task
               })
@@ -92,7 +95,8 @@ object BatchManager extends ManagerTool {
               new Platforms(config).populateAttributes(config.attributes)
               //val md = factory.tsvMetadata(metaFile, config.attributes)
               startTaskRunner(bm.add(Batch(title, comment, None, None),
-                metaFile, dataFile, callFile, append, cached = cached))
+                metaFile, dataFile, callFile, append, cached = cached,
+                conversion = idConversion))
           }
 
         case "recalculate" =>
@@ -178,6 +182,21 @@ object BatchManager extends ManagerTool {
     }
   }
 
+  type ExpressionConverter = ColumnExpressionData => ColumnExpressionData
+  def identityConverter: ExpressionConverter = (x => x)
+
+  def resolveConversion(param: Option[String]) = {
+    param match {
+      case Some(s) =>
+        //e.g. affy_annot.csv:Ensembl
+        val spl = s.split(":")
+        val file = spl(0)
+        val col = spl(1)
+        IDConverter.fromAffy(file, col)
+      case None => identityConverter
+    }
+  }
+
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
@@ -211,7 +230,8 @@ object BatchManager extends ManagerTool {
 class BatchManager(context: Context) {
   import TRDF._
   import BatchManager.Batch
-
+  import BatchManager._
+  
   def config = context.config
   def samples = context.samples
 
@@ -249,7 +269,8 @@ class BatchManager(context: Context) {
   def add[S <: Series[S]](batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false,
-    cached: Boolean = false): Task[Unit] = {
+    cached: Boolean = false,
+    conversion: ExpressionConverter = identityConverter): Task[Unit] = {
 
     for {
       metadata <- readTSVMetadata(metadataFile)
@@ -263,7 +284,7 @@ class BatchManager(context: Context) {
           mc <- Task.simple("Create matrix context") {
             matrixContext()
           }
-          _ <- addExprData(metadata, dataFile, callFile, cached)(mc) andThen
+          _ <- addExprData(metadata, dataFile, callFile, cached, conversion)(mc) andThen
                 recalculateFoldsAndSeries(batch, metadata, simpleLog2)
         } yield ())
     } yield ()
@@ -560,24 +581,26 @@ class BatchManager(context: Context) {
   }
 
   def readCSVExpressionData(md: Metadata, niFile: String,
-      callFile: Option[String], cached: Boolean): Task[ColumnExpressionData] =
+      callFile: Option[String], cached: Boolean,
+      conversion: ExpressionConverter): Task[ColumnExpressionData] =
     new AtomicTask[ColumnExpressionData]("Read raw expression data") {
       override def run() = {
         if (cached) {
-          new CachedCSVRawExpressionData(niFile, callFile,
-            Some(md.samples.size), m => log(s"Warning: $m"))
+          conversion(new CachedCSVRawExpressionData(niFile, callFile,
+            Some(md.samples.size), m => log(s"Warning: $m")))
         } else {
-          new CSVRawExpressionData(niFile, callFile,
-            Some(md.samples.size), m => log(s"Warning: $m"))
+          conversion(new CSVRawExpressionData(niFile, callFile,
+            Some(md.samples.size), m => log(s"Warning: $m")))
         }
     }
   }
 
-  def addExprData(md: Metadata, niFile: String, callFile: Option[String], cached: Boolean)
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String], cached: Boolean,
+      conversion: ExpressionConverter)
       (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.exprDb)
     for {
-      data <- readCSVExpressionData(md, niFile, callFile, cached)
+      data <- readCSVExpressionData(md, niFile, callFile, cached, conversion)
       _ <- new SimpleValueInsert(db, data).insert("Insert expression value data")
     } yield ()
   }
