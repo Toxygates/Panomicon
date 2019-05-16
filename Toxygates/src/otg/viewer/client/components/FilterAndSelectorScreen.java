@@ -193,8 +193,8 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * valid for the new chosen datasets. 
    * @return
    */
-  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets, 
-      Future<SampleClass[]> sampleClassesFuture) {
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets) {
+    Future<SampleClass[]> sampleClassesFuture = fetchSampleClasses(new Future<SampleClass[]>(), datasets);
     chosenDatasets = getStorage().datasetsStorage.store(datasets);
     Future<String[]> compoundsFuture = new Future<String[]>();
     sampleClassesFuture.addSuccessCallback(sampleClasses -> {

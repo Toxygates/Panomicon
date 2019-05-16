@@ -387,8 +387,8 @@ public class SampleSearchScreen extends FilterScreen
   }
 
   @Override
-  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets,
-      Future<SampleClass[]> future) {
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets) {
+    Future<SampleClass[]> future = fetchSampleClasses(new Future<SampleClass[]>(), datasets);
     chosenDatasets = getStorage().datasetsStorage.store(datasets);
     future.addSuccessCallback(sampleClasses -> {
       getStorage().sampleClassStorage.store(filterTools.dataFilterEditor.currentSampleClassShowing());

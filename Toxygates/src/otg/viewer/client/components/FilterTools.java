@@ -50,7 +50,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
 
   public interface Delegate {
     void filterToolsSampleClassChanged(SampleClass sc);
-    Future<?> filterToolsDatasetsChanged(List<Dataset> ds, Future<SampleClass[]> future);
+    Future<?> filterToolsDatasetsChanged(List<Dataset> ds);
     Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future,
         List<Dataset> datasets);
   }
@@ -105,8 +105,7 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
           @Override
           public void onOK() {
             setDatasets(new ArrayList<Dataset>(getSelected()));
-            delegate.filterToolsDatasetsChanged(chosenDatasets,
-                delegate.fetchSampleClasses(new Future<SampleClass[]>(), chosenDatasets));
+            delegate.filterToolsDatasetsChanged(chosenDatasets);
             db.hide();
           }
 

@@ -159,9 +159,8 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   }
   
   @Override
-  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets, 
-      Future<SampleClass[]> future) {
-    Future<?> compoundsFuture = super.filterToolsDatasetsChanged(datasets, future);
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets) {
+    Future<?> compoundsFuture = super.filterToolsDatasetsChanged(datasets);
     compoundsFuture.addSuccessCallback(sampleClasses -> {
       groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, true);
     });
