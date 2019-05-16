@@ -1,6 +1,7 @@
 package otg.viewer.client.components;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -71,10 +72,10 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * @param sampleClassesFuture callback will be added to this future.
    */
   protected void warnLaterIfSampleClassInvalid(Future<SampleClass[]> sampleClassesFuture) {
-    sampleClassesFuture.addSuccessCallback(sampleClasses -> {
-      if (!Arrays.stream(sampleClasses).anyMatch(chosenSampleClass::equals)) {
+    sampleClassesFuture.addNonErrorCallback(f -> {
+      if (!filterTools.dataFilterEditor.availableSampleClasses().stream().anyMatch(chosenSampleClass::equals)) {
         Window.alert("Tried to pick a sampleclass, " + chosenSampleClass + 
-            " that is not valid for te current choice of datasets. This could be "  
+            " that is not valid for the current choice of datasets. This could be "  
             + "due to changes in backend data. Application may now be in an "
             + "inconsistent state.");
       }

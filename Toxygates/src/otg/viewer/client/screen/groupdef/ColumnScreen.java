@@ -181,7 +181,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
       chosenDatasets = newEnabledList;
       getStorage().datasetsStorage.store(chosenDatasets);
       filterTools.setDatasets(chosenDatasets);
-      
+    
       fetchSampleClasses(future, chosenDatasets).addSuccessCallback(sampleClasses -> {
         if (sampleClasses != null) {
           Window.alert(additionalNeededDatasets.size() + " dataset(s) were activated " + 
