@@ -103,7 +103,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
           .store(filterTools.dataFilterEditor.currentSampleClassShowing());
       
       // We only need to fetch compounds if sample class or datasets have changed
-      if (sampleClassesFuture.actuallyRan() || sampleClassChanged) {
+      if (sampleClassesFuture.doneAndSuccessful() || sampleClassChanged) {
         fetchCompounds(compoundsFuture, chosenSampleClass);
       } else {
         compoundsFuture.bypass();
