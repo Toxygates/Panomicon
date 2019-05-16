@@ -135,8 +135,6 @@ object IDConverter {
     }
   }
 
-  def identity(raw: ColumnExpressionData): ColumnExpressionData = raw
-
   def convert(conversion: Map[ProbeId, Iterable[ProbeId]])(raw: ColumnExpressionData): ColumnExpressionData =
     new IDConverter(raw, conversion)
 
@@ -148,5 +146,20 @@ object IDConverter {
     import t.platform.affy._
     val conv = new t.platform.affy.IDConverter(file, Converter.columnLookup(column))
     convert(conv.foreignToAffy)(_)
+  }
+
+  /**
+   * Given a command line argument, identify the correct conversion method.
+   */
+  def fromArgument(param: Option[String]): (ColumnExpressionData => ColumnExpressionData) = {
+    param match {
+      case Some(s) =>
+        //e.g. affy_annot.csv:Ensembl
+        val spl = s.split(":")
+        val file = spl(0)
+        val col = spl(1)
+        fromAffy(file, col)
+      case None => (x => x)
+    }
   }
 }

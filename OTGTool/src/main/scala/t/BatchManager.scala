@@ -56,7 +56,7 @@ object BatchManager extends ManagerTool {
           val append = booleanOption(args, "-append")
           val cached = booleanOption(args, "-cached")
           val comment = stringOption(args, "-comment").getOrElse("")
-          val idConversion = resolveConversion(stringOption(args, "-idConversion"))
+          val idConversion = t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"))
 
           val bm = new BatchManager(context)
 
@@ -185,18 +185,6 @@ object BatchManager extends ManagerTool {
   type ExpressionConverter = ColumnExpressionData => ColumnExpressionData
   def identityConverter: ExpressionConverter = (x => x)
 
-  def resolveConversion(param: Option[String]) = {
-    param match {
-      case Some(s) =>
-        //e.g. affy_annot.csv:Ensembl
-        val spl = s.split(":")
-        val file = spl(0)
-        val col = spl(1)
-        IDConverter.fromAffy(file, col)
-      case None => identityConverter
-    }
-  }
-
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
@@ -231,7 +219,7 @@ class BatchManager(context: Context) {
   import TRDF._
   import BatchManager.Batch
   import BatchManager._
-  
+
   def config = context.config
   def samples = context.samples
 
