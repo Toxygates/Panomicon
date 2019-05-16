@@ -74,9 +74,10 @@ public class SampleSearchScreen extends FilterScreen
   public void loadState(AttributeSet attributes) {
     List<Dataset> newChosenDatasets = getStorage().datasetsStorage.getIgnoringException();
     filterTools.setDatasets(newChosenDatasets);
-    filterTools.setSampleClass(getStorage().sampleClassStorage.getIgnoringException());
     if (!newChosenDatasets.equals(chosenDatasets)) {
-      fetchSampleClasses(new Future<SampleClass[]>(), newChosenDatasets);
+      fetchSampleClasses(new Future<SampleClass[]>(), newChosenDatasets).addCallback(f -> {
+        filterTools.setSampleClass(getStorage().sampleClassStorage.getIgnoringException());
+      });
       chosenDatasets = newChosenDatasets;
     }
     chosenColumns = getStorage().getChosenColumns();
