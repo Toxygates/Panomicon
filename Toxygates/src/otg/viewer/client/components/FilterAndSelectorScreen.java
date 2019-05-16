@@ -1,6 +1,7 @@
 package otg.viewer.client.components;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -71,10 +72,10 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * @param sampleClassesFuture callback will be added to this future.
    */
   protected void warnLaterIfSampleClassInvalid(Future<SampleClass[]> sampleClassesFuture) {
-    sampleClassesFuture.addSuccessCallback(sampleClasses -> {
-      if (!Arrays.stream(sampleClasses).anyMatch(chosenSampleClass::equals)) {
+    sampleClassesFuture.addNonErrorCallback(f -> {
+      if (!filterTools.dataFilterEditor.availableSampleClasses().stream().anyMatch(chosenSampleClass::equals)) {
         Window.alert("Tried to pick a sampleclass, " + chosenSampleClass + 
-            " that is not valid for te current choice of datasets. This could be "  
+            " that is not valid for the current choice of datasets. This could be "  
             + "due to changes in backend data. Application may now be in an "
             + "inconsistent state.");
       }
@@ -102,7 +103,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
           .store(filterTools.dataFilterEditor.currentSampleClassShowing());
       
       // We only need to fetch compounds if sample class or datasets have changed
-      if (sampleClassesFuture.actuallyRan() || sampleClassChanged) {
+      if (sampleClassesFuture.doneAndSuccessful() || sampleClassChanged) {
         fetchCompounds(compoundsFuture, chosenSampleClass);
       } else {
         compoundsFuture.bypass();
@@ -192,8 +193,8 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * valid for the new chosen datasets. 
    * @return
    */
-  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets, 
-      Future<SampleClass[]> sampleClassesFuture) {
+  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets) {
+    Future<SampleClass[]> sampleClassesFuture = fetchSampleClasses(new Future<SampleClass[]>(), datasets);
     chosenDatasets = getStorage().datasetsStorage.store(datasets);
     Future<String[]> compoundsFuture = new Future<String[]>();
     sampleClassesFuture.addSuccessCallback(sampleClasses -> {

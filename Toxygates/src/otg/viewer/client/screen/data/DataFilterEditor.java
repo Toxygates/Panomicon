@@ -40,6 +40,10 @@ public class DataFilterEditor extends Composite {
   public interface Delegate {
     void dataFilterEditorSampleClassChanged(SampleClass sc);
   }
+  
+  public List<SampleClass> availableSampleClasses() {
+    return sampleClasses;
+  }
 
   class SCListBox extends ListBox {
     int idx;

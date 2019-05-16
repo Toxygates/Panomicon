@@ -152,10 +152,4 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
     super.filterToolsSampleClassChanged(sampleClass);
     rankingSelector.removeRankColumns();
   }
-
-  @Override
-  public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets,
-      Future<SampleClass[]> future) {
-    return super.filterToolsDatasetsChanged(datasets, future);
-  }
 }
