@@ -83,8 +83,13 @@ public class OTGSchema extends DataSchema {
       return n * 24 * 60;
     } else if (unit.equals("week")) {
       return n * 7 * 24 * 60;
+    } else if (unit.equals("years")) {
+      // This is approximate, but a precise comparison of different time units is not
+      // expected to be needed
+      return n * 365 * 24 * 60;
     } else {
-      throw new IllegalArgumentException("Unknown time unit " + unit);
+      System.err.println("Warning: unknown time unit " + unit + "; comparisons may be inaccurate");
+      return n;
     }
   }
 
