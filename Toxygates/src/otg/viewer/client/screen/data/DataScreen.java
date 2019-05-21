@@ -29,7 +29,6 @@ import com.google.gwt.user.client.ui.*;
 import otg.viewer.client.components.*;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
@@ -64,8 +63,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
 
   private String[] urlProbes = null;
-  private List<String[]> urlGroups;
-  private List<String> groupNames;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -286,7 +283,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public void show() {         
     super.show();
     getProbes();
-    getColumns();
     reloadDataIfNeeded();   
   }
 
@@ -320,11 +316,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     getStorage().genesetStorage.store(geneSet);
     geneSetToolbar.geneSetChanged(geneSet);
     Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
-  }
-
-  private void columnsChanged(List<Group> columns) {
-    chosenColumns = columns;
-    tableView.columnsChanged(columns);
   }
 
   @Override
@@ -375,48 +366,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
       storeState();
       reloadDataIfNeeded();     
       return true;
-    }
-  }
-
-  @Override
-  public void setUrlColumns(List<String[]> groups, List<String> names) {
-    urlGroups = groups;
-    groupNames = names;
-  }
-
-  /**
-   * Fetch columns if applicable. Used to load columns that were read from URL string.
-   */
-  public void getColumns() {
-    if (urlGroups != null) {
-      manager().sampleService().samplesById(urlGroups,
-          new PendingAsyncCallback<List<Sample[]>>(this,
-              "Failed to look up samples") {
-            @Override
-            public void handleSuccess(List<Sample[]> samples) {
-              int i = 0;
-              List<Group> finalGroups = new ArrayList<Group>();
-              for (Sample[] ss : samples) {
-                Group g = new Group(schema(), groupNames.get(i), ss);
-                i += 1;
-                finalGroups.add(g);
-              }
-              groupNames = null;
-              importColumns(finalGroups);
-            }
-          });
-    }
-    urlGroups = null;
-  }
-
-  private boolean importColumns(List<Group> groups) {
-    if (groups.size() > 0 && !groups.equals(chosenColumns)) {
-      columnsChanged(groups);
-      storeState();
-      reloadDataIfNeeded();
-      return true;
-    } else {
-      return false;
     }
   }
 }

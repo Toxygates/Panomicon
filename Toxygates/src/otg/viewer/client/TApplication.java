@@ -222,7 +222,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   protected boolean readURLParameters() {
-    return readImportedProbes() | readGroupURLparameters();
+    return readImportedProbes();
   }
 
   protected boolean readImportedProbes() {
@@ -251,31 +251,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       return false;
     }
 
-  }
-
-  protected boolean readGroupURLparameters() {
-    Logger l = SharedUtils.getLogger();
-    Map<String, List<String>> params = Window.Location.getParameterMap();
-
-    final List<String[]> useGroups = new ArrayList<String[]>();
-    final List<String> groupNames = new ArrayList<String>();
-    if (params.containsKey("group")) {
-      for (String g : params.get("group")) {
-        l.info("Group from URL: " + g);
-        String[] spl = g.split(",");
-        if (spl.length >= 2) {
-          groupNames.add(spl[0]);
-          useGroups.add(Arrays.copyOfRange(spl, 1, spl.length));
-        }
-      }
-    }
-
-    if (useGroups.size() > 0) {
-      importingScreen.setUrlColumns(useGroups, groupNames);
-      return true;
-    } else {
-      return false;
-    }
   }
 
   private void prepareScreens() {
