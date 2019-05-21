@@ -388,17 +388,27 @@ function hideUnconnected(){
  * at the center of the viewport, with elements coming from the left panel at
  * the left of the intersection, and elements coming from the right panel at the
  * right of the intesection.
- * @param {collection} eles The elements we are to merge with the current graph.
+ * @param {graph} other The elements we are to merge with the current graph.
  * @param {string} innerLyt Layout used for intersecting elements.
  * @param {string} outerLyt Layout used for non-intersecting elements, both at
  * the left and right sides of the display
  */
-function mergeWith(eles, innerLyt="concentric", outerLyt="grid"){
+function mergeWith(other, innerLyt="concentric", outerLyt="grid"){
   /* Define the collections that represent the three components of the new graph,
    * intersecting nodes, left-side nodes and right-side nodes */
-  let inter = this.elements().intersection(eles);
+  let inter = this.elements().intersection(other.elements());
+
+  /* intersecting nodes are gathered from a single graph (the one with the
+   * largest nymber of elements), so that in order to keep the attributes from
+   * both sources, we need to perform their merge manually */
+  let smaller = this.elements().length < other.elements().length ? this : other;
+  inter.forEach(function(ele){
+    jQuery.extend(ele.data('weight'), smaller.$('#'+ele.id())[0].data('weight'));
+  });
+
   let left = inter.absoluteComplement();
-  let right = eles.difference(inter);
+  let right = other.elements().difference(inter);
+
   /* capture the dimensions of the viewport, to use them as constrains for the
    * layout positioning algorithms */
   let w = this.container().parentElement.clientWidth/3;
