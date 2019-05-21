@@ -30,8 +30,9 @@ public class OTGViewer extends TApplication {
   protected void initScreens() {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
-    addScreenSeq(new SampleSearchScreen(this));   
-    addScreenSeq(new DataScreen(this));
+    addScreenSeq(new SampleSearchScreen(this));
+    importingScreen = new DataScreen(this);
+    addScreenSeq(importingScreen);
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));
