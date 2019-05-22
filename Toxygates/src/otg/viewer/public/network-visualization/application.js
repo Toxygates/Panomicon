@@ -47,19 +47,19 @@ function onReadyForVisualization(){
 
 /**
  * Initialize secondary visualization display.
- * Enable a dual panel visualization, by adding an extra DOM component. The
- * extra component is only added once, so we need to double check that the panel
- * is not already there, before creating it.
+ * Enable a dual panel visualization, by adding an extra DOM component (right
+ * side visualization panel).
  */
 function showNetworkOnRight() {
   /* set the interface required for dual panel visualization */
   setDualPanelInterface();
-  /* Check if there is already a right panel */
-  let right = $("#rightDisplay");
-  if( right.length !== 0 ){
-    initCytoscapeGraph(SIDE_ID, right);
-    return;
-  }
+
+  // /* Check if there is already a right panel */
+  // let right = $("#rightDisplay");
+  // if( right.length !== 0 ){
+  //   initCytoscapeGraph(SIDE_ID, right);
+  //   return;
+  // }
   /* Have the left-panel reduce its size to half of the available display */
   $("#leftDisplay").addClass("with-side");
   /* Add a new panel for the display of a second graph */
@@ -282,7 +282,7 @@ $(document).on("click", "#mergeNetworkButton", function(){
   /* Remove DOM elements for the right SIDE_ID */
   removeRightDisplay();
   /* Perform the merge of the networks */
-  vizNet[MAIN_ID].mergeWith(vizNet[SIDE_ID].elements());
+  vizNet[MAIN_ID].mergeWith(vizNet[SIDE_ID]);
   /* Set a default custom layout for the merged network and update the select
    * component accordingly */
   vizNet[MAIN_ID].options().layout['name'] = 'custom';
