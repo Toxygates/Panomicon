@@ -54,16 +54,38 @@ function showColorScaleDialog(evt){
     .data('id', id) // identify the target graph
     ;
 
-  /* re-construct the list of weights available for msgRNA nodes, as this
-   * changes from graph to graph */
-  let msg = Object.keys(evt.cy.nodes('[type="'+nodeType.mRNA+'"]')[0].data('weight'));
+  /* add select options that match the weights available for msgRNA */
+  let wgts = [];
+  /* get all the weights */
+  evt.cy.nodes('[type="'+nodeType.mRNA+'"]').forEach(function(ele){
+    wgts = wgts.concat(Object.keys(ele.data('weight')));
+  });
+  /* reduce to leave only unique values */
+  wgts = wgts.reduce(function(prev, current, i){
+    if( ! prev.includes(current) )
+      return prev.concat(current);
+    return prev;
+  }, []);
+
+  /* add each value as an option to the corresponding select component */
   $('#msgRNAWeight').empty();
-  $.each(msg, function (i, item) {
+  $.each(wgts, function (i, item) {
     $('#msgRNAWeight').append($('<option>', {value: item, text: item}));
   });
 
-  /* add the list of weights available for microRNA nodes */
-  let mic = Object.keys(evt.cy.nodes('[type="'+nodeType.microRNA+'"]')[0].data('weight'));
+  /* add select options that match the weights available for microRNA */
+  let mic = [];
+  /* get all the weights */
+  evt.cy.nodes('[type="'+nodeType.microRNA+'"]').forEach(function(ele){
+    mic = mic.concat(Object.keys(ele.data('weight')));
+  });
+  /* reduce to leave only unique values */
+  mic = mic.reduce(function(prev, current, i){
+    if( ! prev.includes(current) )
+      return prev.concat(current);
+    return prev;
+  }, []);
+  /* add each value as an option to the corresponding select component */
   $('#microRNAWeight').empty();
   $.each(mic, function (i, item) {
     $('#microRNAWeight').append($('<option>', {value: item, text: item}));
