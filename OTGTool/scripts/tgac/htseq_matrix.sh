@@ -6,13 +6,14 @@ i=0
 files="ids.txt"
 
 echo "Gene ID" > ids.txt
-zcat $1 | cut -f1 >> ids.txt
+#Remove .01 etc endings from ENS ids
+zcat $1 | cut -f1 | sed 's/\..*$//' >> ids.txt
 
 for f in $*
 do
   i=$((i+1))
   out="data_$i.txt"
-  echo $f > $out
+  echo ${f%/*} > $out
   zcat $f | cut -f2 >> $out
   files="$files $out"
 done

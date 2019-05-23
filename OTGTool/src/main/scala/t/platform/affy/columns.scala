@@ -22,6 +22,7 @@ package t.platform.affy
 
 sealed trait AffyColumn {
   def title: String
+  def expandList(x: String): Seq[String] = Seq(x)
 }
 
 /**
@@ -52,9 +53,15 @@ abstract class AAffyColumn(val title: String, val annotKey: Option[String],
     }
   }
 
+  //Some columns contain lists, or even lists of lists
   def procListItem(x: String): Seq[Seq[String]] = {
     val records = x.split("///").toVector
     records.map(_.split("//").map(_.trim).filter(_ != "---").toVector)
+  }
+
+  //Expand a single string item into a list if possible, otherwise return it as it is
+  override def expandList(x: String): Seq[String] = {
+    if (isList) procListItem(x).flatten else Seq(x)
   }
 
   lazy val key = annotKey.get

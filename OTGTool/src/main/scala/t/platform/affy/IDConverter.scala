@@ -8,6 +8,17 @@ class IDConverter(affyFile: String, column: AffyColumn) {
 
   val data = Converter.loadColumns(affyFile, Seq(ProbeID, column))
 
-  val foreignToAffy: Map[String, Seq[String]] = data.groupBy(x => x(1)).
-    map { case (specialCol, data) => (specialCol -> data.map(_(0))) }
+  val foreignToAffy: Map[String, Seq[String]] = {
+    val raw = (for {
+      Seq(affy, foreigns) <- data
+      foreign <- column.expandList(foreigns)
+      pair = (affy, foreign)
+    } yield pair)
+
+    raw.groupBy(_._2).map { case (foreign, data) => (foreign -> data.map(_._1)) }
+  }
+
+  println(s"ID conversion sample entries: ")
+  for (d <- foreignToAffy take 10) println(d)
+
 }

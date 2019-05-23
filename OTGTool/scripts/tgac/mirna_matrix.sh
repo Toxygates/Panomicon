@@ -5,7 +5,7 @@
 i=0
 files="ids.txt"
 
-cat $1 | cut -f1 > ids.txt
+cat $1 | cut -f1 | sed "s/-mir-/-miR-/" > ids.txt
 
 for f in $*
 do

@@ -104,8 +104,11 @@ class IDConverter(raw: ColumnExpressionData, conversion: Map[ProbeId, Iterable[P
 
   IDConverter.checkDuplicates(conversion)
 
-  lazy val probes = raw.probes.flatMap(p => conversion(p)).distinct
-  def convert(p: ProbeId) = conversion(p)
+  lazy val probes = raw.probes.flatMap(p => conversion.getOrElse(p, Seq())).distinct
+  def convert(p: ProbeId) = conversion.getOrElse(p, {
+    Console.err.println(s"Warning: could not convert the following probe ID: $p")
+    Seq()
+  })
 
   def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
     val r = raw.data(s)
@@ -129,9 +132,9 @@ object IDConverter {
     val bySnd = pairs.groupBy(_._2)
     val manyToOne = bySnd.filter(_._2.size > 1)
     if (!manyToOne.isEmpty) {
-      Console.err.println("Error: The following keys have multiple incoming mappings in an ID conversion:")
+      Console.err.println("Warning: The following keys have multiple incoming mappings in an ID conversion:")
       println(manyToOne.keys)
-      throw new Exception("Invalid ID conversion map")
+//      throw new Exception("Invalid ID conversion map")
     }
   }
 
