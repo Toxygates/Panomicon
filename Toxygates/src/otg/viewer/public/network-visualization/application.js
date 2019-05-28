@@ -54,12 +54,6 @@ function showNetworkOnRight() {
   /* set the interface required for dual panel visualization */
   setDualPanelInterface();
 
-  // /* Check if there is already a right panel */
-  // let right = $("#rightDisplay");
-  // if( right.length !== 0 ){
-  //   initCytoscapeGraph(SIDE_ID, right);
-  //   return;
-  // }
   /* Have the left-panel reduce its size to half of the available display */
   $("#leftDisplay").addClass("with-side");
   /* Add a new panel for the display of a second graph */
@@ -72,8 +66,8 @@ function showNetworkOnRight() {
       /* add a new cytoscape element to the container */
       initCytoscapeGraph(SIDE_ID, right);
       /* Fit the left graph to the smaller viewport */
-      vizNet[MAIN_ID].resize();
-      vizNet[MAIN_ID].fit();
+      // vizNet[MAIN_ID].resize();
+      // vizNet[MAIN_ID].fit();
     })
     ;
 }
@@ -93,9 +87,23 @@ function showNetworkOnRight() {
 function initCytoscapeGraph(id, container){
   /* init the object as a cytoscape instance, and associate it to the provided
    * container */
-  vizNet[id] = cytoscape({ container: container });
+  vizNet[id] = cytoscape({
+    container: container,
+  });
   /* set default style for nodes and edges in the network */
   vizNet[id].initStyle();
+
+  /* add a canvas element used for the display of color scales associated to the graph */
+  vizNet[id].cyCanvas({
+    zIndex: 0,
+    id: 'cyCanvas-'+id,
+  });
+  vizNet[id].options().layout.minColorScale = undefined;
+  vizNet[id].options().layout.maxColorScale = undefined;
+  vizNet[id].drawColorScale();
+
+  /* bind function to handle the resizing of the panel */
+  vizNet[id].on('resize', onPanelResize);
   /* bind functions used to handle the display and hiding of pop-ups */
   vizNet[id].on("mouseover", "node", onNodeEnter);
   vizNet[id].on("mouseout", "node", onNodeExit);
@@ -279,9 +287,6 @@ $(document).on("change", "#showIntersectionCheckbox", function(){
  * a single display panel.
  */
 $(document).on("click", "#mergeNetworkButton", function(){
-  /* Remove DOM elements for the right SIDE_ID */
-  removeRightDisplay();
-  /* Perform the merge of the networks */
   vizNet[MAIN_ID].mergeWith(vizNet[SIDE_ID]);
   /* Set a default custom layout for the merged network and update the select
    * component accordingly */
@@ -291,10 +296,13 @@ $(document).on("click", "#mergeNetworkButton", function(){
   let showHidden = $("#showHiddenNodesCheckbox").prop("checked", false);
   $("#showHiddenNodesCheckbox").trigger("change");
   /* Clean un-required variables */
+  /* Remove DOM elements for the right SIDE_ID */
+  removeRightDisplay();
+  /* Perform the merge of the networks */
   vizNet[SIDE_ID] = null;
   /* Fit the new network to the viewport */
-  vizNet[MAIN_ID].resize();
-  vizNet[MAIN_ID].fit();
+  // vizNet[MAIN_ID].resize();
+  // vizNet[MAIN_ID].fit();
 });
 
 /**
@@ -303,9 +311,6 @@ $(document).on("click", "#mergeNetworkButton", function(){
 $(document).on('click', '#closeRightPanelButton', function(){
   /* Remove DOM elements for the right panel SIDE_ID */
   removeRightDisplay();
-  /* Fit the remaining network to the whole available space */
-  vizNet[MAIN_ID].resize();
-  vizNet[MAIN_ID].fit();
 });
 
 /**
