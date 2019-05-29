@@ -34,8 +34,8 @@ object ExprValue {
 
   def presentMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
     val present = vs.filter(_.call != 'A')
-    val call = if (present.size > 0) 'P' else 'A'      
-    apply(safeMean(present.map(_.value)), call, probe)    
+    val call = if (present.size > 0) 'P' else 'A'
+    apply(safeMean(present.map(_.value)), call, probe)
   }
 
   def allMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
@@ -111,11 +111,11 @@ case class BasicExprValue(value: Double, call: PACall = 'P', probe: ProbeId = nu
  * experimental conditions).
  */
 case class PExprValue(value: Double, p: PValue, call: PACall = 'P', probe: ProbeId = null) extends ExprValue {
-    override def toString(): String = {
-      if (!java.lang.Double.isNaN(p)) {
-        s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
-      } else {
-        super.toString()
-      }
+  override def toString(): String = {
+    if (!java.lang.Double.isNaN(p)) {
+      s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
+    } else {
+      super.toString()
     }
+  }
 }

@@ -31,13 +31,6 @@ public class ExpressionValue implements Serializable {
 
   public ExpressionValue() {}
 
-  /**
-   * Construct a present ExpressionValue.
-   */
-  public ExpressionValue(double value) {
-    this(value, 'P');
-  }
-
   public ExpressionValue(double value, char call) {
     this(value, call, null);
   }
