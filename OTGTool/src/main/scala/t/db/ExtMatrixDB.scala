@@ -28,7 +28,7 @@ import t.platform.Probe
  */
 trait ExtMatrixDBReader extends MatrixDBReader[PExprValue] {
   def emptyValue(probe: String) = {
-    val r = PExprValue(0.0, 1.0, 'A', probe)
+    val r = PExprValue(0.0, Double.NaN, 'A', probe)
     r.isPadding = true
     r
   }
