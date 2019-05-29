@@ -1,4 +1,59 @@
 /**
+ * Draw the color scale used for the graph
+ *
+ */
+function drawColorScale(){
+  /* get the drawing context */
+  let id = this.options().container.data('idx');
+  let ctx = $('#cyCanvas-'+id)[0].getContext('2d');
+  ctx.font = '1.2em sans-serif';
+
+  /* if no color is specified for the scale, we show the colors used in the
+   * categorical scale of node types */
+  let minColorScale = this.options().layout.minColorScale;
+  if( minColorScale === undefined ){
+    /* padding and size of each color on the display */
+    let hPad = 5;
+    let vPad = 10;
+    let height = 30;
+    let width = 30;
+    /* iterate over node types and draw a box for each individual color */
+    let i = 0;
+    for( let key in nodeType ){
+      /* draw the color box */
+      let color = nodeColor[nodeType[key]]
+      ctx.fillStyle = color;
+      ctx.fillRect(hPad, vPad + i*height, width, height);
+      /* draw the text associated to the color box */
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'black'
+      ctx.fillText(nodeType[key], 2*hPad+width, vPad+ i*height+height/2 );
+      i += 1;
+    }
+    // ctx.fillStyle = nodeColor.MSG_RNA;
+    //
+    // ctx.fillStyle = nodeColor.MICRO_RNA;
+    // ctx.fillRect(2, 14, 10, 10);
+  }
+  /* else, we generate a gradient and draw the corresponding linear scale */
+  else{
+
+    let gradient = ctx.createLinearGradient(0, 20, 0, 100);
+
+    // Add three color stops
+    gradient.addColorStop(0, 'red');
+    gradient.addColorStop(.5, 'white');
+    gradient.addColorStop(1, 'blue');
+
+    // Set the fill style and draw a rectangle
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 20, 20, 80);
+  }
+
+  // ctx.fillText("This text is fixed", 50, 50);
+}
+
+/**
  * Initialize style for network components
  * Set the default style for each type of element within a cytoscape network,
  * i.e. nodes and edges. Also set up a special display to appy to currently
@@ -146,6 +201,21 @@ function onNodeUnselection(event){
     // with the same id)
     vizNet[otherID].nodes('[id="'+n.id()+'"]').unselect();
   }
+}
+
+/**
+ * Manage the resizing of the panel
+ *
+ * Each time the drawing panel changes its size, either because of a change in
+ * the parent window, or because of addition or removal of a right-side drawing
+ * area, the graph is fitted to the updated size, and the color scale is redrawn
+ *
+ * @type {Event}
+ * @param {Event} event The event triggered in the panel
+ */
+function onPanelResize(event){
+  event.target.fit();
+  event.target.drawColorScale();
 }
 
 /**
@@ -592,6 +662,7 @@ function getNetwork(){
 cytoscape('collection', 'setDefaultStyle', setDefaultStyle);
 cytoscape("collection", "updateLayout", updateLayout);
 
+cytoscape('core', 'drawColorScale', drawColorScale);
 cytoscape("core", "hideUnconnected", hideUnconnected);
 cytoscape("core", "mergeWith", mergeWith);
 cytoscape("core", "toggleIntersectionHighlight", toggleIntersectionHighlight);
