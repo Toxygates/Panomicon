@@ -30,10 +30,6 @@ function drawColorScale(){
       ctx.fillText(nodeType[key], 2*hPad+width, vPad+ i*height+height/2 );
       i += 1;
     }
-    // ctx.fillStyle = nodeColor.MSG_RNA;
-    //
-    // ctx.fillStyle = nodeColor.MICRO_RNA;
-    // ctx.fillRect(2, 14, 10, 10);
   }
   /* else, we generate a gradient and draw the corresponding linear scale */
   else{
@@ -41,9 +37,9 @@ function drawColorScale(){
     let gradient = ctx.createLinearGradient(0, 20, 0, 100);
 
     // Add three color stops
-    gradient.addColorStop(0, 'red');
+    gradient.addColorStop(0, this.options().layout.maxColorScale);
     gradient.addColorStop(.5, 'white');
-    gradient.addColorStop(1, 'blue');
+    gradient.addColorStop(1, minColorScale);+6
 
     // Set the fill style and draw a rectangle
     ctx.fillStyle = gradient;
