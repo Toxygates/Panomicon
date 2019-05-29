@@ -1,23 +1,21 @@
 package otg.viewer.server.rpc
 
 import otg.sparql._
+import otg.viewer.server.AppInfoLoader
+import otg.viewer.server.DrugTargetResolver
+import otg.viewer.server.MirnaResolver
 import t.common.shared.AType
 import t.common.shared.sample._
 import t.model.SampleClass
 import t.platform.Probe
+import t.platform.mirna.TargetTable
 import t.sparql._
 import t.sparql.secondary._
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
-import t.viewer.server.intermine.IntermineConnector
-import t.viewer.server.intermine.Intermines
+import t.viewer.server.rpc.NetworkState
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
-import t.viewer.server.rpc.NetworkState
-import t.platform.mirna.TargetTable
-import otg.viewer.server.AppInfoLoader
-import otg.viewer.server.DrugTargetResolver
-import otg.viewer.server.MirnaResolver
 
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otg.viewer.client.rpc.ProbeService {
