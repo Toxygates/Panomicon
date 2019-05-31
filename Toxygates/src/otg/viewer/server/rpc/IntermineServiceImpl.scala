@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,15 +20,5 @@
 
 package otg.viewer.server.rpc
 
-import otg.OTGBConfig
-import t.BaseConfig
-import t.DataConfig
-import t.TriplestoreConfig
-
 class IntermineServiceImpl extends
-  t.viewer.server.intermine.IntermineServiceImpl with OTGServiceServlet {
-
-  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
-    OTGBConfig(ts, data)
-
-}
+  t.viewer.server.intermine.IntermineServiceImpl with OTGServiceServlet
