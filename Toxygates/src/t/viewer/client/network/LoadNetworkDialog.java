@@ -28,7 +28,6 @@ public class LoadNetworkDialog {
 
     for (PackedNetwork network : delegate.networks()) {
       networkSelector.addItem(network.title());
-      Logger.getLogger("foo").info("adding network " + network.title());
     }
 
     Button loadButton = new Button("Load");

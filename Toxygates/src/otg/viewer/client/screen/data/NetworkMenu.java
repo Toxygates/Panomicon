@@ -17,6 +17,7 @@ public class NetworkMenu {
     void visualizeNetwork();
     void deleteNetwork(PackedNetwork network);
     void visualizeNetwork(PackedNetwork network);
+    void saveProbesAsGeneSet(PackedNetwork network);
     void downloadNetwork(Format format);
     List<PackedNetwork> networks();
   }
@@ -41,6 +42,7 @@ public class NetworkMenu {
       MenuBar item = new MenuBar(true);
 
       item.addItem(new MenuItem("Visualize", false, () -> delegate.visualizeNetwork(network)));
+      item.addItem(new MenuItem("Save probes as gene set", false, () -> delegate.saveProbesAsGeneSet(network)));
       item.addItem(new MenuItem("Delete", false, () -> delegate.deleteNetwork(network)));
       root.addItem(network.title(), item);
     }

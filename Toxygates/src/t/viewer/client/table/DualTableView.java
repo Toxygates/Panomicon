@@ -356,6 +356,12 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     netvizDialog = new NetworkVisualizationDialog(DualTableView.this, logger);
     netvizDialog.initWindow(network.unpack());
   }
+  
+  @Override
+  public void saveProbesAsGeneSet(PackedNetwork network) {
+    NetworkToGeneSetDialog dialog = new NetworkToGeneSetDialog(network.unpack(), screen);
+    dialog.initWindow();
+  }
 
   // NetworkVisualizationDialog.Delegate methods
   @Override
