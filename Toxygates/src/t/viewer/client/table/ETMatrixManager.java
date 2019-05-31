@@ -62,7 +62,7 @@ public class ETMatrixManager {
     SortOrder computeSortParams();
     void onApplyColumnFilter();
     void onGetRows();
-    void onSetRowCount(int numRows);
+    void onSetRowCount(int visibleRows);
   }
 
   interface Loader {
