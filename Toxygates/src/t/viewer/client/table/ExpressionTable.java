@@ -487,8 +487,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   @Override
-  public void onSetRowCount(int numRows) {
-    grid.setVisibleRangeAndClearData(new Range(0, numRows), true);
+  public void onSetRowCount(int visibleRows) {
+    logger.info("Set visible row count: " + visibleRows);
+    grid.setVisibleRangeAndClearData(new Range(0, visibleRows), true);
   }
 
   @Override
