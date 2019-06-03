@@ -302,8 +302,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     // If a non-loadable gene list was specified, we try with the blank list
     // (all probes for the species)
     if (chosenProbes.length > 0) {
-      TableView.this.probesChanged(new String[0]);
-      TableView.this.onGettingExpressionFailed();
+      //Have to push this all the way out to the screen to ensure the new empty set gets stored
+      screen.probesChanged(new String[0]);
+      onGettingExpressionFailed();
       reloadDataIfNeeded();
     }
     displayInfo("Data loading failed.");

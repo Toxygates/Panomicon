@@ -273,8 +273,14 @@ public class ETMatrixManager {
 
       @Override
       public void onSuccess(ManagedMatrixInfo result) {
-        matrixInfo = result;
-        setRows(matrixInfo.numRows());
+        if (result.numRows() > 0) {
+          matrixInfo = result;
+          setRows(matrixInfo.numRows());
+        } else {
+          //This only happens if a non-empty probe set with no valid probes
+          //was requested.
+          delegate.onGettingExpressionFailed();
+        }
       }
     });
   }
@@ -294,7 +300,9 @@ public class ETMatrixManager {
   }
 
   public void setRows(int numRows) {
-    lastColumnFilters = matrixInfo.columnFilters();
+    if (matrixInfo != null) {
+      lastColumnFilters = matrixInfo.columnFilters();
+    }
     asyncProvider.updateRowCount(numRows, true);
     int initSize = NavigationTools.INIT_PAGE_SIZE;
     int displayRows = (numRows > initSize) ? initSize : numRows;
@@ -341,8 +349,8 @@ public class ETMatrixManager {
     protected void onRangeChanged(HasData<ExpressionRow> display) {
       range = display.getVisibleRange();
       SortOrder order = delegate.computeSortParams();
-      // The null check on order prevents a NPE on startup
-      if (order != null && range.getLength() > 0) {
+
+      if (range.getLength() > 0) {
         matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key,
             order.asc, rowCallback);
       }

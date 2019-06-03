@@ -475,7 +475,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
         Window.alert("Sorting for this column is not implemented yet.");
       }
     }
-    return null;
+    // Default sort order, sort descending by first column
+    return new ETMatrixManager.SortOrder(new SortKey.MatrixColumn(0), false);
   }
 
   @Override
