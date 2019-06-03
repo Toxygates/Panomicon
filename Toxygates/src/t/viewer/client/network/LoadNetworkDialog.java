@@ -1,7 +1,6 @@
 package t.viewer.client.network;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
