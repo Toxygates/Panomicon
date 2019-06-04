@@ -1,7 +1,4 @@
 // "use strict";
-$.getScript("toxygates/network-visualization/lib/cytoscape-canvas-3.0.1.js", function() {
-   alert("cytoscape-canvas loaded but not necessarily executed.");
-});
 /** types of nodes that can be added to the visualization */
 const nodeType = Object.freeze({
   mRNA: 'MSG_RNA',//: "mRNA",
