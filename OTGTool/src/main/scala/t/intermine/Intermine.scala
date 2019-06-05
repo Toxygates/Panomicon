@@ -29,6 +29,14 @@ import org.json.JSONObject
  */
 class Connector(val appName: String, val serviceUrl: String) {
 
+  /*
+   * This is to block alternative STAX implementations, e.g. Woodstox, whose buffering doesn't
+   * work properly with Intermine Java API (the latter doesn't flush its XMLOutputStream buffers
+   * properly)
+   * Affects PathQuery.toXml and by extension any getting results from the QueryService.
+   */
+  System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")
+
   def serviceFactory = new ServiceFactory(serviceUrl)
 
   def getSessionToken(): String = {
@@ -53,20 +61,10 @@ class Connector(val appName: String, val serviceUrl: String) {
  * Basic query support for Intermine.
  */
 class Query(connector: Connector) {
-  
-  /*
-   * This is to block alternative STAX implementations, e.g. Woodstox, whose buffering doesn't
-   * work properly with Intermine Java API (the latter doesn't flush its XMLOutputStream buffers
-   * properly)
-   * Affects PathQuery.toXml and by extension any getting results from the QueryService.
-   */
-  System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")
-    
   protected val serviceFactory = connector.serviceFactory
   protected val model = serviceFactory.getModel
 
   protected val token = connector.getSessionToken()
   protected val queryService = serviceFactory.getQueryService()
   queryService.setAuthentication(token)
-
 }

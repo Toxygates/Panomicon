@@ -32,7 +32,7 @@
     <!-- for intermine.  -->
     <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
        (causes parse errors). 20090211 is known to work. -->
-  <dependency org="org.json" name="json" rev="20090211"/>
+  <dependency org="org.json" name="json" rev="latest.integration"/>
 
   <!-- intermine-client-2.0 needs the old commons-httpclient module
      (org.apache.httpcomponents will not work) -->
