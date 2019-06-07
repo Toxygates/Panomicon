@@ -15,7 +15,7 @@
   </configurations>
 
   <!-- Dependencies go into the 'compile' configuration by default. -->
-  <dependencies>
+  <dependencies defaultconf="compile->default">
 
     <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
     <dependency org="commons-io" name="commons-io" rev="latest.integration"/>
@@ -30,18 +30,13 @@
     <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
 
     <!-- for intermine.  -->
-    <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
-       (causes parse errors). 20090211 is known to work. -->
   <dependency org="org.json" name="json" rev="latest.integration"/>
 
   <!-- intermine-client-2.0 needs the old commons-httpclient module
      (org.apache.httpcomponents will not work) -->
  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
  <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
-
- <dependency org="org.slf4j" name="slf4j-simple" rev="1.7.25" />
-
- <!-- for intermine. -->  
+  
  <!-- provided->master indicates that the maven scope 'master' is mapped to the ivy configuration 'provided'.
   This means that we pull in the top level jar, but not its dependencies. We guarantee that a functional
   log4j will be provided in the runtime environment. 
@@ -49,9 +44,12 @@
   
   conf="provided->master" 
   -->
+  
+  <!-- Version pinned because 2.9 has multi-version module infos in jars, which Jetty can't handle -->
  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2" />
  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" />
  <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
+ <dependency org="org.apache.logging.log4j" name="log4j-slf4j-impl" rev="2.8.2" /> 
 
  <dependency org="org.antlr" name="antlr" rev="latest.integration" />
 

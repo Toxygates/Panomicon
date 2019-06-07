@@ -12,7 +12,7 @@
     <conf name="provided" description="Needed for compile, but will be present on the target platform."/>
   </configurations>
 
-  <dependencies>
+  <dependencies defaultconf="compile->default">
 
     <!-- for GWT 2.8 -->
     <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" />
