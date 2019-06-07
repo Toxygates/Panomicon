@@ -64,8 +64,10 @@ public class InterMineData {
    * PreferredInstance must not be null
    */
   public void importLists(final boolean asProbes) {
+    final String slowImportMsg =
+        "List import may take a long time if the data warehouse has many public lists.";
     InteractionDialog ui =
-        new InterMineSyncDialog(parent, "Import", true, true, preferredInstance) {
+        new InterMineSyncDialog(parent, "Import", true, true, preferredInstance, slowImportMsg) {
           @Override
           protected void userProceed(IntermineInstance instance, String user, String pass,
               boolean replace) {
@@ -101,7 +103,7 @@ public class InterMineData {
   public void exportLists() {
     final ImportingScreen importingParent = parent;
     InteractionDialog ui =
-        new InterMineSyncDialog(parent, "Export", true, true, preferredInstance) {
+        new InterMineSyncDialog(parent, "Export", true, true, preferredInstance, null) {
           @Override
           protected void userProceed(IntermineInstance instance, String user, String pass,
               boolean replace) {

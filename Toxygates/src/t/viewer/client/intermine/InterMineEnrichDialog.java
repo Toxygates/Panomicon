@@ -32,7 +32,7 @@ public class InterMineEnrichDialog extends InterMineSyncDialog {
 
   public InterMineEnrichDialog(Screen parent, String action,
       @Nullable IntermineInstance preferredInstance) {
-    super(parent, action, false, false, preferredInstance);
+    super(parent, action, false, false, preferredInstance, null);
   }
 
   @Override

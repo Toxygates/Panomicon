@@ -42,6 +42,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
   private static String account, password;
   private @Nullable IntermineInstance instance;
   protected @Nullable InstanceSelector selector;
+  private @Nullable String message;
   
   /**
    * 
@@ -66,13 +67,14 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
   
   public InterMineSyncDialog(Screen parent, String action,
       boolean withPassword, boolean withReplace,
-      @Nullable IntermineInstance preferredInstance) {
+      @Nullable IntermineInstance preferredInstance, @Nullable String message) {
     this(parent, action, withPassword, withReplace, null,
         preferredInstance);
     this.selector = new InstanceSelector(parent.appInfo());
     if (preferredInstance != null) {
       selector.setSelected(preferredInstance);
-    }        
+    }
+    this.message = message;
     setup();
   }
   
@@ -90,7 +92,7 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
   @Override
   protected Widget content() {
     VerticalPanel vp = new VerticalPanel();
-    vp.setWidth("400px");
+    vp.setWidth("600px");
     
     if (selector != null) {
       vp.add(new Label("Data warehouse:"));
@@ -108,6 +110,13 @@ abstract public class InterMineSyncDialog extends InteractionDialog {
 
     if (withReplace) {
       vp.add(replaceCheck);
+    }
+
+    if (message != null) {
+      Label l = new Label();
+      l.setWordWrap(true);
+      l.setText(message);
+      vp.add(l);
     }
 
     Button b = new Button(action);
