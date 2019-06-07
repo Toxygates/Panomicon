@@ -5,18 +5,21 @@
 function drawColorScale(){
   /* get the drawing context */
   let id = this.options().container.data('idx');
-  let ctx = $('#cyCanvas-'+id)[0].getContext('2d');
+  let canvas = $('#cyCanvas-'+id)[0];
+  let ctx = canvas.getContext('2d');
   ctx.font = '1.2em sans-serif';
+  /* delete the previous canvas content - clear the canvas */
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  /* padding and size of each color on the display */
+  let hPad = 5;
+  let vPad = 10;
+  let height = 30;
+  let width = 30;
 
   /* if no color is specified for the scale, we show the colors used in the
    * categorical scale of node types */
   let minColorScale = this.options().layout.minColorScale;
   if( minColorScale === undefined ){
-    /* padding and size of each color on the display */
-    let hPad = 5;
-    let vPad = 10;
-    let height = 30;
-    let width = 30;
     /* iterate over node types and draw a box for each individual color */
     let i = 0;
     for( let key in nodeType ){
@@ -34,19 +37,23 @@ function drawColorScale(){
   /* else, we generate a gradient and draw the corresponding linear scale */
   else{
 
-    let gradient = ctx.createLinearGradient(0, 20, 0, 100);
+    let gradient = ctx.createLinearGradient(hPad, vPad , hPad, canvas.height/2);
 
     // Add three color stops
     gradient.addColorStop(0, this.options().layout.maxColorScale);
     gradient.addColorStop(.5, 'white');
-    gradient.addColorStop(1, minColorScale);+6
+    gradient.addColorStop(1, minColorScale);
 
     // Set the fill style and draw a rectangle
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 20, 20, 80);
+    ctx.fillRect(hPad, vPad, width, canvas.height/2);
+    /* write the extreme values for the scale */
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'black'
+    ctx.fillText(this.options().layout.maxColorValue, 2*hPad+width, vPad );
+    ctx.fillText('0', 2*hPad+width, (vPad+canvas.height/2)/2 );
+    ctx.fillText(this.options().layout.minColorValue, 2*hPad+width, vPad + canvas.height/2 );
   }
-
-  // ctx.fillText("This text is fixed", 50, 50);
 }
 
 /**
@@ -249,8 +256,13 @@ function initContextMenu(id){
       selector: 'node',
       coreAsWell: true,
       onClickFunction: function(evt){
-        if( evt.cy === evt.target ) // click on the background
+        if( evt.cy === evt.target ){ // click on the background
           evt.cy.elements().setDefaultStyle();
+          /* return the color scale to only use default colors */
+          evt.cy.options().layout.minColorScale = undefined;
+          evt.cy.options().layout.maxColorScale = undefined;
+          evt.cy.drawColorScale()
+        }
         else
           evt.target.setDefaultStyle();
       },
