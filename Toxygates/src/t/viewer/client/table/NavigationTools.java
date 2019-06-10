@@ -44,6 +44,7 @@ public class NavigationTools extends Composite {
   final static int PAGE_SIZE_INCREMENT = 50;
 
   protected ListBox valueTypeListBox = new ListBox();
+  protected PageSizePager pager;
   
   public CheckBox pValueCheck;
 
@@ -97,7 +98,7 @@ public class NavigationTools extends Composite {
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
 
-    PageSizePager pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
+    pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
       @Override
       protected void onRangeOrRowCountChanged() {
         super.onRangeOrRowCountChanged();
@@ -138,6 +139,10 @@ public class NavigationTools extends Composite {
 
   void setEnabled(boolean enabled) {
     Utils.setEnabled(tools, enabled);
+  }
+  
+  int pageSize() {
+    return pager.getPageSize();
   }
 
 }

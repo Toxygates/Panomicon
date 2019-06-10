@@ -291,12 +291,13 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   /**
-   * Refetch rows as they are currently represented on the server side. TODO: this should respect
-   * page size changes
+   * Refetch rows as they are currently represented on the server side. 
    */
   public void refetchRows() {
-    int initSize = NavigationTools.INIT_PAGE_SIZE;
-    grid.setVisibleRangeAndClearData(new Range(0, initSize), true);
+    int ps = navigationTools.pageSize();
+    int total = grid.getRowCount();
+    int count = (total < ps ? total : ps);
+    grid.setVisibleRangeAndClearData(new Range(0, count), true);    
   }
 
   protected Set<String> indicatedRows = new HashSet<String>();
@@ -458,7 +459,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   @Override
   public void getExpressions() {
-    getExpressions(false);
+    getExpressions(false);    
   }
 
   @Override

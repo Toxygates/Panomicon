@@ -85,7 +85,7 @@ public class ETMatrixManager {
     asyncProvider.addDataDisplay(grid);
   }
 
-  public ManagedMatrixInfo info() {
+  public @Nullable ManagedMatrixInfo info() {
     return matrixInfo;
   }
 
@@ -328,6 +328,7 @@ public class ETMatrixManager {
 
       @Override
       public void onFailure(Throwable caught) {
+        logger.log(Level.INFO, "KCAsyncProvider data fetch exception", caught);
         Window.alert(errMsg());
       }
 
@@ -349,6 +350,14 @@ public class ETMatrixManager {
     protected void onRangeChanged(HasData<ExpressionRow> display) {
       range = display.getVisibleRange();
       SortOrder order = delegate.computeSortParams();
+
+      if (matrixInfo == null) {
+        logger.warning("Asked to fetch range: " + range.getStart() + ", " + range.getLength()
+            + " but no matrix loaded");
+        // We hit this case on startup. It's not currently clear why rangeChanged events are sent
+        // even before a valid row count has been established.
+        return;
+      }
 
       if (range.getLength() > 0) {
         matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), order.key,
