@@ -51,7 +51,7 @@ object ExprMatrix {
         emptyAnnotations(data.size))
 
   val emptyAnnotation = new SimpleAnnotation(null)
-  def emptyAnnotations(rows: Int) = Vector.fill(rows)(emptyAnnotation)
+  def emptyAnnotations(rows: Int) = Array.fill(rows)(emptyAnnotation)
 }
 
 sealed trait RowAnnotation {

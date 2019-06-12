@@ -32,6 +32,9 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
     }
   }
 
+  /**
+   * Homebrew format used by us.
+   */
   def writeCustom(file: String) {
     val w = new PrintWriter(file)
     try {
@@ -49,7 +52,8 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
     }
   }
 
-  /*
+  /**
+   * SIF format used by e.g. Cytoscape.
    * Reference: http://manual.cytoscape.org/en/stable/Supported_Network_File_Formats.html#sif-format
    */
   def writeSIF(file: String) {
@@ -63,7 +67,8 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
     }
   }
 
-  /*
+  /**
+   * Dot format used by GraphViz.
    * Reference: http://www.graphviz.org/pdf/dotguide.pdf
    */
   def writeDOT(file: String) {
@@ -75,7 +80,7 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
         |  ranksep=1;""".stripMargin)
 
       for (n <- network.nodes.asScala) {
-        w.println(s"""  "${n.id}" [label="${nodeLabel(n)}", ${attributes(n)}]; """)
+        w.println(s"""  "${n.id}" [label="${nodeLabel(n)}", ${DOTattributes(n)}]; """)
       }
 
       for (i <- network.interactions.asScala) {
@@ -102,7 +107,7 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
   val maxWeight = SafeMath.safeMax(network.nodes.asScala.map(nodeWeight(_)))
   val minWeight = SafeMath.safeMin(network.nodes.asScala.map(nodeWeight(_)))
 
-  def color(n: Node) = {
+  def DOTcolor(n: Node) = {
     if (java.lang.Double.isNaN(nodeWeight(n)) ||
         java.lang.Double.isInfinite(nodeWeight(n))) {
       "white"
@@ -112,10 +117,10 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
     }
   }
 
-  def attributes(n: Node) = {
+  def DOTattributes(n: Node) = {
     n.`type` match {
-      case Network.mirnaType => s"""color=blue, fillcolor="${color(n)}" """
-      case Network.mrnaType => s"""color=green, fillcolor="${color(n)}" """
+      case Network.mirnaType => s"""color=blue, fillcolor="${DOTcolor(n)}" """
+      case Network.mrnaType => s"""color=green, fillcolor="${DOTcolor(n)}" """
       case _ => ""
     }
   }

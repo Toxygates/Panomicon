@@ -28,8 +28,6 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       s"$mirnaDir/mirdb_filter.txt",
       new MiRDBConverter(_, "MiRDB 5.0").makeTable)
 
-  def reverse[A,B](xs: Map[A,B]) = xs.map(x => (x._2 -> x._1))
-
   lazy val mirtarbaseTable =
     tryReadTargetTable(
       s"$mirnaDir/tm_mirtarbase.txt",
@@ -37,8 +35,8 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
 
   lazy val miRawTable =
     tryReadTargetTable(
-        s"$mirnaDir/miraw_hsa_targets.txt",
-        MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _))
+      s"$mirnaDir/miraw_hsa_targets.txt",
+      MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _))
 
   protected def mirnaTargetTable(source: MirnaSource) = {
     val table = source.id match {

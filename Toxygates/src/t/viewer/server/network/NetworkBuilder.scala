@@ -51,6 +51,9 @@ class NetworkBuilder(targets: TargetTable,
   val mainInfo = main.info
   val sideInfo = side.info
 
+  /**
+   * Extract all nodes of a given type from the given ExprMatrix.
+   */
   def getNodes(mat: ExprMatrix, info: ManagedMatrixInfo, mtype: String, maxSize: Option[Int]): Seq[Node] = {
     val allRows = mat.asRows
     val useRows = maxSize match {
@@ -65,7 +68,7 @@ class NetworkBuilder(targets: TargetTable,
   }
 
   def targetsForMirna(mirna: Iterable[MiRNA], platform: Iterable[Probe]) =
-        targets.targets(mirna, platform)
+    targets.targets(mirna, platform)
 
   def targetsForMrna(mrna: Iterable[Probe]) =
     targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4))
