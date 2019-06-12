@@ -22,6 +22,7 @@ package t.db.kyotocabinet.chunk
 
 import java.nio.ByteBuffer
 
+import scala.reflect._
 import kyotocabinet.DB
 import t.db._
 import t.db.ExtMatrixDB

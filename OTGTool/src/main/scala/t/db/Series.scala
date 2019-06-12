@@ -22,6 +22,7 @@ package t.db
 
 import t.model.sample.Attribute
 import java.util.NoSuchElementException
+import scala.reflect.ClassTag
 
 /**
  * A series of expression values ranging over some independent variable
@@ -82,7 +83,7 @@ trait SeriesBuilder[S <: Series[S]] {
    * Group samples belonging to the same series together.
    */
   def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(S, Iterable[Sample])]
-    
+
   /**
    * Generate all keys belonging to the (partially specified)
    * series key.
@@ -93,14 +94,14 @@ trait SeriesBuilder[S <: Series[S]] {
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E],
+  def makeNew[E >: Null <: ExprValue : ClassTag](from: MatrixDBReader[E],
       md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
 
   /**
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)
+  def makeNew[E >: Null <: ExprValue : ClassTag](from: MatrixDBReader[E], md: Metadata)
   (implicit mc: MatrixContext): Iterable[S] = makeNew(from, md, md.samples)
 
   /**
@@ -134,7 +135,7 @@ trait SeriesBuilder[S <: Series[S]] {
   def meanPoint(ds: Iterable[ExprValue]): ExprValue = {
     ExprValue.log2(ExprValue.allMean(ds, ds.head.probe))
   }
-  
+
   def meanPointByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
     val byProbe = ds.groupBy(_.probe)
     byProbe.map(x => ExprValue.log2(ExprValue.allMean(x._2, x._1)))

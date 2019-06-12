@@ -78,7 +78,7 @@ import scala.collection.{Map => CMap}
  * Inefficient for other use cases.
  *
  */
-class DBColumnExpressionData(reader: MatrixDBReader[ExprValue],
+class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
   requestedSamples: Iterable[Sample],
    requestedProbes: Iterable[Int]) extends ColumnExpressionData {
 

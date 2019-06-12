@@ -21,6 +21,7 @@
 package t.db.testing
 
 import t.db._
+import scala.reflect._
 
 abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample, Int, E)] = Vector())(implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false

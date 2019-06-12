@@ -320,7 +320,7 @@ class BatchManager(context: Context) {
 
   }
 
-  def insertFoldsDataFromExpressionData(reader: () => MatrixDBReader[ExprValue],
+  def insertFoldsDataFromExpressionData(reader: () => MatrixDBReader[PExprValue],
     probes: Iterable[Int], metadata: Metadata, simpleLog2: Boolean)(implicit mc: MatrixContext) =
     new AtomicTask[Unit]("Insert fold value data from expression data") {
       def run() {

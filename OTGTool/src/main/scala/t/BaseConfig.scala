@@ -29,6 +29,7 @@ import t.db.kyotocabinet._
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.AttributeSet
 import t.sparql.Triplestore
+import scala.reflect._
 
 /*
  * Note: it is not clear whether
@@ -103,14 +104,14 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   def enumIndex: String = enumDb + KCIndexDB.options
 
   def mirnaDir = s"$dir/mirna"
-  
+
   //TODO remove the fold wrap when possible
   def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
     new TransformingWrapper(db) {
       def tfmValue(x: PExprValue) = x.copy(value = Math.pow(2, x.value))
     }
 
-  def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[ExprValue] =
+  def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
     MatrixDB.get(exprDb, false)
   def foldsDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
     foldWrap(foldsDBReaderNowrap)
@@ -120,5 +121,3 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
     MatrixDB.get(file, true)
 }
-
-

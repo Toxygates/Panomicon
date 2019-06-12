@@ -30,11 +30,12 @@ import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
 import otg.model.sample.OTGAttribute
+import scala.reflect.ClassTag
 
 /**
  * Routines for loading a ManagedMatrix and constructing groups.
  */
-abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
+abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBReader[E], val probes: Seq[String]) {
   import ManagedMatrix._
 
   def build(requestColumns: Seq[Group], sparseRead: Boolean,
@@ -90,7 +91,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
           toVector).distinct
     val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
     val data = reader.valuesForSamplesAndProbes(sortedSamples,
-        packedProbes, sparseRead, false)
+        packedProbes, sparseRead, false).map(_.toSeq).toSeq
 
     val sortedProbes = data.map(row => row(0).probe)
     val annotations = sortedProbes.map(x => new SimpleAnnotation(x)).toVector
@@ -108,7 +109,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
     val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
 
-    var ungrouped = ExprMatrix.withRows(data,
+    var ungrouped = ExprMatrix.withRows(data.toSeq.map(_.toSeq),
         sortedProbes, sortedSamples.map(_.sampleId))
 
     val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
@@ -126,7 +127,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue](reader: MatrixDBReader[E], v
         baseColumns)
       )
   }
-  
+
   protected def finaliseUngrouped(ungr: ExprMatrix): ExprMatrix = ungr
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
@@ -194,15 +195,15 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
  * Columns consisting of normalized intensity / "absolute value" expression data
  * for both treated and control samples.
  */
-class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[ExprValue],
-  probes: Seq[String]) extends ManagedMatrixBuilder[ExprValue](reader, probes)
-    with TreatedControlBuilder[ExprValue] {
+class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprValue],
+  probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes)
+    with TreatedControlBuilder[PExprValue] {
 
   protected def buildValue(raw: RowData): ExprValue = ExprValue.presentMean(raw)
 
   override protected def shortName(g: Group): String = "Treated"
 
-  protected def buildRow(raw: RowData,
+  protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData =
     Seq(buildValue(selectIdx(raw, treatedIdx)),
       buildValue(selectIdx(raw, controlIdx)))
@@ -252,8 +253,8 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
-  override protected def finaliseUngrouped(ungr: ExprMatrix) = 
-    ungr.map(e => ManagedMatrix.log2(e)) 
+  override protected def finaliseUngrouped(ungr: ExprMatrix) =
+    ungr.map(e => ManagedMatrix.log2(e))
 
   override protected def shortName(g: Group) = "Log2-fold"
 

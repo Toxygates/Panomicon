@@ -64,7 +64,7 @@ class OTGMatrixContext(baseConfig: BaseConfig) extends MatrixContext {
    * Obtain a reader for the absolute value/normalized intensity
    *  database.
    */
-  def absoluteDBReader: MatrixDBReader[ExprValue] =
+  def absoluteDBReader: MatrixDBReader[PExprValue] =
     data.absoluteDBReader(this)
 
   /**

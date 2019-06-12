@@ -25,6 +25,7 @@ import otg.model.sample.OTGAttribute._
 import t.db._
 import t.db.{ Series => TSeries }
 import t.model.sample.Attribute
+import scala.reflect.ClassTag
 
 /**
  * A series of points (either expression vs time, or expression vs dose).
@@ -179,7 +180,7 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
   def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(OTGSeries, Iterable[Sample])] =
     xs.groupBy(buildEmpty(_, md))
 
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
+  def makeNew[E >: Null <: ExprValue : ClassTag](from: MatrixDBReader[E], md: Metadata,
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     val timeOrDoseMap = seriesType.independentVariableMap

@@ -92,7 +92,7 @@ object MatrixManager extends ManagerTool {
             v => (v.value, v.call, v.p),
             "Insert folds")
 
-          matcopy[ExprValue](mat.absoluteDBReader,
+          matcopy[PExprValue](mat.absoluteDBReader,
               batch,
             () => toDConfig.extWriter(toDConfig.exprDb),
             v => (v.value, v.call, 0.0),

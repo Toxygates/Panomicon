@@ -26,6 +26,7 @@ import scala.language.postfixOps
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter
+import scala.reflect.ClassTag
 
 object MatrixDB {
   def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {
@@ -42,7 +43,7 @@ trait MatrixContext {
 
   lazy val reverseEnumMaps = enumMaps.map(x => x._1 -> (Map() ++ x._2.map(_.swap)))
 
-  def absoluteDBReader: MatrixDBReader[ExprValue]
+  def absoluteDBReader: MatrixDBReader[PExprValue]
   def foldsDBReader: MatrixDBReader[PExprValue]
   def timeSeriesDBReader: SeriesDB[_]
   def doseSeriesDBReader: SeriesDB[_]
@@ -70,7 +71,7 @@ trait MatrixContext {
  * The database will be opened when returned by its constructor.
  * The database must be closed after use.
  */
-trait MatrixDBReader[+E <: ExprValue] {
+trait MatrixDBReader[E <: ExprValue] {
 
   implicit def probeMap: ProbeMap
 
@@ -144,24 +145,24 @@ trait MatrixDBReader[+E <: ExprValue] {
    *  empty value.
    */
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
-    sparseRead: Boolean = false, presentOnly: Boolean = false): Vector[Seq[E]] = {
+    sparseRead: Boolean = false, presentOnly: Boolean = false)(implicit tag: ClassTag[E]): Array[Array[E]] = {
 
     val ps = probes.filter(probeMap.keys.contains(_)).sorted
 
     val rows = if (sparseRead) {
       probes.par.map(p => {
         val dat = Map() ++ valuesForProbe(p, xs).filter(!presentOnly || _._2.present)
-        Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
-      }).seq
+        xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p))).toArray
+      }).seq.toArray
     } else {
       //not sparse read, go sample-wise
       val rs = xs.par.map(x => {
         valuesInSample(x, ps, true).toSeq
       }).seq.toSeq
-      Vector.tabulate(ps.size, xs.size)((p, x) =>
+      Array.tabulate(ps.size, xs.size)((p, x) =>
         rs(x)(p))
     }
-    rows.toVector
+    rows.toArray
   }
 }
 
@@ -194,4 +195,4 @@ trait MatrixDBWriter[E <: ExprValue] {
   def release(): Unit
 }
 
-trait MatrixDB[+ER <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]
+trait MatrixDB[ER <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]
