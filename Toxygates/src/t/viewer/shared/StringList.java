@@ -31,7 +31,6 @@ public class StringList extends ItemList {
   public final static String COMPOUND_LIST_TYPE = "compounds";
 
   private String[] items;
-  private String comment;
 
   /**
    * This constructor is here for GWT serialization
@@ -63,14 +62,6 @@ public class StringList extends ItemList {
     } else {
       return items.length;
     }
-  }
-
-  public String getComment() {
-    return comment;
-  }
-
-  public void setComment(String comment) {
-    this.comment = comment;
   }
 
   public static List<StringList> pickProbeLists(Collection<? extends ItemList> from,

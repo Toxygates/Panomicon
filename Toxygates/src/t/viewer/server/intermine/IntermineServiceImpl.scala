@@ -69,17 +69,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
         tglist = conn.asTGList(iml, affyProbes, platforms.filterProbesAllPlatforms)
         ) yield tglist
 
-      for (l <- tglists.flatten) {
-        if (l.items.size > 0) {
-//          val probesForCurrent = platforms.filterProbes(l.items, List())
-//          l.setComment(probesForCurrent.size + "");
-          l.setComment(l.items.size + "")
-        } else {
-          l.setComment("0")
-        }
-      }
       tglists.flatten.toArray
-
     } catch {
       case e: Exception =>
         e.printStackTrace()
