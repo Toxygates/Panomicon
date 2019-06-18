@@ -34,11 +34,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     super(type, screen);
   }
 
-  /*
-   * Override this function to handle what genes were saved
-   */
-  protected void onSaveSuccess(String name, StringList items) {}
-
   /**
    * Save gene set with specified title. No input box will be shown.
    * @return true iff the save action was successful
@@ -61,7 +56,6 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
 
     storeItemLists();
 
-    onSaveSuccess(name, sl);
     return true;
   }
 

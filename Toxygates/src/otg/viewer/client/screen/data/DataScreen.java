@@ -132,7 +132,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  public List<ItemList> clusteringList() {
+  public List<ItemList> clusteringLists() {
     return chosenClusteringList;
   }
 

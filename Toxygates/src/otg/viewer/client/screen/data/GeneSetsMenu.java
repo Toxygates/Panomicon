@@ -108,7 +108,7 @@ public class GeneSetsMenu {
     root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
 
     List<ClusteringList> clusterings =
-        ClusteringList.pickUserClusteringLists(screen.clusteringList(), null);
+        ClusteringList.pickUserClusteringLists(screen.clusteringLists(), null);
     ensureSorted(clusterings);
 
     for (final ClusteringList cl : clusterings) {

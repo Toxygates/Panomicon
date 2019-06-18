@@ -23,20 +23,19 @@ package otg.viewer.client.screen.data;
 import java.util.*;
 import java.util.logging.Logger;
 
-import t.clustering.shared.Algorithm;
-import t.clustering.shared.ClusteringList;
-import t.common.shared.*;
-import t.common.shared.sample.Group;
-import t.viewer.client.Analytics;
-import t.viewer.client.components.DataView;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.StringList;
-
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.ImportingScreen;
+import t.clustering.shared.Algorithm;
+import t.clustering.shared.ClusteringList;
+import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
+import t.viewer.client.Analytics;
+import t.viewer.client.components.DataView;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.StringList;
 
 /**
  * Adapts the HeatmapDialog for use inside otg.viewer.
@@ -124,13 +123,7 @@ public class HeatmapViewer extends Composite {
 
     protected void saveAsGeneSets() {
       ClusteringListsStoreHelper helper =
-          new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen) {
-        @Override
-        protected void onSaveSuccess(String name, ClusteringList items) {
-              Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SAVE_CLUSTERS);
-          Window.alert("Clusters are successfully saved.");
-        }
-      };
+          new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen);
       helper.save(getCurrent2DArray(), lastClusteringAlgorithm);
     }
 

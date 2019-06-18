@@ -92,7 +92,7 @@ public class InterMineData {
 
         // TODO revise pop-up message handling for this process
         parent.intermineImport(mergeLists(parent.itemLists(), normal, replace, "lists"),
-            mergeLists(parent.clusteringList(), clustering, replace, "clusters"));
+            mergeLists(parent.clusteringLists(), clustering, replace, "clusters"));
       }
     });
   }
@@ -109,7 +109,7 @@ public class InterMineData {
               boolean replace) {
             super.userProceed();
             doExport(instance, user, pass, 
-                StringListsStoreHelper.compileLists(importingParent.itemLists(), importingParent.clusteringList()),
+                StringListsStoreHelper.compileLists(importingParent.itemLists(), importingParent.clusteringLists()),
                 replace);
           }
 

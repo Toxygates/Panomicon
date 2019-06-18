@@ -19,10 +19,13 @@ package otg.viewer.client.screen.data;
 
 import java.util.*;
 
+import com.google.gwt.user.client.Window;
+
 import otg.viewer.client.components.ImportingScreen;
 import otg.viewer.client.components.ItemListsStoreHelper;
 import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
+import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
@@ -38,18 +41,13 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
 
   @Override
   protected void init() {
-    for (ItemList il : screen.clusteringList()) {
+    for (ItemList il : screen.clusteringLists()) {
       if (il instanceof ClusteringList) {
         ClusteringList sl = (ClusteringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);
       }
     }
   }
-
-  /*
-   * Override this function to handle what genes were saved
-   */
-  protected void onSaveSuccess(String name, ClusteringList items) {}
 
   public void save(List<Collection<String>> lists, Algorithm algorithm) {
     saveAction(lists, algorithm, "Name entry", "Please enter a name for the list.");
@@ -83,7 +81,8 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
         storeItemLists();
         inputDialog.setVisible(false);
 
-        onSaveSuccess(value, cl);
+        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SAVE_CLUSTERS);
+        Window.alert("Clusters are successfully saved.");
       }
     };
     inputDialog = Utils.displayInPopup(caption, entry, DialogPosition.Center);

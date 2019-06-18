@@ -43,7 +43,7 @@ public interface ImportingScreen extends OTGScreen {
 
   void runEnrichment(@Nullable IntermineInstance preferredInstance);
 
-  List<ItemList> clusteringList();
+  List<ItemList> clusteringLists();
 
   List<ItemList> itemLists();
 
