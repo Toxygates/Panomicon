@@ -27,8 +27,6 @@ import t.TriplestoreConfig
 import t.sparql.Instances
 import t.viewer.shared.intermine.IntermineInstance
 
-//TODO fix up package dependencies here, break t -> otg dependency
-
 object Configuration {
   /**
    * Create a new Configuration from the ServletConfig.
