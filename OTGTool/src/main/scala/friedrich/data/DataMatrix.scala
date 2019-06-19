@@ -55,7 +55,7 @@ trait DataMatrix[T, V <: Seq[T]] {
  * (for example, String can be used to have named columns and rows).
  * Lookup by (integer) indexed position is still possible.
  */
-trait RowColAllocation[T, V <: Seq[T], Row, Column] {
+trait RowColKeys[T, V <: Seq[T], Row, Column] {
   this: DataMatrix[T, V] =>
 
   def rowKeys: Iterable[Row]

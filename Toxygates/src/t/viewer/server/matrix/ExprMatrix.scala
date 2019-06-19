@@ -74,8 +74,7 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
 class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
     val annotations: Seq[RowAnnotation])
-    extends
-    AllocatedDataMatrix[ExprMatrix, ExprValue,
+    extends KeyedDataMatrix[ExprMatrix, ExprValue,
       Seq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._

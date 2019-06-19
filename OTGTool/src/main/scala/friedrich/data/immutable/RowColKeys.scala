@@ -8,10 +8,11 @@ package friedrich.data.immutable
 import friedrich.data._
 
 /**
- * An immutable row/col allocation.
+ * An immutable row/col map that can be split, subsetted etc.
+ * by creating new copies.
  */
-trait RowColAllocation[T, V <: Seq[T], Row, Column]
-extends friedrich.data.RowColAllocation[T, V, Row, Column] {
+trait RowColKeys[T, V <: Seq[T], Row, Column]
+extends friedrich.data.RowColKeys[T, V, Row, Column] {
   this: AbstractMatrix[_, T, V] =>
 
   val columnMap: Map[Column, Int]
@@ -32,15 +33,15 @@ extends friedrich.data.RowColAllocation[T, V, Row, Column] {
   def obtainRow(row: Row): Int = rowMap(row)
   def obtainColumn(col: Column): Int = columnMap(col)
 
-  def rightAdjoinedColAlloc(other: RowColAllocation[_, _, Row, Column]): Map[Column, Int] = {
+  def rightAdjoinedColKeys(other: RowColKeys[_, _, Row, Column]): Map[Column, Int] = {
     assert((columnMap.keySet intersect other.columnMap.keySet) == Set())
     columnMap ++ other.columnMap.map(x => (x._1, x._2 + columns))
   }
 
-  def selectedRowAlloc(rows: Seq[Int]): Map[Row, Int] = Map() ++ rows.map(rowAt(_)).zipWithIndex
-  def selectedColumnAlloc(columns: Seq[Int]): Map[Column, Int] = Map() ++ columns.map(columnAt(_)).zipWithIndex
+  def selectedRowKeys(rows: Seq[Int]): Map[Row, Int] = Map() ++ rows.map(rowAt(_)).zipWithIndex
+  def selectedColumnKeys(columns: Seq[Int]): Map[Column, Int] = Map() ++ columns.map(columnAt(_)).zipWithIndex
 
-  def splitColumnAlloc(at: Int): (Map[Column, Int], Map[Column, Int]) = {
+  def splitColumnKeys(at: Int): (Map[Column, Int], Map[Column, Int]) = {
     val r1 = columnMap.filter(_._2 < at)
     val r2 = columnMap.filter(_._2 >= at).map(x => (x._1, x._2 - at))
     (r1, r2)
