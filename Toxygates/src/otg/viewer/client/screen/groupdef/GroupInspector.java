@@ -51,7 +51,7 @@ import t.viewer.client.storage.StorageProvider;
 abstract public class GroupInspector extends Composite implements RequiresResize,
     ExistingGroupsTable.Delegate {
 
-  public final Groups groups = new Groups();
+  public final Groups groups;
 
   public SelectionTDGrid selectionGrid;
   private final OTGScreen screen;
@@ -63,7 +63,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private Label titleLabel;
   private Button saveButton, saveAsButton, cancelButton, autoGroupsButton;
  
-  private SelectionTable<Group> existingGroupsTable;
+  private SelectionTable<ClientGroup> existingGroupsTable;
   /**
    * Panel with input for naming and saving groups 
    */
@@ -83,8 +83,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   private Group currentlyEditingGroup = null;
 
   public interface Delegate {
-    Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups);
-    void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds);
+    Future<SampleClass[]> enableDatasetsIfNeeded(Collection<ClientGroup> groups);
+    void groupInspectorEditGroup(ClientGroup group, SampleClass sampleClass, List<String> compounds);
     void groupInspectorClearCompounds();
   }
 
@@ -97,6 +97,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public GroupInspector(OTGScreen scr, Delegate delegate) {
     this.screen = scr;
     this.delegate = delegate;
+    
+    groups = new Groups(screen.getStorage().groupsStorage);
+    
     schema = scr.schema();
     splitPanel = new SplitLayoutPanel();
     initWidget(splitPanel);
@@ -160,7 +163,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * Load groups from local storage and display them in the existing groups table.
    */
   public void loadGroups() {
-    groups.loadGroups(screen.getStorage());
+    groups.storage().loadFromStorage();
     enableDatasetsIfNeeded();
     updateConfigureStatus(false);
 
@@ -251,7 +254,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    *          saved to local storage
    */
   private void reflectGroupChanges() {
-    groups.saveToLocalStorage(screen.getStorage());
+    groups.storage().saveToStorage();
     updateConfigureStatus(true);
     updateTableData();
   }
@@ -315,9 +318,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * to select the dose levels and exposure times.
    */
   private void makeAutoGroups() {
-    List<Group> gs = GroupMaker.autoGroups(this, schema, selectionGrid.getAvailableUnits());
-    for (Group g : gs) {
-      addGroup(g, true);
+    List<ClientGroup> gs = GroupMaker.autoGroups(this, schema, selectionGrid.getAvailableUnits());
+    for (ClientGroup g : gs) {
+      addGroup(g);
     }
     // TODO investigate whether this enableDatasetsIfNeeded call can be removed
     enableDatasetsIfNeeded(); 
@@ -377,7 +380,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
       
       @Override
       protected void onTextBoxValueChange(String newValue) {
-        if (groups.containsKey(newValue)) {
+        if (groups.storage().containsKey(newValue)) {
           submitButton.setText("Overwrite");
         } else {
           submitButton.setText("Save new");
@@ -419,7 +422,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    */
   private Group setGroup(String pendingGroupName, List<Unit> units) {
     logger.info("Set group with " + SharedUtils.mkString(units, ","));
-    Group existingGroup = groups.get(pendingGroupName);
+    ClientGroup existingGroup = groups.storage().get(pendingGroupName);
     if (existingGroup == null) {
       Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_CREATE_NEW_SAMPLE_GROUP);
     } else {
@@ -428,8 +431,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
           Analytics.ACTION_MODIFY_EXISTING_SAMPLE_GROUP);
     }
 
-    Group newGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
-    addGroup(newGroup, true);
+    ClientGroup newGroup = new ClientGroup(schema, pendingGroupName, units.toArray(new Unit[0]), true);
+    addGroup(newGroup);
     // TODO: investigate if this enableDatasetsIfNeeded call is necessary
     enableDatasetsIfNeeded();
     reflectGroupChanges();
@@ -439,11 +442,10 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   /**
    * Adds a group to the existing groups table
    */
-  private void addGroup(Group group, boolean active) {
-    String name = group.getName();
-    groups.put(name, group, active);
+  private void addGroup(ClientGroup group) {
+    groups.put(group);
 
-    logger.info("Add group " + name + " with " + group.getSamples().length + " samples " + "and "
+    logger.info("Add group " + group.getName() + " with " + group.getSamples().length + " samples " + "and "
         + group.getUnits().length + " units ");
   }
 
@@ -453,26 +455,26 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   }
 
   
-  private class GroupColouring implements RowStyles<Group> {
+  private class GroupColouring implements RowStyles<ClientGroup> {
     @Override
-    public String getStyleNames(Group g, int rowIndex) {
+    public String getStyleNames(ClientGroup g, int rowIndex) {
       return g.getStyleName();
     }
   }
   
   // ExistingGroupsTable.Delegate methods
   @Override
-  abstract public void makeGroupColumns(CellTable<Group> table);
+  abstract public void makeGroupColumns(CellTable<ClientGroup> table);
   
   @Override
   public void displayGroupForEditing(String name) {
     setHeading("editing " + name);
     
-    Group group = groups.get(name);
+    ClientGroup group = groups.storage().get(name);
     SampleClass sampleClass = 
         SampleClassUtils.asMacroClass(group.getSamples()[0].sampleClass(), schema);
     List<String> chosenCompounds = 
-        SampleClassUtils.getMajors(schema, groups.get(name), sampleClass).
+        SampleClassUtils.getMajors(schema, groups.storage().get(name), sampleClass).
         collect(Collectors.toList());
     setEditMode();
     
@@ -484,15 +486,15 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   
   @Override
   public void deleteGroup(String name) {
-    groups.remove(name);
+    groups.storage().remove(name);
     reflectGroupChanges();
     clearUiForNewGroup();
   }
   
   @Override
-  public void existingGroupsTableSelectionChanged(Set<Group> selected) {
+  public void existingGroupsTableSelectionChanged(Set<ClientGroup> selected) {
     groups.setActiveGroups(selected);
-    groups.saveToLocalStorage(screen.getStorage());
+    groups.storage().saveToStorage();
     enableDatasetsIfNeeded();
     updateConfigureStatus(true);
   }

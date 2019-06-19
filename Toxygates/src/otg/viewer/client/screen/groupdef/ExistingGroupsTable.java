@@ -10,10 +10,10 @@ import com.google.gwt.user.client.Window;
 
 import otg.viewer.client.screen.groupdef.GroupInspector.ButtonCellResources;
 import t.common.client.components.SelectionTable;
-import t.common.shared.sample.Group;
 import t.model.sample.CoreParameter;
+import t.viewer.client.ClientGroup;
 
-public class ExistingGroupsTable extends SelectionTable<Group> {
+public class ExistingGroupsTable extends SelectionTable<ClientGroup> {
   private Delegate delegate;
   
   public interface Delegate {
@@ -22,7 +22,7 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
      * to a table.
      * @param table the table to add columns to
      */
-    void makeGroupColumns(CellTable<Group> table);
+    void makeGroupColumns(CellTable<ClientGroup> table);
     /**
      * Prepare to edit a sample group , loading it into the UI so the user can 
      * view and modify it.
@@ -38,24 +38,24 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
      * Notify delegate that the set of selected groups has changed.
      * @param selected the new set of selected groups
      */
-    void existingGroupsTableSelectionChanged(Set<Group> selected);
+    void existingGroupsTableSelectionChanged(Set<ClientGroup> selected);
   }
   
   public ExistingGroupsTable(Delegate delegate) {
     super("Active", false);
     this.delegate = delegate;
 
-    TextColumn<Group> textColumn = new TextColumn<Group>() {
+    TextColumn<ClientGroup> textColumn = new TextColumn<ClientGroup>() {
       @Override
-      public String getValue(Group object) {
+      public String getValue(ClientGroup object) {
         return object.getName();
       }
     };
     table.addColumn(textColumn, "Group");
 
-    textColumn = new TextColumn<Group>() {
+    textColumn = new TextColumn<ClientGroup>() {
       @Override
-      public String getValue(Group object) {
+      public String getValue(ClientGroup object) {
         return object.getSamples()[0].get(CoreParameter.Type);
       }
     };
@@ -69,30 +69,30 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
     // We use TextButtonCell instead of ButtonCell since it has setEnabled
     final TextButtonCell editCell = new TextButtonCell(appearance);
 
-    Column<Group, String> editColumn = new Column<Group, String>(editCell) {
+    Column<ClientGroup, String> editColumn = new Column<ClientGroup, String>(editCell) {
       @Override
-      public String getValue(Group g) {
+      public String getValue(ClientGroup g) {
         return "Edit";
       }
     };
-    editColumn.setFieldUpdater(new FieldUpdater<Group, String>() {
+    editColumn.setFieldUpdater(new FieldUpdater<ClientGroup, String>() {
       @Override
-      public void update(int index, Group object, String value) {
+      public void update(int index, ClientGroup object, String value) {
         delegate.displayGroupForEditing(object.getName());
       }
     });
     table.addColumn(editColumn, "");
 
     final TextButtonCell deleteCell = new TextButtonCell(appearance);
-    Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
+    Column<ClientGroup, String> deleteColumn = new Column<ClientGroup, String>(deleteCell) {
       @Override
-      public String getValue(Group g) {
+      public String getValue(ClientGroup g) {
         return "Delete";
       }
     };
-    deleteColumn.setFieldUpdater(new FieldUpdater<Group, String>() {
+    deleteColumn.setFieldUpdater(new FieldUpdater<ClientGroup, String>() {
       @Override
-      public void update(int index, Group object, String value) {
+      public void update(int index, ClientGroup object, String value) {
         if (Window.confirm("Are you sure you want to delete the group " + object.getName() + "?")) {
           delegate.deleteGroup(object.getName());
         }
@@ -103,11 +103,11 @@ public class ExistingGroupsTable extends SelectionTable<Group> {
   }
 
   @Override
-  protected void initTable(CellTable<Group> table) {
+  protected void initTable(CellTable<ClientGroup> table) {
   }
 
   @Override
-  protected void selectionChanged(Set<Group> selected) {
+  protected void selectionChanged(Set<ClientGroup> selected) {
     delegate.existingGroupsTableSelectionChanged(selected);
   }
 }

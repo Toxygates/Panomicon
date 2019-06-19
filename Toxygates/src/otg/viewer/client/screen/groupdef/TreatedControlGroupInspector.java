@@ -23,28 +23,27 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 
 import otg.viewer.client.components.OTGScreen;
-import t.common.shared.sample.Group;
+import t.viewer.client.ClientGroup;
 
 public class TreatedControlGroupInspector extends GroupInspector {
 
-  public TreatedControlGroupInspector(OTGScreen scr,
-      Delegate delegate) {
+  public TreatedControlGroupInspector(OTGScreen scr, Delegate delegate) {
     super(scr, delegate);
   }
 
   @Override
-  public void makeGroupColumns(CellTable<Group> table) {
-    TextColumn<Group> textColumn = new TextColumn<Group>() {
+  public void makeGroupColumns(CellTable<ClientGroup> table) {
+    TextColumn<ClientGroup> textColumn = new TextColumn<ClientGroup>() {
       @Override
-      public String getValue(Group object) {
+      public String getValue(ClientGroup object) {
         return "" + object.getTreatedSamples().length;
       }
     };
     table.addColumn(textColumn, "#Treated samples");
 
-    textColumn = new TextColumn<Group>() {
+    textColumn = new TextColumn<ClientGroup>() {
       @Override
-      public String getValue(Group object) {
+      public String getValue(ClientGroup object) {
         return "" + object.getControlSamples().length;
       }
     };

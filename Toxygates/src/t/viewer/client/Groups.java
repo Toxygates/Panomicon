@@ -1,113 +1,73 @@
 package t.viewer.client;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.google.gwt.user.client.Window;
+import java.util.stream.Collectors;
 
 import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
-import t.viewer.client.storage.StorageProvider;
+import t.viewer.client.storage.NamedObjectStorage;
+import t.viewer.client.storage.Storage;
 
 /**
- * Functionality for managing active and inactive groups, factored out of
- * GroupInspector. The logic for the most part comes directly from
- * GroupInspector, and so is in need of significant further refactoring.
+ * Functionality for managing active and inactive groups.
  */
 public class Groups {
-  private Map<String, Group> groups = new LinkedHashMap<String, Group>();
-  private List<Group> activeGroups = new ArrayList<Group>();
-  private Logger logger = SharedUtils.getLogger("groups");
-
-  public void loadGroups(StorageProvider storage) {
-    clear();
-
-    // Load chosen columns
-    activeGroups = sortedGroupList(storage.getChosenColumns());
-    for (Group g : activeGroups) {
-      groups.put(g.getName(), g);
-    }
-
-    // Load inactive columns
-    try {
-      Collection<Group> inactiveGroups = sortedGroupList(storage.getInactiveColumns());
-      for (Group g : inactiveGroups) {
-        groups.put(g.getName(), g);
-      }
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Unable to load inactive columns", e);
-      Window.alert("Unable to load inactive columns.");
-    }
+  private NamedObjectStorage<ClientGroup> storage;
+  
+  //private Logger logger = SharedUtils.getLogger("groups");
+  
+  public Groups(Storage<List<ClientGroup>> groupsStorage) {
+    this.storage = new NamedObjectStorage<ClientGroup>(groupsStorage, g ->  g.getName());
+  }
+  
+  public NamedObjectStorage<ClientGroup> storage() {
+    return storage;
+  }
+  
+  public List<ClientGroup> activeGroups() {
+    return storage.allObjects().stream().filter(g -> g.active).collect(Collectors.toList());
   }
 
-  public void saveToLocalStorage(StorageProvider storage) {
-    storage.chosenColumnsStorage.store(activeGroups());
-
-    List<Group> inactiveGroups = new ArrayList<Group>(groups.values());
-    inactiveGroups.removeAll(activeGroups());
-    storage.inactiveColumnsStorage.store(inactiveGroups);
+  // ALl these boilerplate methods can be removed eventually
+  public void put(ClientGroup value) {
+    storage.put(value.getName(), value);
   }
-
-  public List<Group> activeGroups() {
-    return activeGroups;
-  }
-
-  public Group get(String key) {
-    return groups.get(key);
-  }
-
-  public void put(String key, Group value, boolean chosen) {
-    Group oldGroup = groups.get(key);
-    if (oldGroup != null) {
-      activeGroups.remove(oldGroup);
-    }
-    groups.put(key, value);
-    if (chosen) {
-      activeGroups.add(value);
-    }
-  }
-
-  public boolean containsKey(String key) {
-    return groups.containsKey(key);
-  }
-
-  public void remove(String key) {
-    Group removed = groups.remove(key);
-    if (removed != null) {
-      deactivate(removed);
-    }
-  }
+//
+//  public boolean containsKey(String key) {
+//    return storage.containsKey(key);
+//  }
+//
+//  public void remove(String key) {
+//    storage.remove(key);
+//  }
 
   public void deactivate(Group group) {
-    activeGroups.remove(group);
+    storage.get(group.getName()).active = false;
   }
 
-  public void setActiveGroups(Collection<Group> selection) {
-    activeGroups = new ArrayList<Group>(selection);
+  public void setActiveGroups(Collection<ClientGroup> selection) {
+    for (ClientGroup g : storage.allObjects()) {
+      g.active = false;
+    }
+    for (Group g : selection) {
+      storage.get(g.getName()).active = true;
+    }
   }
 
-  public Collection<Group> allGroups() {
-    return groups.values();
+  // TODO: sort these
+  public Collection<ClientGroup> allGroups() {
+    return storage.allObjects();
   }
 
   public int size() {
-    return groups.size();
+    return storage.size();
   }
 
   public void clear() {
-    groups.clear();
-    activeGroups.clear();
+    storage.clear();
   }
-
-  private List<Group> sortedGroupList(Collection<Group> groups) {
-    ArrayList<Group> r = new ArrayList<Group>(groups);
-    Collections.sort(r);
-    return r;
-  }
-
+  
   public String suggestName(List<Unit> units, DataSchema schema) {
     String groupDescription = "";
     if (!units.isEmpty()) {
@@ -122,7 +82,7 @@ public class Groups {
     }
     int i = 1;
     String name = groupDescription;
-    while (groups.containsKey(name)) {
+    while (storage.containsKey(name)) {
       name = groupDescription + " " + i;
       i++;
     }

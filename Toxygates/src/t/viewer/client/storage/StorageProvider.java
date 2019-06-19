@@ -28,6 +28,7 @@ import com.google.gwt.user.client.Window;
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.network.PackedNetwork;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
@@ -75,6 +76,8 @@ public class StorageProvider implements Storage.StorageProvider {
   public final ListPacker<MirnaSource> mirnaSourcesPacker = 
       new ListPacker<MirnaSource>(new MirnaSourcePacker(), ":::");
   
+  public final ListPacker<ClientGroup> clientGroupPacker;
+  
   public final Storage<List<String>> probesStorage = 
       new Storage<List<String>>("probes", stringListPacker, this, 
           () -> new ArrayList<String>());
@@ -105,6 +108,8 @@ public class StorageProvider implements Storage.StorageProvider {
   public final Storage<List<MirnaSource>> mirnaSourcesStorage = 
       new Storage<List<MirnaSource>>("mirnaSources", mirnaSourcesPacker, this);
   
+  public final Storage<List<ClientGroup>> groupsStorage;
+  
   public StorageProvider(com.google.gwt.storage.client.Storage storage, String prefix, 
       DataSchema schema, AppInfo info) {
     
@@ -114,6 +119,8 @@ public class StorageProvider implements Storage.StorageProvider {
     sampleClassPacker = new SampleClassPacker(info.attributes());
     samplePacker = new SamplePacker(sampleClassPacker);
     groupPacker = new GroupPacker(samplePacker, schema);
+    clientGroupPacker =
+        new ListPacker<ClientGroup>(new ClientGroupPacker(samplePacker, schema), "###");
     columnsPacker = new ListPacker<Group>(groupPacker, "###");
     
     sampleClassStorage = 
@@ -124,6 +131,8 @@ public class StorageProvider implements Storage.StorageProvider {
     inactiveColumnsStorage = 
         new Storage<List<Group>>("inactiveColumns", columnsPacker, this, 
             () -> new ArrayList<Group>());
+    groupsStorage = new Storage<List<ClientGroup>>("groups", clientGroupPacker, this,
+        () -> new ArrayList<ClientGroup>());
     
     customColumnStorage = new Storage<Group>("customColumn", groupPacker, this);
     

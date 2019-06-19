@@ -34,6 +34,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
 
@@ -124,7 +125,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
     return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
   }
 
-  public List<Dataset> additionalNeededDatasets(Collection<Group> groups, 
+  public List<Dataset> additionalNeededDatasets(Collection<ClientGroup> groups, 
       List<Dataset> currentDatasets) {
     List<String> neededDatasetNames = Group.collectAll(groups, OTGAttribute.Dataset)
          .collect(Collectors.toList());
@@ -170,7 +171,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
 
   // GroupInspector.Delegate methods  
   @Override
-  public Future<SampleClass[]> enableDatasetsIfNeeded(Collection<Group> groups) {
+  public Future<SampleClass[]> enableDatasetsIfNeeded(Collection<ClientGroup> groups) {
     List<Dataset> additionalNeededDatasets = additionalNeededDatasets(groups, chosenDatasets);
     Future<SampleClass[]> future = new Future<SampleClass[]>();
     
@@ -195,7 +196,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   }
 
   @Override
-  public void groupInspectorEditGroup(Group group, SampleClass sampleClass, List<String> compounds) {
+  public void groupInspectorEditGroup(ClientGroup group, SampleClass sampleClass, List<String> compounds) {
     Future<SampleClass[]> sampleClassesFuture =  enableDatasetsIfNeeded(Collections.singletonList(group));
     Future<String[]> compoundsFuture = new Future<String[]>();
     

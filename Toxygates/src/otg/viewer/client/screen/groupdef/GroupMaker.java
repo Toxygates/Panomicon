@@ -22,9 +22,9 @@ import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
-import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
 import t.model.sample.Attribute;
+import t.viewer.client.ClientGroup;
 
 public class GroupMaker {
 
@@ -33,9 +33,9 @@ public class GroupMaker {
    * finds the dose/time combination with the largest number of majors available, and then creates
    * groups with 1 unit each.
    */
-  public static List<Group> autoGroups(GroupInspector groupInspector, DataSchema schema,
+  public static List<ClientGroup> autoGroups(GroupInspector groupInspector, DataSchema schema,
       List<Pair<Unit, Unit>> units) {
-    List<Group> r = new ArrayList<Group>();
+    List<ClientGroup> r = new ArrayList<ClientGroup>();
     Map<String, List<Pair<Unit, Unit>>> byMedMin = new HashMap<String, List<Pair<Unit, Unit>>>();
 
     if (units.size() == 0) {
@@ -71,7 +71,7 @@ public class GroupMaker {
         us.add(c);
       }
       String n = groupInspector.groups.suggestName(us, schema);
-      Group g = new Group(schema, n, us.toArray(new Unit[0]));
+      ClientGroup g = new ClientGroup(schema, n, us.toArray(new Unit[0]), true);
       r.add(g);
     }
 
