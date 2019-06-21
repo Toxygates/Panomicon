@@ -1,15 +1,20 @@
 package t.common.server
 
+import t.common.shared.GWTTypes
+
 /**
- * Conversions to/from GWT serialized objects.
+ * Builders of and conversions to/from GWT serialized objects.
  * Not every implementation of interfaces like java.util.List and java.util.Map is
  * serializable, so we control the specific collection types here.
  */
 object GWTUtils {
   import scala.collection.JavaConverters._
+  import GWTTypes._
+
+  import java.util.{List => JList}
 
   implicit class GWTList[T](x: Seq[T]) {
-     def asGWT = new java.util.ArrayList(x.asJava)
+     def asGWT = mkList(x.asJava)
   }
 
   implicit class GWTIterable[T](x: Iterable[T]) {
