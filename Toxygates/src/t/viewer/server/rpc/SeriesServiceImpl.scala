@@ -20,36 +20,27 @@
 
 package t.viewer.server.rpc
 
-import java.util.ArrayList
-import java.util.{List => JList}
-
-import scala.Array.canBuildFrom
-import scala.collection.JavaConverters._
 import scala.language.implicitConversions
-import t.common.server.GWTUtils._
 
+import otg.model.sample.OTGAttribute
+import otg.model.sample.OTGAttribute._
+import otg.viewer.client.rpc.SeriesService
 import otg.viewer.server.rpc.Conversions.asScala
 import otg.viewer.shared.MatchResult
 import otg.viewer.shared.RankRule
-import otg.viewer.shared.{Series => SSeries}
+import otg.viewer.shared.{ Series => SSeries }
 import t.SeriesRanking
+import t.common.server.GWTUtils._
 import t.common.shared.Dataset
-import t.db._
-import t.sparql._
-import t.model.SampleClass
-import t.viewer.server.Configuration
-import t.viewer.server.Conversions._
-import t.viewer.shared.NoSuchProbeException
-import otg.model.sample.OTGAttribute
-import otg.model.sample.OTGAttribute._
-import otg.TimeSeries
-import t.util.SafeMath
 import t.common.shared.SeriesType
-import otg.viewer.client.rpc.SeriesService
+import t.db._
+import t.model.SampleClass
+import t.sparql._
+import t.util.SafeMath
+import t.viewer.server.Configuration
+import t.viewer.shared.NoSuchProbeException
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
-  import java.lang.{ Double => JDouble }
-
   private var config: Configuration = _
   private implicit def mcontext: MatrixContext = context.matrix
   implicit protected def context: t.Context
@@ -147,7 +138,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   def getSeries(
     seriesType: SeriesType,
     sc: SampleClass, probes: Array[String], timeDose: String,
-    compounds: Array[String]): JList[SSeries] = {
+    compounds: Array[String]): GWTList[SSeries] = {
     val validated = context.probes.identifiersToProbes(
       mcontext.probeMap, probes, true, true)
     val lookup = Map() ++ context.probes.withAttributes(validated).

@@ -13,16 +13,28 @@ object GWTUtils {
 
   import java.util.{List => JList}
 
-  implicit class GWTList[T](x: Seq[T]) {
-     def asGWT = mkList(x.asJava)
+  /**
+   * A list type that is compatible with GWT serialization.
+   * Actual types produced may be more specific.
+   */
+  type GWTList[T] = java.util.List[T]
+  
+  /**
+  * A map type that is compatible with GWT serialization.
+  * Actual types produced may be more specific.
+  */
+  type GWTMap[K,V] = java.util.Map[K,V]
+  
+  implicit class GWTListWrap[T](x: Seq[T]) {
+     def asGWT: GWTList[T] = mkList(x.asJava)
   }
 
-  implicit class GWTIterable[T](x: Iterable[T]) {
-     def asGWT = x.toSeq.asGWT
+  implicit class GWTIterableWrap[T](x: Iterable[T]) {
+     def asGWT: GWTList[T] = x.toSeq.asGWT
   }
 
-  implicit class GWTMap[T, U](x: Map[T, U]) {
-     def asGWT = {
+  implicit class GWTMapWrap[T, U](x: Map[T, U]) {
+     def asGWT: GWTMap[T,U] = {
        val r = new java.util.HashMap[T, U]()
        r.putAll(x.asJava)
        r

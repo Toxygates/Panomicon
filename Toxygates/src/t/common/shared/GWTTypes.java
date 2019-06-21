@@ -1,7 +1,6 @@
 package t.common.shared;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Builders of GWT serialization-safe types that
@@ -16,5 +15,9 @@ public class GWTTypes {
   public static <T> List<T> mkList(List<T> data) {
     return new ArrayList<T>(data);
   }
-
+  
+  public static <K,V> Map<K,V> mkMap() {
+    return new HashMap<K,V>();
+  }
+  
 }

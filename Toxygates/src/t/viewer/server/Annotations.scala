@@ -39,9 +39,12 @@ import t.platform.SSVarianceSet
 import t.sparql.Samples
 import t.viewer.server.Conversions._
 import t.viewer.server.Conversions.asScalaSample
+import t.common.shared.GWTTypes
 
 class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     unitHelper: Units) {
+
+  import GWTTypes._
 
   //TODO this needs to update sometimes, ideally without restart
   lazy val bioParameters = {
@@ -162,7 +165,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
       bpv = bioParamValue(bp, x._2)
     } yield bpv
 
-    new Annotation(sample.id, new java.util.ArrayList(params.asJava))
+    new Annotation(sample.id, mkList(params.asJava))
   }
 
   //TODO use ControlGroup to calculate bounds here too

@@ -11,9 +11,9 @@ import t.viewer.shared.network.Node
 import scala.collection.mutable.{Set => MSet}
 import t.viewer.server.matrix.ExprMatrix
 import t.viewer.shared.ManagedMatrixInfo
+import t.common.shared.GWTTypes
 
 object NetworkBuilder {
-
   /**
    * Uses the current target table to compute side table probes.
    * @param mainOffset defines the start of the current page in the main matrix.
@@ -45,6 +45,7 @@ object NetworkBuilder {
 class NetworkBuilder(targets: TargetTable,
     platforms: Platforms,
     main: ManagedMatrix, side: ManagedMatrix) {
+  import GWTTypes._
 
   val mainType = main.params.typ
   val sideType = side.params.typ
@@ -152,10 +153,9 @@ class NetworkBuilder(targets: TargetTable,
     keepMainNodes.toSeq
   }
 
-  import java.util.{ ArrayList => JList }
   def build: Network = {
     if (main.info.numColumns() == 0) {
-      return new Network("Network", new JList(), new JList(), false, 0)
+      return new Network("Network", mkList(), mkList(), false, 0)
     }
 
     val probes = platforms.resolve(main.current.orderedRowKeys)
