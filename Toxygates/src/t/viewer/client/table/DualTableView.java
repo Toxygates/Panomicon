@@ -250,7 +250,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     //The server-side network will have changed, so we force the side expression table
     //to reflect this.
     
-    sideExpressionTable.refetchRows();
+    sideExpressionTable.refetchRows(MAX_SECONDARY_ROWS);
   }
   
   @Override
@@ -265,7 +265,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     mode.setVisibleColumns(expressionTable);
     expressionTable.associations().setAssociationAutoRefresh(true);
 
-    super.reloadDataIfNeeded();
+    super.reloadDataIfNeeded();    
     sideExpressionTable.setIndicatedProbes(new HashSet<String>(), false);
     expressionTable.setIndicatedProbes(new HashSet<String>(), false);
   }
@@ -289,8 +289,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         
         @Override
         public void handleSuccess(NetworkInfo result) {
-            expressionTable.matrix().setInitialMatrix(result.mainInfo());
-            sideExpressionTable.matrix().setInitialMatrix(result.sideInfo());
+            expressionTable.matrix().setInitialMatrix(chosenProbes, result.mainInfo());
+            sideExpressionTable.matrix().setInitialMatrix(chosenProbes, result.sideInfo());
           setNetwork(result);
         }
       });
@@ -409,7 +409,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   public void afterGetRows(ExpressionTable table) {
     super.afterGetRows(table);
     if (table == expressionTable) {
-      sideExpressionTable.refetchRows();
+      sideExpressionTable.refetchRows(MAX_SECONDARY_ROWS);
     } else if (table == sideExpressionTable) {
       if (netvizDialog != null) {
         networkService.currentView(mainMatrix,
