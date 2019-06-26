@@ -207,6 +207,33 @@ function onNodeUnselection(event){
 }
 
 /**
+ * Update the Layout of the network
+ * Through the provided interface control, the user is able to apply different
+ * layout algorithms to the displayed networks. Whenever the user introduces
+ * manual changes to the position of the nodes in the graph, the 'current'
+ * layout no longer matches a pre-defined option, but should be considered as
+ * a 'custom' layout.
+ * This method updates the corresponding interface and structure values, in
+ * order to properly reflect the nature of the layout.
+ *
+ * @type {CytoscapeEvent}
+ * @param {CytoscapeEvent} event The move event that triggered the call
+ */
+function onDragFree(event){
+  /* need to capture the source container for the movement */
+  let id = (event.cy.container().id === 'leftDisplay') ? MAIN_ID : SIDE_ID;
+  /* fix the current layout to custom */
+  // $('#layoutSelect').val('custom');
+  vizNet[id].options().layout['name'] = 'custom';
+  /* update the selected panel to the one where the node was moved and trigger
+   * a change event on it */
+  $('#panelSelect')
+    .val(id)
+    .trigger('change')
+    ;
+}
+
+/**
  * Manage the resizing of the panel
  *
  * Each time the drawing panel changes its size, either because of a change in
@@ -460,31 +487,39 @@ function hideUnconnected(){
 }
 
 /**
- * Merge the current collection with the collection of elements provided.
+ * Merge the current graph with other graph.
  * The merge is performed in such a way as to keep a single copy of intersecting
- * elements, and defining a dual layout that positions the intersecting elements
- * at the center of the viewport, with elements coming from the left panel at
- * the left of the intersection, and elements coming from the right panel at the
- * right of the intesection.
- * @param {graph} other The elements we are to merge with the current graph.
+ * elements.
+ * Nodes in the intersection retain the union of the weights, that is, all the
+ * weights from both networks. If two nodes have weights with the same name, we
+ * retain the one from the LEFT-side network (current network).
+ * A Custom layout is applied to the merged network, that positions the
+ * intersecting elements at the center of the viewport, with elements coming from
+ * the left panel at the left of the intersection, and elements coming from the
+ * right panel at the right of the intesection.
+ *
+ * @type {CytoscapeGraph}
+ * @param {CytoscapeGraph} other The graph whose elements will be merged into
+ * the current one.
  * @param {string} innerLyt Layout used for intersecting elements.
  * @param {string} outerLyt Layout used for non-intersecting elements, both at
  * the left and right sides of the display
  */
 function mergeWith(other, innerLyt="concentric", outerLyt="grid"){
-  /* Define the collections that represent the three components of the new graph,
-   * intersecting nodes, left-side nodes and right-side nodes */
+  /* Find the intersecting elements between the two graphs */
   let inter = this.elements().intersection(other.elements());
 
-  /* intersecting nodes are gathered from a single graph (the one with the
-   * largest nymber of elements), so that in order to keep the attributes from
-   * both sources, we need to perform their merge manually */
+  /* Intersecting elements are copied from the largest graph */
   let smaller = this.elements().length < other.elements().length ? this : other;
+  /* We copy the data (weights) of the intersecting nodes in the smaller graph
+   * so that we don't lose it in the merge */
   inter.forEach(function(ele){
     jQuery.extend(ele.data('weight'), smaller.$('#'+ele.id())[0].data('weight'));
   });
 
+  /* Elements that are only in the current graph */
   let left = inter.absoluteComplement();
+  /* Elements only in the other graph */
   let right = other.elements().difference(inter);
 
   /* capture the dimensions of the viewport, to use them as constrains for the
@@ -492,9 +527,9 @@ function mergeWith(other, innerLyt="concentric", outerLyt="grid"){
   let w = this.container().parentElement.clientWidth/3;
   let h = this.container().parentElement.clientHeight;
   /* define the layout algorithm for each part of the merged network */
-  let interLyt = inter.updateLayout(innerLyt, {x1:w,y1:0,w:w,h:h} );
-  let leftLyt = left.updateLayout(outerLyt, {x1:0,y1:0,w:w,h:h} );
-  let rightLyt = right.updateLayout(outerLyt, {x1:2*w,y1:0,w:w,h:h} );
+  let interLyt = inter.updateLayout(innerLyt, {x1:w, y1:0, w:w, h:h} );
+  let leftLyt = left.updateLayout(outerLyt, {x1:0, y1:0, w:w, h:h} );
+  let rightLyt = right.updateLayout(outerLyt, {x1:2*w, y1:0, w:w, h:h} );
 
   /* set a promise to run the layout of the 2nd element of the merged network */
   leftLyt.promiseOn('layoutstop').then(function(){

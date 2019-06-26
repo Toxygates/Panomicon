@@ -109,6 +109,8 @@ function initCytoscapeGraph(id, container){
   /* add behaviour to the selection and unselections of nodes */
   vizNet[id].on("select", "node", onNodeSelection);
   vizNet[id].on("unselect", "node", onNodeUnselection);
+  /* bind function to change the current layout when a node is moved by the user */
+  vizNet[id].on('dragfree', "node", onDragFree);
 
   /* add a context menu to the panel (delete the previous one if still there),
    * and position it within the DOM at a level where events will be captured */
@@ -295,9 +297,7 @@ $(document).on("click", "#mergeNetworkButton", function(){
   let showHidden = $("#showHiddenNodesCheckbox").prop("checked", false);
   $("#showHiddenNodesCheckbox").trigger("change");
   /* Clean un-required variables */
-  /* Remove DOM elements for the right SIDE_ID */
   removeRightDisplay();
-  /* Perform the merge of the networks */
   vizNet[SIDE_ID] = null;
 });
 
