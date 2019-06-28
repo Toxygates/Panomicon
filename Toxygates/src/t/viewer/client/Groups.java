@@ -29,7 +29,6 @@ public class Groups {
     return storage.allObjects().stream().filter(g -> g.active).collect(Collectors.toList());
   }
 
-  // ALl these boilerplate methods can be removed eventually
   public void put(ClientGroup value) {
     storage.put(value.getName(), value);
   }
@@ -47,9 +46,10 @@ public class Groups {
     }
   }
 
-  // TODO: sort these
   public Collection<ClientGroup> allGroups() {
-    return storage.allObjects();
+    List<ClientGroup> groups = storage.allObjects(); 
+    Collections.sort(groups);
+    return groups;
   }
 
   public int size() {

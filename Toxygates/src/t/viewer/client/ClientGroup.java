@@ -3,6 +3,7 @@ package t.viewer.client;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleGroup;
 import t.common.shared.sample.Unit;
 
 /**
@@ -39,5 +40,16 @@ public class ClientGroup extends Group {
     _samples = group.getSamples();
     schema = group.getSchema();
     this.active = active;
+  }
+  
+  @Override
+  public int compareTo(SampleGroup<?> other) {
+    if (other instanceof ClientGroup) {
+      ClientGroup otherGroup = (ClientGroup) other;
+      if (active != otherGroup.active) {
+        return active ? -1 : 1;
+      }
+    }
+    return name.compareTo(other.getName());
   }
 }
