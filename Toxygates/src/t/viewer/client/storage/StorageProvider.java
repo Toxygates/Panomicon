@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.gwt.user.client.Window;
 
@@ -76,7 +78,7 @@ public class StorageProvider implements Storage.StorageProvider {
   public final ListPacker<MirnaSource> mirnaSourcesPacker = 
       new ListPacker<MirnaSource>(new MirnaSourcePacker(), ":::");
   
-  public final ListPacker<ClientGroup> clientGroupPacker;
+  public final ListPacker<ClientGroup> clientGroupsPacker;
   
   public final Storage<List<String>> probesStorage = 
       new Storage<List<String>>("probes", stringListPacker, this, 
@@ -119,25 +121,45 @@ public class StorageProvider implements Storage.StorageProvider {
     sampleClassPacker = new SampleClassPacker(info.attributes());
     samplePacker = new SamplePacker(sampleClassPacker);
     groupPacker = new GroupPacker(samplePacker, schema);
-    clientGroupPacker =
+    clientGroupsPacker =
         new ListPacker<ClientGroup>(new ClientGroupPacker(samplePacker, schema), "###");
     columnsPacker = new ListPacker<Group>(groupPacker, "###");
     
     sampleClassStorage = 
         new Storage<SampleClass>("sampleClass", sampleClassPacker, this, () -> new SampleClass());
+    
+    // These two are obsolete now that we are using groupsStorage instead, but  
+    // we are keeping them around so we can load users' old data.
     chosenColumnsStorage = 
         new Storage<List<Group>>("columns", columnsPacker, this,
             () -> new ArrayList<Group>());
     inactiveColumnsStorage = 
         new Storage<List<Group>>("inactiveColumns", columnsPacker, this, 
             () -> new ArrayList<Group>());
-    groupsStorage = new Storage<List<ClientGroup>>("groups", clientGroupPacker, this,
-        () -> new ArrayList<ClientGroup>());
+    
+    groupsStorage = new Storage<List<ClientGroup>>("groups", clientGroupsPacker, this,
+        () -> recoverOldGroups());
     
     customColumnStorage = new Storage<Group>("customColumn", groupPacker, this);
     
     datasetsStorage = new Storage<List<Dataset>>("datasets", datasetsPacker, this,
         () -> Dataset.defaultSelection(info.datasets()));
+  }
+  
+  /**
+   * Loads groups from the old chosenColumns/inactiveColumns storage and converts 
+   * them to ClientGroups.
+   * @return a list of groups, represented as ClientGroups
+   */
+  private List<ClientGroup> recoverOldGroups() {
+    List<Group> activeGroups = chosenColumnsStorage.getIgnoringException();
+    List<Group> inactiveGroups = inactiveColumnsStorage.getIgnoringException();
+    
+    Stream<ClientGroup> activeGroupsStream = 
+        activeGroups.stream().map(group -> new ClientGroup(group, true));
+    Stream<ClientGroup> inactiveGroupsStream = 
+        inactiveGroups.stream().map(group -> new ClientGroup(group, false));
+    return Stream.concat(activeGroupsStream, inactiveGroupsStream).collect(Collectors.toList());
   }
 
   @Override
