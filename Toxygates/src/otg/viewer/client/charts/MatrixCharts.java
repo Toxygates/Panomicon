@@ -27,6 +27,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 
@@ -43,7 +44,7 @@ public class MatrixCharts extends Charts {
   }
 
   protected final SampleServiceAsync sampleService;
-  private List<Group> groups;
+  private List<ClientGroup> groups;
 
   /**
    * Samples will be fetched based on the sample classes of the groups the first time they are
@@ -59,7 +60,7 @@ public class MatrixCharts extends Charts {
    * @param groups The user's selected groups. Based on these, additional surrounding sample classes
    *        will also be included to give context in the charts.
    */
-  public MatrixCharts(OTGScreen screen, List<Group> groups) {
+  public MatrixCharts(OTGScreen screen, List<ClientGroup> groups) {
     super(screen);
     this.groups = groups;
     this.sampleService = screen.manager().sampleService();

@@ -30,7 +30,7 @@ import otg.viewer.client.screen.groupdef.*;
 import otg.viewer.client.screen.ranking.CompoundRanker;
 import otg.viewer.client.screen.ranking.SimpleCompoundRanker;
 import t.common.shared.DataSchema;
-import t.common.shared.sample.Group;
+import t.viewer.client.ClientGroup;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -57,7 +57,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups) {
+  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups) {
     return new GroupLabels(screen, schema, groups);
   }
 

@@ -25,8 +25,16 @@ public class Groups {
     return storage;
   }
   
+  private List<ClientGroup> getGroups(boolean active) {
+    return storage.allObjects().stream().filter(g -> g.active == active).collect(Collectors.toList());
+  }
+  
   public List<ClientGroup> activeGroups() {
-    return storage.allObjects().stream().filter(g -> g.active).collect(Collectors.toList());
+    return getGroups(true);
+  }
+  
+  public List<ClientGroup> inactiveGroups() {
+    return getGroups(false);
   }
 
   public void put(ClientGroup value) {

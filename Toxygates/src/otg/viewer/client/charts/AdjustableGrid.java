@@ -30,6 +30,7 @@ import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.storage.StorageProvider;
 import static otg.viewer.client.charts.DataSource.*;
@@ -48,7 +49,7 @@ public class AdjustableGrid<DS extends Dataset<?>> extends Composite {
   private ExpressionRowSource source;
   private List<String> majorVals;
   private List<String> organisms;
-  private List<Group> groups;
+  private List<ClientGroup> groups;
   private VerticalPanel vp;
   private VerticalPanel chartsVerticalPanel;
   private OTGScreen screen;

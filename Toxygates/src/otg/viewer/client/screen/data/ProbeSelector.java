@@ -31,8 +31,8 @@ import otg.viewer.client.components.*;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
-import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.ProbeServiceAsync;
@@ -65,7 +65,7 @@ abstract public class ProbeSelector extends Composite implements
   private final static String CHILD_WIDTH = "100%";
 
   public List<Sample> getAllSamples() {
-    return Group.getAllSamples(screen.chosenColumns());
+    return ClientGroup.getAllSamples(screen.chosenColumns());
   }
 
   public ProbeSelector(ImportingScreen screen, String label, boolean wb) {

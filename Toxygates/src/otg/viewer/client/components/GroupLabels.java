@@ -26,18 +26,19 @@ import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 
 public class GroupLabels extends Composite {
 
-  protected List<Group> groups;
+  protected List<ClientGroup> groups;
   protected DataSchema schema;
   private FlowPanel flowPanel;
   protected OTGScreen screen;
 
   final static int LABEL_MAX_LEN = 40;
 
-  public GroupLabels(OTGScreen screen, DataSchema schema, List<Group> groups) {
+  public GroupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups) {
     flowPanel = new FlowPanel();
     this.groups = groups;
     this.schema = schema;
@@ -50,7 +51,7 @@ public class GroupLabels extends Composite {
     return ":" + g.getTriples(schema, 2, ", ");
   }
 
-  private void show(List<Group> groups) {
+  private void show(List<ClientGroup> groups) {
     flowPanel.clear();
     for (Group group : groups) {
       FlowPanel groupPanel = new FlowPanel();
@@ -87,7 +88,7 @@ public class GroupLabels extends Composite {
 
   private void showSmall() {
     if (groups.size() > 5) {
-      List<Group> gs = groups.subList(0, 5);
+      List<ClientGroup> gs = groups.subList(0, 5);
       show(gs);
       Button b = new Button("Show all", new ClickHandler() {
         @Override

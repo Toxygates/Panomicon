@@ -33,6 +33,8 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
@@ -67,11 +69,12 @@ public class SampleDetailScreen extends MinimalScreen
   private Button downloadButton;
   private HorizontalPanel tools;
 
-  private List<Group> chosenColumns = new ArrayList<Group>();
+  private Groups groups;
   private SampleColumn chosenCustomColumn;
 
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, man);
+    groups = new Groups(getStorage().groupsStorage);
     sampleService = man.sampleService();
     atd = new AnnotationTDGrid(this, this);
     mkTools();
@@ -79,7 +82,7 @@ public class SampleDetailScreen extends MinimalScreen
 
   @Override
   public void loadState(AttributeSet attributes) {
-    chosenColumns = getStorage().getChosenColumns();
+    groups.storage().loadFromStorage();
     try {
       chosenCustomColumn = getStorage().customColumnStorage.get();
     } catch (UnpackInputException e) {
@@ -153,8 +156,8 @@ public class SampleDetailScreen extends MinimalScreen
 
   private void updateColumnList() {
     columnList.clear();
-    if (chosenColumns.size() > 0) {
-      for (DataColumn<?> c : chosenColumns) {
+    if (groups.activeGroups().size() > 0) {
+      for (DataColumn<?> c : groups.activeGroups()) {
         columnList.addItem(c.getShortTitle());
       }
     }
@@ -178,7 +181,7 @@ public class SampleDetailScreen extends MinimalScreen
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getStorage().getChosenColumns();
+    List<ClientGroup> chosenColumns = groups.activeGroups();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 
@@ -193,6 +196,8 @@ public class SampleDetailScreen extends MinimalScreen
       @Override
       public void onClick(ClickEvent event) {
         int index = columnList.getSelectedIndex();
+        
+        List<ClientGroup> chosenColumns = groups.activeGroups();
         
         // Get compounds for currently selected group
         List<String> compounds = SampleClassUtils.getMajors(schema(), chosenColumns.get(index))
@@ -265,7 +270,7 @@ public class SampleDetailScreen extends MinimalScreen
       setDisplayColumn(chosenCustomColumn);
       return;
     } else {
-      for (SampleColumn c : chosenColumns) {
+      for (SampleColumn c : groups.activeGroups()) {
         if (c.getShortTitle().equals(column)) {
           setDisplayColumn(c);
           return;

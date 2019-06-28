@@ -31,7 +31,7 @@ import otg.viewer.client.screen.ranking.CompoundRanker;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.DataSchema;
-import t.common.shared.sample.Group;
+import t.viewer.client.ClientGroup;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -49,7 +49,7 @@ public interface UIFactory {
   public GroupInspector groupInspector(OTGScreen scr,
       GroupInspector.Delegate delegate);
   
-  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups);
+  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups);
   
   public GeneSetEditor geneSetEditor(ImportingScreen screen);
   

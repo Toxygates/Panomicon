@@ -18,6 +18,7 @@ import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
@@ -57,7 +58,7 @@ public class ETMatrixManager {
     void setupColumns();
     void onGettingExpressionFailed();
     void setEnabled(boolean enabled);
-    List<Group> chosenColumns();
+    List<ClientGroup> chosenColumns();
     void getExpressions();
     SortOrder computeSortParams();
     void onApplyColumnFilter();

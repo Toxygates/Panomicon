@@ -17,6 +17,7 @@ import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.components.DataView;
 import t.viewer.client.components.TickMenuItem;
 import t.viewer.client.dialog.DialogPosition;
@@ -67,7 +68,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
   
   @Override
-  public void columnsChanged(List<Group> columns) {
+  public void columnsChanged(List<ClientGroup> columns) {
     super.columnsChanged(columns);
     expressionTable.columnsChanged(columns);
   }
@@ -202,8 +203,8 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   @Override
   public void loadInitialMatrix(ValueType valueType, 
 		  int initPageSize, List<ColumnFilter> initFilters) {
-    matrixService.loadMatrix(defaultMatrix, chosenColumns, chosenProbes, 
-      valueType, initFilters, 
+    matrixService.loadMatrix(defaultMatrix, ClientGroup.convertToGroups(chosenColumns), 
+        chosenProbes, valueType, initFilters, 
       new AsyncCallback<ManagedMatrixInfo>() {
         @Override
         public void onFailure(Throwable caught) {
@@ -218,7 +219,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
       });
   }
   
-  protected TableStyle styleForColumns(List<Group> columns) {
+  protected TableStyle styleForColumns(List<ClientGroup> columns) {
     boolean foundMirna = false;
     boolean foundNonMirna = false;    
     for (Group g: chosenColumns) {

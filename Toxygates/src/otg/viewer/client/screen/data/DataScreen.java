@@ -28,9 +28,10 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.*;
 import t.common.shared.GroupUtils;
-import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.storage.StorageProvider;
@@ -52,12 +53,12 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   protected TableView tableView;
 
   protected String[] lastProbes;
-  protected List<Group> lastColumns;
 
   protected GeneSetsMenu geneSetsMenu;
   
+  protected Groups groups;
+  
   protected String[] chosenProbes = new String[0];
-  protected List<Group> chosenColumns = new ArrayList<Group>();
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
   public ItemList chosenGeneSet = null;
   protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
@@ -68,7 +69,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public void loadState(AttributeSet attributes) {
     StorageProvider storage = getStorage();
     chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
-    chosenColumns = storage.getChosenColumns();
+    groups.storage().loadFromStorage();
     chosenItemLists = storage.itemListsStorage.getIgnoringException();
     chosenGeneSet = storage.genesetStorage.getIgnoringException();
     chosenClusteringList = storage.clusteringListsStorage.getIgnoringException();
@@ -81,7 +82,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
       Window.alert("Please select miRNA sources (in the tools menu) to enable mRNA-miRNA associations.");
     }
 
-    tableView.columnsChanged(chosenColumns);
+    tableView.columnsChanged(groups.activeGroups());
     tableView.probesChanged(chosenProbes);  
     geneSetToolbar.geneSetChanged(chosenGeneSet);
     geneSetsMenu.itemListsChanged(chosenItemLists);
@@ -127,6 +128,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public DataScreen(ScreenManager man) {
     super("View data", key, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
+    groups = new Groups(getStorage().groupsStorage);
     geneSetToolbar = makeGeneSetSelector();
     sendMirnaSources();
   }
@@ -146,8 +148,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  public List<Group> chosenColumns() {
-    return chosenColumns;
+  public List<ClientGroup> chosenColumns() {
+    return groups.activeGroups();
   }
 
   protected GeneSetToolbar makeGeneSetSelector() {
@@ -206,7 +208,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   public TableView.ViewType preferredViewType() {  
-    chosenColumns = getStorage().getChosenColumns();
+    groups.storage().loadFromStorage();
+    List<ClientGroup> chosenColumns = groups.activeGroups();
     String[] types =
         chosenColumns.stream().map(g -> GroupUtils.groupType(g)).distinct().toArray(String[]::new);    
     return types.length >= 2 ? ViewType.Dual : ViewType.Single;
@@ -268,7 +271,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getStorage().getChosenColumns();
+    groups.storage().loadFromStorage();
+    List<ClientGroup> chosenColumns = groups.activeGroups();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 
@@ -304,7 +308,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     getStorage().probesStorage.store(Arrays.asList(chosenProbes));
 
     lastProbes = null;
-    lastColumns = null;
     tableView.probesChanged(probes);
   }
 

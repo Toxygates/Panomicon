@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
+import t.viewer.client.ClientGroup;
 import t.viewer.shared.Association;
 
 /**
@@ -17,10 +17,10 @@ import t.viewer.shared.Association;
 public abstract class DataView extends Composite {
 
   protected String[] lastProbes;
-  protected List<Group> lastColumns;
+  protected List<ClientGroup> lastColumns;
   
   protected String[] chosenProbes = new String[0];
-  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected List<ClientGroup> chosenColumns = new ArrayList<ClientGroup>();
   
   public DataView() {
     fileMenu = addMenu("File");
@@ -91,11 +91,11 @@ public abstract class DataView extends Composite {
   
   public Collection<Widget> toolbars() { return toolbars; }
   
-  public void columnsChanged(List<Group> columns) {
+  public void columnsChanged(List<ClientGroup> columns) {
     chosenColumns = columns;
   }
 
-  public List<Group> chosenColumns() {
+  public List<ClientGroup> chosenColumns() {
     return chosenColumns;
   }
 

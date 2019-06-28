@@ -1,5 +1,11 @@
 package t.viewer.client;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -51,5 +57,22 @@ public class ClientGroup extends Group {
       }
     }
     return name.compareTo(other.getName());
+  }
+  
+  public Group convertToGroup() {
+    return new Group(schema, name, _samples, color);
+  }
+  
+  public static List<Group> convertToGroups(Collection<ClientGroup> clientGroups) {
+    return clientGroups.stream().map(cg -> cg.convertToGroup()).collect(Collectors.toList());
+  }
+
+  public static List<Sample> getAllSamples(List<ClientGroup> columns) {
+    List<Sample> list = new ArrayList<Sample>();
+    for (ClientGroup g : columns) {
+      List<Sample> ss = Arrays.asList(g.getSamples());
+      list.addAll(ss);
+    }
+    return list;
   }
 }

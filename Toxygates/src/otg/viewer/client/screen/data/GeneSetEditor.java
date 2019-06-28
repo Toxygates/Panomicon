@@ -38,6 +38,7 @@ import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.*;
 import t.viewer.shared.ItemList;
@@ -463,7 +464,8 @@ public class GeneSetEditor extends Composite {
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    probeService.identifiersToProbes(probes, true, false, titleMatch, Group.getAllSamples(screen.chosenColumns()),
+    probeService.identifiersToProbes(probes, true, false, titleMatch, 
+        ClientGroup.getAllSamples(screen.chosenColumns()),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain manual probes (technical error).") {
           @Override
@@ -592,7 +594,7 @@ public class GeneSetEditor extends Composite {
     listedProbes.addAll(Arrays.asList(probes));
   }
 
-  private void setColumns(List<Group> cs) {
+  private void setColumns(List<ClientGroup> cs) {
     Stream<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
     compounds.forEach(c -> compoundList.addItem(c));

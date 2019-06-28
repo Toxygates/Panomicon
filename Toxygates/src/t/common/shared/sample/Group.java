@@ -34,6 +34,12 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   public Group() {}
 
+  public Group(DataSchema schema, String name, Sample[] barcodes, String color,
+      Unit[] units) {
+    super(schema, name, barcodes, color);
+    _units = units;
+  }
+  
   public Group(DataSchema schema, String name, Sample[] barcodes, String color) {
     super(schema, name, barcodes, color);
     _units = Unit.formUnits(schema, barcodes);
@@ -100,15 +106,6 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
   public String tooltipText(DataSchema schema) {
     SampleClass sc = getSamples()[0].sampleClass();
     return SampleClassUtils.label(sc, schema) + ":\n" + getTriples(schema, -1, ", ");
-  }
-
-  public static List<Sample> getAllSamples(List<Group> columns) {
-    List<Sample> list = new ArrayList<Sample>();
-    for (Group g : columns) {
-      List<Sample> ss = Arrays.asList(g.getSamples());
-      list.addAll(ss);
-    }
-    return list;
   }
 
   public boolean hasSameUnits(Group otherGroup) {

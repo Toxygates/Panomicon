@@ -44,6 +44,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.shared.ManagedMatrixInfo;
@@ -93,7 +94,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   protected boolean sortAsc;
   private boolean withPValueOption;
 
-  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected List<ClientGroup> chosenColumns = new ArrayList<ClientGroup>();
   protected SampleClass chosenSampleClass;
   protected String[] chosenProbes = new String[0];
 
@@ -261,7 +262,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     return grid.getVisibleItems();
   }
 
-  public void columnsChanged(List<Group> columns) {
+  public void columnsChanged(List<ClientGroup> columns) {
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
     HashSet<Group> newColumns = new HashSet<Group>(columns);
     if (newColumns.equals(oldColumns) && newColumns.size() > 0) {
@@ -449,7 +450,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   @Override
-  public List<Group> chosenColumns() {
+  public List<ClientGroup> chosenColumns() {
     return chosenColumns;
   }
 

@@ -29,8 +29,8 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 
 import otg.viewer.client.intermine.InterMineData;
-import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
@@ -51,7 +51,7 @@ public interface ImportingScreen extends OTGScreen {
 
   void itemListsChanged(List<ItemList> lists);
 
-  List<Group> chosenColumns();
+  List<ClientGroup> chosenColumns();
   
   default List<MenuItem> intermineMenuItems(AppInfo appInfo) {
     List<MenuItem> intermineItems = new ArrayList<MenuItem>();

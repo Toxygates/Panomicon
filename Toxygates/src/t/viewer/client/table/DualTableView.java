@@ -10,8 +10,8 @@ import otg.viewer.client.screen.data.DataScreen;
 import otg.viewer.client.screen.data.NetworkMenu;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.network.*;
@@ -142,7 +142,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   protected void flipDualView() {    
     preferredDoubleMode = mode.flip();    
-    List<Group> allColumns = new ArrayList<Group>(chosenColumns);
+    List<ClientGroup> allColumns = new ArrayList<ClientGroup>(chosenColumns);
     allColumns.addAll(sideExpressionTable.chosenColumns());
     columnsChanged(allColumns);
     probesChanged(new String[0]);
@@ -199,13 +199,13 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   protected boolean mainTableSelectable() { return true; }  
   
-  protected List<Group> columnsOfType(List<Group> from, String type) {
+  protected List<ClientGroup> columnsOfType(List<ClientGroup> from, String type) {
     return from.stream().filter(g -> type.equals(GroupUtils.groupType(g))).
         collect(Collectors.toList());    
   }
   
-  protected List<Group> columnsForMainTable(List<Group> from) {    
-    List<Group> r = columnsOfType(from, mode.mainType);
+  protected List<ClientGroup> columnsForMainTable(List<ClientGroup> from) {    
+    List<ClientGroup> r = columnsOfType(from, mode.mainType);
     
     //If mRNA and miRNA columns are not mixed, we simply display them as they are
     if (r.isEmpty()) {
@@ -214,12 +214,12 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     return r;
   }
   
-  protected List<Group> columnsForSideTable(List<Group> from) {
+  protected List<ClientGroup> columnsForSideTable(List<ClientGroup> from) {
     return columnsOfType(from, mode.sideType);        
   }
   
   @Override
-  public void columnsChanged(List<Group> columns) {
+  public void columnsChanged(List<ClientGroup> columns) {
     logger.info("Dual mode pick for " + columns.size() + " columns");
     mode = preferredDoubleMode;    
     
@@ -232,7 +232,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
     super.columnsChanged(columnsForMainTable(columns));
     
-    List<Group> sideColumns = columnsForSideTable(columns);
+    List<ClientGroup> sideColumns = columnsForSideTable(columns);
     if (sideExpressionTable != null && !sideColumns.isEmpty()) {    
       sideExpressionTable.columnsChanged(sideColumns);    
     }
@@ -283,8 +283,10 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   @Override
   public void loadInitialMatrix(ValueType valueType, int initPageSize,
 		  List<ColumnFilter> initFilters) {
-    networkService.loadNetwork(mainMatrix, expressionTable.chosenColumns, chosenProbes, 
-      sideMatrix, sideExpressionTable.chosenColumns, valueType, initPageSize, 
+    networkService.loadNetwork(mainMatrix, ClientGroup.convertToGroups(expressionTable.chosenColumns), 
+        chosenProbes, sideMatrix, 
+        ClientGroup.convertToGroups(sideExpressionTable.chosenColumns), 
+        valueType, initPageSize, 
       new PendingAsyncCallback<NetworkInfo>(this.screen, "Unable to load network") {
         
         @Override

@@ -41,6 +41,8 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
 import t.viewer.client.Utils;
 
 /**
@@ -54,15 +56,15 @@ public class PathologyScreen extends MinimalScreen {
   private Set<Pathology> pathologies = new HashSet<Pathology>();
 
   private SampleClass lastClass;
-  private List<Group> lastColumns;
+  private List<ClientGroup> lastColumns;
 
   protected SampleClass chosenSampleClass;
-  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected Groups groups;
 
   @Override
   public void loadState(AttributeSet attributes) {
     chosenSampleClass = getStorage().sampleClassStorage.getIgnoringException();
-    chosenColumns = getStorage().getChosenColumns();
+    groups.storage().loadFromStorage();
   }
 
   public interface Resources extends CellTable.Resources {
@@ -73,7 +75,7 @@ public class PathologyScreen extends MinimalScreen {
 
   @Override
   public boolean enabled() {
-    List<Group> chosenColumns = getStorage().getChosenColumns();
+    List<ClientGroup> chosenColumns = groups.activeGroups();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
 
@@ -81,6 +83,7 @@ public class PathologyScreen extends MinimalScreen {
 
   public PathologyScreen(ScreenManager man) {
     super("Pathologies", key, man);
+    groups = new Groups(getStorage().groupsStorage);
     Resources resources = GWT.create(Resources.class);
     pathologyTable = new CellTable<Pathology>(15, resources);
     sampleService = man.sampleService();
@@ -125,7 +128,7 @@ public class PathologyScreen extends MinimalScreen {
     TextColumn<Pathology> col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
-        Stream<Group> gs = GroupUtils.groupsFor(chosenColumns, p.barcode());        
+        Stream<ClientGroup> gs = GroupUtils.groupsFor(groups.activeGroups(), p.barcode());        
         String r = gs.map(g -> g.getName()).collect(Collectors.joining(" "));
         if (r.length() == 0) {
           return "None";
@@ -140,7 +143,7 @@ public class PathologyScreen extends MinimalScreen {
     col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
-        Sample b = GroupUtils.sampleFor(chosenColumns, p.barcode());
+        Sample b = GroupUtils.sampleFor(groups.activeGroups(), p.barcode());
         return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) +
             " [" + p.barcode() + "]";
       }
@@ -202,12 +205,12 @@ public class PathologyScreen extends MinimalScreen {
   @Override
   public void show() {
     super.show();
-    displayStatusPanel(chosenColumns);
+    displayStatusPanel(groups.activeGroups());
     if (visible
-        && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null || !chosenColumns
+        && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null || !groups.activeGroups()
             .equals(lastColumns))) {
       pathologies.clear();
-      for (SampleColumn c : chosenColumns) {
+      for (SampleColumn c : groups.activeGroups()) {
         sampleService.pathologies(c, new AsyncCallback<Pathology[]>() {
           @Override
           public void onFailure(Throwable caught) {
@@ -222,7 +225,7 @@ public class PathologyScreen extends MinimalScreen {
         });
       }
       lastClass = chosenSampleClass;
-      lastColumns = chosenColumns;
+      lastColumns = groups.activeGroups();
     }
   }
 
@@ -235,7 +238,7 @@ public class PathologyScreen extends MinimalScreen {
     @Override
     public void onClick(String value) {
       ScreenUtils.displaySampleDetail(PathologyScreen.this,
-        GroupUtils.sampleFor(chosenColumns, value));
+        GroupUtils.sampleFor(groups.activeGroups(), value));
     }
   }
 

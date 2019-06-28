@@ -32,8 +32,8 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 
 public abstract class MinimalScreen implements OTGScreen {
@@ -63,7 +63,7 @@ public abstract class MinimalScreen implements OTGScreen {
 
   // Converted from updateStatusPanel. Rather than setting a showGroups flag, it's now 
   // each screen's responsibility to call this if/when appropriate.
-  protected void displayStatusPanel(List<Group> groups) {
+  protected void displayStatusPanel(List<ClientGroup> groups) {
     // statusPanel.setWidth(Window.getClientHeight() + "px");
     statusPanel.clear();
     spOuter.setHeight("30px");

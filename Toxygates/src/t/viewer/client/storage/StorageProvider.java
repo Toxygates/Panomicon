@@ -20,7 +20,6 @@ package t.viewer.client.storage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,10 +55,14 @@ public class StorageProvider implements Storage.StorageProvider {
   public final GroupPacker groupPacker;
   public final ListPacker<Group> columnsPacker;
   public final Storage<SampleClass> sampleClassStorage;
-  public final Storage<List<Group>> chosenColumnsStorage;
-  public final Storage<List<Group>> inactiveColumnsStorage;
   public final Storage<Group> customColumnStorage;
   public final Storage<List<Dataset>> datasetsStorage;
+  
+  // These two are private because they are obsolete; should only be accessed
+  // when groupsStorage fails
+  private final Storage<List<Group>> chosenColumnsStorage;
+  private final Storage<List<Group>> inactiveColumnsStorage;
+  
   
   public final ListPacker<String> stringListPacker = 
       new ListPacker<String>(new IdentityPacker(), "###");
@@ -188,15 +191,5 @@ public class StorageProvider implements Storage.StorageProvider {
       }
     }
     return true;
-  }
-  
-  public List<Group> getChosenColumns() {
-    return chosenColumnsStorage.getWithExceptionHandler(e -> 
-        logger.log(Level.WARNING, "Exception while retrieving columns", e));
-  }
-
-  public List<Group> getInactiveColumns() {
-    return inactiveColumnsStorage.getWithExceptionHandler(e -> 
-        logger.log(Level.WARNING, "Exception while retrieving columns", e));
   }
 }

@@ -30,6 +30,7 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.shared.Synthetic;
 
@@ -125,7 +126,7 @@ class AnalysisTools extends Composite {
   /**
    * Re-initialise this UI when the available columns changed.
    */
-  void columnsChanged(List<Group> columns) {
+  void columnsChanged(List<ClientGroup> columns) {
     groupsel1.clear();
     groupsel2.clear();
     for (DataColumn<?> dc : columns) {

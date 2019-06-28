@@ -33,6 +33,7 @@ import t.clustering.shared.ClusteringList;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
 import t.viewer.client.components.DataView;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.StringList;
@@ -45,7 +46,7 @@ public class HeatmapViewer extends Composite {
   private ImportingScreen screen;
   private Logger logger;
 
-  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected List<ClientGroup> chosenColumns = new ArrayList<ClientGroup>();
   protected String[] chosenProbes = new String[0];
 
   public HeatmapViewer(ImportingScreen screen) {
@@ -157,7 +158,7 @@ public class HeatmapViewer extends Composite {
 
     @Override
     protected List<Group> columnsForClustering() {
-      return chosenColumns;
+      return ClientGroup.convertToGroups(chosenColumns);
     }
   }
 
