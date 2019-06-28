@@ -33,6 +33,8 @@ import t.common.shared.Dataset;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.*;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.TickMenuItem;
@@ -48,7 +50,7 @@ public class SampleSearchScreen extends FilterScreen
   private SampleServiceAsync sampleService;
 
   protected List<Dataset> chosenDatasets;
-  protected List<Group> chosenColumns = new ArrayList<Group>();
+  protected Groups groups;
 
   private Widget tools;
   private ConditionEditor conditionEditor;
@@ -80,7 +82,7 @@ public class SampleSearchScreen extends FilterScreen
       });
       chosenDatasets = newChosenDatasets;
     }
-    chosenColumns = getStorage().getChosenColumns();
+    groups.storage().loadFromStorage();
   }
 
   private void getParameterInfo() {
@@ -97,6 +99,8 @@ public class SampleSearchScreen extends FilterScreen
   public SampleSearchScreen(ScreenManager man) {
     super("Sample search", key, man, man.resources().sampleSearchHTML(),
         man.resources().sampleSearchHelp());
+    
+    groups = new Groups(getStorage().groupsStorage);
     filterTools = new FilterTools(this);
 
     sampleService = man.sampleService();
@@ -136,11 +140,11 @@ public class SampleSearchScreen extends FilterScreen
           if (currentSearch.helper().selectionTable().getSelection().size() > 0) {
             Unit[] allUnits = currentSearch.sampleGroupFromSelected();
 
-            String name = findAvailableGroupName("Sample search group ");
-            Group pendingGroup = new Group(schema(), name, allUnits);
+            String name = groups.storage().suggestName("Sample search group");
+            ClientGroup pendingGroup = new ClientGroup(schema(), name, allUnits, true);
 
-            chosenColumns.add(pendingGroup);
-          getStorage().chosenColumnsStorage.store(chosenColumns);
+            groups.put(pendingGroup);
+            groups.storage().saveToStorage();
 
             currentSearch.helper().selectionTable().clearSelection();
 
@@ -157,28 +161,6 @@ public class SampleSearchScreen extends FilterScreen
 
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,
         searchButton, radioButtonPanel, resultCountLabel, saveGroupButton));
-  }
-
-  private String findAvailableGroupName(String prefix) throws Exception {
-    List<Group> inactiveGroups =
-        getStorage().getInactiveColumns();
-
-    Set<String> groupNames = new HashSet<String>();
-    for (Group group : chosenColumns) {
-      groupNames.add(group.getName());
-    }
-    if (inactiveGroups != null) {
-      for (Group group : inactiveGroups) {
-        groupNames.add(group.getName());
-      }
-    }
-
-    int n = 1;
-    while (groupNames.contains(prefix + n)) {
-      n++;
-    }
-
-    return prefix + n;
   }
 
   @Override

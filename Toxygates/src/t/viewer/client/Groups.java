@@ -33,14 +33,6 @@ public class Groups {
   public void put(ClientGroup value) {
     storage.put(value.getName(), value);
   }
-//
-//  public boolean containsKey(String key) {
-//    return storage.containsKey(key);
-//  }
-//
-//  public void remove(String key) {
-//    storage.remove(key);
-//  }
 
   public void deactivate(Group group) {
     storage.get(group.getName()).active = false;
@@ -80,13 +72,7 @@ public class Groups {
     } else {
       groupDescription = "Empty group";
     }
-    int i = 1;
-    String name = groupDescription;
-    while (storage.containsKey(name)) {
-      name = groupDescription + " " + i;
-      i++;
-    }
-    return name;
+    return storage.suggestName(groupDescription);
   }
 
   private String firstChars(String s) {

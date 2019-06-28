@@ -64,4 +64,14 @@ public class NamedObjectStorage<T> {
   public boolean containsKey(String key) {
     return objectsByName.containsKey(key);
   }
+  
+  public String suggestName(String prefix) {
+    String name = prefix;
+    int i = 1;
+    while (containsKey(name)) {
+      name = prefix + " " + i;
+      i++;
+    }
+    return name;
+  }
 }
