@@ -115,7 +115,7 @@ abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: Seq[T]](val da
 }
 
 /**
- * A Vector-backed data matrix that also has allocated rows and columns.
+ * A vector (here, some seq type) backed data matrix that also has keyed rows and columns.
  *
  * Type parameters: Self is the matrix selftype,
  * T: element,
@@ -123,21 +123,22 @@ abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: Seq[T]](val da
  * Row: row keys,
  * Column: column keys
  */
-abstract class AllocatedDataMatrix[Self <: AllocatedDataMatrix[Self, T, V, Row, Column], T, V <: Seq[T], Row, Column](data: Seq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
+abstract class KeyedDataMatrix[Self <: KeyedDataMatrix[Self, T, V, Row, Column], T, V <: Seq[T], Row, Column]
+(data: Seq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
   extends DataMatrix[Self, T, V](data, rows, columns)
-  with RowColAllocation[T, V, Row, Column] {
+  with RowColKeys[T, V, Row, Column] {
 
   def copyWith(rows: Seq[V]): Self = copyWith(rows, rowMap, columnMap)
   def copyWith(rows: Seq[V], rowMap: Map[Row, Int], columnMap: Map[Column, Int]): Self
 
-  def copyWithRowAlloc(alloc: Map[Row, Int]): Self = copyWith(data, alloc, columnMap)
-  def copyWithColAlloc(alloc: Map[Column, Int]): Self = copyWith(data, rowMap, alloc)
+  def copyWithRowKeys(keys: Map[Row, Int]): Self = copyWith(data, keys, columnMap)
+  def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(data, rowMap, keys)
 
   override def adjoinRight(other: Self): Self = {
     val r = super.adjoinRight(other)
     other match {
-      case ra: RowColAllocation[T, V, Row, Column] => {
-        r.copyWithColAlloc(rightAdjoinedColAlloc(ra))
+      case ra: RowColKeys[T, V, Row, Column] => {
+        r.copyWithColKeys(rightAdjoinedColKeys(ra))
       }
       case _ => r //what's the right behaviour?
     }
@@ -145,26 +146,28 @@ abstract class AllocatedDataMatrix[Self <: AllocatedDataMatrix[Self, T, V, Row, 
 
   override def verticalSplit(at: Int): (Self, Self) = {
     val (r1, r2) = super.verticalSplit(at)
-    val (ca1, ca2) = splitColumnAlloc(at)
+    val (ca1, ca2) = splitColumnKeys(at)
 
-    val rr1 = r1.copyWithColAlloc(ca1)
-    val rr2 = r2.copyWithColAlloc(ca2)
+    val rr1 = r1.copyWithColKeys(ca1)
+    val rr2 = r2.copyWithColKeys(ca2)
     (rr1, rr2)
   }
 
   override def selectRows(rows: Seq[Int]): Self =
-    super.selectRows(rows).copyWithRowAlloc(selectedRowAlloc(rows))
+    super.selectRows(rows).copyWithRowKeys(selectedRowKeys(rows))
 
   /**
-   * NB this allows for permutation as well as selection
+   * NB this allows for permutation as well as selection. Columns are returned
+   * in the order requested.
    */
   def selectNamedRows(rows: Seq[Row]): Self = selectRows(rows.flatMap(rowMap.get(_)))
 
   override def selectColumns(columns: Seq[Int]): Self =
-    super.selectColumns(columns).copyWithColAlloc(selectedColumnAlloc(columns))
+    super.selectColumns(columns).copyWithColKeys(selectedColumnKeys(columns))
 
   /**
-   * NB this allows for permutation as well as selection
+   * NB this allows for permutation as well as selection. Columns are returned
+   * in the order requested.
    */
   def selectNamedColumns(columns: Seq[Column]): Self = selectColumns(columns.flatMap(columnMap.get(_)))
 
@@ -173,7 +176,7 @@ abstract class AllocatedDataMatrix[Self <: AllocatedDataMatrix[Self, T, V, Row, 
    */
   def appendColumn(col: V, key: Column): Self = {
     val r = appendColumn(col)
-    r.copyWithColAlloc(columnMap + (key -> columns))
+    r.copyWithColKeys(columnMap + (key -> columns))
   }
 
   override def filterRows(f: V => Boolean): Self = {

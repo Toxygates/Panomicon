@@ -21,6 +21,8 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
@@ -35,7 +37,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.*;
 import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
-import otg.viewer.client.charts.*;
+import otg.viewer.client.charts.ChartParameters;
+import otg.viewer.client.charts.MatrixCharts;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -291,12 +294,14 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   /**
-   * Refetch rows as they are currently represented on the server side. 
+   * Refetch the first page of rows as they are currently represented on the server side.
+   * @param forcePageSize The number of rows to fetch, or null to use
+   * the pager's default page size. 
    */
-  public void refetchRows() {
-    int ps = navigationTools.pageSize();
-    int total = grid.getRowCount();
-    int count = (total < ps ? total : ps);
+  public void refetchRows(@Nullable Integer forcePageSize) {
+    int ps = navigationTools.pageSize();   ;
+    int count = (forcePageSize == null) ? ps : forcePageSize;
+    
     grid.setVisibleRangeAndClearData(new Range(0, count), true);    
   }
 

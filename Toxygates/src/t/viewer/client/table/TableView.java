@@ -213,7 +213,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
 
         @Override
         public void onSuccess(ManagedMatrixInfo result) {
-            expressionTable.matrix().setInitialMatrix(result);
+            expressionTable.matrix().setInitialMatrix(chosenProbes, result);
         }
       });
   }

@@ -153,7 +153,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
   }
 }
 
-trait TreatedControlBuilder[E >: Null <: ExprValue] {
+trait TreatedControlBuilder[E <: ExprValue] {
   this: ManagedMatrixBuilder[E] =>
 
   type RowData = ManagedMatrix.RowData

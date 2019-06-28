@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import static t.common.shared.GWTTypes.*;
 
 /**
  * Information about a ManagedMatrix that the server maintains on behalf of the client. The main
@@ -36,15 +37,15 @@ public class ManagedMatrixInfo implements Serializable, ColumnSet {
   private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 
   // Per-column information
-  private List<String> shortColumnNames = new ArrayList<String>();
-  private List<String> columnNames = new ArrayList<String>();
-  private List<String> columnHints = new ArrayList<String>();
-  private List<Group> columnGroups = new ArrayList<Group>();
-  private List<ColumnFilter> columnFilters = new ArrayList<ColumnFilter>();
-  private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
-  private List<Sample[]> samples = new ArrayList<Sample[]>();
+  private List<String> shortColumnNames = mkList();
+  private List<String> columnNames = mkList();
+  private List<String> columnHints = mkList();
+  private List<Group> columnGroups = mkList();
+  private List<ColumnFilter> columnFilters = mkList();
+  private List<Boolean> isPValueColumn = mkList();
+  private List<Sample[]> samples = mkList();
 
-  private List<String> platforms = new ArrayList<String>();
+  private List<String> platforms = mkList();
 
   // The currently visible probes
   private String[] atomicProbes = new String[0];
@@ -92,18 +93,18 @@ public class ManagedMatrixInfo implements Serializable, ColumnSet {
       Group baseGroup, boolean isPValue, Sample[] samples) {
     addColumn(synthetic, name, name, hint, defaultFilter, baseGroup, isPValue, samples);
   }
-
+  
   public void removeSynthetics() {
     numSynthetics = 0;
     int n = numDataColumns;
-    //The standard implementation of subList can't be serialised by GWT
-    shortColumnNames = new ArrayList<String>(shortColumnNames.subList(0, n));
-    columnNames = new ArrayList<String>(columnNames.subList(0, n));
-    columnHints = new ArrayList<String>(columnHints.subList(0, n));
-    columnGroups = new ArrayList<Group>(columnGroups.subList(0, n));
-    columnFilters = new ArrayList<ColumnFilter>(columnFilters.subList(0, n));
-    isPValueColumn = new ArrayList<Boolean>(isPValueColumn.subList(0, n));
-    samples = new ArrayList<Sample[]>(samples.subList(0, n));
+    // subList returns a type that can't be serialised by GWT
+    shortColumnNames = mkList(shortColumnNames.subList(0, n));
+    columnNames = mkList(columnNames.subList(0, n));
+    columnHints = mkList(columnHints.subList(0, n));
+    columnGroups = mkList(columnGroups.subList(0, n));
+    columnFilters = mkList(columnFilters.subList(0, n));
+    isPValueColumn = mkList(isPValueColumn.subList(0, n));
+    samples = mkList(samples.subList(0, n));
   }
 
   /**

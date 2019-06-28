@@ -137,8 +137,8 @@ public class ETMatrixManager {
    * To be called when a new matrix is set (as opposed to partial refinement or
    * modification of a previously loaded matrix).
    */
-  void setInitialMatrix(ManagedMatrixInfo matrix) {
-    if (matrix.numRows() > 0) {
+  void setInitialMatrix(String[] requestedProbes, ManagedMatrixInfo matrix) {
+    if (requestedProbes.length == 0 || matrix.numRows() > 0) {
       matrixInfo = matrix;
       
       if (lastColumnGroups == null ||
@@ -170,7 +170,7 @@ public class ETMatrixManager {
        */
       @Override
       public void handleSuccess(ManagedMatrixInfo result) {
-        setInitialMatrix(result);
+        setInitialMatrix(new String[] {}, result);
       }
     });
   }
@@ -260,7 +260,7 @@ public class ETMatrixManager {
   /**
    * Filter data that has already been loaded
    */
-  public void refilterData(String[] chosenProbes) {
+  public void refilterData(final String[] chosenProbes) {
     asyncProvider.updateRowCount(0, false);
     delegate.setEnabled(false);
     logInfo("Refilter for " + chosenProbes.length + " probes");
@@ -273,7 +273,7 @@ public class ETMatrixManager {
 
       @Override
       public void onSuccess(ManagedMatrixInfo result) {
-        if (result.numRows() > 0) {
+        if (chosenProbes.length == 0 || result.numRows() > 0) {
           matrixInfo = result;
           setRows(matrixInfo.numRows());
         } else {

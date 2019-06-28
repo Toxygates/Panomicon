@@ -23,12 +23,14 @@ package t.viewer.server.matrix
 import t.db.ExprValue
 import t.viewer.shared.ManagedMatrixInfo
 
-
 /**
  * A matrix mapper converts a whole matrix from one domain into
- * a matrix in another domain.
- * Example: Convert a transcript matrix into a gene matrix.
- * Example: Convert a gene matrix into a protein matrix.
+ * a matrix in another domain. For example, we might want to convert a
+ * transcript matrix into a gene matrix, or a gene matrix into a protein
+ * matrix.
+ *
+ * The only actual use for this presently is converting non-orthogonal matrices
+ * into orthogonal (multi-platform) ones.
  *
  * This process changes the number and index keys of the rows, but
  * preserves columns.

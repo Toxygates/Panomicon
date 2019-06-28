@@ -233,7 +233,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * to a list of probes.
    */
   def identifiersToProbes(map: ProbeMap, idents: Array[String], precise: Boolean,
-    quick: Boolean = false, tritigate: Boolean = false): Iterable[Probe] = {
+    quick: Boolean = false): Iterable[Probe] = {
 
     val resolver = new GradualProbeResolver(idents)
     //some may be probes already

@@ -20,26 +20,25 @@
 
 package t.viewer.server
 
-import t.sparql.Probes
-import t.viewer.shared.clustering.ProbeClustering
-import t.viewer.shared.StringList
-import t.viewer.shared.AppInfo
-import otg.viewer.server.rpc.Conversions._
-import scala.collection.JavaConverters._
-import t.common.shared.Platform
 import t.BaseConfig
+import t.common.shared.Platform
 import t.sparql._
-import t.util.PeriodicRefresh
-import t.util.Refreshable
-import t.viewer.shared.mirna.MirnaSource
+import t.sparql.Probes
 import t.viewer.server.Conversions._
-import java.util.ArrayList
-import java.util.Collections
+import scala.collection.JavaConverters._
+import t.viewer.shared.AppInfo
+import t.viewer.shared.StringList
+import t.viewer.shared.clustering.ProbeClustering
+import t.viewer.shared.mirna.MirnaSource
+import t.common.shared.GWTTypes
 
 class AppInfoLoader(probeStore: Probes,
     configuration: Configuration,
     baseConfig: BaseConfig,
     appName: String) {
+
+  import t.common.server.GWTUtils._
+  import GWTTypes._
 
   /**
    * Called when AppInfo needs a full refresh.
@@ -47,7 +46,7 @@ class AppInfoLoader(probeStore: Probes,
   def load(): AppInfo = {
     val probeLists = predefProbeLists()
 
-    new AppInfo(configuration.instanceName, new ArrayList(),
+    new AppInfo(configuration.instanceName, mkList(),
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
       probeClusterings(probeLists.asScala), appName,
@@ -61,13 +60,13 @@ class AppInfoLoader(probeStore: Probes,
       mapInnerValues(p => p.identifier)
     val sls = ls.map(x => new StringList(
       StringList.PROBES_LIST_TYPE, x._1, x._2.toArray)).toList
-    new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
+    sls.sortBy(_.name).asGWT
   }
 
   def probeClusterings(probeLists: Iterable[StringList]) = {
     val cls = probeLists.flatMap(x => Option(ProbeClustering.buildFrom(x)))
 
-    new java.util.LinkedList(seqAsJavaList(cls.toSeq))
+    cls.toSeq.asGWT
   }
 
   /**

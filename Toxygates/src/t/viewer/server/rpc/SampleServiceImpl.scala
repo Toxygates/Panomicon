@@ -169,17 +169,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     scs.flatMap(units(_, param, paramValues))
   }
 
-//  //TODO this is not used currently
-//  @throws[TimeoutException]
-//  def probes(columns: Array[SampleColumn]): Array[String] = {
-//    val samples = columns.flatMap(_.getSamples)
-//    val metadata = new TriplestoreMetadata(sampleStore, context.config.attributes)
-//    val usePlatforms = samples.flatMap(s => metadata.parameter(
-//        t.db.Sample(s.id), "platform_id")
-//        ).distinct
-//    usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
-//  }
-
   @throws[TimeoutException]
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)

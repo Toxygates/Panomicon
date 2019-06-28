@@ -10,6 +10,8 @@ import t.viewer.shared.network.Network
 import t.viewer.server.Platforms
 import scala.collection.JavaConverters._
 import t.common.shared.sample.ExpressionRow
+import t.common.shared.GWTTypes
+import t.common.server.GWTUtils
 
 /**
  * Extended version of ManagedMatrix to preserve
@@ -68,12 +70,12 @@ class ManagedNetwork(mainParams: LoadParams,
 
   def countMap = filteredCountMap(rawGrouped)
 
-  import java.util.{HashMap => JHMap}
   import java.lang.{Double => JDouble}
 
-  // THe use of JHMap ensures that this map is ready for GWT serialisation.
-  private[this] var currentCountMap: JHMap[ProbeId, JDouble] =
-    new JHMap[ProbeId, JDouble]
+  import GWTTypes._
+  import GWTUtils._
+
+  private[this] var currentCountMap = mkMap[ProbeId, JDouble]
 
   /**
    * A mutable count map that will be updated as the current gene set changes,
@@ -81,7 +83,7 @@ class ManagedNetwork(mainParams: LoadParams,
    * miRNA occurs in a mRNA table, or vice versa)
    * This map is GWT-serialisable.
    */
-  def currentViewCountMap: JHMap[ProbeId, JDouble] = currentCountMap
+  def currentViewCountMap: GWTMap[ProbeId, JDouble] = currentCountMap
 
   def buildCountMap(mat: ExprMatrix): Map[String, JDouble] = {
     val lookup = mat.rowKeys.toSeq
