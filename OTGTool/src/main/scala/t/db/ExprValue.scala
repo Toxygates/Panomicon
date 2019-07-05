@@ -111,11 +111,24 @@ case class BasicExprValue(value: Double, call: PACall = 'P', probe: ProbeId = nu
  * experimental conditions).
  */
 case class PExprValue(value: Double, p: PValue, call: PACall = 'P', probe: ProbeId = null) extends ExprValue {
+  import java.lang.{Double => JDouble}
   override def toString(): String = {
-    if (!java.lang.Double.isNaN(p)) {
+    if (!JDouble.isNaN(p)) {
       s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
     } else {
       super.toString()
+    }
+  }
+
+  override def equals(other: Any): Boolean = {
+    other match {
+      case PExprValue(ov, op, oc, opr) =>
+        if (JDouble.isNaN(p) && JDouble.isNaN(op)) {
+          value == ov && call == oc && probe == opr
+        } else {
+          value == ov && call == oc && probe == opr && p == op
+        }
+      case _ => super.equals(other)
     }
   }
 }
