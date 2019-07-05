@@ -33,7 +33,7 @@ object TestConfiguration {
   val data = tc.dataConfig
 
   lazy val config = new Configuration(ts.repository,
-      KCChunkMatrixDB.CHUNK_PREFIX + ":" + data.dir, null, null,
+      KCChunkMatrixDB.CHUNK_PREFIX + data.dir, null, null,
       ts.url, ts.updateUrl,
       ts.user, ts.pass,
       null, null,
