@@ -39,9 +39,8 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.InputDialog;
+import t.viewer.client.dialog.SaveObjectDialog;
 import t.viewer.client.future.Future;
-import t.viewer.client.storage.StorageProvider;
 
 /**
  * This widget provides a visual interface where the user can interactively
@@ -356,38 +355,16 @@ abstract public class GroupInspector extends Composite implements RequiresResize
         groups.suggestName(selectionGrid.getSelectedUnits(true), schema) :
         currentlyEditingGroup.getName();
     
-    InputDialog entry = new InputDialog("Please enter a name for the group.",
-        initialText) {
-      @Override
-      protected void onChange(String value) {
-        if (value != "") { // Empty string means OK button with blank text input
-          if (value != null) { // value == null means cancel button
-            if (value.trim().equals("")) {
-              Window.alert("Please enter a group name.");
-              return;
-            }
-            if (!StorageProvider.isAcceptableString(value, "Unacceptable group name.")) {
-              Window.alert("Please enter a valid group name.");
-              return;
-            }
-            Group newGroup = setGroup(value, units);
-            clearUiForNewGroup();
-            loadTimeWarningIfNeeded(newGroup);  
-          }
-          groupNameInputDialog.hide();
-        }
-      }
-      
-      @Override
-      protected void onTextBoxValueChange(String newValue) {
-        if (groups.storage().containsKey(newValue)) {
-          submitButton.setText("Overwrite");
-        } else {
-          submitButton.setText("Save new");
-        }
-      }
-    };
-    groupNameInputDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
+    SaveObjectDialog dialog = new SaveObjectDialog("Please enter a name for the group.",
+        initialText, groups.storage(), 
+        name -> { 
+          Group newGroup = setGroup(name, units);
+          clearUiForNewGroup();
+          loadTimeWarningIfNeeded(newGroup);  
+        },
+        () -> { groupNameInputDialog.hide(); });
+        
+    groupNameInputDialog = Utils.displayInPopup("Name entry", dialog, DialogPosition.Center);
   }
 
   /**
