@@ -120,7 +120,7 @@ public class NumericalBioParamValue extends BioParamValue {
       if (value != null) {
         return formatNumber(value);
       } else {
-        return "N/A";
+        return null;
       }
     } else {
       return "(Undefined)";
