@@ -49,11 +49,10 @@ class ManagedNetworkTest extends TTestSuite {
     val expMainNodes = main.current.asRows take Network.MAX_NODES
     assert(expMainNodes.map(_.getProbe).toSet.subsetOf(mrnaIds.toSet))
 
-    val expSideNodes = side.current.asRows take Network.MAX_NODES
+    val expSideNodes = side.current.asRows
     assert(expSideNodes.map(_.getProbe).toSet.subsetOf(mirnaIds.toSet))
 
     val ids = (expMainNodes.toSeq ++ expSideNodes).map(_.getProbe)
-
     network.nodes.asScala.map(_.id).toSet should equal(ids.toSet)
   }
 
