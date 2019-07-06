@@ -20,7 +20,6 @@
 
 package t.viewer.server.matrix
 
-import t.common.shared.sample.EVABuilder
 import t.db.ExprValue
 import org.junit.runner.RunWith
 import t.TTestSuite
@@ -226,8 +225,6 @@ class ExprMatrixTest extends TTestSuite {
   }
 
   test("appendColumn") {
-    implicit def builder = EVABuilder
-
     val em = testMatrix
     val evals = (1 to 5).map(ExprValue(_))
 

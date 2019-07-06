@@ -6,5 +6,12 @@ The latest public version is available at http://toxygates.nibiohn.go.jp .
 
 The main technologies used in this project are Java, Scala and GWT (Google Web Toolkit).
 
-Build instructions will be published here in the near future.
+The contents of this directory are:
 
+OTGTool/ 
+Back-end and command line tools
+
+Toxygates/
+GWT-based web frontend
+
+Instructions for building a new database from scratch will be published here in the near future.

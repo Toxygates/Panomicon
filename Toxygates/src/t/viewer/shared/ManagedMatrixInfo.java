@@ -32,7 +32,7 @@ import static t.common.shared.GWTTypes.*;
  * purpose is to track information about columns in a matrix.
  */
 @SuppressWarnings("serial")
-public class ManagedMatrixInfo implements Serializable, ColumnSet {
+public class ManagedMatrixInfo implements Serializable {
 
   private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 
@@ -155,7 +155,6 @@ public class ManagedMatrixInfo implements Serializable, ColumnSet {
    * @param column Column index. Must be 0 <= i < numColumns.
    * @return The name of the column.
    */
-  @Override
   public String columnName(int column) {
     return columnNames.get(column);
   }
