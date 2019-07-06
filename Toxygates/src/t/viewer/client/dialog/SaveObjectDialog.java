@@ -24,6 +24,7 @@ public class SaveObjectDialog extends InputDialog {
     this.storage = storage;
     this.saveAction = saveAction;
     this.closeAction = closeAction;
+    onTextBoxValueChange(initialText);
   }
   
   @Override
