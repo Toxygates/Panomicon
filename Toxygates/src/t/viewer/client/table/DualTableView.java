@@ -10,13 +10,12 @@ import otg.viewer.client.screen.data.DataScreen;
 import otg.viewer.client.screen.data.NetworkMenu;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.Analytics;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.Association;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.mirna.MirnaSource;
@@ -33,9 +32,11 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected final static String sideMatrix = NetworkService.tablePrefix + "SIDE";
   
   final static int MAX_SECONDARY_ROWS = Network.MAX_NODES;
-  private List<PackedNetwork> _networks; // Don't access directly; see explanation below
 
   protected NetworkServiceAsync networkService;
+  
+  // do not access directly: see explanation below
+  private NamedObjectStorage<PackedNetwork> _networkStorage;
   
   private NetworkVisualizationDialog netvizDialog;
 
@@ -104,6 +105,20 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     sideExpressionTable.selectionModel().addSelectionChangeHandler(e -> {   
       network.onDestSelectionChanged();   
     });
+  }
+  
+  /*
+   * The networks need to be available in a superclass constructor, so this 
+   * needs to be initialized when it first gets used, which is earlier than 
+   * DualTableView's constructor code is executed.  
+   */
+  public NamedObjectStorage<PackedNetwork> networkStorage() {
+    if (_networkStorage == null) {
+      _networkStorage = new NamedObjectStorage<>(screen.getStorage().packedNetworksStorage,
+          packedNetwork -> packedNetwork.title(),
+          (packedNetwork, newName) -> packedNetwork.changeTitle(newName));
+    }
+    return _networkStorage;
   }
   
   @Override
@@ -309,7 +324,9 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         "Unable to load network view") {
       @Override
       public void handleSuccess(Network result) {
-        netvizDialog = new NetworkVisualizationDialog(DualTableView.this, logger);
+        result.changeTitle(networkStorage().suggestName(result.title()));
+        netvizDialog = new NetworkVisualizationDialog(DualTableView.this, 
+            networkStorage(), logger);
         netvizDialog.initWindow(result);
       }      
     });
@@ -331,31 +348,22 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     });
   }
 
-  /*
-   * The networks need to be available in a superclass constructor, so this 
-   * needs to be initialized when it first gets used, which is earlier than 
-   * DualTableView's constructor code is executed.  
-   */
   @Override
   public List<PackedNetwork> networks() {
-    if (_networks == null) {
-      _networks = screen.getStorage().packedNetworksStorage.getIgnoringException();
-    }
-    return _networks;
+    return networkStorage().allObjects();
   }
 
   @Override
   public void deleteNetwork(PackedNetwork network) {
-    if (!networks().remove(network)) {
-
-    }
-    screen.getStorage().packedNetworksStorage.store(networks());
+    networkStorage().remove(network.title());
+    networkStorage().saveToStorage();
     networkMenu.networksChanged();
   }
 
   @Override
   public void visualizeNetwork(PackedNetwork network) {
-    netvizDialog = new NetworkVisualizationDialog(DualTableView.this, logger);
+    netvizDialog = new NetworkVisualizationDialog(DualTableView.this, 
+        networkStorage(), logger);
     netvizDialog.initWindow(network.unpack());
   }
   
@@ -368,8 +376,8 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   // NetworkVisualizationDialog.Delegate methods
   @Override
   public void saveNetwork(PackedNetwork network) {
-    networks().add(network);
-    screen.getStorage().packedNetworksStorage.store(networks());
+    networkStorage().put(network);
+    networkStorage().saveToStorage();
     networkMenu.networksChanged();
   }
 

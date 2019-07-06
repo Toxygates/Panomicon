@@ -1,9 +1,6 @@
 package t.viewer.client.storage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages the storage of objects that can be saved and loaded by name. 
@@ -13,9 +10,14 @@ public class NamedObjectStorage<T> {
   private Map<String, T> objectsByName;
   private Storage<List<T>> localStorage;
   private NameExtractor<T> nameExtractor;
+  private NameChanger<T> nameChanger;
   
   public interface NameExtractor<T> {
     String getName(T object);
+  }
+  
+  public interface NameChanger<T> {
+    void changeName(T object, String newName);
   }
   
   public NamedObjectStorage (Storage<List<T>> localStorage, NameExtractor<T> nameExtractor) {
@@ -26,11 +28,53 @@ public class NamedObjectStorage<T> {
     loadFromStorage();
   }
   
+  public NamedObjectStorage (Storage<List<T>> localStorage, NameExtractor<T> nameExtractor,
+      NameChanger<T> nameChanger) {
+    // We can't use our other constructor, because nameChanger needs to be assigned
+    // before the loadFromStorage call
+    this.localStorage = localStorage;
+    this.nameExtractor= nameExtractor;
+    this.nameChanger = nameChanger;
+    objectsByName = new HashMap<String, T>();
+    
+    loadFromStorage();
+  }
+  
+  /**
+   * Loads objects from storage. If a NameChanger is available and multiple
+   * objects with the same name are found, then suggestName is used to find 
+   * new names for the ones with duplicate names.
+   */
   public void loadFromStorage() {
+    clear();
     List<T> items = localStorage.getIgnoringException();
+    
+    /* We first insert all the uniquely named objects from the list, THEN insert 
+     * objects that need to be renamed. Otherwise, if we have networks named
+     * ["Network", "Network", "Network 1"], then the second network would be renamed
+     * to "Network 1" and the third network would be renamed to "Network 1 1", which
+     * is not desirable.
+     */
+    List<T> secondBatch = new ArrayList<T>();
+    
     for (T item : items) {
-      objectsByName.put(nameExtractor.getName(item), item);
+      String itemName = nameExtractor.getName(item);
+      if (objectsByName.containsKey(itemName)) {
+        if (nameChanger == null) {
+          throw new RuntimeException("Duplicate name " + itemName + " while " +
+              "loading from storage, with no NameChanger provided.");
+        } else {
+          secondBatch.add(item);
+        }
+      } else {
+        objectsByName.put(itemName, item);
+      }
     }
+    
+    secondBatch.forEach(item -> {
+      nameChanger.changeName(item, suggestName(nameExtractor.getName(item)));
+      objectsByName.put(nameExtractor.getName(item), item);
+    });
   }
   
   public void saveToStorage() {
@@ -39,6 +83,10 @@ public class NamedObjectStorage<T> {
   
   public T get(String name) {
     return objectsByName.get(name);
+  }
+  
+  public void put(T value) {
+    objectsByName.put(nameExtractor.getName(value), value);
   }
   
   public void put(String name, T value) {

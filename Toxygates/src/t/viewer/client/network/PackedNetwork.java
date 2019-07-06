@@ -22,7 +22,23 @@ public class PackedNetwork {
   public String title() { return title; }
   
   public String jsonString() { return jsonString; }
+  
+  /**
+   * Changes the title of the packed network. This method is necessary when
+   * migrating data from a storage scheme where duplicate names are allowed,
+   * to one they are not allowed.
+   * @param newTitle the new title for the network
+   */
+  public void changeTitle(String newTitle) {
+    title = newTitle;
+    unpack();
+    unpacked.changeTitle(newTitle);
+    jsonString = NetworkConversion.packNetwork(unpacked);
+  }
 
+  /**
+   * Unpacks the network into a Java Network
+   */
   public Network unpack() {
     unpackJS();
     if (unpacked == null) {
@@ -31,6 +47,9 @@ public class PackedNetwork {
     return unpacked;
   }
   
+  /**
+   * Unpacks the network into a JavaScript Network 
+   */
   public JavaScriptObject unpackJS() {
     if (unpackedJS == null) {
       unpackedJS = NetworkConversion.unpackToJavaScript(jsonString);

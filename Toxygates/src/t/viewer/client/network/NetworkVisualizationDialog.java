@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.*;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.network.Network;
 
 public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
@@ -35,7 +36,8 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   private HandlerRegistration resizeHandler;
   private Logger logger;
   private Delegate delegate;
-
+  private NamedObjectStorage<PackedNetwork> networkStorage;
+  
   private static Boolean injected = false;
 
   public interface Delegate {
@@ -48,8 +50,10 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
     List<PackedNetwork> networks();
   }
 
-  public NetworkVisualizationDialog(Delegate delegate, Logger logger) {
+  public NetworkVisualizationDialog(Delegate delegate, 
+      NamedObjectStorage<PackedNetwork> networkStorage, Logger logger) {
     this.logger = logger;
+    this.networkStorage = networkStorage;
     this.delegate = delegate;
     mainDialog = new DialogBox() {
       @Override
@@ -188,21 +192,14 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
    *          the text field
    */
   private void showNetworkNameDialog(String title) {
-    InputDialog entry = new InputDialog("Please enter a name for the network.", title) {
-      @Override
-      protected void onChange(String value) {
-        if (value != "") { // Empty string means OK button with blank text input
-          networkNameDialog.hide();
-          if (value != null) { // value == null means cancel button
-            saveCurrentNetwork(value);
-            mainDialog.hide();
-            resizeHandler.removeHandler();
-            delegate.onNetworkVisualizationDialogClose();
-          }
-        }
-      }
-    };
-    networkNameDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
+    SaveObjectDialog dialog = new SaveObjectDialog("Please enter a name for the network.", title, 
+        networkStorage, name -> {
+          saveCurrentNetwork(title);
+          mainDialog.hide();
+          resizeHandler.removeHandler();
+          delegate.onNetworkVisualizationDialogClose();
+        }, () ->  {networkNameDialog.hide();});
+    networkNameDialog = Utils.displayInPopup("Name entry", dialog, DialogPosition.Center);
   }
 
   /**

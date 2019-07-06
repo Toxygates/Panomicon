@@ -88,6 +88,10 @@ public class Network implements Serializable {
   public int trueSize() { return trueSize; }
   public boolean wasTruncated() { return wasTruncated; }
   
+  public void changeTitle(String newTitle) {
+    title = newTitle;
+  }
+  
   public String jsonString() {
     return jsonString;
   }
