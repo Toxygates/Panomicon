@@ -97,7 +97,7 @@ public class GeneSetEditor extends Composite {
 
   private Logger logger;
 
-  public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+  public List<ItemList> itemLists = new ArrayList<ItemList>();
 
   public GeneSetEditor(ImportingScreen screen) {
     super();
@@ -601,7 +601,7 @@ public class GeneSetEditor extends Composite {
   }
 
   public void createNew(String[] initProbes) {
-    chosenItemLists = screen.itemLists();
+    itemLists = screen.itemLists();
     setProbes(initProbes);
     setColumns(screen.chosenColumns());
 
@@ -613,7 +613,7 @@ public class GeneSetEditor extends Composite {
   }
 
   public void edit(StringList stringList) {
-    chosenItemLists = screen.itemLists();
+    itemLists = screen.itemLists();
     setProbes(stringList.items());
     setColumns(screen.chosenColumns());
 
@@ -627,7 +627,7 @@ public class GeneSetEditor extends Composite {
   private String getAvailableName() {
     String newTitle = NEW_TITLE_PREFIX;
     System.out.println("Existing names");
-    for (ItemList li : chosenItemLists) {
+    for (ItemList li : itemLists) {
       System.out.println(li.name());
     }
 
@@ -640,7 +640,7 @@ public class GeneSetEditor extends Composite {
   }
 
   private boolean exists(String name) {
-    for (ItemList li : chosenItemLists) {
+    for (ItemList li : itemLists) {
       if (!li.type().equals("probes")) {
         continue;
       }

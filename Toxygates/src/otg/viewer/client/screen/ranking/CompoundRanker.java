@@ -66,9 +66,9 @@ abstract public class CompoundRanker extends Composite {
 
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
-  protected List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+  protected List<ItemList> itemLists = new ArrayList<ItemList>();
   protected ItemList chosenGeneSet = null;
-  protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+  protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
   List<String> availableCompounds = chosenCompounds;
 
   public SampleClass sampleClass() {
@@ -284,13 +284,13 @@ abstract public class CompoundRanker extends Composite {
   }
 
   public void itemListsChanged(List<ItemList> lists) {
-    chosenItemLists = lists;
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
+    itemLists = lists;
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.itemLists, this.clusteringLists));
   }
 
   public void clusteringListsChanged(List<ItemList> lists) {
-    chosenClusteringList = lists;
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.chosenItemLists, this.chosenClusteringList));
+    clusteringLists = lists;
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.itemLists, this.clusteringLists));
   }
   
   

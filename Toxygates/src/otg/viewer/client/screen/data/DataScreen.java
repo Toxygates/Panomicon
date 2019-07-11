@@ -59,9 +59,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   protected Groups groups;
   
   protected String[] chosenProbes = new String[0];
-  public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+  public List<ItemList> itemLists = new ArrayList<ItemList>();
   public ItemList chosenGeneSet = null;
-  protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+  protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
 
   private String[] urlProbes = null;
 
@@ -70,9 +70,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     StorageProvider storage = getStorage();
     chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
     groups.storage().loadFromStorage();
-    chosenItemLists = storage.itemListsStorage.getIgnoringException();
-    chosenGeneSet = storage.genesetStorage.getIgnoringException();
-    chosenClusteringList = storage.clusteringListsStorage.getIgnoringException();
+    itemLists = storage.itemListsStorage.getIgnoringException();
+    chosenGeneSet = storage.chosenGenesetStorage.getIgnoringException();
+    clusteringLists = storage.clusteringListsStorage.getIgnoringException();
 
     if (tableView == null || tableView.type() != preferredViewType()) {
       rebuildGUI();
@@ -85,7 +85,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     tableView.columnsChanged(groups.activeGroups());
     tableView.probesChanged(chosenProbes);  
     geneSetToolbar.geneSetChanged(chosenGeneSet);
-    geneSetsMenu.itemListsChanged(chosenItemLists);
+    geneSetsMenu.itemListsChanged(itemLists);
   }
   
   public void sendMirnaSources() {
@@ -135,12 +135,12 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public List<ItemList> clusteringLists() {
-    return chosenClusteringList;
+    return clusteringLists;
   }
 
   @Override
   public List<ItemList> itemLists() {
-    return chosenItemLists;
+    return itemLists;
   }
 
   public ItemList geneSet() {
@@ -316,21 +316,21 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
    */
   public void geneSetChanged(ItemList geneSet) {
     chosenGeneSet = geneSet;
-    getStorage().genesetStorage.store(geneSet);
+    getStorage().chosenGenesetStorage.store(geneSet);
     geneSetToolbar.geneSetChanged(geneSet);
     Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
   }
 
   @Override
   public void itemListsChanged(List<ItemList> lists) {
-    chosenItemLists = lists;
+    itemLists = lists;
     getStorage().itemListsStorage.store(lists);
     geneSetsMenu.itemListsChanged(lists);
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
-    chosenClusteringList = lists;
+    clusteringLists = lists;
     getStorage().clusteringListsStorage.store(lists);
     geneSetsMenu.clusteringListsChanged(lists);
   }

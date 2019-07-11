@@ -57,7 +57,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   protected Logger logger;
 
   List<String> chosenCompounds = new ArrayList<String>();
-  public List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+  public List<ItemList> itemLists = new ArrayList<ItemList>();
   
   private List<String> allCompounds;
 
@@ -155,7 +155,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   @Override
   public void itemListsChanged(List<ItemList> lists) {
-    chosenItemLists = lists;
+    itemLists = lists;
     compoundEditor.setLists(lists);
   }
 

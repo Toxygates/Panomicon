@@ -99,7 +99,7 @@ public class StorageProvider implements Storage.StorageProvider {
       new Storage<List<ItemList>>("clusterings", itemListsPacker, this, 
           () -> new ArrayList<ItemList>());
 
-  public final Storage<ItemList> genesetStorage = 
+  public final Storage<ItemList> chosenGenesetStorage = 
       new Storage<ItemList>("geneset", genesetPacker, this);
   
   public final Storage<List<PackedNetwork>> packedNetworksStorage = 
