@@ -166,20 +166,20 @@ trait TreatedControlBuilder[E <: ExprValue] {
   protected def columnInfo(g: Group): ManagedMatrixInfo
   def colNames(g: Group): Seq[String]
 
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+  protected def columnsFor(g: Group, sortedSamples: Seq[Sample],
     data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo) = {
 
-    val (tus, cus) = treatedAndControl(g)
-    println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
+    val (treatedUnits, controlUnits) = treatedAndControl(g)
+    println(s"#Control units: ${controlUnits.size} #Non-control units: ${treatedUnits.size}")
 
-    if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
+    if (treatedUnits.size > 1 || (!enhancedColumns) || controlUnits.size == 0 || treatedUnits.size == 0) {
       // A simple average column
-      defaultColumns(g, sortedBarcodes, data)
-    } else if (tus.size == 1) {
+      defaultColumns(g, sortedSamples, data)
+    } else if (treatedUnits.size == 1) {
       // Possibly insert a control column as well as the usual one
 
-      val ti = unitIdxs(tus, sortedBarcodes)
-      val ci = unitIdxs(cus, sortedBarcodes)
+      val ti = unitIdxs(treatedUnits, sortedSamples)
+      val ci = unitIdxs(controlUnits, sortedSamples)
 
       val rows = data.map(vs => buildRow(vs, ti, ci))
       val i = columnInfo(g)
