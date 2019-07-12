@@ -20,49 +20,11 @@ package t.viewer.client.components;
 import java.util.*;
 import java.util.logging.Logger;
 
-import otg.viewer.client.components.ImportingScreen;
-import otg.viewer.client.components.ItemListsStoreHelper;
 import t.clustering.shared.ClusteringList;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
-public class StringListsStoreHelper extends ItemListsStoreHelper {
-  
-  // private final Logger logger = SharedUtils.getLogger("ItemListsStoreHelper");
-
-  public StringListsStoreHelper(String type, ImportingScreen screen) {
-    super(type, screen);
-  }
-
-  /**
-   * Save gene set with specified title. No input box will be shown.
-   * @return true iff the save action was successful
-   */
-  public boolean saveAs(Collection<String> list, String name) {
-    return saveAction(list, name, false);
-  }
-
-  public boolean saveAs(Collection<String> list, String name, boolean overwrite) {
-    return saveAction(list, name, overwrite);
-  }
-
-  private boolean saveAction(Collection<String> list, String name, boolean overwrite) {
-    if (!validate(name, overwrite)) {
-      return false;
-    }
-
-    StringList sl = new StringList(type, name, list.toArray(new String[0]));
-    putIfAbsent(type).put(name, sl);
-
-    storeItemLists();
-
-    return true;
-  }
-
-  private void storeItemLists() {
-    screen.itemListsChanged(buildItemLists());
-  }
-  
+public class StringListsStoreHelper {
   private final static String SET_PREFIX = "Set:";
   private final static String CLUSTER_PREFIX = "Clust:";
   
@@ -164,5 +126,4 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     
     return r;
   }
-
 }

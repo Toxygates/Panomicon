@@ -12,6 +12,8 @@ public class NamedObjectStorage<T> {
   private NameExtractor<T> nameExtractor;
   private NameChanger<T> nameChanger;
   
+  public Set<String> reservedNames = new HashSet<String>();
+  
   public interface NameExtractor<T> {
     String getName(T object);
   }
@@ -109,6 +111,10 @@ public class NamedObjectStorage<T> {
     return new ArrayList<T>(objectsByName.values());
   }
   
+  public boolean reservedName(String key) {
+    return reservedNames.contains(key);
+  }
+  
   public boolean containsKey(String key) {
     return objectsByName.containsKey(key);
   }
@@ -116,7 +122,7 @@ public class NamedObjectStorage<T> {
   public String suggestName(String prefix) {
     String name = prefix;
     int i = 1;
-    while (containsKey(name)) {
+    while (reservedName(name) || containsKey(name)) {
       name = prefix + " " + i;
       i++;
     }

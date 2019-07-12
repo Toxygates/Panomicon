@@ -41,7 +41,7 @@ import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.*;
-import t.viewer.shared.ItemList;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.StringList;
 
 public class GeneSetEditor extends Composite {
@@ -96,8 +96,6 @@ public class GeneSetEditor extends Composite {
   private List<SaveActionHandler> saveActions = new ArrayList<SaveActionHandler>();
 
   private Logger logger;
-
-  public List<ItemList> itemLists = new ArrayList<ItemList>();
 
   public GeneSetEditor(ImportingScreen screen) {
     super();
@@ -295,25 +293,29 @@ public class GeneSetEditor extends Composite {
   }
 
   private boolean save(String name) {
-    StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+    NamedObjectStorage<StringList> geneSets = screen.geneSets();
     boolean overwrite = false;
 
     if (editingExistingGeneSet && name.equals(originalTitle)) {
       overwrite = true;
     }
+    
+    if (!geneSets.reservedName(name)) {
+      if (overwrite || !!geneSets.containsKey(name)) {
+        geneSets.put(new StringList(StringList.PROBES_LIST_TYPE, name, 
+            listedProbes.toArray(new String[0])));
+        screen.geneSetsChanged();
+        if (overwrite) {
+          Analytics.trackEvent(Analytics.CATEGORY_GENE_SET,
+              Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
 
-    if (helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite)) {
-      if (overwrite) {
-        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET,
-            Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
-
-      } else {
-        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_CREATE_NEW_GENE_SET);
+        } else {
+          Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_CREATE_NEW_GENE_SET);
+        }
+        return true;
       }
-      return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   private ProbeSelector probeSelector() {
@@ -601,19 +603,17 @@ public class GeneSetEditor extends Composite {
   }
 
   public void createNew(String[] initProbes) {
-    itemLists = screen.itemLists();
     setProbes(initProbes);
     setColumns(screen.chosenColumns());
 
     originalProbes = null;
-    originalTitle = getAvailableName();
+    originalTitle = screen.geneSets().suggestName(NEW_TITLE_PREFIX);
     editingExistingGeneSet = false;
     titleText.setText(originalTitle);
     dialog.show();
   }
 
   public void edit(StringList stringList) {
-    itemLists = screen.itemLists();
     setProbes(stringList.items());
     setColumns(screen.chosenColumns());
 
@@ -622,34 +622,6 @@ public class GeneSetEditor extends Composite {
     editingExistingGeneSet = true;
     titleText.setText(originalTitle);
     dialog.show();
-  }
-
-  private String getAvailableName() {
-    String newTitle = NEW_TITLE_PREFIX;
-    System.out.println("Existing names");
-    for (ItemList li : itemLists) {
-      System.out.println(li.name());
-    }
-
-    int i = 1;
-    while (exists(newTitle)) {
-      newTitle = NEW_TITLE_PREFIX + " " + (++i);
-    }
-
-    return newTitle;
-  }
-
-  private boolean exists(String name) {
-    for (ItemList li : itemLists) {
-      if (!li.type().equals("probes")) {
-        continue;
-      }
-      if (li.name().equals(name)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   public void addSaveActionHandler(SaveActionHandler handler) {

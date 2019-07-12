@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.ImportingScreen;
 import t.viewer.client.Utils;
-import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.network.Network;
 
@@ -54,10 +53,8 @@ public class NetworkToGeneSetDialog {
             filter(n -> n.type() == probeTypeSelector.getSelectedItemText()).
             map(n -> n.id()).collect(Collectors.toList()).toArray(new String[0]);
         StringList newGeneSet = new StringList("probes", input.getValue(), probes);
-        List<ItemList> itemLists = screen.getStorage().itemListsStorage.getIgnoringException();
-        itemLists.removeIf(l -> l.name() == input.getValue());
-        itemLists.add(newGeneSet);
-        screen.itemListsChanged(itemLists);
+        screen.geneSets().put(newGeneSet);
+        screen.geneSetsChanged();
         mainDialog.hide();
       }
     });

@@ -132,7 +132,7 @@ public abstract class ItemListsStoreHelper {
     }
     
     if (itemLists.get(type).remove(name) != null) {
-      screen.itemListsChanged(buildItemLists());
+      //screen.itemListsChanged(buildItemLists()); TODO don't fix this, just get rid of this class
     }
   }
 

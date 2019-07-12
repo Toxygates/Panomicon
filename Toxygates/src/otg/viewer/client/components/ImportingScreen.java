@@ -32,8 +32,10 @@ import otg.viewer.client.intermine.InterMineData;
 import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 
 public interface ImportingScreen extends OTGScreen {
@@ -49,7 +51,8 @@ public interface ImportingScreen extends OTGScreen {
 
   void clusteringListsChanged(List<ItemList> lists);
 
-  void itemListsChanged(List<ItemList> lists);
+  public NamedObjectStorage<StringList> geneSets();
+  void geneSetsChanged();
 
   List<ClientGroup> chosenColumns();
   

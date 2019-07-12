@@ -19,6 +19,7 @@
 package otg.viewer.client.screen.data;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -34,6 +35,7 @@ import t.viewer.client.ClientGroup;
 import t.viewer.client.Groups;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.client.table.DualTableView;
 import t.viewer.client.table.TableView;
@@ -60,6 +62,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   
   protected String[] chosenProbes = new String[0];
   public List<ItemList> itemLists = new ArrayList<ItemList>();
+  public NamedObjectStorage<StringList> geneSets;
   public ItemList chosenGeneSet = null;
   protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
 
@@ -71,6 +74,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
     groups.storage().loadFromStorage();
     itemLists = storage.itemListsStorage.getIgnoringException();
+    geneSets.loadFromStorage();
     chosenGeneSet = storage.chosenGenesetStorage.getIgnoringException();
     clusteringLists = storage.clusteringListsStorage.getIgnoringException();
 
@@ -85,7 +89,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     tableView.columnsChanged(groups.activeGroups());
     tableView.probesChanged(chosenProbes);  
     geneSetToolbar.geneSetChanged(chosenGeneSet);
-    geneSetsMenu.itemListsChanged(itemLists);
+    geneSetsMenu.geneSetsChanged(geneSets.allObjects());
   }
   
   public void sendMirnaSources() {
@@ -112,6 +116,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
       }
     });
   }
+  
+  public NamedObjectStorage<StringList> geneSets() {
+    return geneSets;
+  }
 
   public TableView dataView() {
     return tableView;
@@ -131,6 +139,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     groups = new Groups(getStorage().groupsStorage);
     geneSetToolbar = makeGeneSetSelector();
     sendMirnaSources();
+    geneSets = new NamedObjectStorage<StringList>(getStorage().geneSetsStorage,
+        l -> l.name());
+    geneSets.reservedNames.addAll(manager().appInfo().predefinedProbeLists().stream().
+        map(l -> l.name()).collect(Collectors.toList()));
   }
 
   @Override
@@ -256,7 +268,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   
   @Override
   public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
-    itemListsChanged(itemLists);
+    //itemListsChanged(itemLists); TODO fix this
     clusteringListsChanged(clusteringLists);
   }
 
@@ -322,10 +334,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  public void itemListsChanged(List<ItemList> lists) {
-    itemLists = lists;
-    getStorage().itemListsStorage.store(lists);
-    geneSetsMenu.itemListsChanged(lists);
+  public void geneSetsChanged() {
+    geneSets.saveToStorage();
+    geneSetsMenu.geneSetsChanged(geneSets.allObjects());
   }
 
   @Override

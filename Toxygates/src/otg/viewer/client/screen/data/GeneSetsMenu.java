@@ -32,7 +32,6 @@ import t.clustering.shared.ClusteringList;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.MenuItemCaptionSeparator;
-import t.viewer.client.components.StringListsStoreHelper;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 import t.viewer.shared.clustering.ProbeClustering;
@@ -263,9 +262,8 @@ public class GeneSetsMenu {
       }
 
       ItemList geneSet = screen.geneSet();
-      StringListsStoreHelper helper =
-          new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
-      helper.delete(sl.name());
+      screen.geneSets().remove(sl.name());
+      screen.geneSetsChanged();
       Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_DELETE_GENE_SET);
       // If the user deletes chosen gene set, switch to "All probes" automatically.
       if (geneSet != null && sl.type().equals(geneSet.type())
@@ -345,14 +343,15 @@ public class GeneSetsMenu {
     } 
   }
 
+  
   /**
-   * Refresh menu items on itemListsChanged fired. Note the events would be also
+   * Refresh menu items on stringListsChanged fired. Note the events would be also
    * fired when the DataScreen is activated. [DataScreen#show -> Screen#show ->
    * Screen#lodaState -> ? ]
    * 
    * @see otg.viewer.client.screen.data.DataScreen#show()
    */
-  public void itemListsChanged(List<ItemList> lists) {
+  public void geneSetsChanged(List<StringList> lists) {
     root.clearItems();
     createMenuItem();
   }

@@ -47,10 +47,15 @@ public class SaveObjectDialog extends InputDialog {
   
   @Override
   protected void onTextBoxValueChange(String newValue) {
-    if (storage != null && storage.containsKey(newValue)) {
+    if (storage != null && storage.reservedName(newValue)) {
+      submitButton.setText("Save new");
+      submitButton.setEnabled(false);
+    } else if (storage != null && storage.containsKey(newValue)) {
       submitButton.setText("Overwrite");
+      submitButton.setEnabled(true);
     } else {
       submitButton.setText("Save new");
+      submitButton.setEnabled(true);
     }
   }
 }
