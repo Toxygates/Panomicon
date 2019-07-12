@@ -49,7 +49,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
    * raw data. Update info to reflect the changes.
    * Resulting data should be row-major.
    */
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+  protected def columnsFor(g: Group, sortedSamples: Seq[Sample],
     data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo)
 
   /**
@@ -64,12 +64,12 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   protected def shortName(g: Group): String = g.toString
 
-  protected def defaultColumns[E <: ExprValue](g: Group, sortedBarcodes: Seq[Sample],
+  protected def defaultColumns[E <: ExprValue](g: Group, sortedSamples: Seq[Sample],
     data: Seq[RowData]): (Seq[RowData], ManagedMatrixInfo) = {
     // A simple average column
     val tus = treatedAndControl(g)._1
-    val treatedIdx = unitIdxs(tus, sortedBarcodes)
-    val samples = TUnit.collectBarcodes(tus)
+    val treatedIdx = unitIdxs(tus, sortedSamples)
+    val samples = TUnit.collectSamples(tus)
 
     val info = new ManagedMatrixInfo()
 
@@ -213,10 +213,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
     val info = new ManagedMatrixInfo()
     info.addColumn(false, shortName(g), colNames(g)(0),
         colNames(g)(0) + ": average of treated samples", ColumnFilter.emptyAbsGT, g, false,
-        TUnit.collectBarcodes(tus))
+        TUnit.collectSamples(tus))
     info.addColumn(false, "Control", colNames(g)(1),
         colNames(g)(1) + ": average of control samples", ColumnFilter.emptyAbsGT, g, false,
-        TUnit.collectBarcodes(cus))
+        TUnit.collectSamples(cus))
     info
   }
 
@@ -262,7 +262,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 
   override protected def columnInfo(g: Group): ManagedMatrixInfo = {
     val tus = treatedAndControl(g)._1
-    val samples = TUnit.collectBarcodes(tus)
+    val samples = TUnit.collectSamples(tus)
     val info = new ManagedMatrixInfo()
     info.addColumn(false, shortName(g), colNames(g)(0),
         colNames(g)(0) + tooltipSuffix,

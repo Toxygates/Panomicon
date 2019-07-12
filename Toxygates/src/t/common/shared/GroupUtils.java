@@ -46,8 +46,8 @@ public class GroupUtils {
    */
   public static <T extends Sample, G extends SampleGroup<T>> 
     Stream<G> groupsFor(List<G> columns,
-      String barcode) {
-    return columns.stream().filter(c -> c.containsSample(barcode));  
+      String sampleId) {
+    return columns.stream().filter(c -> c.containsSample(sampleId));  
   }
 
   public static Stream<String> collect(List<? extends SampleGroup<?>> columns, Attribute parameter) {

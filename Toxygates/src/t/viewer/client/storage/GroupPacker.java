@@ -46,17 +46,17 @@ public class GroupPacker extends Packer<Group> {
     }
     String name = s1[1];
     String color = "";
-    String barcodes = "";
+    String sampleIds = "";
 
     color = s1[2];
-    barcodes = s1[3];
+    sampleIds = s1[3];
     if (SharedUtils.indexOf(SampleGroup.groupColors, color) == -1) {
       // replace the color if it is invalid.
       // this lets us safely upgrade colors in the future.
       color = SampleGroup.groupColors[0];
     }
 
-    String[] s2 = barcodes.split("\\^\\^\\^");
+    String[] s2 = sampleIds.split("\\^\\^\\^");
     Sample[] bcs = new Sample[s2.length];
     for (int i = 0; i < s2.length; ++i) {
       bcs[i] = samplePacker.unpack(s2[i]);

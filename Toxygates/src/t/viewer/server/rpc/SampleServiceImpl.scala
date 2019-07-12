@@ -170,9 +170,9 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   @throws[TimeoutException]
-  def annotations(barcode: Sample): Annotation = {
-    val params = sampleStore.parameterQuery(barcode.id)
-    annotations.fromAttributes(barcode, params)
+  def annotations(sample: Sample): Annotation = {
+    val params = sampleStore.parameterQuery(sample.id)
+    annotations.fromAttributes(sample, params)
   }
 
   @throws[TimeoutException]
