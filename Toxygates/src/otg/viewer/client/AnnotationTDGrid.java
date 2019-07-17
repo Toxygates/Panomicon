@@ -130,10 +130,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     sc.put(OTGAttribute.Compound, compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(screen,
-        "Unable to retrieve barcodes for the group definition.") {
+        "Unable to retrieve samples for the group definition.") {
       @Override
-      public void handleSuccess(Sample[] barcodes) {
-        processAnnotationBarcodes(annotation, row, col, time, barcodes);
+      public void handleSuccess(Sample[] samples) {
+        processAnnotationSamples(annotation, row, col, time, samples);
       }
     });
   }
@@ -148,10 +148,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     throw new IllegalArgumentException("Value not available");
   }
   
-  private void processAnnotationBarcodes(final String annotation, final int row, final int col,
-      final String time, final Sample[] barcodes) {
+  private void processAnnotationSamples(final String annotation, final int row, final int col,
+      final String time, final Sample[] samples) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
-    Group g = new Group(schema, "temporary", barcodes, null);
+    Group g = new Group(schema, "temporary", samples, null);
     sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(screen,
         "Unable to get annotations.") {
       @Override
@@ -168,7 +168,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
           } catch (IllegalArgumentException e) {
             logger.info("No value for parameter " + annotation + " for sample " + a.id());
           } catch (Exception e) {
-            logger.log(Level.WARNING, "Annotation barcode processing error", e);            
+            logger.log(Level.WARNING, "Annotation sample processing error", e);
           }
         }
 

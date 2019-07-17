@@ -1,16 +1,10 @@
 package t.viewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import t.common.shared.DataSchema;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleGroup;
-import t.common.shared.sample.Unit;
+import t.common.shared.sample.*;
 
 /**
  * Like a group, but encodes the notion of whether it is active or inactive,
@@ -28,7 +22,7 @@ public class ClientGroup extends Group {
   }
   
   public ClientGroup(DataSchema schema, String name, Unit[] units, boolean active) {
-    super(schema, name, Unit.collectBarcodes(units));
+    super(schema, name, Unit.collectSamples(units));
     this.active = active;
     _units = units;
   }

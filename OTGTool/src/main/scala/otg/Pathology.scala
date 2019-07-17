@@ -25,4 +25,4 @@ package otg
  */
 case class Pathology(finding: Option[String], topography: Option[String],
     grade: Option[String], spontaneous: Boolean,
-    barcode: String = null, digitalViewerLink: String = null)
+    sampleId: String = null, digitalViewerLink: String = null)

@@ -25,7 +25,7 @@ import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 
 /**
- * A group of barcodes.
+ * A group of samples.
  */
 @SuppressWarnings("serial")
 public class Group extends SampleGroup<Sample> implements SampleColumn {
@@ -34,24 +34,24 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   public Group() {}
 
-  public Group(DataSchema schema, String name, Sample[] barcodes, String color,
+  public Group(DataSchema schema, String name, Sample[] sampleIds, String color,
       Unit[] units) {
-    super(schema, name, barcodes, color);
+    super(schema, name, sampleIds, color);
     _units = units;
   }
   
-  public Group(DataSchema schema, String name, Sample[] barcodes, String color) {
-    super(schema, name, barcodes, color);
-    _units = Unit.formUnits(schema, barcodes);
+  public Group(DataSchema schema, String name, Sample[] sampleIds, String color) {
+    super(schema, name, sampleIds, color);
+    _units = Unit.formUnits(schema, sampleIds);
   }
 
-  public Group(DataSchema schema, String name, Sample[] barcodes) {
-    super(schema, name, barcodes);
-    _units = Unit.formUnits(schema, barcodes);
+  public Group(DataSchema schema, String name, Sample[] sampleIds) {
+    super(schema, name, sampleIds);
+    _units = Unit.formUnits(schema, sampleIds);
   }
 
   public Group(DataSchema schema, String name, Unit[] units) {
-    super(schema, name, Unit.collectBarcodes(units));
+    super(schema, name, Unit.collectSamples(units));
     _units = units;
   }
 

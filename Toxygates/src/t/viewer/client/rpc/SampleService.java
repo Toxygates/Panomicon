@@ -132,7 +132,7 @@ public interface SampleService extends RemoteService {
    * Annotations are experiment-associated information such as dose, time, biochemical data etc.
    * This method obtains them for a single sample.
    */
-  Annotation annotations(Sample barcode) throws TimeoutException;
+  Annotation annotations(Sample sample) throws TimeoutException;
 
   /**
    * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have

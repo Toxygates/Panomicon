@@ -45,7 +45,7 @@ import t.viewer.client.table.TooltipColumn;
 
 public class SampleDetailTable extends Composite {
   private CellTable<BioParamValue[]> table;
-  private Sample[] barcodes;
+  private Sample[] samples;
   private SampleServiceAsync sampleService;
   private final @Nullable String title;
   private final boolean isSection;
@@ -143,7 +143,7 @@ public class SampleDetailTable extends Composite {
   }
   
   private void setupColumns(HasSamples<Sample> c) {
-    barcodes = c.getSamples();    
+    samples = c.getSamples();    
     while (table.getColumnCount() > 0) {
       table.removeColumn(0);
     }
@@ -158,8 +158,8 @@ public class SampleDetailTable extends Composite {
     table.addColumnStyleName(0, "sampleDetailTitleColumn");
     
     TextCell tc = new TextCell();
-    for (int i = 1; i < barcodes.length + 1; ++i) {
-      String name = barcodes[i - 1].id();
+    for (int i = 1; i < samples.length + 1; ++i) {
+      String name = samples[i - 1].id();
       BioParamColumn bpc = new BioParamColumn(tc, i - 1);
       String borderStyle = i == 1 ? "darkBorderLeft" : "lightBorderLeft";
       bpc.setCellStyleNames(borderStyle);
@@ -169,7 +169,7 @@ public class SampleDetailTable extends Composite {
       table.addColumn(bpc, header);
       table.addColumnStyleName(i, "sampleDetailDataColumn");
     }
-    table.setWidth((15 + 9 * barcodes.length) + "em", true);
+    table.setWidth((15 + 9 * samples.length) + "em", true);
   }
   
   private static String abbreviate(String sampleId) {
@@ -187,10 +187,10 @@ public class SampleDetailTable extends Composite {
    * @return The row, or null if no samples had a display value for the parameter.
    */
   private @Nullable BioParamValue[] makeAnnotItem(int i, Annotation[] as) {
-    BioParamValue[] item = new BioParamValue[barcodes.length];
+    BioParamValue[] item = new BioParamValue[samples.length];
 
     boolean hasDisplayValue = false;
-    for (int j = 0; j < as.length && j < barcodes.length; ++j) {
+    for (int j = 0; j < as.length && j < samples.length; ++j) {
       item[j] = as[j].getAnnotations().get(i);
       if (item[j].displayValue() != null) {
         hasDisplayValue = true;

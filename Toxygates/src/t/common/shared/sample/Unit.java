@@ -127,7 +127,7 @@ public class Unit extends SampleClass {
       collect(Collectors.toList());    
   }
 
-  public static Sample[] collectBarcodes(Unit[] units) {
+  public static Sample[] collectSamples(Unit[] units) {
     return Arrays.stream(units).flatMap(u -> 
       Arrays.stream(u.getSamples())).
       toArray(Sample[]::new);

@@ -128,7 +128,7 @@ public class PathologyScreen extends MinimalScreen {
     TextColumn<Pathology> col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
-        Stream<ClientGroup> gs = GroupUtils.groupsFor(groups.activeGroups(), p.barcode());        
+        Stream<ClientGroup> gs = GroupUtils.groupsFor(groups.activeGroups(), p.sampleId());        
         String r = gs.map(g -> g.getName()).collect(Collectors.joining(" "));
         if (r.length() == 0) {
           return "None";
@@ -138,14 +138,15 @@ public class PathologyScreen extends MinimalScreen {
     };
     addColumn(col, "Group", "", "10em");
 
-    //Note: we may need to stop including p.barcode() at some point
-    //if pathologies get to have longer barcodes (currently only OTG samples)
+    // Note: we may need to stop including p.sample() at some point
+    // if pathologies get to have longer barcodes (currently only OTG samples,
+    // where sample ID == barcode, have pathologies)
     col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
-        Sample b = GroupUtils.sampleFor(groups.activeGroups(), p.barcode());
+        Sample b = GroupUtils.sampleFor(groups.activeGroups(), p.sampleId());
         return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) +
-            " [" + p.barcode() + "]";
+            " [" + p.sampleId() + "]";
       }
     };
     addColumn(col, "Sample", "lightBorderLeft", "22em");
@@ -249,7 +250,7 @@ public class PathologyScreen extends MinimalScreen {
 
     @Override
     public String getValue(Pathology p) {
-      return p.barcode();
+      return p.sampleId();
     }
   }
 

@@ -229,7 +229,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid implements SampleDeta
     }
   }
 
-  public List<Sample> getSelectedBarcodes() {
+  public List<Sample> getSelectedSamples() {
     List<Sample> r = new ArrayList<Sample>();
     for (Unit k : unitUis.keySet()) {
       if (unitUis.get(k).getValue()) {
@@ -383,7 +383,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid implements SampleDeta
       unitUis.remove(u);
       ui.setUnit(u);
       // Remove the key and replace it since the ones from availableUnits
-      // will be populated with concrete Barcodes (getSamples)
+      // will be populated with concrete samples (getSamples)
       unitUis.put(u, ui);
       
       int cIdx = chosenCompounds.indexOf(u.get(schema.majorParameter()));

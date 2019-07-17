@@ -49,7 +49,7 @@ object Conversions {
   import t.viewer.server.Conversions._
 
   implicit def asJava(path: otg.Pathology): Pathology =
-    new Pathology(path.barcode, path.topography.getOrElse(null),
+    new Pathology(path.sampleId, path.topography.getOrElse(null),
       path.finding.getOrElse(null),
       path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 

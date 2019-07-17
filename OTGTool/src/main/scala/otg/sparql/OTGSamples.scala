@@ -94,8 +94,8 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   def pathologyQuery(constraints: String): Vector[Pathology] =
     PathologySparql.pathologyQuery(triplestore, constraints)
 
-  def pathologies(barcode: String): Vector[Pathology] = {
-    val r = pathologyQuery("?x rdfs:label \"" + barcode + "\". ")
-    r.map(_.copy(barcode = barcode))
+  def pathologies(query: String): Vector[Pathology] = {
+    val r = pathologyQuery("?x rdfs:label \"" + query + "\". ")
+    r.map(_.copy(sampleId = query))
   }
 }

@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 
 @SuppressWarnings("serial")
 public class Pathology implements Serializable {
-  private String barcode;
+  private String sampleId;
   private String topography;
   private String finding;
   private boolean spontaneous;
@@ -34,9 +34,9 @@ public class Pathology implements Serializable {
 
   public Pathology() {}
 
-  public Pathology(@Nullable String _barcode, String _topography, String _finding,
+  public Pathology(@Nullable String _sampleId, String _topography, String _finding,
       boolean _spontaneous, String _grade, @Nullable String _viewerLink) {
-    barcode = _barcode;
+    sampleId = _sampleId;
     topography = _topography;
     finding = _finding;
     spontaneous = _spontaneous;
@@ -44,8 +44,8 @@ public class Pathology implements Serializable {
     viewerLink = _viewerLink;
   }
 
-  public @Nullable String barcode() {
-    return barcode;
+  public @Nullable String sampleId() {
+    return sampleId;
   }
 
   public String topography() {
@@ -72,8 +72,8 @@ public class Pathology implements Serializable {
   @Override
   public int hashCode() {
     int r = 1;
-    if (barcode != null) {
-      r = r * 41 + barcode.hashCode();
+    if (sampleId != null) {
+      r = r * 41 + sampleId.hashCode();
     }
     if (topography != null) {
       r = r * 41 + topography.hashCode();
@@ -97,11 +97,10 @@ public class Pathology implements Serializable {
   public boolean equals(Object other) {
     if (other instanceof Pathology) {
       Pathology op = (Pathology) other;
-      Object[] th = new Object[] {barcode, topography, finding, spontaneous, grade, viewerLink};
-      Object[] oth =
-          new Object[] {op.barcode(), op.topography(), op.finding(), op.spontaneous(), op.grade(),
-              op.viewerLink()};
-      return Arrays.deepEquals(th, oth);
+      Object[] p1 = new Object[] {sampleId, topography, finding, spontaneous, grade, viewerLink};
+      Object[] p2 = new Object[] {op.sampleId(), op.topography(), op.finding(), op.spontaneous(),
+          op.grade(), op.viewerLink()};
+      return Arrays.deepEquals(p1, p2);
     }
     return false;
   }
