@@ -86,7 +86,7 @@ public class GeneSetsMenu {
   private void createUserSets() {
     root.addSeparator(new MenuItemCaptionSeparator("User sets"));
 
-    List<StringList> geneSets = StringList.pickProbeLists(screen.itemLists(), null);
+    List<StringList> geneSets = screen.geneSets().allObjects(); 
     ensureSorted(geneSets);
 
     for (final StringList sl : geneSets) {
