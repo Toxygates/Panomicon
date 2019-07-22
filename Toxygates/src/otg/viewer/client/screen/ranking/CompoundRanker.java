@@ -24,8 +24,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.*;
-import otg.viewer.client.components.*;
+import otg.viewer.client.Resources;
+import otg.viewer.client.components.GeneOracle;
+import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.compoundsel.RankingCompoundSelector;
 import otg.viewer.shared.RankRule;
 import t.common.shared.DataSchema;
@@ -37,6 +38,7 @@ import t.viewer.client.components.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
@@ -66,7 +68,7 @@ abstract public class CompoundRanker extends Composite {
 
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
-  protected List<ItemList> itemLists = new ArrayList<ItemList>();
+  protected List<StringList> compoundLists = new ArrayList<StringList>();
   protected ItemList chosenGeneSet = null;
   protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
   List<String> availableCompounds = chosenCompounds;
@@ -121,8 +123,8 @@ abstract public class CompoundRanker extends Composite {
       }
 
       @Override
-      protected void listsChanged(List<ItemList> lists) {
-        selector.delegate().compoundSelectorItemListsChanged(lists);
+      protected void listsChanged(List<StringList> lists) {
+        selector.delegate().compoundSelectorCompoundListsChanged(lists);
       }
     };
     listChooser.addStyleName("colored");
@@ -283,14 +285,14 @@ abstract public class CompoundRanker extends Composite {
     availableCompounds = compounds;
   }
 
-  public void itemListsChanged(List<ItemList> lists) {
-    itemLists = lists;
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.itemLists, this.clusteringLists));
+  public void compoundListsChanged(List<StringList> lists) {
+    compoundLists = lists;
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.compoundLists, this.clusteringLists));
   }
 
   public void clusteringListsChanged(List<ItemList> lists) {
     clusteringLists = lists;
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.itemLists, this.clusteringLists));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.compoundLists, this.clusteringLists));
   }
   
   

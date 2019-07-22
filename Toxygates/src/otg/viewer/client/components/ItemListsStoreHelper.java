@@ -47,17 +47,7 @@ public abstract class ItemListsStoreHelper {
     init();
   }
 
-  /*
-   * Obtain current item lists
-   */
-  protected void init() {
-    for (ItemList il : screen.itemLists()) {
-      if (il instanceof StringList) {
-        StringList sl = (StringList) il;
-        putIfAbsent(sl.type()).put(sl.name(), sl);
-      }
-    }
-  }
+  protected void init() {}
 
   protected Map<String, ItemList> putIfAbsent(String type) {
     Map<String, ItemList> value = itemLists.get(type);

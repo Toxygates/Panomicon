@@ -31,7 +31,6 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.viewer.client.Utils;
-import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
 /**
@@ -42,7 +41,7 @@ import t.viewer.shared.StringList;
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
   public interface Delegate {
-    void itemListsChanged(List<ItemList> itemLists);
+    void compoundListsChanged(List<StringList> compoundLists);
   }
 
   protected List<SelectionMethod<String>> methods = new ArrayList<SelectionMethod<String>>();
@@ -86,9 +85,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
         }
 
         @Override
-        protected void listsChanged(List<ItemList> itemLists) {
-          delegate.itemListsChanged(itemLists);
-          sle.listsChanged(itemLists);
+        protected void listsChanged(List<StringList> stringLists) {
+          delegate.compoundListsChanged(stringLists);
+          sle.listsChanged(stringLists);
         }
       };
       listChooser.addStyleName("colored");
@@ -240,7 +239,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
         null);
   }
 
-  public void setLists(List<ItemList> lists) {
+  public void setLists(List<StringList> lists) {
     if (listChooser != null) {
       listChooser.setLists(lists);
     }
@@ -286,7 +285,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   protected void selectionChanged(Set<String> items) {}
 
   // Ditto
-  protected void listsChanged(List<ItemList> itemLists) {}
+  protected void listsChanged(List<StringList> itemLists) {}
 
   public void scrollBrowseCheckToTop() {
     browseCheck.scrollToTop();

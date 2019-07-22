@@ -35,7 +35,7 @@ import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
-import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 public class RankingScreen extends FilterAndSelectorScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {
@@ -67,9 +67,9 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
 
     rankingSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
-      public void itemListsChanged(List<ItemList> lists) {
-        super.itemListsChanged(lists);
-        compoundRanker.itemListsChanged(lists);
+      public void compoundListsChanged(List<StringList> lists) {
+        super.compoundListsChanged(lists);
+        compoundRanker.compoundListsChanged(lists);
       }
 
       @Override

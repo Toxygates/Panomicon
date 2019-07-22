@@ -33,7 +33,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.components.FreeEdit;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
 /**
@@ -57,7 +56,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   protected Logger logger;
 
   List<String> chosenCompounds = new ArrayList<String>();
-  public List<ItemList> itemLists = new ArrayList<ItemList>();
+  public List<StringList> compoundLists = new ArrayList<StringList>();
   
   private List<String> allCompounds;
 
@@ -66,7 +65,7 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public interface Delegate {
-    void compoundSelectorItemListsChanged(List<ItemList> itemLists);
+    void compoundSelectorCompoundListsChanged(List<StringList> stringLists);
     void compoundSelectorCompoundsChanged(List<String> compounds);
   }
 
@@ -110,8 +109,8 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
           }
 
           @Override
-          protected void listsChanged(List<ItemList> itemLists) {
-            delegate.compoundSelectorItemListsChanged(itemLists);
+          protected void listsChanged(List<StringList> stringLists) {
+            delegate.compoundSelectorCompoundListsChanged(stringLists);
           }
           
           @Override
@@ -154,8 +153,8 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   @Override
-  public void itemListsChanged(List<ItemList> lists) {
-    itemLists = lists;
+  public void compoundListsChanged(List<StringList> lists) {
+    compoundLists = lists;
     compoundEditor.setLists(lists);
   }
 

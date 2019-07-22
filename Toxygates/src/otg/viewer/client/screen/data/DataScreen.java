@@ -30,10 +30,7 @@ import com.google.gwt.user.client.ui.*;
 import otg.viewer.client.components.*;
 import t.common.shared.GroupUtils;
 import t.model.sample.AttributeSet;
-import t.viewer.client.Analytics;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Groups;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.client.storage.StorageProvider;
@@ -62,7 +59,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   
   protected String[] chosenProbes = new String[0];
   public List<ItemList> itemLists = new ArrayList<ItemList>();
-  public NamedObjectStorage<StringList> geneSets;
+  private NamedObjectStorage<StringList> geneSets;
   public ItemList chosenGeneSet = null;
   protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
 
@@ -117,6 +114,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     });
   }
   
+  @Override
   public NamedObjectStorage<StringList> geneSets() {
     return geneSets;
   }

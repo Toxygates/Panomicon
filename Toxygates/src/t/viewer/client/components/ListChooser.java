@@ -277,7 +277,7 @@ public class ListChooser extends Composite {
   /**
    * To be overridden by subclasses/users. Called when the user has saved or deleted a list.
    */
-  protected void listsChanged(List<ItemList> lists) {}
+  protected void listsChanged(List<StringList> lists) {}
 
   /**
    * To be called by users when the current list has been edited externally.
@@ -289,13 +289,12 @@ public class ListChooser extends Composite {
   /**
    * Returns all ItemLists, including the ones of a type not managed by this chooser.
    */
-  public List<ItemList> getLists() {
-    List<ItemList> r = new ArrayList<ItemList>();
-    r.addAll(otherTypeLists);
+  public List<StringList> getLists() {
+    List<StringList> r = new ArrayList<StringList>();
     for (String k : lists.keySet()) {
       if (!isPredefinedListName(k)) {
         List<String> v = lists.get(k);
-        ItemList il = new StringList(listType, k, v.toArray(new String[0]));
+        StringList il = new StringList(listType, k, v.toArray(new String[0]));
         r.add(il);
       }
     }
@@ -306,11 +305,11 @@ public class ListChooser extends Composite {
    * Set all ItemLists. This chooser will identify the ones that have the correct type and display
    * those only.
    */
-  public void setLists(List<? extends ItemList> itemLists) {
+  public <T extends ItemList> void setLists(List<T> itemLists) {
     lists.clear();
     otherTypeLists.clear();
 
-    for (ItemList il : itemLists) {
+    for (T il : itemLists) {
       if (il.type().equals(listType) && (il instanceof StringList)) {
         StringList sl = (StringList) il;
         lists.put(il.name(), Arrays.asList(sl.items()));

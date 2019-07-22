@@ -16,7 +16,7 @@ import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
-import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 /**
  * Contains functionality for managing the interaction between FilterTools and 
@@ -211,8 +211,8 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * Called by compound selector when item lists have been changed.
    * @param itemLists the updated item lists
    */
-  public void compoundSelectorItemListsChanged(List<ItemList> itemLists) {
-    getStorage().itemListsStorage.store(itemLists);
+  public void compoundSelectorCompoundListsChanged(List<StringList> stringLists) {
+    getStorage().compoundListStorage.store(stringLists);
   }
 
   /**

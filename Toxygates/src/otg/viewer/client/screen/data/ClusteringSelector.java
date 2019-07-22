@@ -42,7 +42,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
   private ClListBox clustering;
   private VerticalPanel paramTitlesContainer;
   private VerticalPanel paramListsContainer;
-  private ListChooser cluster;
+  private ListChooser listChooser;
 
   private Button addButton;
 
@@ -180,12 +180,12 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
       items.add(pc.getList());
     }
     
-    cluster.setLists(items);
+    listChooser.setLists(items);
 
     // Reset selection of cluster to avoid loading problem here.
     // Note: even if the clustering changed, if the clustering has the same cluster name
     // as previous clustering, it would not load probes expected.
-    cluster.trySelect(null);
+    listChooser.trySelect(null);
     loadedProbes.clear();
 
     updateAddButton();
@@ -223,7 +223,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
     selector.setWidget(2, 0, paramTitlesContainer);
     selector.setWidget(2, 1, paramListsContainer);
 
-    cluster = new ListChooser(new ArrayList<StringList>(), ProbeClustering.PROBE_CLUSTERING_TYPE, 
+    listChooser = new ListChooser(new ArrayList<StringList>(), ProbeClustering.PROBE_CLUSTERING_TYPE, 
       false) {
       @Override
       protected void itemsChanged(List<String> items) {
@@ -233,7 +233,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
       }
     };
     selector.setText(3, 0, "Cluster");
-    selector.setWidget(3, 1, cluster);
+    selector.setWidget(3, 1, listChooser);
 
     addButton = new Button("Add probes >>");
     addButton.addClickHandler(new ClickHandler() {

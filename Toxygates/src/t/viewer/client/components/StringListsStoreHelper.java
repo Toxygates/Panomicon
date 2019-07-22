@@ -51,7 +51,7 @@ public class StringListsStoreHelper {
   /**
    * Compile item lists and clustering list into a StringList format.
    */
-  public static List<StringList> compileLists(List<ItemList> itemLists, List<ItemList> clusteringList) {
+  public static <T extends ItemList> List<StringList> compileLists(List<T> itemLists, List<ItemList> clusteringList) {
     List<ItemList> r = new ArrayList<ItemList>();
     r.addAll(itemLists);
     r.addAll(clusteringList);
