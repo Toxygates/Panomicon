@@ -29,13 +29,9 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 
 import otg.viewer.client.intermine.InterMineData;
-import t.viewer.client.Analytics;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.viewer.shared.*;
 import t.viewer.shared.intermine.IntermineInstance;
 
 public interface ImportingScreen extends OTGScreen {
@@ -46,8 +42,6 @@ public interface ImportingScreen extends OTGScreen {
   void runEnrichment(@Nullable IntermineInstance preferredInstance);
 
   List<ItemList> clusteringLists();
-
-  List<ItemList> itemLists();
 
   void clusteringListsChanged(List<ItemList> lists);
 

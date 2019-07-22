@@ -27,14 +27,15 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 
-import otg.viewer.client.components.*;
+import otg.viewer.client.components.ImportingScreen;
 import t.clustering.shared.ClusteringList;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.StringListsStoreHelper;
-import t.viewer.client.dialog.*;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.intermine.*;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
@@ -91,8 +92,9 @@ public class InterMineData {
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
         // TODO revise pop-up message handling for this process
-        parent.intermineImport(mergeLists(parent.itemLists(), normal, replace, "lists"),
-            mergeLists(parent.clusteringLists(), clustering, replace, "clusters"));
+        // TODO reimplement this
+//        parent.intermineImport(mergeLists(parent.itemLists(), normal, replace, "lists"),
+//            mergeLists(parent.clusteringLists(), clustering, replace, "clusters"));
       }
     });
   }
@@ -108,9 +110,10 @@ public class InterMineData {
           protected void userProceed(IntermineInstance instance, String user, String pass,
               boolean replace) {
             super.userProceed();
-            doExport(instance, user, pass, 
-                StringListsStoreHelper.compileLists(importingParent.itemLists(), importingParent.clusteringLists()),
-                replace);
+            // TODO reimplement this  
+//            doExport(instance, user, pass, 
+//                StringListsStoreHelper.compileLists(importingParent.itemLists(), importingParent.clusteringLists()),
+//                replace);
           }
 
         };

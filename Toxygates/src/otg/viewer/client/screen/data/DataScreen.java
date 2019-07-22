@@ -58,7 +58,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   protected Groups groups;
   
   protected String[] chosenProbes = new String[0];
-  public List<ItemList> itemLists = new ArrayList<ItemList>();
   private NamedObjectStorage<StringList> geneSets;
   public ItemList chosenGeneSet = null;
   protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
@@ -70,7 +69,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     StorageProvider storage = getStorage();
     chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
     groups.storage().loadFromStorage();
-    itemLists = storage.itemListsStorage.getIgnoringException();
     geneSets.loadFromStorage();
     chosenGeneSet = storage.chosenGenesetStorage.getIgnoringException();
     clusteringLists = storage.clusteringListsStorage.getIgnoringException();
@@ -146,11 +144,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public List<ItemList> clusteringLists() {
     return clusteringLists;
-  }
-
-  @Override
-  public List<ItemList> itemLists() {
-    return itemLists;
   }
 
   public ItemList geneSet() {
