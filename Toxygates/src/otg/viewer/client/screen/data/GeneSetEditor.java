@@ -37,10 +37,9 @@ import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
-import t.viewer.client.Analytics;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Utils;
-import t.viewer.client.components.*;
+import t.viewer.client.*;
+import t.viewer.client.components.FixedWidthLayoutPanel;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.StringList;
 
@@ -289,7 +288,6 @@ public class GeneSetEditor extends Composite {
     }
 
     probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
-
   }
 
   private boolean save(String name) {
@@ -300,20 +298,18 @@ public class GeneSetEditor extends Composite {
       overwrite = true;
     }
     
-    if (!geneSets.reservedName(name)) {
-      if (overwrite || !!geneSets.containsKey(name)) {
-        geneSets.put(new StringList(StringList.PROBES_LIST_TYPE, name, 
-            listedProbes.toArray(new String[0])));
-        screen.geneSetsChanged();
-        if (overwrite) {
-          Analytics.trackEvent(Analytics.CATEGORY_GENE_SET,
-              Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
+    if (geneSets.validateNewObjectName(name, overwrite)) {
+      geneSets.put(new StringList(StringList.PROBES_LIST_TYPE, name, 
+          listedProbes.toArray(new String[0])));
+      screen.geneSetsChanged();
+      if (overwrite) {
+        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET,
+            Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
 
-        } else {
-          Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_CREATE_NEW_GENE_SET);
-        }
-        return true;
+      } else {
+        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_CREATE_NEW_GENE_SET);
       }
+      return true;
     }
     return false;
   }

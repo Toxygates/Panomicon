@@ -2,6 +2,8 @@ package t.viewer.client.storage;
 
 import java.util.*;
 
+import com.google.gwt.user.client.Window;
+
 /**
  * Manages the storage of objects that can be saved and loaded by name. 
  * Backed by an instance of t.viewer.client.storage.Storage.
@@ -117,6 +119,28 @@ public class NamedObjectStorage<T> {
   
   public boolean containsKey(String key) {
     return objectsByName.containsKey(key);
+  }
+  
+  public boolean validateNewObjectName(String name, boolean overwrite) {
+    if (name == null) {
+      return false;
+    }
+    if (name.equals("")) {
+      Window.alert("You must enter a non-empty name.");
+      return false;
+    }
+    if (!StorageProvider.isAcceptableString(name, "Unacceptable list name.")) {
+      return false;
+    }
+    if (reservedName(name)) {
+      Window.alert("This name is reserved for the system and cannot be used.");
+      return false;
+    }
+    if (!overwrite && containsKey(name)) {
+      return Window.confirm(
+          "The title \"" + name + "\" is already taken.\n" + "Do you wish to replace it?");
+    }
+    return true;
   }
   
   public String suggestName(String prefix) {
