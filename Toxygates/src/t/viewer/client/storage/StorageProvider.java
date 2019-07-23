@@ -31,9 +31,7 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.network.PackedNetwork;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 
 /**
@@ -95,7 +93,7 @@ public class StorageProvider implements Storage.StorageProvider {
       new Storage<List<String>>("compounds", stringsPacker, this, 
           () -> new ArrayList<String>());
   
-  public final Storage<List<ItemList>> itemListsStorage = 
+  private final Storage<List<ItemList>> itemListsStorage = 
       new Storage<List<ItemList>>("lists", itemListsPacker, this, 
           () -> new ArrayList<ItemList>());
 

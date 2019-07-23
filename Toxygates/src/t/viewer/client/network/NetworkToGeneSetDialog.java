@@ -1,10 +1,11 @@
 package t.viewer.client.network;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.ImportingScreen;
@@ -18,6 +19,7 @@ public class NetworkToGeneSetDialog {
   private ImportingScreen screen;
   
   private Network network;
+  private String lastSuggestedName = null;
   
   public NetworkToGeneSetDialog(Network network, ImportingScreen screen) {
     this.network = network;
@@ -32,8 +34,8 @@ public class NetworkToGeneSetDialog {
     verticalPanel.add(new Label("Name for new gene set:"));
 
     final TextBox input = new TextBox();
+    input.setWidth("90%");
     verticalPanel.add(input);
-    
     verticalPanel.add(new Label("Type of probes to extract:"));
     
     Set<String> probeTypeNames = new HashSet<String>();
@@ -45,17 +47,28 @@ public class NetworkToGeneSetDialog {
     });
     verticalPanel.add(probeTypeSelector);
     
+    probeTypeSelector.addChangeHandler(new ChangeHandler() {
+      @Override
+      public void onChange(ChangeEvent event) {
+        if (input.getValue() == lastSuggestedName) {
+          input.setValue(suggestName());
+        }
+      }
+    });
+    
     Button saveButton = new Button("Save");
     saveButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        String[] probes = network.nodes().stream().
-            filter(n -> n.type() == probeTypeSelector.getSelectedItemText()).
-            map(n -> n.id()).collect(Collectors.toList()).toArray(new String[0]);
-        StringList newGeneSet = new StringList("probes", input.getValue(), probes);
-        screen.geneSets().put(newGeneSet);
-        screen.geneSetsChanged();
-        mainDialog.hide();
+        if (screen.geneSets().validateNewObjectName(input.getValue(), false)) {
+          String[] probes = network.nodes().stream().
+              filter(n -> n.type() == probeTypeSelector.getSelectedItemText()).
+              map(n -> n.id()).collect(Collectors.toList()).toArray(new String[0]);
+          StringList newGeneSet = new StringList("probes", input.getValue(), probes);
+          screen.geneSets().put(newGeneSet);
+          screen.geneSetsChanged();
+          mainDialog.hide();
+        }
       }
     });
 
@@ -74,6 +87,15 @@ public class NetworkToGeneSetDialog {
     mainDialog.center();
     mainDialog.setModal(true);
 
+    input.setValue(suggestName());
+    
     mainDialog.show();
+  }
+  
+  private String suggestName() {
+    String prefix = network.title() + " " + probeTypeSelector.getSelectedItemText();
+    lastSuggestedName = screen.geneSets().suggestName(prefix);
+    Logger.getLogger("aoeu").info("lastSuggestedName = " + lastSuggestedName);
+    return lastSuggestedName;
   }
 }
