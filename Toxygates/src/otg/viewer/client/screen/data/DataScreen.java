@@ -256,12 +256,6 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public void addAnalysisMenuItem(MenuItem mi) {
     analysisMenu.addItem(mi);
   }
-  
-  @Override
-  public void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists) {
-    //itemListsChanged(itemLists); TODO fix this
-    clusteringListsChanged(clusteringLists);
-  }
 
   @Override
   public void runEnrichment(@Nullable IntermineInstance preferredInstance) {

@@ -37,8 +37,6 @@ import t.viewer.shared.intermine.IntermineInstance;
 public interface ImportingScreen extends OTGScreen {
   void setUrlProbes(String[] probes);
 
-  void intermineImport(List<ItemList> itemLists, List<ItemList> clusteringLists);
-
   void runEnrichment(@Nullable IntermineInstance preferredInstance);
 
   List<ItemList> clusteringLists();

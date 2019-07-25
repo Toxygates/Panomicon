@@ -92,9 +92,9 @@ public class InterMineData {
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
         // TODO revise pop-up message handling for this process
-        // TODO reimplement this
-//        parent.intermineImport(mergeLists(parent.itemLists(), normal, replace, "lists"),
-//            mergeLists(parent.clusteringLists(), clustering, replace, "clusters"));
+        parent.geneSets().insertAll(normal, replace);
+        parent.geneSetsChanged();
+        parent.clusteringListsChanged(mergeLists(parent.clusteringLists(), clustering, replace, "clusters"));
       }
     });
   }
@@ -110,10 +110,9 @@ public class InterMineData {
           protected void userProceed(IntermineInstance instance, String user, String pass,
               boolean replace) {
             super.userProceed();
-            // TODO reimplement this  
-//            doExport(instance, user, pass, 
-//                StringListsStoreHelper.compileLists(importingParent.itemLists(), importingParent.clusteringLists()),
-//                replace);
+            doExport(instance, user, pass, 
+                StringListsStoreHelper.compileLists(importingParent.geneSets().allObjects(), importingParent.clusteringLists()),
+                replace);
           }
 
         };

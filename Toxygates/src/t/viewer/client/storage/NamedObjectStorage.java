@@ -124,6 +124,7 @@ public class NamedObjectStorage<T> {
   public boolean validateNewObjectName(String name, boolean overwrite) {
     if (name == null) {
       return false;
+
     }
     if (name.equals("")) {
       Window.alert("You must enter a non-empty name.");
@@ -151,5 +152,14 @@ public class NamedObjectStorage<T> {
       i++;
     }
     return name;
+  }
+  
+  public void insertAll(List<T> itemsToInsert, boolean overwrite) {
+    for (T item : itemsToInsert) {
+      String itemName = nameExtractor.getName(item);
+      if (overwrite || !containsKey(itemName)) {
+        put(itemName, item);
+      }
+    }
   }
 }
