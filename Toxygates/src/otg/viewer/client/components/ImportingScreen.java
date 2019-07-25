@@ -39,9 +39,9 @@ public interface ImportingScreen extends OTGScreen {
 
   void runEnrichment(@Nullable IntermineInstance preferredInstance);
 
-  List<ItemList> clusteringLists();
+  NamedObjectStorage<ItemList> clusteringLists();
 
-  void clusteringListsChanged(List<ItemList> lists);
+  void clusteringListsChanged();
 
   public NamedObjectStorage<StringList> geneSets();
   void geneSetsChanged();

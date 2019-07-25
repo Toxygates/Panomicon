@@ -110,20 +110,4 @@ public abstract class ItemListsStoreHelper {
     }
     return lists;
   }
-  
-  /**
-   * Delete specified list from storage
-   * 
-   * @param name the name to be deleted
-   */
-  public void delete(String name) {
-    if (!itemLists.containsKey(type)) {
-      throw new RuntimeException("Type \"" + type + "\" not found.");
-    }
-    
-    if (itemLists.get(type).remove(name) != null) {
-      //screen.itemListsChanged(buildItemLists()); TODO don't fix this, just get rid of this class
-    }
-  }
-
 }

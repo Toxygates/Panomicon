@@ -107,7 +107,7 @@ public class GeneSetsMenu {
     root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
 
     List<ClusteringList> clusterings =
-        ClusteringList.pickUserClusteringLists(screen.clusteringLists(), null);
+        ClusteringList.pickUserClusteringLists(screen.clusteringLists().allObjects(), null);
     ensureSorted(clusterings);
 
     for (final ClusteringList cl : clusterings) {
@@ -291,9 +291,9 @@ public class GeneSetsMenu {
         return;
       }
 
-      ClusteringListsStoreHelper helper =
-          new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen);
-      helper.delete(cl.name());
+      screen.clusteringLists().remove(cl.name());
+      screen.clusteringListsChanged();
+      
       ItemList geneSet = screen.geneSet();
 
       // If the user deletes chosen gene set, switch to "All probes" automatically.

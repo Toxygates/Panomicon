@@ -59,8 +59,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   
   protected String[] chosenProbes = new String[0];
   private NamedObjectStorage<StringList> geneSets;
+  private NamedObjectStorage<ItemList> clusteringLists;
   public ItemList chosenGeneSet = null;
-  protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
 
   private String[] urlProbes = null;
 
@@ -71,7 +71,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     groups.storage().loadFromStorage();
     geneSets.loadFromStorage();
     chosenGeneSet = storage.chosenGenesetStorage.getIgnoringException();
-    clusteringLists = storage.clusteringListsStorage.getIgnoringException();
+    clusteringLists.loadFromStorage();
 
     if (tableView == null || tableView.type() != preferredViewType()) {
       rebuildGUI();
@@ -139,10 +139,15 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
         l -> l.name());
     geneSets.reservedNames.addAll(manager().appInfo().predefinedProbeLists().stream().
         map(l -> l.name()).collect(Collectors.toList()));
+    clusteringLists = new NamedObjectStorage<ItemList>(getStorage().clusteringListsStorage,
+        l -> l.name());
+    // Not sure if disallowing these reserved names for clustering lists is necessary
+    clusteringLists.reservedNames.addAll(manager().appInfo().predefinedProbeLists().stream().
+        map(l -> l.name()).collect(Collectors.toList())); 
   }
 
   @Override
-  public List<ItemList> clusteringLists() {
+  public NamedObjectStorage<ItemList> clusteringLists() {
     return clusteringLists;
   }
 
@@ -325,10 +330,9 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   }
 
   @Override
-  public void clusteringListsChanged(List<ItemList> lists) {
-    clusteringLists = lists;
-    getStorage().clusteringListsStorage.store(lists);
-    geneSetsMenu.clusteringListsChanged(lists);
+  public void clusteringListsChanged() {
+    clusteringLists.saveToStorage();
+    geneSetsMenu.clusteringListsChanged(clusteringLists.allObjects());
   }
 
   public String[] displayedAtomicProbes() {

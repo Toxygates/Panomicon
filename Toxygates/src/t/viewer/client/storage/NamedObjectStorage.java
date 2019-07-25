@@ -154,7 +154,7 @@ public class NamedObjectStorage<T> {
     return name;
   }
   
-  public void insertAll(List<T> itemsToInsert, boolean overwrite) {
+  public <S extends T> void insertAll(List<S> itemsToInsert, boolean overwrite) {
     for (T item : itemsToInsert) {
       String itemName = nameExtractor.getName(item);
       if (overwrite || !containsKey(itemName)) {

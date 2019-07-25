@@ -94,7 +94,8 @@ public class InterMineData {
         // TODO revise pop-up message handling for this process
         parent.geneSets().insertAll(normal, replace);
         parent.geneSetsChanged();
-        parent.clusteringListsChanged(mergeLists(parent.clusteringLists(), clustering, replace, "clusters"));
+        parent.clusteringLists().insertAll(clustering, replace);
+        parent.clusteringListsChanged();
       }
     });
   }
@@ -111,7 +112,8 @@ public class InterMineData {
               boolean replace) {
             super.userProceed();
             doExport(instance, user, pass, 
-                StringListsStoreHelper.compileLists(importingParent.geneSets().allObjects(), importingParent.clusteringLists()),
+                StringListsStoreHelper.compileLists(importingParent.geneSets().allObjects(), 
+                    importingParent.clusteringLists().allObjects()),
                 replace);
           }
 

@@ -32,9 +32,10 @@ import t.clustering.shared.Algorithm;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
-import t.viewer.client.Analytics;
-import t.viewer.client.ClientGroup;
+import t.viewer.client.*;
 import t.viewer.client.components.DataView;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InputDialog;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.StringList;
 
@@ -123,10 +124,68 @@ public class HeatmapViewer extends Composite {
     }
 
     protected void saveAsGeneSets() {
-      ClusteringListsStoreHelper helper =
-          new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen);
-      helper.save(getCurrent2DArray(), lastClusteringAlgorithm);
+      save(getCurrent2DArray(), lastClusteringAlgorithm);
     }
+    
+    protected DialogBox inputDialog;
+    
+    public void save(List<Collection<String>> lists, Algorithm algorithm) {
+      saveAction(lists, algorithm, "Name entry", "Please enter a name for the list.");
+    }
+
+    private void saveAction(final List<Collection<String>> lists, final Algorithm algorithm,
+        String caption, String message) {
+      final String type = ClusteringList.USER_CLUSTERING_TYPE;
+      
+      InputDialog entry = new InputDialog(message) {
+        @Override
+        protected void onChange(String name) {
+          if (name == null) { // on Cancel clicked
+            inputDialog.setVisible(false);
+            return;
+          }
+
+          if (!screen.clusteringLists().validateNewObjectName(name, false)) {
+            return;
+          }
+
+          List<String> names = generateNameList(name, lists.size());
+          List<StringList> clusters = new ArrayList<StringList>();
+          for (int i = 0; i < lists.size(); ++i) {
+            clusters.add(new StringList(StringList.PROBES_LIST_TYPE, 
+                names.get(i), lists.get(i).toArray(new String[0])));
+          }
+
+          ClusteringList cl =
+              new ClusteringList(type, name, algorithm, clusters.toArray(new StringList[0]));
+          
+          screen.clusteringLists().put(name, cl);
+          screen.clusteringLists().saveToStorage();
+          inputDialog.setVisible(false);
+
+          Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SAVE_CLUSTERS);
+          Window.alert("Clusters are successfully saved.");
+        }
+      };
+      inputDialog = Utils.displayInPopup(caption, entry, DialogPosition.Center);
+    }
+    
+    private List<String> generateNameList(String base, int size) {
+      if (size > 1) {
+        return getSerialNumberedNames(base, size);
+      } else {
+        return new ArrayList<String>(Arrays.asList(new String[] {base}));
+      }
+    }
+    
+    private List<String> getSerialNumberedNames(String base, int count) {
+      List<String> names = new ArrayList<String>(count);
+      for (int i = 0; i < count; ++i) {
+        names.add(base + " " + (i + 1));
+      }
+      return names;
+    }
+
 
     @Override
     protected void addTopContent(HorizontalPanel topContent) {
