@@ -292,7 +292,9 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
 
     val data = new ClusteringData(cont, probes, probesScala, valueType)
 
-    val clust = new RClustering(codeDir)
+    // R can't deal with backslashes in a file path so we need to replace them
+    // with slashes
+    val clust = new RClustering(codeDir.replace("\\", "/"))
     clust.clustering(data.data.flatten, rowNamesForHeatmap(data.rowNames),
         data.colNames, data.geneSymbols, algorithm, featureDecimalDigits)
   }
