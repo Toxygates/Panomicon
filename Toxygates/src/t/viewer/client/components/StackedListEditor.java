@@ -82,7 +82,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       listChooser = new ListChooser(predefinedLists, listType) {
         @Override
         protected void itemsChanged(List<String> items) {
-          setSelection(validateItems(items));
+          setSelection(validateItems(items), StackedListEditor.this);
         }
 
         @Override
