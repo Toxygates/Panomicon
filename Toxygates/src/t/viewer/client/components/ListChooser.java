@@ -198,6 +198,8 @@ public class ListChooser extends Composite {
     lists.put(entryName, items);
     refreshSelector();
     listsChanged(getLists());
+    int newItemIndex = Utils.findListBoxItemIndex(listBox, entryName);
+    listBox.setSelectedIndex(newItemIndex);
 
     return SAVE_SUCCESS;
   }

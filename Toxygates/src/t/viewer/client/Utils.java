@@ -372,4 +372,19 @@ public class Utils {
       }
     }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
+  
+  /**
+   * Finds the index of the first item in a ListBox with the given name
+   * @param listBox the listBox whose items should be searched
+   * @param itemName the name of the item to find 
+   * @return the index of the item if found, otherwise -1
+   */
+  public static int findListBoxItemIndex(ListBox listBox, String itemName) {
+    for (int i = 0; i < listBox.getItemCount(); i++) {
+      if (listBox.getItemText(i) == itemName) {
+        return i;
+      }
+    }
+    return -1;
+  }
 }
