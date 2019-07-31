@@ -212,7 +212,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    * @param itemLists the updated item lists
    */
   public void compoundSelectorCompoundListsChanged(List<StringList> stringLists) {
-    getStorage().compoundListStorage.store(stringLists);
+    getStorage().compoundListsStorage.store(stringLists);
   }
 
   /**

@@ -106,7 +106,7 @@ public class StorageProvider implements Storage.StorageProvider {
               map(l -> (StringList) l).collect(Collectors.toList());
           });
   
-  public final Storage<List<StringList>> compoundListStorage = 
+  public final Storage<List<StringList>> compoundListsStorage = 
       new Storage<List<StringList>>("compoundLists", stringListsPacker, this, 
           () -> {
             // Fallback: get all the compound lists from itemListsStorage

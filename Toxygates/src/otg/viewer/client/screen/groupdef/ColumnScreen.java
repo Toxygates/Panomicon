@@ -49,6 +49,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
 
   @Override
   public void loadState(AttributeSet attributes) {
+    compoundSelector.compoundListsChanged(getStorage().compoundListsStorage.getIgnoringException());
     boolean datasetsChanged = chosenDatasets != null && 
         !chosenDatasets.equals(getStorage().datasetsStorage.getIgnoringException());
     List<String> oldCompounds = chosenCompounds;
