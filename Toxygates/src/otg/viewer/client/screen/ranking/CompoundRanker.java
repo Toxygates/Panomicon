@@ -92,7 +92,7 @@ abstract public class CompoundRanker extends Composite {
     resources = screen.resources();
     probeService = _screen.manager().probeService();
     sampleService = _screen.manager().sampleService();
-
+    
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
       @Override
       protected void preSaveAction() {
@@ -285,7 +285,7 @@ abstract public class CompoundRanker extends Composite {
     availableCompounds = compounds;
   }
 
-  public void compoundListsChanged(List<StringList> lists) {
+  public void geneSetsChanged(List<StringList> lists) {
     compoundLists = lists;
     listChooser.setLists(StringListsStoreHelper.compileLists(this.compoundLists, this.clusteringLists));
   }

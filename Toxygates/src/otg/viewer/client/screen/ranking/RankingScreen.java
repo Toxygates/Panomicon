@@ -35,7 +35,6 @@ import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
-import t.viewer.shared.StringList;
 
 public class RankingScreen extends FilterAndSelectorScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {
@@ -50,6 +49,8 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
 
   @Override
   public void loadState(AttributeSet attributes) {
+    compoundRanker.geneSetsChanged(getStorage().geneSetsStorage.getIgnoringException());
+    compoundRanker.clusteringListsChanged(getStorage().clusteringListsStorage.getIgnoringException());
     // Clear the rankings if we get new compounds as a result of dataset/sampleclass changes
     loadDatasetsAndSampleClass(attributes).addSuccessCallback(c -> {
       rankingSelector.removeRankColumns();
@@ -66,12 +67,6 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
     compoundRanker = factory().compoundRanker(this);
 
     rankingSelector = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
-      @Override
-      public void compoundListsChanged(List<StringList> lists) {
-        super.compoundListsChanged(lists);
-        compoundRanker.compoundListsChanged(lists);
-      }
-
       @Override
       protected void availableCompoundsChanged(List<String> compounds) {
         super.availableCompoundsChanged(compounds);
