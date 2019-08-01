@@ -30,6 +30,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.storage.client.Storage;
@@ -159,7 +160,18 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {      
       @Override
       public void onUncaughtException(Throwable e) {
-        logger.log(Level.WARNING, "Exception", e);
+        Throwable unwrapped = unwrap(e);
+        logger.log(Level.WARNING, "Exception", unwrapped);
+      }
+
+      public Throwable unwrap(Throwable e) {
+        if(e instanceof UmbrellaException) {
+          UmbrellaException ue = (UmbrellaException) e;
+          if(ue.getCauses().size() == 1) {
+            return unwrap(ue.getCauses().iterator().next());
+          }
+        }
+        return e;
       }
     });
     
