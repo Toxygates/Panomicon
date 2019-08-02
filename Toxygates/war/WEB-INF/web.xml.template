@@ -146,6 +146,15 @@
     	<url-pattern>/toxygates/intermine</url-pattern>
   	</servlet-mapping>
   	
+  	<servlet>
+    	<servlet-name>remoteLogging</servlet-name>
+    	<servlet-class>com.google.gwt.logging.server.RemoteLoggingServiceImpl</servlet-class>
+	</servlet>	
+	<servlet-mapping>
+    	<servlet-name>remoteLogging</servlet-name>
+    	<url-pattern>/toxygates/remote_logging</url-pattern>
+	</servlet-mapping>
+  	
   	<context-param>
 		<param-name>intermine.instances</param-name>
 		<param-value>target,rat,human,mouse</param-value>
