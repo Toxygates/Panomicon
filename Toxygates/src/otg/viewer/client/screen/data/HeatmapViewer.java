@@ -160,7 +160,7 @@ public class HeatmapViewer extends Composite {
               new ClusteringList(type, name, algorithm, clusters.toArray(new StringList[0]));
           
           screen.clusteringLists().put(name, cl);
-          screen.clusteringLists().saveToStorage();
+          screen.clusteringListsChanged();
           inputDialog.setVisible(false);
 
           Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SAVE_CLUSTERS);
