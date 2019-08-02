@@ -111,7 +111,7 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
       |}
       |LIMIT 10""".stripMargin
     triplestore.mapQuery(query).map(x =>
-      (x.get("s").getOrElse(x("l")), x("l")))
+      (x.getOrElse("s", x("l")), x("l")))
   }
 
   /**

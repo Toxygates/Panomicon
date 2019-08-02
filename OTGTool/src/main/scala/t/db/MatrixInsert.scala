@@ -69,7 +69,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
             log(s"Warning: unknown probe '$probe' (this error may be safely ignored).")
           }
           val knownProbes = raw.probes.toSet -- unknownProbes
-          if (knownProbes.size == 0) {
+          if (knownProbes.isEmpty) {
             throw new LookupFailedException("No valid probes in data.")
           }
 

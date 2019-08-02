@@ -542,7 +542,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
       Probe.unpack(query) ->
         DefaultBio(Probe.unpackOnly(target),
-          x.get("symbol").getOrElse(Probe.unpackOnly(target)),
+          x.getOrElse("symbol", Probe.unpackOnly(target)),
           Some(extraInfo))
     })
     makeMultiMap(r)

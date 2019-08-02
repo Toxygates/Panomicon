@@ -42,10 +42,10 @@ class CSVRawExpressionData(exprFile: String,
     columns.drop(1).toVector.map(s => Sample(unquote(s)))
   }
 
-  override lazy val samples: Seq[Sample] =
+  override lazy val samples: Vector[Sample] =
     samplesInFile(exprFile).distinct
 
-  override lazy val probes: Seq[String] =
+  override lazy val probes: Vector[String] =
     probesInFile(exprFile).toVector
 
   private def probesInFile(file: String) = {
@@ -80,13 +80,13 @@ class CSVRawExpressionData(exprFile: String,
   }
 
   protected def probeBuffer[T] = {
-    var r = ArrayBuffer[T]()
+    val r = ArrayBuffer[T]()
     r.sizeHint(probes.size)
     r
   }
 
   protected def sampleBuffer[T] = {
-    var r = ArrayBuffer[T]()
+    val r = ArrayBuffer[T]()
     r.sizeHint(samples.size)
     r
   }
@@ -95,9 +95,9 @@ class CSVRawExpressionData(exprFile: String,
     extract: String => T): CMap[Sample, Seq[T]] = {
     val samples = ss.map(_.sampleId).toSet
 
-    val raw = probeBuffer[Seq[String]]
-    var keptColumns: Option[Seq[String]] = None
-    var keptIndices: Option[Seq[Int]] = None
+    val raw = probeBuffer[IndexedSeq[String]]
+    var keptColumns: Option[IndexedSeq[String]] = None
+    var keptIndices: Option[IndexedSeq[Int]] = None
 
     traverseFile(file, (columns, l) => {
 
@@ -204,7 +204,7 @@ class CachedCSVRawExpressionData(exprFile: String,
    override protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
     extract: String => T): CMap[Sample, Seq[T]] = {
 
-    val raw = probeBuffer[Seq[T]]
+    val raw = probeBuffer[IndexedSeq[T]]
 
     traverseFile(file, (columns, l) => {
 

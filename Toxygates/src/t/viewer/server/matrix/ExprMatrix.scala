@@ -71,11 +71,12 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
  * The main data matrix class. Tracks names of columns and rows.
  * This class is immutable. The various operations produce modified copies.
  */
-class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
+class ExprMatrix(withData: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
     val annotations: Seq[RowAnnotation])
     extends KeyedDataMatrix[ExprMatrix, ExprValue,
-      Seq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
+      IndexedSeq[ExprValue], String, String](withData.toIndexedSeq.map(_.toIndexedSeq),
+          rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._
   import t.util.SafeMath._
@@ -84,7 +85,7 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
 
   override def toString:String = s"ExprMatrix $rows x $columns"
 
-  def fromSeq(s: Seq[ExprValue]) = s
+  def fromSeq(s: Seq[ExprValue]) = s.toIndexedSeq
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.

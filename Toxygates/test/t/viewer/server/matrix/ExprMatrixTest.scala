@@ -64,12 +64,12 @@ class ExprMatrixTest extends TTestSuite {
     assert(em.column("a") === em.column(0))
     assert(em.row("a") === em.row(0))
 
-    def tv(x: Seq[Int]) = x.map(ExprValue(_))
+    def tv(x: IndexedSeq[Int]) = x.map(ExprValue(_))
 
-    assert(em.column(0) === tv(Seq(3,1,2,4,5)))
-    assert(em.column(1) === tv(Seq(3,2,1,4,2)))
-    assert(em.row(0) === tv(Seq(3,3,5,3,3,5)))
-    assert(em.row(1) === tv(Seq(1,2,1,9,8,10)))
+    assert(em.column(0) === tv(Vector(3,1,2,4,5)))
+    assert(em.column(1) === tv(Vector(3,2,1,4,2)))
+    assert(em.row(0) === tv(Vector(3,3,5,3,3,5)))
+    assert(em.row(1) === tv(Vector(1,2,1,9,8,10)))
 
     val transpose = em.copyWith(em.toColVectors)
     for (i <- 0 until 5) {
@@ -89,7 +89,7 @@ class ExprMatrixTest extends TTestSuite {
       assert(em2.column(i) === em.column(i))
     }
 
-    val em3 = em.copyWithColumns(List(tv(Seq(1,2,3,4))))
+    val em3 = em.copyWithColumns(List(tv(Vector(1,2,3,4))))
     assert(em3.rows === 4)
     assert(em3.columns === 1)
 

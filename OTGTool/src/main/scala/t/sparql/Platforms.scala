@@ -145,7 +145,7 @@ class Platforms(baseConfig: BaseConfig) extends
         attribSet.findOrCreate(x("id"), x("desc"), x("type")),
       x.get("sec"),
       x.get("lower").map(_.toDouble), x.get("upper").map(_.toDouble),
-      attribMaps.get(x("id")).getOrElse(Map())))
+      attribMaps.getOrElse(x("id"), Map())))
 
     new BioParameters(Map() ++ bpcons.map(b => b.attribute -> b))
   }

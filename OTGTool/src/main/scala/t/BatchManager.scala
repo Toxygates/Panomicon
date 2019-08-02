@@ -613,7 +613,7 @@ class BatchManager(context: Context) {
       db.deleteSamples(samples)
     } catch {
       case lf: LookupFailedException =>
-        println(s"Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
+        println("Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
         println("Please investigate manually!")
       case t: Throwable => throw t
     }
@@ -752,7 +752,7 @@ class BatchManager(context: Context) {
         val filtSamples = tsmd.samples
         val total = filtSamples.size
         var pcomp = 0d
-        var it = filtSamples.grouped(100)
+        val it = filtSamples.grouped(100)
         while (it.hasNext && shouldContinue(pcomp)) {
           val sg = it.next
           val xs = builder.makeNew(source, tsmd, sg)

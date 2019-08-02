@@ -49,7 +49,7 @@ object Converter {
     convert(input, output)
   }
 
-  def loadColumns(input: String, requestColumns: Seq[AffyColumn]): Seq[Seq[String]] = {
+  def loadColumns(input: String, requestColumns: IndexedSeq[AffyColumn]): Seq[Seq[String]] = {
     val (columns, rawData) = loadRaw(input)
     val offsets = requestColumns.map(r => columns.indexOf(r.title))
     rawData.map(d => offsets.map(d(_)))
@@ -59,8 +59,8 @@ object Converter {
      val data =
       Source.fromFile(input).getLines.toVector.dropWhile(_.startsWith("#")).
         map(l => rejoin(l.split(",").toList))
-    val columns = data(0).map(procItem)
-    (columns, data.drop(1).map(_.map(procItem)))
+    val columns = data(0).map(procItem).toArray
+    (columns, data.drop(1).map(_.map(procItem).toArray))
   }
 
   def convert(input: String, output: String): Unit = {
@@ -79,7 +79,7 @@ object Converter {
     }
   }
 
-  def procLine(l: Seq[String], columns: Seq[String], idColumn: Int) {
+  def procLine(l: IndexedSeq[String], columns: IndexedSeq[String], idColumn: Int) {
     val id = l(idColumn)
     if (id.startsWith(ignorePrefix)) {
       return //don't print this probe

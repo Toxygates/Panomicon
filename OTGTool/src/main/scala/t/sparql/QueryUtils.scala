@@ -55,7 +55,7 @@ trait QueryUtils {
 
   def caseInsensitiveMultiFilter(v: String, values: Iterable[String]): String = {
     val m = values.map(" regex(" + v + ", " + _ + ", \"i\") ")
-    if (m.size == 0) {
+    if (m.isEmpty) {
       ""
     } else {
       "FILTER ( " + m.mkString(" || ") + " )"

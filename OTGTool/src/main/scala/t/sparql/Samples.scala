@@ -248,7 +248,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
-        s"WHERE { GRAPH ?batchGraph { " +
+        "WHERE { GRAPH ?batchGraph { " +
         "?x t:" + attribute.id + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
       triplestore.simpleQueryNonQuiet)
