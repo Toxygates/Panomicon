@@ -45,12 +45,12 @@ class ExprMatrixTest extends TTestSuite {
    */
 
   val testMatrix = {
-    val data = List(
-      List(3, 3, 5, 3, 3, 5),
-      List(1, 2, 1, 9, 8, 10),
-      List(2, 1, 1, 19, 18, 20),
-      List(4, 4, 4, 2, 1, 2),
-      List(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
+    val data = Vector(
+      Vector(3, 3, 5, 3, 3, 5),
+      Vector(1, 2, 1, 9, 8, 10),
+      Vector(2, 1, 1, 19, 18, 20),
+      Vector(4, 4, 4, 2, 1, 2),
+      Vector(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
     new ExprMatrix(data, data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),

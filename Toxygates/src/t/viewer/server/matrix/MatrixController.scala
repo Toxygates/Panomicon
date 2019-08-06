@@ -157,7 +157,7 @@ abstract class MatrixController(params: ControllerParams) {
     val mm = if (filteredProbes.size > 0) {
       finish(makeMatrix(filteredProbes.toSeq, typ, params.fullLoad))
     } else {
-      val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
+      val emptyMatrix = new ExprMatrix(Vector(), 0, 0, Map(), Map(), List())
       finish(new ManagedMatrix(
         LoadParams(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
         ))
