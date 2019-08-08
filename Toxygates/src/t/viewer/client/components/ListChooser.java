@@ -19,6 +19,7 @@
 package t.viewer.client.components;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
@@ -54,7 +55,6 @@ public class ListChooser extends Composite {
   private DialogBox inputDialog;
   final private ListBox listBox;
   final private String listType;
-  private List<ItemList> otherTypeLists = new ArrayList<ItemList>();
 
   /*
    * Create empty list box
@@ -223,15 +223,18 @@ public class ListChooser extends Composite {
       return;
     }
     String sel = listBox.getItemText(idx);
-    if (lists.containsKey(sel)) {
-      if (isPredefinedListName(sel)) {
-        Window.alert("Cannot delete a predefined list.");
-      } else {
-        // should probably have confirmation here
-        lists.remove(sel);
-        refreshSelector();
-        listsChanged(getLists());
-      }
+    Logger.getLogger("aou").info("idx =  " + idx + "; lists.size = " + lists.size());
+    if (isPredefinedListName(sel)) {
+      Window.alert("Cannot delete a predefined list.");
+    } else if (idx > lists.size()) {
+      Window.alert("Cannot delete extra lists.");
+    } else if (lists.containsKey(sel)) {
+      // should probably have confirmation here
+      lists.remove(sel);
+      refreshSelector();
+      listsChanged(getLists());
+    } else {
+      throw new RuntimeException("Error finding list box item text in list of items.");
     }
   }
 
@@ -241,6 +244,7 @@ public class ListChooser extends Composite {
 
     addItems(lists);
     addItems(extraLists);
+    addItems(predefinedLists);
   }
   
   protected void addItems(Map<String, List<String>> listsToAdd) {
@@ -297,7 +301,7 @@ public class ListChooser extends Composite {
   }
 
   /**
-   * Returns all ItemLists, including the ones of a type not managed by this chooser.
+   * Returns the lists managed by this chooser.
    */
   public List<StringList> getLists() {
     List<StringList> r = new ArrayList<StringList>();
@@ -317,17 +321,16 @@ public class ListChooser extends Composite {
    */
   public <T extends ItemList> void setLists(List<T> itemLists) {
     lists.clear();
-    otherTypeLists.clear();
 
     for (T il : itemLists) {
       if (il.type().equals(listType) && (il instanceof StringList)) {
         StringList sl = (StringList) il;
         lists.put(il.name(), Arrays.asList(sl.items()));
-      } else {
-        otherTypeLists.add(il);
+        Logger.getLogger("aou").info("adding " + il.name() + " to lists; new size = " + lists.size());
       }
     }
-    lists.putAll(predefinedLists);
+    
+    Logger.getLogger("aou").info("added predefined; new size = " + lists.size());
     refreshSelector();
   }
 
