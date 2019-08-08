@@ -46,6 +46,7 @@ public class ListChooser extends Composite {
 
   // ordered map
   protected Map<String, List<String>> lists = new TreeMap<String, List<String>>();
+  protected Map<String, List<String>> extraLists = new TreeMap<String, List<String>>();
 
   private Map<String, List<String>> predefinedLists = new TreeMap<String, List<String>>(); // ordered
                                                                                            // map
@@ -235,12 +236,17 @@ public class ListChooser extends Composite {
   }
 
   protected void refreshSelector() {
-    String selected = getSelectedText();
-
     listBox.clear();
     listBox.addItem(DEFAULT_ITEM);
 
-    List<String> sorted = new ArrayList<String>(lists.keySet());
+    addItems(lists);
+    addItems(extraLists);
+  }
+  
+  protected void addItems(Map<String, List<String>> listsToAdd) {
+    String selected = getSelectedText();
+    
+    List<String> sorted = new ArrayList<String>(listsToAdd.keySet());
     Collections.sort(sorted, new Comparator<String>() {
       @Override
       public int compare(String o1, String o2) {
@@ -251,7 +257,7 @@ public class ListChooser extends Composite {
       }
     });
 
-    int idx = 0, i = 1;
+    int idx = -1, i = 1;
     for (String s : sorted) {
       listBox.addItem(s);
       if (s.equals(selected)) {
@@ -260,7 +266,9 @@ public class ListChooser extends Composite {
       ++i;
     }
 
-    listBox.setSelectedIndex(idx);
+    if (idx >= 0) {
+      listBox.setSelectedIndex(idx);
+    }
   }
 
   protected boolean isPredefinedListName(String name) {
@@ -323,6 +331,18 @@ public class ListChooser extends Composite {
     refreshSelector();
   }
 
+  public void setExtraLists(List<? extends ItemList> newExtraLists, String namePrefix) {
+    extraLists.clear();
+    
+    for (ItemList il : newExtraLists) {
+      if ((il instanceof StringList)) {
+        StringList sl = (StringList) il;
+        extraLists.put(namePrefix + il.name(), Arrays.asList(sl.items()));
+      }
+    }
+    refreshSelector();
+  }
+  
   /**
    * Try to select an item that matches given title in list box.
    * 

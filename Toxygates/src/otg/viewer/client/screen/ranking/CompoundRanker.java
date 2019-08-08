@@ -29,12 +29,14 @@ import otg.viewer.client.components.GeneOracle;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.compoundsel.RankingCompoundSelector;
 import otg.viewer.shared.RankRule;
+import t.clustering.shared.ClusteringList;
 import t.common.shared.DataSchema;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.client.components.*;
+import t.viewer.client.components.ListChooser;
+import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.ItemList;
@@ -68,9 +70,8 @@ abstract public class CompoundRanker extends Composite {
 
   protected SampleClass chosenSampleClass;
   protected List<String> chosenCompounds = new ArrayList<String>();
-  protected List<StringList> compoundLists = new ArrayList<StringList>();
+  private List<StringList> geneSets = new ArrayList<StringList>();
   protected ItemList chosenGeneSet = null;
-  protected List<ItemList> clusteringLists = new ArrayList<ItemList>();
   List<String> availableCompounds = chosenCompounds;
 
   public SampleClass sampleClass() {
@@ -286,14 +287,21 @@ abstract public class CompoundRanker extends Composite {
   }
 
   public void geneSetsChanged(List<StringList> lists) {
-    compoundLists = lists;
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.compoundLists, this.clusteringLists));
+    geneSets = lists;
+    listChooser.setLists(geneSets);
   }
 
   public void clusteringListsChanged(List<ItemList> lists) {
-    clusteringLists = lists;
-    listChooser.setLists(StringListsStoreHelper.compileLists(this.compoundLists, this.clusteringLists));
+    List<StringList> clusters = new ArrayList<StringList>();
+    for (ItemList itemList: lists)  {
+      //Logger.getLogger("aou").info("considering " + il.name());
+      if (itemList instanceof ClusteringList) {
+        ClusteringList clusteringList = (ClusteringList) itemList;
+        for (StringList l: clusteringList.asStringLists()) {
+          clusters.add(l);
+        }
+      }
+    }
+    listChooser.setExtraLists(clusters, "Clust: ");
   }
-  
-  
 }
