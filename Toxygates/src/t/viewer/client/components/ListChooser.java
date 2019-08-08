@@ -121,7 +121,15 @@ public class ListChooser extends Composite {
         if (sel == null) {
           return;
         }
-        currentItems = lists.containsKey(sel) ? lists.get(sel) : new ArrayList<String>();
+        if (lists.containsKey(sel)) {
+          currentItems = lists.get(sel);
+        } else if (extraLists.containsKey(sel)) {
+          currentItems = extraLists.get(sel);
+        } else if (predefinedLists.containsKey(sel)) {
+          currentItems = predefinedLists.get(sel);
+        } else {
+          currentItems = new ArrayList<String>();
+        }
         itemsChanged(currentItems);
       }
     });
