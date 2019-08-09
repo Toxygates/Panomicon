@@ -94,21 +94,6 @@
 
   </target>
 
- <target name="docs" depends="retrieve">
-    <mkdir dir="${docs.dir}" />
-
-    <scaladoc srcdir="${sources.dir}"
-      destdir="${docs.dir}"
-      classpathref="compile.classpath"
-      diagrams="on"
-      nofail="on"
-      addparams="-no-java-comments"
-      doctitle="Toxygates library documentation">
-      <include name="**/*.scala" />
-      <include name="**/*.java" />
-    </scaladoc>
-  </target>
-
   <path id="gwtpath">
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <pathelement location="${gwt.sdk}/gwt-dev.jar"/>

@@ -75,20 +75,6 @@
     </scalac>
   </target>
 
-  <target name="docs" depends="retrieve">
-    <mkdir dir="${docs.dir}" />
-     
-    <scaladoc srcdir="${sources.dir}"
-      destdir="${docs.dir}"
-      classpathref="compile.classpath"
-      diagrams="on"
-      doctitle="OTGTool (Toxygates) library documentation">
-      <include name="${scala-source.dir}/**/*.scala" />
-      <include name="${java-source.dir}/**/*.java" />
-    </scaladoc>
-
-  </target>
-
   <target name="compile" depends="classfiles">
   </target>
 
