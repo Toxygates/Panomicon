@@ -28,6 +28,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.*;
+import t.clustering.shared.ClusteringList;
 import t.common.shared.GroupUtils;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
@@ -67,11 +68,31 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   @Override
   public void loadState(AttributeSet attributes) {
     StorageProvider storage = getStorage();
-    chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
+    
     groups.storage().loadFromStorage();
     geneSets.loadFromStorage();
-    chosenGeneSet = storage.chosenGenesetStorage.getIgnoringException();
     clusteringLists.loadFromStorage();
+    
+    chosenGeneSet = storage.chosenGenesetStorage.getIgnoringException();
+    
+    /* Make sure that the chosen gene set still exists, either among
+       the user-defined gene sets, user-defined clustering lists, or
+       predefined clusters. If not, this means the chosen gene set
+       has been deleted, so we should load all probes instead.
+    */
+    if (chosenGeneSet != null) {
+      if (geneSets.containsKey(chosenGeneSet.name()) ||
+          ((chosenGeneSet instanceof ClusteringList) && 
+              clusteringLists.containsKey(chosenGeneSet.name())) ||
+          geneSets.reservedNames.contains(chosenGeneSet.name())) {
+        chosenProbes = storage.probesStorage.getIgnoringException().toArray(new String[0]);
+      } else {
+        chosenGeneSet = null;
+        storage.chosenGenesetStorage.store(null);
+        chosenProbes = new String[0];
+        storage.probesStorage.store(Arrays.asList(chosenProbes));
+      }
+    }
 
     if (tableView == null || tableView.type() != preferredViewType()) {
       rebuildGUI();
