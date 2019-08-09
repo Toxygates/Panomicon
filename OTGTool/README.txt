@@ -4,5 +4,12 @@ To compile with ant, first set SCALA_HOME (the current tested version is 2.12.x)
 The ivy ant task is also needed.
 Place ivy.jar in a directory called e.g. antlib, and run the following command:
 
-ant -lib antlib compile
+$ant -lib antlib compile
+
+To generate scaladoc documentation in docs/ :
+$ant -lib antlib docs
+
+To run unit tests, the location of kyoto cabinet libraries (native and Java bindings) must be supplied:
+$export KC_LIB_DIR=/usr/local/lib
+$ant -lib antlib test
 
