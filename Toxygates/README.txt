@@ -10,5 +10,12 @@ $export SCALA_HOME=/path/to/scala-2.12.6
 The ivy ant task is also needed.
 Place ivy.jar in a directory called e.g. antlib, and run the following command:
 
-ant -lib antlib build
+$ant -lib antlib build
+
+To generate scaladoc documentation in docs/ :
+$ant -lib antlib docs
+
+To run unit tests, the location of kyoto cabinet libraries (native and Java bindings) must be supplied:
+$export KC_LIB_DIR=/usr/local/lib
+$ant -lib antlib test
 
