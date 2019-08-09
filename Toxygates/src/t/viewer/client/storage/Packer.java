@@ -32,7 +32,6 @@ abstract public class Packer<T> {
   }
 
   public static String packList(Collection<String> items, String separator) {
-    // TODO best location of this? handle viewer/common separation cleanly.
     return SharedUtils.packList(items, separator);
   }
 }

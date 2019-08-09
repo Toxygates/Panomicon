@@ -126,10 +126,9 @@ abstract class MatrixController(params: ControllerParams) {
     }
 
     try {
-      //TODO get rid of/factor out this, possibly to a factory of some kind
-      //TODO get rid of the enhancedCols flag
+      //Task: get rid of the enhancedCols flag
       val b = reader match {
-        //TODO modify TransformingWrapper API to be able to check for type argument at runtime
+        //Task: modify TransformingWrapper API to be able to check for type argument at runtime
         //or stop trying to match the type argument
         case wrapped: TransformingWrapper[PExprValue @unchecked] =>
           new ExtFoldBuilder(enhancedCols, wrapped, probes)
@@ -142,7 +141,7 @@ abstract class MatrixController(params: ControllerParams) {
         case _ => throw new Exception("Unexpected DB reader type")
       }
 
-      //TODO best location of this heuristic?
+      //Note: clarify the best code location of this heuristic
       val sparseRead = probes.size <= 10
       b.build(groups, sparseRead, fullLoad)
     } finally {

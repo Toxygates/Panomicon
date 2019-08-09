@@ -70,7 +70,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   override def localInit(conf: Configuration) {
     super.localInit(conf)
 
-    //TODO: we shouldn't have to do this more than once
     val platforms = new t.sparql.Platforms(baseConfig)
     platforms.populateAttributes(baseConfig.attributes)
 
@@ -183,7 +182,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] =
     annotations.forSamples(sampleStore, column.getSamples, importantOnly)
 
-  //TODO bio-param timepoint handling
   @throws[TimeoutException]
   def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String =
     annotations.prepareCSVDownload(sampleStore, column.getSamples,

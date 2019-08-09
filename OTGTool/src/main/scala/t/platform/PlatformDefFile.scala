@@ -23,7 +23,6 @@ package t.platform
 import scala.io.Source
 import t.db.kyotocabinet.KCIndexDB
 
-//TODO extract standard columns and move outside affy package
 import t.platform.affy.{GOMF, GOBP, GOCC, Entrez}
 
 object ProbeRecord {

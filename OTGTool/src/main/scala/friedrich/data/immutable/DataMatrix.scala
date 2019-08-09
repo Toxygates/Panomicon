@@ -67,7 +67,6 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]]
     mapRows(r => fromSeq(r.map(f)))
 }
 
-//TODO are both DataMatrix and AbstractMatrix needed as separate classes?
 abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: IndexedSeq[T]](val data: IndexedSeq[V], val rows: Int, val columns: Int)
   extends AbstractMatrix[Self, T, V] {
 

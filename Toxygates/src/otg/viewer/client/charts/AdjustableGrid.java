@@ -76,7 +76,7 @@ public class AdjustableGrid<DS extends Dataset<?>> extends Composite {
     schema = screen.manager().schema();
     storageProvider = screen.getStorage();
 
-    // TODO use schema somehow to handle organism propagation
+    // Task: use schema somehow to handle organism propagation
     organisms = groups.stream().flatMap(g -> g.collect(OTGAttribute.Organism)).distinct()
         .collect(Collectors.toList());
 
@@ -276,7 +276,7 @@ public class AdjustableGrid<DS extends Dataset<?>> extends Composite {
         expectedGrids += 1;
         gridFor(vsTime, columns, majorsA, grids, sp);
       } else {
-        // TODO when is this case used? fuse with above?
+        // Task: when is this case used? unify with above?
         SimplePanel sp = makeGridPanel(majorVals.toArray(new String[0]));
         chartsVerticalPanel.add(sp);
         expectedGrids += 1;

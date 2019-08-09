@@ -107,7 +107,7 @@ public class Dataset extends ManagedItem {
     return id.startsWith("user-shared-");
   }
   
-  //TODO this also matches user shared datasets.
+  // Note: this also matches user "shared" datasets.
   public static boolean isUserDataset(String id) {
     return id.startsWith("user-");
   }

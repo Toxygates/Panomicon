@@ -217,7 +217,7 @@ public class GeneSetEditor extends Composite {
 
     Button btnCancel = makeButton("Cancel", () -> {
       if (!listedProbes.equals(originalProbes)) {
-        // TODO Need to confirm if lists are not saved?
+        // Task: Need to confirm if lists are not saved?
       }
 
       GeneSetEditor.this.dialog.hide();
@@ -585,7 +585,7 @@ public class GeneSetEditor extends Composite {
   private void setProbes(String[] probes) {
     probesList.clear();
     for (String p : probes) {
-      // TODO look up syms here?
+      // note: could look up symbols here
       probesList.addItem(p);
     }
     listedProbes.clear();

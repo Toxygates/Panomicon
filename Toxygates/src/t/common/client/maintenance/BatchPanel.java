@@ -78,7 +78,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
     table.addColumn(samplesColumn, "Samples");
     table.setColumnWidth(samplesColumn, "6em");
 
-    //TODO factor out column construction code, share with e.g. PathologyScreen
+    // Note: could factor out column construction code, share with e.g. PathologyScreen
     final ImageClickCell<String> overviewCell = 
         new ImageClickCell.StringImageClickCell(resources.magnify(), "overview", false) {
 

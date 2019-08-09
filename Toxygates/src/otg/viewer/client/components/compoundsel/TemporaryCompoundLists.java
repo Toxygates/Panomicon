@@ -29,9 +29,9 @@ import t.viewer.shared.StringList;
 
 public class TemporaryCompoundLists {
 
-	/*
-	 * TODO Temporary hardcoded lists for testing. Will eventually be stored as RDF.
-	 */
+  /**
+   * Note: Temporary hardcoded lists for testing. Task: store as RDF instead.
+   */
 	static List<StringList> predefinedLists() {
 		List<StringList> r = new ArrayList<StringList>();
 		String[] negElBilib = new String[] { 

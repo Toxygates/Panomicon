@@ -32,9 +32,7 @@ import t.common.shared.ManagedItem;
 
 abstract public class ManagerPanel<T extends ManagedItem> {
 
-  //TODO 100 is an arbitrary number - we should eventually have paging controls in the GUI.
-  //For example, SimplePager.
-  //A page size of <= 20 is best to reduce the number of queries made to the server.
+  // Task: 100 is a totally arbitrary number - we should eventually have paging controls here.
   private CellTable<T> table = Utils.makeTable(100);
   List<RunCommand> cmds = new ArrayList<RunCommand>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);

@@ -70,7 +70,7 @@ object CSVDownload {
 
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows
-    //TODO move into RowLabels if possible
+    //Task: move into RowLabels if possible
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
     //May be slow!

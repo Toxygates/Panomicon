@@ -105,7 +105,7 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
 
   def mirnaDir = s"$dir/mirna"
 
-  //TODO remove the fold wrap when possible
+  //Task: remove the fold wrap when possible
   def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
     new TransformingWrapper(db) {
       def tfmValue(x: PExprValue) = x.copy(value = Math.pow(2, x.value))

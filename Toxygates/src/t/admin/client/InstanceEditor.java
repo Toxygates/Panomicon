@@ -44,7 +44,6 @@ public class InstanceEditor extends ManagedItemEditor {
     Label l = new Label("Access policy");
     vp.add(l);
 
-    //TODO set values for these fields and keep them in sync
     policySelector = new ItemSelector<AccessPolicy>() {
       @Override
       protected AccessPolicy[] values() {

@@ -62,7 +62,7 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
     }
 
     try {
-      //TODO consider how we handle new time points, test
+      //Note: consider how we handle new time points, test
       val timeUnits = md.attributeValues(ExposureTime).map(_.split(" ")(1))
       println(s"timeUnits: $timeUnits")
       val accepted = Seq("hr", "day")

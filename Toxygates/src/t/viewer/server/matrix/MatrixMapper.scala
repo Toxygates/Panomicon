@@ -117,7 +117,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
   /**
    * This conversion keeps the columns and column names (etc),
    * but removes synthetics and filtering options.
-   * TODO synthetics handling needs to be tested
+   * Task: synthetics handling needs to be tested
    */
   private def convert(from: ManagedMatrixInfo, newRows: Seq[String]): ManagedMatrixInfo = {
     val r = new ManagedMatrixInfo()

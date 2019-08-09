@@ -195,7 +195,7 @@ abstract public class DataSource {
           }));
     }
 
-    // TODO think about the way these methods interact with superclass
+    // Note: think about the way these methods interact with superclass
     // - bad design
     @Override
     void getPointsAsync(ValueType vt, SampleMultiFilter smf, ColorPolicy policy,

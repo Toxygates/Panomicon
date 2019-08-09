@@ -108,7 +108,7 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
 
   /**
    * @param sample one of the treated samples to build fold values for.
-   * TODO this method should operate per control group rather than per sample,
+   * Note: this method should operate per control group rather than per sample,
    * ideally
    */
   override protected def makeFolds(controlSamples: Seq[Sample],

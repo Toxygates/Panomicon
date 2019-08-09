@@ -60,7 +60,6 @@ public class SharedUtils {
     return Logger.getLogger("jp.level-five.tframework." + suffix);
   }
 
-  // TODO best location for this?
   public static String packList(Collection<String> items, String separator) {
     StringBuilder sb = new StringBuilder();    
     items.stream().forEachOrdered(i -> sb.append(i + separator));    

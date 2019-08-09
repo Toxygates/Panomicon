@@ -78,7 +78,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
           var nvalues = 0
 
           //CSVRawExpressionData is more efficient with chunked reading
-          //TODO optimise more for fold building
+          //Task: optimise more for fold building
           val it = raw.samples.iterator.grouped(50)
           while (it.hasNext && shouldContinue(pcomp)) {
             val sampleChunk = it.next

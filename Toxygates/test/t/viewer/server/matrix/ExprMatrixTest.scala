@@ -264,7 +264,7 @@ class ExprMatrixTest extends TTestSuite {
     assert(empty.rows === 0)
     assert(empty.columns === 0)
 
-    // TODO it's not clear how the column allocation should behave
+    // Note: it's not clear how the column allocation should behave
     //when we remove rows and columns. Currently it is kept.
 //    assert(empty.rowKeys.isEmpty)
 //    assert(empty.columnKeys.isEmpty)

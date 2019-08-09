@@ -46,7 +46,7 @@ class IntermineConnector(instance: IntermineInstance,
   def getListService(user: Option[String] = None,
     pass: Option[String] = None): ListService = {
     println(s"Connect to $title")
-    // TODO this is insecure - ideally, auth tokens should be used.
+    // Task: this is insecure; auth tokens should be used.
     val sf = (user, pass) match {
       case (Some(u), Some(p)) => InsecureServiceFactory.fromUserAndPass(serviceUrl, u, p)
       case _                  => new ServiceFactory(serviceUrl)
@@ -74,12 +74,6 @@ class IntermineConnector(instance: IntermineInstance,
     println(s"${items take 100} ...")
     var probes = items.flatMap(g => platforms.geneLookup.get(g)).
       flatten.map(_.identifier).distinct
-
-    //TODO handle large lists
-//    if (probes.size > 1000) {
-//      println(s"Warning: truncating list ${l.getName} from ${probes.size} to 1000 items")
-//      probes = (probes take 1000)
-//    }
 
     val filtered = if (!probes.isEmpty) {
       filterProbes(probes)
@@ -165,7 +159,7 @@ class IntermineConnector(instance: IntermineInstance,
     validNameForExport(ls, name, replace) match {
       case Some(useName) =>
         val ci = new ls.ListCreationInfo("Gene", useName)
-        //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
+        //Note: we have the option of doing a fuzzy (e.g. symbol-based) export here
         ci.setContent(getGenes().toSeq.asJava)
         ci.addTags(tags.asJava)
         println(s"Exporting list '$useName'")

@@ -19,7 +19,6 @@ import t.viewer.client.Utils;
  * freely. Items are separated by commas or whitespace.
  */
 public class FreeEdit extends SelectionMethod<String> {
-  // TODO: the constants 10, 45 are somewhat ad-hoc -- find a better method in the future
   protected TextArea textArea = new ResizableTextArea(10, 45);
   private String lastText = "";
   private Timer t;

@@ -50,7 +50,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
     super.destroy()
   }
 
-  // TODO: pass in a preferred species, get status info back
+  // Task: pass in a preferred species, get status info back
   def importLists(inst: IntermineInstance, user: String, pass: String,
     asProbes: Boolean): Array[StringList] = {
     val conn = mines.connector(inst, platforms)

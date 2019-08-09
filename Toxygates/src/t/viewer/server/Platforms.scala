@@ -56,7 +56,7 @@ class Platforms(val data: Map[String, Set[Probe]]) {
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
 
-//TODO: update mechanism
+//  Note: may eventually need a mechanism for periodic updates
 
   def resolve(identifiers: Seq[String]): Seq[Probe] =
     identifiers.flatMap(identifierLookup.get(_))

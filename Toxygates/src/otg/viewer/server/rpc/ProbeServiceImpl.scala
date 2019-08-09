@@ -60,7 +60,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     r.toArray
   }
 
-  //TODO consider removing the sc argument (and the need for sp in orthologs)
+  //Task: try to remove the sc argument (and the need for sp in orthologs)
   @throws[TimeoutException]
   override def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = {
@@ -78,7 +78,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     } else {
       probeStore.forUniprots(proteins)
     }
-    val pmap = context.matrix.probeMap //TODO context.probes(filter)
+    val pmap = context.matrix.probeMap // context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 

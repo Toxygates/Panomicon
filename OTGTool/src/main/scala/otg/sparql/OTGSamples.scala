@@ -73,7 +73,6 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   }
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]] = {
-    //TODO may be able to lift up to superclass and generalise
     val hlPred = hlAttributes.filter(isPredicateAttribute)
 
     val vars = hlPred.map(a => s"?${a.id}").mkString(" ")

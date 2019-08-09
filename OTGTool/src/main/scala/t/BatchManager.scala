@@ -172,7 +172,6 @@ object BatchManager extends ManagerTool {
             }
           }
         case "sampleCheck" =>
-          //TODO: do not access the db files directly (obtain readers instead)
           sampleCheck(config.data.exprDb,
             args.size > 1 && args(1) == "delete")
           sampleCheck(config.data.foldDb,
@@ -700,7 +699,7 @@ class BatchManager(context: Context) {
       try {
         target = KCSeriesDB[S](dbName, true, builder, false)
           var pcomp = 0d
-          for ( //TODO might want to chunk these
+          for ( //Note: might want to chunk these
             samples <- bySeries;
             if shouldContinue(pcomp)
           ) {

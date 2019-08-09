@@ -402,7 +402,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
   public MenuBar createColumnVisibilityMenu() {
     Set<String> visibleColumns = new HashSet<String>(screen.getStorage().columnStateStorage.getIgnoringException());
     MenuBar menuBar = new MenuBar(true);
-    //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
+    // Task: store the TickMenuItem in HideableColumn so that the state can be synchronised
     for (final HideableColumn<T, ?> column : getHideableColumns()) {
         final String title = column.columnInfo().title();
    
@@ -426,7 +426,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     Set<String> visibleColumns = new HashSet<String>(screen.getStorage().columnStateStorage.getIgnoringException()); 
     if (visibleColumns != null) {
       for (HideableColumn<T, ?> c : hideableColumns) {
-        //TODO: we ignore persisted state for standard columns - for now this is to
+        // Task: we currently ignore persisted state for standard columns - for now this is to
         //play nicely with dual data screen
         if (c.standard == null) {
           ColumnInfo info = c.columnInfo();
