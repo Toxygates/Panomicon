@@ -34,7 +34,7 @@ extends friedrich.data.RowColKeys[T, V, Row, Column] {
   def obtainColumn(col: Column): Int = columnMap(col)
 
   def rightAdjoinedColKeys(other: RowColKeys[_, _, Row, Column]): Map[Column, Int] = {
-    assert((columnMap.keySet intersect other.columnMap.keySet) == Set())
+    assert((columnMap.keySet intersect other.columnMap.keySet).isEmpty)
     columnMap ++ other.columnMap.map(x => (x._1, x._2 + columns))
   }
 

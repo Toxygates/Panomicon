@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -36,12 +36,11 @@ import t.sparql.Samples
 import t.viewer.server.Conversions._
 import t.viewer.shared.TimeoutException
 
-
 class Units(schema: DataSchema, sampleStore: Samples) extends
   UnitsHelper(schema) {
   /**
    * Generates units containing treated samples and their associated control samples.
-   * TODO: sensitive algorithm, should simplify and possibly move to OTGTool.
+   * Task: sensitive algorithm, should simplify and possibly move to OTGTool.
    */
   @throws[TimeoutException]
   def units(sc: SampleClass,
@@ -58,7 +57,7 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
 
     def unit(s: Sample) = SampleClassUtils.asUnit(s.sampleClass, schema)
 
-    //TODO the copying may be costly - consider optimising in the future
+    //Note: the copying may be costly - consider optimising in the future
     def unitWithoutMajorMedium(s: Sample) = unit(s).
       copyWithout(schema.majorParameter).copyWithout(schema.mediumParameter)
 

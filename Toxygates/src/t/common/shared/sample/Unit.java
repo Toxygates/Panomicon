@@ -28,8 +28,6 @@ import t.model.sample.AttributeSet;
 
 /**
  * A sample class with associated samples.
- * 
- * TODO: generify, split up OTG/non-OTG versions
  */
 @SuppressWarnings("serial")
 public class Unit extends SampleClass {

@@ -67,7 +67,7 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
    * Compute a control sample (as a mean).
    */
   protected def controlMeanSample(data: Seq[CMap[String, FoldPExpr]]): CMap[String, Double] = {
-    var controlValues = HashMap[String, Double]()
+    val controlValues = HashMap[String, Double]()
 
     for (probe <- data.flatMap(_.keys).distinct) {
       val usableVals = data.flatMap(_.get(probe).map(_._1))
@@ -108,7 +108,7 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
 
   /**
    * @param sample one of the treated samples to build fold values for.
-   * TODO this method should operate per control group rather than per sample,
+   * Note: this method should operate per control group rather than per sample,
    * ideally
    */
   override protected def makeFolds(controlSamples: Seq[Sample],
@@ -119,13 +119,13 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
     val l2 = Math.log(2)
 
     input.loadData(controlSamples ++ treatedSamples)
-    
+
     val controlData = input.data(controlSamples)
     val treatedData = input.data(treatedSamples)
     val sampleExpr = treatedData(sample).mapValues(_._1)
 //
-    val controlValues = controlData.values.toSeq
-//    val treatedValues = treatedData.values.toSeq
+    val controlValues = controlData.values.toArray
+//    val treatedValues = treatedData.values.toArray
     val controlMean = controlMeanSample(controlValues)
 
     val probes = input.probes.toSeq

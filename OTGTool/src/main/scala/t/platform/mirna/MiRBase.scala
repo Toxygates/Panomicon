@@ -97,7 +97,7 @@ object MiRBaseConverter {
       val lines = Source.fromFile(args(0)).getLines()
       val command = args(1)
 
-      var (record, next) = lines.span(! _.startsWith("//"))
+      val (record, next) = lines.span(! _.startsWith("//"))
 
       def remainingRecords: Stream[RawRecord] = {
         if (!lines.hasNext) {

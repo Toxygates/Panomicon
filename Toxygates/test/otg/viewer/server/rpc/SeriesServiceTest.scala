@@ -50,7 +50,7 @@ class SeriesServiceTest extends TTestSuite {
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
 
    val ds = new Dataset("otg", "", "", new Date(), "", 1)
-    //TODO needs a valid dataset for the first argument
+    //Note: needs a valid dataset for the first argument
     val res = s.rankedCompounds(SeriesType.Time, Array(ds), sc, Array(r)).toSeq
     println(res take 10)
   }

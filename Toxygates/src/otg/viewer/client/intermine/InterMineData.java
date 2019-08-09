@@ -91,7 +91,7 @@ public class InterMineData {
         List<StringList> normal = StringList.pickProbeLists(rebuild, null);
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
-        // TODO revise pop-up message handling for this process
+        // Task: revise pop-up message handling for this process
         parent.geneSets().insertAll(normal, replace);
         parent.geneSetsChanged();
         parent.clusteringLists().insertAll(clustering, replace);
@@ -154,7 +154,7 @@ public class InterMineData {
   // These tokens are only valid for 24 h.
   // In practice, the Toxygates server side session will time out before this, forcing a
   // client reload and thus renewal of the token.
-  // TODO: keep track of expiry time/handle expiry gracefully
+  // Task: keep track of expiry time/handle expiry gracefully
   private static Map<IntermineInstance, String> imTokens = new HashMap<IntermineInstance, String>();
 
   private void ensureTokenAndThen(final IntermineInstance instance, final Runnable r) {

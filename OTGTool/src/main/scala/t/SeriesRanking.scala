@@ -113,10 +113,11 @@ object SeriesRanking {
       if (s.values(0).value < 0 || s.values(0).call == 'A') { //optional: remove this constraint
         score -= 1
       }
-      for (i <- 0 until s.points.size - 1) {
-        if (s.values(i + 1).value < s.values(i).value - 0.001 ||
-          s.values(i + 1).value < 0.001
-          || s.values(i + 1).call == 'A') {
+
+      for (Seq(fst, snd) <- s.values.sliding(2)) {
+        if (snd.value < fst.value - 0.001 ||
+            snd.value < 0.001 ||
+            snd.call == 'A') {
           score -= 1
         }
       }
@@ -135,13 +136,15 @@ object SeriesRanking {
       if (s.values(0).value > 0 || s.values(0).call == 'A') { //optional: remove this constraint
         score -= 1
       }
-      for (i <- 0 until s.values.size - 1) {
-        if (s.values(i + 1).value > s.values(i).value + 0.001 ||
-          s.values(i + 1).value > 0.001
-          || s.values(i + 1).call == 'A') {
+
+      for (Seq(fst, snd) <- s.values.sliding(2)) {
+        if (snd.value > fst.value + 0.001 ||
+            snd.value > 0.001 ||
+            snd.call == 'A') {
           score -= 1
         }
       }
+
       //score -= (4 - s.values.size) //penalise missing data heavily
       score
     }

@@ -27,10 +27,28 @@ import t.common.shared.sample.ExpressionRow
 import t.db.BasicExprValue
 import t.db.ExprValue
 import t.viewer.server.Conversions
+import scala.collection.mutable.WrappedArray
 
 object ExprMatrix {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
+
+  /**
+   * Rebuild any Seq into the vector type expected by this
+   * matrix.
+   */
+  def fromSeq(s: Seq[ExprValue]) = {
+    s match {
+      //toIndexedSeq will return an immutable IndexedSeq only.
+      //Thus, WrappedArray is ineligible.
+      //We check this case here to avoid rebuilding arrays into vectors.
+      case a: WrappedArray[ExprValue] => a
+      case _                  => s.toIndexedSeq
+    }
+  }
+
+  def fromSeqSeq(ss: Seq[Seq[ExprValue]]) =
+    ss.map(fromSeq).toIndexedSeq
 
   def safeCountColumns(rows: Seq[Seq[Any]]) =
     if (rows.size > 0) { rows(0).size } else 0
@@ -41,12 +59,13 @@ object ExprMatrix {
     } else {
       val rows = data.size
       val columns = safeCountColumns(data)
-      new ExprMatrix(data, rows, columns, Map(), Map(), emptyAnnotations(rows))
+      new ExprMatrix(data.map(fromSeq).toIndexedSeq,
+          rows, columns, Map(), Map(), emptyAnnotations(rows))
     }
   }
 
   def withRows(data: Seq[Seq[ExprValue]], rowNames: Seq[String], colNames: Seq[String]) =
-    new ExprMatrix(data, data.size, safeCountColumns(data),
+    new ExprMatrix(fromSeqSeq(data), data.size, safeCountColumns(data),
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex,
         emptyAnnotations(data.size))
 
@@ -71,11 +90,11 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
  * The main data matrix class. Tracks names of columns and rows.
  * This class is immutable. The various operations produce modified copies.
  */
-class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
+class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
     val annotations: Seq[RowAnnotation])
     extends KeyedDataMatrix[ExprMatrix, ExprValue,
-      Seq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
+      IndexedSeq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._
   import t.util.SafeMath._
@@ -84,7 +103,7 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
 
   override def toString:String = s"ExprMatrix $rows x $columns"
 
-  def fromSeq(s: Seq[ExprValue]) = s
+  def fromSeq(s: Seq[ExprValue]) = ExprMatrix.fromSeq(s)
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
@@ -93,14 +112,14 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
       columnMap: Map[String, Int],
       annotations: Seq[RowAnnotation]): ExprMatrix =  {
 
-        new ExprMatrix(rowData, rowData.size,
+        new ExprMatrix(fromSeqSeq(rowData), rowData.size,
             safeCountColumns(rowData),
             rowMap, columnMap, annotations)
   }
 
   def copyWith(rowData: Seq[Seq[ExprValue]], rowMap: Map[String, Int],
       columnMap: Map[String, Int]): ExprMatrix = {
-    copyWith(rowData, rowMap, columnMap, annotations)
+    copyWith(fromSeqSeq(rowData), rowMap, columnMap, annotations)
   }
 
   def copyWithAnnotations(annots: Seq[RowAnnotation]): ExprMatrix = {

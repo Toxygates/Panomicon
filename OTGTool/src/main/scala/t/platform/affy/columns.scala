@@ -33,7 +33,7 @@ sealed trait AffyColumn {
 abstract class AAffyColumn(val title: String, val annotKey: Option[String],
     val isList: Boolean = true) extends AffyColumn {
 
-  //TODO support e.g. quoted strings so we don't need to remove commas
+  //Task support e.g. quoted strings so we wouldn't need to remove commas
   private def escape(x: String) = x.replace(",", " -")
 
   def annotations(data: String): Option[String] = {

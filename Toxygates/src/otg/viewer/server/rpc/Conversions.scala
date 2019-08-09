@@ -54,7 +54,7 @@ object Conversions {
       path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 
   implicit def asScala(series: Series)(implicit context: MatrixContext): OTGSeries = {
-    val p = context.probeMap.pack(series.probe) //TODO filtering
+    val p = context.probeMap.pack(series.probe) //Task: filtering
     val sc = series.sampleClass
     val seriesType = if (series.independentParam() == OTGAttribute.ExposureTime)
       TimeSeries else DoseSeries

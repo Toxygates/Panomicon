@@ -23,7 +23,7 @@ package t.db
 /**
  * A bidirectional mapping between tokens and their database codes.
  */
-trait LookupMap[Code, Token] {  
+trait LookupMap[Code, Token] {
   /**
    * Keys that are actually used
    */
@@ -36,11 +36,11 @@ trait LookupMap[Code, Token] {
   def isToken(t: Token): Boolean = tokens.contains(t)
 
   def data: Map[Token, Code]
-  
+
   protected val revMap = Map[Code, Token]() ++ data.map(_.swap)
 
-  def pack(item: Token): Code = data.get(item).getOrElse(
-    throw new LookupFailedException(s"Lookup failed for $item"))  
+  def pack(item: Token): Code = data.getOrElse(item,
+    throw new LookupFailedException(s"Lookup failed for $item"))
 }
 
 /*
@@ -54,4 +54,3 @@ trait CachedIntLookupMap[Token] extends LookupMap[Int, Token] {
 }
 
 class LookupFailedException(reason: String) extends Exception(reason)
-

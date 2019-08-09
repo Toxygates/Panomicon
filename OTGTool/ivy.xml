@@ -16,7 +16,7 @@
 
   <!-- Dependencies go into the 'compile' configuration by default. -->
   <dependencies defaultconf="compile->default">
-
+<!--    <dependency org="com.sksamuel.scapegoat" name="scalac-scapegoat-plugin_2.12" rev="1.3.9"/> -->
     <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
     <dependency org="commons-io" name="commons-io" rev="latest.integration"/>
     <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  

@@ -30,7 +30,7 @@ import t.sparql._
 import t.sparql.secondary._
 import t.sparql.secondary.B2RKegg
 
-// TODO: quite a bit of code from here should be lifted up
+// Note: some code from here could be lifted up
 class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
   import Probes._
 
@@ -49,7 +49,6 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
      makeMultiMap(triplestore.mapQuery(query).map(x => (Probe.unpack(x("p")), Gene(x("x")))))
   }
 
-  //TODO share query-forming code with superclass instead of totally overriding it
   override def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
     def obtainMany(m: Iterable[Map[String, String]], key: String) = {
       val r = m.filter(_.get("relation") == Some(key)).map(_("value"))
@@ -111,7 +110,7 @@ class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with 
       |}
       |LIMIT 10""".stripMargin
     triplestore.mapQuery(query).map(x =>
-      (x.get("s").getOrElse(x("l")), x("l")))
+      (x.getOrElse("s", x("l")), x("l")))
   }
 
   /**

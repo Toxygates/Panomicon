@@ -46,7 +46,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
 
   import GWTTypes._
 
-  //TODO this needs to update sometimes, ideally without restart
+  //Note: currently this cannot be updated without restarting the application
   lazy val bioParameters = {
     val pfs = new t.sparql.Platforms(baseConfig)
     pfs.bioParameters
@@ -73,7 +73,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * @param samples data source
    * @param column the samples for which we fetch annotations
    */
-   //TODO get these from schema, etc.
+   //Task: get these from schema, etc.
   def forSamples(samples: Samples, querySet: Iterable[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
 
@@ -168,7 +168,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     new Annotation(sample.id, mkList(params.asJava))
   }
 
-  //TODO use ControlGroup to calculate bounds here too
+  //Task: use ControlGroup to calculate bounds here too
   def prepareCSVDownload(sampleStore: Samples, samples: Seq[Sample],
       csvDir: String, csvUrlBase: String): String = {
     val timepoints = samples.toSeq.flatMap(s =>

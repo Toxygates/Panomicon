@@ -73,13 +73,6 @@ public interface ImportingScreen extends OTGScreen {
             title);      
     }));
 
-    mb.addItem(new MenuItem("Enrichment...", () -> {      
-        //TODO this should be disabled if we are not on the data screen.
-        //The menu item is only here in order to be logically grouped with other 
-        //TargetMine items, but it is a duplicate and may be removed.
-      this.runEnrichment(inst);
-    }));
-
     mb.addItem(new MenuItem("Go to " + title, () -> 
         Utils.displayURL("Go to " + title + " in a new window?", "Go", inst.webURL())
         ));

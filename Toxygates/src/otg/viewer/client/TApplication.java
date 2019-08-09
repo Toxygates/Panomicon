@@ -307,14 +307,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   /**
-   * In the HTML head, e.g.: <meta name="instanceName" content="toxygates"> .
-   * 
-   * TODO: this information is also available via AppInfo and we should move towards using only
-   * that. Except we now only use it in storagePrefix, which is needed for getting AppInfo in
-   * the first place...
+   * In the HTML head, e.g.: <meta name="instanceName" content="toxygates"> . Currently used only
+   * when loading the initial AppInfo (after which instanceName may be obtained from there).
    */
-  @Deprecated
-  protected String instanceName() {
+  private String instanceName() {
     String v = getMeta("instanceName");
     return v != null ? v : "default";
   }

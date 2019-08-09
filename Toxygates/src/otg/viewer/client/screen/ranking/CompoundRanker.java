@@ -75,7 +75,7 @@ abstract public class CompoundRanker extends Composite {
   List<String> availableCompounds = chosenCompounds;
 
   public SampleClass sampleClass() {
-    //TODO ensure s.c. is propagated properly
+    // Task: ensure s.c. is propagated properly
     if (chosenSampleClass != null) {
       return chosenSampleClass.copy();
     } else {

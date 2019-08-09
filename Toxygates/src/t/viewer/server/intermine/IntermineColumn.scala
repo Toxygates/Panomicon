@@ -87,7 +87,7 @@ class IntermineColumn(connector: IntermineConnector,
     makeMultiMap(
       queryService.getRowListIterator(pq).asScala.toSeq.map(row => {
         val id = row.get(2).toString
-        //TODO might retrieve and insert the score of the association as well
+        //Note: might retrieve and insert the score of the association as well
         val tooltip = Some(s"$id (miRTarBase via TargetMine) experimental: true")
         Gene(row.get(0).toString) ->
         DefaultBio(row.get(1).toString, row.get(2).toString, tooltip)

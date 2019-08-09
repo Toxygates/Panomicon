@@ -69,7 +69,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
             log(s"Warning: unknown probe '$probe' (this error may be safely ignored).")
           }
           val knownProbes = raw.probes.toSet -- unknownProbes
-          if (knownProbes.size == 0) {
+          if (knownProbes.isEmpty) {
             throw new LookupFailedException("No valid probes in data.")
           }
 
@@ -78,7 +78,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
           var nvalues = 0
 
           //CSVRawExpressionData is more efficient with chunked reading
-          //TODO optimise more for fold building
+          //Task: optimise more for fold building
           val it = raw.samples.iterator.grouped(50)
           while (it.hasNext && shouldContinue(pcomp)) {
             val sampleChunk = it.next

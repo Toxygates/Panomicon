@@ -45,12 +45,12 @@ class ExprMatrixTest extends TTestSuite {
    */
 
   val testMatrix = {
-    val data = List(
-      List(3, 3, 5, 3, 3, 5),
-      List(1, 2, 1, 9, 8, 10),
-      List(2, 1, 1, 19, 18, 20),
-      List(4, 4, 4, 2, 1, 2),
-      List(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
+    val data = Vector(
+      Vector(3, 3, 5, 3, 3, 5),
+      Vector(1, 2, 1, 9, 8, 10),
+      Vector(2, 1, 1, 19, 18, 20),
+      Vector(4, 4, 4, 2, 1, 2),
+      Vector(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
     new ExprMatrix(data, data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
@@ -64,12 +64,12 @@ class ExprMatrixTest extends TTestSuite {
     assert(em.column("a") === em.column(0))
     assert(em.row("a") === em.row(0))
 
-    def tv(x: Seq[Int]) = x.map(ExprValue(_))
+    def tv(x: IndexedSeq[Int]) = x.map(ExprValue(_))
 
-    assert(em.column(0) === tv(Seq(3,1,2,4,5)))
-    assert(em.column(1) === tv(Seq(3,2,1,4,2)))
-    assert(em.row(0) === tv(Seq(3,3,5,3,3,5)))
-    assert(em.row(1) === tv(Seq(1,2,1,9,8,10)))
+    assert(em.column(0) === tv(Vector(3,1,2,4,5)))
+    assert(em.column(1) === tv(Vector(3,2,1,4,2)))
+    assert(em.row(0) === tv(Vector(3,3,5,3,3,5)))
+    assert(em.row(1) === tv(Vector(1,2,1,9,8,10)))
 
     val transpose = em.copyWith(em.toColVectors)
     for (i <- 0 until 5) {
@@ -89,7 +89,7 @@ class ExprMatrixTest extends TTestSuite {
       assert(em2.column(i) === em.column(i))
     }
 
-    val em3 = em.copyWithColumns(List(tv(Seq(1,2,3,4))))
+    val em3 = em.copyWithColumns(List(tv(Vector(1,2,3,4))))
     assert(em3.rows === 4)
     assert(em3.columns === 1)
 
@@ -264,7 +264,7 @@ class ExprMatrixTest extends TTestSuite {
     assert(empty.rows === 0)
     assert(empty.columns === 0)
 
-    // TODO it's not clear how the column allocation should behave
+    // Note: it's not clear how the column allocation should behave
     //when we remove rows and columns. Currently it is kept.
 //    assert(empty.rowKeys.isEmpty)
 //    assert(empty.columnKeys.isEmpty)

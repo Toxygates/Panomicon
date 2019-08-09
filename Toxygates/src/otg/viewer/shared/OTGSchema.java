@@ -71,7 +71,7 @@ public class OTGSchema extends DataSchema {
     sort(OTGAttribute.DoseLevel, doses);
   }
 
-  // TODO validity check units and exposure times before we subject
+  // Task: validity check units and exposure times before we subject
   // them to this parsing (and report errors)
 
   private int toMinutes(int n, String unit) {

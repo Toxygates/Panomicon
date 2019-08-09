@@ -110,7 +110,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     MenuItem mColumns = new MenuItem("View", false, expressionTable.createColumnVisibilityMenu());
     addTopLevelMenu(mColumns);
     
-    // TODO: this is secretly a (stateful) tick menu item, but without the tick.
+    // Note: this is secretly a (stateful) tick menu item, but without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
  
@@ -162,7 +162,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     };
   }  
   
-  //TODO hook to be overridden - try to remove this
+  // hook to be overridden
   protected void onGettingExpressionFailed() { }
   
   @Override

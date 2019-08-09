@@ -47,7 +47,7 @@ public class AdminConsole implements EntryPoint {
 
   private final Resources resources = GWT.create(Resources.class);
   
-  // TODO lift these into AdminPanel, reduce code duplication
+  // Task: lift these into AdminPanel, reduce code duplication
   final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();
   final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
   final ListDataProvider<Instance> instanceData = new ListDataProvider<Instance>();

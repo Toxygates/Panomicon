@@ -186,7 +186,7 @@ public abstract class DataSchema implements Serializable {
 
   public abstract int numDataPointsInSeries(SampleClass sc, SeriesType st);
 
-  // TODO move down to otg
+  // Note: should move down to otg
   @Nullable
   public String organismPlatform(String organism) {
     return null;

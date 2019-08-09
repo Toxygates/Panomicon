@@ -275,7 +275,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   
   @Override
   public void reloadDataIfNeeded() {
-    // TODO: doesn't make sense to set visible columns every time we reload data 
+    // Task: doesn't make sense to set visible columns every time we reload data
     expressionTable.associations().setAssociationAutoRefresh(false);
     mode.setVisibleColumns(expressionTable);
     expressionTable.associations().setAssociationAutoRefresh(true);

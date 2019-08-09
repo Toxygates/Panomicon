@@ -254,8 +254,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   import t.sparql.secondary.B2RKegg
-  //TODO best location for this?
-  //Think about how to combine query fragments from different domains like this
   def forPathway(kegg: B2RKegg, pw: t.sparql.secondary.Pathway): Iterable[Probe] = {
     val (p1, q1) = probeToGene
     val (p2, q2) = kegg.attributes(pw)
@@ -365,8 +363,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     triplestore.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
   }
 
-  //TODO A better solution is to have the URI of the GOTerm as a starting point to find the
-  //probes.
+  //Task: A better solution is to have the URI of the GOTerm as a starting point to find the
+  //probes, instead of looking for a matching name.
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = s"""$tPrefixes
         |SELECT DISTINCT ?probe WHERE {
@@ -542,7 +540,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
       Probe.unpack(query) ->
         DefaultBio(Probe.unpackOnly(target),
-          x.get("symbol").getOrElse(Probe.unpackOnly(target)),
+          x.getOrElse("symbol", Probe.unpackOnly(target)),
           Some(extraInfo))
     })
     makeMultiMap(r)

@@ -38,7 +38,6 @@ import t.viewer.server._
 import t.viewer.server.Conversions._
 import t.viewer.shared.Association
 
-
 class DrugTargetResolver(sampleStore: OTGSamples, chembl: ChEMBL,
                          drugBank: DrugBank) {
 
@@ -171,7 +170,7 @@ class AssociationResolver(probeStore: OTGProbes,
     extraResolvers: Iterable[AssociationLookup] = Seq()): Array[Association] = {
 
     //Look up all core associations first.
-    //TODO this might not be needed - platformsCache might do a better job
+    //Note: this might not be needed - platformsCache might do a better job
     val aprobes = probeStore.withAttributes(probes.map(Probe(_)))
 
     types.par.map(t => queryOrEmpty(t, aprobes,

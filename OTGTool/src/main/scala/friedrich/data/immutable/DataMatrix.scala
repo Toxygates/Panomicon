@@ -13,7 +13,7 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]]
   extends friedrich.data.DataMatrix[T, V] {
 
   def copyWith(other: Self): Self = copyWith(other.toRowVectors)
-  def copyWith(rows: Seq[V]): Self
+  def copyWith(rows: Seq[Seq[T]]): Self
   def copyWithColumns(columns: Seq[V]) = {
     // Transpose the columns into rows
     if (columns.isEmpty) {
@@ -33,7 +33,7 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]]
    * and be sorted in the same way.
    */
   def adjoinRight(other: Self): Self
-  def appendColumn(col: Seq[T]): Self
+  def appendColumn(col: Iterable[T]): Self
   def modifyJointly(other: Self, f: (Self) => Self): (Self, Self)
 
   /**
@@ -67,8 +67,7 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]]
     mapRows(r => fromSeq(r.map(f)))
 }
 
-//TODO are both DataMatrix and AbstractMatrix needed as separate classes?
-abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: Seq[T]](val data: Seq[V], val rows: Int, val columns: Int)
+abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: IndexedSeq[T]](val data: IndexedSeq[V], val rows: Int, val columns: Int)
   extends AbstractMatrix[Self, T, V] {
 
   def apply(row: Int, col: Int) = data(row)(col)
@@ -77,7 +76,7 @@ abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: Seq[T]](val da
   def row(x: Int): V = data(x)
   def column(x: Int): V = fromSeq(data.map(_(x)))
 
-  def appendColumn(col: Seq[T]): Self = copyWith(data.zip(col).map(x => fromSeq(x._1 :+ x._2)))
+  def appendColumn(col: Iterable[T]): Self = copyWith(data.zip(col).map(x => fromSeq(x._1 :+ x._2)))
 
   def adjoinRight(other: Self): Self = {
     val nrows = (0 until rows).map(i => fromSeq(data(i) ++ other.row(i)))
@@ -123,13 +122,13 @@ abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: Seq[T]](val da
  * Row: row keys,
  * Column: column keys
  */
-abstract class KeyedDataMatrix[Self <: KeyedDataMatrix[Self, T, V, Row, Column], T, V <: Seq[T], Row, Column]
-(data: Seq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
+abstract class KeyedDataMatrix[Self <: KeyedDataMatrix[Self, T, V, Row, Column], T, V <: IndexedSeq[T], Row, Column]
+(data: IndexedSeq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
   extends DataMatrix[Self, T, V](data, rows, columns)
   with RowColKeys[T, V, Row, Column] {
 
-  def copyWith(rows: Seq[V]): Self = copyWith(rows, rowMap, columnMap)
-  def copyWith(rows: Seq[V], rowMap: Map[Row, Int], columnMap: Map[Column, Int]): Self
+  def copyWith(rows: Seq[Seq[T]]): Self = copyWith(rows, rowMap, columnMap)
+  def copyWith(rows: Seq[Seq[T]], rowMap: Map[Row, Int], columnMap: Map[Column, Int]): Self
 
   def copyWithRowKeys(keys: Map[Row, Int]): Self = copyWith(data, keys, columnMap)
   def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(data, rowMap, keys)
@@ -174,7 +173,7 @@ abstract class KeyedDataMatrix[Self <: KeyedDataMatrix[Self, T, V, Row, Column],
   /**
    * Append a column, also registering it by its key
    */
-  def appendColumn(col: V, key: Column): Self = {
+  def appendColumn(col: Iterable[T], key: Column): Self = {
     val r = appendColumn(col)
     r.copyWithColKeys(columnMap + (key -> columns))
   }

@@ -35,8 +35,8 @@ class SeriesTest extends TTestSuite {
   implicit val context = new otg.testing.FakeContext()
   val cmap = context.enumMaps("compound_name")
 
-  //TODO much code shared with KCSeriesDBTest - factor out
-  trait seriesTestType {
+  //Note: much code shared with KCSeriesDBTest - could factor out
+  trait SeriesTestType {
     def name: String
     def seriesType: OTGSeriesType
     def builderType: OTGSeriesBuilder
@@ -46,7 +46,7 @@ class SeriesTest extends TTestSuite {
     def attribute = seriesType.independentVariable
   }
 
-  object timeSeriesTest extends seriesTestType {
+  object TimeSeriesTest extends SeriesTestType {
     val name = "time series"
     val seriesType = TimeSeries
     val builderType = OTGTimeSeriesBuilder
@@ -55,7 +55,7 @@ class SeriesTest extends TTestSuite {
     val inputSeries = OData.series
   }
 
-  object doseSeriesTest extends seriesTestType {
+  object DoseSeriesTest extends SeriesTestType {
     val name = "dose series"
     val seriesType = DoseSeries
     val builderType = OTGDoseSeriesBuilder
@@ -64,7 +64,7 @@ class SeriesTest extends TTestSuite {
     val inputSeries = OData.doseSeries
   }
 
-  val testTypes = List(timeSeriesTest, doseSeriesTest)
+  val testTypes = List(TimeSeriesTest, DoseSeriesTest)
 
   for (tt <- testTypes) {
     test(s"pack and build ${tt.name}") {

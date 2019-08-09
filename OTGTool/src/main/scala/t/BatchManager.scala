@@ -172,7 +172,6 @@ object BatchManager extends ManagerTool {
             }
           }
         case "sampleCheck" =>
-          //TODO: do not access the db files directly (obtain readers instead)
           sampleCheck(config.data.exprDb,
             args.size > 1 && args(1) == "delete")
           sampleCheck(config.data.foldDb,
@@ -613,7 +612,7 @@ class BatchManager(context: Context) {
       db.deleteSamples(samples)
     } catch {
       case lf: LookupFailedException =>
-        println(s"Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
+        println("Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
         println("Please investigate manually!")
       case t: Throwable => throw t
     }
@@ -700,7 +699,7 @@ class BatchManager(context: Context) {
       try {
         target = KCSeriesDB[S](dbName, true, builder, false)
           var pcomp = 0d
-          for ( //TODO might want to chunk these
+          for ( //Note: might want to chunk these
             samples <- bySeries;
             if shouldContinue(pcomp)
           ) {
@@ -752,7 +751,7 @@ class BatchManager(context: Context) {
         val filtSamples = tsmd.samples
         val total = filtSamples.size
         var pcomp = 0d
-        var it = filtSamples.grouped(100)
+        val it = filtSamples.grouped(100)
         while (it.hasNext && shouldContinue(pcomp)) {
           val sg = it.next
           val xs = builder.makeNew(source, tsmd, sg)

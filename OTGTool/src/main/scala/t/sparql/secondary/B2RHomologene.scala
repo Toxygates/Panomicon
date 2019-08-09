@@ -62,7 +62,7 @@ class B2RHomologene extends Triplestore {
     geneIds.map(x => (x._1 -> x._2.flatMap(homologs.getOrElse(_, Set()))))
   }
 
-  override def close {
+  override def close() {
     super.close
     iproClass.close
   }

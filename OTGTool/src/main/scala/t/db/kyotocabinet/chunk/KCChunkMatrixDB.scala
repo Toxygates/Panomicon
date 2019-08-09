@@ -222,7 +222,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   private def updateChunk(v: V): Unit = {
     val key = formKey(v)
 
-    if (v.xs.size == 0) {
+    if (v.xs.isEmpty) {
       db.remove(key)
     } else {
       val value = formValue(v)

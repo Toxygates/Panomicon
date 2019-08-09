@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -130,7 +130,7 @@ abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
 
   private def results(condition: MatchCondition): Set[ST] =
     condition match {
-      //TODO optimise and-evaluation by not evaluating unnecessary conditions?
+      //Note: could optimise and-evaluation by not evaluating unnecessary conditions
       case and: AndMatch =>
         and.subConditions.asScala.map(results _).reduce(_ intersect _)
       case or: OrMatch =>

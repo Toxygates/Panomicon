@@ -156,8 +156,6 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
     r ++ nonLookup.map(x => Array[String]())
   }
 
-  //TODO more general two-way annotation resolution (don't hardcode a single annotation type
-  //such as pathway)
   @throws[TimeoutException]
   def probesForPathway(pathway: String): Array[String] = {
     probesForPathway(pathway, null)
@@ -194,7 +192,7 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
     filterByGroup(result, samples)
   }
 
-  //TODO less boolean parameters, use an enum instead
+  //Task: could use an enum rather than so many boolean parameters
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
                           quick: Boolean, titlePatternMatch: Boolean,
                           samples: JList[Sample]): Array[String] = {
