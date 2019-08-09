@@ -1,0 +1,55 @@
+
+  <property environment="env" />
+
+  <!-- set scala.home -->
+  <property name="scala.home" value="${env.SCALA_HOME}" />
+
+  <!-- needed for tests -->
+  <property name="kyotocabinet_lib.dir" value="${env.KC_LIB_DIR}" />
+
+  <property name="sources.dir" value="src" />
+  <property name="lib.dir" value="lib" />
+  <property name="scala-source.dir" value="main/scala" />
+  <property name="java-source.dir" value="main/java" />
+  <property name="build.dir" value="classes" />
+  <property name="docs.dir" value="docs" />
+  <property name="testbuild.dir" value="test-classes" />
+  <property name="test-sources.dir" value="test" />
+
+  <target name="resolve">
+    <ivy:settings />
+    <!--
+    <ivy:configure file="ivysettings.xml" />
+    -->
+    <ivy:resolve file="ivy.xml" conf="compile" />
+  </target>
+
+  <target name="retrieve" depends="init">
+    <ivy:cachepath pathid="ivy.classpath" />
+    <!-- Needed for bundling/packaging of front-end. Deletes obsolete artifacts. -->
+    <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+      sync="true" type="bundle,jar" />
+  </target>
+
+  <target name="test" depends="classfiles">
+    <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
+      <classpath refid="test.classpath" />
+    </taskdef>
+    <scalatest fork="true" parallel="false">
+      <reporter type="stdout" config="FD"/>
+      <reporter type="file" filename="tests.out"/>
+      <runpath>
+        <pathelement location="${testbuild.dir}" />
+      </runpath>
+      <jvmarg value="-Djava.library.path=${kyotocabinet_lib.dir}"/>
+    </scalatest>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}" failonerror="false" />
+    <delete dir="${testbuild.dir}" failonerror="false" />
+  </target>
+
+
+
+
