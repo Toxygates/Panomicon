@@ -89,6 +89,11 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
           delegate.compoundListsChanged(stringLists);
           sle.listsChanged(stringLists);
         }
+        
+        @Override
+        protected boolean checkName(String name) {
+          return StackedListEditor.this.checkName(name);
+        }
       };
       listChooser.addStyleName("colored");
       northVp.add(listChooser);
@@ -106,6 +111,16 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       }
       stackLayoutPanel.showWidget(browseCheck);
     }
+  }
+  
+  /**
+   * Checks the validity of a name being saved in the list selector. Should be 
+   * overridden if withListSelector = true
+   * @param name
+   * @return
+   */
+  protected boolean checkName(String name) {
+    return false;
   }
 
   /**

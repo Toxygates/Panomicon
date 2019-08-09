@@ -39,6 +39,7 @@ import t.viewer.client.components.ListChooser;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
@@ -94,6 +95,10 @@ abstract public class CompoundRanker extends Composite {
     probeService = _screen.manager().probeService();
     sampleService = _screen.manager().sampleService();
     
+    NamedObjectStorage<StringList> geneSetsStorage = 
+        new NamedObjectStorage<StringList>(screen.getStorage().geneSetsStorage,
+            list -> list.name());
+    
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
       @Override
       protected void preSaveAction() {
@@ -126,6 +131,11 @@ abstract public class CompoundRanker extends Composite {
       @Override
       protected void listsChanged(List<StringList> lists) {
         screen.getStorage().geneSetsStorage.store(lists);
+      }
+      
+      @Override
+      protected boolean checkName(String name) {
+        return geneSetsStorage.validateNewObjectName(name, false);
       }
     };
     listChooser.addStyleName("colored");

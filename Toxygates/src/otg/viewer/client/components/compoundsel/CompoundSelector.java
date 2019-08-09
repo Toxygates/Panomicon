@@ -33,6 +33,7 @@ import t.viewer.client.Analytics;
 import t.viewer.client.components.FreeEdit;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.StringList;
 
 /**
@@ -92,6 +93,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     boolean isAdjuvant = 
         instanceName.equals("adjuvant") || instanceName.equals("dev");
 
+    NamedObjectStorage<StringList> compoundListsStorage = 
+        new NamedObjectStorage<StringList>(screen.getStorage().compoundListsStorage, 
+            list -> list.name());
+    
     final Collection<StringList> predefLists =
         (isAdjuvant ? TemporaryCompoundLists.predefinedLists() : new ArrayList<StringList>());
     compoundEditor =
@@ -120,7 +125,12 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
               Analytics.trackEvent(Analytics.CATEGORY_GENERAL, 
                   Analytics.ACTION_FREE_EDIT_COMPOUNDS);  
             }
-          }          
+          }     
+          
+          @Override
+          protected boolean checkName(String name) {
+            return compoundListsStorage.validateNewObjectName(name, false);
+          }
         };
 
     dp.add(compoundEditor);
@@ -152,12 +162,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     compoundEditor.setSelection(compounds);
   }
 
-  @Override
-  public void compoundListsChanged(List<StringList> lists) {
-    compoundLists = lists;
-    compoundEditor.setLists(lists);
-  }
-
   public void setChosenCompounds(List<String> compounds) {
     chosenCompounds = compounds;
     setSelection(compounds);
@@ -165,4 +169,11 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
   protected void availableCompoundsChanged(List<String> compounds) {
   }
+  
+  // StackedListEditor.Delegate methods
+  @Override
+  public void compoundListsChanged(List<StringList> lists) {
+    compoundLists = lists;
+    compoundEditor.setLists(lists);
+  }  
 }

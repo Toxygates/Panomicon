@@ -28,7 +28,6 @@ import com.google.gwt.user.client.ui.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
-import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
@@ -178,22 +177,14 @@ public class ListChooser extends Composite {
     saveAction();
   }
 
+  /**
+   * Checks the validity of the name for a new list. Should be overridden
+   * if hasButtons = true.
+   * @param name
+   * @return
+   */
   protected boolean checkName(String name) {
-    if (name == null) {
-      return false;
-    }
-    if (name.equals("")) {
-      Window.alert("You must enter a non-empty name.");
-      return false;
-    }
-    if (isPredefinedListName(name)) {
-      Window.alert("This name is reserved for the system and cannot be used.");
-      return false;
-    }
-    if (!StorageProvider.isAcceptableString(name, "Unacceptable list name.")) {
-      return false;
-    }
-    return true;
+    return false;
   }
 
   public int saveAs(String entryName, List<String> items) {
