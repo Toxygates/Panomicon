@@ -94,21 +94,6 @@
 
   </target>
 
- <target name="docs" depends="retrieve">
-    <mkdir dir="${docs.dir}" />
-
-    <scaladoc srcdir="${sources.dir}"
-      destdir="${docs.dir}"
-      classpathref="compile.classpath"
-      diagrams="on"
-      nofail="on"
-      addparams="-no-java-comments"
-      doctitle="Toxygates library documentation">
-      <include name="**/*.scala" />
-      <include name="**/*.java" />
-    </scaladoc>
-  </target>
-
   <path id="gwtpath">
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <pathelement location="${gwt.sdk}/gwt-dev.jar"/>
@@ -138,5 +123,17 @@
 
   <target name="compile" depends="retrieve,gwtc" />
 
+  <target name="devmode" depends="classfiles" description="Run development mode">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
+      <classpath>
+        <pathelement location="src"/>
+	<path refid="compile.classpath"/>
+      </classpath>
+      <jvmarg value="-Xmx3g"/>
+      <jvmarg value="-Djava.library.path=${env.KC_LIB_DIR}"/>
+      <arg value="otg.viewer.Toxygates"/>
+      <arg value="otg.admin.OTGAdmin"/>
+    </java>
+  </target>
 </project>
 
