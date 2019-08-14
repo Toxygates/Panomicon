@@ -60,7 +60,7 @@ object Triplestore {
     if (user != null && pass != null) {
       rep.setUsernameAndPassword(user, pass)
     }
-    rep.initialize()
+    rep.init();
     if (rep == null) {
       throw new Exception("Unable to access repository ")
     }
