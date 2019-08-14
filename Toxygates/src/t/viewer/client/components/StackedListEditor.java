@@ -154,7 +154,12 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   @Override
   public Set<String> validateItems(List<String> items) {
     HashSet<String> r = new HashSet<String>();
+
     Iterator<String> i = items.iterator();
+    if (!i.hasNext()) {
+      return r;
+    }
+
     String s = i.next();
     while (s != null) {
       String v = validateItem(s);
