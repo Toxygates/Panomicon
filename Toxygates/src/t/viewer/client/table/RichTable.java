@@ -358,7 +358,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     public String getStyleNames(T row, int rowIndex) {
       if (highlightedRow != -1 && rowIndex == highlightedRow + grid.getVisibleRange().getStart()) {
         return "highlightedRow";
-      } else if (isIndicated(row)) {
+      } else if (row != null && isIndicated(row)) {
         return "indicatedRow";
       } else {
         return "";
