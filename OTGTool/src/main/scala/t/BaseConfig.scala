@@ -31,20 +31,17 @@ import t.model.sample.AttributeSet
 import t.sparql.Triplestore
 import scala.reflect._
 
-/*
- * Note: it is not clear whether
- * BaseConfig should be invariant between applications.
- * Currently OTGBConfig is the concrete OTG version of this.
- */
 trait BaseConfig {
   def triplestore: TriplestoreConfig
   def data: DataConfig
 
+  type DataSeries <: Series[DataSeries]
+
   /*
    * Note: this might be better in the context instead.
    */
-  def timeSeriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
-  def doseSeriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
+  def timeSeriesBuilder: SeriesBuilder[DataSeries]
+  def doseSeriesBuilder: SeriesBuilder[DataSeries]
 
   def attributes: AttributeSet
 
