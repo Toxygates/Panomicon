@@ -130,7 +130,9 @@ abstract public class CompoundRanker extends Composite {
 
       @Override
       protected void listsChanged(List<StringList> lists) {
-        screen.getStorage().geneSetsStorage.store(lists);
+        geneSetsStorage.clear();
+        geneSetsStorage.insertAll(lists, true);
+        geneSetsStorage.saveToStorage();
       }
       
       @Override
