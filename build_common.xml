@@ -9,8 +9,6 @@
 
   <property name="sources.dir" value="src" />
   <property name="lib.dir" value="lib" />
-  <property name="scala-source.dir" value="main/scala" />
-  <property name="java-source.dir" value="main/java" />
   <property name="build.dir" value="classes" />
   <property name="docs.dir" value="docs" />
   <property name="testbuild.dir" value="test-classes" />
