@@ -208,14 +208,6 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
   
   // CompoundSelector.Delegate methods
   /**
-   * Called by compound selector when item lists have been changed.
-   * @param itemLists the updated item lists
-   */
-  public void compoundSelectorCompoundListsChanged(List<StringList> stringLists) {
-    getStorage().compoundListsStorage.store(stringLists);
-  }
-
-  /**
    * Called by compound selector when the user edits the set of chosen compounds
    * @param compounds the new set of chosen compounds
    */

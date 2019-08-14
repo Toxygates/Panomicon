@@ -40,10 +40,6 @@ import t.viewer.shared.StringList;
  */
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
-  public interface Delegate {
-    void compoundListsChanged(List<StringList> compoundLists);
-  }
-
   protected List<SelectionMethod<String>> methods = new ArrayList<SelectionMethod<String>>();
   protected Set<String> selectedItems = new HashSet<String>();
   protected Set<String> availableItems = new HashSet<String>();
@@ -63,8 +59,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * @param itemTitle Header for the item type being selected (in certain cases)
    * @param predefinedLists Predefined lists that the user may choose from
    */
-  public StackedListEditor(final Delegate delegate,
-      String listType, String itemTitle,
+  public StackedListEditor(String listType, String itemTitle,
       int maxAutoSel, Collection<StringList> predefinedLists,
       boolean withListSelector, boolean withFreeEdit) {
     dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -75,8 +70,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     northVp = Utils.mkVerticalPanel();
     northVp.setWidth("100%");
 
-    final StackedListEditor sle = this;
-
     if (withListSelector) {
       listChooser = new ListChooser(predefinedLists, listType) {
         @Override
@@ -86,8 +79,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
         @Override
         protected void listsChanged(List<StringList> stringLists) {
-          delegate.compoundListsChanged(stringLists);
-          sle.listsChanged(stringLists);
+          StackedListEditor.this.listsChanged(stringLists);
         }
         
         @Override

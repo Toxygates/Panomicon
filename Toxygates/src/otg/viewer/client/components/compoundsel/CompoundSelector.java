@@ -20,6 +20,7 @@ package otg.viewer.client.components.compoundsel;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -41,7 +42,7 @@ import t.viewer.shared.StringList;
  * 
  * Receives: dataFilter Emits: compounds
  */
-public class CompoundSelector extends Composite implements RequiresResize, StackedListEditor.Delegate {
+public class CompoundSelector extends Composite implements RequiresResize {
 
   protected final SampleServiceAsync sampleService;
 
@@ -66,7 +67,6 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   public interface Delegate {
-    void compoundSelectorCompoundListsChanged(List<StringList> stringLists);
     void compoundSelectorCompoundsChanged(List<String> compounds);
   }
 
@@ -92,15 +92,19 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
     String instanceName = screen.manager().appInfo().instanceName();
     boolean isAdjuvant = 
         instanceName.equals("adjuvant") || instanceName.equals("dev");
-
+    final Collection<StringList> predefLists =
+        (isAdjuvant ? TemporaryCompoundLists.predefinedLists() : new ArrayList<StringList>());
+        
     NamedObjectStorage<StringList> compoundListsStorage = 
         new NamedObjectStorage<StringList>(screen.getStorage().compoundListsStorage, 
             list -> list.name());
+    compoundListsStorage.reservedNames.addAll(predefLists.stream().
+        map(l -> l.name()).collect(Collectors.toList()));
     
-    final Collection<StringList> predefLists =
-        (isAdjuvant ? TemporaryCompoundLists.predefinedLists() : new ArrayList<StringList>());
+    compoundLists = compoundListsStorage.allObjects();
+    
     compoundEditor =
-        new StackedListEditor(this, "compounds", heading, MAX_AUTO_SEL, predefLists,
+        new StackedListEditor("compounds", heading, MAX_AUTO_SEL, predefLists,
             withListSelector, withFreeEdit) {
           @Override
           protected void selectionChanged(Set<String> selected) {
@@ -115,7 +119,10 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
 
           @Override
           protected void listsChanged(List<StringList> stringLists) {
-            delegate.compoundSelectorCompoundListsChanged(stringLists);
+            super.listsChanged(stringLists);
+            compoundListsStorage.clear();
+            compoundListsStorage.insertAll(stringLists, true);
+            compoundListsStorage.saveToStorage();
           }
           
           @Override
@@ -132,6 +139,8 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
             return compoundListsStorage.validateNewObjectName(name, false);
           }
         };
+        
+    compoundEditor.setLists(compoundLists);
 
     dp.add(compoundEditor);
     compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());
@@ -168,12 +177,5 @@ public class CompoundSelector extends Composite implements RequiresResize, Stack
   }
 
   protected void availableCompoundsChanged(List<String> compounds) {
-  }
-  
-  // StackedListEditor.Delegate methods
-  @Override
-  public void compoundListsChanged(List<StringList> lists) {
-    compoundLists = lists;
-    compoundEditor.setLists(lists);
-  }  
+  } 
 }
