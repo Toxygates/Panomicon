@@ -325,11 +325,9 @@ public class ListChooser extends Composite {
       if (il.type().equals(listType) && (il instanceof StringList)) {
         StringList sl = (StringList) il;
         lists.put(il.name(), Arrays.asList(sl.items()));
-        Logger.getLogger("aou").info("adding " + il.name() + " to lists; new size = " + lists.size());
       }
     }
     
-    Logger.getLogger("aou").info("added predefined; new size = " + lists.size());
     refreshSelector();
   }
 

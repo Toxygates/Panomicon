@@ -19,6 +19,7 @@
 package otg.viewer.client.screen.ranking;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -98,6 +99,8 @@ abstract public class CompoundRanker extends Composite {
     NamedObjectStorage<StringList> geneSetsStorage = 
         new NamedObjectStorage<StringList>(screen.getStorage().geneSetsStorage,
             list -> list.name());
+    geneSetsStorage.reservedNames.addAll(_screen.manager().appInfo().predefinedProbeLists().stream().
+        map(l -> l.name()).collect(Collectors.toList()));
     
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
       @Override
