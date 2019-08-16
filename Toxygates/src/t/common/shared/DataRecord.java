@@ -27,16 +27,16 @@ import javax.annotation.Nullable;
  */
 public interface DataRecord {
   @Nullable
-  public Date getDate();
+  Date getDate();
 
-  public String getComment();
+  String getComment();
 
-  public String getId();
+  String getId();
 
   /**
    * User-readable title string
    * 
    * @return
    */
-  public String getUserTitle();
+  String getUserTitle();
 }

@@ -90,7 +90,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
     List<AType> r = new ArrayList<AType>();
     for (AssociationColumn<T> ac : assocColumns.values()) {
       if (ac.visible()) {
-        r.add(((AssociationColumn<?>) ac).assoc);
+        r.add(ac.assoc);
       }
     }
     return r.toArray(new AType[0]);
@@ -146,8 +146,8 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
             } else {
               associations.remove(a.type());
             }
-          };
-          viewDelegate.associationsUpdated(AssociationManager.this, result);
+          }
+            viewDelegate.associationsUpdated(AssociationManager.this, result);
           table.redrawGrid();
         }
       };

@@ -42,7 +42,7 @@ import t.common.shared.maintenance.Instance;
 public class AdminConsole implements EntryPoint {
 
   private RootLayoutPanel rootPanel;
-  protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
+  protected MaintenanceServiceAsync maintenanceService = GWT
       .create(MaintenanceService.class);
 
   private final Resources resources = GWT.create(Resources.class);

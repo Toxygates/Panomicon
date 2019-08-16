@@ -55,7 +55,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
       @Override
       protected void beginDragging(MouseDownEvent event) {
         event.preventDefault();
-      };
+      }
     };
     uiDiv.getElement().setId("netvizdiv");
   }

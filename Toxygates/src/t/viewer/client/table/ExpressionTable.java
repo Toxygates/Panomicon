@@ -299,8 +299,8 @@ public class ExpressionTable extends RichTable<ExpressionRow>
    * the pager's default page size. 
    */
   public void refetchRows(@Nullable Integer forcePageSize) {
-    int ps = navigationTools.pageSize();   ;
-    int count = (forcePageSize == null) ? ps : forcePageSize;
+    int ps = navigationTools.pageSize();
+      int count = (forcePageSize == null) ? ps : forcePageSize;
     
     grid.setVisibleRangeAndClearData(new Range(0, count), true);    
   }

@@ -23,7 +23,7 @@ public enum Methods {
 
   private String method;
 
-  private Methods(String method) {
+  Methods(String method) {
     this.method = method;
   }
 

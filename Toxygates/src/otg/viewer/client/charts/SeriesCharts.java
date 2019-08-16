@@ -43,7 +43,7 @@ public class SeriesCharts extends Charts {
   /**
    * Callback for a client that expects to receive a chart.
    */
-  public static interface Acceptor {
+  public interface Acceptor {
     void acceptCharts(ChartGrid<?> cg);
   }
 

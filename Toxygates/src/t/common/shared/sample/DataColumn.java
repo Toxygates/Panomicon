@@ -20,5 +20,5 @@ package t.common.shared.sample;
 
 public interface DataColumn<S extends Sample> extends HasSamples<S> {
 
-  public String getShortTitle();
+  String getShortTitle();
 }

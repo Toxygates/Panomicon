@@ -29,5 +29,5 @@ public interface MatchCondition {
    * Parameters whose values are needed to test this condition match.
    * @return
    */
-  public Collection<Attribute> neededParameters();
+  Collection<Attribute> neededParameters();
 }

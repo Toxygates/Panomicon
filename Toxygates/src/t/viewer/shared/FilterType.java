@@ -24,7 +24,7 @@ public enum FilterType {
   boolean abs;
   boolean upper;
   
-  private FilterType(boolean abs, boolean upper) {
+  FilterType(boolean abs, boolean upper) {
     this.abs = abs;
     this.upper = upper;
   }

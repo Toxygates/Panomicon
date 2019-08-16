@@ -417,7 +417,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
                       Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
           }
         }
-      }.setState(visibleColumns.contains(title));;
+      }.setState(visibleColumns.contains(title));
     }
     return menuBar;
   }

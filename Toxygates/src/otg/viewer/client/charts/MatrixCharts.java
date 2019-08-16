@@ -38,7 +38,7 @@ public class MatrixCharts extends Charts {
   /**
    * Callback for a client that expects to receive an adjustable (interactive) chart.
    */
-  public static interface Acceptor {
+  public interface Acceptor {
     void accept(AdjustableGrid<?> cg);
   }
 

@@ -101,10 +101,7 @@ public class ProbeClustering implements Serializable {
         if (!pc.clustering.getParams().containsKey(paramName)) {
           return false;
         }
-        if (!pc.clustering.getParams().get(paramName).equals(paramValue)) {
-          return false;
-        }
-        return true;
+          return pc.clustering.getParams().get(paramName).equals(paramValue);
       }
     }.filter(from);
   }

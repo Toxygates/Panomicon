@@ -35,7 +35,7 @@ public enum RuleType implements Serializable {
 
   private String name;
 
-  private RuleType(String name) {
+  RuleType(String name) {
     this.name = name;
   }
 

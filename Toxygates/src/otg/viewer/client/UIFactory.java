@@ -42,18 +42,18 @@ import t.viewer.shared.intermine.IntermineInstance;
  */
 public interface UIFactory {
 
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr);
+  SelectionTDGrid selectionTDGrid(OTGScreen scr);
 
-  public CompoundRanker compoundRanker(OTGScreen _screen);
+  CompoundRanker compoundRanker(OTGScreen _screen);
   
-  public GroupInspector groupInspector(OTGScreen scr,
-      GroupInspector.Delegate delegate);
+  GroupInspector groupInspector(OTGScreen scr,
+                                GroupInspector.Delegate delegate);
   
-  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups);
+  GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<Group> groups);
   
-  public GeneSetEditor geneSetEditor(ImportingScreen screen);
+  GeneSetEditor geneSetEditor(ImportingScreen screen);
   
-  public GeneSetsMenu geneSetsMenu(DataScreen screen);
+  GeneSetsMenu geneSetsMenu(DataScreen screen);
 
   /**
    * Perform enrichment for a single gene set.

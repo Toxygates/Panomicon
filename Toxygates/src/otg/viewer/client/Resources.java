@@ -22,7 +22,7 @@ import com.google.gwt.resources.client.*;
 
 public interface Resources extends t.common.client.Resources {
 
-  public interface OtgCssResource extends CssResource {
+  interface OtgCssResource extends CssResource {
     String group0_color();
     String group1_color();
     String group2_color();

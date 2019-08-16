@@ -181,10 +181,7 @@ public class ListChooser extends Composite {
       Window.alert("This name is reserved for the system and cannot be used.");
       return false;
     }
-    if (!StorageProvider.isAcceptableString(name, "Unacceptable list name.")) {
-      return false;
-    }
-    return true;
+      return StorageProvider.isAcceptableString(name, "Unacceptable list name.");
   }
 
   public int saveAs(String entryName, List<String> items) {

@@ -20,8 +20,8 @@ package t.common.shared.maintenance;
 
 public interface MaintenanceConstants {
 
-  final String metaPrefix = "TADMIN-META";
-  final String dataPrefix = "TADMIN-DATA";
-  final String callPrefix = "TADMIN-CALL";
-  final String platformPrefix = "TADMIN-PLAT";
+  String metaPrefix = "TADMIN-META";
+  String dataPrefix = "TADMIN-DATA";
+  String callPrefix = "TADMIN-CALL";
+  String platformPrefix = "TADMIN-PLAT";
 }

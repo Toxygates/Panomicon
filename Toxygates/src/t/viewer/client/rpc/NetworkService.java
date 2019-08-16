@@ -37,7 +37,7 @@ public interface NetworkService extends RemoteService {
   /**
    * Prefix for matrix IDs in network state. To be prepended by client.
    */
-  final static String tablePrefix = "network.";
+  String tablePrefix = "network.";
   
   /**
    * Set the desired miRNA association sources. In the objects passed in,

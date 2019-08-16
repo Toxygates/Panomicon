@@ -98,7 +98,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
   }
 
   public ClusteringSelector() {
-    this(Collections.<ProbeClustering>emptyList());
+    this(Collections.emptyList());
   }
 
   public ClusteringSelector(Collection<ProbeClustering> clusterings) {

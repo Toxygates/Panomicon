@@ -31,8 +31,8 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     ETMatrixManager.Loader, AssociationManager.ViewDelegate<ExpressionRow>, 
     MirnaSourceDialog.Delegate {
 
-  public static enum ViewType {
-    Single, Dual;    
+  public enum ViewType {
+    Single, Dual
   }
   
   protected ExpressionTable expressionTable;
@@ -272,9 +272,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     } else if (expressionTable.associations().isVisible(AType.MRNA)) {
       expressionTable.associations().getAssociations(new AType[] {AType.MRNA});
     }
-  };;
-  
-  public boolean needMirnaSources() {
+  }
+
+    public boolean needMirnaSources() {
     return (expressionTable.associations().isVisible(AType.MiRNA) ||
         expressionTable.associations().isVisible(AType.MRNA));
   }

@@ -47,7 +47,7 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class InterMineData {
 
   final ImportingScreen parent;
-  final IntermineServiceAsync tmService = (IntermineServiceAsync) GWT
+  final IntermineServiceAsync tmService = GWT
       .create(IntermineService.class);
 
   private Logger logger = SharedUtils.getLogger("intermine");

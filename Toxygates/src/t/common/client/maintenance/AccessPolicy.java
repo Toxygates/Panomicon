@@ -23,5 +23,5 @@ package t.common.client.maintenance;
 import java.io.Serializable;
 
 public enum AccessPolicy implements Serializable {
-	Public, Password;		
+	Public, Password
 }

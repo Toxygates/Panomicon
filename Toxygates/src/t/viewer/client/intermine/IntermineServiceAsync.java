@@ -26,12 +26,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface IntermineServiceAsync {
 
-	public void importLists(IntermineInstance instance, String user,
-			String pass, boolean asProbes, AsyncCallback<StringList[]> callback);
+	void importLists(IntermineInstance instance, String user,
+                     String pass, boolean asProbes, AsyncCallback<StringList[]> callback);
 
-	public void exportLists(IntermineInstance instance, String user,
-			String pass, StringList[] lists, boolean replace,
-			AsyncCallback<Void> callback);
+	void exportLists(IntermineInstance instance, String user,
+                     String pass, StringList[] lists, boolean replace,
+                     AsyncCallback<Void> callback);
 
 	void enrichment(IntermineInstance instance, StringList list,
 			EnrichmentParams params, String session,

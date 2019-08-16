@@ -30,16 +30,16 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
  */
 public interface SetEditor<T> {
 
-  public void setSelection(Collection<T> items);
+  void setSelection(Collection<T> items);
 
-  public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector);
+  void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector);
 
-  public Set<T> getSelection();
+  Set<T> getSelection();
 
-  public List<T> availableItems();
+  List<T> availableItems();
 
-  public Set<T> validateItems(List<T> items);
+  Set<T> validateItems(List<T> items);
 
-  public List<Suggestion> getSuggestions(String request);
+  List<Suggestion> getSuggestions(String request);
 
 }

@@ -25,5 +25,5 @@ package t.common.shared;
  *
  */
 public interface Packable {
-  public String pack();
+  String pack();
 }

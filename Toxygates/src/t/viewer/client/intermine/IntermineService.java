@@ -35,15 +35,15 @@ public interface IntermineService extends RemoteService {
    * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
    * @return
    */
-  public StringList[] importLists(IntermineInstance instance,
-      String user, String pass, boolean asProbes)
+  StringList[] importLists(IntermineInstance instance,
+                           String user, String pass, boolean asProbes)
       throws IntermineException;
 
   /**
    * Export gene lists to an intermine user account
    */
-  public void exportLists(IntermineInstance instance,
-      String user, String pass, StringList[] lists, boolean replace)
+  void exportLists(IntermineInstance instance,
+                   String user, String pass, StringList[] lists, boolean replace)
       throws IntermineException;
 
   /**
@@ -55,8 +55,8 @@ public interface IntermineService extends RemoteService {
    * @return
    * @throws IntermineException
    */
-  public String[][] enrichment(IntermineInstance instance,
-      StringList list, EnrichmentParams params, String session) throws IntermineException;
+  String[][] enrichment(IntermineInstance instance,
+                        StringList list, EnrichmentParams params, String session) throws IntermineException;
 
   /**
    * Enrich multiple gene lists simultaneously, returning only the top result for each
@@ -67,8 +67,8 @@ public interface IntermineService extends RemoteService {
    * @return
    * @throws IntermineException
    */
-  public String[][][] multiEnrichment(IntermineInstance instance,
-      StringList[] lists, EnrichmentParams params, String session)
+  String[][][] multiEnrichment(IntermineInstance instance,
+                               StringList[] lists, EnrichmentParams params, String session)
       throws IntermineException;
 
   /**
@@ -77,6 +77,6 @@ public interface IntermineService extends RemoteService {
    * @return A session key
    * @throws IntermineException
    */
-  public String getSession(IntermineInstance instance) 
+  String getSession(IntermineInstance instance)
 		  throws IntermineException;
 }

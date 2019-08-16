@@ -72,7 +72,7 @@ abstract public class HeatmapDialog<C, R> {
       @Override
       protected void beginDragging(MouseDownEvent event) {
         event.preventDefault();
-      };
+      }
     };
     this.logger = logger;
     this.matrixId = matrixId;

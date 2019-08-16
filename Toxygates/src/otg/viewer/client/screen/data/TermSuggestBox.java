@@ -88,7 +88,7 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
 
   @Override
   public void onSelection(SelectionEvent<TermSuggestion> event) {
-    TermSuggestion sug = (TermSuggestion) event.getSelectedItem();
+    TermSuggestion sug = event.getSelectedItem();
     selected = sug.getTerm();
     previousValue = selected.getTermString();
   }
@@ -175,7 +175,7 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
       return false;
     }
 
-    return ((DefaultSuggestionDisplay) getSuggestionDisplay())
+    return getSuggestionDisplay()
         .isSuggestionListShowing();
   }
 

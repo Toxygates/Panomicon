@@ -79,7 +79,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 
     DataSchema schema = screen.manager().schema();
 
-    tables = (D[][]) dataset.makeDataArray(rfsize * osize, minsOrMeds.length);
+    tables = dataset.makeDataArray(rfsize * osize, minsOrMeds.length);
 
     for (int col = 0; col < minsOrMeds.length; ++col) {
       grid.setWidget(0, col, Utils.mkEmphLabel(minsOrMeds[col]));

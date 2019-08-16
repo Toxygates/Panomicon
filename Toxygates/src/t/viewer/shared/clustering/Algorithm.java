@@ -30,7 +30,7 @@ public enum Algorithm {
   private String[] clusterings;
   private String[] params;
 
-  private Algorithm(String title, String[] clusterings, @Nullable String[] params) {
+  Algorithm(String title, String[] clusterings, @Nullable String[] params) {
     this.title = title;
     this.clusterings = clusterings;
     this.params = params;

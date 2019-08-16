@@ -92,7 +92,7 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
     if (size > 1) {
       return getSerialNumberedNames(base, size);
     } else {
-      return new ArrayList<String>(Arrays.asList(new String[] {base}));
+      return new ArrayList<String>(Arrays.asList(base));
     }
   }
 

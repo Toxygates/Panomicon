@@ -150,7 +150,7 @@ public enum AType {
 
   private String _title;
 
-  private AType(String name) {
+  AType(String name) {
     this._title = name;
   }
 

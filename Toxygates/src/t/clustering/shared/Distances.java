@@ -23,7 +23,7 @@ public enum Distances {
           "correlation"), ABSORRELATION("abscorrelation"), SPEARMAN("spearman"), KENDALL("kendall");
   private String distance;
 
-  private Distances(String distance) {
+  Distances(String distance) {
     this.distance = distance;
   }
 

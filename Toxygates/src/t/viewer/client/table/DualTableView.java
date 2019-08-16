@@ -41,7 +41,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   protected MenuItem sideDownloadGrouped, sideDownloadSingle;
   
-  public static enum DualMode {
+  public enum DualMode {
     Forward("mRNA", "miRNA", AType.MiRNA) {
       @Override
       void setVisibleColumns(ExpressionTable table) {

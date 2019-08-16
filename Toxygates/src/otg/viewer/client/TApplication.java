@@ -64,17 +64,17 @@ import t.viewer.shared.AppInfo;
 abstract public class TApplication implements ScreenManager, EntryPoint {
   private static Resources resources = GWT.create(Resources.class);
 
-  private static SampleServiceAsync sampleService = (SampleServiceAsync) GWT
+  private static SampleServiceAsync sampleService = GWT
       .create(SampleService.class);
-  private static ProbeServiceAsync probeService = (ProbeServiceAsync) GWT
+  private static ProbeServiceAsync probeService = GWT
       .create(ProbeService.class);
-  private static MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
+  private static MatrixServiceAsync matrixService = GWT
       .create(MatrixService.class);
-  private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
+  private static SeriesServiceAsync seriesService = GWT
       .create(SeriesService.class);
-  private static UserDataServiceAsync userDataService = (UserDataServiceAsync) GWT
+  private static UserDataServiceAsync userDataService = GWT
       .create(UserDataService.class);
-  private static NetworkServiceAsync networkService = (NetworkServiceAsync) GWT
+  private static NetworkServiceAsync networkService = GWT
       .create(NetworkService.class);
   
   private RootLayoutPanel rootPanel;

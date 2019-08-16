@@ -110,9 +110,9 @@ public class SampleDetailTable extends Composite {
         sb.append(TEMPLATES.endStyled());
       }
     }        
-  };
-  
-  public SampleDetailTable(OTGScreen screen, @Nullable String title, boolean isSection) {
+  }
+
+    public SampleDetailTable(OTGScreen screen, @Nullable String title, boolean isSection) {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.waitListener = screen;

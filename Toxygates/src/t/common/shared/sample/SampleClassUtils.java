@@ -81,7 +81,7 @@ public class SampleClassUtils {
 
   public static <S extends Sample, HS extends HasSamples<S>> 
       Stream<String> getMajors(DataSchema schema, HS hasSamples) {
-    return getMajors(schema, hasSamples, (SampleClass) null);
+    return getMajors(schema, hasSamples, null);
   }
 
   public static <S extends Sample, HS extends HasSamples<S>> 

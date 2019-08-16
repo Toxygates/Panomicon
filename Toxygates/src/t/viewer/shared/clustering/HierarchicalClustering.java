@@ -57,7 +57,7 @@ class HierarchicalClustering extends Clusterings {
       // if K is not found
       return null;
     }
-    String k = items[1].substring(items[1].indexOf("K"), items[1].length());
+    String k = items[1].substring(items[1].indexOf("K"));
     if (k.length() == 0) {
       return null;
     }
