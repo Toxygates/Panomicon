@@ -102,18 +102,26 @@ public class StorageProvider implements Storage.StorageProvider {
       new Storage<List<StringList>>("geneSets", stringListsPacker, this, 
           () -> {
             // Fallback: get all the gene sets from itemListsStorage
-            return itemListsStorage.getIgnoringException().stream().
-              filter(l -> l.type() == StringList.PROBES_LIST_TYPE).
+            List<ItemList> fallback = itemListsStorage.getIgnoringException();
+            if (fallback == null) {
+              return new ArrayList<StringList>();
+            } else {
+              return fallback.stream().filter(l -> l.type() == StringList.PROBES_LIST_TYPE).
               map(l -> (StringList) l).collect(Collectors.toList());
+            }
           });
   
   public final Storage<List<StringList>> compoundListsStorage = 
       new Storage<List<StringList>>("compoundLists", stringListsPacker, this, 
           () -> {
             // Fallback: get all the compound lists from itemListsStorage
-            return itemListsStorage.getIgnoringException().stream().
-              filter(l -> l.type() == StringList.COMPOUND_LIST_TYPE).
-              map(l -> (StringList) l).collect(Collectors.toList());
+            List<ItemList> fallback = itemListsStorage.getIgnoringException();
+            if (fallback == null) {
+              return new ArrayList<StringList>();
+            } else {
+              return fallback.stream().filter(l -> l.type() == StringList.COMPOUND_LIST_TYPE).
+                map(l -> (StringList) l).collect(Collectors.toList());
+            }
           });
   
   public final Storage<List<ItemList>> clusteringListsStorage = 

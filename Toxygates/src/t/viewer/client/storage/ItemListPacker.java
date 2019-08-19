@@ -43,18 +43,14 @@ public class ItemListPacker extends Packer<ItemList> {
   }
 
   @Override
-  public ItemList unpack(String string) {
-    return doUnpack(string);
-  }
-
-  public static ItemList doUnpack(String string) {
+  public ItemList unpack(String string) throws UnpackInputException {
     if (string == null) {
-      return null;
+      throw new UnpackInputException("Tried to unpack ItemList from null string");
     }
 
     String[] spl = string.split(":::");
     if (spl.length < 2) {
-      return null;
+      throw new UnpackInputException("Tried to unpack ItemList from string with insufficeint fields");
     }
 
     String type = spl[0];
@@ -70,8 +66,7 @@ public class ItemListPacker extends Packer<ItemList> {
     } else if (type.equals("userclustering")) {
       return new ClusteringList(type, name, items);
     } else {
-      // Unexpected type, ignore
-      return null;
+      throw new UnpackInputException("Tried to unpack ItemList of unknown type");
     }
   }
 }
