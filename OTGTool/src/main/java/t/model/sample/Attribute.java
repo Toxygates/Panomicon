@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -30,24 +29,24 @@ public interface Attribute {
   /**
    * Internal ID for database purposes
    */
-  public String id();
+  String id();
   
   /**
    * Human-readable title
    */
-  public String title();
+  String title();
   
   /**
    * Whether the attribute is numerical
    */
-  public boolean isNumerical();
+  boolean isNumerical();
   
   /**
    * The section that the attribute belongs to, if any.
    */
-  public @Nullable String section();
+  @Nullable String section();
 
-  public final String NOT_AVAILABLE = "na";
+  String NOT_AVAILABLE = "na";
 
-  public final String UNDEFINED_VALUE = "undef";
+  String UNDEFINED_VALUE = "undef";
 }

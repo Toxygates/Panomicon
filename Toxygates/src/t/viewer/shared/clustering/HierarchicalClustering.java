@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -57,7 +56,7 @@ class HierarchicalClustering extends Clusterings {
       // if K is not found
       return null;
     }
-    String k = items[1].substring(items[1].indexOf("K"), items[1].length());
+    String k = items[1].substring(items[1].indexOf("K"));
     if (k.length() == 0) {
       return null;
     }

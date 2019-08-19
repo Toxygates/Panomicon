@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -37,7 +36,7 @@ public interface NetworkService extends RemoteService {
   /**
    * Prefix for matrix IDs in network state. To be prepended by client.
    */
-  final static String tablePrefix = "network.";
+  String tablePrefix = "network.";
   
   /**
    * Set the desired miRNA association sources. In the objects passed in,

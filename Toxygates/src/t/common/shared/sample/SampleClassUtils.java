@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -81,7 +80,7 @@ public class SampleClassUtils {
 
   public static <S extends Sample, HS extends HasSamples<S>> 
       Stream<String> getMajors(DataSchema schema, HS hasSamples) {
-    return getMajors(schema, hasSamples, (SampleClass) null);
+    return getMajors(schema, hasSamples, null);
   }
 
   public static <S extends Sample, HS extends HasSamples<S>> 

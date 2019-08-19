@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -29,5 +28,5 @@ public interface MatchCondition {
    * Parameters whose values are needed to test this condition match.
    * @return
    */
-  public Collection<Attribute> neededParameters();
+  Collection<Attribute> neededParameters();
 }

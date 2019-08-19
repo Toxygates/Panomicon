@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -23,5 +22,5 @@ package t.common.client.maintenance;
 import java.io.Serializable;
 
 public enum AccessPolicy implements Serializable {
-	Public, Password;		
+	Public, Password
 }

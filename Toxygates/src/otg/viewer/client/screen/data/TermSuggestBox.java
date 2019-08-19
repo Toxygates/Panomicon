@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -88,7 +87,7 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
 
   @Override
   public void onSelection(SelectionEvent<TermSuggestion> event) {
-    TermSuggestion sug = (TermSuggestion) event.getSelectedItem();
+    TermSuggestion sug = event.getSelectedItem();
     selected = sug.getTerm();
     previousValue = selected.getTermString();
   }
@@ -175,7 +174,7 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
       return false;
     }
 
-    return ((DefaultSuggestionDisplay) getSuggestionDisplay())
+    return getSuggestionDisplay()
         .isSuggestionListShowing();
   }
 

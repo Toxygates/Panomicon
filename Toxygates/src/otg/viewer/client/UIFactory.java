@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -42,18 +41,18 @@ import t.viewer.shared.intermine.IntermineInstance;
  */
 public interface UIFactory {
 
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr);
+  SelectionTDGrid selectionTDGrid(OTGScreen scr);
 
-  public CompoundRanker compoundRanker(OTGScreen _screen);
+  CompoundRanker compoundRanker(OTGScreen _screen);
   
-  public GroupInspector groupInspector(OTGScreen scr,
-      GroupInspector.Delegate delegate);
+  GroupInspector groupInspector(OTGScreen scr,
+                                GroupInspector.Delegate delegate);
   
-  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups);
+  GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups);
   
-  public GeneSetEditor geneSetEditor(ImportingScreen screen);
+  GeneSetEditor geneSetEditor(ImportingScreen screen);
   
-  public GeneSetsMenu geneSetsMenu(DataScreen screen);
+  GeneSetsMenu geneSetsMenu(DataScreen screen);
 
   /**
    * Perform enrichment for a single gene set.

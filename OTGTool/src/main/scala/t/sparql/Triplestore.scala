@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -60,7 +59,7 @@ object Triplestore {
     if (user != null && pass != null) {
       rep.setUsernameAndPassword(user, pass)
     }
-    rep.initialize()
+    rep.init();
     if (rep == null) {
       throw new Exception("Unable to access repository ")
     }

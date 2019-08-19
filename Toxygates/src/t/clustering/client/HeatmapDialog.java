@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -72,7 +71,7 @@ abstract public class HeatmapDialog<C, R> {
       @Override
       protected void beginDragging(MouseDownEvent event) {
         event.preventDefault();
-      };
+      }
     };
     this.logger = logger;
     this.matrixId = matrixId;

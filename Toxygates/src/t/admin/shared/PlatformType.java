@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -23,5 +22,5 @@ package t.admin.shared;
 import java.io.Serializable;
 
 public enum PlatformType implements Serializable {
-  Standard, Affymetrix, Biological; 
+  Standard, Affymetrix, Biological
 }
