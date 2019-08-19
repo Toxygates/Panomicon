@@ -1,6 +1,9 @@
 /**
- * Draw the color scale used for the graph
- *
+ * Draw the color scale used for the graph.
+ * The color scale always has 2 components: A categorical scale, used to color
+ * nodes by default according to their type, and a continuous scale, used only
+ * after the user defines colors to be matched to the specific values in the
+ * network.
  */
 function drawColorScale(){
   /* get the drawing context */
@@ -12,47 +15,63 @@ function drawColorScale(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   /* padding and size of each color on the display */
   let hPad = 5;
-  let vPad = 10;
-  let height = 30;
+  let vPad = 30;
+  let height = 30; /* the height of a single line or color square */
   let width = 30;
 
-  /* if no color is specified for the scale, we show the colors used in the
-   * categorical scale of node types */
-  let minColorScale = this.options().layout.minColorScale;
-  if( minColorScale === undefined ){
-    /* iterate over node types and draw a box for each individual color */
-    let i = 0;
-    for( let key in nodeType ){
-      /* draw the color box */
-      let color = nodeColor[nodeType[key]]
-      ctx.fillStyle = color;
-      ctx.fillRect(hPad, vPad + i*height, width, height);
-      /* draw the text associated to the color box */
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'black'
-      ctx.fillText(nodeType[key], 2*hPad+width, vPad+ i*height+height/2 );
-      i += 1;
-    }
+  /* to increasingly position elements in the color bars, we will keep a
+   * reference to the y-position of the currently drawn element */
+  let yPos = vPad;
+
+  /* First we display the default colors used for the categorical scale of node
+  * types */
+  ctx.textBaseline = 'bottom';
+  ctx.textAlign = 'start';
+  ctx.fillStyle = 'black';
+  ctx.fillText('Default Color:', hPad, yPos );
+  for( let key in nodeType ){
+    /* draw the color box */
+    let color = nodeColor[nodeType[key]]
+    ctx.fillStyle = color;
+    ctx.fillRect(hPad, yPos, width, height);
+    /* draw the text associated to the color box */
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'black'
+    ctx.fillText(nodeType[key], 2*hPad+width, yPos+height/2 );
+    yPos += height;
   }
-  /* else, we generate a gradient and draw the corresponding linear scale */
-  else{
 
-    let gradient = ctx.createLinearGradient(hPad, vPad , hPad, canvas.height/2);
+  /* if a color scale has been defined by the user, we also display it */
+  let minColorScale = this.options().layout.minColorScale;
+  if( minColorScale !== undefined ){
 
-    // Add three color stops
+    yPos += height;
+    /* Write the Scale text */
+    ctx.textBaseline = 'bottom';
+    ctx.textAlign = 'start';
+    ctx.fillStyle = 'black';
+    ctx.fillText('Color Scale:', hPad, yPos );
+
+    /* redefine the height to whole bar size */
+    height = (canvas.height-yPos )/2;
+    /* create a gradient for the continious scale */
+    let gradient = ctx.createLinearGradient(hPad, yPos, hPad, yPos+height);
+    /* Add three color stops */
     gradient.addColorStop(0, this.options().layout.maxColorScale);
     gradient.addColorStop(.5, 'white');
     gradient.addColorStop(1, minColorScale);
 
     // Set the fill style and draw a rectangle
     ctx.fillStyle = gradient;
-    ctx.fillRect(hPad, vPad, width, canvas.height/2);
+    ctx.fillRect(hPad, yPos, width, height);
     /* write the extreme values for the scale */
-    ctx.textBaseline = 'middle';
     ctx.fillStyle = 'black'
-    ctx.fillText(this.options().layout.maxColorValue, 2*hPad+width, vPad );
-    ctx.fillText('0', 2*hPad+width, (vPad+canvas.height/2)/2 );
-    ctx.fillText(this.options().layout.minColorValue, 2*hPad+width, vPad + canvas.height/2 );
+    ctx.textBaseline = 'hanging';
+    ctx.fillText(this.options().layout.maxColorValue, 2*hPad+width, yPos );
+    ctx.textBaseline = 'middle';
+    ctx.fillText('0', 2*hPad+width, yPos+height/2 );
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(this.options().layout.minColorValue, 2*hPad+width, yPos+height );
   }
 }
 
@@ -130,7 +149,11 @@ function onNodeEnter(event){
     let row = $('<tr/>')
       .addClass('popperRow')
     row.append('<td>'+k+':</td>');
-    row.append('<td>'+wgts[k].toFixed(4)+'</td>');
+    /* sometimes nodes have no value associated, so null could be encountered */
+    if( wgts[k] !== null )
+      row.append('<td>'+wgts[k].toFixed(4)+'</td>');
+    else
+      row.append('<td>NaN</td>');
     $('#popperTable').append(row);
   }
 

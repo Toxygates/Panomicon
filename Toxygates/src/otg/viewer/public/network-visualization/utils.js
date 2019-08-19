@@ -241,7 +241,7 @@ function valueToColor(val, min=-1, max=1, negColor='#FF0000', posColor='#0000FF'
   /* Handle all the extreme cases first. This also handle the cases when min
    * and max have the same value */
   /* 0. the value is not a valid number */
-  if (isNaN(val))
+  if (isNaN(val) || val === null )
     return undefined;
   /* 1. value is at or below the min */
   if( val <= min ) return negColor;
