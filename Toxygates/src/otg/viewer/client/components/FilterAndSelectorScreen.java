@@ -35,7 +35,6 @@ import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
-import t.viewer.shared.StringList;
 
 /**
  * Contains functionality for managing the interaction between FilterTools and 

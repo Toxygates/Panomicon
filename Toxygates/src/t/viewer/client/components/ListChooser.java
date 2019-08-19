@@ -29,6 +29,7 @@ import com.google.gwt.user.client.ui.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
@@ -55,6 +56,8 @@ public class ListChooser extends Composite {
   private DialogBox inputDialog;
   final private ListBox listBox;
   final private String listType;
+  
+  public NamedObjectStorage<StringList> storage;
 
   /*
    * Create empty list box
@@ -178,16 +181,6 @@ public class ListChooser extends Composite {
     saveAction();
   }
 
-  /**
-   * Checks the validity of the name for a new list. Should be overridden
-   * if hasButtons = true.
-   * @param name
-   * @return
-   */
-  protected boolean checkName(String name) {
-    return false;
-  }
-
   public int saveAs(String entryName, List<String> items) {
     if (entryName != null) {
       entryName = entryName.trim();
@@ -288,10 +281,27 @@ public class ListChooser extends Composite {
    */
   protected void itemsChanged(List<String> items) {}
 
+  protected void listsChanged(List<StringList> lists) {
+    if (storage != null) {
+      storage.clear();
+      storage.insertAll(lists, true);
+      storage.saveToStorage();
+    }
+  }
+  
   /**
-   * To be overridden by subclasses/users. Called when the user has saved or deleted a list.
+   * Checks the validity of the name for a new list. Should be overridden
+   * if hasButtons = true.
+   * @param name
+   * @return
    */
-  protected void listsChanged(List<StringList> lists) {}
+  protected boolean checkName(String name) {
+    if (storage != null) {
+      return storage.validateNewObjectName(name, false);
+    } else {
+      return false;
+    }
+  }
 
   /**
    * To be called by users when the current list has been edited externally.

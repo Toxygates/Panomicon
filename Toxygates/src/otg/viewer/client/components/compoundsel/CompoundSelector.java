@@ -106,7 +106,7 @@ public class CompoundSelector extends Composite implements RequiresResize {
     
     compoundEditor =
         new StackedListEditor("compounds", heading, MAX_AUTO_SEL, predefLists,
-            withListSelector, withFreeEdit) {
+            compoundListsStorage, withListSelector, withFreeEdit) {
           @Override
           protected void selectionChanged(Set<String> selected) {
             List<String> r = new ArrayList<String>();
@@ -117,14 +117,6 @@ public class CompoundSelector extends Composite implements RequiresResize {
               delegate.compoundSelectorCompoundsChanged(r);
             }
           }
-
-          @Override
-          protected void listsChanged(List<StringList> stringLists) {
-            super.listsChanged(stringLists);
-            compoundListsStorage.clear();
-            compoundListsStorage.insertAll(stringLists, true);
-            compoundListsStorage.saveToStorage();
-          }
           
           @Override
           public void setSelection(Collection<String> items, @Nullable SetEditor<String> fromSelector) {
@@ -134,11 +126,6 @@ public class CompoundSelector extends Composite implements RequiresResize {
                   Analytics.ACTION_FREE_EDIT_COMPOUNDS);  
             }
           }     
-          
-          @Override
-          protected boolean checkName(String name) {
-            return compoundListsStorage.validateNewObjectName(name, false);
-          }
         };
         
     compoundEditor.setLists(compoundLists);

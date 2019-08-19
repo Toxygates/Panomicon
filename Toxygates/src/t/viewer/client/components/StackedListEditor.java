@@ -32,6 +32,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.viewer.client.Utils;
+import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.StringList;
 
 /**
@@ -62,6 +63,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    */
   public StackedListEditor(String listType, String itemTitle,
       int maxAutoSel, Collection<StringList> predefinedLists,
+      NamedObjectStorage<StringList> stringListStorage,
       boolean withListSelector, boolean withFreeEdit) {
     dockLayoutPanel = new DockLayoutPanel(Unit.PX);
     initWidget(dockLayoutPanel);
@@ -77,17 +79,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
         protected void itemsChanged(List<String> items) {
           setSelection(validateItems(items), StackedListEditor.this);
         }
-
-        @Override
-        protected void listsChanged(List<StringList> stringLists) {
-          StackedListEditor.this.listsChanged(stringLists);
-        }
-        
-        @Override
-        protected boolean checkName(String name) {
-          return StackedListEditor.this.checkName(name);
-        }
       };
+      listChooser.storage = stringListStorage;
       listChooser.addStyleName("colored");
       northVp.add(listChooser);
       dockLayoutPanel.addNorth(northVp, 37);
@@ -104,16 +97,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       }
       stackLayoutPanel.showWidget(browseCheck);
     }
-  }
-  
-  /**
-   * Checks the validity of a name being saved in the list selector. Should be 
-   * overridden if withListSelector = true
-   * @param name
-   * @return
-   */
-  protected boolean checkName(String name) {
-    return false;
   }
 
   /**
@@ -292,9 +275,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * Outgoing signal. Called when the selection has changed.
    */
   protected void selectionChanged(Set<String> items) {}
-
-  // Ditto
-  protected void listsChanged(List<StringList> itemLists) {}
 
   public void scrollBrowseCheckToTop() {
     browseCheck.scrollToTop();

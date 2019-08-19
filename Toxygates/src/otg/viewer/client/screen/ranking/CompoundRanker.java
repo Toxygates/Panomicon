@@ -131,19 +131,8 @@ abstract public class CompoundRanker extends Composite {
               }
             });
       }
-
-      @Override
-      protected void listsChanged(List<StringList> lists) {
-        geneSetsStorage.clear();
-        geneSetsStorage.insertAll(lists, true);
-        geneSetsStorage.saveToStorage();
-      }
-      
-      @Override
-      protected boolean checkName(String name) {
-        return geneSetsStorage.validateNewObjectName(name, false);
-      }
     };
+    listChooser.storage = geneSetsStorage;
     listChooser.addStyleName("colored");
 
     csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
