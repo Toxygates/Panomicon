@@ -44,6 +44,10 @@ public class ItemListPacker extends Packer<ItemList> {
 
   @Override
   public ItemList unpack(String string) throws UnpackInputException {
+    return doUnpack(string);
+  }
+  
+  public static ItemList doUnpack(String string) throws UnpackInputException {
     if (string == null) {
       throw new UnpackInputException("Tried to unpack ItemList from null string");
     }
