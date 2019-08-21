@@ -19,12 +19,12 @@
 
 package otg.viewer.client.components.compoundsel;
 
-import static t.viewer.shared.StringList.COMPOUND_LIST_TYPE;
+import t.viewer.shared.StringList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import t.viewer.shared.StringList;
+import static t.viewer.shared.StringList.COMPOUND_LIST_TYPE;
 
 public class TemporaryCompoundLists {
 
@@ -32,7 +32,7 @@ public class TemporaryCompoundLists {
    * Note: Temporary hardcoded lists for testing. Task: store as RDF instead.
    */
 	static List<StringList> predefinedLists() {
-		List<StringList> r = new ArrayList<StringList>();
+		List<StringList> r = new ArrayList<>();
 		String[] negElBilib = new String[] { 
 				"chloramphenicol",
 				"aspirin",
@@ -53,8 +53,8 @@ public class TemporaryCompoundLists {
 				"hydroxyzine",
 				"tamoxifen",
 				"ticlopidine",
-				"carbon_tetrachloride",
-				"allyl_alcohol",
+				"carbon tetrachloride",
+				"allyl alcohol",
 				"perhexiline"		
 		};
 		r.add(new StringList(COMPOUND_LIST_TYPE, "Negative elevation bilirubin", 
@@ -69,7 +69,7 @@ public class TemporaryCompoundLists {
 				"glibenclamide",
 				"phenylbutazone",
 				"coumarin",
-				"carbon_tetrachloride",
+				"carbon tetrachloride",
 				"thioacetamide",
 				"hexachlorobenzene",
 				"methapyrilene",
@@ -100,8 +100,8 @@ public class TemporaryCompoundLists {
 				"coumarin",
 				"cyclophosphamide",
 				"omeprazole",
-				"carbon_tetrachloride",
-				"allyl_alcohol",
+				"carbon tetrachloride",
+				"allyl alcohol",
 				"thioacetamide",
 				"ethionine",
 				"hexachlorobenzene",
