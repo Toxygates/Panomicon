@@ -65,9 +65,6 @@ function showNetworkOnRight() {
       right.data('idx', SIDE_ID);
       /* add a new cytoscape element to the container */
       initCytoscapeGraph(SIDE_ID, right);
-      /* Fit the left graph to the smaller viewport */
-      // vizNet[MAIN_ID].resize();
-      // vizNet[MAIN_ID].fit();
     })
     ;
 }
@@ -99,7 +96,9 @@ function initCytoscapeGraph(id, container){
     id: 'cyCanvas-'+id,
   });
   vizNet[id].options().layout.minColorScale = undefined;
+  vizNet[id].options().layout.minColorValue = undefined;
   vizNet[id].options().layout.maxColorScale = undefined;
+  vizNet[id].options().layout.maxColorValue = undefined;
   vizNet[id].drawColorScale();
 
   /* bind function to handle the resizing of the panel */
@@ -110,6 +109,8 @@ function initCytoscapeGraph(id, container){
   /* add behaviour to the selection and unselections of nodes */
   vizNet[id].on("select", "node", onNodeSelection);
   vizNet[id].on("unselect", "node", onNodeUnselection);
+  /* bind function to change the current layout when a node is moved by the user */
+  vizNet[id].on('dragfree', "node", onDragFree);
 
   /* add a context menu to the panel (delete the previous one if still there),
    * and position it within the DOM at a level where events will be captured */
@@ -296,13 +297,8 @@ $(document).on("click", "#mergeNetworkButton", function(){
   let showHidden = $("#showHiddenNodesCheckbox").prop("checked", false);
   $("#showHiddenNodesCheckbox").trigger("change");
   /* Clean un-required variables */
-  /* Remove DOM elements for the right SIDE_ID */
   removeRightDisplay();
-  /* Perform the merge of the networks */
   vizNet[SIDE_ID] = null;
-  /* Fit the new network to the viewport */
-  // vizNet[MAIN_ID].resize();
-  // vizNet[MAIN_ID].fit();
 });
 
 /**
@@ -353,6 +349,12 @@ $(document).on("click", "#okColorScaleDialog", function (event){
   /* retrieve cap values for negative and positive ends of the scale */
   let min = $('#negCap').val();
   let max = $('#posCap').val();
+  /* colors and values for later use in the display of the color scale */
+  vizNet[id].options().layout.minColorScale = negColor;
+  vizNet[id].options().layout.minColorValue = min;
+  vizNet[id].options().layout.maxColorScale = posColor;
+  vizNet[id].options().layout.maxColorValue = max;
+
   /* apply the linearly interpolated color to each node in the graph */
   vizNet[id].nodes().forEach(function(ele){
     /* retrieve the current node's weight value */
@@ -371,6 +373,8 @@ $(document).on("click", "#okColorScaleDialog", function (event){
     else
       ele.setDefaultStyle();
   });
+  /* redraw the color scale */
+  vizNet[id].drawColorScale();
   /* hide the modal after color has been applied to nodes */
   $("#colorScaleDialog").css('visibility', 'hidden');
 });

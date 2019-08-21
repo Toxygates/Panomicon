@@ -1,7 +1,4 @@
 // "use strict";
-$.getScript("toxygates/network-visualization/lib/cytoscape-canvas-3.0.1.js", function() {
-   alert("cytoscape-canvas loaded but not necessarily executed.");
-});
 /** types of nodes that can be added to the visualization */
 const nodeType = Object.freeze({
   mRNA: 'MSG_RNA',//: "mRNA",
@@ -244,7 +241,7 @@ function valueToColor(val, min=-1, max=1, negColor='#FF0000', posColor='#0000FF'
   /* Handle all the extreme cases first. This also handle the cases when min
    * and max have the same value */
   /* 0. the value is not a valid number */
-  if (isNaN(val))
+  if (isNaN(val) || val === null )
     return undefined;
   /* 1. value is at or below the min */
   if( val <= min ) return negColor;

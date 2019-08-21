@@ -1,52 +1,78 @@
 /**
- * Draw the color scale used for the graph
- *
+ * Draw the color scale used for the graph.
+ * The color scale always has 2 components: A categorical scale, used to color
+ * nodes by default according to their type, and a continuous scale, used only
+ * after the user defines colors to be matched to the specific values in the
+ * network.
  */
 function drawColorScale(){
   /* get the drawing context */
   let id = this.options().container.data('idx');
-  let ctx = $('#cyCanvas-'+id)[0].getContext('2d');
+  let canvas = $('#cyCanvas-'+id)[0];
+  let ctx = canvas.getContext('2d');
   ctx.font = '1.2em sans-serif';
+  /* delete the previous canvas content - clear the canvas */
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  /* padding and size of each color on the display */
+  let hPad = 5;
+  let vPad = 30;
+  let height = 30; /* the height of a single line or color square */
+  let width = 30;
 
-  /* if no color is specified for the scale, we show the colors used in the
-   * categorical scale of node types */
-  let minColorScale = this.options().layout.minColorScale;
-  if( minColorScale === undefined ){
-    /* padding and size of each color on the display */
-    let hPad = 5;
-    let vPad = 10;
-    let height = 30;
-    let width = 30;
-    /* iterate over node types and draw a box for each individual color */
-    let i = 0;
-    for( let key in nodeType ){
-      /* draw the color box */
-      let color = nodeColor[nodeType[key]]
-      ctx.fillStyle = color;
-      ctx.fillRect(hPad, vPad + i*height, width, height);
-      /* draw the text associated to the color box */
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'black'
-      ctx.fillText(nodeType[key], 2*hPad+width, vPad+ i*height+height/2 );
-      i += 1;
-    }
+  /* to increasingly position elements in the color bars, we will keep a
+   * reference to the y-position of the currently drawn element */
+  let yPos = vPad;
+
+  /* First we display the default colors used for the categorical scale of node
+  * types */
+  ctx.textBaseline = 'bottom';
+  ctx.textAlign = 'start';
+  ctx.fillStyle = 'black';
+  ctx.fillText('Default Color:', hPad, yPos );
+  for( let key in nodeType ){
+    /* draw the color box */
+    let color = nodeColor[nodeType[key]]
+    ctx.fillStyle = color;
+    ctx.fillRect(hPad, yPos, width, height);
+    /* draw the text associated to the color box */
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'black'
+    ctx.fillText(nodeType[key], 2*hPad+width, yPos+height/2 );
+    yPos += height;
   }
-  /* else, we generate a gradient and draw the corresponding linear scale */
-  else{
 
-    let gradient = ctx.createLinearGradient(0, 20, 0, 100);
+  /* if a color scale has been defined by the user, we also display it */
+  let minColorScale = this.options().layout.minColorScale;
+  if( minColorScale !== undefined ){
 
-    // Add three color stops
+    yPos += height;
+    /* Write the Scale text */
+    ctx.textBaseline = 'bottom';
+    ctx.textAlign = 'start';
+    ctx.fillStyle = 'black';
+    ctx.fillText('Color Scale:', hPad, yPos );
+
+    /* redefine the height to whole bar size */
+    height = (canvas.height-yPos )/2;
+    /* create a gradient for the continious scale */
+    let gradient = ctx.createLinearGradient(hPad, yPos, hPad, yPos+height);
+    /* Add three color stops */
     gradient.addColorStop(0, this.options().layout.maxColorScale);
     gradient.addColorStop(.5, 'white');
-    gradient.addColorStop(1, minColorScale);+6
+    gradient.addColorStop(1, minColorScale);
 
     // Set the fill style and draw a rectangle
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 20, 20, 80);
+    ctx.fillRect(hPad, yPos, width, height);
+    /* write the extreme values for the scale */
+    ctx.fillStyle = 'black'
+    ctx.textBaseline = 'hanging';
+    ctx.fillText(this.options().layout.maxColorValue, 2*hPad+width, yPos );
+    ctx.textBaseline = 'middle';
+    ctx.fillText('0', 2*hPad+width, yPos+height/2 );
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(this.options().layout.minColorValue, 2*hPad+width, yPos+height );
   }
-
-  // ctx.fillText("This text is fixed", 50, 50);
 }
 
 /**
@@ -123,7 +149,11 @@ function onNodeEnter(event){
     let row = $('<tr/>')
       .addClass('popperRow')
     row.append('<td>'+k+':</td>');
-    row.append('<td>'+wgts[k].toFixed(4)+'</td>');
+    /* sometimes nodes have no value associated, so null could be encountered */
+    if( wgts[k] !== null )
+      row.append('<td>'+wgts[k].toFixed(4)+'</td>');
+    else
+      row.append('<td>NaN</td>');
     $('#popperTable').append(row);
   }
 
@@ -200,6 +230,33 @@ function onNodeUnselection(event){
 }
 
 /**
+ * Update the Layout of the network
+ * Through the provided interface control, the user is able to apply different
+ * layout algorithms to the displayed networks. Whenever the user introduces
+ * manual changes to the position of the nodes in the graph, the 'current'
+ * layout no longer matches a pre-defined option, but should be considered as
+ * a 'custom' layout.
+ * This method updates the corresponding interface and structure values, in
+ * order to properly reflect the nature of the layout.
+ *
+ * @type {CytoscapeEvent}
+ * @param {CytoscapeEvent} event The move event that triggered the call
+ */
+function onDragFree(event){
+  /* need to capture the source container for the movement */
+  let id = (event.cy.container().id === 'leftDisplay') ? MAIN_ID : SIDE_ID;
+  /* fix the current layout to custom */
+  // $('#layoutSelect').val('custom');
+  vizNet[id].options().layout['name'] = 'custom';
+  /* update the selected panel to the one where the node was moved and trigger
+   * a change event on it */
+  $('#panelSelect')
+    .val(id)
+    .trigger('change')
+    ;
+}
+
+/**
  * Manage the resizing of the panel
  *
  * Each time the drawing panel changes its size, either because of a change in
@@ -249,8 +306,13 @@ function initContextMenu(id){
       selector: 'node',
       coreAsWell: true,
       onClickFunction: function(evt){
-        if( evt.cy === evt.target ) // click on the background
+        if( evt.cy === evt.target ){ // click on the background
           evt.cy.elements().setDefaultStyle();
+          /* return the color scale to only use default colors */
+          evt.cy.options().layout.minColorScale = undefined;
+          evt.cy.options().layout.maxColorScale = undefined;
+          evt.cy.drawColorScale()
+        }
         else
           evt.target.setDefaultStyle();
       },
@@ -448,31 +510,39 @@ function hideUnconnected(){
 }
 
 /**
- * Merge the current collection with the collection of elements provided.
+ * Merge the current graph with other graph.
  * The merge is performed in such a way as to keep a single copy of intersecting
- * elements, and defining a dual layout that positions the intersecting elements
- * at the center of the viewport, with elements coming from the left panel at
- * the left of the intersection, and elements coming from the right panel at the
- * right of the intesection.
- * @param {graph} other The elements we are to merge with the current graph.
+ * elements.
+ * Nodes in the intersection retain the union of the weights, that is, all the
+ * weights from both networks. If two nodes have weights with the same name, we
+ * retain the one from the LEFT-side network (current network).
+ * A Custom layout is applied to the merged network, that positions the
+ * intersecting elements at the center of the viewport, with elements coming from
+ * the left panel at the left of the intersection, and elements coming from the
+ * right panel at the right of the intesection.
+ *
+ * @type {CytoscapeGraph}
+ * @param {CytoscapeGraph} other The graph whose elements will be merged into
+ * the current one.
  * @param {string} innerLyt Layout used for intersecting elements.
  * @param {string} outerLyt Layout used for non-intersecting elements, both at
  * the left and right sides of the display
  */
 function mergeWith(other, innerLyt="concentric", outerLyt="grid"){
-  /* Define the collections that represent the three components of the new graph,
-   * intersecting nodes, left-side nodes and right-side nodes */
+  /* Find the intersecting elements between the two graphs */
   let inter = this.elements().intersection(other.elements());
 
-  /* intersecting nodes are gathered from a single graph (the one with the
-   * largest nymber of elements), so that in order to keep the attributes from
-   * both sources, we need to perform their merge manually */
+  /* Intersecting elements are copied from the largest graph */
   let smaller = this.elements().length < other.elements().length ? this : other;
+  /* We copy the data (weights) of the intersecting nodes in the smaller graph
+   * so that we don't lose it in the merge */
   inter.forEach(function(ele){
     jQuery.extend(ele.data('weight'), smaller.$('#'+ele.id())[0].data('weight'));
   });
 
+  /* Elements that are only in the current graph */
   let left = inter.absoluteComplement();
+  /* Elements only in the other graph */
   let right = other.elements().difference(inter);
 
   /* capture the dimensions of the viewport, to use them as constrains for the
@@ -480,9 +550,9 @@ function mergeWith(other, innerLyt="concentric", outerLyt="grid"){
   let w = this.container().parentElement.clientWidth/3;
   let h = this.container().parentElement.clientHeight;
   /* define the layout algorithm for each part of the merged network */
-  let interLyt = inter.updateLayout(innerLyt, {x1:w,y1:0,w:w,h:h} );
-  let leftLyt = left.updateLayout(outerLyt, {x1:0,y1:0,w:w,h:h} );
-  let rightLyt = right.updateLayout(outerLyt, {x1:2*w,y1:0,w:w,h:h} );
+  let interLyt = inter.updateLayout(innerLyt, {x1:w, y1:0, w:w, h:h} );
+  let leftLyt = left.updateLayout(outerLyt, {x1:0, y1:0, w:w, h:h} );
+  let rightLyt = right.updateLayout(outerLyt, {x1:2*w, y1:0, w:w, h:h} );
 
   /* set a promise to run the layout of the 2nd element of the merged network */
   leftLyt.promiseOn('layoutstop').then(function(){
