@@ -75,8 +75,7 @@
     <scalac srcdir="${sources.dir}"
       destdir="${build.dir}"
       classpathref="compile.classpath"
-      deprecation="on"
-      optimise="on">
+      deprecation="on">
       <include name="**/*.scala" />
       <include name="**/*.java" />
     </scalac>
