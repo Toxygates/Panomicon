@@ -116,8 +116,8 @@ public enum AType {
   MiRNA("MicroRNA") {
     public String formLink(String value) {
       //example: MIMAT0000376
-//      return "http://www.mirbase.org/cgi-bin/mature.pl?mature_acc=" + value;
-      return "http://www.mirbase.org/cgi-bin/query.pl?terms=" + value;
+      //example: rno-miR-96-3p
+      return "http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=" + value;
     }
   },
   //mRNA-microRNA association
