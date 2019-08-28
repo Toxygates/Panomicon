@@ -10,6 +10,8 @@ const nodeColor = Object.freeze({
   MSG_RNA: '#007f7f',
   MICRO_RNA: '#827f00',
   HIGHLIGHT: '#ffde4c',
+  SELECTED: '#00de4c',
+  CONNECTED: '#6fde95',
 });
 
 /** list of shapes that can be used to draw a node */
@@ -22,6 +24,7 @@ const nodeShape = Object.freeze({
 const edgeColor = Object.freeze({
   REGULAR: '#989898',
   HIGHLIGHT: '#ffde4c',
+  CONNECTED: '#6fde95',
 });
 
 /**
