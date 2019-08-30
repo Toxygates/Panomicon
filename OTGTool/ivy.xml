@@ -48,11 +48,18 @@
   
   <!-- Version pinned because 2.9 has multi-version module infos in jars, which Jetty can't handle -->
  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.8.2" />
- <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" />
- <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
- <dependency org="org.apache.logging.log4j" name="log4j-slf4j-impl" rev="2.8.2" /> 
 
- <dependency org="org.antlr" name="antlr" rev="latest.integration" />
+<!-- Here it is necessary to explicitly import the "jar" type or only test-jar will be imported,
+   for some reason -->
+ <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.8.2" >
+     <artifact name="log4j-core" type="jar" />
+ </dependency>
+
+ <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="2.8.2" /> 
+ <dependency org="org.apache.logging.log4j" name="log4j-slf4j-impl" rev="2.8.2" />
+
+ <!--For intermine. latest.integration version is not compatible with intermine-java-client 2.0 as of Aug 2019. -->
+ <dependency org="antlr" name="antlr" rev="2.7.6" />
 
  <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
 

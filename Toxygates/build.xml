@@ -69,7 +69,7 @@
     <pathelement location="${otgtool.root}/test-classes" />
   </path>
 
-  <target name="classfiles" depends="init,resolve">
+  <target name="classfiles" depends="init,retrieve">
     <ivy:cachepath pathid="ivy.classpath" />
     <mkdir dir="${build.dir}" />
     <scalac srcdir="${sources.dir}"
@@ -120,7 +120,7 @@
 
   </target>
 
-  <target name="compile" depends="retrieve,gwtc" />
+  <target name="compile" depends="gwtc" />
 
   <target name="devmode" depends="classfiles" description="Run development mode">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">

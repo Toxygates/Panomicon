@@ -14,12 +14,8 @@
   <property name="testbuild.dir" value="test-classes" />
   <property name="test-sources.dir" value="test" />
 
-  <target name="resolve">
-    <ivy:settings />
-    <!--
-    <ivy:configure file="ivysettings.xml" />
-    -->
-    <ivy:resolve file="ivy.xml" conf="compile" />
+  <target name="ivyreport" depends="retrieve">
+    <ivy:report dot="true" />
   </target>
 
   <target name="retrieve" depends="init">
