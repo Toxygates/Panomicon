@@ -96,16 +96,21 @@ function initStyle(){
       'border-width': '1px',
       'display': 'element',
     })
-    .selector('node:selected')
+    .selector('node.connected')
     .style({
-      'border-width': '5px',
-      'background-color': nodeColor.HIGHLIGHT,
-      'border-color': nodeColor.HIGHLIGHT,
+      'background-color': nodeColor.CONNECTED,
+      'border-color': nodeColor.CONNECTED,
     })
     .selector('node.highlighted')
     .style({
       'background-color': nodeColor.HIGHLIGHT,
       'border-color': nodeColor.HIGHLIGHT,
+    })
+    .selector('node:selected')
+    .style({
+      'border-width': '5px',
+      'background-color': nodeColor.SELECTED,
+      'border-color': nodeColor.SELECTED,
     })
     .selector('node.hidden')
     .style({
@@ -115,6 +120,10 @@ function initStyle(){
     .selector("edge")
     .style({
       "line-color": "data(color)",
+    })
+    .selector('edge.connected')
+    .style({
+      'line-color': edgeColor.CONNECTED,
     })
     .selector('edge.highlighted')
     .style({
@@ -197,16 +206,21 @@ function onNodeExit(event){
 function onNodeSelection(event){
   // The id of the DOM element where the selection was triggered
   var dpl = event.cy.container().id;
+  /* the node where the selection event was triggered */
+  let node = event.target;
   // Definition of the complementary display panel
   var otherID = (dpl === "leftDisplay") ? 1 : 0;
   // If the complementary display is empty, we don't need to do anything
   if( vizNet[otherID] !== null ){
-    // Target node - the node that was selected
-    var n = event.target;
     // Select the corresponding node on the complementary display (element with
     // the same id). If no such node exists, the nothing will happen
-    vizNet[otherID].nodes('[id="'+n.id()+'"]').select();
+    vizNet[otherID].nodes('[id="'+node.id()+'"]').select();
   }
+
+  /* toggle class connected for the connected elements to the selected node */
+  node.openNeighbourhood().forEach(function(ele){
+    ele.toggleClass('connected', true);
+  })
 }
 
 /**
@@ -217,16 +231,21 @@ function onNodeSelection(event){
 function onNodeUnselection(event){
   // The id of the DOM element where the unselection was triggered
   var dpl = event.cy.container().id;
+  /* the node where the unselection event was triggered */
+  let node = event.target;
   // Definition of the complementary display panel
   var otherID = (dpl === "leftDisplay") ? 1 : 0;
   // If the complementary display is empty, we don't need to do anything
   if( vizNet[otherID] !== null ){
-    // Target node - the node that was unselected
-    var n = event.target;
     // Un-select the corresponding node on the complementary display (element
     // with the same id)
-    vizNet[otherID].nodes('[id="'+n.id()+'"]').unselect();
+    vizNet[otherID].nodes('[id="'+node.id()+'"]').unselect();
   }
+
+  /* turn off class connected for the elements linked to the unselected node */
+  node.openNeighbourhood().forEach(function(ele){
+    ele.toggleClass('connected', false);
+  });
 }
 
 /**
