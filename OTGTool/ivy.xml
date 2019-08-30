@@ -29,8 +29,9 @@
     <!-- for javax.annotation.Nullable -->
     <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
 
-    <!-- for intermine.  -->
-  <dependency org="org.json" name="json" rev="latest.integration"/>
+    <!-- for intermine. latest.integration version is not compatible with intermine-java-client 2.0 as of Aug 2019.
+     Causes errors when retrieving gene lists. -->
+  <dependency org="org.json" name="json" rev="20090211"/>
 
   <!-- intermine-client-2.0 needs the old commons-httpclient module
      (org.apache.httpcomponents will not work) -->
