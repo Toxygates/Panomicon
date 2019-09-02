@@ -576,6 +576,10 @@ Groups
 	color: GROUP6_COLOR;
 }
 
+.Group7 {
+	color: GROUP7_COLOR;
+}
+
 .Group0-background {
 	background: GROUP0_COLOR;
 }
@@ -602,6 +606,10 @@ Groups
 
 .Group6-background {
 	background: GROUP6_COLOR;
+}
+
+.Group7-background {
+	background: GROUP7_COLOR;
 }
 
 /**************************************	
