@@ -19,8 +19,7 @@
 
 package t.viewer.client.rpc;
 
-import java.util.List;
-
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
@@ -28,7 +27,7 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import java.util.List;
 
 public interface SampleServiceAsync {
 
@@ -56,10 +55,10 @@ public interface SampleServiceAsync {
 
   void annotations(Sample[] samples, Attribute[] attributes, AsyncCallback<Annotation[]> callback);
 
-  void annotations(HasSamples<Sample> column, boolean importantOnly,
+  void annotations(Sample[] samples, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);
-  
-  void prepareAnnotationCSVDownload(HasSamples<Sample> column, 
+
+  void prepareAnnotationCSVDownload(Sample[] samples,
       AsyncCallback<String> callback);
 
   void sampleSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,

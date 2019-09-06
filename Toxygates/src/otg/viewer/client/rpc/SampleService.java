@@ -20,9 +20,8 @@
 package otg.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
 import otg.viewer.shared.Pathology;
-import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.Sample;
 import t.viewer.shared.TimeoutException;
 
 @RemoteServiceRelativePath("sample")
@@ -30,5 +29,5 @@ public interface SampleService extends t.viewer.client.rpc.SampleService {
   /**
    * Obtain pathologies for a set of samples
    */
-  Pathology[] pathologies(SampleColumn column) throws TimeoutException;
+  Pathology[] pathologies(Sample[] samples) throws TimeoutException;
 }

@@ -19,27 +19,23 @@
 
 package t.viewer.server.rpc
 
-import java.util.{ List => JList }
+import java.util.{List => JList}
 
-import scala.collection.JavaConverters._
 import t.common.server.GWTUtils._
-
-import otg.viewer.shared.Pathology
-import t.common.server.ScalaUtils
 import t.common.shared._
 import t.common.shared.sample._
 import t.common.shared.sample.search.MatchCondition
 import t.model.SampleClass
-import t.model.sample.Attribute
-import t.model.sample.SampleLike
-import t.platform.Probe
+import t.model.sample.{Attribute, SampleLike}
 import t.sparql._
 import t.sparql.secondary._
 import t.viewer.client.rpc._
-import t.viewer.server._
 import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
+import t.viewer.server._
 import t.viewer.shared._
+
+import scala.collection.JavaConverters._
 
 class SampleState(instanceURI: Option[String]) {
   var sampleFilter: SampleFilter = SampleFilter(instanceURI = instanceURI)
@@ -50,7 +46,6 @@ class SampleState(instanceURI: Option[String]) {
  */
 abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   SampleService {
-  import ScalaUtils._
 
   type DataColumn = t.common.shared.sample.DataColumn[Sample]
 
@@ -178,15 +173,13 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     annotations.forSamples(sampleStore, samples, attributes)
 
   @throws[TimeoutException]
-  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] =
-    annotations.forSamples(sampleStore, column.getSamples, importantOnly)
+  def annotations(samples: Array[Sample], importantOnly: Boolean = false): Array[Annotation] =
+    annotations.forSamples(sampleStore, samples, importantOnly)
 
   @throws[TimeoutException]
-  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String =
-    annotations.prepareCSVDownload(sampleStore, column.getSamples,
+  def prepareAnnotationCSVDownload(samples: Array[Sample]): String =
+    annotations.prepareCSVDownload(sampleStore, samples,
       configuration.csvDirectory, configuration.csvUrlBase)
-
-  import scala.collection.{ Map => CMap, Set => CSet }
 
   def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int):
       RequestResult[Pair[Sample, Pair[Unit, Unit]]] = {

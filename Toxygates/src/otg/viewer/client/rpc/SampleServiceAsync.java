@@ -19,14 +19,12 @@
 
 package otg.viewer.client.rpc;
 
-import t.common.shared.sample.SampleColumn;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import otg.viewer.shared.Pathology;
+import t.common.shared.sample.Sample;
 
 public interface SampleServiceAsync extends t.viewer.client.rpc.SampleServiceAsync {
 
-  void pathologies(SampleColumn column, AsyncCallback<Pathology[]> callback);
+  void pathologies(Sample[] samples, AsyncCallback<Pathology[]> callback);
 
 }

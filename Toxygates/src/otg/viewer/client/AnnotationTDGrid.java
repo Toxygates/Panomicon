@@ -19,14 +19,10 @@
 
 package otg.viewer.client;
 
-import java.util.List;
-import java.util.logging.Level;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
-
 import otg.model.sample.OTGAttribute;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.TimeDoseGrid;
@@ -36,6 +32,9 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.future.Future;
+
+import java.util.List;
+import java.util.logging.Level;
 
 /**
  * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a
@@ -152,8 +151,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private void processAnnotationSamples(final String annotation, final int row, final int col,
       final String time, final Sample[] samples) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
-    Group g = new Group(schema, "temporary", samples, null);
-    sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(screen,
+    sampleService.annotations(samples, false, new PendingAsyncCallback<Annotation[]>(screen,
         "Unable to get annotations.") {
       @Override
       public void handleSuccess(Annotation[] as) {

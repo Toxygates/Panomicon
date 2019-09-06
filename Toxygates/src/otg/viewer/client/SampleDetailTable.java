@@ -19,10 +19,6 @@
 
 package otg.viewer.client;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
@@ -32,13 +28,16 @@ import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSe
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
-
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.sample.*;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.table.TooltipColumn;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * A table that displays sample annotations for a small set of samples.
@@ -50,7 +49,7 @@ public class SampleDetailTable extends Composite {
   private SampleServiceAsync sampleService;
   private final @Nullable String title;
   private final boolean isSection;
-  private final OTGScreen waitListener;
+  private final OTGScreen screen;
   public Delegate delegate;
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
@@ -113,10 +112,10 @@ public class SampleDetailTable extends Composite {
     }        
   }
 
-    public SampleDetailTable(OTGScreen screen, @Nullable String title, boolean isSection) {
+  public SampleDetailTable(OTGScreen screen, @Nullable String title, boolean isSection) {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
-    this.waitListener = screen;
+    this.screen = screen;
     sampleService = screen.manager().sampleService();
     Resources resources = GWT.create(Resources.class);
     table = new CellTable<BioParamValue[]>(15, resources);
@@ -128,12 +127,13 @@ public class SampleDetailTable extends Composite {
 
   public @Nullable String sectionTitle() { return title; }
   
-  public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {        
-    sampleService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
-        waitListener) {
+  public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {
+    sampleService.annotations(c.getSamples(), importantOnly, new PendingAsyncCallback<Annotation[]>(
+            screen) {
       @Override
       public void handleFailure(Throwable caught) {
-        Window.alert("Unable to get array annotations.");
+        screen.getLogger().log(Level.WARNING, "sampleService.annotations failed", caught);
+        Window.alert("Unable to get sample annotations.");
       }
 
       @Override

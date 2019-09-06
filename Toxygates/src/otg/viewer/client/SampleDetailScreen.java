@@ -19,28 +19,24 @@
 
 package otg.viewer.client;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-
 import otg.viewer.client.components.MinimalScreen;
 import otg.viewer.client.components.ScreenManager;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.Analytics;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Groups;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.Packer.UnpackInputException;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * This screen displays detailed information about a sample or a set of samples, i.e. experimental
@@ -116,11 +112,12 @@ public class SampleDetailScreen extends MinimalScreen
 
   public void loadSections(final HasSamples<Sample> hasSamples, boolean importantOnly) {
     downloadButton.setEnabled(false);
-    sampleService.annotations(hasSamples, importantOnly, new PendingAsyncCallback<Annotation[]>(
+      sampleService.annotations(hasSamples.getSamples(), importantOnly, new PendingAsyncCallback<Annotation[]>(
         SampleDetailScreen.this) {
       @Override
       public void handleFailure(Throwable caught) {
-        Window.alert("Unable to get array annotations.");
+          getLogger().log(Level.WARNING, "sampleService.annotations failed", caught);
+          Window.alert("Unable to get sample annotations.");
       }
 
       @Override
@@ -232,7 +229,7 @@ public class SampleDetailScreen extends MinimalScreen
         if (currentColumn == null) {
           return;
         }
-        sampleService.prepareAnnotationCSVDownload(currentColumn,
+          sampleService.prepareAnnotationCSVDownload(currentColumn.getSamples(),
             new PendingAsyncCallback<String>(SampleDetailScreen.this,
             "Unable to prepare the data for download,") {
           @Override

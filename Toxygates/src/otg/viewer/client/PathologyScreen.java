@@ -19,10 +19,6 @@
 
 package otg.viewer.client;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -32,19 +28,22 @@ import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSe
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-
 import otg.model.sample.OTGAttribute;
 import otg.viewer.client.components.*;
 import otg.viewer.client.rpc.SampleServiceAsync;
 import otg.viewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
-import t.common.shared.sample.*;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Groups;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
+
+import java.util.*;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This screen displays information about pathological findings in a given set of sample groups.
@@ -213,9 +212,10 @@ public class PathologyScreen extends MinimalScreen {
             .equals(lastColumns))) {
       pathologies.clear();
       for (SampleColumn c : groups.activeGroups()) {
-        sampleService.pathologies(c, new AsyncCallback<Pathology[]>() {
+        sampleService.pathologies(c.getSamples(), new AsyncCallback<Pathology[]>() {
           @Override
           public void onFailure(Throwable caught) {
+            getLogger().log(Level.WARNING, "sampleService.pathologies failed", caught);
             Window.alert("Unable to get pathologies.");
           }
 

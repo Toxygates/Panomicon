@@ -19,13 +19,8 @@
 
 package t.viewer.client.rpc;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
@@ -33,6 +28,9 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * A service that provides information about samples, datasets, and 
@@ -146,23 +144,23 @@ public interface SampleService extends RemoteService {
   /**
    * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
    * values for all of the specified attributes will be returned.
-   * 
-   * @param column the samples to obtain annotations for
+   *
+   * @param samples the samples to obtain annotations for
    * @param importantOnly If true, a smaller set of core annotations will be obtained. If false, all
    *        annotations will be obtained.
    * @return
    */
-  Annotation[] annotations(HasSamples<Sample> column, boolean importantOnly)
+  Annotation[] annotations(Sample[] samples, boolean importantOnly)
       throws TimeoutException;
 
   /**
    * Prepare a CSV file with annotation information for download.
-   * 
-   * @param column The samples to include in the downloadable file.
+   *
+   * @param samples The samples to include in the downloadable file.
    * @return The URL of the downloadable file.
    * @throws TimeoutException
    */
-  String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
+  String prepareAnnotationCSVDownload(Sample[] samples) throws TimeoutException;
   
   /**
    * Search for samples

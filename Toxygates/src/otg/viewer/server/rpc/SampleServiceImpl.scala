@@ -19,10 +19,10 @@
 
 package otg.viewer.server.rpc
 
-import t.common.shared.sample.SampleColumn
-import t.viewer.shared.TimeoutException
-import otg.viewer.shared.Pathology
 import otg.sparql.OTGSamples
+import otg.viewer.shared.Pathology
+import t.common.shared.sample.Sample
+import t.viewer.shared.TimeoutException
 
 class SampleServiceImpl extends t.viewer.server.rpc.SampleServiceImpl with OTGServiceServlet
   with otg.viewer.client.rpc.SampleService {
@@ -30,8 +30,8 @@ class SampleServiceImpl extends t.viewer.server.rpc.SampleServiceImpl with OTGSe
   private def sampleStore: OTGSamples = context.samples
 
   @throws[TimeoutException]
-  override def pathologies(column: SampleColumn): Array[Pathology] =
-    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(
+  override def pathologies(column: Array[Sample]): Array[Pathology] =
+    column.flatMap(x => sampleStore.pathologies(x.id)).map(
         otg.viewer.server.rpc.Conversions.asJava(_))
 
 }
