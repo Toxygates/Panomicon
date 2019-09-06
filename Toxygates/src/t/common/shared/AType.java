@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 /**
  * All known association types. In order to add a new type, it is necessary to define it here, and
  * then add the corresponding lookup code in SparqlServiceImpl.
- * 
+ * <p>
  * Note: instead of defining everything in a single place, it may eventually
  * be better to have a registry
  * and allow different modules with specialised functionality to register their own association
@@ -72,9 +72,7 @@ public enum AType {
     }
   },
   RefseqTrn("RefSeq transcript") {
-    public String formLink(String value) {
-      return "https://www.ncbi.nlm.nih.gov/nuccore/" + value;
-    }
+    public String formLink(String value) { return formRefseqTranscriptLink(value); }
   },
   RefseqProt("Refseq protein") {
     public String formLink(String value) {
@@ -122,10 +120,8 @@ public enum AType {
   },
   //mRNA-microRNA association
   MRNA("mRNA") {
-    public String formLink(String value) {
-      //example: NM_001109235
-      return "https://www.ncbi.nlm.nih.gov/nuccore/" + value;
-    }
+    //example: NM_001109235
+    public String formLink(String value) { return formRefseqTranscriptLink(value); }
   },
 
   //TODO possible link format for Affymetrix probes
@@ -133,19 +129,15 @@ public enum AType {
 
   //Was used in Tritigate
   EnsemblOSA("O.Sativa orth. genes") {
-    public String formLink(String value) {
-      return formEnsemblPlantsLink(value);
-    }
+    public String formLink(String value) { return formEnsemblPlantsLink(value); }
   },
-  
+
   //Was used in Tritigate
   KEGGOSA("O.Sativa orth. pathways") {
     //Not used currently (Tritigate legacy)
-    public String formLink(String value) {
-      return value;
-    }
+    public String formLink(String value) { return value; }
   },
-  
+
   //Was used in Tritigate
   Contigs("Contigs"), SNPs("SNPs"), POPSEQ("POPSEQ distances") {
     public boolean canSort() {
@@ -179,39 +171,29 @@ public enum AType {
     return false;
   }
 
-  public @Nullable String auxSortTableKey() {
+  public @Nullable
+  String auxSortTableKey() {
     return null;
   }
 
   public static String formGeneLink(String value) {
-    if (value != null) {
-      return "http://www.ncbi.nlm.nih.gov/gene/" + value;
-    } else {
-      return null;
-    }
+    return (value == null ? null : "http://www.ncbi.nlm.nih.gov/gene/" + value);
   }
 
   public static String formProteinLink(String value) {
-    if (value != null) {
-      return "http://www.uniprot.org/uniprot/" + value;
-    } else {
-      return null;
-    }
+    return (value == null ? null : "http://www.uniprot.org/uniprot/" + value);
   }
 
   public static String formGOLink(String value) {
-    if (value != null) {
-      return "http://amigo.geneontology.org/amigo/term/" + value.toUpperCase();
-    } else {
-      return null;
-    }
+    return (value == null ? null : "http://amigo.geneontology.org/amigo/term/" + value.toUpperCase());
   }
 
   public static String formEnsemblPlantsLink(String value) {
-    if (value != null) {
-      return "http://plants.ensembl.org/Oryza_sativa/Gene/Summary?g=" + value.toUpperCase();
-    } else {
-      return null;
-    }
+    return (value == null ? null : "http://plants.ensembl.org/Oryza_sativa/Gene/Summary?g=" + value.toUpperCase());
   }
+
+  public static String formRefseqTranscriptLink(String value) {
+    return (value == null ? null : "https://www.ncbi.nlm.nih.gov/nuccore/" + value);
+  }
+
 }
