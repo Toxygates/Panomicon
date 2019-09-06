@@ -121,8 +121,16 @@ public enum AType {
     }
   },
   //mRNA-microRNA association
-  MRNA("mRNA"),    
-  
+  MRNA("mRNA") {
+    public String formLink(String value) {
+      //example: NM_001109235
+      return "https://www.ncbi.nlm.nih.gov/nuccore/" + value;
+    }
+  },
+
+  //TODO possible link format for Affymetrix probes
+  //http://probe.dbcls.jp/1381961_at
+
   //Was used in Tritigate
   EnsemblOSA("O.Sativa orth. genes") {
     public String formLink(String value) {
