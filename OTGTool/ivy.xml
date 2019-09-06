@@ -21,8 +21,10 @@
     <dependency org="commons-io" name="commons-io" rev="latest.integration"/>
     <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
 
-    <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>
-    <dependency org="org.eclipse.rdf4j" name="rdf4j-rio-turtle" rev="latest.integration"/>
+      <!-- version of rdf4j pinned since later versions pull in Java 9 multi-version jars, which
+      dev mode does not currently support -->
+    <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="2.5.4"/>
+    <dependency org="org.eclipse.rdf4j" name="rdf4j-rio-turtle" rev="2.5.4"/>
 
     <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
 
