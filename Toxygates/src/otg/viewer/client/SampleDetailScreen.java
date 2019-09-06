@@ -179,6 +179,7 @@ public class SampleDetailScreen extends MinimalScreen
 
   @Override
   public boolean enabled() {
+    groups.storage().loadFromStorage();
     List<ClientGroup> chosenColumns = groups.activeGroups();
     return chosenColumns != null && chosenColumns.size() > 0;
   }
