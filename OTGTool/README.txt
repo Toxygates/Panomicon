@@ -1,5 +1,5 @@
 This is the Toxygates back-end, OTGTool.
-To compile with ant, first set SCALA_HOME (the current tested version is 2.12.x).
+To compile with ant, first set SCALA_HOME (a scala 2.12.x series version is needed).
 
 The ivy ant task is also needed.
 Place ivy.jar in a directory called e.g. antlib, and run the following command:
