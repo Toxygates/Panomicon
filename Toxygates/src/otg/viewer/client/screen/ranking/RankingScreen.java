@@ -84,7 +84,7 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
   protected void addToolbars() {
     super.addToolbars();
     HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
-    addToolbar(hp, 0);
+    addToolbar(hp, 45);
     addLeftbar(compoundSelector, 350);
   }
 

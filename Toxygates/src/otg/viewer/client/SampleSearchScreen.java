@@ -257,7 +257,7 @@ public class SampleSearchScreen extends FilterScreen
   protected void addToolbars() {
     super.addToolbars();
     HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
-    addToolbar(hp, 0);
+    addToolbar(hp, 45);
   }
 
   @Override
