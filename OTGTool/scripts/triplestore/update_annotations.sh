@@ -20,7 +20,7 @@ MAINTENANCE_FILE=/opt/toxygates-chunk/MAINTENANCE_MODE
 
 ssh toxygates touch $MAINTENANCE_FILE
 
-ssh toxygates curl -L -o $AHOME/go.owl  http://purl.obolibrary.org/obo/go/go.owl
+ssh toxygates curl -L -o $AHOME/go.owl  http://current.geneontology.org/ontology/go.owl
 ssh toxygates $TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/annotation/go \
         "\"GO terms\"" "\"Updated $(date) from go.owl\"" &
 
