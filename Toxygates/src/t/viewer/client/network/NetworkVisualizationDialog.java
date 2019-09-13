@@ -213,7 +213,7 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   private void showNetworkNameDialog(String title) {
     SaveObjectDialog dialog = new SaveObjectDialog("Please enter a name for the network.", title, 
         networkStorage, name -> {
-          saveCurrentNetwork(title);
+          saveCurrentNetwork(name);
           mainDialog.hide();
           resizeHandler.removeHandler();
           delegate.onNetworkVisualizationDialogClose();
