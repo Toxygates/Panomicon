@@ -52,10 +52,13 @@ class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
       s"$mirnaDir/tm_mirtarbase.txt",
       MiRNATargets.tableFromFile(_))
 
-  lazy val miRawTable =
+  lazy val miRawTable = {
+    val allTranscripts = platforms.data.valuesIterator.flatten.flatMap(_.transcripts).toSet
+
     tryReadTargetTable(
       s"$mirnaDir/miraw_hsa_targets.txt",
-      MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _))
+      MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _, allTranscripts))
+  }
 
   protected def mirnaTargetTable(source: MirnaSource) = {
     val table = source.id match {

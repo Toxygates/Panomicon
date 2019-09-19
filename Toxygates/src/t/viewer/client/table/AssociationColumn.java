@@ -107,4 +107,14 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
     	return ("(Waiting for data...)");
     } 
   }
+
+  @Override
+  protected boolean wasSizeExceeded(T data) {
+    if (delegate.associations().containsKey(assoc)) {
+      Association a = delegate.associations().get(assoc);
+      return a.overSizeLimit();
+    } else {
+      return super.wasSizeExceeded(data);
+    }
+  }
 }

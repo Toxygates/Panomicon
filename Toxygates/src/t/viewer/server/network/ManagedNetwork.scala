@@ -100,7 +100,7 @@ class ManagedNetwork(mainParams: LoadParams,
    * A mutable count map that will be updated as the current gene set changes,
    * to reflect the counts in that set (counting the number of times each
    * miRNA occurs in a mRNA table, or vice versa)
-   * This map is GWT-serialisable.
+   * This map is GWT-serializable.
    */
   def currentViewCountMap: GWTMap[ProbeId, JDouble] = currentCountMap
 
@@ -110,11 +110,20 @@ class ManagedNetwork(mainParams: LoadParams,
     if (sideIsMRNA) {
       val all = platforms.data(sideMatrix.params.platform)
       val rowTargets = targets.targets(lookup.map(MiRNA(_)), all)
-      rowTargets.groupBy(_._2).map(x => (x._1.identifier, new JDouble(x._2.size)))
+      rowTargets.groupBy(_._2).map(x => {
+        //the same association can occur through multiple mappings - count
+        //distinct end to end mappings here
+        val n = x._2.toSeq.distinct.size
+        (x._1.identifier, new JDouble(n))
+      })
     } else {
       val resolved = platforms.resolve(lookup)
       val rowTargets = targets.reverseTargets(resolved)
-      rowTargets.groupBy(_._2).map(x => (x._1.id, new JDouble(x._2.size)))
+      rowTargets.groupBy(_._2).map(x => {
+        //as above
+        val n = x._2.toSeq.distinct.size
+        (x._1.id, new JDouble(n))
+      })
     }
   }
 

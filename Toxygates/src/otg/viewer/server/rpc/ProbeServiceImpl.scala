@@ -112,10 +112,13 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
 
+    val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
     val resolvers = Seq(drugTargetResolver,
-      new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform).lookup)
+      mirnaRes.lookup)
+    val mainRes =  new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
+      b2rKegg)
+    mirnaRes.limitState = mainRes.limitState
 
-    new otg.viewer.server.AssociationResolver(probeStore, sampleStore,
-        b2rKegg).resolve(types, sc, sf, probes, resolvers)
+    mainRes.resolve(types, sc, sf, probes, resolvers)
   }
 }

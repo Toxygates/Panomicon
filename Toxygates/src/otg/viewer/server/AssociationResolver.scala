@@ -37,6 +37,10 @@ import t.viewer.server._
 import t.viewer.server.Conversions._
 import t.viewer.shared.Association
 
+class LimitState {
+  @volatile var exceeded = false
+}
+
 class DrugTargetResolver(sampleStore: OTGSamples, chembl: ChEMBL,
                          drugBank: DrugBank) {
 
@@ -58,7 +62,8 @@ class DrugTargetResolver(sampleStore: OTGSamples, chembl: ChEMBL,
 
 class MirnaResolver(probeStore: OTGProbes, platforms: t.viewer.server.Platforms, mirnaTable: TargetTable,
   sidePlatform: Option[String]) {
-  @volatile var sizeLimitExceeded = false
+
+  var limitState = new LimitState()
 
   def lookup: AssociationLookup = {
       case (MiRNA, sc, _, probes)      => resolveMiRNA(sc, probes, false)
@@ -87,8 +92,9 @@ class MirnaResolver(probeStore: OTGProbes, platforms: t.viewer.server.Platforms,
     val data = filtTable.associationLookup(lookedUp, fromMirna,
       platform, sizeLimit)
 
-    if (sizeLimit.map(_ <= data.size).getOrElse(false)) {
-      sizeLimitExceeded = true
+    val total = data.values.map(_.size).sum
+    if (sizeLimit.map(_ <= total).getOrElse(false)) {
+      limitState.exceeded = true
     }
     data
   }
@@ -115,7 +121,7 @@ class AssociationResolver(probeStore: OTGProbes,
     sampleStore: OTGSamples,
     b2rKegg: B2RKegg) {
 
-  @volatile protected var sizeLimitExceeded = false
+  var limitState = new LimitState
 
   val mainResolver: AssociationLookup = {
     case (GOMF, _, _, probes)       => probeStore.mfGoTerms(probes)
@@ -159,14 +165,18 @@ class AssociationResolver(probeStore: OTGProbes,
     convertAssociations(errorVals(probes)), false, false)
 
   def queryOrEmpty[T](t: AType, probes: Iterable[Probe], f: => BBMap): Association = {
+    val data = f
     gracefully(new Association(t,
-        convertAssociations(f),
-        sizeLimitExceeded, true), errorAssoc(t, probes))
+        convertAssociations(data),
+      limitState.exceeded, true), errorAssoc(t, probes))
   }
 
   def resolve(types: Iterable[AType], sc: SampleClass, sf: SampleFilter,
     probes: Iterable[String],
     extraResolvers: Iterable[AssociationLookup] = Seq()): Array[Association] = {
+
+    //reset state
+    limitState.exceeded = false
 
     //Look up all core associations first.
     //Note: this might not be needed - platformsCache might do a better job

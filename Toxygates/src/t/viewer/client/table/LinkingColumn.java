@@ -42,7 +42,7 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
 
   // Note: might move this method down or parameterise AssociationValue,
   // use an interface etc
-  protected List<String> makeLinks(Collection<AssociationValue> values) {
+  protected List<String> makeLinks(Collection<AssociationValue> values, boolean limitExceeded) {
     List<String> r = new ArrayList<String>();
     int i = 0;
     for (AssociationValue v : values) {
@@ -58,19 +58,26 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
         }
       }
       if (i == MAX_ITEMS + 1) {
-        r.add("<div> ... (" + values.size() + " items)");
+        r.add("<div> ... (" + values.size() +
+                ( limitExceeded ? "+ items" : " items") +
+            ")");
       }
     }
     return r;
   }
 
   @Override
-  protected String getHtml(T er) {
-    return SharedUtils.mkString(makeLinks(getLinkableValues(er)), "");
+  protected String getHtml(T row) {
+    return SharedUtils.mkString(makeLinks(getLinkableValues(row),
+        wasSizeExceeded(row)), "");
   }
 
-  protected Collection<AssociationValue> getLinkableValues(T er) {
+  protected Collection<AssociationValue> getLinkableValues(T data) {
     return new ArrayList<AssociationValue>();
+  }
+
+  protected boolean wasSizeExceeded(T data) {
+    return false;
   }
 
   protected abstract String formLink(String value);

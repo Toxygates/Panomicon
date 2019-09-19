@@ -120,9 +120,9 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
       MatrixController(context, orthMappings, scSideColumns, Seq(), typ, false))
     val sideMat = getState.matrix(sideId)
 
-    val gt = GroupUtils.groupType(scSideColumns(0))
+    val sidetype = GroupUtils.groupType(scSideColumns(0))
     val species = groupSpecies(scSideColumns(0))
-    val sideIsMRNA = gt == Network.mrnaType;
+    val sideIsMRNA = sidetype == Network.mrnaType;
 
     var targets = getState.targetTable
     targets = targets.speciesFilter(species)
@@ -146,7 +146,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     }
 
     sideMat.addSynthetic(
-      new Synthetic.Precomputed("Count", s"Number of times each $gt appeared in the set",
+      new Synthetic.Precomputed("Count", s"Number of times each $sidetype appeared in the set",
         mainMat.currentViewCountMap, null))
 
     new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)

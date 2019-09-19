@@ -120,6 +120,8 @@ class TargetTable(
   def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {
     val allTrn = targets(miRNAs)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
+    //note: we are not deduplicating here, should define how to do it
+    //(handling multiple scores for the same pair, etc)
     allTrn.flatMap(x => probeLookup.get(x._2) match {
       case Some(ps) => ps.map((x._1, _, x._3, x._4))
       case _        => Seq()
@@ -167,9 +169,9 @@ class TargetTable(
           (x._1.asProbe, DefaultBio(x._2.id, x._2.id, Some(x._4))))
       }
 
-      makeMultiMap(limitSize(targetRes,sizeLimit))
+      makeMultiMap(limitSize(targetRes.toSeq.distinct, sizeLimit))
     } else {
-      makeMultiMap(limitSize(reverseTargets(probes), sizeLimit).map(x =>
+      makeMultiMap(limitSize(reverseTargets(probes).toSeq.distinct, sizeLimit).map(x =>
         (x._1, DefaultBio(x._2.id, x._2.id, Some(x._4)))))
     }
   }
