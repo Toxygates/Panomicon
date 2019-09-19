@@ -27,7 +27,8 @@ public enum CoreParameter implements Attribute {
   Batch("batchGraph", "Batch", "System details"),
   ControlGroup("control_group", "Control group", "Sample details"),
   Platform("platform_id", "Platform ID", "Sample details"),
-  Type("type", "Type", "Sample details");
+  Type("type", "Type", "Sample details"),
+  ControlSampleId("control_sample_id", "Control sample ID", "Sample details");
   
   CoreParameter(String id, String title, String section) {
     this.id = id;
@@ -41,9 +42,13 @@ public enum CoreParameter implements Attribute {
   private boolean isNumerical;
   private String section;
   
+  @Override
   public String id() { return id; }
+  @Override
   public String title() { return title; }
+  @Override
   public boolean isNumerical() { return isNumerical; }
+  @Override
   public String section() { return section; }
   
 }
