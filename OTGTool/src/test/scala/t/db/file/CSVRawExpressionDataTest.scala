@@ -33,13 +33,33 @@ class CSVRawExpressionDataTest extends TTestSuite {
   val meta = TSVMetadata.apply(fact, "testData/meta.tsv",
     TestConfig.config.attributes, println(_))
 
-  test("basic") {
+  test("basic CRED") {
     val d = new CSVRawExpressionData("testData/data.csv", None,
       Some(meta.samples.size), m => println(s"Warning: $m"))
 
     d.samples should (contain theSameElementsAs(meta.samples))
     for (s <- meta.samples) {
       d.data(s).size should (be > 0)
+    }
+  }
+
+  test("cached CRED") {
+    val d = new CachedCSVRawExpressionData("testData/data.csv", None,
+      Some(meta.samples.size), m => println(s"Warning: $m"))
+    d.samples should (contain theSameElementsAs(meta.samples))
+    for (s <- meta.samples) {
+      d.data(s).size should (be > 0)
+    }
+  }
+
+  test("consistency") {
+    val d1 = new CSVRawExpressionData("testData/data.csv", None,
+      Some(meta.samples.size), m => println(s"Warning: $m"))
+    val d2 = new CachedCSVRawExpressionData("testData/data.csv", None,
+      Some(meta.samples.size), m => println(s"Warning: $m"))
+    for (s <- meta.samples) {
+      d1.exprs(s) should equal(d2.exprs(s))
+      d1.calls(s) should equal(d2.calls(s))
     }
   }
 }

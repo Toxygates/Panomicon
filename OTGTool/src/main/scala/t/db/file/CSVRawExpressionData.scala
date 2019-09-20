@@ -65,12 +65,6 @@ class CSVRawExpressionData(exprFile: String,
     val ls = s.getLines
     val columns = ls.next.split(",", -1).map(x => unquote(x.trim))
 
-    //Would this be too strict?
-//    if (expectedColumns != None && expectedColumns.get != columns.size) {
-//      throw new ParseException(
-//          s"Wrong number of column headers - expected $expectedColumns got ${columns.size}")
-//    }
-//
     for (l <- ls) {
       lineHandler(columns, l)
     }
