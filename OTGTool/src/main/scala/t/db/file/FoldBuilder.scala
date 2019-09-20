@@ -27,6 +27,7 @@ import friedrich.util.CmdLineOptions
 import t.db._
 import scala.collection.mutable.HashMap
 import scala.collection.{Map => CMap}
+import t.model.sample.CoreParameter
 
 /**
  * log-2 fold values constructed from the input data
@@ -118,6 +119,12 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
     val l2 = Math.log(2)
 
     input.loadData(controlSamples ++ treatedSamples)
+    
+    val shouldDoPairedSampleTTest = treatedSamples.forall(s => {
+      val controlSampleId = md.parameter(s, CoreParameter.ControlSampleId.id())
+      val controlSampleFound = controlSampleId.map(id => controlSamples.exists(cs => cs.sampleId == id))
+      controlSampleFound.getOrElse(false)
+    })
 
     val controlData = input.data(controlSamples)
     val treatedData = input.data(treatedSamples)
@@ -141,7 +148,11 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
           val cs = controlExpr.flatMap(_(i))
            val ts = treatedExpr.flatMap(_(i))
           val pval = if (cs.size >= 2 && ts.size >= 2) {
-            tt.tTest(cs.toArray, ts.toArray)
+            if (shouldDoPairedSampleTTest) {
+              tt.pairedTTest(cs.toArray, ts.toArray)
+            } else {
+              tt.tTest(cs.toArray, ts.toArray)
+            }
           } else {
             Double.NaN
           }
