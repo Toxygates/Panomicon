@@ -46,10 +46,15 @@ trait LookupMap[Code, Token] {
  * More efficient lookup for integers
  */
 trait CachedIntLookupMap[Token] extends LookupMap[Int, Token] {
-  protected val revLookup = Array.tabulate(revMap.keys.max + 1)(x => revMap.get(x))
+  protected val revLookup: Array[Option[Token]] =
+    if (revMap.nonEmpty) {
+      Array.tabulate(revMap.keys.max + 1)(x => revMap.get(x))
+    } else {
+      Array.empty
+    }
 
-  override def tryUnpack(x: Int) = revLookup(x)
-  override def unpack(x: Int) =  revLookup(x).get
+  override def tryUnpack(x: Int): Option[Token] = revLookup(x)
+  override def unpack(x: Int): Token =  revLookup(x).get
 }
 
 class LookupFailedException(reason: String) extends Exception(reason)
