@@ -63,7 +63,7 @@ class CSVRawExpressionData(exprFile: String,
     println("Read " + file)
     val s = Source.fromFile(file)
     val ls = s.getLines
-    val columns = ls.next.split(",", -1).map(_.trim)
+    val columns = ls.next.split(",", -1).map(x => unquote(x.trim))
 
     //Would this be too strict?
 //    if (expectedColumns != None && expectedColumns.get != columns.size) {
@@ -99,9 +99,7 @@ class CSVRawExpressionData(exprFile: String,
     var keptIndices: Option[IndexedSeq[Int]] = None
 
     traverseFile(file, (columns, l) => {
-
       if(keptColumns == None) {
-        println("Read columns: " + ss.mkString(" "))
         keptColumns = Some(ArrayBuffer(columns.head) ++
            columns.filter(x => samples.contains(x)))
         keptIndices = Some(ArrayBuffer(0) ++
@@ -176,7 +174,7 @@ class CSVRawExpressionData(exprFile: String,
   }
 
   def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
-    data(Set(s)).head._2
+    data(Set(s)).headOption.map(_._2).getOrElse(Map())
   }
 }
 
@@ -242,7 +240,7 @@ class CachedCSVRawExpressionData(exprFile: String,
 
   override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
     val (preExisting, notYetRead) = ss.partition(callsCache.contains(_))
-    if (!notYetRead.isEmpty) {
+    if (notYetRead.nonEmpty) {
       callsCache ++= super.readCalls(file, notYetRead)
     }
     val sampleSet = ss.toSet
@@ -251,7 +249,7 @@ class CachedCSVRawExpressionData(exprFile: String,
 
   override protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Double]] = {
     val (preExisting, notYetRead) = ss.partition(exprCache.contains(_))
-    if (!notYetRead.isEmpty) {
+    if (notYetRead.nonEmpty) {
       exprCache ++= super.readExprValues(file, notYetRead)
     }
     val sampleSet = ss.toSet
