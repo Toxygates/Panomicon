@@ -28,7 +28,7 @@ public enum CoreParameter implements Attribute {
   ControlGroup("control_group", "Control group", "Sample details"),
   Platform("platform_id", "Platform ID", "Sample details"),
   Type("type", "Type", "Sample details"),
-  ControlSampleId("control_sample_id", "Control sample ID", "Sample details");
+  ControlSampleId("control_sample_id", "Control Sample ID", "Sample details");
   
   CoreParameter(String id, String title, String section) {
     this.id = id;
