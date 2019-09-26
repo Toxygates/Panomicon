@@ -737,3 +737,10 @@
                 "compound_fullname" ;
         <http://level-five.jp/t/label>  "Compound full name" ;
         <http://level-five.jp/t/type>   "text" .
+
+<http://level-five.jp/t/probe/control_sample_id>
+        a                               <http://level-five.jp/t/probe> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "control_sample_id" ;
+        <http://level-five.jp/t/label>  "Control sample ID" ;
+        <http://level-five.jp/t/type>   "text" .
