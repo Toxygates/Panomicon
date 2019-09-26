@@ -592,7 +592,6 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   @Override
   public void navigationToolsValueTypeChanged() {
-    matrix().removeTests();
     getExpressions();
   }
 
