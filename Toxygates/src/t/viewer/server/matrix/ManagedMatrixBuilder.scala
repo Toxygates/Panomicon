@@ -45,11 +45,20 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   /**
    * Construct the columns representing a particular group (g), from the given
-   * raw data. Update info to reflect the changes.
-   * Resulting data should be row-major.
+   * raw data, and column info reflecting these columns.
    */
-  protected def columnsFor(g: Group, sortedSamples: Seq[Sample],
-    data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo)
+  def columnsFor(g: Group, sortedSamples: Seq[Sample],
+                          data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo) = {
+    val (treatedUnits, controlUnits) = treatedAndControl(g)
+    println(s"#Control units: ${controlUnits.size} #Non-control units: ${treatedUnits.size}")
+    val ti = unitIdxs(treatedUnits, sortedSamples)
+    val ci = unitIdxs(controlUnits, sortedSamples)
+    columnsFor(g, treatedUnits, ti, controlUnits, ci, data)
+  }
+
+  def columnsFor(g: Group, treatedUnits: Array[TUnit], treatedIdx: Seq[Int],
+                 controlUnits: Array[TUnit], controlIdx: Seq[Int],
+                 data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo)
 
   /**
    * Collapse multiple raw expression values into a single cell.
@@ -63,12 +72,10 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   protected def shortName(g: Group): String = g.toString
 
-  protected def defaultColumns[E <: ExprValue](g: Group, sortedSamples: Seq[Sample],
+  protected def defaultColumns[E <: ExprValue](g: Group, treatedIdx: Seq[Int],
+                                               treatedUnits: Array[TUnit],
     data: Seq[RowData]): (Seq[RowData], ManagedMatrixInfo) = {
-    // A simple average column
-    val tus = treatedAndControl(g)._1
-    val treatedIdx = unitIdxs(tus, sortedSamples)
-    val samples = TUnit.collectSamples(tus)
+    val samples = TUnit.collectSamples(treatedUnits)
 
     val info = new ManagedMatrixInfo()
 
@@ -151,61 +158,21 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
     g.getUnits().partition(u => !sc.isControl(u))
   }
 }
-
-trait TreatedControlBuilder[E <: ExprValue] {
-  this: ManagedMatrixBuilder[E] =>
-
-  type RowData = ManagedMatrix.RowData
-
-  def enhancedColumns: Boolean
-
-  protected def buildRow(raw: Seq[E],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData
-
-  protected def columnInfo(g: Group): ManagedMatrixInfo
-  def colNames(g: Group): Seq[String]
-
-  protected def columnsFor(g: Group, sortedSamples: Seq[Sample],
-    data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo) = {
-
-    val (treatedUnits, controlUnits) = treatedAndControl(g)
-    println(s"#Control units: ${controlUnits.size} #Non-control units: ${treatedUnits.size}")
-
-    if (treatedUnits.size > 1 || (!enhancedColumns) || controlUnits.size == 0 || treatedUnits.size == 0) {
-      // A simple average column
-      defaultColumns(g, sortedSamples, data)
-    } else if (treatedUnits.size == 1) {
-      // Possibly insert a control column as well as the usual one
-
-      val ti = unitIdxs(treatedUnits, sortedSamples)
-      val ci = unitIdxs(controlUnits, sortedSamples)
-
-      val rows = data.map(vs => buildRow(vs, ti, ci))
-      val i = columnInfo(g)
-
-      (rows, i)
-    } else {
-      throw new Exception("No units in group")
-    }
-  }
-}
-
 /**
  * Columns consisting of normalized intensity / "absolute value" expression data
  * for both treated and control samples.
  */
 class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprValue],
-  probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes)
-    with TreatedControlBuilder[PExprValue] {
+  probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) {
+  import ManagedMatrix._
 
   protected def buildValue(raw: RowData): ExprValue = ExprValue.presentMean(raw)
 
   override protected def shortName(g: Group): String = "Treated"
 
-  protected def buildRow(raw: Seq[PExprValue],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData =
-    Seq(buildValue(selectIdx(raw, treatedIdx)),
-      buildValue(selectIdx(raw, controlIdx)))
+  protected def buildRow(treated: Seq[PExprValue],
+                         control: Seq[PExprValue]): RowData =
+    Seq(buildValue(treated), buildValue(control))
 
   protected def columnInfo(g: Group) = {
     val (tus, cus) = treatedAndControl(g)
@@ -222,14 +189,22 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
   def colNames(g: Group): Seq[String] =
     List(g.toString, g.toString + "(cont)")
 
-  override protected def samplesToLoad(g: Group): Array[SSample] = {
-    val (tus, cus) = treatedAndControl(g)
-    if (tus.size > 1) {
-      super.samplesToLoad(g)
+  def columnsFor(g: Group, treatedUnits: Array[TUnit], treatedIdx: Seq[Int],
+                 controlUnits: Array[TUnit], controlIdx: Seq[Int],
+                 data: Seq[Seq[PExprValue]]) = {
+    if (!enhancedColumns) {
+      // A simple average column
+      defaultColumns(g, treatedIdx, treatedUnits, data)
     } else {
-      //all samples
-      g.getSamples()
+      val rows = data.map(vs => buildRow(selectIdx(vs, treatedIdx),
+        selectIdx(vs, controlIdx)))
+      val i = columnInfo(g)
+      (rows, i)
     }
+  }
+
+  override protected def samplesToLoad(g: Group): Array[SSample] = {
+    g.getSamples()
   }
 }
 
@@ -237,9 +212,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
  * Columns consisting of fold-values, associated p-values and custom P/A calls.
  */
 class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprValue],
-  probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes)
-    with TreatedControlBuilder[PExprValue] {
-
+  probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) {
   import ManagedMatrix._
 
   protected def buildValue(raw: RowData): ExprValue = log2(javaMean(raw))
@@ -259,7 +232,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 
   override protected def tooltipSuffix = ": log2-fold change of treated versus control"
 
-  override protected def columnInfo(g: Group): ManagedMatrixInfo = {
+  protected def columnInfo(g: Group): ManagedMatrixInfo = {
     val tus = treatedAndControl(g)._1
     val samples = TUnit.collectSamples(tus)
     val info = new ManagedMatrixInfo()
@@ -275,4 +248,17 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 
   def colNames(g: Group) =
     List(g.toString, g.toString + "(p)")
+
+  def columnsFor(g: Group, treatedUnits: Array[TUnit], treatedIdx: Seq[Int],
+                 controlUnits: Array[TUnit], controlIdx: Seq[Int],
+                 data: Seq[Seq[PExprValue]]) = {
+    if (treatedUnits.size != 1 || !enhancedColumns) {
+      // A simple average column
+      defaultColumns(g, treatedIdx, treatedUnits, data)
+    } else {
+      val rows = data.map(vs => buildRow(vs, treatedIdx, controlIdx))
+      val i = columnInfo(g)
+      (rows, i)
+    }
+  }
 }
