@@ -72,7 +72,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   protected def shortName(g: Group): String = g.toString
 
-  protected def defaultColumns[E <: ExprValue](g: Group, treatedIdx: Seq[Int],
+  protected def defaultColumns[E <: ExprValue](g: Group, treatedValues: Seq[E],
                                                treatedUnits: Array[TUnit],
     data: Seq[RowData]): (Seq[RowData], ManagedMatrixInfo) = {
     val samples = TUnit.collectSamples(treatedUnits)
@@ -82,7 +82,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
     info.addColumn(false, shortName(g), g.toString,
         s"$g$tooltipSuffix",
         ColumnFilter.emptyAbsGT, g, false, samples)
-    val d = data.map(vs => Seq(buildValue(selectIdx(vs, treatedIdx))))
+    val d = data.map(vs => Seq(buildValue(treatedValues)))
 
     (d, info)
   }
@@ -192,12 +192,13 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
   def columnsFor(g: Group, treatedUnits: Array[TUnit], treatedIdx: Seq[Int],
                  controlUnits: Array[TUnit], controlIdx: Seq[Int],
                  data: Seq[Seq[PExprValue]]) = {
+    val treatedVs = selectedIdx(vs, treatedIdx)
+
     if (!enhancedColumns) {
       // A simple average column
-      defaultColumns(g, treatedIdx, treatedUnits, data)
+      defaultColumns(g, treatedVs, treatedUnits, data)
     } else {
-      val rows = data.map(vs => buildRow(selectIdx(vs, treatedIdx),
-        selectIdx(vs, controlIdx)))
+      val rows = data.map(vs => buildRow(treatedVs, selectIdx(vs, controlIdx)))
       val i = columnInfo(g)
       (rows, i)
     }
@@ -209,7 +210,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
 }
 
 /**
- * Columns consisting of fold-values, associated p-values and custom P/A calls.
+ * Columns consisting of fold-values and precomputed p-values (if appropriate)
  */
 class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprValue],
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) {
@@ -217,11 +218,9 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 
   protected def buildValue(raw: RowData): ExprValue = log2(javaMean(raw))
 
-  protected def buildRow(raw: Seq[PExprValue],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData = {
-    val treatedVs = selectIdx(raw, treatedIdx)
-    val first = treatedVs.head
-    val fold = buildValue(treatedVs)
+  protected def buildRow(treated: Seq[PExprValue]): RowData = {
+    val first = treated.head
+    val fold = buildValue(treated)
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
@@ -252,11 +251,12 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   def columnsFor(g: Group, treatedUnits: Array[TUnit], treatedIdx: Seq[Int],
                  controlUnits: Array[TUnit], controlIdx: Seq[Int],
                  data: Seq[Seq[PExprValue]]) = {
+    val treatedVs = selectIdx(vs, treatedIdx)
     if (treatedUnits.size != 1 || !enhancedColumns) {
       // A simple average column
-      defaultColumns(g, treatedIdx, treatedUnits, data)
+      defaultColumns(g, treatedVs, treatedUnits, data)
     } else {
-      val rows = data.map(vs => buildRow(vs, treatedIdx, controlIdx))
+      val rows = data.map(vs => buildRow(treatedVs))
       val i = columnInfo(g)
       (rows, i)
     }
