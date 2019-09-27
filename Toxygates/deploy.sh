@@ -30,6 +30,7 @@ function makeAdminWar {
     rm admin.war
     jar cf admin.war OTGAdmin admin.html *.css images
     jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
+      -path WEB-INF/classes/t/tomcat -o \
       \( -type f -print \) )
     cd ..
 }
