@@ -81,8 +81,7 @@ object Sample {
         case Some(v) => try {
           v.toLowerCase() match {
             case Attribute.NOT_AVAILABLE => None
-            case Attribute.UNDEFINED_VALUE => None
-            case Attribute.UNDEFINED_VALUE_2 => None
+            case Attribute.UNDEFINED_VALUE | Attribute.UNDEFINED_VALUE_2 => None
             case _ => Some(v.toDouble)
           }
         } catch {
