@@ -108,6 +108,7 @@ object BioParameter {
   def tryParseDouble(x: String) = x.toLowerCase match {
       case Attribute.NOT_AVAILABLE => None
       case Attribute.UNDEFINED_VALUE => None
+      case Attribute.UNDEFINED_VALUE_2 => None
       case _    => Some(x.toDouble)
     }
 

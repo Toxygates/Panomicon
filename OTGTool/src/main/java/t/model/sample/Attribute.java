@@ -48,5 +48,13 @@ public interface Attribute {
 
   String NOT_AVAILABLE = "na";
 
+  /**
+   * Marker for values that were measured, but the result is judged to be not defined.
+   */
   String UNDEFINED_VALUE = "undef";
+
+  /**
+   * Marker for values that were measured, but the result is judged to be not defined.
+   */
+  String UNDEFINED_VALUE_2 = "n.d";
 }

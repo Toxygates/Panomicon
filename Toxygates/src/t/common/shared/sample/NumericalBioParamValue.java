@@ -82,7 +82,9 @@ public class NumericalBioParamValue extends BioParamValue {
   }
 
   public static boolean isUndefinedNumericalValue(String representation) {
-    return representation.toLowerCase().equals(Attribute.UNDEFINED_VALUE);
+    String lower = representation.toLowerCase();
+    return lower.equals(Attribute.UNDEFINED_VALUE) ||
+        lower.equals(Attribute.UNDEFINED_VALUE_2);
   }
 
   public @Nullable Double value() {
