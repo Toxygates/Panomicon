@@ -168,10 +168,4 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
     }
     r
   }
-
-//  import scala.collection.{Map => CMap}
-//
-//  def data(s: Sample): CMap[String, FoldPExpr] = {
-//    HashMap() ++ values(s)
-//  }
 }

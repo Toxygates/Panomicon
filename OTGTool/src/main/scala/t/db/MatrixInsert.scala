@@ -50,17 +50,31 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
 
   protected def mkValue(v: FoldPExpr): E
 
-  def values(xs: Iterable[Sample]) =
-    for ((x, data) <- raw.data(xs).toSeq;
-      values = data.toSeq.map {case (probe, (v, c, p)) => (probe, mkValue(v, c, p)) }
-    ) yield (x, values)
+  private val pmap = context.probeMap
+  def packProbe(knownProbes: Set[String], probe: ProbeId,
+                log: String => Unit): Option[Int] = {
+    if (knownProbes.contains(probe)) {
+      val packed = try {
+        pmap.pack(probe)
+      } catch {
+        case lf: LookupFailedException =>
+          throw new LookupFailedException(
+            s"Unknown probe: $probe. Did you forget to upload a platform definition?")
+        case e: Exception => throw e
+      }
+      Some(packed)
+    } else {
+      log(s"Not inserting unknown probe '$probe'")
+      None
+    }
+  }
 
   def insert(name: String): Task[Unit] = {
     new AtomicTask[Unit](name) {
       override def run(): Unit = {
         try {
-          val ns = raw.samples.size
-          log(s"$ns samples")
+          val nsamples = raw.samples.size
+          log(s"$nsamples samples")
           log(raw.probes.size + " probes")
 
           val unknownProbes = raw.probes.toSet -- context.probeMap.tokens
@@ -72,39 +86,18 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
             throw new LookupFailedException("No valid probes in data.")
           }
 
-          val pmap = context.probeMap
           var pcomp = 0d
           var nvalues = 0
 
-          //CSVRawExpressionData is more efficient with chunked reading
-          //Task: optimise more for fold building
-          val it = raw.samples.iterator.grouped(50)
-          while (it.hasNext && shouldContinue(pcomp)) {
-            val sampleChunk = it.next
-            raw.loadData(sampleChunk)
-            for ((sample, vs) <- values(sampleChunk);
-              if shouldContinue(pcomp)) {
-              val packed = vs.toSeq.flatMap(vv => {
-                val (probe, v) = vv
-                if (knownProbes.contains(probe)) {
-                  val pk = try {
-                    pmap.pack(probe)
-                  } catch {
-                    case lf: LookupFailedException =>
-                      throw new LookupFailedException(
-                        s"Unknown probe: $probe. Did you forget to upload a platform definition?")
-                    case t: Throwable => throw t
-                  }
-                  Some(pk, v)
-                } else {
-                  log(s"Not inserting unknown probe '$probe'")
-                  None
-                }
-              })
-              nvalues += packed.size
-              db.writeMany(sample, packed)
-              pcomp += 100.0 / ns
-            }
+          for {
+            (sample, data) <- raw.samplesAndData
+            if shouldContinue(pcomp)
+            withProbes = data.map { case (p, v) => (packProbe(knownProbes, p, x => log(x)), v) }
+            values = withProbes.collect {case (Some(probe), (v, c, p)) => (probe, mkValue(v, c, p)) }
+          } {
+            nvalues += values.size
+            db.writeMany(sample, values)
+            pcomp += 100.0 / nsamples
           }
 
           logResult(s"${nvalues} values written")

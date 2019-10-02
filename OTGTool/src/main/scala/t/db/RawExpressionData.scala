@@ -35,6 +35,24 @@ trait ColumnExpressionData {
    */
   def loadData(ss: Iterable[Sample]) {}
 
+  protected val sampleChunkSize = 50
+
+  /**
+   * Iterate through the data in this source in the most efficient way for the chosen samples.
+   */
+  def samplesAndData(forSamples: Iterable[Sample]): Iterator[(Sample, Seq[(ProbeId, FoldPExpr)])] = {
+    forSamples.grouped(sampleChunkSize).flatMap(ss => {
+      loadData(ss)
+      ss.map(s => (s, data(s).toSeq))
+    })
+  }
+
+  /**
+   * Iterate through the data in this source in the most efficient way.
+   */
+  def samplesAndData: Iterator[(Sample, Seq[(ProbeId, FoldPExpr)])] =
+    samplesAndData(samples)
+
   def data(s: Sample): CMap[ProbeId, FoldPExpr]
 
   def data(ss: Iterable[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
