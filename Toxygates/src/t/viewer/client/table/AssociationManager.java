@@ -62,6 +62,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
   public interface ViewDelegate<T extends ExpressionRow> {
     void associationsUpdated(AssociationManager<T> associations, Association[] result);
     boolean mirnaSourcesSet();
+    void showMirnaSourcesAlert(boolean force);
     //    void beforeGetAssociations(AssociationManager<T> associations);
   }
 
@@ -121,7 +122,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
   public void enableAssociation(AType association) {
     if ((association == AType.MiRNA || association == AType.MRNA) && 
         !viewDelegate.mirnaSourcesSet()) {
-      Window.alert("Please select miRNA sources (in the tools menu) to enable mRNA-miRNA associations.");
+      viewDelegate.showMirnaSourcesAlert(false);
     } else {
       getAssociations(new AType[]{ association });
     }

@@ -100,7 +100,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     }
     
     if (tableView.needMirnaSources() && !tableView.mirnaSourcesSet()) {
-      Window.alert("Please select miRNA sources (in the tools menu) to enable mRNA-miRNA associations.");
+      tableView.showMirnaSourcesAlert(true);
     }
 
     tableView.columnsChanged(groups.activeGroups());

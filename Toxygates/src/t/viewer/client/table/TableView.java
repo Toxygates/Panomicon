@@ -37,8 +37,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
-import t.viewer.client.components.DataView;
-import t.viewer.client.components.TickMenuItem;
+import t.viewer.client.components.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
@@ -63,6 +62,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   protected UIFactory factory;
   protected Logger logger;
   protected MatrixServiceAsync matrixService;
+  protected NonRepeatingAlert mirnaSourcesUnsetWarning;
   
   public TableView(DataScreen screen,
                    String mainTableTitle, 
@@ -74,6 +74,7 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
     this.factory = manager.factory();
     this.logger = Logger.getLogger("tableView");
     this.expressionTable = makeExpressionTable(mainTableTitle, mainTableSelectable);
+    mirnaSourcesUnsetWarning = new NonRepeatingAlert("Please select miRNA sources (in the tools menu) to enable mRNA-miRNA associations.");
     expressionTable.setDisplayPColumns(false);
     expressionTable.loadColumnVisibility();
     initWidget(content());   
@@ -96,6 +97,11 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   public void probesChanged(String[] probes) {
     super.probesChanged(probes);
     expressionTable.probesChanged(probes);
+  }
+  
+  @Override
+  public void showMirnaSourcesAlert(boolean force) {
+    mirnaSourcesUnsetWarning.possiblyAlert(force);
   }
 
   @Override
@@ -331,7 +337,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
   }
 
   @Override
-  public void afterGetRows(ExpressionTable table) { }
+  public void afterGetRows(ExpressionTable table) { 
+    mirnaSourcesUnsetWarning.reset();
+  }
 
   @Override
   public void onApplyColumnFilter() {
