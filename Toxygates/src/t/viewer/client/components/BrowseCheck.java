@@ -84,7 +84,8 @@ public class BrowseCheck extends SelectionMethod<String> {
         }
 
         setSelection(sel);
-        parentSelector.setSelection(sel, bc);
+        // We send null instead of passing bc in order to clear the ListChooser selection
+        parentSelector.setSelection(sel, null);
       }
     });
     selectAllButton.addStyleName("lightButton");
@@ -95,6 +96,7 @@ public class BrowseCheck extends SelectionMethod<String> {
       public void onClick(ClickEvent ce) {
         List<String> empty = new ArrayList<String>();
         setSelection(empty);
+        // No need to set null here, since empty selection will clear ListChooser
         parentSelector.setSelection(empty, bc);
       }
     });

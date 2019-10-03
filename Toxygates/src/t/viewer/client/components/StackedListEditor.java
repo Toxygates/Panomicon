@@ -256,6 +256,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     selectedItems = new HashSet<String>(items);
     if (listChooser != null) {
       listChooser.setItems(new ArrayList<String>(items));
+      if (from == null || items.size() == 0) {
+        listChooser.resetSelection();
+      }
     }
     if (from != null) {
       triggerChange();

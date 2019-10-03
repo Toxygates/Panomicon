@@ -164,6 +164,10 @@ public class ListChooser extends Composite {
 
     return hp;
   }
+  
+  public void resetSelection() {
+    listBox.setSelectedIndex(0);
+  }
 
   public String getSelectedText() {
     int idx = listBox.getSelectedIndex();
