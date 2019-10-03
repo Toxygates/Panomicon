@@ -65,7 +65,7 @@ abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Se
     this(schema, name, samples, pickColor());
   }
 
-  private static synchronized String pickColor() {
+  public static synchronized String pickColor() {
     nextColor += 1;
     if (nextColor > groupColors.length) {
       nextColor = 1;

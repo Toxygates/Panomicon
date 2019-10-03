@@ -23,8 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import t.common.shared.DataSchema;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Unit;
+import t.common.shared.sample.*;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.client.storage.Storage;
 
@@ -100,6 +99,30 @@ public class Groups {
       groupDescription = "Empty group";
     }
     return storage.suggestName(groupDescription);
+  }
+  
+  public String nextColor() {
+    HashMap<String, Integer> existingColors = new HashMap<String, Integer>();
+    // count the number of uses of each color
+    for (ClientGroup group : allGroups()) {
+      String color = group.getColor();
+      if (existingColors.containsKey(color)) {
+        existingColors.put(color, existingColors.get(color) + 1);
+      } else {
+        existingColors.put(color, 1);
+      }
+    }
+    // find the least frequently used color that is first on the list of colors
+    String bestColorSoFar = SampleGroup.groupColors[0]; 
+    int smallestCountSoFar = Integer.MAX_VALUE;
+    for (String color : SampleGroup.groupColors) {
+      Integer newColorCount = existingColors.getOrDefault(color, 0);
+      if (newColorCount < smallestCountSoFar) {
+        smallestCountSoFar = newColorCount;
+        bestColorSoFar = color;
+      }
+    }
+    return bestColorSoFar;
   }
 
   private String firstChars(String s) {

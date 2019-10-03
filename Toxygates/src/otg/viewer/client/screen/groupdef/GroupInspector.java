@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 import com.google.gwt.cell.client.ButtonCellBase;
 import com.google.gwt.cell.client.ButtonCellBase.DefaultAppearance.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.Window;
@@ -318,10 +318,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * to select the dose levels and exposure times.
    */
   private void makeAutoGroups() {
-    List<ClientGroup> gs = GroupMaker.autoGroups(this, schema, selectionGrid.getAvailableUnits());
-    for (ClientGroup g : gs) {
-      addGroup(g);
-    }
+    GroupMaker.autoGroups(this, schema, selectionGrid.getAvailableUnits(), groups);
     // TODO investigate whether this enableDatasetsIfNeeded call can be removed
     enableDatasetsIfNeeded(); 
     reflectGroupChanges();
@@ -409,7 +406,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
           Analytics.ACTION_MODIFY_EXISTING_SAMPLE_GROUP);
     }
 
-    ClientGroup newGroup = new ClientGroup(schema, pendingGroupName, units.toArray(new Unit[0]), true);
+    ClientGroup newGroup = new ClientGroup(schema, pendingGroupName, units.toArray(new Unit[0]), true,
+        groups.nextColor());
     addGroup(newGroup);
     // TODO: investigate if this enableDatasetsIfNeeded call is necessary
     enableDatasetsIfNeeded();

@@ -26,6 +26,7 @@ import t.common.shared.Pair;
 import t.common.shared.sample.Unit;
 import t.model.sample.Attribute;
 import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
 
 public class GroupMaker {
 
@@ -34,14 +35,9 @@ public class GroupMaker {
    * finds the dose/time combination with the largest number of majors available, and then creates
    * groups with 1 unit each.
    */
-  public static List<ClientGroup> autoGroups(GroupInspector groupInspector, DataSchema schema,
-      List<Pair<Unit, Unit>> units) {
-    List<ClientGroup> r = new ArrayList<ClientGroup>();
+  public static void autoGroups(GroupInspector groupInspector, DataSchema schema,
+      List<Pair<Unit, Unit>> units, Groups groups) {
     Map<String, List<Pair<Unit, Unit>>> byMedMin = new HashMap<String, List<Pair<Unit, Unit>>>();
-
-    if (units.size() == 0) {
-      return r;
-    }
 
     final Attribute medParam = schema.mediumParameter(), minParam = schema.minorParameter();
 
@@ -72,10 +68,8 @@ public class GroupMaker {
         us.add(c);
       }
       String n = groupInspector.groups.suggestName(us, schema);
-      ClientGroup g = new ClientGroup(schema, n, us.toArray(new Unit[0]), true);
-      r.add(g);
+      ClientGroup g = new ClientGroup(schema, n, us.toArray(new Unit[0]), true, groups.nextColor());
+      groups.put(g);
     }
-
-    return r;
   }
 }

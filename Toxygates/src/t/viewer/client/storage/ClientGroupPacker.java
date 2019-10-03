@@ -2,7 +2,8 @@ package t.viewer.client.storage;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.*;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleGroup;
 import t.viewer.client.ClientGroup;
 
 /**
@@ -71,7 +72,7 @@ public class ClientGroupPacker extends Packer<ClientGroup> {
     if (SharedUtils.indexOf(SampleGroup.groupColors, color) == -1) {
       // replace the color if it is invalid.
       // this lets us safely upgrade colors in the future.
-      color = SampleGroup.groupColors[0];
+      color = SampleGroup.pickColor();
     }
 
     String[] s2 = barcodes.split("\\^\\^\\^");

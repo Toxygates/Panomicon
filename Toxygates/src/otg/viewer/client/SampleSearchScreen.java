@@ -32,9 +32,7 @@ import t.common.shared.Dataset;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.*;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.Groups;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.TickMenuItem;
 import t.viewer.client.components.search.*;
@@ -140,7 +138,8 @@ public class SampleSearchScreen extends FilterScreen
             Unit[] allUnits = currentSearch.sampleGroupFromSelected();
 
             String name = groups.storage().suggestName("Sample search group");
-            ClientGroup pendingGroup = new ClientGroup(schema(), name, allUnits, true);
+            ClientGroup pendingGroup = new ClientGroup(schema(), name, allUnits, true,
+                groups.nextColor());
 
             groups.put(pendingGroup);
             groups.storage().saveToStorage();

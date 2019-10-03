@@ -21,8 +21,8 @@ public class ClientGroup extends Group {
     _units = Unit.formUnits(schema, barcodes);
   }
   
-  public ClientGroup(DataSchema schema, String name, Unit[] units, boolean active) {
-    super(schema, name, Unit.collectSamples(units));
+  public ClientGroup(DataSchema schema, String name, Unit[] units, boolean active, String color) {
+    super(schema, name, Unit.collectSamples(units), color);
     this.active = active;
     _units = units;
   }
