@@ -244,12 +244,13 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     if (!isPredicateAttribute(attribute)) {
       throw new Exception("Invalid query")
     }
-
+    
     Query(tPrefixes,
-      "SELECT DISTINCT ?q " +
-        "WHERE { GRAPH ?batchGraph { " +
+      "SELECT DISTINCT ?q WHERE { " +
+        s"${sf.standardSampleFilters} " + 
+        "GRAPH ?batchGraph { " +
         "?x t:" + attribute.id + " ?q . ",
-      s"} ${sf.standardSampleFilters} } ",
+      s"} }",
       triplestore.simpleQueryNonQuiet)
   }
 
