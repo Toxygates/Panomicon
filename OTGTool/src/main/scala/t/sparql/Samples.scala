@@ -263,9 +263,11 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     Query(tPrefixes,
       s"""|SELECT DISTINCT *
-          |  WHERE { GRAPH ?batchGraph {
-          |    ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
-          s"} ${sf.standardSampleFilters} } ",
+          |  WHERE {
+          |    ${sf.standardSampleFilters} 
+          |    GRAPH ?batchGraph {
+          |      ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
+          s"} }",
       triplestore.mapQuery(_, 10000))
   }
 
