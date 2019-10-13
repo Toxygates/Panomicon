@@ -310,18 +310,20 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ SampleId).distinct
     val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
-
-    val sampleClassFilterString = if (sampleClassFilter.constraints.isEmpty) "" else
-      s"""|
-          |    FILTER( ${filterAttributes.map(a => s"?${a.id} = " + "\"" +
-                           sampleClassFilter.constraints(a) + "\"").mkString(" && ") } )""".stripMargin
+    
+    val sampleClassFilterString = filterAttributes
+      .map(a => s"t:${a.id}" + " \"" + s"${sampleClassFilter.constraints(a)}" + "\"")
+      .mkString("; ")
 
     Query(tPrefixes,
         s"""SELECT ${ queryAttributes.map('?' + _.id).mkString(" ") }
-           |  WHERE { GRAPH ?batchGraph {
-           |    ?x ${ (queryAttributes ++ filterAttributes).distinct.map(a => s"t:${a.id} ?${a.id}").mkString("; ") }
+           |  WHERE {
+           |  ${sampleFilter.standardSampleFilters}  
+           |  GRAPH ?batchGraph {
+           |    ?x ${ (queryAttributes ++ filterAttributes).distinct.map(a => s"t:${a.id} ?${a.id}").mkString("; ") };
+           |    $sampleClassFilterString
            |""".stripMargin,
-        s"""} ${sampleFilter.standardSampleFilters} $sampleClassFilterString
+        s"""} 
            |  }""".stripMargin,
         triplestore.mapQuery(_, 20000).map(s => {
           val sampleClass = new SampleClass((convertMapToAttributes(s, bc.attributes)
