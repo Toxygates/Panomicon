@@ -116,7 +116,7 @@ class Platforms(baseConfig: BaseConfig) extends
 
     val attribs = triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {
-        |  ?p $platformType $biologicalPlatform.
+        |  ?p a t:platform; t:platformType t:biological.
         |  GRAPH ?p {
         |    ?probe a t:probe; rdfs:label ?id; ?key ?value.
         |  }
@@ -130,7 +130,7 @@ class Platforms(baseConfig: BaseConfig) extends
 
     val bps = triplestore.mapQuery(s"""$tPrefixes
       |SELECT ?id ?desc ?sec ?type ?lower ?upper WHERE {
-      |  ?p $platformType $biologicalPlatform.
+      |  ?p a t:platform; t:platformType t:biological.
       |  GRAPH ?p {
       |    ?probe a t:probe; rdfs:label ?id; t:label ?desc; t:type ?type.
       |    OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
