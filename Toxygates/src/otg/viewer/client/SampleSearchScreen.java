@@ -20,6 +20,7 @@
 package otg.viewer.client;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
@@ -64,10 +65,18 @@ public class SampleSearchScreen extends FilterScreen
   private UnitSearch unitSearch;
   private Search<?, ?> currentSearch = null;
 
-  private Collection<Attribute> searchParameters;
-  private Collection<Attribute> nonSearchParameters;
+  private Collection<Attribute> numericalParameters;
+  private Collection<Attribute> stringParameters;
+  
+  private MenuItem numericalParametersItem;
+  private MenuItem stringParametersItem;
+  private MenuBar numericalParametersBar;
+  private MenuBar stringParametersBar;
 
-  private Collection<ParameterTickItem> parameterMenuItems;
+  private List<ParameterTickItem> numericalParameterMenuItems;
+  private List<ParameterTickItem> stringParameterMenuItems;
+  
+  Set<Attribute> enabledAttributesForCurrentSampleFilter = new HashSet<Attribute>();
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -76,6 +85,7 @@ public class SampleSearchScreen extends FilterScreen
     if (!newChosenDatasets.equals(chosenDatasets)) {
       fetchSampleClasses(new Future<SampleClass[]>(), newChosenDatasets).addCallback(f -> {
         filterTools.setSampleClass(getStorage().sampleClassStorage.getIgnoringException());
+        fetchAttributesForSampleClass(filterTools.dataFilterEditor.currentSampleClassShowing());
       });
       chosenDatasets = newChosenDatasets;
     }
@@ -89,8 +99,8 @@ public class SampleSearchScreen extends FilterScreen
     java.util.Collections.sort(searchParams, new AttributeComparator());
     java.util.Collections.sort(nonSearchParams, new AttributeComparator());
 
-    searchParameters = searchParams;
-    nonSearchParameters = nonSearchParams;
+    numericalParameters = searchParams;
+    stringParameters = nonSearchParams;
   }
 
   public SampleSearchScreen(ScreenManager man) {
@@ -111,7 +121,7 @@ public class SampleSearchScreen extends FilterScreen
   }
 
   private void makeTools() {
-    conditionEditor = new ConditionEditor(searchParameters);
+    conditionEditor = new ConditionEditor(numericalParameters);
 
     Button searchButton = new Button("Search", (ClickHandler) e -> {
       SampleClass chosenSampleClass = filterTools.dataFilterEditor.currentSampleClassShowing();
@@ -183,6 +193,12 @@ public class SampleSearchScreen extends FilterScreen
       attribute = attrib;
       setEnabled(enabled);
     }
+    
+    public ParameterTickItem(Attribute attrib, boolean initState, boolean enabled) {
+      super(attrib.title(), initState, true);
+      attribute = attrib;
+      setEnabled(enabled);
+    }
 
     public Attribute attribute() {
       return attribute;
@@ -230,25 +246,31 @@ public class SampleSearchScreen extends FilterScreen
     editBar.addItem(clearSelectionItem);
     addMenu(editItem);
 
-    parameterMenuItems = new ArrayList<ParameterTickItem>();
+    // We construct the menu items here, but do not add them 
+    numericalParameterMenuItems = new ArrayList<ParameterTickItem>(numericalParameters.size());
+    for (Attribute attribute : numericalParameters) {
+      numericalParameterMenuItems.add(new ParameterTickItem(attribute, false, false));
+    }
+    stringParameterMenuItems = new ArrayList<ParameterTickItem>(stringParameters.size());
+    for (Attribute attribute : stringParameters) {
+      stringParameterMenuItems.add(new ParameterTickItem(attribute, false, false));
+    }
+    
     MenuBar parametersBar = new MenuBar(true);
     MenuItem parameterItem = new MenuItem("View", false, parametersBar);
-    MenuBar numericalParametersBar = new MenuBar(true);
-    MenuItem numericalParametersItem =
+    
+    numericalParametersBar = new MenuBar(true);
+    numericalParametersItem =
         new MenuItem("Numerical parameters", false, numericalParametersBar);
-    for (Attribute attribute : searchParameters) {
-      parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
-          attribute, false, false));
-    }
-    MenuBar stringParametersBar = new MenuBar(true);
-    MenuItem stringParametersItem =
-        new MenuItem("Non-numerical parameters", false, stringParametersBar);
-    for (Attribute attribute : nonSearchParameters) {
-      parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
-          attribute, false, false));
-    }
     parametersBar.addItem(numericalParametersItem);
+    
+    stringParametersBar = new MenuBar(true);
+    stringParametersItem =
+        new MenuItem("Non-numerical parameters", false, stringParametersBar);
     parametersBar.addItem(stringParametersItem);
+    
+    updateMenuItemExistence();
+    
     addMenu(parameterItem);
   }
 
@@ -287,6 +309,66 @@ public class SampleSearchScreen extends FilterScreen
           }
         });
   }
+  
+  /**
+   * Updates the enabled attribute set. Called (eventually) on load, and after sampleclass
+   * changes. 
+   */
+  private void updateEnabledAttributeSet(Attribute[] newEnabledSet) {
+    enabledAttributesForCurrentSampleFilter = 
+        new HashSet<Attribute>(Arrays.asList(newEnabledSet));
+  }
+  
+  /**
+   * Called on load, 
+   */
+  private void updateMenuItemExistence() {
+    updateMenuItemExistenceForOneMenu(numericalParametersBar, numericalParameterMenuItems, 
+        numericalParametersItem);
+    updateMenuItemExistenceForOneMenu(stringParametersBar, stringParameterMenuItems, 
+        stringParametersItem);
+  }
+  
+  private void updateMenuItemExistenceForOneMenu(MenuBar menuBar, 
+      Collection<ParameterTickItem> menuItems, MenuItem  menuItem) {
+    menuBar.clearItems();
+    boolean menuIsEmpty = true;
+    for (ParameterTickItem item : menuItems) {
+      if (enabledAttributesForCurrentSampleFilter.contains(item.attribute())) {
+        menuBar.addItem(item.menuItem());
+        menuIsEmpty = false;
+      }
+    }
+    menuItem.setEnabled(!menuIsEmpty);
+  }
+  
+  private void updateMenuItemTickedStates(Collection<ParameterTickItem> items, 
+      HashSet<Attribute> requiredAttributes, HashSet<Attribute> nonRequiredAttributes) {
+    for (ParameterTickItem item : items) {
+      if (requiredAttributes.contains(item.attribute())) {
+        item.setState(true);
+        item.setEnabled(false);
+      } else if (nonRequiredAttributes.contains(item.attribute())) {
+        item.setState(true);
+        item.setEnabled(true);
+      } else {
+        item.setState(false);
+        item.setEnabled(true);
+      }
+    }
+  }
+  
+  private void fetchAttributesForSampleClass(SampleClass sc) {
+    sampleService.attributesForSamples(sc, new PendingAsyncCallback<Attribute[]>(
+        SampleSearchScreen.this,
+        "Unable to prepare the data for download,") {
+      @Override
+      public void handleSuccess(Attribute[] attribs) {
+        Logger.getLogger("aoeu").info("got " + attribs.length + " attributes");
+        updateEnabledAttributeSet(attribs);
+      }
+    });;
+  }
 
   /*
    * Search.Delegate methods
@@ -324,18 +406,10 @@ public class SampleSearchScreen extends FilterScreen
     HashSet<Attribute> nonRequiredAttributes =
         new HashSet<Attribute>(Arrays.asList(currentSearch.helper().nonRequiredAttributes()));
 
-    for (ParameterTickItem item : parameterMenuItems) {
-      if (requiredAttributes.contains(item.attribute())) {
-        item.setState(true);
-        item.setEnabled(false);
-      } else if (nonRequiredAttributes.contains(item.attribute())) {
-        item.setState(true);
-        item.setEnabled(true);
-      } else {
-        item.setState(false);
-        item.setEnabled(true);
-      }
-    }
+    updateMenuItemExistence();
+    
+    updateMenuItemTickedStates(numericalParameterMenuItems, requiredAttributes, nonRequiredAttributes);
+    updateMenuItemTickedStates(stringParameterMenuItems, requiredAttributes, nonRequiredAttributes);
   }
 
   @Override
@@ -365,6 +439,7 @@ public class SampleSearchScreen extends FilterScreen
   @Override
   public void filterToolsSampleClassChanged(SampleClass sc) {
     getStorage().sampleClassStorage.store(sc);
+    fetchAttributesForSampleClass(sc);
   }
 
   @Override

@@ -19,8 +19,13 @@
 
 package t.viewer.client.rpc;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
@@ -28,9 +33,6 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * A service that provides information about samples, datasets, and 
@@ -124,6 +126,7 @@ public interface SampleService extends RemoteService {
   Pair<Unit, Unit>[] units(SampleClass[] scs, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
+  Attribute[] attributesForSamples(SampleClass sc) throws TimeoutException;
 
   /**
    * Annotations are experiment-associated information such as dose, time, biochemical data etc.

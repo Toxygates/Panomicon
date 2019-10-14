@@ -362,4 +362,33 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       samples = all.flatMap(m => lookup.get(m("sid")))
     ) yield (group, samples)
   }
+  
+  /**
+   * Find all attributes for which at least one of the samples matching the sample
+   * class filter has a value.
+   */
+  def attributesForSamples(sampleClassFilter: SampleClassFilter = SampleClassFilter())
+    (implicit sampleFilter: SampleFilter): Query[Vector[Attribute]] = {
+
+    val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
+    
+    val sampleClassFilterString = filterAttributes
+      .map(a => s"t:${a.id}" + " \"" + s"${sampleClassFilter.constraints(a)}" + "\"")
+      .mkString("; ")
+
+    Query(tPrefixes,
+        s"""SELECT DISTINCT ?bioparam WHERE {
+           |  ${sampleFilter.standardSampleFilters}
+	         |  GRAPH ?batchGraph {
+    	     |    ?sample ?bioparam ?value;
+    	     |    $sampleClassFilterString
+  	       |  }
+  	       |}""".stripMargin, 
+  	       "",
+        triplestore.simpleQuery(_, false, 20000).flatMap(bp => {
+          val paramId = bp.split("/").last
+          println(s"$bp converted to $paramId")
+          Option(bc.attributes.byId(paramId))
+        }))
+  }
 }

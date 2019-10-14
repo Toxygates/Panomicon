@@ -161,6 +161,10 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
     scs.flatMap(units(_, param, paramValues))
   }
+  
+  def attributesForSamples(sc: SampleClass): Array[Attribute] = {
+    sampleStore.attributesForSamples(SampleClassFilter(sc))(sf)().toArray
+  }
 
   @throws[TimeoutException]
   def annotations(sample: Sample): Annotation = {

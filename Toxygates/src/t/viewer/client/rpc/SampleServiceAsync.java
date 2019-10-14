@@ -19,15 +19,16 @@
 
 package t.viewer.client.rpc;
 
+import java.util.List;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
-
-import java.util.List;
 
 public interface SampleServiceAsync {
 
@@ -50,6 +51,8 @@ public interface SampleServiceAsync {
 
   void units(SampleClass[] sc, String param, String[] paramValues,
       AsyncCallback<Pair<Unit, Unit>[]> callback);
+  
+  void attributesForSamples(SampleClass sc, AsyncCallback<Attribute[]> callback);
 
   void annotations(Sample sample, AsyncCallback<Annotation> callback);
 
