@@ -37,26 +37,27 @@ public abstract class ItemSelector<T> extends Composite {
  
   public ItemSelector(T[] values) {
     initWidget(lb);
-    setup(values);
+    setValues(values);
   }
   
   public ItemSelector() {
     initWidget(lb);
-    setup(values());
-  }
-  
-  private void setup(T[] values) {
-    lb.clear();
     lb.setVisibleItemCount(1);
-    for (T t : values) {
-      lb.addItem(titleForValue(t));
-    }
     lb.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
         onValueChange(value());
       }
     });
+    setValues(values());
+  }
+  
+  public void setValues(T[] values) {
+    lb.clear();
+    
+    for (T t : values) {
+      lb.addItem(titleForValue(t));
+    }
   }
 
   public ListBox listBox() {

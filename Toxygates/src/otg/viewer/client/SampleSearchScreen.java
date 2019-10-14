@@ -20,7 +20,6 @@
 package otg.viewer.client;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
@@ -317,6 +316,10 @@ public class SampleSearchScreen extends FilterScreen
   private void updateEnabledAttributeSet(Attribute[] newEnabledSet) {
     enabledAttributesForCurrentSampleFilter = 
         new HashSet<Attribute>(Arrays.asList(newEnabledSet));
+    
+    Set<Attribute> enabledNumericalParameters = new HashSet<Attribute>(numericalParameters);
+    enabledNumericalParameters.retainAll(Arrays.asList(newEnabledSet));
+    conditionEditor.updateParameters(enabledNumericalParameters);
   }
   
   /**
@@ -364,7 +367,7 @@ public class SampleSearchScreen extends FilterScreen
         "Unable to prepare the data for download,") {
       @Override
       public void handleSuccess(Attribute[] attribs) {
-        Logger.getLogger("aoeu").info("got " + attribs.length + " attributes");
+        //Logger.getLogger("aoeu").info("got " + attribs.length + " attributes");
         updateEnabledAttributeSet(attribs);
       }
     });;

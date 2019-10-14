@@ -23,13 +23,13 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import t.common.shared.sample.search.AndMatch;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
-
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * And-conditions are stacked vertically as rows.
@@ -47,6 +47,14 @@ public class AndEditor extends MatchEditor {
     orEditors.add(o);  
     panel.add(o);    
     panel.addStyleName("samplesearch-andpanel");
+  }
+  
+  @Override
+  public void updateParameters(Collection<Attribute> parameters) {
+    super.updateParameters(parameters);
+    for (OrEditor child : orEditors) {
+      child.updateParameters(parameters);
+    }
   }
   
   public @Nullable MatchCondition getCondition() {

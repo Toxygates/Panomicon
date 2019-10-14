@@ -23,16 +23,16 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.TextBox;
+
 import t.common.client.components.ItemSelector;
 import t.common.shared.sample.search.AtomicMatch;
 import t.common.shared.sample.search.MatchType;
 import t.model.sample.Attribute;
 import t.model.sample.BasicAttribute;
 import t.viewer.client.Utils;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.TextBox;
 
 public class AtomicEditor extends MatchEditor {
 
@@ -96,6 +96,15 @@ public class AtomicEditor extends MatchEditor {
     hPanel.add(textBox);
 
     disable();
+  }
+  
+  @Override
+  public void updateParameters(Collection<Attribute> parameters) {
+    super.updateParameters(parameters);
+    List<Attribute> parametersWithUndefined = new ArrayList<Attribute>();
+    parametersWithUndefined.add(UNDEFINED_ITEM);
+    parametersWithUndefined.addAll(parameters);
+    paramSel.setValues(parametersWithUndefined.toArray(new Attribute[0]));
   }
   
   void disable() {

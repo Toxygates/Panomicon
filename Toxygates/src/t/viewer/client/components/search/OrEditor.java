@@ -23,12 +23,12 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+
 import t.common.shared.sample.search.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
-
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 
 public class OrEditor extends MatchEditor {
 
@@ -43,6 +43,14 @@ public class OrEditor extends MatchEditor {
     atomicEditors.add(a);
     panel.add(a);
     panel.addStyleName("samplesearch-orpanel");
+  }
+  
+  @Override
+  public void updateParameters(Collection<Attribute> parameters) {
+    super.updateParameters(parameters);
+    for (AtomicEditor child : atomicEditors) {
+      child.updateParameters(parameters);
+    }
   }
 
   public @Nullable MatchCondition getCondition() {

@@ -23,10 +23,10 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import t.model.sample.Attribute;
-
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
+
+import t.model.sample.Attribute;
 
 abstract public class MatchEditor extends Composite {
 
@@ -40,6 +40,10 @@ abstract public class MatchEditor extends Composite {
     super();
     this.parameters = parameters;
     this.parent = parent;
+  }
+  
+  public void updateParameters(Collection<Attribute> parameters) {
+    this.parameters = parameters;
   }
   
   void signalEdit() {

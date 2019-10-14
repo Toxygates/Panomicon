@@ -21,10 +21,10 @@ package t.viewer.client.components.search;
 
 import java.util.Collection;
 
+import com.google.gwt.user.client.ui.SimplePanel;
+
 import t.common.shared.sample.search.MatchCondition;
 import t.model.sample.Attribute;
-
-import com.google.gwt.user.client.ui.SimplePanel;
 
 /**
  * Visual editor for sample match conditions.
@@ -41,6 +41,12 @@ public class ConditionEditor extends MatchEditor {
     clear();   
     initWidget(panel);
     panel.addStyleName("samplesearch-rootpanel");
+  }
+  
+  @Override
+  public void updateParameters(Collection<Attribute> parameters) {
+    super.updateParameters(parameters);
+    root.updateParameters(parameters);
   }
   
   /**
