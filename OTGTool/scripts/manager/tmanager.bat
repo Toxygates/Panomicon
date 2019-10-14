@@ -26,5 +26,4 @@ set T_DATA_MATDBCONFIG=#pccap=1073741824#msiz=4294967296
 
 ::echo "%OTGTOOL_ROOT%\bin;%CLASSPATH%"
 
-:: Scala 2.11 is required
-C:\Users\yuji\Documents\Toxygates\scala-2.11.12\bin\scala.bat -Djava.library.path=%KC_LIBDIR% -J-Xmx4g -classpath "%OTGTOOL_ROOT%\bin;%CLASSPATH%" otg.Manager %*
+scala -Djava.library.path=%KC_LIBDIR% -J-Xmx4g -classpath "%OTGTOOL_ROOT%\bin;%CLASSPATH%" otg.Manager %*
