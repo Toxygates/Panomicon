@@ -155,9 +155,17 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   def currentView(mainTableId: String): Network =
     getState.networks(mainTableId).makeNetwork
 
+  def distinctInteractions(net: Network): Network = {
+    val all = net.interactions().asScala.groupBy(i => (i.from, i.to))
+    val distinct = all.values.map(_.head)
+    new Network(net.title(), net.nodes(),
+      distinct.toList.asJava, net.wasTruncated(), net.trueSize())
+  }
+
   def prepareNetworkDownload(mainTableId: String, format: Format,
                              messengerWeightColumn: String, microWeightColumn: String): String = {
-    prepareNetworkDownload(currentView(mainTableId), format, messengerWeightColumn, microWeightColumn)
+    prepareNetworkDownload(distinctInteractions(currentView(mainTableId)),
+      format, messengerWeightColumn, microWeightColumn)
   }
 
   def prepareNetworkDownload(network: Network, format: Format, messengerWeightColumn: String,
