@@ -104,7 +104,7 @@ public class ProgressDisplay extends Composite {
           @Override
           public void onFailure(Throwable caught) {
             addLog("Error: unable to obtain current job status from server");
-            addLog(caught.getMessage());
+            addLog(caught);
 
           }
         });
@@ -126,7 +126,7 @@ public class ProgressDisplay extends Composite {
       maintenanceService.getOperationResults(new AsyncCallback<OperationResults>() {
         @Override
         public void onFailure(Throwable caught) {
-          Window.alert("Error while obtaining operation results: " + caught.getMessage());
+          Window.alert("Error while obtaining operation results: " + caught);
         }
 
         @Override
@@ -176,7 +176,7 @@ public class ProgressDisplay extends Composite {
     maintenanceService.cancelTask(new AsyncCallback<Void>() {
       @Override
       public void onFailure(Throwable caught) {
-        addLog("Unable to cancel task: " + caught.getMessage());
+        addLog("Unable to cancel task: " + caught);
       }
 
       @Override

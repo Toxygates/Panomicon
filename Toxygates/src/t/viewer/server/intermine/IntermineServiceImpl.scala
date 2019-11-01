@@ -72,7 +72,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
     } catch {
       case e: Exception =>
         e.printStackTrace()
-        throw new IntermineException(e.getMessage)
+        throw new IntermineException(s"$e")
     }
   }
 
@@ -85,7 +85,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
     } catch {
       case e: Exception =>
         e.printStackTrace()
-        throw new IntermineException(e.getMessage)
+        throw new IntermineException(s"$e")
     }
   }
 

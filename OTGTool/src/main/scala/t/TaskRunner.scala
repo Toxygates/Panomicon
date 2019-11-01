@@ -206,7 +206,7 @@ object TaskRunner {
           Success(r)
         }
         case Failure(t) => {
-          log(s"Error while running task ${currentAtomicTask.get.name}: ${t.getMessage()}")
+          log(s"Error while running task ${currentAtomicTask.get.name}: $t")
           t.printStackTrace()
           log("Remaining tasks will not be executed")
           _errorCause = Some(t)
@@ -221,7 +221,7 @@ object TaskRunner {
         cleanup
       } catch {
         case e @ (_: Exception | _: Error) =>
-          log("Error during task cleanup: " + e.getMessage())
+          log("Error during task cleanup: " + e)
           e.printStackTrace()
       } finally {
         _currentAtomicTask = None

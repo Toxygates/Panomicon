@@ -142,7 +142,7 @@ abstract public class HeatmapDialog<C, R> {
     return new AsyncCallback<String>() {
       @Override
       public void onFailure(Throwable caught) {
-        logger.severe(caught.getMessage());
+        logger.severe(caught);
         Window.alert("Failed to generate heat map data.");
       }
 

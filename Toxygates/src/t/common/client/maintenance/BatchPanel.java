@@ -93,7 +93,7 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
             new AsyncCallback<String[][]>() {
               @Override
               public void onFailure(Throwable caught) {
-                Window.alert("Unable to obtain batch data: " + caught.getMessage());                    
+                Window.alert("Unable to obtain batch data: " + caught);
               }
 
               @Override
