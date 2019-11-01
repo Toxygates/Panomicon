@@ -444,7 +444,9 @@ public class SampleSearchScreen extends FilterScreen
     Future<SampleClass[]> future = fetchSampleClasses(new Future<SampleClass[]>(), datasets);
     chosenDatasets = getStorage().datasetsStorage.store(datasets);
     future.addSuccessCallback(sampleClasses -> {
-      getStorage().sampleClassStorage.store(filterTools.dataFilterEditor.currentSampleClassShowing());
+      SampleClass newSampleClass = filterTools.dataFilterEditor.currentSampleClassShowing();
+      getStorage().sampleClassStorage.store(newSampleClass);
+      fetchAttributesForSampleClass(newSampleClass);
     });
     return future;
   }
