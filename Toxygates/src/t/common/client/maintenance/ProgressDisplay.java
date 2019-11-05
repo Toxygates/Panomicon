@@ -104,7 +104,7 @@ public class ProgressDisplay extends Composite {
           @Override
           public void onFailure(Throwable caught) {
             addLog("Error: unable to obtain current job status from server");
-            addLog(caught);
+            addLog(caught.toString());
 
           }
         });
