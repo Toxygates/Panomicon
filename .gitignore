@@ -15,6 +15,7 @@ Toxygates/lib/*
 
 .DS_Store
 
+#Eclipse
 OTGTool/.cache-main
 OTGTool/.cache-tests
 OTGTool/.classpath
@@ -25,5 +26,10 @@ Toxygates/.cache-tests
 Toxygates/.classpath
 Toxygates/.project
 Toxygates/.settings
+
+#IntelliJ
+.idea/*
+*.iml
+out/*
 
 *.class
