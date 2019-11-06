@@ -95,11 +95,10 @@ function initCytoscapeGraph(id, container){
     zIndex: 0,
     id: 'cyCanvas-'+id,
   });
-  vizNet[id].options().layout.minColorScale = undefined;
-  vizNet[id].options().layout.minColorValue = undefined;
-  vizNet[id].options().layout.maxColorScale = undefined;
-  vizNet[id].options().layout.maxColorValue = undefined;
-  vizNet[id].drawColorScale();
+  // vizNet[id].options().layout.minColorScale = undefined;
+  // vizNet[id].options().layout.minColorValue = undefined;
+  // vizNet[id].options().layout.maxColorScale = undefined;
+  // vizNet[id].options().layout.maxColorValue = undefined;
 
   /* bind function to handle the resizing of the panel */
   vizNet[id].on('resize', onPanelResize);
@@ -124,6 +123,9 @@ function initCytoscapeGraph(id, container){
 
   /* load the graph elements and add them to the display */
   let positioned = changeNetwork(id);
+
+  /* draw the color scale, default plus predefined (if any) */
+  vizNet[id].drawColorScale();
 
   /* Update the value of panel select */
   $('#panelSelect').val(id);
@@ -159,6 +161,11 @@ function changeNetwork(id=MAIN_ID){
   vizNet[id].elements().remove();
   /* store the name of the graph as data field in the container */
   vizNet[id].options().container.data('title', convertedNetwork.title);
+  /* retrieve color scale definitions (if any)*/
+  vizNet[id].options().layout.minColorScale = convertedNetwork.minColorScale;
+  vizNet[id].options().layout.minColorValue = convertedNetwork.minColorValue;
+  vizNet[id].options().layout.maxColorScale = convertedNetwork.maxColorScale;
+  vizNet[id].options().layout.maxColorValue = convertedNetwork.maxColorValue;
   /* load the content of 'convertedNetwork' as elements for the graph */
   let positioned = vizNet[id].loadElements(convertedNetwork);
   /* mark unconnected nodes as hidden */

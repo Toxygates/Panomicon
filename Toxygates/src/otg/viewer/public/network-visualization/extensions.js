@@ -742,7 +742,12 @@ function getNetwork(){
     interactions.push(new Interaction(data.source, data.target));
   });
   /* return the list defined by all elements */
-  return new Network(title, interactions, nodes);
+  let net = new Network(title, interactions, nodes);
+  net.setColorScale(
+    this.options().layout.minColorScale, this.options().layout.minColorValue,
+    this.options().layout.maxColorScale, this.options().layout.maxColorValue
+  );
+  return net;
 }
 
 // add functions to cytoscape prototype

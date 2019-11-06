@@ -115,6 +115,20 @@ class Network{
   }
 
   /**
+   * Set the different parameters that define a custom color scale
+   * @param {String} minScale the RGB string used as minimum value of the scale
+   * @param {String} minValue the float value used as minimum for the scale
+   * @param {String} maxScale the RGB string used as maximum value of the scale
+   * @param {String} maxValue the float value used as maximum for the scale
+   */
+  setColorScale(minScale, minValue, maxScale, maxValue){
+    this.minColorScale = minScale;
+    this.minColorValue = minValue;
+    this.maxColorScale = maxScale;
+    this.maxColorValue = maxValue;
+  }
+
+  /**
    * Convinience function used to retrieve all nodes and interactions of a
    * network, and return them in a format suitable for visualization using
    * Cytoscape.js
@@ -192,6 +206,10 @@ class Network{
   toJSON(){
     return {
       title: this.title,
+      minColorScale: this.minColorScale,
+      minColorValue: this.minColorValue,
+      maxColorScale: this.maxColorScale,
+      maxColorValue: this.maxColorValue,
       nodes: this.nodes,
       interactions: this.interactions
     };
