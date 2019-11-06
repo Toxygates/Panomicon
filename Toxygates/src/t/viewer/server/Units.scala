@@ -154,10 +154,14 @@ class UnitsHelper(schema: DataSchema) {
       Seq[(Unit, (Unit, VarianceSet))] = {
     formTreatedAndControlUnits(samples).flatMap {
       case (treatedSamples, controlSamples) =>
-        val units = treatedSamples.map(formUnit(_, schema))
-        val controlGroup = formUnit(controlSamples, schema)
-        val varianceSet = new SimpleVarianceSet(controlSamples)
-        units.map(_ -> (controlGroup, varianceSet))
+        if (treatedSamples.nonEmpty && controlSamples.nonEmpty) {
+          val units = treatedSamples.map(formUnit(_, schema))
+          val controlGroup = formUnit(controlSamples, schema)
+          val varianceSet = new SimpleVarianceSet(controlSamples)
+          units.map(_ -> (controlGroup, varianceSet))
+        } else {
+          Seq.empty
+        }
     }
   }
 

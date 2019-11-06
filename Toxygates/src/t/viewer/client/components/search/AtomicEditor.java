@@ -67,7 +67,7 @@ public class AtomicEditor extends MatchEditor {
       
       @Override
       protected void onValueChange(Attribute selected) {
-        if (selected.equals(UNDEFINED_ITEM)) {
+        if (selected == null || selected.equals(UNDEFINED_ITEM)) {
           disable();
         } else {
           enable();
