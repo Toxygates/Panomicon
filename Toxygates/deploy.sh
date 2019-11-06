@@ -36,13 +36,12 @@ function makeAdminWar {
 }
 
 WARLIB=war/WEB-INF/lib
+[ ! -d $WARLIB ] && mkdir -p $WARLIB
 #ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 rm $WARLIB/*jar
-cp lib/jar/*.jar $WARLIB
-cp lib/bundle/*.jar $WARLIB
+cp lib/{jar,bundle}/*.jar $WARLIB
 cp mlib/*.jar $WARLIB
-cp ../OTGTool/lib/jar/*.jar $WARLIB
-cp ../OTGTool/lib/bundle/*.jar $WARLIB
+cp ../OTGTool/lib/{jar,bundle}/*.jar $WARLIB
 cp ../OTGTool/mlib/*.jar $WARLIB
 
 
