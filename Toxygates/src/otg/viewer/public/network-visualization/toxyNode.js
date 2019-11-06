@@ -35,6 +35,7 @@ class ToxyNode{
     this.y = undefined; // y coordinate (in pixels) - the location of the node
     this.shape = undefined; // the shape used to draw the node
     this.color = undefined; // background color of the node
+    this.borderColor = undefined; // color used for the border of the node
   }
 
   /**
@@ -107,6 +108,7 @@ class ToxyNode{
       y: this.y,
       shape: this.shape,
       color: this.color,
+      borderColor: this.borderColor,
     }
   }
 

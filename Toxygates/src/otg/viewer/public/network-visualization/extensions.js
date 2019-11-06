@@ -395,6 +395,7 @@ function loadElements(network){
     let symbol = (e.symbol.length > 0) ? e.symbol : [id];
     let label = symbol[0];
     let color = e.color !== undefined ? e.color : nodeColor[nodeType[e.type]];
+    let borderColor = e.borderColor !== undefined ? e.borderColor : nodeColor[nodeType[e.type]];
     let shape = e.shape !== undefined ? e.shape : nodeShape[nodeType[e.type]] ;
     /* use the properties to create a new cytoscape node element */
     let node = {
@@ -405,7 +406,7 @@ function loadElements(network){
         label: label,
         symbol: symbol,
         color: color,
-        borderColor: color,
+        borderColor: borderColor,
         type: type,
         shape: shape,
         weight: weight,
@@ -729,6 +730,7 @@ function getNetwork(){
     tn.setWeights(data.weight);
     tn.setPosition(pos.x, pos.y);
     tn.color = data.color;
+    tn.borderColor = data.borderColor;
     tn.shape = shape;
     /* add the node to the list */
     nodes.push(tn);
