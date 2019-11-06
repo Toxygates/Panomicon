@@ -101,7 +101,7 @@ public class SeriesCharts extends Charts {
       acceptor.acceptCharts(cg);
 
     } catch (Exception e) {
-      Window.alert("Unable to display charts: " + e.getMessage());
+      Window.alert("Unable to display charts: " + e);
       logger.log(Level.WARNING, "Unable to display charts.", e);
     }
   }

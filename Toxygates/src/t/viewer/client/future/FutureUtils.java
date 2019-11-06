@@ -49,7 +49,7 @@ public class FutureUtils {
       screen.removePendingRequest();
       if (f.doneWithError()) {
         screen.getLogger().log(Level.SEVERE, errorMessage, f.caught());
-        Window.alert(errorMessage + ": " + f.caught().getMessage());
+        Window.alert(errorMessage + ": " + f.caught());
       }
     });
     return future;

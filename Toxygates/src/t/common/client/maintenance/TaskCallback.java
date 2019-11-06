@@ -60,7 +60,7 @@ public class TaskCallback implements AsyncCallback<Void> {
 
   @Override
   public void onFailure(Throwable caught) {
-    Window.alert("Failure: " + caught.getMessage());
+    Window.alert("Failure: " + caught);
 
     log.log(Level.SEVERE, "TaskCallback error", caught);
     if (caught.getCause() != null) {

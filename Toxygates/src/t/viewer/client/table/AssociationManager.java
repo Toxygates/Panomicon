@@ -137,7 +137,7 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
       AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
         @Override
         public void onFailure(Throwable caught) {
-          Window.alert("Unable to get associations: " + caught.getMessage());
+          Window.alert("Unable to get associations: " + caught);
         }
 
         @Override

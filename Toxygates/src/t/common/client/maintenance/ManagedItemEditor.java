@@ -107,7 +107,7 @@ public abstract class ManagedItemEditor extends Composite {
 
       @Override
       public void onFailure(Throwable caught) {
-        Window.alert("Operation failed: " + caught.getMessage());
+        Window.alert("Operation failed: " + caught);
         onError();
       }
     };

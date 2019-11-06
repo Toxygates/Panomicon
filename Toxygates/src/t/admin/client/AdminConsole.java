@@ -261,7 +261,7 @@ public class AdminConsole implements EntryPoint {
     maintenanceService.delete(object, new AsyncCallback<Void>() {
       @Override
       public void onFailure(Throwable caught) {
-        Window.alert("Unable to delete " + itemType + ": " + caught.getMessage());
+        Window.alert("Unable to delete " + itemType + ": " + caught);
       }
 
       @Override

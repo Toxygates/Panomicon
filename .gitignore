@@ -14,11 +14,22 @@ OTGTool/lib/*
 Toxygates/lib/*
 
 .DS_Store
-(OTGTool|Toxygates)/.cache-main
-(OTGTool|Toxygates)/.cache-tests
-(OTGTool|Toxygates)/.classpath
-(OTGTool|Toxygates)/.project
-(OTGTool|Toxygates)/.settings
 
-syntax:glob
+#Eclipse
+OTGTool/.cache-main
+OTGTool/.cache-tests
+OTGTool/.classpath
+OTGTool/.project
+OTGTool/.settings
+Toxygates/.cache-main
+Toxygates/.cache-tests
+Toxygates/.classpath
+Toxygates/.project
+Toxygates/.settings
+
+#IntelliJ
+.idea/*
+*.iml
+out/*
+
 *.class
