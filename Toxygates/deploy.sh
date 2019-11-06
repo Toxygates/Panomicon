@@ -2,12 +2,14 @@
 
 TGCP=war/WEB-INF/classes
 TOOLCP=../OTGTool/classes
+CP=classes
 
 function makeWar {
     OUTPUT=toxygates-template.war
     cp -r $TOOLCP/friedrich $TGCP
     cp -r $TOOLCP/otg $TGCP
     cp -r $TOOLCP/t $TGCP
+    cp -r $CP/* $TGCP
     cd war
     rm $OUTPUT
     rm WEB-INF/web.xml
@@ -22,9 +24,10 @@ function makeWar {
 }
 
 function makeAdminWar {
-    cp -r $TOOLCP/friedrich war/WEB-INF/classes
-    cp -r $TOOLCP/otg war/WEB-INF/classes
-    cp -r $TOOLCP/t war/WEB-INF/classes
+    cp -r $TOOLCP/friedrich $TGCP
+    cp -r $TOOLCP/otg $TGCP
+    cp -r $TOOLCP/t $TGCP
+    cp -r $CP/* $TGCP
     cd war
     cp WEB-INF/web.xml.admin WEB-INF/web.xml
     rm admin.war
@@ -43,7 +46,7 @@ cp lib/{jar,bundle}/*.jar $WARLIB
 cp mlib/*.jar $WARLIB
 cp ../OTGTool/lib/{jar,bundle}/*.jar $WARLIB
 cp ../OTGTool/mlib/*.jar $WARLIB
-
+cp ${GWT_SDK}/gwt-servlet.jar $WARLIB
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar
