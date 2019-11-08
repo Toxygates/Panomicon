@@ -41,7 +41,7 @@ object MedianValueMapper extends ValueMapper {
   def format(x: Double) = ExprValue.nf.format(x)
 
   def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue = {
-    if (domainVs.size == 0) {
+    if (domainVs.isEmpty) {
       return ExprValue(0.0, 'A')
     }
 

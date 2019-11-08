@@ -26,6 +26,7 @@ import t.common.shared.sample.ExpressionRow
 import t.db.BasicExprValue
 import t.db.ExprValue
 import t.viewer.server.Conversions
+
 import scala.collection.mutable.WrappedArray
 
 object ExprMatrix {
@@ -50,7 +51,7 @@ object ExprMatrix {
     ss.map(fromSeq).toIndexedSeq
 
   def safeCountColumns(rows: Seq[Seq[Any]]) =
-    if (rows.size > 0) { rows(0).size } else 0
+    if (rows.nonEmpty) { rows.head.size } else 0
 
   def withRows(data: Seq[Seq[ExprValue]], metadata: ExprMatrix = null) = {
     if (metadata != null) {
@@ -142,7 +143,7 @@ class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: In
     val is = for (
       (r, i) <- asRows.zipWithIndex;
       ats = r.getAtomicProbes.toSet;
-      if (!useProbes.intersect(ats).isEmpty)
+      if useProbes.intersect(ats).nonEmpty
     ) yield i
     selectRows(is)
   }
@@ -187,7 +188,7 @@ class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: In
     colName: String): ExprMatrix = {
     def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
 
-    appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)
+    appendTwoColTest(sourceData, group1, group2, diffTest, 1, colName)
   }
 
   def appendStatic(data: Seq[Double], name: String): ExprMatrix = {

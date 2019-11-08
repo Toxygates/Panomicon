@@ -66,7 +66,7 @@ class ManagedNetwork(mainParams: LoadParams,
   def updateSideMatrix() {
     val offset = currentPageRows.map(_._1).getOrElse(0)
     val length = currentPageRows.map(_._2).getOrElse(currentPageSize)
-    if (targets.size == 0) {
+    if (targets.isEmpty) {
       println("Warning: targets table is empty. No side table can be constructed.")
     }
     val sideProbes = NetworkBuilder.extractSideProbes(targets, platforms,
@@ -87,7 +87,7 @@ class ManagedNetwork(mainParams: LoadParams,
     r.filter(x => pset.contains(x._1))
   }
 
-  def countMap = filteredCountMap(rawGrouped)
+  private def countMap = filteredCountMap(rawGrouped)
 
   import java.lang.{Double => JDouble}
 
@@ -109,7 +109,7 @@ class ManagedNetwork(mainParams: LoadParams,
 
     if (sideIsMRNA) {
       val all = platforms.data(sideMatrix.params.platform)
-      val rowTargets = targets.targets(lookup.map(MiRNA(_)), all)
+      val rowTargets = targets.targets(lookup.map(MiRNA), all)
       rowTargets.groupBy(_._2).map(x => {
         //the same association can occur through multiple mappings - count
         //distinct end to end mappings here
@@ -127,8 +127,8 @@ class ManagedNetwork(mainParams: LoadParams,
     }
   }
 
-  override private[server] def currentRowsChanged() = synchronized {
-    super.currentRowsChanged
+  override private[server] def currentRowsChanged(): Unit = synchronized {
+    super.currentRowsChanged()
     if (currentCountMap != null) {
       currentCountMap.clear()
       currentCountMap.putAll(filteredCountMap(current).asJava)

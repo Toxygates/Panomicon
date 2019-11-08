@@ -20,7 +20,7 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]]
       copyWith(Seq())
     } else {
       copyWith(
-        (0 until columns(0).size).map(
+        columns(0).indices.map(
           r => fromSeq(columns.map(c => c(r)))))
     }
   }

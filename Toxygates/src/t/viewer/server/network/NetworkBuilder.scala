@@ -48,11 +48,11 @@ object NetworkBuilder {
 
     mainType match {
       case Network.mrnaType =>
-        val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
+        val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
         val range = targets.reverseTargets(platforms.resolve(domain))
         range.map(_._2.id).toSeq.distinct
       case Network.mirnaType =>
-        val domain = (main.current.orderedRowKeys drop mainOffset) take mainSize
+        val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
         val allProbes = platforms.data(expPlatform).toSeq
         val range = targets.targets(domain.map(new MiRNA(_)), allProbes)
         range.map(_._2.identifier).toSeq.distinct
@@ -186,7 +186,7 @@ class NetworkBuilder(targets: TargetTable,
     val mainTargets = probeTargets(platforms.resolve(mainSel.orderedRowKeys), pfs)
     val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
-      filter(sideTableProbeSet.contains(_))
+      filter(sideTableProbeSet.contains)
 
     //Select as a new copy, in order to avoid affecting the current view being
     //displayed

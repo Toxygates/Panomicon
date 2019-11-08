@@ -41,7 +41,7 @@ import t.db.MatrixContext
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
-    val samples = groups.toList.flatMap(_.getSamples().map(_.id))
+    val samples = groups.toList.flatMap(_.getSamples.map(_.id))
     context.samples.platforms(samples)
   }
 
@@ -144,7 +144,7 @@ abstract class MatrixController(params: ControllerParams) {
       val sparseRead = probes.size <= 10
       b.build(groups, sparseRead, fullLoad)
     } finally {
-      reader.release
+      reader.release()
     }
   }
 
@@ -152,7 +152,7 @@ abstract class MatrixController(params: ControllerParams) {
 
   def _managedMatrix: Mat = {
 
-    val mm = if (filteredProbes.size > 0) {
+    val mm = if (filteredProbes.nonEmpty) {
       finish(makeMatrix(filteredProbes.toSeq, typ, params.fullLoad))
     } else {
       val emptyMatrix = new ExprMatrix(Vector(), 0, 0, Map(), Map(), List())
@@ -173,7 +173,7 @@ abstract class MatrixController(params: ControllerParams) {
    * Select probes and update the current managed matrix
    */
   def selectProbes(probes: Seq[String]): Mat = {
-    val useProbes = (if (!probes.isEmpty) {
+    val useProbes = (if (probes.nonEmpty) {
       println("Refilter probes: " + probes.length)
       probes
     } else {
@@ -190,10 +190,11 @@ abstract class MatrixController(params: ControllerParams) {
   def applySorting(sortKey: SortKey, ascending: Boolean): Mat = {
     sortKey match {
       case mc: SortKey.MatrixColumn =>
-        if (Some(mc.matrixIndex) != managedMatrix.sortColumn ||
-          ascending != managedMatrix.sortAscending) {
-          managedMatrix.sort(mc.matrixIndex, ascending)
-          println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
+        managedMatrix.sortColumn match {
+          case Some(mc.matrixIndex) =>
+          case _ =>
+            managedMatrix.sort(mc.matrixIndex, ascending)
+            println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
         }
       case _ => throw new Exception("Unsupported sort method")
     }
@@ -215,7 +216,7 @@ abstract class MatrixController(params: ControllerParams) {
  */
 class DefaultMatrixController(params: ControllerParams) extends MatrixController(params) {
   type Mat = ManagedMatrix
-  def finish(mm: ManagedMatrix) = mm
+  def finish(mm: ManagedMatrix): ManagedMatrix = mm
 
   protected def mapper: Option[MatrixMapper] = None
 
@@ -230,7 +231,7 @@ class DefaultMatrixController(params: ControllerParams) extends MatrixController
     }
   }
 
-  override def _managedMatrix = {
+  override def _managedMatrix: ManagedMatrix = {
     applyMapper(super._managedMatrix, mapper)
   }
 }
@@ -243,14 +244,14 @@ class MergedMatrixController(params: ControllerParams, orthologs: () => Iterable
 
   override protected def enhancedCols = false
 
-  lazy val orth = orthologs().filter(! _.mappings.isEmpty).head
+  lazy val orth = orthologs().filter(_.mappings.nonEmpty).head
 
   println(s"Using orthologs from ${orth.name} for mapping")
 
   override lazy val filteredProbes = {
     //Use orthologs to expand the probe set if this request is
     //multi-platform
-    val expanded = initProbes.map(orth.forProbe.getOrElse(_, Set())).flatten
+    val expanded = initProbes.flatMap(orth.forProbe.getOrElse(_, Set()))
     platforms.filterProbes(expanded, groupPlatforms)
   }
 

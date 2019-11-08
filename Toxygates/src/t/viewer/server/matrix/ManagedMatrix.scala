@@ -97,7 +97,7 @@ class CoreMatrix(val params: LoadParams) {
    * For the given column in the grouped matrix,
    * which columns in the ungrouped matrix are its basis?
    */
-  def baseColumns(col: Int): Seq[Int] = params.baseColumnMap.get(col).getOrElse(List())
+  def baseColumns(col: Int): Seq[Int] = params.baseColumnMap.getOrElse(col, List())
 
   /**
    * What is the current sort column?
@@ -311,7 +311,7 @@ trait Synthetics extends CoreMatrix {
         }
         val name = test.getName
         if (!currentInfo.hasColumn(name)) {
-          currentInfo.addColumn(true, name, test.getTooltip(),
+          currentInfo.addColumn(true, name, test.getTooltip,
             ColumnFilter.emptyLT, null, false,
             Array[SSample]())
         }

@@ -28,12 +28,12 @@ trait DataMatrix[T, V <: Seq[T]] {
   /**
    * A vector of rows.
    */
-  def toRowVectors: Seq[V] = (0 until rows).toSeq.map(row(_))
+  def toRowVectors: Seq[V] = (0 until rows).toSeq.map(row)
 
   /**
    * A vector of columns.
    */
-  def toColVectors: Seq[V] = (0 until columns).toSeq.map(column(_))
+  def toColVectors: Seq[V] = (0 until columns).toSeq.map(column)
 
   /**
    *  Extract a single row
