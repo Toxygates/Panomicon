@@ -6,19 +6,21 @@
 package friedrich.util.formats
 import java.io._
 
+import scala.io.{Codec, Source}
+
 /**
  * Reads files with tab-separated columns.
  * Result stored in column-major format.
  */
 object TSVFile extends FileReadable[Seq[Seq[String]]] {
+  import t.util.DoThenClose._
+
   protected def read(prefix: String = ".", name: String) = {
-    val r = new BufferedReader(new FileReader(prefix + name))
-    try {
+    doThenClose(Source.fromFile(prefix + name)(Codec.UTF8))(r => {
       var data = Vector[Array[String]]()
-      while (r.ready()) {
-        val l = r.readLine
+      for {l <- r.getLines} {
         val cs = l.split("\t")
-        if (cs.length > 0 && l.length > 0) {
+        if (cs.nonEmpty && l.length > 0) {
           //ignore empty lines
           data :+= cs
         }
@@ -30,9 +32,7 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
         Vector.tabulate(data(0).length, data.length)((col, row) =>
           data(row)(col))
       }
-    } finally {
-      r.close
-    }
+    })
   }
 
   /**

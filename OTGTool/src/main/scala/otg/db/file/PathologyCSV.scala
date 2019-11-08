@@ -42,7 +42,10 @@ case class PathologyItem(barcode: String,
  * http://dbarchive.biosciencedbc.jp/en/open-tggates/download.html
  */
 class PathologyCSV(file: String) {
-  def lines = Source.fromFile(file)(Codec.UTF8).getLines.toSeq
+  import t.util.DoThenClose._
+
+  def lines =
+    doThenClose(Source.fromFile(file)(Codec.UTF8))(_.getLines.toSeq)
 
   val items = lines.drop(1).map(l => {
     val s = mergeQuoted(l.split(",").toVector)

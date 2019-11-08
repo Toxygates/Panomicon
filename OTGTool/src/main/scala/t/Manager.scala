@@ -123,14 +123,6 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
 }
 
 trait ManagerTool extends CmdLineOptions {
-  def withCloseable[T](cl: Closeable)(f: => T): T = {
-    try {
-      f
-    } finally {
-      cl.close()
-    }
-  }
-
   def expectArgs(args: Seq[String], n: Int) {
     if (args.size < n) {
       showHelp()

@@ -35,9 +35,11 @@ class CSVRawExpressionData(exprFile: String,
     callFile: Option[String], expectedSamples: Option[Int],
     parseWarningHandler: (String) => Unit) extends ColumnExpressionData {
 
+  import t.util.DoThenClose._
+
   private def samplesInFile(file: String) = {
-    val line = Source.fromFile(file).getLines.next
-    val columns = line.split(",", -1).map(_.trim)
+    val firstLine = doThenClose(Source.fromFile(file))(_.getLines.next)
+    val columns = firstLine.split(",", -1).map(_.trim)
     columns.drop(1).toVector.map(s => Sample(unquote(s)))
   }
 
@@ -47,13 +49,14 @@ class CSVRawExpressionData(exprFile: String,
   override lazy val probes: Vector[String] =
     probesInFile(exprFile).toVector
 
-  private def probesInFile(file: String) = {
-    val lines = Source.fromFile(file).getLines
-    lines.next
-    for (line <- lines;
-      columns = line.split(",", -1).map(_.trim);
-      probe = unquote(columns.head)
-    ) yield probe
+  private def probesInFile(file: String): Seq[ProbeId] = {
+    doThenClose(Source.fromFile(file))(ls => {
+      (for {
+        line <- ls.getLines().drop(1)
+        columns = line.split(",", -1).map(_.trim)
+        probe = unquote(columns.head)
+      } yield probe).toList //force evaluation
+    })
   }
 
   protected val expectedColumns = expectedSamples.map(_ + 1)
@@ -61,15 +64,15 @@ class CSVRawExpressionData(exprFile: String,
   protected def traverseFile[T](file: String,
     lineHandler: (Array[String], String) => Unit): Array[String] = {
     println("Read " + file)
-    val s = Source.fromFile(file)
-    val ls = s.getLines
-    val columns = ls.next.split(",", -1).map(x => unquote(x.trim))
+    doThenClose(Source.fromFile(file))(s => {
+      val ls = s.getLines
+      val columns = ls.next.split(",", -1).map(x => unquote(x.trim))
 
-    for (l <- ls) {
-      lineHandler(columns, l)
-    }
-    s.close
-    columns
+      for (l <- ls) {
+        lineHandler(columns, l)
+      }
+      columns
+    })
   }
 
   protected def probeBuffer[T] = {

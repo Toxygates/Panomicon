@@ -36,7 +36,7 @@ object Statistics {
   /**
    * Squares of all samples
    */
-  def square(data: Iterable[Double]) = data.map(x => x * x)
+  def square(data: Iterable[Double]): Iterable[Double] = data.map(x => x * x)
 
   /**
    * Square root
@@ -48,7 +48,7 @@ object Statistics {
    */
   def sqrt(data: Iterable[Double]): Iterable[Double] = data.map(sqrt)
 
-  def abs(v: Double) = Math.abs(v)
+  def abs(v: Double): Double = Math.abs(v)
 
   /**
    * Compute the Pearson correlation coefficient.

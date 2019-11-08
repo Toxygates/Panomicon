@@ -39,6 +39,7 @@ import t.platform.Species._
  * already inserted platform information.
  */
 class SSOrthTTL(probes: OTGProbes, output: String) {
+  import t.util.DoThenClose._
 
   val probeToGene = probes.allGeneIds()
   val geneToProbe = probeToGene.reverse
@@ -66,10 +67,10 @@ class SSOrthTTL(probes: OTGProbes, output: String) {
        * This builds the transitive closure of all the
        * ortholog relations
        */
-      if (ps1 != None && ps2 != None) {
+      if (ps1.isDefined && ps2.isDefined) {
         val nw = ps1.get ++ ps2.get
         val existing = nw.filter(all.contains)
-        if (existing.size > 0) {
+        if (existing.nonEmpty) {
           //Join the existing sets together
           val newSet = MSet() ++ nw ++ existing.toSeq.flatMap(all(_))
 
@@ -83,9 +84,7 @@ class SSOrthTTL(probes: OTGProbes, output: String) {
       }
     }
 
-    var fw: BufferedWriter = null
-    try {
-      fw = new BufferedWriter(new FileWriter(output))
+    doThenClose(new BufferedWriter(new FileWriter(output)))(fw => {
       fw.write("@prefix t:<http://level-five.jp/t/>. ")
       fw.newLine()
       val pre = t.sparql.Probes.defaultPrefix
@@ -98,32 +97,31 @@ class SSOrthTTL(probes: OTGProbes, output: String) {
         fw.newLine()
         seen ++= vs
       }
-
-    } finally {
-      if (fw != null) fw.close()
-    }
+    })
   }
 
   /**
    * Read pairs of ENTREZ ids
    */
   def readPairs(in: String): Iterable[(Gene, Gene)] = {
-    Source.fromFile(in).getLines.toVector.flatMap(l => {
-      val gs = l.split("\t")
-      if (gs.length != 2) {
-        None
-      } else if (gs(0) != "-" && gs(1) != "-") {
-        val i1 = Integer.parseInt(gs(0))
-        val i2 = Integer.parseInt(gs(1))
-        //standard sort order
-        if (i1 < i2) {
-          Some((Gene(i1), Gene(i2)))
+    doThenClose(Source.fromFile(in))(s => {
+      s.getLines.toVector.flatMap(l => {
+        val gs = l.split("\t")
+        if (gs.length != 2) {
+          None
+        } else if (gs(0) != "-" && gs(1) != "-") {
+          val i1 = Integer.parseInt(gs(0))
+          val i2 = Integer.parseInt(gs(1))
+          //standard sort order
+          if (i1 < i2) {
+            Some((Gene(i1), Gene(i2)))
+          } else {
+            Some((Gene(i2), Gene(i1)))
+          }
         } else {
-          Some((Gene(i2), Gene(i1)))
+          None
         }
-      } else {
-        None
-      }
+      })
     })
   }
 }
