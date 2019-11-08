@@ -190,11 +190,9 @@ abstract class MatrixController(params: ControllerParams) {
   def applySorting(sortKey: SortKey, ascending: Boolean): Mat = {
     sortKey match {
       case mc: SortKey.MatrixColumn =>
-        managedMatrix.sortColumn match {
-          case Some(mc.matrixIndex) =>
-          case _ =>
-            managedMatrix.sort(mc.matrixIndex, ascending)
-            println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
+        if (!managedMatrix.sortColumn.contains(mc.matrixIndex)) {
+          managedMatrix.sort(mc.matrixIndex, ascending)
+          println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
         }
       case _ => throw new Exception("Unsupported sort method")
     }
