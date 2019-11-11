@@ -116,12 +116,17 @@ class Network{
 
   /**
    * Set the different parameters that define a custom color scale
+   *
+   * @param {String} msgWgt
+   * @param {String} micWgt
    * @param {String} minScale the RGB string used as minimum value of the scale
-   * @param {String} minValue the float value used as minimum for the scale
+   * @param {number} minValue the float value used as minimum for the scale
    * @param {String} maxScale the RGB string used as maximum value of the scale
-   * @param {String} maxValue the float value used as maximum for the scale
+   * @param {number} maxValue the float value used as maximum for the scale
    */
-  setColorScale(minScale, minValue, maxScale, maxValue){
+  setColorScale(msgWgt, micWgt, minScale, minValue, maxScale, maxValue){
+    this.msgWgt = msgWgt;
+    this.micWgt = micWgt;
     this.minColorScale = minScale;
     this.minColorValue = minValue;
     this.maxColorScale = maxScale;
@@ -206,6 +211,8 @@ class Network{
   toJSON(){
     return {
       title: this.title,
+      msgWgt: this.msgWgt,
+      micWgt: this.micWgt,
       minColorScale: this.minColorScale,
       minColorValue: this.minColorValue,
       maxColorScale: this.maxColorScale,

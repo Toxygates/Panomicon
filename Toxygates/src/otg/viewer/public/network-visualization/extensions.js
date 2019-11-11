@@ -9,6 +9,9 @@ function drawColorScale(){
   /* get the drawing context */
   let id = this.options().container.data('idx');
   let canvas = $('#cyCanvas-'+id)[0];
+  /* if no canvas to pain on, there is nothing to do */
+  if( canvas === undefined ) return;
+
   let ctx = canvas.getContext('2d');
   ctx.font = '1.2em sans-serif';
   /* delete the previous canvas content - clear the canvas */
@@ -390,32 +393,40 @@ function loadElements(network){
   network.nodes.forEach(function(e){
     /* define all the node's properties */
     let id = e.id;
-    let type = nodeType[e.type];
-    let weight = e.weight;
     let symbol = (e.symbol.length > 0) ? e.symbol : [id];
     let label = symbol[0];
     let color = e.color !== undefined ? e.color : nodeColor[nodeType[e.type]];
     let borderColor = e.borderColor !== undefined ? e.borderColor : nodeColor[nodeType[e.type]];
+    let type = nodeType[e.type];
     let shape = e.shape !== undefined ? e.shape : nodeShape[nodeType[e.type]] ;
+    let weight = e.weight;
+    let hidden = e.hidden !== undefined ? e.hidden : false;
+    let selected = e.selected !== undefined ? e.selected : false;
+
+    let x = e.x !== undefined? e.x : 0;
+    let y = e.y !== undefined? e.y : 0;
     /* use the properties to create a new cytoscape node element */
     let node = {
       group: 'nodes',
       classes: type,
       data:{
         id: id,
-        label: label,
         symbol: symbol,
+        label: label,
         color: color,
         borderColor: borderColor,
         type: type,
         shape: shape,
         weight: weight,
+        hidden: hidden,
+        selected: selected,
+      },
+      display:{
         display: 'element',
-        hidden: false,
       },
       position: {
-        x: e.x,
-        y: e.y,
+        x: x,
+        y: y,
       },
     };
     /* add the node to the list of elements */
@@ -439,10 +450,10 @@ function loadElements(network){
   this.add(eles);
 
   /* return true if there was a position associated to the first node */
-  let positioned = network.nodes[0].x !== undefined;
-  if( positioned )
-    this.options().layout.name = 'custom';
-  return positioned;
+  // let positioned = network.nodes[0].x !== undefined;
+  // if( positioned )
+  //   this.options().layout.name = 'custom';
+  // return positioned;
 }
 
 /**
@@ -523,10 +534,8 @@ function hideUnconnected(){
   let unconnected = this.nodes().filter(function(ele){
     return ele.degree(false) === 0;
   });
-  unconnected.forEach(function(ele){
-    ele.data('hidden', true);
-    ele.toggleClass('hidden', true);
-  });
+  unconnected.data('hidden', true);
+  unconnected.toggleClass('hidden', true);
 }
 
 /**
@@ -602,10 +611,11 @@ function mergeWith(other, innerLyt="concentric", outerLyt="grid"){
 }
 
 /**
+ * Apply default style to all elements.
  * Returns elements in the collection to their default style, in terms of color
- * and shape of its components
+ * and shape of its components.
  */
-function setDefaultStyle(){//eles){
+function setDefaultStyle(){
   this.forEach(function(ele){
     if ( ele.isEdge() ){
       ele.data("color", edgeColor.REGULAR);
@@ -625,7 +635,7 @@ function setDefaultStyle(){//eles){
  * Hide/Show nodes
  * @param {boolean} show Boolean value that indicates whether the hidden nodes
  * should be displayed or not. If they are to be displayed, then their 'hidden'
- * needs to be set to OFF (false), otherwise, it turned ON (true).
+ * class needs to be set to OFF (false), otherwise, it turned ON (true).
  */
   function toggleHiddenNodes(show){
     this.options().layout['showHidden'] = show;
@@ -633,9 +643,7 @@ function setDefaultStyle(){//eles){
     let hiddenNodes = this.nodes('[?hidden]');
     /* for each element turn the class 'hidden' ON or OFF depending on the value
      * of show */
-    hiddenNodes.forEach(function(ele){
-      this.$('#'+ele.id()).toggleClass('hidden', !show);
-    }, this);
+    hiddenNodes.toggleClass('hidden', !show);
   }
 
 /**
@@ -723,15 +731,17 @@ function getNetwork(){
   /* Add the nodes to the defined list */
   this.nodes().forEach(function(node){
     let data = node.data();
+    let style = node.style();
     let pos = node.position();
-    let shape = node.style().shape;
     /* define a new instance of ToxyNode, with all the corresponding fields */
     let tn = new ToxyNode(data.id, getNodeKey(data.type), data.symbol);
     tn.setWeights(data.weight);
     tn.setPosition(pos.x, pos.y);
-    tn.color = data.color;
-    tn.borderColor = data.borderColor;
-    tn.shape = shape;
+    tn.setColor(data.color);
+    tn.setBorderColor(data.borderColor);
+    tn.setShape(style.shape);
+    tn.setHidden(data.hidden);
+    tn.setSelected(node.selected());
     /* add the node to the list */
     nodes.push(tn);
   });
@@ -744,10 +754,73 @@ function getNetwork(){
   /* return the list defined by all elements */
   let net = new Network(title, interactions, nodes);
   net.setColorScale(
+    this.options().layout.msgWgt, this.options().layout.micWgt,
     this.options().layout.minColorScale, this.options().layout.minColorValue,
     this.options().layout.maxColorScale, this.options().layout.maxColorValue
   );
   return net;
+}
+
+/**
+ *
+ * Only update the values of the color scale if these are actually defined (!==
+ * of undefined), otherwise, keep the current values for each of the color scale
+ * parameters.
+ *
+ * @param {String} msgWgt
+ * @param {String} micWgt
+ * @param {String} minScale the RGB string used as minimum value of the scale
+ * @param {number} minValue the float value used as minimum for the scale
+ * @param {String} maxScale the RGB string used as maximum value of the scale
+ * @param {number} maxValue the float value used as maximum for the scale
+ */
+function setColorScale(msgWgt, micWgt, minScale, minValue, maxScale, maxValue){
+  if(msgWgt !== undefined) this.options().layout.msgWgt = msgWgt;
+  if(micWgt !== undefined) this.options().layout.micWgt = micWgt;
+  if(minScale !== undefined) this.options().layout.minColorScale = minScale;
+  if(minValue !== undefined) this.options().layout.minColorValue = minValue;
+  if(maxScale !== undefined) this.options().layout.maxColorScale = maxScale;
+  if(maxValue !== undefined) this.options().layout.maxColorValue = maxValue;
+}
+
+/**
+ *
+ *
+ * @return A boolean value indicating if the color scale was applied to the
+ * network
+ */
+function applyColorScale(){
+  /* can only apply an existing color scale */
+  if( this.options().layout.minColorScale === undefined )
+    return false;
+
+  /* apply the color scale defined by the current values */
+  let msgWgt = this.options().layout.msgWgt;
+  let micWgt = this.options().layout.micWgt;
+  let negColor = this.options().layout.minColorScale;
+  let min = this.options().layout.minColorValue;
+  let posColor = this.options().layout.maxColorScale;
+  let max = this.options().layout.maxColorValue;
+
+  /* apply the linearly interpolated color to each node in the graph */
+  this.nodes().forEach(function(ele){
+    /* retrieve the current node's weight value */
+    let val = ele.data('weight')[msgWgt];
+    if (ele.data('type') === nodeType.microRNA )
+      val = ele.data('weight')[micWgt];
+
+    /* calculate the color for the current node */
+    let c = valueToColor(val, min, max, negColor, posColor);
+    /* if the color is valid, assign it to the node */
+    if( c !== undefined ){
+      ele.data("color", c);
+      val <= 0 ? ele.data('borderColor', negColor) : ele.data('borderColor', posColor);
+    }
+    /* else, revert the node to default color */
+    else
+      ele.setDefaultStyle();
+  });
+  return true;
 }
 
 // add functions to cytoscape prototype
@@ -767,3 +840,5 @@ cytoscape("core", "toggleHiddenNodes", toggleHiddenNodes);
 cytoscape('core', 'getName', getName);
 cytoscape('core', 'setName', setName);
 cytoscape('core', 'getNetwork', getNetwork);
+cytoscape('core', 'setColorScale', setColorScale);
+cytoscape('core', 'applyColorScale', applyColorScale);
