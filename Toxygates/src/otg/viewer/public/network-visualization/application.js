@@ -138,30 +138,13 @@ function initCytoscapeGraph(id, container){
  * @param {number} id Identifies the display to which changes should be made
  */
 function changeNetwork(id=MAIN_ID){
-  /* pass hiding and selection information to the new newtork elements */
-  vizNet[id].nodes('.hidden').forEach(function(node){
-    let n = convertedNetwork.nodes.length;
-    for( let i=0; i<n; ++i ){
-      if( convertedNetwork.nodes[i].id === node.data().id ){
-        convertedNetwork.nodes[i].setHidden(true);
-        i = n;
-      }
-    }
-  });
-
-  vizNet[id].nodes(':selected').forEach(function(node){
-    let n = convertedNetwork.nodes.length;
-    for( let i=0; i<n; ++i ){
-      if( convertedNetwork.nodes[i].id === node.data().id ){
-        convertedNetwork.nodes[i].setSelected(true);
-        i = n;
-      }
-    }
-  });
-
-  /* replace the elements in the network for those currently provided  */
-  vizNet[id].elements().remove();
-  vizNet[id].loadElements(convertedNetwork);
+  /* retain the elements that are part of the new network and add the new ones */
+  let newNodes = cytoscape({
+    headless: true}
+  )
+  newNodes.loadElements(convertedNetwork);
+  vizNet[id].nodes().difference(newNodes.nodes()).remove()
+  vizNet[id].add(newNodes.elements());
   vizNet[id].hideUnconnected();
 
   /* store the name of the graph as data field in the container */
@@ -170,7 +153,7 @@ function changeNetwork(id=MAIN_ID){
   $('#panelSelect').val(id);
 
   /* handle the application of a layout to the nodes */
-  let lyt = vizNet[id].options().layout.name; // concentric by default
+  let lyt = vizNet[id].options().layout.name;
   $('#layoutSelect')
     .val(lyt)
     .trigger('change');

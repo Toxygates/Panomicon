@@ -448,12 +448,6 @@ function loadElements(network){
   /* add the whole list of elements (nodes and interactions) to the current
    * cytoscape graph */
   this.add(eles);
-
-  /* return true if there was a position associated to the first node */
-  // let positioned = network.nodes[0].x !== undefined;
-  // if( positioned )
-  //   this.options().layout.name = 'custom';
-  // return positioned;
 }
 
 /**
