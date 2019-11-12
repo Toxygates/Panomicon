@@ -51,6 +51,11 @@ function onReadyForVisualization(){
  * side visualization panel).
  */
 function showNetworkOnRight() {
+  /* If a panel already exists, we simply change the network associated to it */
+  if( $('#rightDisplay').length !== 0 ){
+    changeNetwork(SIDE_ID);
+    return;
+  }
   /* set the interface required for dual panel visualization */
   setDualPanelInterface();
 
@@ -256,7 +261,6 @@ $(document).on("change", "#layoutSelect", function (){
  * These nodes can be shown by checking the corresponding checkbox.
  */
 $(document).on("change", "#showHiddenNodesCheckbox", function(){
-  console.log('called hiddennodescheckbox change');
   /* Capture the panel selected by the user */
   let id = parseInt($("#panelSelect").val());
   /* Determine if the hidden nodes should be shown or not */
