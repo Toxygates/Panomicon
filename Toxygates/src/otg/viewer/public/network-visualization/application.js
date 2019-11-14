@@ -157,6 +157,10 @@ function changeNetwork(id=MAIN_ID){
   /* Update the value of panel select */
   $('#panelSelect').val(id);
 
+  /* handle the display of hidden nodes */
+  $('#showHiddenNodesCheckbox')
+    .trigger('change');
+
   /* handle the application of a layout to the nodes */
   let lyt = vizNet[id].options().layout.name;
   $('#layoutSelect')
@@ -170,9 +174,6 @@ function changeNetwork(id=MAIN_ID){
   vizNet[id].applyColorScale();
   vizNet[id].drawColorScale();
 
-  /* handle the display of hidden nodes */
-  $('#showHiddenNodesCheckbox')
-    .trigger('change');
 
   /* show the selected nodes */
   vizNet[id].nodes('[?selected]').select();
@@ -271,16 +272,21 @@ $(document).on("change", "#showHiddenNodesCheckbox", function(){
     case SIDE_ID:
       vizNet[id].toggleHiddenNodes(showHidden);
       vizNet[id].fit();
+      // vizNet[id].options().layout.name = 'custom';
       break;
     case BOTH_ID:
       vizNet[MAIN_ID].toggleHiddenNodes(showHidden);
       vizNet[MAIN_ID].fit();
+      // vizNet[MAIN_ID].options().layout.name = 'custom';
       vizNet[SIDE_ID].toggleHiddenNodes(showHidden);
       vizNet[SIDE_ID].fit();
+      // vizNet[SIDE_ID].options().layout.name = 'custom';
       break;
   }
   /* trigger the change in layout, as the network potentially changed */
-  $("#layoutSelect").trigger("change");
+  if( showHidden )
+    $("#layoutSelect").trigger("change");
+  // $('#layoutSelect').val('custom');
 });
 
 /**
