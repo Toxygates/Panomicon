@@ -39,14 +39,18 @@ public class AtomicEditor extends MatchEditor {
   private ItemSelector<Attribute> paramSel;
   private ItemSelector<MatchType> typeSel;
   private TextBox textBox = new TextBox();
-  
+
+  Attribute[] attributes;
+
   final static Attribute UNDEFINED_ITEM =
       new BasicAttribute("undefined", "Undefined", false, null);
   
   public AtomicEditor(@Nullable MatchEditor parent, 
       final Collection<Attribute> parameters) {
     super(parent, parameters);
-    
+
+    attributes = generateListBoxChoices(parameters);
+
     HorizontalPanel hPanel = Utils.mkHorizontalPanel(true);
     initWidget(hPanel);
     hPanel.addStyleName("samplesearch-atomicpanel");
@@ -54,11 +58,8 @@ public class AtomicEditor extends MatchEditor {
     paramSel = new ItemSelector<Attribute>() {
       @Override
       protected Attribute[] values() {
-        List<Attribute> r = new ArrayList<Attribute>();
-        r.add(UNDEFINED_ITEM);
-        r.addAll(parameters);
-        return r.toArray(new Attribute[0]);
-      }      
+        return attributes;
+      }
       
       @Override
       protected String titleForValue(Attribute bp) {
@@ -101,10 +102,13 @@ public class AtomicEditor extends MatchEditor {
   @Override
   public void updateParameters(Collection<Attribute> parameters) {
     super.updateParameters(parameters);
-    List<Attribute> parametersWithUndefined = new ArrayList<Attribute>();
-    parametersWithUndefined.add(UNDEFINED_ITEM);
-    parametersWithUndefined.addAll(parameters);
-    paramSel.setValues(parametersWithUndefined.toArray(new Attribute[0]));
+    attributes = generateListBoxChoices(parameters);
+
+    Attribute currentItem = paramSel.value();
+    paramSel.updateListBoxChoices();
+    if (currentItem != null) {
+      paramSel.setSelected(currentItem);
+    }
   }
   
   void disable() {
@@ -135,4 +139,10 @@ public class AtomicEditor extends MatchEditor {
     }
   }
 
+  private Attribute[] generateListBoxChoices(final Collection<Attribute> parameters) {
+    List<Attribute> r = new ArrayList<Attribute>();
+    r.add(UNDEFINED_ITEM);
+    r.addAll(parameters);
+    return r.toArray(new Attribute[0]);
+  }
 }
