@@ -25,10 +25,12 @@ import t.viewer.shared.intermine.IntermineInstance;
 
 public class InstanceSelector extends ItemSelector<IntermineInstance> {
 
-  private IntermineInstance[] instances;
+  private IntermineInstance[] instances = new IntermineInstance[0];
+
   public InstanceSelector(AppInfo info) {
-    super(info.intermineInstances());
+    super();
     instances = info.intermineInstances();
+    updateListBoxChoices();
   }
   
   @Override

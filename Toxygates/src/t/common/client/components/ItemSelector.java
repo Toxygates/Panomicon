@@ -34,12 +34,7 @@ import com.google.gwt.user.client.ui.ListBox;
 public abstract class ItemSelector<T> extends Composite {
 
   private ListBox lb = new ListBox();
- 
-  public ItemSelector(T[] values) {
-    initWidget(lb);
-    setValues(values);
-  }
-  
+
   public ItemSelector() {
     initWidget(lb);
     lb.setVisibleItemCount(1);
@@ -49,13 +44,13 @@ public abstract class ItemSelector<T> extends Composite {
         onValueChange(value());
       }
     });
-    setValues(values());
+    updateListBoxChoices();
   }
   
-  public void setValues(T[] values) {
+  public void updateListBoxChoices() {
     lb.clear();
     
-    for (T t : values) {
+    for (T t : values()) {
       lb.addItem(titleForValue(t));
     }
   }
