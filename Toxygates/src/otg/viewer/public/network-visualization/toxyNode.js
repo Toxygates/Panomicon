@@ -10,7 +10,6 @@
  * @param {String} type The type of node. Takes one of two values: 'msgRNA' or
  * 'microRNA'
  * @param {Array<String>} symbol List of gene symbols used to identify a node.
- *
  * @property {{String: float}} weight Set of numerical attributes associated to
  * a node. Usually related to expression or p values.
  * @property {int} x the x coordinate (in pixels) that represents the point in
@@ -21,6 +20,8 @@
  * given by cytoscape) used to display the node
  * @property {String} color a string, in RGB Hex format, used to store the
  * background color that should be used to draw the node
+ * @property {String} borderColor a string, in RGB Hex format, used to store the
+ * color of the border of the node
  */
 class ToxyNode{
 
@@ -35,11 +36,60 @@ class ToxyNode{
     this.y = undefined; // y coordinate (in pixels) - the location of the node
     this.shape = undefined; // the shape used to draw the node
     this.color = undefined; // background color of the node
+    this.borderColor = undefined; // color used for the border of the node
   }
 
   /**
-   * Update the current list of weights associated with the node for the one
-   * provided as parameter
+   * @return The id of the node
+   */
+  getID(){
+    return this.id;
+  }
+
+  /**
+   * Set the borderColor of the node
+   * @param {String} bcolor An RGB hex string used for color
+   */
+  setBorderColor(bcolor){
+    this.borderColor = bcolor;
+  }
+
+  /**
+   * Set the color of a node
+   * @param {String} color An RGB hex string used for color
+   */
+  setColor(color){
+    this.color = color;
+  }
+
+  /**
+   * Set the hidden status of a node
+   * @param {boolean} hidden whether the node is hidden or not
+   */
+  setHidden(hidden){
+    this.hidden = (hidden === true) ? true : false;
+  }
+
+  /**
+   * Set the selected status of a node
+   * @param {boolean} selected whether a node is selected or not
+   */
+  setSelected(selected){
+    this.selected = (selected === true) ? true : false;
+  }
+
+  /**
+   * Set the shape of the node
+   * @param {String} shape The shape of the node. Should be one of the values
+   * defined in Cytoscape
+   */
+  setShape(shape){
+    this.shape = shape;
+  }
+
+  /**
+   * Set the list of weights of a node
+   * @param {object} weights
    */
   setWeights(weights){
     this.weight = weights;
@@ -93,21 +143,30 @@ class ToxyNode{
   }
 
   /**
-   *
+   * Convert the node to a JSON string.
+   * @return A JSON object representation of the node
    */
   toJSON(){
-    return{
-      id: this.id,
-      type: this.type,
-      symbol: this.symbol,
-      weight: this.weight,
+    let node = {}
+    node.id = this.id;
+
+    node.type = this.type;
+    node.symbol = this.symbol;
+    node.weight = this.weight;
 
       // visual properties of a node
-      x: this.x,
-      y: this.y,
-      shape: this.shape,
-      color: this.color,
-    }
+    node.x = this.x;
+    node.y = this.y;
+    node.shape = this.shape;
+    node.color = this.color;
+    node.borderColor = this.borderColor;
+
+    // hidden, selected and connected status
+    if( this.hidden === true ) node.hidden = true;
+    if( this.selected === true ) node.selected = true;
+
+
+    return node;
   }
 
 } // class ToxyNode

@@ -51,6 +51,11 @@ function onReadyForVisualization(){
  * side visualization panel).
  */
 function showNetworkOnRight() {
+  /* If a panel already exists, we simply change the network associated to it */
+  if( $('#rightDisplay').length !== 0 ){
+    changeNetwork(SIDE_ID);
+    return;
+  }
   /* set the interface required for dual panel visualization */
   setDualPanelInterface();
 
@@ -86,6 +91,9 @@ function initCytoscapeGraph(id, container){
    * container */
   vizNet[id] = cytoscape({
     container: container,
+    layout: {
+      name: 'concentric'
+    }
   });
   /* set default style for nodes and edges in the network */
   vizNet[id].initStyle();
@@ -95,11 +103,6 @@ function initCytoscapeGraph(id, container){
     zIndex: 0,
     id: 'cyCanvas-'+id,
   });
-  vizNet[id].options().layout.minColorScale = undefined;
-  vizNet[id].options().layout.minColorValue = undefined;
-  vizNet[id].options().layout.maxColorScale = undefined;
-  vizNet[id].options().layout.maxColorValue = undefined;
-  vizNet[id].drawColorScale();
 
   /* bind function to handle the resizing of the panel */
   vizNet[id].on('resize', onPanelResize);
@@ -123,50 +126,60 @@ function initCytoscapeGraph(id, container){
     .hide();
 
   /* load the graph elements and add them to the display */
-  let positioned = changeNetwork(id);
-
-  /* Update the value of panel select */
-  $('#panelSelect').val(id);
-
-  /* Update the layout select. If the loaded graph had no positioning, apply a
-   * concentric layout by default */
-  let lyt = positioned ? vizNet[id].options().layout['name'] : 'concentric';
-  $('#layoutSelect')
-    .val(lyt)
-    .trigger('change');
-
-  /* Update the display hidden nodes checkbox */
-  $('#showHiddenNodesCheckbox').prop('checked', false);
-  vizNet[id].options().layout['showHidden'] = false;
+  // let positioned = changeNetwork(id);
+  changeNetwork(id);
 }
 
 /**
- * Load graph data provided by toxygates into a Cytoscape instance
- * Data being currently inspected by the user through the table view of
- * Toxygates is provided for visualization through the 'convertedNetwork'
- * variable.
- * Here, data is provided as JSON style dictionaries, containing a list of nodes
- * and interactions, that can be used to populate the Cytoscape instance of the
- * graph used for visualization.
- * This function is also called whenever a change is made to the network
- * elements (ex. via filtering) in order to update the corresponding
- * visualization.
+ * Handle the updating of the network.
+ * Every time user interactions cause the composition of the network to be
+ * updated (changes in the nodes and edges, represented by changes in
+ * convertedNetwork), a series of processes need to be carried out.
+ * First, we review the current data, to retain information that needs to be
+ * carried to the new network, such as the hiding and selection status of nodes.
+ * Then, the network is updated and visualization status duplicated to ensure
+ * consistency in the visual representation.
  *
  * @param {number} id Identifies the display to which changes should be made
  */
 function changeNetwork(id=MAIN_ID){
-  /* remove all previous data */
-  vizNet[id].elements().remove();
+  /* retain the elements that are part of the new network and add the new ones */
+  let newNodes = cytoscape({
+    headless: true}
+  )
+  newNodes.loadElements(convertedNetwork);
+  vizNet[id].nodes().difference(newNodes.nodes()).remove()
+  vizNet[id].add(newNodes.elements());
+  vizNet[id].hideUnconnected();
+
   /* store the name of the graph as data field in the container */
   vizNet[id].options().container.data('title', convertedNetwork.title);
-  /* load the content of 'convertedNetwork' as elements for the graph */
-  let positioned = vizNet[id].loadElements(convertedNetwork);
-  /* mark unconnected nodes as hidden */
-  vizNet[id].hideUnconnected();
+  /* Update the value of panel select */
+  $('#panelSelect').val(id);
+
+  /* handle the display of hidden nodes */
+  $('#showHiddenNodesCheckbox')
+    .trigger('change');
+
+  /* handle the application of a layout to the nodes */
+  let lyt = vizNet[id].options().layout.name;
+  $('#layoutSelect')
+    .val(lyt)
+    .trigger('change');
+
+  /* handle the application of a color scale */
+  vizNet[id].setColorScale(convertedNetwork.msgWgt, convertedNetwork.micWgt,
+    convertedNetwork.minColorScale, convertedNetwork.minColorValue,
+    convertedNetwork.maxColorScale, convertedNetwork.maxColorValue);
+  vizNet[id].applyColorScale();
+  vizNet[id].drawColorScale();
+
+
+  /* show the selected nodes */
+  vizNet[id].nodes('[?selected]').select();
+
   /* fit the graph to the current viewport */
   vizNet[id].fit();
-  /* return if the elements had a position or not */
-  return positioned;
 }
 
 /**
@@ -259,16 +272,21 @@ $(document).on("change", "#showHiddenNodesCheckbox", function(){
     case SIDE_ID:
       vizNet[id].toggleHiddenNodes(showHidden);
       vizNet[id].fit();
+      // vizNet[id].options().layout.name = 'custom';
       break;
     case BOTH_ID:
       vizNet[MAIN_ID].toggleHiddenNodes(showHidden);
       vizNet[MAIN_ID].fit();
+      // vizNet[MAIN_ID].options().layout.name = 'custom';
       vizNet[SIDE_ID].toggleHiddenNodes(showHidden);
       vizNet[SIDE_ID].fit();
+      // vizNet[SIDE_ID].options().layout.name = 'custom';
       break;
   }
   /* trigger the change in layout, as the network potentially changed */
-  $("#layoutSelect").trigger("change");
+  if( showHidden )
+    $("#layoutSelect").trigger("change");
+  // $('#layoutSelect').val('custom');
 });
 
 /**
@@ -350,29 +368,35 @@ $(document).on("click", "#okColorScaleDialog", function (event){
   let min = $('#negCap').val();
   let max = $('#posCap').val();
   /* colors and values for later use in the display of the color scale */
-  vizNet[id].options().layout.minColorScale = negColor;
-  vizNet[id].options().layout.minColorValue = min;
-  vizNet[id].options().layout.maxColorScale = posColor;
-  vizNet[id].options().layout.maxColorValue = max;
+  // vizNet[id].options().layout.msgWgt = msgWgt;
+  // vizNet[id].options().layout.micWgt = micWgt;
+  // vizNet[id].options().layout.minColorScale = negColor;
+  // vizNet[id].options().layout.minColorValue = min;
+  // vizNet[id].options().layout.maxColorScale = posColor;
+  // vizNet[id].options().layout.maxColorValue = max;
+  vizNet[id].setColorScale(msgWgt, micWgt, negColor, min, posColor, max);
+
+  /* apply the defined color scale to the network */
+  vizNet[id].applyColorScale();
 
   /* apply the linearly interpolated color to each node in the graph */
-  vizNet[id].nodes().forEach(function(ele){
-    /* retrieve the current node's weight value */
-    let val = ele.data('weight')[msgWgt];
-    if (ele.data('type') === nodeType.microRNA )
-      val = ele.data('weight')[micWgt];
-
-    /* calculate the color for the current node */
-    let c = valueToColor(val, min, max, negColor, posColor);
-    /* if the color is valid, assign it to the node */
-    if( c !== undefined ){
-      ele.data("color", c);
-      val <= 0 ? ele.data('borderColor', negColor) : ele.data('borderColor', posColor);
-    }
-    /* else, revert the node to default color */
-    else
-      ele.setDefaultStyle();
-  });
+  // vizNet[id].nodes().forEach(function(ele){
+  //   /* retrieve the current node's weight value */
+  //   let val = ele.data('weight')[msgWgt];
+  //   if (ele.data('type') === nodeType.microRNA )
+  //     val = ele.data('weight')[micWgt];
+  //
+  //   /* calculate the color for the current node */
+  //   let c = valueToColor(val, min, max, negColor, posColor);
+  //   /* if the color is valid, assign it to the node */
+  //   if( c !== undefined ){
+  //     ele.data("color", c);
+  //     val <= 0 ? ele.data('borderColor', negColor) : ele.data('borderColor', posColor);
+  //   }
+  //   /* else, revert the node to default color */
+  //   else
+  //     ele.setDefaultStyle();
+  // });
   /* redraw the color scale */
   vizNet[id].drawColorScale();
   /* hide the modal after color has been applied to nodes */
