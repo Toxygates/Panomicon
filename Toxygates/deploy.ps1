@@ -1,5 +1,6 @@
 ﻿Set-Variable -Name "TGCP"  -Value "war/WEB-INF/classes"
 Set-Variable -Name "TOOLCP" -Value "../OTGTool/classes"
+Set-Variable -Name "TOXYCP" -Value "classes"
 
 Set-Variable -Name "WARLIB" -Value "war/WEB-INF/lib"
 
@@ -12,6 +13,7 @@ Copy-Item "mlib/*.jar" $WARLIB
 Copy-Item "../OTGTool/lib/jar/*.jar" $WARLIB
 Copy-Item "../OTGTool/lib/bundle/*.jar" $WARLIB #error
 Copy-Item "../OTGTool/mlib/*.jar" $WARLIB
+Copy-Item $env:GWT_SDK/gwt-servlet.jar $WARLIB
 
 # These should be in the shared tomcat lib dir (tglobal.jar)
 #Remove-Item ($WARLIB + "/*kyotocabinet*jar")
@@ -55,6 +57,7 @@ Set-Variable -Name "OUTPUT" -Value "toxygates-template.war"
 Copy-Item -Recurse -Force ($TOOLCP + "/friedrich") $TGCP
 Copy-Item -Recurse -Force ($TOOLCP + "/otg") $TGCP
 Copy-Item -Recurse -Force ($TOOLCP + "/t") $TGCP 
+Get-ChildItem $TOXYCP | Copy-Item -Destination $TGCP -Recurse -Force
 Set-Location war
 Remove-Item $OUTPUT
 Remove-Item WEB-INF/web.xml
@@ -77,11 +80,12 @@ Set-Location ..
 Copy-Item -Recurse -Force ($TOOLCP + "/friedrich") war/WEB-INF/classes
 Copy-Item -Recurse -Force ($TOOLCP + "/otg") war/WEB-INF/classes
 Copy-Item -Recurse -Force ($TOOLCP + "/t") war/WEB-INF/classes
+Get-ChildItem $TOXYCP | Copy-Item -Destination war/WEB-INF/classes -Recurse -Force
 Set-Location war
 Copy-Item WEB-INF/web.xml.admin WEB-INF/web.xml
 Remove-Item admin.war
 jar cf admin.war OTGAdmin admin.html *.css images
-$Exclusions = $ExcludeJars + "*WEB-INF\classes\t\global*"
+$Exclusions = $ExcludeJars + "*WEB-INF\classes\t\global*", "*WEB-INF\classes\t\tomcat*"
 $Files = Exclude-All $AllFiles $Exclusions | foreach { Resolve-Path -Relative $_ }
 foreach ($sublist in (Chunk-Array $Files)) {
   jar uf admin.war $sublist
