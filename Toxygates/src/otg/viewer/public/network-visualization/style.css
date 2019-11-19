@@ -2,7 +2,7 @@
  * CSS for general elements
  * ------------------------------------------- */
 #display.visualization{
-  border-style: dashed;
+  /* border-style: dashed; */
   position: relative;
   overflow: hidden;
 	display: flex;
@@ -11,8 +11,8 @@
 }
 
 #leftDisplay.sub-viz{
-	border-style: dashed;
-  color: navajowhite;
+	/* border-style: dashed;
+  color: navajowhite; */
   width: 100%;
   height: 100%;
 }
@@ -22,10 +22,10 @@
 }
 
 #rightDisplay.sub-viz{
-  border-style: dashed;
-  color: sandybrown;
+  /* border-style: dashed;
+  color: sandybrown; */
   width: 50%;
-  height: 100%; */
+  height: 100%;
 }
 
 /* ----------------------------------------------------------

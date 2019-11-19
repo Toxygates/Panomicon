@@ -12,6 +12,7 @@ Toxygates/bin/*
 OTGTool/bin/*
 OTGTool/lib/*
 Toxygates/lib/*
+Toxygates/gwtTomcatFilter.jar
 
 .DS_Store
 
