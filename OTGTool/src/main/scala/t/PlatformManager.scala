@@ -26,7 +26,7 @@ import t.platform.affy.Converter
 import t.sparql.Platforms
 import t.sparql.Probes
 import t.sparql.TRDF
-import t.util.TempFiles
+import t.util.{DoThenClose, TempFiles}
 
 /**
  * Platform/probe management CLI
@@ -158,16 +158,18 @@ class PlatformManager(context: Context) {
         val probes = new Probes(config.triplestore).forPlatform(title)
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
-        log(s"Opened $dbfile for writing")
-        for (p <- probes) {
-          db.get(p) match {
-            case Some(id) => existingProbes += 1
-            case None =>
-              db.put(p)
-              newProbes += 1
+        DoThenClose.useThenClose(db)(db => {
+          log(s"Opened $dbfile for writing")
+          for (p <- probes) {
+            db.get(p) match {
+              case Some(id) => existingProbes += 1
+              case None =>
+                db.put(p)
+                newProbes += 1
+            }
           }
-        }
-        logResult(s"$newProbes new probes added, $existingProbes probes already existed")
+          logResult(s"$newProbes new probes added, $existingProbes probes already existed")
+        })
       }
     }
 
@@ -190,10 +192,11 @@ class PlatformManager(context: Context) {
       override def run(): Unit = {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
-        val probes = new Probes(config.triplestore).forPlatform(title)
-        log(s"Opened $dbfile for writing")
-        db.remove(probes)
-
+        DoThenClose.useThenClose(db)(db => {
+          val probes = new Probes(config.triplestore).forPlatform(title)
+          log(s"Opened $dbfile for writing")
+          db.remove(probes)
+        })
       }
     }
 }
