@@ -51,9 +51,6 @@ object Species extends Enumeration(0) {
       case Mouse => "mmu"
     }
   }
-  
-  val knownPlatforms = Seq("HG-U133_Plus_2", "Rat230_2",
-      "Mouse430_2", "GPL5642", "GPL10558")
 
   val supportedSpecies = List(Rat, Human, Mouse)
 
