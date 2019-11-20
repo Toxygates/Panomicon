@@ -30,7 +30,11 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
         Vector()
       } else {
         Vector.tabulate(data(0).length, data.length)((col, row) =>
-          data(row)(col))
+          if (data(row).length > col) {
+            data(row)(col)
+          } else {
+            ""
+          })
       }
     })
   }
