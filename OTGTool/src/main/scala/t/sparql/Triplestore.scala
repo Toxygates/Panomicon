@@ -19,23 +19,19 @@
 
 package t.sparql
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeoutException
-
-import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.language.implicitConversions
+import java.io.Closeable
+import java.util.concurrent.{Executors, TimeoutException}
 
 import org.eclipse.rdf4j.common.iteration.Iteration
-import org.eclipse.rdf4j.model.impl.URIImpl
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory
 import org.eclipse.rdf4j.query.QueryLanguage
 import org.eclipse.rdf4j.repository.RepositoryConnection
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.eclipse.rdf4j.rio.RDFFormat
 
-import t.Closeable
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory
-import org.eclipse.rdf4j.query.BindingSet
+import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
+import scala.language.implicitConversions
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()

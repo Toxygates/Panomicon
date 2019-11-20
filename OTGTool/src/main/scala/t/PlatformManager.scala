@@ -26,7 +26,8 @@ import t.platform.affy.Converter
 import t.sparql.Platforms
 import t.sparql.Probes
 import t.sparql.TRDF
-import t.util.{DoThenClose, TempFiles}
+import t.util.TempFiles
+import t.util.DoThenClose._
 
 /**
  * Platform/probe management CLI
@@ -158,7 +159,7 @@ class PlatformManager(context: Context) {
         val probes = new Probes(config.triplestore).forPlatform(title)
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
-        DoThenClose.useThenClose(db)(db => {
+        doThenClose(db)(db => {
           log(s"Opened $dbfile for writing")
           for (p <- probes) {
             db.get(p) match {
@@ -192,7 +193,7 @@ class PlatformManager(context: Context) {
       override def run(): Unit = {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
-        DoThenClose.useThenClose(db)(db => {
+        doThenClose(db)(db => {
           val probes = new Probes(config.triplestore).forPlatform(title)
           log(s"Opened $dbfile for writing")
           db.remove(probes)

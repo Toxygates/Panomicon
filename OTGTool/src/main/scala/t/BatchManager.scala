@@ -19,21 +19,17 @@
 
 package t
 
-import scala.Vector
-import scala.collection.JavaConverters._
-import scala.language.implicitConversions
-
 import t.db._
-import t.db.file.CSVRawExpressionData
-import t.db.file.PFoldValueBuilder
+import t.db.file.{CSVRawExpressionData, CachedCSVRawExpressionData, PFoldValueBuilder}
 import t.db.kyotocabinet._
 import t.global.KCDBRegistry
-import t.sparql._
-import t.util.TempFiles
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.CoreParameter
-import t.db.file.TSVMetadata
-import t.db.file.CachedCSVRawExpressionData
+import t.sparql._
+import t.util.DoThenClose._
+import t.util.TempFiles
+
+import scala.collection.JavaConverters._
+import scala.language.implicitConversions
 
 /**
  * Batch management CLI
@@ -214,9 +210,8 @@ object BatchManager extends ManagerTool {
 }
 
 class BatchManager(context: Context) {
+  import BatchManager.{Batch, _}
   import TRDF._
-  import BatchManager.Batch
-  import BatchManager._
 
   def config = context.config
   def samples = context.samples
@@ -241,11 +236,7 @@ class BatchManager(context: Context) {
 
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
-        try {
-          db.enumMaps(config.timeSeriesBuilder.enums)
-        } finally {
-          db.release()
-        }
+        doThenClose(db)(db => db.enumMaps(config.timeSeriesBuilder.enums))
       }
     }
 
@@ -325,11 +316,8 @@ class BatchManager(context: Context) {
         val expressionData = new DBColumnExpressionData(reader(), metadata.samples, probes) {
           override def logEvent(msg: String) { log(msg) }
         }
-        try {
-          addFoldsData(metadata, expressionData, simpleLog2).execute()
-        } finally {
-          expressionData.release()
-        }
+        doThenClose(expressionData)(data =>
+          addFoldsData(metadata, data, simpleLog2).execute())
       }
     }
 
@@ -479,16 +467,6 @@ class BatchManager(context: Context) {
         throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
       }
     }
-  }
-
-  private def suggestSampleId(existing: Set[String], candidate: String): String = {
-    var n = 1
-    var cand = candidate
-    while(existing.contains(cand)) {
-      cand = s"${candidate}_$n"
-      n += 1
-    }
-    cand
   }
 
   def addRecord(title: String, comment: String, ts: TriplestoreConfig) =
@@ -658,18 +636,20 @@ class BatchManager(context: Context) {
        */
       override def run(): Unit = {
         val db = KCIndexDB(config.data.enumIndex, true)
-        for (
-          s <- md.samples; paramMap = md.parameterMap(s);
-          e <- config.timeSeriesBuilder.enums // time series and dose series have the same enums
-        ) {
-          db.findOrCreate(e, paramMap(e))
-        }
+        doThenClose(db)(db => {
+          for (
+            s <- md.samples; paramMap = md.parameterMap(s);
+            e <- config.timeSeriesBuilder.enums // time series and dose series have the same enums
+          ) {
+            db.findOrCreate(e, paramMap(e))
+          }
 
-        //Insert standard values to ensure they are always present
-        for ((k, v) <- config.timeSeriesBuilder.standardEnumValues ++
+          //Insert standard values to ensure they are always present
+          for ((k, v) <- config.timeSeriesBuilder.standardEnumValues ++
             config.doseSeriesBuilder.standardEnumValues) {
-          db.findOrCreate(k, v)
-        }
+            db.findOrCreate(k, v)
+          }
+        })
       }
     }
 

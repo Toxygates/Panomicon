@@ -19,10 +19,12 @@
 
 package t.db.kyotocabinet
 
+import java.io.Closeable
+
 import kyotocabinet.DB
 import t.global.KCDBRegistry
 
-abstract class KyotoCabinetDB(db: DB, writeMode: Boolean) extends t.Closeable {
+abstract class KyotoCabinetDB(db: DB, writeMode: Boolean) extends Closeable {
   def get(key: Array[Byte]): Option[Array[Byte]] = {
     val d = db.get(key)
     if (d != null) {

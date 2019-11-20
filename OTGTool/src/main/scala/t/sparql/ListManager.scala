@@ -19,12 +19,13 @@
 
 package t.sparql
 
+import java.io.Closeable
+
 import Triplestore.tPrefixes
 import t.TriplestoreConfig
 import java.util.Date
 import java.util.Calendar
 import java.text.SimpleDateFormat
-import t.Closeable
 
 /**
  * Manages a list of items of some given class in the triplestore.

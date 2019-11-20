@@ -19,13 +19,15 @@
 
 package t.db
 
-import scala.collection.{ Map => CMap }
+import java.io.Closeable
+
+import scala.collection.{Map => CMap}
 
 /**
  * Efficient sample-based lookup from a data source.
  * For some methods, values are returned in the order specified by the probes sequence.
  */
-trait ColumnExpressionData {
+trait ColumnExpressionData extends Closeable {
   def probes: Seq[ProbeId]
   def samples: Iterable[Sample]
 
@@ -82,6 +84,8 @@ trait ColumnExpressionData {
    * Release the resource after use.
    */
   def release() {}
+
+  def close() { release() }
 
   /**
    * Used mainly by tests
