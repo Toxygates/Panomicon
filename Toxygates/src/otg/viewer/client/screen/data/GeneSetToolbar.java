@@ -76,7 +76,7 @@ public class GeneSetToolbar extends Composite {
   }
 
   private void geneSetEditorNew() {    
-    geneSetEditor().createNew(screen.displayedAtomicProbes());
+    geneSetEditor().createNew(screen.displayedAtomicProbes(false));
   }
 
   private void geneSetEditorEdit() {

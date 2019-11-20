@@ -309,9 +309,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
    * The probes currently contained in the current matrix, up to a limit.
    */
   @Override
-  public String[] displayedAtomicProbes() {
-    String[] r = expressionTable.matrixInfo().getAtomicProbes();
-    if (r.length < expressionTable.matrixInfo().numRows()) {
+  public String[] displayedAtomicProbes(boolean limit) {
+    String[] r = expressionTable.matrixInfo().getAtomicProbes(limit);
+    if (limit && r.length < expressionTable.matrixInfo().numRows()) {
       Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
     }
     return r;

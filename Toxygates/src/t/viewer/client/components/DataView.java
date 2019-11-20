@@ -97,7 +97,7 @@ public abstract class DataView extends Composite {
    */
   public Collection<MenuItem> topLevelMenus() { return topLevelMenus; }
   
-  abstract public String[] displayedAtomicProbes();
+  abstract public String[] displayedAtomicProbes(boolean limit);
   
   @Nullable 
   public Widget tools() { return null; }

@@ -176,6 +176,7 @@ public class ETMatrixManager {
       setRows(matrix.numRows());
 
       logInfo("Data successfully loaded");
+      logInfo(matrixInfo.getAtomicProbes(false).length + " atomic probes");
     } else {
       delegate.onGettingExpressionFailed();
     }
