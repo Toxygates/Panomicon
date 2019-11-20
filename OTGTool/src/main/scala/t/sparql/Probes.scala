@@ -470,32 +470,4 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
             x.get("comment"))
         )
   }
-
-  private def mirnaQueryGraphs(platform: Option[String], mirnaSourceGraph: String) = {
-    val r = platform match {
-      case Some(s)   => s"FROM <${Platforms.context(s)}>"
-      case _ =>
-        Species.knownPlatforms.map(p => s"FROM <${Platforms.context(p)}>").mkString("\n")
-    }
-    s"""|$r
-       |$mirnaSourceGraph""".stripMargin
-  }
-
-  private def mirnaToMrnaQuery(queryForFilter: Iterable[String],
-      scoreLimit: Option[Double]) =
-    s"""|WHERE {
-       |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
-       |  ${valuesMultiFilter("?mirna", queryForFilter)}
-       |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
-       |  ?mrna t:refseqTrn ?trn; a t:probe; t:symbol ?symbol.
-       |}""".stripMargin
-
-  private def mrnaToMirnaQuery(queryForFilter: Iterable[String],
-    scoreLimit: Option[Double]) =
-    s"""|WHERE {
-       |  ?mrna t:refseqTrn ?trn; a t:probe.
-       |  ${valuesMultiFilter("?mrna", queryForFilter)}
-       |  [ t:refseqTrn ?trn; t:mirna ?mirna; t:score ?score ].
-       |  ${scoreLimit.map(s => s"FILTER(?score > $s)").getOrElse("")}
-       |}""".stripMargin
 }
