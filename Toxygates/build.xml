@@ -5,14 +5,13 @@
 <project name="Toxygates" default="compile" basedir="."
   xmlns:ivy="antlib:org.apache.ivy.ant">
 
+  <property name="build.dir" value="war/WEB-INF/classes" />
+  <property name="test-sources.dir" value="test" />
+
   <!-- import ../build_common.xml -->
   &common;
 
-  <!-- mostly from: http://www.scala-lang.org/node/98 -->
-
   <property name="otgtool.root" value="../OTGTool" />
-  <property name="build.dir" value="war/WEB-INF/classes" />
-  <property name="test-sources.dir" value="test" />
   
   <!-- Configure path to GWT SDK -->
   <property name="gwt.sdk" value="${env.GWT_SDK}" />

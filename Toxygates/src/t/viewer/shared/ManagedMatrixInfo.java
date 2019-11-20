@@ -64,8 +64,7 @@ public class ManagedMatrixInfo implements Serializable {
    * @param synthetic is the column synthetic?
    * @param name
    * @param hint tooltip to display
-   * @param isUpperFiltering should the column have upper bound filtering? If not, lower bound is
-   *        used.
+   * @param defaultFilter the default filter for this column
    * @param baseGroup The group the column is based on
    * @param isPValue is this a p-value column?
    * @param samples The samples actually displayed in this column (may be a subset of the ones in
@@ -248,8 +247,7 @@ public class ManagedMatrixInfo implements Serializable {
   }
 
   public void setAtomicProbes(String[] probes) {
-    atomicProbes =
-        (probes.length > ATOMICS_MAX_LENGTH ? Arrays.copyOf(probes, ATOMICS_MAX_LENGTH) : probes);
+    atomicProbes = probes;
   }
 
   /**
@@ -258,8 +256,9 @@ public class ManagedMatrixInfo implements Serializable {
    * 
    * @return
    */
-  public String[] getAtomicProbes() {
-    return atomicProbes;
+  public String[] getAtomicProbes(boolean limit) {
+    return ((limit && atomicProbes.length > ATOMICS_MAX_LENGTH) ?
+            Arrays.copyOf(atomicProbes, ATOMICS_MAX_LENGTH) : atomicProbes);
   }
 
   /**

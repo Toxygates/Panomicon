@@ -340,7 +340,7 @@ public class GeneSetsMenu {
     if (list != null) {
       gse.edit(list);
     } else {
-      gse.createNew(screen.displayedAtomicProbes());
+      gse.createNew(screen.displayedAtomicProbes(false));
     } 
   }
 

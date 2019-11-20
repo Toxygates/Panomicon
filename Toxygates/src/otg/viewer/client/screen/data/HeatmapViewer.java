@@ -228,7 +228,7 @@ public class HeatmapViewer extends Composite {
   public static void show(HeatmapViewer viewer, DataView view, ValueType defaultType,
       String matrixId) {    
     viewer.chosenColumns = view.chosenColumns();
-    viewer.chosenProbes = view.displayedAtomicProbes();
+    viewer.chosenProbes = view.displayedAtomicProbes(true);
 
     int probesCount = (viewer.chosenProbes != null ? viewer.chosenProbes.length : 0);
     if (probesCount == 0 || probesCount > 1000) {

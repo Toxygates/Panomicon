@@ -286,10 +286,10 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
 
   @Override
   public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
-    logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
+    String[] enrichProbes = DataScreen.this.displayedAtomicProbes(true);
+    logger.info("Enrich " + enrichProbes.length + " probes");
     StringList genes = 
-        new StringList(StringList.PROBES_LIST_TYPE, 
-            "temp", DataScreen.this.displayedAtomicProbes());
+        new StringList(StringList.PROBES_LIST_TYPE, "temp", enrichProbes);
     DataScreen.this.factory().displayEnrichmentDialog(DataScreen.this, genes, preferredInstance);
   }
 
@@ -357,8 +357,8 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
     geneSetsMenu.clusteringListsChanged(clusteringLists.allObjects());
   }
 
-  public String[] displayedAtomicProbes() {
-    return tableView.displayedAtomicProbes();    
+  public String[] displayedAtomicProbes(boolean limit) {
+    return tableView.displayedAtomicProbes(limit);
   }
 
   @Override
