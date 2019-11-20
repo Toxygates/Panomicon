@@ -65,7 +65,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
           val v = vm.convert(rng, xs)
           MappedValue(v, xs)
         })
-        Some((nr, FullAnnotation(rng, domProbes)))
+        Some((nr, RowAnnotation(rng, domProbes)))
       } else {
         None
       }

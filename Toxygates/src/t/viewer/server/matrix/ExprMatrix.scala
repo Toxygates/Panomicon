@@ -69,22 +69,11 @@ object ExprMatrix {
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex,
         emptyAnnotations(data.size))
 
-  val emptyAnnotation = new SimpleAnnotation(null)
+  val emptyAnnotation = RowAnnotation(null, List())
   def emptyAnnotations(rows: Int) = Array.fill(rows)(emptyAnnotation)
 }
 
-sealed trait RowAnnotation {
-  def probe: String
-  def atomics: Iterable[String]
-}
-
-/*
- * Note: it's not clear that we benefit from having multiple varieties of RowAnnotation
- */
-case class FullAnnotation(probe: String, atomics: Iterable[String]) extends RowAnnotation
-case class SimpleAnnotation(probe: String) extends RowAnnotation {
-  def atomics = List(probe)
-}
+case class RowAnnotation(probe: String, atomics: Iterable[String])
 
 /**
  * The main data matrix class. Tracks names of columns and rows.

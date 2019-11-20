@@ -100,7 +100,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
         packedProbes, sparseRead, false).map(_.toSeq).toSeq
 
     val sortedProbes = data.map(row => row(0).probe)
-    val annotations = sortedProbes.map(x => new SimpleAnnotation(x)).toVector
+    val annotations = sortedProbes.map(x => RowAnnotation(x, List(x))).toVector
 
     val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
