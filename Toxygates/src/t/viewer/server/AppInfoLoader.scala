@@ -45,6 +45,8 @@ class AppInfoLoader(probeStore: Probes,
   def load(): AppInfo = {
     val probeLists = predefProbeLists()
 
+    new t.sparql.Platforms(baseConfig).populateAttributes(baseConfig.attributes)
+
     new AppInfo(configuration.instanceName, mkList(),
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
