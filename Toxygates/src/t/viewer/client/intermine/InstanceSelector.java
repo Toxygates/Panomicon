@@ -28,7 +28,7 @@ public class InstanceSelector extends ItemSelector<IntermineInstance> {
   private IntermineInstance[] instances = new IntermineInstance[0];
 
   public InstanceSelector(AppInfo info) {
-    super();
+    super(false);
     instances = info.intermineInstances();
     updateListBoxChoices();
   }

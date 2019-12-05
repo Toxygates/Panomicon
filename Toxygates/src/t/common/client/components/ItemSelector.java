@@ -35,7 +35,11 @@ public abstract class ItemSelector<T> extends Composite {
 
   private ListBox lb = new ListBox();
 
-  public ItemSelector() {
+  /**
+   * @param doInitialUpdate Whether items should be updated once immediately.
+   *                        Requires the values() method to be available for the duration of this constructor.
+   */
+  public ItemSelector(boolean doInitialUpdate) {
     initWidget(lb);
     lb.setVisibleItemCount(1);
     lb.addChangeHandler(new ChangeHandler() {
@@ -44,7 +48,13 @@ public abstract class ItemSelector<T> extends Composite {
         onValueChange(value());
       }
     });
-    updateListBoxChoices();
+    if (doInitialUpdate) {
+      updateListBoxChoices();
+    }
+  }
+
+  public ItemSelector() {
+    this(true);
   }
   
   public void updateListBoxChoices() {
