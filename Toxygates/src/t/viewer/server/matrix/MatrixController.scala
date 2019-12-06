@@ -190,7 +190,8 @@ abstract class MatrixController(params: ControllerParams) {
   def applySorting(sortKey: SortKey, ascending: Boolean): Mat = {
     sortKey match {
       case mc: SortKey.MatrixColumn =>
-        if (!managedMatrix.sortColumn.contains(mc.matrixIndex)) {
+        if (!managedMatrix.sortColumn.contains(mc.matrixIndex) ||
+            ascending != managedMatrix.sortAscending) {
           managedMatrix.sort(mc.matrixIndex, ascending)
           println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
         }
