@@ -346,7 +346,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     hm.addItem(new MenuItem("Display guide messages", () -> currentScreen.showGuide()));
 
-    hm.addItem(new MenuItem("About Toxygates...", () ->      
+    hm.addItem(new MenuItem("About Panomicon...", () ->
         Utils.showHelp(getAboutHTML(), getAboutImage())
         ));
 
