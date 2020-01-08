@@ -762,12 +762,19 @@ Non-semantic
 Help
 ******************************************************************************/
 
+.helpImage {
+    max-width: 100%;
+    height: auto;
+}
+
 .helpPanelInner {
 	width: 600px;
+	margin: 0 auto;
 }
 
 .helpPanelOuter {
-	width: 650px;
+	width: 800px;
+	text-align: center;
 }
 
 

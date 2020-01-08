@@ -278,7 +278,9 @@ public class Utils {
     VerticalPanel verticalPanel = new VerticalPanel();
     if (helpImage != null) {
       HorizontalPanel widePanel = Utils.mkWidePanel();
-      widePanel.add(new Image(helpImage));
+      Image i = new Image(helpImage);
+      i.addStyleName("helpImage");
+      widePanel.add(i);
       verticalPanel.add(widePanel);
     }
     SimplePanel simplePanel = new SimplePanel();
