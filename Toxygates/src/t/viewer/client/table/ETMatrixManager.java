@@ -198,8 +198,8 @@ public class ETMatrixManager {
 
   void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name,
       String selectedGroup1, String selectedGroup2) {
-    final Group g1 = GroupUtils.findGroup(delegate.chosenColumns(), selectedGroup1).get();
-    final Group g2 = GroupUtils.findGroup(delegate.chosenColumns(), selectedGroup2).get();
+    final Group g1 = GroupUtils.findGroup(delegate.chosenColumns(), selectedGroup1).get().convertToGroup();
+    final Group g2 = GroupUtils.findGroup(delegate.chosenColumns(), selectedGroup2).get().convertToGroup();
     synth.setGroups(g1, g2);
 
     matrixService.addSyntheticColumn(matrixId, synth,

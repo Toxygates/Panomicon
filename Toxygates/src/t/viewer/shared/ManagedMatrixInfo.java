@@ -265,6 +265,9 @@ public class ManagedMatrixInfo implements Serializable {
    * Searches for a column based on a hint string and group and returns its index
    */
   public int findColumn(String hint, Group group) {
+    if (group == null) {
+      return -1;
+    }
     for (int i = 0; i < columnHints.size(); i++) {
       if (columnHints.get(i) == hint &&
           group.hasSameUnits(columnGroups.get(i))) {
