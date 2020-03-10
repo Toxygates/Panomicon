@@ -33,6 +33,12 @@ import t.util.DoThenClose._
  * Platform/probe management CLI
  */
 object PlatformManager extends ManagerTool {
+  def format(command: String): PlatformFormat = command match {
+    case "add" => GeneralPlatform
+    case "addEnsembl" => EnsemblPlatform
+    case "addAffy" => AffymetrixPlatform
+  }
+
   def apply(args: Seq[String])(implicit context: Context): Unit = {
 
     if (args.size < 1) {
@@ -42,17 +48,16 @@ object PlatformManager extends ManagerTool {
       val platforms = new Platforms(context.config)
       try {
         args(0) match {
-          case "add" =>
+          case "add" | "addEnsembl" =>
+            val pfFormat = format(args(0))
+
             val title = require(stringOption(args, "-title"),
               "Please specify a title with -title")
             val inputFile = require(stringOption(args, "-input"),
               "Please specify a definition file with -input")
             val defns = new PlatformDefFile(inputFile).records
             val comment = stringOption(args, "-comment").getOrElse("")
-            startTaskRunner(manager.add(title, comment, inputFile, false, false))
-
-            //Redefine only syntax
-  //          platforms.redefine(title, comment, false, defns)
+            startTaskRunner(manager.add(title, comment, inputFile, pfFormat))
           case "delete" =>
             val title = require(stringOption(args, "-title"),
               "Please specify a title with -title")
@@ -74,6 +79,12 @@ object PlatformManager extends ManagerTool {
   }
 }
 
+sealed trait PlatformFormat
+case object AffymetrixPlatform extends PlatformFormat
+case object EnsemblPlatform extends PlatformFormat
+case object GeneralPlatform extends PlatformFormat
+case object BioPlatform extends PlatformFormat
+
 class PlatformManager(context: Context) {
   import TRDF._
   def config = context.config
@@ -84,28 +95,33 @@ class PlatformManager(context: Context) {
    * They are mutually exclusive.
    */
   def add(title: String, comment: String,
-    inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Task[Unit] = {
+    inputFile: String, format: PlatformFormat): Task[Unit] = {
     val pf = new Platforms(config)
 
     consistencyCheck(title) andThen
-      (if (affymetrixFormat) {
-        //assume Affymetrix format
-        addFromAffymetrix(title, comment, inputFile) andThen
-          addProbeIDs(title)
-      } else {
-        //assume T format
-        addStandard(title, comment, inputFile, bioFormat) andThen
-          addProbeIDs(title)
-      })
+      (
+        format match {
+          case AffymetrixPlatform =>
+            addFromAffymetrix(title, comment, inputFile) andThen
+              addProbeIDs(title)
+          case GeneralPlatform =>
+            addStandard(title, comment, inputFile, format == BioPlatform) andThen
+              addProbeIDs(title)
+          case EnsemblPlatform =>
+            addFromEnsembl(title, comment, inputFile) andThen
+              addProbeIDs(title)
+          case _ => throw new Exception("Unsupported platform format")
+        }
+        )
   }
 
-  def consistencyCheck(title: String) = new AtomicTask[Unit]("Consistency check") {
+  def consistencyCheck(title: String): AtomicTask[Unit] = new AtomicTask[Unit]("Consistency check") {
     override def run(): Unit = {
       checkValidIdentifier(title, "platform title")
     }
   }
 
-  def addFromAffymetrix(title: String, comment: String, file: String) =
+  def addFromAffymetrix(title: String, comment: String, file: String): AtomicTask[Unit] =
     new AtomicTask[Unit]("Insert platform from Affymetrix data") {
       override def run(): Unit = {
         val tf = new TempFiles()
@@ -138,12 +154,25 @@ class PlatformManager(context: Context) {
     }
 
   /**
+   * Add a platform from Ensembl data.
+   * Expected input is an RDF file (e.g. TTL) preprocessed with prepare_ensembl.sh.
+   * @param title
+   * @param comment
+   * @param file
+   * @return
+   */
+
+  def addFromEnsembl(title: String, comment: String, file: String): AtomicTask[Unit] = {
+    ???
+  }
+
+  /**
    * Add a platform from the "standard" T platform format (tsv).
    * @param biological Is this platform a "biological" parameter platform, with e.g. blood data,
    * and not an 'omics platform?
    */
   def addStandard(title: String, comment: String, file: String,
-      biological: Boolean) =
+      biological: Boolean): AtomicTask[Unit] =
     new AtomicTask[Unit]("Add platform (RDF)") {
       override def run(): Unit = {
         val defns = new PlatformDefFile(file).records
@@ -152,7 +181,7 @@ class PlatformManager(context: Context) {
       }
     }
 
-  def addProbeIDs(title: String) =
+  def addProbeIDs(title: String): AtomicTask[Unit] =
     new AtomicTask[Unit]("Add probe IDs") {
       override def run(): Unit = {
         var newProbes, existingProbes: Int = 0
@@ -181,14 +210,14 @@ class PlatformManager(context: Context) {
       deleteRDF(title)
   }
 
-  def deleteRDF(title: String) = new AtomicTask[Unit]("Delete platform") {
+  def deleteRDF(title: String): AtomicTask[Unit] = new AtomicTask[Unit]("Delete platform") {
     override def run(): Unit = {
       val platforms = new Platforms(config)
       platforms.delete(title)
     }
   }
 
-  def deleteProbeIDs(title: String) =
+  def deleteProbeIDs(title: String): AtomicTask[Unit] =
     new AtomicTask[Unit]("Delete probe IDs") {
       override def run(): Unit = {
         val dbfile = config.data.probeIndex
