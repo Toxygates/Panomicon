@@ -75,7 +75,7 @@ object PlatformManager extends ManagerTool {
   }
 
   def showHelp() {
-    println("Please specify a command (add/delete/list)")
+    println("Please specify a command (add/addEnsembl/addAffy/delete/list)")
   }
 }
 
@@ -163,7 +163,12 @@ class PlatformManager(context: Context) {
    */
 
   def addFromEnsembl(title: String, comment: String, file: String): AtomicTask[Unit] = {
-    ???
+    new AtomicTask[Unit]("Insert platform from Ensembl data") {
+      override def run() {
+        val platforms = new Platforms(config)
+        platforms.redefineFromEnsembl(title, comment, file)
+      }
+    }
   }
 
   /**

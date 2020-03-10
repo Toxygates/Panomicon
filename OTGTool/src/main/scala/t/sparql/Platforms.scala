@@ -72,9 +72,15 @@ class Platforms(baseConfig: BaseConfig) extends
   }
 
   def redefineFromEnsembl(name: String, comment: String, inputFile: String) = {
-    delete(name) //remove old platform with this name
+    //Note: we are not currently auto-deleting the platform here
+    //as a manual insert step is expected prior to running this function.
+//    delete(name)
     addWithTimestamp(name, comment)
-    triplestore.addTTL(new File(inputFile), Platforms.context(name))
+
+    //Adding the file through the SPARQLConnection currently is very inefficient - better to add the file
+    //with HTTP directly via e.g. curl (scripts/triplestore/replace.sh can be used) instead of the below
+//    triplestore.addTTL(new File(inputFile), Platforms.context(name))
+
     EnsemblPlatform.constructPlatformFromEnsemblGraph(triplestore, Platforms.context(name))
   }
 
@@ -174,7 +180,7 @@ object EnsemblPlatform {
       |PREFIX purl: <http://www.purl.org/>
       |PREFIX dc: <http://purl.org/dc/elements/1.1/>
       |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      |PREFIX t:<http://level.five.jp/t/>
+      |PREFIX t:<http://level-five.jp/t/>
       |PREFIX ident_type: <http://idtype.identifiers.org/>
       |PREFIX identifiers: <http://identifiers.org/>
       |PREFIX sio: <http://semanticscience.org/resource/>
@@ -192,30 +198,42 @@ object EnsemblPlatform {
       s"""$prefixes
         |WITH <$graph>
         |INSERT {
-        |?probe a t:probe; rdfs:label ?rsident;
+        |  ?probe a t:probe; rdfs:label ?rsident;
         |  t:ensemblTranscript ?transcript; t:refseqTrn ?rsident.
         |} WHERE {
-        |  ?transcript rdfs:seeAlso ?refseq; obo:SO_transcribed_from ?gene;
-        |                                    obo:SO_translates_to ?protein.
+        |  ?transcript rdfs:seeAlso ?refseq.
         |  ?refseq a identifiers:refseq; dc:identifier ?rsident.
         |  BIND(IRI(CONCAT("http://level-five.jp/t/probe/", ?rsident)) as ?probe)
         |}
         |""".stripMargin
     )
 
-    //proteins and genes
+    //genes
     ts.update(
       s"""$prefixes
          |WITH <$graph>
          |INSERT {
-         |  ?probe t:ensemblGene ?gene; t:ensemblProtein ?protein.
+         |  ?probe t:ensemblGene ?gene.
          |} WHERE {
          |  ?probe t:ensemblTranscript ?transcript.
-         |  ?transcript obo:SO_transcribed_from ?gene;
-         |  obo:SO_translates_to ?protein.
+         |  ?transcript obo:SO_transcribed_from ?gene.
          |}
         """.stripMargin
     )
+
+    //proteins
+    ts.update(
+      s"""$prefixes
+         |WITH <$graph>
+         |INSERT {
+         |  ?probe t:ensemblProtein ?protein.
+         |} WHERE {
+         |  ?probe t:ensemblTranscript ?transcript.
+         |  ?transcript obo:SO_translates_to ?protein.
+         |}
+        """.stripMargin
+    )
+
 
     //Uniprot
     //Note: filtering on purl.uniprot.org is a little ugly but there was no simpler way of achieving this result
@@ -253,9 +271,9 @@ object EnsemblPlatform {
       s"""$prefixes
          |WITH <$graph>
          |INSERT {
-         | 	?probe ?t:symbol ?symbol.
+         | 	?probe t:symbol ?symbol.
          |} WHERE {
-         |  ?probe t:ensemblGene ?gene;
+         |  ?probe t:ensemblGene ?gene.
          |  ?gene rdfs:seeAlso [ rdfs:label ?symbol ].
          |}
         """.stripMargin
@@ -268,7 +286,7 @@ object EnsemblPlatform {
          |INSERT {
          |  ?probe t:entrez ?ncbiident.
          |} WHERE {
-         |  ?probe t:ensemblGene ?gene;
+         |  ?probe t:ensemblGene ?gene.
          |  ?gene term:DEPENDENT ?ncbigene. ?ncbigene a identifiers:ncbigene; dc:identifier ?ncbiident.
          |}
          |""".stripMargin
