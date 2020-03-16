@@ -21,6 +21,8 @@ package t.db
 
 import java.io.Closeable
 
+import t.platform.EnsemblPlatform
+
 import scala.collection.{Map => CMap}
 
 /**
@@ -147,6 +149,9 @@ class IDConverter(raw: ColumnExpressionData, conversion: Map[ProbeId, Iterable[P
   }
 }
 
+/**
+ * Utilities for converting Probe IDs.
+ */
 object IDConverter {
   def checkDuplicates(map: Map[ProbeId, Iterable[ProbeId]]) {
     val pairs = map.toSeq.flatMap(x => (x._2.map(y => (x._1, y))))
@@ -172,17 +177,26 @@ object IDConverter {
     convert(conv.foreignToAffy)(_)
   }
 
+
+  def fromEnsembl(file: String) = {
+    convert(EnsemblPlatform.loadConversionTable(file))(_)
+  }
+
   /**
    * Given a command line argument, identify the correct conversion method.
    */
   def fromArgument(param: Option[String]): (ColumnExpressionData => ColumnExpressionData) = {
+    val AffyPtn = "affy:(.+):(.+)".r
+    val EnsemblPtn = "ensembl:(.+)".r
     param match {
-      case Some(s) =>
-        //e.g. affy_annot.csv:Ensembl
-        val spl = s.split(":")
-        val file = spl(0)
-        val col = spl(1)
-        fromAffy(file, col)
+      case Some(AffyPtn(file, col)) =>
+          //e.g. affy:affy_annot.csv:Ensembl
+          fromAffy(file, col)
+      case Some(EnsemblPtn(file)) =>
+        //e.g. ensembl:ensembl_mapping.tsv
+        fromEnsembl(file)
+      case Some(x) =>
+        throw new Exception(s"Unknown ID conversion specifier $x")
       case None => (x => x)
     }
   }

@@ -59,9 +59,9 @@ object Species extends Enumeration(0) {
    * and we should probably do it dynamically instead.
    */
   def forKnownPlatform(plat: String) = plat match {
-    case "HG-U133_Plus_2" | "GPL10558" => Some(Human)
-    case "Rat230_2" => Some(Rat)
-    case "Mouse430_2" | "GPL5642" => Some(Mouse)
+    case "HG-U133_Plus_2" | "GPL10558" | "hsa.ensembl" => Some(Human)
+    case "Rat230_2" | "rno.ensembl" => Some(Rat)
+    case "Mouse430_2" | "GPL5642" | "mmu.ensembl" => Some(Mouse)
     case _ => None
   }
 }

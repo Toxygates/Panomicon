@@ -39,7 +39,6 @@ class SimpleValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: ColumnExpr
 
    //Importantly, this does not get initialised until  MatrixInsert.insert actually runs
     //(which means the releasing finalizer will also run)
-    //The same is true for AbsoluteValueInsert above
   lazy val db = getDB()
 }
 
@@ -78,12 +77,13 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
           log(raw.probes.size + " probes")
 
           val unknownProbes = raw.probes.toSet -- context.probeMap.tokens
-          for (probe <- unknownProbes) {
-            log(s"Warning: unknown probe '$probe' (this error may be safely ignored).")
+          for (probe <- (unknownProbes take 100)) {
+            log(s"Warning: unknown probe '$probe' (This error may be safely ignored. The probe will be skipped.)")
+            log(s"Total of ${unknownProbes.size} unknown probes.")
           }
           val knownProbes = raw.probes.toSet -- unknownProbes
           if (knownProbes.isEmpty) {
-            throw new LookupFailedException("No valid probes in data.")
+            throw new LookupFailedException("No valid probes in data. Unable to insert any data.")
           }
 
           var pcomp = 0d

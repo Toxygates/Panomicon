@@ -173,7 +173,6 @@ class Platforms(baseConfig: BaseConfig) extends
 }
 
 object EnsemblPlatform {
-
   val prefixes =
     """
       |PREFIX obo: <http://purl.obolibrary.org/obo/>
