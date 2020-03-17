@@ -24,5 +24,6 @@ public interface MaintenanceConstants {
   String metaPrefix = "TADMIN-META";
   String dataPrefix = "TADMIN-DATA";
   String callPrefix = "TADMIN-CALL";
+  String probesPrefix = "TADMIN-PROB";
   String platformPrefix = "TADMIN-PLAT";
 }
