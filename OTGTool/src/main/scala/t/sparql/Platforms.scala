@@ -245,7 +245,7 @@ object EnsemblPlatform {
         |} WHERE {
         |   ?probe t:ensemblProtein ?protein.
         |   ?protein term:DIRECT ?uniprot.
-        |   ?uniprot rdfs:label ?upident.
+        |   ?uniprot dc:identifier ?upident.
         |  FILTER(contains(str(?uniprot), "purl.uniprot.org"))
         |}
         """.stripMargin
