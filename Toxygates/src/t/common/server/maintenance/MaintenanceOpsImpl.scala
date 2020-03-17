@@ -116,7 +116,9 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     val currentRequest = request
     val session = request.getSession
     TaskRunner.runThenFinally(task) {
+      TaskRunner.log("Writing databases, this may take a while...")
       KCDBRegistry.closeWriters()
+      TaskRunner.log("Databases written")
       TaskRunner.synchronized {
         try {
           val success = TaskRunner.errorCause == None
