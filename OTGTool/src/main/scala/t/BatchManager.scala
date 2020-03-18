@@ -51,7 +51,7 @@ object BatchManager extends ManagerTool {
           val append = booleanOption(args, "-append")
           val cached = booleanOption(args, "-cached")
           val comment = stringOption(args, "-comment").getOrElse("")
-          val idConversion = t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"))
+          val idConversion = t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"), context)
 
           val bm = new BatchManager(context)
 
