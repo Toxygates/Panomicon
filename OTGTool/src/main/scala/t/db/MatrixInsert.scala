@@ -63,7 +63,6 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
       }
       Some(packed)
     } else {
-      log(s"Not inserting unknown probe '$probe'")
       None
     }
   }
@@ -78,9 +77,10 @@ abstract class MatrixInsert[E <: ExprValue](raw: ColumnExpressionData)
 
           val unknownProbes = raw.probes.toSet -- context.probeMap.tokens
           for (probe <- (unknownProbes take 100)) {
+            //Limit the amount of log messages generated to avoid overwhelming the user
             log(s"Warning: unknown probe '$probe' (This error may be safely ignored. The probe will be skipped.)")
-            log(s"Total of ${unknownProbes.size} unknown probes.")
           }
+          log(s"Total of ${unknownProbes.size} unknown probes.")
           val knownProbes = raw.probes.toSet -- unknownProbes
           if (knownProbes.isEmpty) {
             throw new LookupFailedException("No valid probes in data. Unable to insert any data.")

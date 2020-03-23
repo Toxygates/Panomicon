@@ -19,8 +19,6 @@
 
 package t.common.server.maintenance
 
-import scala.collection.JavaConverters._
-
 import javax.annotation.Nullable
 import t.BatchManager
 import t.TaskRunner
@@ -30,14 +28,14 @@ import t.common.shared.maintenance.Batch
 import t.common.shared.maintenance.BatchUploadException
 import t.common.shared.maintenance.MaintenanceConstants._
 import t.common.shared.maintenance.MaintenanceException
-import t.db.Metadata
-import t.model.sample.Attribute
+import t.db.{IDConverter, Metadata}
+import t.model.sample.{Attribute, CoreParameter}
 import t.sparql.Batches
 import t.sparql.Datasets
 import t.sparql.SampleFilter
 import t.sparql.TRDF
 import t.util.TempFiles
-import collection.JavaConverters.asScalaSetConverter
+import collection.JavaConverters._
 import scala.language.implicitConversions
 
 import t.viewer.server.rpc.TServiceServlet
@@ -84,6 +82,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv")
       val dataFile = getLatestFile(maintenanceUploads(), dataPrefix, dataPrefix, "csv")
       val callsFile = getLatestFile(maintenanceUploads(), callPrefix, callPrefix, "csv")
+      val probesFile = getLatestFile(maintenanceUploads(), probesPrefix, probesPrefix, "tsv")
 
       if (metaFile.isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
@@ -92,12 +91,27 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 
-      //val metadata = createMetadata(metaFile.get)
+      val conversion = probesFile.map(pf => {
+        val meta = factory.tsvMetadata(metaFile.get.getAbsolutePath(),
+          context.config.attributes)
+        val pfs = meta.attributeValues(CoreParameter.Platform)
+        if (pfs.size != 1) {
+          throw BatchUploadException.badPlatformForConversion("Need exactly one platform in batch for probe conversion");
+        }
+        try {
+          IDConverter.fromPlatform(pfs.head, context, pf.getAbsolutePath)
+        } catch {
+          case e: Exception =>
+            e.printStackTrace()
+            throw BatchUploadException.badPlatformForConversion("Unable to convert probes into platform " + pfs.head)
+        }
+      })
 
       runTasks(batchManager.add(batch, metaFile.get.getAbsolutePath,
         dataFile.get.getAbsolutePath,
         callsFile.map(_.getAbsolutePath),
-        false, simpleLog2))
+        false, simpleLog2,
+        conversion = conversion.getOrElse(BatchManager.identityConverter)))
     }
   }
 
@@ -115,26 +129,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       if (metaFile.isEmpty) {
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
-//      val metaFile = getLatestFile(maintenanceUploads(), metaPrefix, metaPrefix, "tsv").getOrElse {
-//        throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
-//      }
-//      val metadata = createMetadata(metaFile)
 
       runTasks(batchManager.updateMetadata(batch, metaFile.get.getAbsolutePath, recalculate))
-    }
-  }
-
-  protected def createMetadata(metaFile: java.io.File): Metadata = {
-    try {
-      val md = factory.tsvMetadata(metaFile.getAbsolutePath(),
-        context.config.attributes)
-      checkMetadata(md)
-      alterMetadataPriorToInsert(md)
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file. "
-            + e)
     }
   }
 

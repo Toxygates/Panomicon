@@ -2,7 +2,7 @@ package t.db
 
 import friedrich.util.formats.TSVFile
 import t.Context
-import t.platform.EnsemblPlatform
+import t.platform.{EnsemblPlatform, Species}
 
 import scala.collection.{Map => CMap}
 
@@ -136,6 +136,27 @@ object IDConverter {
       case Some(x) =>
         throw new Exception(s"Unknown ID conversion specifier $x")
       case None => (x => x)
+    }
+  }
+
+  /**
+   * Given a platform ID, identify the correct conversion method.
+   * @param platform
+   * @param context
+   * @param conversionFile
+   * @return
+   */
+  def fromPlatform(platform: String, context: Context, conversionFile: String) = {
+    Species.supportedSpecies.find(s => {
+      s.ensemblPlatform == platform
+    }) match {
+      case Some(sp) =>  fromEnsembl(conversionFile)
+      case None =>
+        if (platform.startsWith("mirbase-v")) {
+          fromMirbase(conversionFile, context.probes.forPlatform(platform))
+        } else {
+          throw new Exception(s"Unable to convert probes into platform $platform")
+        }
     }
   }
 }

@@ -78,6 +78,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
     super.updateBatchMetadataAsync(b, recalculate)
   }
 
+  //Currently not used - kept here for reference
   override protected def alterMetadataPriorToInsert(md: Metadata): Metadata = {
     //Enforce a special suffix for user data
     md.mapParameter(factory, "compound_name", n => {
