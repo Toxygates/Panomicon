@@ -150,9 +150,12 @@ object IDConverter {
     Species.supportedSpecies.find(s => {
       s.ensemblPlatform == platform
     }) match {
-      case Some(sp) =>  fromEnsembl(conversionFile)
+      case Some(sp) =>
+        println(s"Detected ensembl conversion into $platform")
+        fromEnsembl(conversionFile)
       case None =>
         if (platform.startsWith("mirbase-v")) {
+          println(s"Detected mirbase conversion into $platform")
           fromMirbase(conversionFile, context.probes.forPlatform(platform))
         } else {
           throw new Exception(s"Unable to convert probes into platform $platform")
