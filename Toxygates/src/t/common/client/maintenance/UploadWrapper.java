@@ -34,8 +34,12 @@ public class UploadWrapper extends Composite {
   VerticalPanel vp = new VerticalPanel();
   ItemUploader manager;
 
+  private static Integer uploadCount = 0;
+  final private String purePrefix;
+
   public UploadWrapper(ItemUploader manager, String description, String prefix, String... extensions) {
     this.manager = manager;
+    this.purePrefix = prefix;
     initWidget(vp);
     Label l = new Label(description);
     vp.add(l);
@@ -44,7 +48,6 @@ public class UploadWrapper extends Composite {
     vp.setWidth("250px");
 
     u = new SingleUploader();
-    u.setFileInputPrefix(prefix);
     u.setValidExtensions(extensions);
     u.setAutoSubmit(true);
 
@@ -72,11 +75,32 @@ public class UploadWrapper extends Composite {
     setFailure();
   }
 
+  /*
+    By incrementing the file prefix every time we upload another file,
+    we can distinguish them more easily on the server side if several files are uploaded
+    through the same Uploader.
+   */
+  synchronized protected void incrementPrefix() {
+    uploadCount += 1;
+    //String.format is not in GWT
+    StringBuilder r = new StringBuilder();
+    r.append(purePrefix + "-");
+    if (uploadCount < 100) {
+      r.append('0');
+    }
+    if (uploadCount < 10) {
+      r.append('0');
+    }
+    r.append(uploadCount);
+    u.setFileInputPrefix(r.toString());
+  }
+
   void setFinished() {
     finished = true;
     statusLabel.addStyleDependentName("success");
     statusLabel.removeStyleDependentName("failure");
     statusLabel.setText("OK");
+    incrementPrefix();
   }
 
   void setFailure() {
@@ -84,6 +108,7 @@ public class UploadWrapper extends Composite {
     statusLabel.addStyleDependentName("failure");
     statusLabel.removeStyleDependentName("success");
     statusLabel.setText("Please upload a file");
+    incrementPrefix();
   }
 
   public boolean hasFile() {
