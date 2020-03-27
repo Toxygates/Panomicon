@@ -116,7 +116,9 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     val currentRequest = request
     val session = request.getSession
     TaskRunner.runThenFinally(task) {
+      TaskRunner.log("Writing databases, this may take a while...")
       KCDBRegistry.closeWriters()
+      TaskRunner.log("Databases written")
       TaskRunner.synchronized {
         try {
           val success = TaskRunner.errorCause == None
@@ -181,15 +183,16 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    * @param tag the tag to look for.
    * @return
    */
-  // TODO: stop relying on undocumented UploadServlet.getSessionFileItems sort order
   private def getFileItem(tag: String): Option[FileItem] = {
     val sessionItems = UploadServlet.getSessionFileItems(request);
     if (sessionItems == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
     }
-    // We are currently relying on getSessionFileItems being sorted in ascending
-    // order of upload time, which is undocumented behavior.
-    val tagItems = sessionItems.asScala.filter(_.getFieldName().startsWith(tag)).reverse
+
+    // The client will increment tags such as tag-001, tag-002, tag-003 etc which allows us
+    // to fetch the latest file here when multiple files have been uploaded.
+    val tagItems = sessionItems.asScala.filter(_.getFieldName().startsWith(tag)).
+      sortBy(_.getFieldName).reverse
     // Session files get deleted when their corresponding FileItems are garbage
     // collected, so it's enough to remove them from the session file list
     tagItems.foreach(sessionItems.remove(_))

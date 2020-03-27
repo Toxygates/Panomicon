@@ -21,7 +21,7 @@ trait Readable[+T] {
   /**
    * Read the object with the given name.
    */
-  protected def read(prefix: String = "", name: String): T
+//  protected def read(prefix: String = "", name: String): T
 }
 
 trait FileReadable[T] extends Readable[T] {
