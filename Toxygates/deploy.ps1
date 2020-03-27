@@ -1,6 +1,5 @@
 ﻿Set-Variable -Name "TGCP"  -Value "war/WEB-INF/classes"
 Set-Variable -Name "TOOLCP" -Value "../OTGTool/classes"
-Set-Variable -Name "TOXYCP" -Value "classes"
 
 Set-Variable -Name "WARLIB" -Value "war/WEB-INF/lib"
 
@@ -57,7 +56,6 @@ Set-Variable -Name "OUTPUT" -Value "toxygates-template.war"
 Copy-Item -Recurse -Force ($TOOLCP + "/friedrich") $TGCP
 Copy-Item -Recurse -Force ($TOOLCP + "/otg") $TGCP
 Copy-Item -Recurse -Force ($TOOLCP + "/t") $TGCP 
-Get-ChildItem $TOXYCP | Copy-Item -Destination $TGCP -Recurse -Force
 Set-Location war
 Remove-Item $OUTPUT
 Remove-Item WEB-INF/web.xml
@@ -80,7 +78,6 @@ Set-Location ..
 Copy-Item -Recurse -Force ($TOOLCP + "/friedrich") war/WEB-INF/classes
 Copy-Item -Recurse -Force ($TOOLCP + "/otg") war/WEB-INF/classes
 Copy-Item -Recurse -Force ($TOOLCP + "/t") war/WEB-INF/classes
-Get-ChildItem $TOXYCP | Copy-Item -Destination war/WEB-INF/classes -Recurse -Force
 Set-Location war
 Copy-Item WEB-INF/web.xml.admin WEB-INF/web.xml
 Remove-Item admin.war
