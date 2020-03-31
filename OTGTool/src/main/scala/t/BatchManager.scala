@@ -717,13 +717,8 @@ class BatchManager(context: Context) {
       val sf = SampleFilter(batchURI = Some(batchURI))
       val tsmd = new TriplestoreMetadata(samples, config.attributes)(sf)
 
-      //Note, strictly speaking we don't need the source data here.
-      //This dependency could be removed by having the builder make points
-      //with all zeroes.
-
       //Note: this can probably be made considerably faster by structuring it like addSeriesData
       //above, but then TriplestoreMetadata.controlSamples would have to be implemented first.
-      val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       try {
         target = KCSeriesDB[S](dbName, true, builder, false)
@@ -732,8 +727,8 @@ class BatchManager(context: Context) {
         var pcomp = 0d
         val it = filtSamples.grouped(100)
         while (it.hasNext && shouldContinue(pcomp)) {
-          val sg = it.next
-          val xs = builder.makeNew(source, tsmd, sg)
+          val sampleChunk = it.next
+          val xs = builder.makeNewEmpty(tsmd, sampleChunk)
           for (x <- xs) {
             try {
               target.removePoints(x)
@@ -749,7 +744,6 @@ class BatchManager(context: Context) {
         if (target != null) {
           target.release
         }
-        source.release
       }
     }
   }

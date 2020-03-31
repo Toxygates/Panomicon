@@ -35,8 +35,12 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
     builder.rebuild(this, keep ++ from.points)
   }
 
-  def removePoints(in: This, builder: SeriesBuilder[This]): This = {
-    val keep = points.filter(x => !in.points.exists(y => y.code == x.code))
+  /**
+   * Remove points based on the point code (independent value) of the supplied points.
+   * Their expression value is ignored.
+   */
+  def removePoints(toRemove: This, builder: SeriesBuilder[This]): This = {
+    val keep = points.filter(x => !toRemove.points.exists(y => y.code == x.code))
     builder.rebuild(this, keep)
   }
 
@@ -90,15 +94,20 @@ trait SeriesBuilder[S <: Series[S]] {
   def keysFor(group: S)(implicit mc: MatrixContext): Iterable[S]
 
   /**
+   * Construct all possible series for the given samples using empty points.
+   */
+  def makeNewEmpty(md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
+
+  /**
    * Using values from the given MatrixDB, construct all possible series for the
-   * samples indicated in the metadata.
+   * given samples
    */
   def makeNew[E >: Null <: ExprValue : ClassTag](from: MatrixDBReader[E],
       md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
 
   /**
    * Using values from the given MatrixDB, construct all possible series for the
-   * samples indicated in the metadata.
+   * given samples
    */
   def makeNew[E >: Null <: ExprValue : ClassTag](from: MatrixDBReader[E], md: Metadata)
   (implicit mc: MatrixContext): Iterable[S] = makeNew(from, md, md.samples)
