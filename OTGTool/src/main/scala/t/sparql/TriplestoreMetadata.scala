@@ -45,8 +45,8 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
     })
   }
 
-  override def attributeValues(attribute: Attribute): Set[String] =
-    sampleStore.sampleAttributeQuery(attribute)(sf)().toSet
+  override def attributeValues(attribute: Attribute): Seq[String] =
+    sampleStore.sampleAttributeQuery(attribute)(sf)().distinct
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 }
@@ -79,7 +79,7 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
     data.getOrElse(s.sampleId, Map()).toSeq
 
   // all values for a given parameter
-  override def attributeValues(attribute: Attribute): Set[String] =
-    data.flatMap(_._2.get(attribute)).toSet
+  override def attributeValues(attribute: Attribute): Seq[String] =
+    data.flatMap(_._2.get(attribute)).toSeq.distinct
 
 }

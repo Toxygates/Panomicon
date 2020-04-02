@@ -55,7 +55,7 @@ trait Metadata extends SampleSet {
    * Obtain all values for a given parameter represented by the samples in
    * this metadata.
    */
-  def attributeValues(attr: Attribute): Set[String]
+  def attributeValues(attr: Attribute): Seq[String]
 
   override def parameter(s: Sample, identifier: String): Option[String] =
     parameterMap(s).get(identifier)
@@ -94,8 +94,8 @@ class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends
   
   def attributeSet = from.attributeSet
   
-  def attributeValues(attr: Attribute): Set[String] =
-    samples.flatMap(x => sampleAttributes(x, Seq(attr)).map(_._2))
+  def attributeValues(attr: Attribute): Seq[String] =
+    samples.toSeq.flatMap(x => sampleAttributes(x, Seq(attr)).map(_._2)).distinct
   
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata =
     new FilteredMetadata(from.mapParameter(fact, key, f), visibleSamples)
