@@ -52,17 +52,16 @@ trait MatrixContext {
 
   def probeSets: Map[String, Seq[Int]] = Map()
 
-  def defaultExpectedProbes = probeMap.keys.toSeq
-
   /**
    * Probes expected to be present in the database for a given sample.
    * They are not guaranteed to actually be present.
    */
-  def expectedProbes(x: Sample) = probeSets.getOrElse(x(CoreParameter.Platform),
-    defaultExpectedProbes)
+  def expectedProbes(x: Sample) = {
+    val plat = x(CoreParameter.Platform)
 
-  def expectedProbes(xs: Iterable[Sample]): Iterable[Int] =
-    xs.flatMap(expectedProbes).toSeq.distinct
+    probeSets.getOrElse(plat,
+      throw new Exception(s"Expected probes are not defined for the platform $plat"))
+  }
 }
 
 /**

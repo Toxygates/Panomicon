@@ -75,7 +75,7 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
 
   def samples: Iterable[Sample] = {
     val ids = metadata("sample_id")
-    ids.map(Sample(_))
+    ids.map(x => Sample(x, Map() ++ sampleAttributes(Sample(x))))
   }
 
   protected lazy val idxLookup = Map() ++ metadata("sample_id").zipWithIndex
