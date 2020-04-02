@@ -111,7 +111,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   /**
    * Converts the keys in a Map from String to Attribute using the supplied
-   * AttributeSet. Keys not found in the AttributeSet will be ommitted.
+   * AttributeSet. Keys not found in the AttributeSet will be omitted.
    */
   protected def convertMapToAttributes(map: Map[String, String],
       attributeSet: AttributeSet): Map[Attribute, String] = {
