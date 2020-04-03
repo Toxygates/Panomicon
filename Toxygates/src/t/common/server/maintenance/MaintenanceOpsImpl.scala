@@ -207,7 +207,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
         println(s"${fi.getName}  size ${fi.getSize}  field: ${fi.getFieldName}")
       }
     }
-    println("Maintenace uploads:")
+    println("Maintenance uploads:")
     maintenanceUploads().registry.foreach({ case ((prefix, suffix), file) =>
       println(s"${file.getName} size ${file.length} prefix $prefix suffix $suffix")
     })
