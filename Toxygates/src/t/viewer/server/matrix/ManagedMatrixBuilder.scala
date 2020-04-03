@@ -97,7 +97,8 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
           toVector).distinct
     val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
     val data = reader.valuesForSamplesAndProbes(sortedSamples,
-        packedProbes, sparseRead, false).map(_.toSeq).toSeq
+        packedProbes, sparseRead, false).map(_.toSeq).
+        filter(row => row.exists(_.isPadding == false))
 
     val sortedProbes = data.map(row => row(0).probe)
     val annotations = sortedProbes.map(x => RowAnnotation(x, List(x))).toVector
