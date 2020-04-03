@@ -243,7 +243,7 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.asScala.map(_.id)
   val hlParameters = config.attributes.getHighLevel.asScala.map(_.id)
 
-  def add[S <: Series[S]](batch: Batch, metadataFile: String,
+  def add(batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false,
     cached: Boolean = false,
@@ -267,7 +267,7 @@ class BatchManager(context: Context) {
     } yield ()
   }
 
-  def updateMetadata[S <: Series[S]](batch: Batch, metaFile: String,
+  def updateMetadata(batch: Batch, metaFile: String,
       recalculate: Boolean = false, simpleLog2: Boolean = false,
       force: Boolean = false): Task[Unit] = {
     for {
@@ -279,7 +279,7 @@ class BatchManager(context: Context) {
     } yield ()
   }
 
-  def recalculateFoldsAndSeries[S <: Series[S]](batch: Batch, metadata: Metadata,
+  def recalculateFoldsAndSeries(batch: Batch, metadata: Metadata,
       simpleLog2: Boolean = false): Task[Unit] = {
     implicit val mc = matrixContext()
 
@@ -327,7 +327,7 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addMetadata[S <: Series[S]](batch: Batch, metadata: Metadata,
+  def addMetadata(batch: Batch, metadata: Metadata,
       append: Boolean, update: Boolean = false): Task[Unit] = {
     val ts = config.triplestore.get
 
@@ -375,7 +375,7 @@ class BatchManager(context: Context) {
     }
   }
 
-  def delete[S <: Series[S]](title: String, rdfOnly: Boolean = false): Task[Unit] = {
+  def delete(title: String, rdfOnly: Boolean = false): Task[Unit] = {
     implicit val mc = matrixContext()
 
     //Enums can not yet be deleted.
@@ -653,13 +653,13 @@ class BatchManager(context: Context) {
       }
     }
 
-  def addTimeSeriesData[S <: Series[S], E <: ExprValue](md: Metadata)(implicit mc: MatrixContext) =
+  def addTimeSeriesData(md: Metadata)(implicit mc: MatrixContext) =
     addSeriesData(md, config.data.timeSeriesDb, config.timeSeriesBuilder, "time")(mc)
 
-  def addDoseSeriesData[S <: Series[S], E <: ExprValue](md: Metadata)(implicit mc: MatrixContext) =
+  def addDoseSeriesData(md: Metadata)(implicit mc: MatrixContext) =
     addSeriesData(md, config.data.doseSeriesDb, config.doseSeriesBuilder, "dose")(mc)
 
-  def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata, dbName: String,
+  def addSeriesData[S <: Series[S]](md: Metadata, dbName: String,
     builder: SeriesBuilder[S], kind: String)(implicit mc: MatrixContext) =
       new AtomicTask[Unit](s"Insert $kind series data") {
     override def run(): Unit = {
@@ -669,30 +669,33 @@ class BatchManager(context: Context) {
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       var inserted = 0
-      val controlGroups = md.treatedControlGroups(md.samples)
-      val treated = controlGroups.toSeq.flatMap(_._1)
+      val treated = md.samples.filter(x => !md.isControl(x))
 
-      val bySeries = builder.groupSamples(treated, md).map(_._2)
-      val total = bySeries.size
+      val data = builder.makeNew(source, md, treated)
+      println(s"${data.size} series to insert")
+      val total = data.size
 
+      /*
+      This method (and deleteSeriesData) groups the data by probe before performing db reads/writes
+      to obtain better performance.
+      If a large number of samples is operated on at once, we might run out of memory. If that happens,
+      chunking the samples/control groups on the outer level should resolve the issue.
+      The next step would be the unify the this method with deleteSeriesData, since the structure is so similar.
+       */
       try {
         target = KCSeriesDB[S](dbName, true, builder, false)
           var pcomp = 0d
-          for ( //Note: might want to chunk these
-            samples <- bySeries;
+          for {
+            ss <- data.groupBy(_.probe).values;
+            s <- ss;
             if shouldContinue(pcomp)
-          ) {
-            val filtered = new FilteredMetadata(md, samples)
-            val xs = builder.makeNew(source, filtered)
-
-            for (x <- xs; if shouldContinue(pcomp)) {
-              target.addPoints(x)
-              }
-            pcomp = 100.0 * inserted / total
+          } {
+            target.addPoints(s)
             inserted += 1
+            pcomp = 100.0 * inserted / total
           }
       } finally {
-        logResult(s"Series for $inserted control groups inserted")
+        logResult(s"Series for $inserted series inserted")
         if (target != null) {
           target.release
         }
@@ -701,10 +704,10 @@ class BatchManager(context: Context) {
     }
   }
 
-  def deleteTimeSeriesData[S <: Series[S]](batch: String)(implicit mc: MatrixContext) =
+  def deleteTimeSeriesData(batch: String)(implicit mc: MatrixContext) =
     deleteSeriesData(batch, config.data.timeSeriesDb, config.timeSeriesBuilder, "time")(mc)
 
-  def deleteDoseSeriesData[S <: Series[S]](batch: String)(implicit mc: MatrixContext) =
+  def deleteDoseSeriesData(batch: String)(implicit mc: MatrixContext) =
     deleteSeriesData(batch, config.data.doseSeriesDb, config.doseSeriesBuilder, "dose")(mc)
 
   def deleteSeriesData[S <: Series[S]](batch: String, dbName: String,
@@ -715,31 +718,32 @@ class BatchManager(context: Context) {
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val tsmd = new TriplestoreMetadata(samples, config.attributes)(sf)
+      val md = context.factory.triplestoreMetadata(samples, config.attributes)(sf)
 
-      //Note: this can probably be made considerably faster by structuring it like addSeriesData
-      //above, but then TriplestoreMetadata.controlSamples would have to be implemented first.
+      val controlGroups = md.treatedControlGroups(md.samples)
+      val treated = controlGroups.toSeq.flatMap(_._1)
+
+      val data = builder.makeNewEmpty(md, treated)
+      val total = data.size
+
       var target: KCSeriesDB[S] = null
       try {
         target = KCSeriesDB[S](dbName, true, builder, false)
-        val filtSamples = tsmd.samples
-        val total = filtSamples.size
         var pcomp = 0d
-        val it = filtSamples.grouped(100)
-        while (it.hasNext && shouldContinue(pcomp)) {
-          val sampleChunk = it.next
-          val xs = builder.makeNewEmpty(tsmd, sampleChunk)
-          for (x <- xs) {
-            try {
-              target.removePoints(x)
-            } catch {
-              case lfe: LookupFailedException =>
-                println(lfe)
-                println("Exception caught, continuing deletion of series")
-            }
+        for {
+          ss <- data.groupBy(_.probe).values;
+          s <- ss;
+          if shouldContinue(pcomp)
+        } {
+          try {
+            target.removePoints(s)
+          } catch {
+            case lfe: LookupFailedException =>
+              println(lfe)
+              println("Exception caught, continuing deletion of series")
           }
-          pcomp += 100.0 / total
         }
+        pcomp += 100.0 / total
       } finally {
         if (target != null) {
           target.release

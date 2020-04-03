@@ -21,7 +21,9 @@ package t.db.kyotocabinet
 
 import java.nio.ByteBuffer
 
-import kyotocabinet.DB
+//Resolve name clash with this package
+import _root_.kyotocabinet.DB
+import _root_.kyotocabinet.Visitor
 import t.db._
 import t.global.KCDBRegistry
 
@@ -120,30 +122,43 @@ class KCSeriesDB[S <: Series[S]](db: DB, writeMode: Boolean,
     }
   }
 
-  def addPoints(s: S): Unit = {
-    get(formKey(s)) match {
-      case Some(d) =>
-        val exist = extractValue(d, s)
-        write(exist.addPoints(s, builder))
-      case None =>
-        write(s)
+  def pointsVisitor(points: S, remove: Boolean): Visitor = {
+    new Visitor {
+      def visit_empty(key: Array[Byte]): Array[Byte] = {
+        if (remove) {
+          Visitor.NOP
+        } else {
+          formValue(points)
+        }
+      }
+
+      def visit_full(key: Array[Byte], value: Array[Byte]): Array[Byte] = {
+        if (remove) {
+          val old = extractValue(value, points)
+          val removed = old.removePoints(points, builder)
+          if (removed.points.nonEmpty) {
+            formValue(removed)
+          } else {
+            Visitor.REMOVE
+          }
+        } else {
+          //add data
+          val old = extractValue(value, points)
+          val added = old.addPoints(points, builder)
+          formValue(added)
+        }
+      }
     }
   }
 
+  def addPoints(s: S): Unit = {
+    val key = formKey(s)
+    db.accept(key, pointsVisitor(s, false), true)
+  }
+
   def removePoints(s: S): Unit = {
-    val k = formKey(s)
-    get(k) match {
-      case Some(d) =>
-        val exist = extractValue(d, s)
-        val removed = exist.removePoints(s, builder)
-        if (removed.points.size > 0) {
-          write(removed)
-        } else {
-          db.remove(k)
-        }
-      case None =>
-        write(s)
-    }
+    val key = formKey(s)
+    db.accept(key, pointsVisitor(s, true), true)
   }
 
    /**
