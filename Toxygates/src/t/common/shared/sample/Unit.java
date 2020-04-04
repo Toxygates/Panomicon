@@ -46,8 +46,7 @@ public class Unit extends SampleClass {
     return samples;
   }
 
-  // TODO: get rid of the AttributeSet dependency once we refactor SampleClass to store Attributes
-  public void computeAllAttributes(AttributeSet attributeSet, boolean overwrite) {
+  public void computeAllAttributes(boolean overwrite) {
     Set<Attribute> computedAttribs = new HashSet<Attribute>();
 
     for (Sample sample : samples) {

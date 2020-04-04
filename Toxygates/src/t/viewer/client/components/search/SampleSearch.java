@@ -37,9 +37,8 @@ public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>>
   private HashMap<String, Pair<Unit, Unit>> unitPairsMap;
 
   public SampleSearch(Delegate delegate, ResultTable<Sample> helper,
-                      AttributeSet attributes,
-      SampleServiceAsync sampleService) {
-    super(delegate, helper, attributes, sampleService);
+                      SampleServiceAsync sampleService) {
+    super(delegate, helper, sampleService);
   }
 
   @Override
