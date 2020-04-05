@@ -55,14 +55,14 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * Fetch annotations for given samples. Does not compute any bounds for
    * any parameters. Annotations will only be returned for samples that
    * have values for *all* of the attributes selected.
-   * @param querySamples the samples for which to fetch annotations
-   * @param queryAttributes the attributes to fetch
+   * @param samples the samples for which to fetch annotations
+   * @param attributes the attributes to fetch
    */
-  def forSamples(sampleStore: SampleStore, querySamples: Iterable[Sample],
-                 queryAttribs: Iterable[Attribute]): Array[Annotation] = {
-    val queryResult = sampleStore.sampleAttributeValues(querySamples.map(_.id),
-        queryAttribs)
-    querySamples.map(s => fromAttributes(None, s, queryResult(s.id))).toArray
+  def forSamples(sampleStore: SampleStore, samples: Iterable[Sample],
+                 attributes: Iterable[Attribute]): Array[Annotation] = {
+    val queryResult = sampleStore.sampleAttributeValues(samples.map(_.id),
+        attributes)
+    samples.map(s => fromAttributes(None, s, queryResult(s.id))).toArray
   }
 
   /**
@@ -70,13 +70,13 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * annotations, using the control samples in the provided samples to
    * compute bounds for values if appropriate.
    * @param sampleStore data source
-   * @param column the samples for which we fetch annotations
+   * @param samples the samples for which we fetch annotations
    */
    //Task: get these from schema, etc.
-  def forSamples(sampleStore: SampleStore, querySet: Iterable[Sample],
+  def forSamples(sampleStore: SampleStore, samples: Iterable[Sample],
                  importantOnly: Boolean = false): Array[Annotation] = {
 
-    val cgs = querySet.groupBy(_.get(CoreParameter.ControlGroup))
+    val cgs = samples.groupBy(_.get(CoreParameter.ControlGroup))
 
     val rs = for (
       (cgroup, ss) <- cgs;
