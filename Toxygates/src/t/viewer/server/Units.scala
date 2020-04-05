@@ -31,11 +31,11 @@ import t.model.sample.CoreParameter._
 
 import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
-import t.sparql.Samples
+import t.sparql.SampleStore
 import t.viewer.server.Conversions._
 import t.viewer.shared.TimeoutException
 
-class Units(schema: DataSchema, sampleStore: Samples) extends
+class Units(schema: DataSchema, sampleStore: SampleStore) extends
   UnitsHelper(schema) {
   /**
    * Generates units containing treated samples and their associated control samples.

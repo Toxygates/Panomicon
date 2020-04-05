@@ -28,7 +28,7 @@ import t.model.sample.CoreParameter._
 import otg.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 
-class OTGSamples(bc: BaseConfig) extends Samples(bc) {
+class OTGSampleStore(bc: BaseConfig) extends SampleStore(bc) {
 
   import t.sparql.scToSparql
 

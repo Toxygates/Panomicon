@@ -37,7 +37,7 @@ class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config
   implicit val context = new OTGMatrixContext(config)
-  val samples = new OTGSamples(config)
+  val samples = new OTGSampleStore(config)
 
   after {
     samples.close

@@ -51,7 +51,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
 
   var instanceURI: Option[String] = None
 
-  private def sampleStore: Samples = context.samples
+  private def sampleStore: SampleStore = context.sampleStore
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _

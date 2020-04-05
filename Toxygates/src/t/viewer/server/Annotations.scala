@@ -35,7 +35,7 @@ import t.model.sample.Attribute
 import t.model.sample.CoreParameter
 import t.platform.BioParameter
 import t.platform.SSVarianceSet
-import t.sparql.Samples
+import t.sparql.SampleStore
 import t.viewer.server.Conversions._
 import t.viewer.server.Conversions.asScalaSample
 import t.common.shared.GWTTypes
@@ -58,9 +58,9 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * @param querySamples the samples for which to fetch annotations
    * @param queryAttributes the attributes to fetch
    */
-  def forSamples(samples: Samples, querySamples: Iterable[Sample],
-      queryAttribs: Iterable[Attribute]): Array[Annotation] = {
-    val queryResult = samples.sampleAttributeValues(querySamples.map(_.id),
+  def forSamples(sampleStore: SampleStore, querySamples: Iterable[Sample],
+                 queryAttribs: Iterable[Attribute]): Array[Annotation] = {
+    val queryResult = sampleStore.sampleAttributeValues(querySamples.map(_.id),
         queryAttribs)
     querySamples.map(s => fromAttributes(None, s, queryResult(s.id))).toArray
   }
@@ -69,18 +69,18 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * For given samples, which may be in different control groups, fetch
    * annotations, using the control samples in the provided samples to
    * compute bounds for values if appropriate.
-   * @param samples data source
+   * @param sampleStore data source
    * @param column the samples for which we fetch annotations
    */
    //Task: get these from schema, etc.
-  def forSamples(samples: Samples, querySet: Iterable[Sample],
-      importantOnly: Boolean = false): Array[Annotation] = {
+  def forSamples(sampleStore: SampleStore, querySet: Iterable[Sample],
+                 importantOnly: Boolean = false): Array[Annotation] = {
 
     val cgs = querySet.groupBy(_.get(CoreParameter.ControlGroup))
 
     val rs = for (
       (cgroup, ss) <- cgs;
-      results = forSamplesSingleGroup(samples, ss, importantOnly)
+      results = forSamplesSingleGroup(sampleStore, ss, importantOnly)
     ) yield results
 
     rs.flatten.toArray
@@ -90,8 +90,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * Fetch annotations for samples from the same control group, using
    * provided control samples to generate bounds for variable, if applicable
    */
-  private def forSamplesSingleGroup(sampleStore: Samples,
-      samples: Iterable[Sample], importantOnly: Boolean) = {
+  private def forSamplesSingleGroup(sampleStore: SampleStore,
+                                    samples: Iterable[Sample], importantOnly: Boolean) = {
 
     val (cg, keys) = if (importantOnly) {
       (None,
@@ -168,8 +168,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
   }
 
   //Task: use ControlGroup to calculate bounds here too
-  def prepareCSVDownload(sampleStore: Samples, samples: Seq[Sample],
-      csvDir: String, csvUrlBase: String): String = {
+  def prepareCSVDownload(sampleStore: SampleStore, samples: Seq[Sample],
+                         csvDir: String, csvUrlBase: String): String = {
     val timepoints = samples.toSeq.flatMap(s =>
       Option(s.get(schema.timeParameter()))).distinct
 

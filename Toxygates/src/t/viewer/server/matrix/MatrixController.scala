@@ -42,7 +42,7 @@ import t.db.MatrixContext
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
     val samples = groups.toList.flatMap(_.getSamples.map(_.id))
-    context.samples.platforms(samples)
+    context.sampleStore.platforms(samples)
   }
 
   def apply(context: Context, orthologs: () => Iterable[OrthologMapping],

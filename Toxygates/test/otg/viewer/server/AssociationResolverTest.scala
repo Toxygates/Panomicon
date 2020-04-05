@@ -61,7 +61,7 @@ class AssociationResolverTest extends TTestSuite {
 
   val tsc = conf.tsConfig
   val probeStore = new OTGProbes(tsc)
-  val sampleStore = new OTGSamples(baseConf)
+  val sampleStore = new OTGSampleStore(baseConf)
   val b2rKegg = new B2RKegg(tsc.triplestore)
   val uniprot = new LocalUniprot(tsc.triplestore)
 

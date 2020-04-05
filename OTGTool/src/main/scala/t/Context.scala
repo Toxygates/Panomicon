@@ -19,7 +19,7 @@
 
 package t
 
-import t.sparql.Samples
+import t.sparql.SampleStore
 import t.sparql.Probes
 import t.db.MatrixContext
 
@@ -28,10 +28,10 @@ import t.db.MatrixContext
  * application
  */
 class Context(val config: BaseConfig,
-  val factory: Factory,
-  val probes: Probes,
-  val samples: Samples,
-  val matrix: MatrixContext) {
+              val factory: Factory,
+              val probes: Probes,
+              val sampleStore: SampleStore,
+              val matrix: MatrixContext) {
 
   /*
    * Note: this may not be the best location for the auxSortMap

@@ -39,7 +39,7 @@ import t.viewer.shared.TimeoutException
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otg.viewer.client.rpc.ProbeService {
 
-  protected def sampleStore: otg.sparql.OTGSamples = context.samples
+  protected def sampleStore: otg.sparql.OTGSampleStore = context.sampleStore
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _

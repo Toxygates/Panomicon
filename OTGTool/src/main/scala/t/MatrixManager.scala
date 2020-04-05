@@ -38,7 +38,7 @@ object MatrixManager extends ManagerTool {
 
     def samplesInBatch(batch: String) = {
       val sf = t.sparql.SampleFilter(None, Some(Batches.packURI(batch)))
-      context.samples.samples(SampleClassFilter())(sf)
+      context.sampleStore.samples(SampleClassFilter())(sf)
     }
 
     def matcopy[E >: Null <: ExprValue](from: MatrixDBReader[E],

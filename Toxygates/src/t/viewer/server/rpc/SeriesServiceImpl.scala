@@ -67,7 +67,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
     val majAttr = schema.majorParameter()
 
-    context.samples.attributeValues(SampleClassFilter(sc).filterAll,
+    context.sampleStore.attributeValues(SampleClassFilter(sc).filterAll,
       majAttr).toSet
   }
 

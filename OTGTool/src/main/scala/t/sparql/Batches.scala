@@ -38,7 +38,7 @@ object Batches extends RDFClass {
     val f = tempFiles.makeNew("metadata", "ttl")
     val fout = new BufferedWriter(new FileWriter(f))
     for (s <- samples) {
-      fout.write(s"<${Samples.defaultPrefix}/${s.identifier}>\n")
+      fout.write(s"<${SampleStore.defaultPrefix}/${s.identifier}>\n")
       fout.write(s"  a <$tRoot/sample>; rdfs:label" + "\"" + s.identifier + "\"; \n")
       val params = md.sampleAttributes(s).map(
         p => s"<$tRoot/${p._1.id}> " + "\"" + TRDF.escape(p._2) + "\"")
@@ -129,7 +129,7 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   }
 
   def samples(batch: String): Iterable[SampleId] = {
-    val prefix = Samples.defaultPrefix
+    val prefix = SampleStore.defaultPrefix
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
       s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
   }

@@ -182,7 +182,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     context.config.attributes.getRequired.asScala.toSeq
 
   def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
-    val samples = context.samples
+    val samples = context.sampleStore
     val params = overviewParameters
     val batchURI = Batches.packURI(batch.getId)
     val sf = SampleFilter(None, Some(batchURI))
@@ -243,7 +243,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
                            cellAttribute: Attribute): Array[Array[String]] = {
     val batches = getBatches(Array(dataset.getId))
 
-    val samples = context.samples
+    val samples = context.sampleStore
     val allAttribs = rowAttributes ++ columnAttributes ++ Option(cellAttribute)
 
     val adata = batches.toSeq.flatMap(b => {

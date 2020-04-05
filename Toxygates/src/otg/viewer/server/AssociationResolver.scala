@@ -41,7 +41,7 @@ class LimitState {
   @volatile var exceeded = false
 }
 
-class DrugTargetResolver(sampleStore: OTGSamples, chembl: ChEMBL,
+class DrugTargetResolver(sampleStore: OTGSampleStore, chembl: ChEMBL,
                          drugBank: DrugBank) {
 
   def lookup: AssociationLookup = {
@@ -118,8 +118,8 @@ class MirnaResolver(probeStore: OTGProbes, platforms: t.viewer.server.Platforms,
  * Subresolvers provide partial functions that perform the resolution.
  */
 class AssociationResolver(probeStore: OTGProbes,
-    sampleStore: OTGSamples,
-    b2rKegg: B2RKegg) {
+                          sampleStore: OTGSampleStore,
+                          b2rKegg: B2RKegg) {
 
   var limitState = new LimitState
 
