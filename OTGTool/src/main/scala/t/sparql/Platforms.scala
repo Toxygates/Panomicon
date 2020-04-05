@@ -58,12 +58,12 @@ class Platforms(baseConfig: BaseConfig) extends
       triplestore.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
     }
 
-    val probes = new Probes(config)
+    val probes = new ProbeStore(config)
 
     val tempFiles = new TempFiles()
     try {
       for (g <- definitions.par.toList.grouped(1000)) {
-        val ttl = Probes.recordsToTTL(tempFiles, name, g)
+        val ttl = ProbeStore.recordsToTTL(tempFiles, name, g)
         triplestore.addTTL(ttl, Platforms.context(name))
       }
     } finally {
@@ -95,8 +95,8 @@ class Platforms(baseConfig: BaseConfig) extends
   }
 
   private def removeProbeAttribPrefix(x: String) =
-    if (x.startsWith(Probes.probeAttributePrefix + "/")) {
-      x.drop(Probes.probeAttributePrefix.size + 1)
+    if (x.startsWith(ProbeStore.probeAttributePrefix + "/")) {
+      x.drop(ProbeStore.probeAttributePrefix.size + 1)
     } else {
       x
     }

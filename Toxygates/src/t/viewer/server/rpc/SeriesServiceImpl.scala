@@ -89,7 +89,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
     //Convert the input probes (which may actually be gene symbols) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = context.probes.identifiersToProbes(mcontext.probeMap,
+      val resolved = context.probeStore.identifiersToProbes(mcontext.probeMap,
           Array(pr._1), true, true)
       if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
@@ -138,9 +138,9 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     seriesType: SeriesType,
     sc: SampleClass, probes: Array[String], timeDose: String,
     compounds: Array[String]): GWTList[SSeries] = {
-    val validated = context.probes.identifiersToProbes(
+    val validated = context.probeStore.identifiersToProbes(
       mcontext.probeMap, probes, true, true)
-    val lookup = Map() ++ context.probes.withAttributes(validated).
+    val lookup = Map() ++ context.probeStore.withAttributes(validated).
       map(p => p.identifier -> p.symbols.head)
 
     val preFilter = withDB(seriesType, db => {

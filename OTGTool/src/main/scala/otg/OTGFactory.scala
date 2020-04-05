@@ -21,7 +21,7 @@ package otg
 
 import otg.db.Metadata
 import otg.sparql.OTGSampleStore
-import otg.sparql.OTGProbes
+import otg.sparql.OTGProbeStore
 import t.BaseConfig
 import t.DataConfig
 
@@ -37,8 +37,8 @@ class OTGFactory extends t.Factory {
   override def samples(config: BaseConfig): OTGSampleStore =
     new OTGSampleStore(config)
 
-  override def probes(config: TriplestoreConfig): OTGProbes =
-    new OTGProbes(config)
+  override def probes(config: TriplestoreConfig): OTGProbeStore =
+    new OTGProbeStore(config)
 
   override def context(ts: TriplestoreConfig, data: DataConfig) = {
     val bc = new OTGBConfig(ts, data)

@@ -46,7 +46,7 @@ object MatrixServiceImpl {
 
   def getOrthologs(c: Context) = synchronized {
     if (orthologs == None) {
-      val probes = c.probes
+      val probes = c.probeStore
       orthologs = Some(probes.orthologMappings)
     }
     orthologs.get
@@ -100,7 +100,7 @@ abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with Matri
   import MatrixServiceImpl._
 
   protected implicit var mcontext: MatrixContext = _
-  private def probes = context.probes
+  private def probes = context.probeStore
   private var config: Configuration = _
   private val logger = Logger.getLogger("MatrixService")
   private var codeDir: String = null

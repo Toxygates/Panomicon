@@ -231,7 +231,7 @@ class BatchManager(context: Context) {
         SampleIndex.fromRaw(KCIndexDB.readOnce(config.data.sampleIndex))
 
       override lazy val probeSets =
-        new Probes(config.triplestore).platformsAndProbes.
+        new ProbeStore(config.triplestore).platformsAndProbes.
           mapValues(_.toSeq.map(p => probeMap.pack(p.identifier)))
 
       lazy val enumMaps: Map[String, Map[String, Int]] = {
@@ -284,7 +284,7 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
-    val probeMap = new Probes(config.triplestore).platformsAndProbes
+    val probeMap = new ProbeStore(config.triplestore).platformsAndProbes
     val probes = platforms.flatMap(probeMap(_)).toSeq
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
 

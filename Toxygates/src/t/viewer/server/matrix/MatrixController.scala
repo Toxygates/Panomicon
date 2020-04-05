@@ -64,7 +64,7 @@ object ControllerParams {
     initProbes: Seq[String], groupPlatforms: Iterable[String],
     typ: ValueType, fullLoad: Boolean): ControllerParams =
       ControllerParams(context.matrix,
-      Platforms(context.probes), groups, initProbes, groupPlatforms, typ,
+      Platforms(context.probeStore), groups, initProbes, groupPlatforms, typ,
       fullLoad)
 }
 

@@ -35,7 +35,7 @@ class SPARQLTest extends TTestSuite {
 
   val config = TestConfig.config
 
-  val affyProbes = new OTGProbes(config.triplestore)
+  val affyProbes = new OTGProbeStore(config.triplestore)
   val homologene = new B2RHomologene
 //  val iproclass = new B2RIProClass
   val kegg = new B2RKegg(config.triplestore.triplestore)

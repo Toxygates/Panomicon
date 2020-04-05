@@ -56,7 +56,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
 
-  private def probeStore: Probes = context.probes
+  private def probeStore: ProbeStore = context.probeStore
 
   lazy val annotations = new Annotations(schema, baseConfig,
         new UnitStore(schema, sampleStore))

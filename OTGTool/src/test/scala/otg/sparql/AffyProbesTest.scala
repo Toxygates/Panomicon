@@ -34,7 +34,7 @@ import org.junit.runner.RunWith
 class AffyProbesTest extends TTestSuite {
 
   val config = TestConfig.config
-  val affyProbes = new OTGProbes(config.triplestore)
+  val affyProbes = new OTGProbeStore(config.triplestore)
 
   after {
     affyProbes.close

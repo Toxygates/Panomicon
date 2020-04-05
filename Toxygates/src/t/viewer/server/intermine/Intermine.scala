@@ -30,7 +30,7 @@ import org.json.JSONObject
 
 import t.viewer.shared.StringList
 import t.sparql._
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.sparql.secondary._
 import t.viewer.server.Platforms
 import t.viewer.shared.intermine._
@@ -59,8 +59,8 @@ class IntermineConnector(instance: IntermineInstance,
     ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
   def asTGList(l: org.intermine.webservice.client.lists.ItemList,
-    ap: Probes,
-    filterProbes: (Seq[String]) => Seq[String]): Option[StringList] = {
+               ap: ProbeStore,
+               filterProbes: (Seq[String]) => Seq[String]): Option[StringList] = {
     var items: Vector[Gene] = Vector()
     println(s"Importing ${l.getName}")
 

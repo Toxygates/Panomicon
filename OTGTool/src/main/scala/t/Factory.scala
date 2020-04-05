@@ -36,7 +36,7 @@ import t.db.Sample
 abstract class Factory {
   def samples(config: BaseConfig): SampleStore
 
-  def probes(config: TriplestoreConfig): Probes
+  def probes(config: TriplestoreConfig): ProbeStore
 
   def tsvMetadata(file: String, attr: AttributeSet,
       warningHandler: (String) => Unit = println): Metadata =

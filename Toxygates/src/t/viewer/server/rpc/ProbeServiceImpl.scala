@@ -33,7 +33,7 @@ import t.model.SampleClass
 import t.model.sample.CoreParameter
 import t.platform.Probe
 import t.sparql.Datasets
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.sparql.SampleFilter
 import t.sparql.secondary._
 import t.util.PeriodicRefresh
@@ -60,7 +60,7 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
   import ScalaUtils._
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
-  private def probeStore: Probes = context.probes
+  private def probeStore: ProbeStore = context.probeStore
   protected var instanceURI: Option[String] = None
 
   protected var uniprot: Uniprot = _

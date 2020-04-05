@@ -22,7 +22,7 @@ package t.viewer.server
 import t.BaseConfig
 import t.common.shared.Platform
 import t.sparql._
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.viewer.server.Conversions._
 import scala.collection.JavaConverters._
 import t.viewer.shared.AppInfo
@@ -31,10 +31,10 @@ import t.viewer.shared.clustering.ProbeClustering
 import t.viewer.shared.mirna.MirnaSource
 import t.common.shared.GWTTypes
 
-class AppInfoLoader(probeStore: Probes,
-    configuration: Configuration,
-    baseConfig: BaseConfig,
-    appName: String) {
+class AppInfoLoader(probeStore: ProbeStore,
+                    configuration: Configuration,
+                    baseConfig: BaseConfig,
+                    appName: String) {
 
   import t.common.server.GWTUtils._
   import GWTTypes._

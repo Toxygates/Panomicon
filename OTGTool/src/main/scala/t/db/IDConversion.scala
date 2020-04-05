@@ -132,7 +132,7 @@ object IDConverter {
         fromEnsembl(file)
       case Some(MirbasePtn(platform, file)) =>
         //e.g. mirbase:mirbase-v21:mirbase_mapping.tsv
-        fromMirbase(file, context.probes.forPlatform(platform))
+        fromMirbase(file, context.probeStore.forPlatform(platform))
       case Some(x) =>
         throw new Exception(s"Unknown ID conversion specifier $x")
       case None => (x => x)
@@ -156,7 +156,7 @@ object IDConverter {
       case None =>
         if (platform.startsWith("mirbase-v")) {
           println(s"Detected mirbase conversion into $platform")
-          fromMirbase(conversionFile, context.probes.forPlatform(platform))
+          fromMirbase(conversionFile, context.probeStore.forPlatform(platform))
         } else {
           throw new Exception(s"Unable to convert probes into platform $platform")
         }

@@ -25,13 +25,13 @@ import org.apache.commons.lang.StringUtils
 
 import t.common.shared.ValueType
 import t.platform.Probe
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.viewer.server.matrix.MatrixController
 import t.viewer.server.matrix.ManagedMatrix
 
 
 class ClusteringData(val controller: MatrixController,
-                     probeStore: Probes,
+                     probeStore: ProbeStore,
                      rows: Seq[String],
                      valueType: ValueType) extends t.clustering.server.ClusteringData {
 
