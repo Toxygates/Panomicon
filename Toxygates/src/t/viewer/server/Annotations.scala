@@ -41,7 +41,7 @@ import t.viewer.server.Conversions.asScalaSample
 import t.common.shared.GWTTypes
 
 class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
-    unitHelper: Units) {
+    unitHelper: UnitStore) {
 
   import GWTTypes._
 

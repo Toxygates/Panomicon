@@ -35,7 +35,7 @@ import t.sparql.SampleStore
 import t.viewer.server.Conversions._
 import t.viewer.shared.TimeoutException
 
-class Units(schema: DataSchema, sampleStore: SampleStore) extends
+class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
   UnitsHelper(schema) {
   /**
    * Generates units containing treated samples and their associated control samples.

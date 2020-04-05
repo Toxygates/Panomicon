@@ -59,7 +59,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   private def probeStore: Probes = context.probes
 
   lazy val annotations = new Annotations(schema, baseConfig,
-        new Units(schema, sampleStore))
+        new UnitStore(schema, sampleStore))
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -155,7 +155,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   @throws[TimeoutException]
   def units(sc: SampleClass,
       param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
-      new Units(schema, sampleStore).units(sc, param, paramValues)
+      new UnitStore(schema, sampleStore).units(sc, param, paramValues)
 
   def units(scs: Array[SampleClass], param: String,
       paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
