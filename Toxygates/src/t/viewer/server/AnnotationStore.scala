@@ -40,8 +40,7 @@ import t.viewer.server.Conversions._
 import t.viewer.server.Conversions.asScalaSample
 import t.common.shared.GWTTypes
 
-class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
-    unitHelper: UnitStore) {
+class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 
   import GWTTypes._
 
