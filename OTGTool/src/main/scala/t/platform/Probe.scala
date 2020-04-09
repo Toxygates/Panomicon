@@ -21,11 +21,11 @@ package t.platform
 
 import t.sparql.secondary.Gene
 import t.sparql.secondary.Protein
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.db.StoredBioObject
 
 object Probe {
-  import Probes._
+  import ProbeStore._
   private val split = defaultPrefix + "/"
   def unpack(uri: String) = Probe(unpackOnly(uri))
   def unpackOnly(uri: String) = uri.split(split)(1)
@@ -48,5 +48,5 @@ case class Probe(val identifier: String, override val name: String = "",
     case _                           => false
   }
 
-  def pack = Probes.defaultPrefix + "/" + identifier
+  def pack = ProbeStore.defaultPrefix + "/" + identifier
 }

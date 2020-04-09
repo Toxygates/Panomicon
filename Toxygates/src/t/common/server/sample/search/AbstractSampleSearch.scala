@@ -38,7 +38,7 @@ import t.model.sample.CoreParameter
 import t.model.sample.SampleLike
 import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
-import t.sparql.Samples
+import t.sparql.SampleStore
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.UnitsHelper
 
@@ -51,16 +51,16 @@ import t.viewer.server.UnitsHelper
 trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
 
   protected def rawSamples(condition: MatchCondition, sampleClass: SampleClass,
-      sampleFilter: SampleFilter, sampleStore: Samples, schema: DataSchema,
-      attributes: AttributeSet): Seq[Sample] = {
+                           sampleFilter: SampleFilter, sampleStore: SampleStore, schema: DataSchema,
+                           attributes: AttributeSet): Seq[Sample] = {
 
     sampleStore.sampleAttributeQuery(condition.neededParameters().asScala ++
         attributes.getUnitLevel().asScala ++ Seq(CoreParameter.ControlGroup),
         SampleClassFilter(sampleClass))(sampleFilter)().map(asJavaSample)
   }
 
-  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: Samples,
-      schema: DataSchema, attributes: AttributeSet)
+  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: SampleStore,
+            schema: DataSchema, attributes: AttributeSet)
       (implicit sampleFilter: SampleFilter): SS = {
     val samples = rawSamples(condition, sampleClass, sampleFilter,
         sampleStore, schema, attributes)

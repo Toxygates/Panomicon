@@ -29,7 +29,7 @@ import t.model.SampleClass
 import t.model.sample.AttributeSet
 import t.model.sample.CoreParameter
 import t.sparql.SampleFilter
-import t.sparql.Samples
+import t.sparql.SampleStore
 import t.viewer.server.UnitsHelper
 import t.common.shared.sample.Unit
 

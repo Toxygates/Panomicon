@@ -100,7 +100,7 @@ object BatchManager extends ManagerTool {
           new Platforms(config).populateAttributes(config.attributes)
           val sampleFilter = new SampleFilter(None, Some(Batches.packURI(title)))
           val metadata =
-            factory.cachingTriplestoreMetadata(context.samples, config.attributes,
+            factory.cachingTriplestoreMetadata(context.sampleStore, config.attributes,
                 config.attributes.getHighLevel.asScala ++
                 config.attributes.getUnitLevel.asScala ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup,
@@ -214,7 +214,7 @@ class BatchManager(context: Context) {
   import TRDF._
 
   def config = context.config
-  def samples = context.samples
+  def samples = context.sampleStore
 
   def matrixContext(): MatrixContext =
     new MatrixContext {
@@ -231,7 +231,7 @@ class BatchManager(context: Context) {
         SampleIndex.fromRaw(KCIndexDB.readOnce(config.data.sampleIndex))
 
       override lazy val probeSets =
-        new Probes(config.triplestore).platformsAndProbes.
+        new ProbeStore(config.triplestore).platformsAndProbes.
           mapValues(_.toSeq.map(p => probeMap.pack(p.identifier)))
 
       lazy val enumMaps: Map[String, Map[String, Int]] = {
@@ -284,7 +284,7 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
-    val probeMap = new Probes(config.triplestore).platformsAndProbes
+    val probeMap = new ProbeStore(config.triplestore).platformsAndProbes
     val probes = platforms.flatMap(probeMap(_)).toSeq
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
 
@@ -510,7 +510,7 @@ class BatchManager(context: Context) {
       override def run(): Unit = {
         val tempFiles = new TempFiles()
         //time series and dose series use same enums
-        val summaries = config.timeSeriesBuilder.enums.map(e => AttribValueSummary(context.samples, e))
+        val summaries = config.timeSeriesBuilder.enums.map(e => AttribValueSummary(context.sampleStore, e))
 
         try {
           val total = metadata.samples.size

@@ -33,7 +33,7 @@ import t.common.shared.maintenance.MaintenanceConstants._
 import t.sparql.Datasets
 import t.sparql.Instances
 import t.sparql.Platforms
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.sparql.TRDF
 import t.util.TempFiles
 import t.viewer.server.Configuration
@@ -178,7 +178,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   def getPlatforms: Array[Platform] = {
-    val prs = new Probes(baseConfig.triplestore)
+    val prs = new ProbeStore(baseConfig.triplestore)
     val np = prs.numProbes()
     val ps = new Platforms(baseConfig)
     val comments = ps.comments

@@ -21,16 +21,16 @@ package t.viewer.server
 
 import t.platform.Probe
 
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.platform.Species.Species
 
 object Platforms {
-  def apply(probes: Probes): Platforms = {
+  def apply(probeStore: ProbeStore): Platforms = {
     /*
      * Note: if this query becomes too slow, it may be desirable to load
      * the platforms incrementally, e.g. by species
      */
-    val pps = Probes.platformsAndProbes(probes)
+    val pps = ProbeStore.platformsAndProbes(probeStore)
     new Platforms(pps.map(x => x._1 -> x._2.toSet))
   }
 }

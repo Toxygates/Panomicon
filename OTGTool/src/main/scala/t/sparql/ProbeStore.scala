@@ -30,7 +30,7 @@ import t.util.TempFiles
 import t.platform.Species
 import t.platform.Species._
 
-object Probes extends RDFClass {
+object ProbeStore extends RDFClass {
   val defaultPrefix: String = s"$tRoot/probe"
   val itemClass: String = "t:probe"
   val hasProbeRelation = "t:hasProbe"
@@ -64,7 +64,7 @@ object Probes extends RDFClass {
   var _platformsAndProbes: Map[String, Iterable[Probe]] = null
 
   //This lookup takes time, so we keep it here as a static resource
-  def platformsAndProbes(p: Probes): Map[String, Iterable[Probe]] = synchronized {
+  def platformsAndProbes(p: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
     if (_platformsAndProbes == null) {
       _platformsAndProbes = p.platformsAndProbesLookup
     }
@@ -72,13 +72,13 @@ object Probes extends RDFClass {
   }
 }
 
-class Probes(config: TriplestoreConfig) extends ListManager(config) {
+class ProbeStore(config: TriplestoreConfig) extends ListManager(config) {
   import Triplestore._
   import QueryUtils._
-  import Probes._
+  import ProbeStore._
 
-  def defaultPrefix: String = Probes.defaultPrefix
-  def itemClass = Probes.itemClass
+  def defaultPrefix: String = ProbeStore.defaultPrefix
+  def itemClass = ProbeStore.itemClass
 
   def orthologMappings: Iterable[OrthologMapping] = {
     val msq = triplestore.simpleQuery(tPrefixes + '\n' +
@@ -96,13 +96,13 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     triplestore.simpleQuery(s"""$tPrefixes
         |SELECT ?l WHERE {
         |  GRAPH $platform {
-        |    ?p a ${Probes.itemClass}; rdfs:label ?l .
+        |    ?p a ${ProbeStore.itemClass}; rdfs:label ?l .
         |  }
         |}""".stripMargin)
   }
 
   def platformsAndProbes: Map[String, Iterable[Probe]] =
-    Probes.platformsAndProbes(this)
+    ProbeStore.platformsAndProbes(this)
 
   /**
    * Read all platforms. Slow.

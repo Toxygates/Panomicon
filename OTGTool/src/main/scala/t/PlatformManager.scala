@@ -24,7 +24,7 @@ import t.global.KCDBRegistry
 import t.platform.PlatformDefFile
 import t.platform.affy.Converter
 import t.sparql.Platforms
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.sparql.TRDF
 import t.util.TempFiles
 import t.util.DoThenClose._
@@ -143,7 +143,7 @@ class PlatformManager(context: Context) {
           val groups = rest.grouped(g)
           while (groups.hasNext && shouldContinue(pcomp)) {
             val tg = groups.next
-            val ttl = Probes.recordsToTTL(tf, title, tg)
+            val ttl = ProbeStore.recordsToTTL(tf, title, tg)
             pcomp += g.toDouble * 100.0 / total
             platforms.triplestore.addTTL(ttl, Platforms.context(title))
           }
@@ -190,7 +190,7 @@ class PlatformManager(context: Context) {
     new AtomicTask[Unit]("Add probe IDs") {
       override def run(): Unit = {
         var newProbes, existingProbes: Int = 0
-        val probes = new Probes(config.triplestore).forPlatform(title)
+        val probes = new ProbeStore(config.triplestore).forPlatform(title)
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         doThenClose(db)(db => {
@@ -228,7 +228,7 @@ class PlatformManager(context: Context) {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         doThenClose(db)(db => {
-          val probes = new Probes(config.triplestore).forPlatform(title)
+          val probes = new ProbeStore(config.triplestore).forPlatform(title)
           log(s"Opened $dbfile for writing")
           db.remove(probes)
         })

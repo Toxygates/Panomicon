@@ -54,7 +54,7 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
      }
 
     val pfs = md.attributeValues(Platform)
-    pfs.find(!context.probes.platformsAndProbes.keySet.contains(_)) match {
+    pfs.find(!context.probeStore.platformsAndProbes.keySet.contains(_)) match {
       case Some(pf) =>
         throw new MaintenanceException(s"Metadata error: the platform_id $pf is unknown.")
       case None =>

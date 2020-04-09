@@ -60,8 +60,8 @@ class AssociationResolverTest extends TTestSuite {
 //  val geneIds = Array("361510", "362972")
 
   val tsc = conf.tsConfig
-  val probeStore = new OTGProbes(tsc)
-  val sampleStore = new OTGSamples(baseConf)
+  val probeStore = new OTGProbeStore(tsc)
+  val sampleStore = new OTGSampleStore(baseConf)
   val b2rKegg = new B2RKegg(tsc.triplestore)
   val uniprot = new LocalUniprot(tsc.triplestore)
 

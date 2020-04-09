@@ -20,7 +20,7 @@
 package t.viewer.server.matrix
 
 import t.viewer.server.CSVHelper
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.platform.Probe
 import t.viewer.server.Conversions._
 
@@ -29,15 +29,15 @@ object CSVDownload {
   /**
    * Generate a downloadable CSV file.
    * @param managedMat matrix data
-   * @param probes probe data source
+   * @param probeStore probe data source
    * @param directory the directory to place the file in
    * @param individualSamples should columns be samples or groups?
    * @param auxColumns function to generate auxiliary columns, if any.
    * @return the name of the file generated in the directory.
    */
-  def generate(managedMat: ManagedMatrix, probes: Probes,
-      directory: String, individualSamples: Boolean,
-      auxColumns: ExprMatrix => Seq[(String, Seq[String])] = emptyAuxColumns): String = {
+  def generate(managedMat: ManagedMatrix, probeStore: ProbeStore,
+               directory: String, individualSamples: Boolean,
+               auxColumns: ExprMatrix => Seq[(String, Seq[String])] = emptyAuxColumns): String = {
 
      var mat = if (individualSamples &&
       managedMat.rawUngrouped != null && managedMat.current != null) {
@@ -73,7 +73,7 @@ object CSVDownload {
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
     //May be slow!
-    val gis = probes.allGeneIds.mapInnerValues(_.identifier)
+    val gis = probeStore.allGeneIds.mapInnerValues(_.identifier)
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row =>
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))

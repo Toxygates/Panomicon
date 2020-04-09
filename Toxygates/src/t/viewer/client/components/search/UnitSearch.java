@@ -37,8 +37,8 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   private HashMap<String, Unit> controlUnitsMap;
 
   public UnitSearch(Delegate delegate, ResultTable<Unit> helper, 
-                    AttributeSet attributes, SampleServiceAsync sampleService) {
-    super(delegate, helper, attributes, sampleService);
+                    SampleServiceAsync sampleService) {
+    super(delegate, helper, sampleService);
   }
 
   @Override

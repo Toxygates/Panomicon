@@ -51,15 +51,14 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
 
   var instanceURI: Option[String] = None
 
-  private def sampleStore: Samples = context.samples
+  private def sampleStore: SampleStore = context.sampleStore
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
 
-  private def probeStore: Probes = context.probes
+  private def probeStore: ProbeStore = context.probeStore
 
-  lazy val annotations = new Annotations(schema, baseConfig,
-        new Units(schema, sampleStore))
+  lazy val annotationStore = new AnnotationStore(schema, baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -155,13 +154,13 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   @throws[TimeoutException]
   def units(sc: SampleClass,
       param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
-      new Units(schema, sampleStore).units(sc, param, paramValues)
+      new UnitStore(schema, sampleStore).units(sc, param, paramValues)
 
   def units(scs: Array[SampleClass], param: String,
       paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
     scs.flatMap(units(_, param, paramValues))
   }
-  
+
   def attributesForSamples(sc: SampleClass): Array[Attribute] = {
     sampleStore.attributesForSamples(SampleClassFilter(sc))(sf)().toArray
   }
@@ -169,20 +168,20 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   @throws[TimeoutException]
   def annotations(sample: Sample): Annotation = {
     val params = sampleStore.parameterQuery(sample.id)
-    annotations.fromAttributes(sample, params)
+    annotationStore.fromAttributes(sample, params)
   }
 
   @throws[TimeoutException]
   def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] =
-    annotations.forSamples(sampleStore, samples, attributes)
+    annotationStore.forSamples(sampleStore, samples, attributes)
 
   @throws[TimeoutException]
   def annotations(samples: Array[Sample], importantOnly: Boolean = false): Array[Annotation] =
-    annotations.forSamples(sampleStore, samples, importantOnly)
+    annotationStore.forSamples(sampleStore, samples, importantOnly)
 
   @throws[TimeoutException]
   def prepareAnnotationCSVDownload(samples: Array[Sample]): String =
-    annotations.prepareCSVDownload(sampleStore, samples,
+    annotationStore.prepareCSVDownload(sampleStore, samples,
       configuration.csvDirectory, configuration.csvUrlBase)
 
   def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int):
