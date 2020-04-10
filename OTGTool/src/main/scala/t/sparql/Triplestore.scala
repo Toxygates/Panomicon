@@ -124,7 +124,7 @@ abstract class Triplestore extends Closeable {
   }
 
   /**
-   * Insert a TRIG file.
+   * Insert a TTL file.
    */
   def addTTL(file: java.io.File, context: String): Unit = {
     if (isReadonly) {

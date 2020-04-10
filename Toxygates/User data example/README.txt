@@ -1,5 +1,7 @@
 This directory contains example data in a format that can be uploaded to Toxygates.
 
+This document describes the legacy upload method using Affymetrix platforms. Please refer to the separate document "Panomicon Case Study" for a more up-to-date guide to current insertion methods for mRNA and miRNA using Ensembl and MirBase platforms.
+
 For uploads to the version of Toxygates hosted at NIBIOHN, please note that while we will make reasonable efforts to protect your data and keep it secure, we are in no way responsible for any damages or incidents that may occur as a result of data corruption, loss or theft. You agree to use this functionality (as well as all other functionality in Toxygates) at your own risk. 
 
 At least two files must be uploaded: a metadata .tsv file that describes each sample, and a file with normalised expression data (.csv).
@@ -51,7 +53,7 @@ sin_rep_type - Single or Repeat.
 
 organ_id - The organ being studied, for example Liver, Kidney, etc. New organs may be introduced when necessary.
 
-type - The type of 'omics data. Currently, only mRNA is supported.
+type - The type of 'omics data. mRNA and miRNA are supported.
 
 EXPRESSION DATA FILE
 --------------------

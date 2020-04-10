@@ -20,7 +20,7 @@
 package t
 
 import t.db._
-import t.sparql.Samples
+import t.sparql.SampleStore
 
 abstract class ValueSummary(valueName: String) {
   def originalValues: Set[String]
@@ -49,9 +49,9 @@ abstract class ValueSummary(valueName: String) {
 class SimpleValueSummary(valueName: String, val originalValues: Set[String])
   extends ValueSummary(valueName)
 
-case class AttribValueSummary(samples: Samples, attribName: String)
+case class AttribValueSummary(sampleStore: SampleStore, attribName: String)
   extends ValueSummary(attribName) {
-  val originalValues = samples.allValuesForSampleAttribute(attribName).toSet
+  val originalValues = sampleStore.allValuesForSampleAttribute(attribName).toSet
 
   def check(md: Metadata, samples: Iterable[Sample]) {
     for (

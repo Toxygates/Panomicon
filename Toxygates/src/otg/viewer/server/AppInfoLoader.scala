@@ -20,7 +20,7 @@
 package otg.viewer.server
 
 import t.BaseConfig
-import otg.sparql.OTGProbes
+import otg.sparql.OTGProbeStore
 import otg.viewer.server.AppInfoLoader._
 import t.viewer.server.Configuration
 import t.viewer.shared.mirna.MirnaSource
@@ -38,9 +38,9 @@ object AppInfoLoader {
   val MIRAW_SOURCE: String = "MiRAW"
 }
 
-class AppInfoLoader(probeStore: OTGProbes,
-  configuration: Configuration, baseConfig: BaseConfig,
-  appName: String)
+class AppInfoLoader(probeStore: OTGProbeStore,
+                    configuration: Configuration, baseConfig: BaseConfig,
+                    appName: String)
     extends t.viewer.server.AppInfoLoader(probeStore,
       configuration, baseConfig, appName) {
 

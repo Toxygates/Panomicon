@@ -15,11 +15,11 @@ import scala.io.{Codec, Source}
 object TSVFile extends FileReadable[Seq[Seq[String]]] {
   import t.util.DoThenClose._
 
-  protected def read(prefix: String = ".", name: String) = {
+  protected def read(prefix: String = ".", name: String, unquote: Boolean = false) = {
     doThenClose(Source.fromFile(prefix + name)(Codec.UTF8))(r => {
       var data = Vector[Array[String]]()
       for {l <- r.getLines} {
-        val cs = l.split("\t")
+        val cs = l.split("\t").map(normalize(unquote, _))
         if (cs.nonEmpty && l.length > 0) {
           //ignore empty lines
           data :+= cs
@@ -39,11 +39,17 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
     })
   }
 
+  def normalize(unquote: Boolean, value: String) =
+    if (unquote)
+      value.replace("\"", "")
+    else
+      value
+
   /**
    * A map indexed by column.
    */
-  def readMap(prefix: String = ".", name: String): Map[String, Seq[String]] = {
-    val cs = read(prefix, name)
-    Map() ++ cs.map(col => col.head -> col.tail)
+  def readMap(prefix: String = ".", name: String, unquote: Boolean = false): Map[String, Seq[String]] = {
+    val cs = read(prefix, name, unquote)
+    Map() ++ cs.map(col => normalize(unquote, col.head) -> col.tail)
   }
 }

@@ -33,8 +33,8 @@ import t.model.sample.AttributeSet
  * @param sampleStore The triplestore to be queried.
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
-    querySet: Iterable[Attribute] = Seq())
+class TriplestoreMetadata(sampleStore: SampleStore, val attributeSet: AttributeSet,
+                          querySet: Iterable[Attribute] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
   override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
@@ -45,8 +45,8 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
     })
   }
 
-  override def attributeValues(attribute: Attribute): Set[String] =
-    sampleStore.sampleAttributeQuery(attribute)(sf)().toSet
+  override def attributeValues(attribute: Attribute): Seq[String] =
+    sampleStore.sampleAttributeQuery(attribute)(sf)().distinct
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 }
@@ -54,8 +54,8 @@ class TriplestoreMetadata(sampleStore: Samples, val attributeSet: AttributeSet,
 /**
  * Caching triplestore metadata that reads all the data once and stores it.
  */
-class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
-    querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
+class CachingTriplestoreMetadata(os: SampleStore, attributes: AttributeSet,
+                                 querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
     extends TriplestoreMetadata(os, attributes, querySet) {
 
   val useQuerySet = (querySet.toSeq :+ SampleId).distinct
@@ -79,7 +79,7 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
     data.getOrElse(s.sampleId, Map()).toSeq
 
   // all values for a given parameter
-  override def attributeValues(attribute: Attribute): Set[String] =
-    data.flatMap(_._2.get(attribute)).toSet
+  override def attributeValues(attribute: Attribute): Seq[String] =
+    data.flatMap(_._2.get(attribute)).toSeq.distinct
 
 }

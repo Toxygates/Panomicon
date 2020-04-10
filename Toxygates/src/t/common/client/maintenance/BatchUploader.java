@@ -25,7 +25,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 public class BatchUploader extends ItemUploader {
-  UploadWrapper metadata, data, calls;
+  UploadWrapper metadata, data, calls, probes;
 
   public BatchUploader(boolean full) {
     VerticalPanel vp = new VerticalPanel();
@@ -38,7 +38,8 @@ public class BatchUploader extends ItemUploader {
     hp.add(metadata);
 
     if (full) {
-      data = new UploadWrapper(this, "Normalized data file (CSV)", dataPrefix, "csv");
+      data = new UploadWrapper(this, "Normalized data file (CSV)",
+              dataPrefix, "csv");
       uploaders.add(data);
       hp.add(data);
       vp.add(hp);
@@ -46,10 +47,13 @@ public class BatchUploader extends ItemUploader {
       hp = new HorizontalPanel();
       hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
       hp.setWidth("100%");
-      calls =
-          new UploadWrapper(this, "Affymetrix calls file (CSV) (optional)", callPrefix, "csv");
+      calls = new UploadWrapper(this, "Affymetrix calls file (CSV) (optional)",
+              callPrefix, "csv");
       uploaders.add(calls);
       hp.add(calls);
+      probes = new UploadWrapper(this, "Probe definitions (TSV) (optional)",
+              probesPrefix, "tsv");
+      hp.add(probes);
     }
 
     vp.add(hp);

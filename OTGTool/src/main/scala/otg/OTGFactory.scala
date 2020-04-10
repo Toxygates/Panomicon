@@ -20,8 +20,8 @@
 package otg
 
 import otg.db.Metadata
-import otg.sparql.OTGSamples
-import otg.sparql.OTGProbes
+import otg.sparql.OTGSampleStore
+import otg.sparql.OTGProbeStore
 import t.BaseConfig
 import t.DataConfig
 
@@ -34,11 +34,11 @@ import t.db.FilteredMetadata
 import t.db.Sample
 
 class OTGFactory extends t.Factory {
-  override def samples(config: BaseConfig): OTGSamples =
-    new OTGSamples(config)
+  override def samples(config: BaseConfig): OTGSampleStore =
+    new OTGSampleStore(config)
 
-  override def probes(config: TriplestoreConfig): OTGProbes =
-    new OTGProbes(config)
+  override def probes(config: TriplestoreConfig): OTGProbeStore =
+    new OTGProbeStore(config)
 
   override def context(ts: TriplestoreConfig, data: DataConfig) = {
     val bc = new OTGBConfig(ts, data)
@@ -48,15 +48,15 @@ class OTGFactory extends t.Factory {
   override def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
     new MapMetadata(data, attr) with otg.db.Metadata
 
-  override def triplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
-      querySet: Iterable[Attribute] = Seq())
+  override def triplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
+                                   querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): TriplestoreMetadata =
-    new TriplestoreMetadata(samples, attributeSet, querySet)(sf) with otg.db.Metadata
+    new TriplestoreMetadata(sampleStore, attributeSet, querySet)(sf) with otg.db.Metadata
 
-  override def cachingTriplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
-      querySet: Iterable[Attribute] = Seq())
+  override def cachingTriplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
+                                          querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): CachingTriplestoreMetadata =
-    new CachingTriplestoreMetadata(samples, attributeSet, querySet)(sf) with otg.db.Metadata
+    new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf) with otg.db.Metadata
     
   override def filteredMetadata(from: t.db.Metadata, sampleView: Iterable[Sample]) =
     new FilteredMetadata(from, sampleView) with otg.db.Metadata

@@ -19,8 +19,8 @@
 
 package t
 
-import t.sparql.Samples
-import t.sparql.Probes
+import t.sparql.SampleStore
+import t.sparql.ProbeStore
 import t.db.MatrixContext
 
 /**
@@ -28,10 +28,10 @@ import t.db.MatrixContext
  * application
  */
 class Context(val config: BaseConfig,
-  val factory: Factory,
-  val probes: Probes,
-  val samples: Samples,
-  val matrix: MatrixContext) {
+              val factory: Factory,
+              val probeStore: ProbeStore,
+              val sampleStore: SampleStore,
+              val matrix: MatrixContext) {
 
   /*
    * Note: this may not be the best location for the auxSortMap
@@ -39,13 +39,13 @@ class Context(val config: BaseConfig,
 
   /**
    * Obtain an ordering of the probes, identified by a string key.
-   * 
-   * This mechanism was formerly used to sort by an association in Tritigate, 
+   *
+   * This mechanism was formerly used to sort by an association in Tritigate,
    * but is not currently used.
    */
   def auxSortMap(key: String): Map[String, Double] = {
     val allProbes = matrix.probeMap.tokens
     println("Aux map for " + allProbes.size + " probes key " + key)
-    probes.auxSortMap(allProbes, key)
+    probeStore.auxSortMap(allProbes, key)
   }
 }

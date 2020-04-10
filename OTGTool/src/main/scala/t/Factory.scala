@@ -34,9 +34,9 @@ import t.db.Sample
  * and then store them and the resulting context, baseconfig
  */
 abstract class Factory {
-  def samples(config: BaseConfig): Samples
+  def samples(config: BaseConfig): SampleStore
 
-  def probes(config: TriplestoreConfig): Probes
+  def probes(config: TriplestoreConfig): ProbeStore
 
   def tsvMetadata(file: String, attr: AttributeSet,
       warningHandler: (String) => Unit = println): Metadata =
@@ -45,15 +45,15 @@ abstract class Factory {
   def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
     new MapMetadata(data, attr)
 
-  def triplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
-      querySet: Iterable[Attribute] = Seq())
+  def triplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
+                          querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): TriplestoreMetadata =
-    new TriplestoreMetadata(samples, attributeSet, querySet)(sf)
+    new TriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
 
-  def cachingTriplestoreMetadata(samples: Samples, attributeSet: AttributeSet,
-      querySet: Iterable[Attribute] = Seq())
+  def cachingTriplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
+                                 querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): TriplestoreMetadata =
-    new CachingTriplestoreMetadata(samples, attributeSet, querySet)(sf)
+    new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
 
   def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
     new FilteredMetadata(from, sampleView)

@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 
 import org.intermine.webservice.client.results.TabTableResult
 
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.viewer.client.intermine.IntermineService
 import t.viewer.server.Configuration
 import t.viewer.server.Platforms
@@ -32,14 +32,14 @@ import t.viewer.shared.StringList
 import t.viewer.shared.intermine._
 
 abstract class IntermineServiceImpl extends TServiceServlet with IntermineService {
-  var affyProbes: Probes = _
+  var affyProbes: ProbeStore = _
   var platforms: Platforms = _
   var mines: Intermines = _
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
-    affyProbes = context.probes
+    affyProbes = context.probeStore
     platforms = Platforms(affyProbes)
     mines = new Intermines(config.intermineInstances)
   }

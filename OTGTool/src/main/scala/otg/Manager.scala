@@ -39,7 +39,7 @@ object Manager extends t.Manager[OTGContext, OTGBConfig] with CmdLineOptions {
         val spPairs = Seq((Rat, Human), (Human, Mouse), (Mouse, Rat))
 
         val conn = new t.intermine.Connector(intermineAppName, intermineURL)
-        new SSOrthTTL(context.probes, output).generateFromIntermine(conn, spPairs)
+        new SSOrthTTL(context.probeStore, output).generateFromIntermine(conn, spPairs)
       case _ => super.handleArgs(args)
     }
   }

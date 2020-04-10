@@ -53,19 +53,16 @@ public abstract class Search<Entity, Container> {
   protected Delegate delegate;
   protected ResultTable<Entity> helper;
   protected SampleServiceAsync sampleService;
-  protected AttributeSet attributes;
-  
+
   Entity[] searchResult;
   MatchCondition condition;
   private Set<Attribute> fetchedAttributes;
 
   public Search(Delegate delegate, ResultTable<Entity> helper,
-                AttributeSet attributes,
       SampleServiceAsync sampleService) {
     this.delegate = delegate;
     this.helper = helper;
     this.sampleService = sampleService;
-    this.attributes = attributes;
   }
 
   public ResultTable<Entity> helper() {

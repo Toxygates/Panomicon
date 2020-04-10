@@ -50,6 +50,7 @@ object Species extends Enumeration(0) {
       case Rat   => "rno"
       case Mouse => "mmu"
     }
+    val ensemblPlatform = shortCode + ".ensembl"
   }
 
   val supportedSpecies = List(Rat, Human, Mouse)
@@ -58,10 +59,15 @@ object Species extends Enumeration(0) {
    * Note: mapping species to platform IDs here is too static
    * and we should probably do it dynamically instead.
    */
-  def forKnownPlatform(plat: String) = plat match {
-    case "HG-U133_Plus_2" | "GPL10558" => Some(Human)
-    case "Rat230_2" => Some(Rat)
-    case "Mouse430_2" | "GPL5642" => Some(Mouse)
-    case _ => None
+  def forKnownPlatform(plat: String): Option[Species] = {
+    supportedSpecies.find(s => plat == s.ensemblPlatform) match {
+      case Some(s) => Some(s)
+      case _ => plat match {
+        case "HG-U133_Plus_2" | "GPL10558" => Some(Human)
+        case "Rat230_2" => Some(Rat)
+        case "Mouse430_2" | "GPL5642" => Some(Mouse)
+        case _ => None
+      }
+    }
   }
 }

@@ -39,7 +39,7 @@ import t.viewer.shared.TimeoutException
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otg.viewer.client.rpc.ProbeService {
 
-  protected def sampleStore: otg.sparql.OTGSamples = context.samples
+  protected def sampleStore: otg.sparql.OTGSampleStore = context.sampleStore
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
@@ -50,7 +50,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     drugBank = new DrugBank()
   }
 
-  private def probeStore: OTGProbes = context.probes
+  private def probeStore: OTGProbeStore = context.probeStore
 
   override protected def reloadAppInfo = {
     val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load

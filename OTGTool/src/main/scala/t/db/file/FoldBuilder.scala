@@ -45,7 +45,6 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
   protected lazy val groups = md.treatedControlGroups(input.samples)
 
   def data(s: Sample): CMap[String, FoldPExpr] = {
-    println("Compute control values")
     var r = List[Entry]()
     for ((ts, cs) <- groups;
       if ts.toSet.contains(s)) {
@@ -99,8 +98,6 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
 
 /**
  * log-2 fold values with P-values.
- * This could be stored in a separate table, but for simplicity, we are grouping it with
- * expression data for now.
  */
 class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
   extends FoldValueBuilder(md, input) {
@@ -163,7 +160,6 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
           val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
           r ::= (p, (foldVal, pacall, pval))
         case _ =>
-          r ::= (p, (Double.NaN, 'A', Double.NaN))
       }
     }
     r

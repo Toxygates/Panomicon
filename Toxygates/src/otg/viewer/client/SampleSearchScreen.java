@@ -111,8 +111,8 @@ public class SampleSearchScreen extends FilterScreen
 
     sampleService = man.sampleService();
 
-    sampleSearch = new SampleSearch(this, sampleTableHelper, attributes(), sampleService);
-    unitSearch = new UnitSearch(this, unitTableHelper, attributes(), sampleService);
+    sampleSearch = new SampleSearch(this, sampleTableHelper, sampleService);
+    unitSearch = new UnitSearch(this, unitTableHelper, sampleService);
 
     getParameterInfo();
 

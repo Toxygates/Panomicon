@@ -55,4 +55,8 @@ public class BatchUploadException extends MaintenanceException {
     return new BatchUploadException(message, false, false, true);
   }
 
+  public static BatchUploadException badPlatformForConversion(String message) {
+    return new BatchUploadException(message, false, true, false);
+  }
+
 }

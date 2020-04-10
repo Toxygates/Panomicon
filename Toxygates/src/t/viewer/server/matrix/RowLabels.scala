@@ -28,7 +28,7 @@ import t.platform.Probe
  * Row labels for normal, single-species matrices.
  */
 class RowLabels(context: Context, schema: DataSchema) {
-  val probes = context.probes
+  val probes = context.probeStore
 
   private def loadProbes(rows: Iterable[ExpressionRow]) =
     if (rows.isEmpty) {

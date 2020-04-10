@@ -21,9 +21,9 @@ package otg
 
 import t.platform.Species._
 import otg.model.sample.OTGAttribute._
-import t.db._
-import t.db.{ Series => TSeries }
+import t.db.{MatrixDBReader, Series => TSeries, _}
 import t.model.sample.Attribute
+
 import scala.reflect.ClassTag
 
 /**
@@ -179,11 +179,19 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
   def groupSamples(xs: Iterable[Sample], md: Metadata): Iterable[(OTGSeries, Iterable[Sample])] =
     xs.groupBy(buildEmpty(_, md))
 
-  def makeNew[E >: Null <: ExprValue : ClassTag](from: MatrixDBReader[E], md: Metadata,
-      samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
+  def makeNewEmpty(md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
+    makeNew(md, samples, (ss, prs, p) => makeEmptyPoints(prs, p))
+  }
+
+  def makeNew[E <: ExprValue : ClassTag](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
+    (implicit mc: MatrixContext) : Iterable[OTGSeries] = {
+    makeNew(md, samples, makeDataPoints(from)(_, _, _))
+  }
+
+  def makeNew(md: Metadata, samples: Iterable[Sample],
+      makePoints: (Iterable[Sample], Seq[Int], String) => Seq[(Int, SeriesPoint)])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     val timeOrDoseMap = seriesType.independentVariableMap
-
     val grouped = groupSamples(samples, md)
     var r = Vector[OTGSeries]()
 
@@ -191,19 +199,13 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
       //Construct the series s for all probes, using the samples xs
 
       val repSample = xs.head
-      val probes = from.sortProbes(mc.expectedProbes(repSample))
+      val probes = mc.expectedProbes(repSample)
       val indepPoints = xs.groupBy(x => md.sampleAttribute(x, seriesType.independentVariable).get)
 
-      val spoints = (for (
-        (point, pointSamples) <- indepPoints.toSeq.par;
-        samples = from.sortSamples(pointSamples);
-        exprs = from.valuesForSamplesAndProbes(samples, probes, false, false);
-        (pr, data) <- (probes zip exprs);
-        nonPadded = data.filter(!_.isPadding);
-        if (!nonPadded.isEmpty);
-        mean = meanPoint(nonPadded);
-        spoint = SeriesPoint(timeOrDoseMap(point), mean))
-        yield (pr, spoint))
+      val spoints = (for {
+        (point, samples) <- indepPoints.toSeq.par;
+        probePoint <- makePoints(samples, probes, point)
+      } yield probePoint)
 
       for ((pr, points) <- spoints.seq.groupBy(_._1)) {
         r :+= series.copy(probe = pr, points = points.map(_._2))
@@ -211,6 +213,37 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
     }
     println(s"Constructed ${r.size} series including: ${r.head}")
     r
+  }
+
+  /**
+   * Point builder function that reads data from a folds database
+   */
+  private def makeDataPoints[E <: ExprValue : ClassTag](from: MatrixDBReader[E])(samples: Iterable[Sample],
+                                                    probes: Seq[Int], point: String)(implicit mc: MatrixContext) = {
+
+    val timeOrDoseMap = seriesType.independentVariableMap
+    val ssamples = from.sortSamples(samples);
+    val sprobes = from.sortProbes(probes)
+    val exprs = from.valuesForSamplesAndProbes(ssamples, sprobes, false, false);
+    for {
+      (pr, data) <- (sprobes zip exprs);
+      nonPadded = data.filter(!_.isPadding);
+      if (!nonPadded.isEmpty);
+      mean = meanPoint(nonPadded);
+      spoint = SeriesPoint(timeOrDoseMap(point), mean)
+    } yield (pr, spoint)
+  }
+
+  /**
+   * Point builder function that generates empty points
+   */
+  private def makeEmptyPoints(probes: Seq[Int], point: String)(implicit mc: MatrixContext) = {
+    val timeOrDoseMap = seriesType.independentVariableMap
+    for {
+      pr <- probes;
+      mean = BasicExprValue(0, 'A', mc.probeMap.unpack(pr))
+      spoint = SeriesPoint(timeOrDoseMap(point), mean)
+    } yield (pr, spoint)
   }
 
   def standardEnumValues = seriesType.standardEnumValues

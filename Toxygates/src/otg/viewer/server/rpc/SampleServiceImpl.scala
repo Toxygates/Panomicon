@@ -19,7 +19,7 @@
 
 package otg.viewer.server.rpc
 
-import otg.sparql.OTGSamples
+import otg.sparql.OTGSampleStore
 import otg.viewer.shared.Pathology
 import t.common.shared.sample.Sample
 import t.viewer.shared.TimeoutException
@@ -27,7 +27,7 @@ import t.viewer.shared.TimeoutException
 class SampleServiceImpl extends t.viewer.server.rpc.SampleServiceImpl with OTGServiceServlet
   with otg.viewer.client.rpc.SampleService {
 
-  private def sampleStore: OTGSamples = context.samples
+  private def sampleStore: OTGSampleStore = context.sampleStore
 
   @throws[TimeoutException]
   override def pathologies(column: Array[Sample]): Array[Pathology] =

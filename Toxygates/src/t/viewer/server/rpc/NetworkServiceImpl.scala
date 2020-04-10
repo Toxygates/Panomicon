@@ -27,7 +27,7 @@ import t.common.shared.ValueType
 import t.common.shared.sample.Group
 import t.platform.mirna._
 import t.platform.mirna.TargetTable
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.viewer.client.rpc.NetworkService
 import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
@@ -82,7 +82,7 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
 
   def mirnaDir = context.config.data.mirnaDir
 
-  private def probeStore: Probes = context.probes
+  private def probeStore: ProbeStore = context.probeStore
   lazy val platforms = t.viewer.server.Platforms(probeStore)
 
   override def localInit(c: Configuration) {

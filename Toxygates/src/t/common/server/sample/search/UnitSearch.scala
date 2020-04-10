@@ -61,7 +61,7 @@ class UnitSearch(condition: MatchCondition,
       controlUnits(unit.get(CoreParameter.SampleId))))
 
   override protected def postProcessSample(sample: Unit): Unit = {
-    sample.computeAllAttributes(attributes, false)
+    sample.computeAllAttributes(false)
     sample
   }
 

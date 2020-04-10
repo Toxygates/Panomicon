@@ -20,9 +20,7 @@
 package t.admin.server
 
 import scala.sys.process.Process
-
-import t.PlatformManager
-import t.TaskRunner
+import t.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat, PlatformManager, Task, TaskRunner}
 import t.admin.client.MaintenanceService
 import t.admin.shared.PlatformType
 import t.common.server.maintenance.BatchOpsImpl
@@ -35,14 +33,13 @@ import t.common.shared.maintenance.MaintenanceConstants._
 import t.sparql.Datasets
 import t.sparql.Instances
 import t.sparql.Platforms
-import t.sparql.Probes
+import t.sparql.ProbeStore
 import t.sparql.TRDF
 import t.util.TempFiles
 import t.viewer.server.Configuration
 import t.viewer.server.SharedDatasets
 import t.viewer.server.rpc.TServiceServlet
 import javax.servlet.http.HttpSession
-import t.Task
 
 abstract class MaintenanceServiceImpl extends TServiceServlet
 with BatchOpsImpl with MaintenanceService {
@@ -62,6 +59,15 @@ with BatchOpsImpl with MaintenanceService {
     session.setAttribute(name, x)
 
   override protected def request = getThreadLocalRequest
+
+  private def format(pt: PlatformType): PlatformFormat = {
+    pt match {
+      case PlatformType.Standard => GeneralPlatform
+      case PlatformType.Affymetrix => AffymetrixPlatform
+      case PlatformType.Biological => BioPlatform
+      case _ => throw new Exception("This tool does not support uploading of the specified platform format.")
+    }
+  }
 
   def addPlatformAsync(p: Platform, pt: PlatformType): Unit = {
     ensureNotMaintenance()
@@ -85,11 +91,8 @@ with BatchOpsImpl with MaintenanceService {
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
       }
 
-      val affymetrixFormat = (pt == PlatformType.Affymetrix)
-      val bioFormat = (pt == PlatformType.Biological)
-
       runTasks(pm.add(id, TRDF.escape(comment),
-          platformFile.get.getAbsolutePath(), affymetrixFormat, bioFormat) andThen
+          platformFile.get.getAbsolutePath(), format(pt)) andThen
           Task.simple("Set platform parameters"){ updatePlatform(p) })
     }
   }
@@ -175,7 +178,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   def getPlatforms: Array[Platform] = {
-    val prs = new Probes(baseConfig.triplestore)
+    val prs = new ProbeStore(baseConfig.triplestore)
     val np = prs.numProbes()
     val ps = new Platforms(baseConfig)
     val comments = ps.comments

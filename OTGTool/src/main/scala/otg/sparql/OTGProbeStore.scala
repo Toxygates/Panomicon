@@ -30,8 +30,8 @@ import t.sparql.secondary._
 import t.sparql.secondary.B2RKegg
 
 // Note: some code from here could be lifted up
-class OTGProbes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
-  import Probes._
+class OTGProbeStore(config: TriplestoreConfig) extends t.sparql.ProbeStore(config) with Store[Probe] {
+  import ProbeStore._
 
   val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 

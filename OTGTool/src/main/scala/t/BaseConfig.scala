@@ -104,7 +104,11 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   //Task: remove the fold wrap when possible
   def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
     new TransformingWrapper(db) {
-      def tfmValue(x: PExprValue) = x.copy(value = Math.pow(2, x.value))
+      def tfmValue(x: PExprValue) = {
+        val r = x.copy(value = Math.pow(2, x.value))
+        r.isPadding = x.isPadding
+        r
+      }
     }
 
   def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =

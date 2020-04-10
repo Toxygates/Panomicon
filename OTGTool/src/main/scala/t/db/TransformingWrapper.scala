@@ -21,6 +21,7 @@ package t.db
 
 /**
  * Wraps a matrix DB to apply a transformation to each value read.
+ * Task: remove this mechanism as it makes things more complicated
  */
 abstract class TransformingWrapper[E >: Null <: ExprValue](val
     wrapped: MatrixDBReader[E]) extends MatrixDBReader[E] {
