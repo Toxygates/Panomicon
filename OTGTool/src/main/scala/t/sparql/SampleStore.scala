@@ -177,8 +177,8 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
    * for samples that have values for *all* of the parameters requested.
    * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
    */
-  def sampleAttributeValues(samples: Iterable[String],
-    queryAttribs: Iterable[Attribute] = Seq()): Map[String, Seq[(Attribute, Option[String])]] = {
+  def sampleAttributeValues(sampleIDs: Iterable[String],
+                            queryAttribs: Iterable[Attribute] = Seq()): Map[String, Seq[(Attribute, Option[String])]] = {
 
     val queryParams = (if (queryAttribs.isEmpty) {
       bc.attributes.getAll.asScala.toSeq
@@ -188,14 +188,13 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
     val withIndex = queryParams.zipWithIndex
     val vars = withIndex.map("?k" + _._2 + " ").mkString
     val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
-    val sampleIds = samples.map("\"" + _ + "\" ").mkString
-    val sampleIdsXsd = samples.map("\"" + _ + "\"^^xsd:string ").mkString
+    val sampleIds = sampleIDs.map("\"" + _ + "\" ").mkString
 
     val queryResult = triplestore.mapQuery(s"""$tPrefixes
       |SELECT ?label $vars WHERE {
       |  GRAPH ?g {
       |    $triples
-      |    ?x rdfs:label ?label. VALUES ?label {$sampleIds $sampleIdsXsd}
+      |    ?x rdfs:label ?label. VALUES ?label {$sampleIds}
       |  }
       |}""".stripMargin)
 
@@ -225,8 +224,7 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
     val withIndex = queryParams.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ")
     val query = "SELECT * WHERE { GRAPH ?batchGraph { " +
-      "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
-      "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +
+      "{ { ?x rdfs:label \"" + sample + "\" } }" +
       triples.mkString + " } } "
     val r = triplestore.mapQuery(tPrefixes + '\n' + query)
     if (r.isEmpty) {
