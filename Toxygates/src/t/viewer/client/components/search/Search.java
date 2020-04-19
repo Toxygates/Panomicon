@@ -125,18 +125,19 @@ public abstract class Search<Entity, Container> {
     return fetchedAttributes.contains(attribute);
   }
 
-  protected void getAnnotationsAsync(Attribute attribute, AsyncCallback<Annotation[]> callback) {
-    sampleService.annotations(relevantSamples(), new Attribute[] {attribute}, callback);
+  protected void getAnnotationsAsync(Attribute attribute,
+                                     AsyncCallback<Map<String, HashMap<Attribute, String>>> callback) {
+    sampleService.parameterValuesForSamples(relevantSamples(), new Attribute[] {attribute}, callback);
   }
 
   abstract Sample[] relevantSamples();
 
-  abstract void addParameter(Attribute attribute, Annotation[] annotations);
+  abstract void addParameter(Attribute attribute, Map<String, HashMap<Attribute, String>> parameterValues);
 
   public void fetchParameter(final Attribute attribute) {
-    getAnnotationsAsync(attribute, new AsyncCallback<Annotation[]>() {
+    getAnnotationsAsync(attribute, new AsyncCallback<Map<String, HashMap<Attribute, String>>>() {
       @Override
-      public void onSuccess(Annotation[] result) {
+      public void onSuccess(Map<String, HashMap<Attribute, String>> result) {
         addParameter(attribute, result);
         fetchedAttributes.add(attribute);
         helper.gotDataForAttribute(attribute);

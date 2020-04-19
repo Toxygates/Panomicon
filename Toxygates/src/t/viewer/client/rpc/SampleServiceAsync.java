@@ -19,7 +19,9 @@
 
 package t.viewer.client.rpc;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -56,7 +58,8 @@ public interface SampleServiceAsync {
 
   void annotations(Sample sample, AsyncCallback<Annotation> callback);
 
-  void annotations(Sample[] samples, Attribute[] attributes, AsyncCallback<Annotation[]> callback);
+  void parameterValuesForSamples(Sample[] samples, Attribute[] attributes,
+                                 AsyncCallback<Map<String, HashMap<Attribute, String>>> callback);
 
   void annotations(Sample[] samples, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);

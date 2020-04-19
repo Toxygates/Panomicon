@@ -85,16 +85,12 @@ public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>>
   }
 
   @Override
-  protected void addParameter(Attribute attribute, Annotation[] annotations) {
-    for (Annotation annotation : annotations) {
-      Sample sample = sampleIdMap().get(annotation.id());
+  protected void addParameter(Attribute attribute, Map<String, HashMap<Attribute, String>> parameterValues) {
+    for (Map.Entry<String, HashMap<Attribute, String>> item : parameterValues.entrySet()) {
+      Sample sample = sampleIdMap().get(item.getKey());
       if (sample != null) {
-        for (BioParamValue value : annotation.getAnnotations()) {
-          if (value.id() == attribute.id()) {
-            sample.sampleClass().put(attribute, value.displayValue());
-            break;
-          }
-        }
+        String value = item.getValue().get(attribute);
+        sample.sampleClass().put(attribute, value);
       }
     }
   }

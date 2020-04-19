@@ -178,7 +178,8 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
    * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
    */
   def sampleAttributeValues(sampleIDs: Iterable[String],
-                            queryAttribs: Iterable[Attribute] = Seq()): Map[String, Seq[(Attribute, Option[String])]] = {
+                            queryAttribs: Iterable[Attribute] = Seq()
+                           ): Map[String, Seq[(Attribute, Option[String])]] = {
 
     val queryParams = (if (queryAttribs.isEmpty) {
       bc.attributes.getAll.asScala.toSeq

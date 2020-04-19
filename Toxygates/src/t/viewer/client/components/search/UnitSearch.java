@@ -91,17 +91,13 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   }
 
   @Override
-  protected void addParameter(Attribute attribute, Annotation[] annotations) {
+  protected void addParameter(Attribute attribute, Map<String, HashMap<Attribute, String>> parameterValues) {
     // first load parameter info into samples
-    for (Annotation annotation : annotations) {
-      Sample sample = sampleIdMap().get(annotation.id());
+    for (Map.Entry<String, HashMap<Attribute, String>> item : parameterValues.entrySet()) {
+      Sample sample = sampleIdMap().get(item.getKey());
       if (sample != null) {
-        for (BioParamValue value : annotation.getAnnotations()) {
-          if (value.id() == attribute.id()) {
-            sample.sampleClass().put(attribute, value.displayValue());
-            break;
-          }
-        }
+        String value = item.getValue().get(attribute);
+        sample.sampleClass().put(attribute, value);
       }
     }
     

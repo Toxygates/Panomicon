@@ -51,20 +51,6 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
   }
 
   /**
-   * Fetch annotations for given samples. Does not compute any bounds for
-   * any parameters. Annotations will only be returned for samples that
-   * have values for *all* of the attributes selected.
-   * @param samples the samples for which to fetch annotations
-   * @param attributes the attributes to fetch
-   */
-  def forSamples(sampleStore: SampleStore, samples: Iterable[Sample],
-                 attributes: Iterable[Attribute]): Array[Annotation] = {
-    val queryResult = sampleStore.sampleAttributeValues(samples.map(_.id),
-        attributes)
-    samples.map(s => fromAttributes(None, s, queryResult(s.id))).toArray
-  }
-
-  /**
    * For given samples, which may be in different control groups, fetch
    * annotations, using the control samples in the provided samples to
    * compute bounds for values if appropriate.

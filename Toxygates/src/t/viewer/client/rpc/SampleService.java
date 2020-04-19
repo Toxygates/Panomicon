@@ -19,10 +19,13 @@
 
 package t.viewer.client.rpc;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -134,15 +137,7 @@ public interface SampleService extends RemoteService {
    */
   Annotation annotations(Sample sample) throws TimeoutException;
 
-  /**
-   * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
-   * values for all of the specified attributes will be returned.
-   * 
-   * @param samples
-   * @param attributes the attributes to fetch
-   * @return
-   */
-  Annotation[] annotations(Sample[] samples, Attribute[] attributes) throws TimeoutException;
+  Map<String, HashMap<Attribute, String>> parameterValuesForSamples(Sample[] samples, Attribute[] attributes);
 
   /**
    * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have

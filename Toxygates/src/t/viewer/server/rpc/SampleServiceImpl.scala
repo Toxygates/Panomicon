@@ -19,7 +19,10 @@
 
 package t.viewer.server.rpc
 
+import java.util
 import java.util.{List => JList}
+import java.util.{Map => JMap}
+import java.util.HashMap
 
 import t.common.server.GWTUtils._
 import t.common.shared._
@@ -172,8 +175,19 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] =
-    annotationStore.forSamples(sampleStore, samples, attributes)
+  def parameterValuesForSamples(samples: Array[Sample],
+                                attributes: Array[Attribute]
+                               ): JMap[String, HashMap[Attribute, String]] = {
+    val queryResult: Map[String, Seq[(Attribute, Option[String])]] = sampleStore.sampleAttributeValues(samples.map(_.id), attributes)
+    val foo = new HashMap[Attribute, String]()
+    new HashMap((for {
+      (id, attributeOptionMap) <- queryResult
+      attributeMap = new HashMap[Attribute, String]((Map() ++ (for {
+        (attribute, optionValue) <- attributeOptionMap
+        value <- optionValue
+      } yield (attribute -> value))).asJava)
+    } yield (id, attributeMap)).asJava)
+  }
 
   @throws[TimeoutException]
   def annotations(samples: Array[Sample], importantOnly: Boolean = false): Array[Annotation] =
