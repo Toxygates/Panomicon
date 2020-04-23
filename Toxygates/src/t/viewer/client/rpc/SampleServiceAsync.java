@@ -59,7 +59,7 @@ public interface SampleServiceAsync {
   void annotations(Sample sample, AsyncCallback<Annotation> callback);
 
   void parameterValuesForSamples(Sample[] samples, Attribute[] attributes,
-                                 AsyncCallback<Map<String, HashMap<Attribute, String>>> callback);
+                                 AsyncCallback<Sample[]> callback);
 
   void annotations(Sample[] samples, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);

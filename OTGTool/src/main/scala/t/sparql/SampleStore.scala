@@ -21,9 +21,10 @@ package t.sparql
 
 import t.BaseConfig
 import t.TriplestoreConfig
-import t.db.{Sample}
-import t.sparql.{ Filter => TFilter }
+import t.db.Sample
+import t.sparql.{Filter => TFilter}
 import t.model.sample.Attribute
+
 import scala.collection.JavaConverters._
 import t.model.sample.CoreParameter._
 import t.model.SampleClass
@@ -179,7 +180,7 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
    */
   def sampleAttributeValues(sampleIDs: Iterable[String],
                             queryAttribs: Iterable[Attribute] = Seq()
-                           ): Map[String, Seq[(Attribute, Option[String])]] = {
+                           ): Seq[Sample] = {
 
     val queryParams = (if (queryAttribs.isEmpty) {
       bc.attributes.getAll.asScala.toSeq
@@ -191,7 +192,7 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
     val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
     val sampleIds = sampleIDs.map("\"" + _ + "\" ").mkString
 
-    val queryResult = triplestore.mapQuery(s"""$tPrefixes
+    val queryResult: Seq[Map[String, String]] = triplestore.mapQuery(s"""$tPrefixes
       |SELECT ?label $vars WHERE {
       |  GRAPH ?g {
       |    $triples
@@ -199,13 +200,16 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
       |  }
       |}""".stripMargin)
 
-    val groupedResult = queryResult.groupBy(_.get("label"))
+    val groupedResult: Map[Option[String], Seq[Map[String, String]]] =
+      queryResult.groupBy(_.get("label"))
 
-    Map() ++ (for {
-      idOption <- groupedResult.keys
+    (for {
+      (idOption, stringMaps) <- groupedResult
       sampleId <- idOption
-      paramsForId = groupedResult(Some(sampleId)).head
-    } yield sampleId -> withIndex.map(x => (x._1, paramsForId.get("k" + x._2))))
+      stringMap = stringMaps.head
+      attributesSeq = withIndex.map(x => (x._1, stringMap.getOrElse("k" + x._2, null)))
+      attributesMap = (Map() ++ attributesSeq).asJava
+    } yield new Sample(sampleId, new SampleClass(attributesMap))).toSeq
   }
 
   /**

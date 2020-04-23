@@ -91,14 +91,11 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   }
 
   @Override
-  protected void addParameter(Attribute attribute, Map<String, HashMap<Attribute, String>> parameterValues) {
+  protected void addParameter(Attribute attribute, Sample[] fetchedSamples) {
     // first load parameter info into samples
-    for (Map.Entry<String, HashMap<Attribute, String>> item : parameterValues.entrySet()) {
-      Sample sample = sampleIdMap().get(item.getKey());
-      if (sample != null) {
-        String value = item.getValue().get(attribute);
-        sample.sampleClass().put(attribute, value);
-      }
+    for (Sample fetchedSample : fetchedSamples) {
+      Sample targetSample = sampleIdMap().get(fetchedSample.id());
+      targetSample.sampleClass().mergeDeferred(fetchedSample.sampleClass());
     }
     
     // then compute parameter value for each unit

@@ -85,13 +85,10 @@ public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>>
   }
 
   @Override
-  protected void addParameter(Attribute attribute, Map<String, HashMap<Attribute, String>> parameterValues) {
-    for (Map.Entry<String, HashMap<Attribute, String>> item : parameterValues.entrySet()) {
-      Sample sample = sampleIdMap().get(item.getKey());
-      if (sample != null) {
-        String value = item.getValue().get(attribute);
-        sample.sampleClass().put(attribute, value);
-      }
+  protected void addParameter(Attribute attribute, Sample[] fetchedSamples) {
+    for (Sample fetchedSample : fetchedSamples) {
+      Sample targetSample = sampleIdMap().get(fetchedSample.id());
+      targetSample.sampleClass().mergeDeferred(fetchedSample.sampleClass());
     }
   }
 

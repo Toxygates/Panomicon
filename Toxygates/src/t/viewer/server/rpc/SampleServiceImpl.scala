@@ -28,6 +28,7 @@ import t.common.server.GWTUtils._
 import t.common.shared._
 import t.common.shared.sample._
 import t.common.shared.sample.search.MatchCondition
+import t.db
 import t.model.SampleClass
 import t.model.sample.{Attribute, SampleLike}
 import t.sparql._
@@ -177,16 +178,9 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   @throws[TimeoutException]
   def parameterValuesForSamples(samples: Array[Sample],
                                 attributes: Array[Attribute]
-                               ): JMap[String, HashMap[Attribute, String]] = {
-    val queryResult: Map[String, Seq[(Attribute, Option[String])]] = sampleStore.sampleAttributeValues(samples.map(_.id), attributes)
-    val foo = new HashMap[Attribute, String]()
-    new HashMap((for {
-      (id, attributeOptionMap) <- queryResult
-      attributeMap = new HashMap[Attribute, String]((Map() ++ (for {
-        (attribute, optionValue) <- attributeOptionMap
-        value <- optionValue
-      } yield (attribute -> value))).asJava)
-    } yield (id, attributeMap)).asJava)
+                               ): Array[Sample] = {
+    val queryResult: Seq[db.Sample] = sampleStore.sampleAttributeValues(samples.map(_.id), attributes)
+    queryResult.map(asJavaSample(_)).toArray
   }
 
   @throws[TimeoutException]

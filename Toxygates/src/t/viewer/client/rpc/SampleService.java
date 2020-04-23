@@ -137,7 +137,7 @@ public interface SampleService extends RemoteService {
    */
   Annotation annotations(Sample sample) throws TimeoutException;
 
-  Map<String, HashMap<Attribute, String>> parameterValuesForSamples(Sample[] samples, Attribute[] attributes);
+  Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes);
 
   /**
    * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
