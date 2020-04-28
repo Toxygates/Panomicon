@@ -23,8 +23,7 @@ import otg.model.sample.OTGAttribute._
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition
-import t.db.SimpleVarianceSet
-import t.db.VarianceSet
+import t.db.{SimpleVarianceSet, VarianceSet}
 import t.model.SampleClass
 import t.model.sample.AttributeSet
 import t.model.sample.CoreParameter
@@ -58,7 +57,7 @@ object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 }
 
 class IndividualSearch(condition: MatchCondition, varianceSets: Map[String, VarianceSet],
-    units: Map[String, (Unit, Unit)], samples: Iterable[Sample])
+                       units: Map[String, (Unit, Unit)], samples: Iterable[Sample])
     extends AbstractSampleSearch[Sample](condition, varianceSets, samples)  {
 
   lazy val pairedResults = results.map(sample => (sample,

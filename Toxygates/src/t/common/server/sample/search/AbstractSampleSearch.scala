@@ -21,7 +21,6 @@ package t.common.server.sample.search
 
 import scala.collection.JavaConverters._
 import scala.collection.Seq
-
 import otg.viewer.shared.OTGSchema
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
@@ -73,7 +72,7 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
 }
 
 abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
-    varianceSets: Map[String, VarianceSet], samples: Iterable[ST]) {
+                                                      varianceSets: Map[String, VarianceSet], samples: Iterable[ST]) {
 
   protected def zTestSampleSize(s: ST): Int
   protected def sortObject(s: ST): (String, Int, Int)
@@ -116,14 +115,14 @@ abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
   private def paramIsHigh(sample: ST, attribute: Attribute): Option[Boolean] = {
     paramComparison(sample, attribute,
       x => varianceSets.get(x.get(CoreParameter.SampleId)).
-          flatMap(_.upperBound(attribute, zTestSampleSize(sample))),
+          flatMap(x => Option(x.upperBound(attribute, zTestSampleSize(sample)))),
       _ > _)
   }
 
   private def paramIsLow(sample: ST, attribute: Attribute): Option[Boolean] = {
     paramComparison(sample, attribute,
       x => varianceSets.get(x.get(CoreParameter.SampleId)).
-          flatMap(_.lowerBound(attribute, zTestSampleSize(sample))),
+          flatMap(x => Option(x.lowerBound(attribute, zTestSampleSize(sample)))),
       _ < _)
   }
 

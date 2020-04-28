@@ -19,18 +19,16 @@
 
 package t.viewer.server
 
-import java.lang.{ Double => JDouble }
+import java.lang.{Double => JDouble}
 
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions
-
 import t.BaseConfig
 import t.common.shared.DataSchema
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.NumericalBioParamValue
 import t.common.shared.sample.Sample
 import t.common.shared.sample.StringBioParamValue
-import t.db.VarianceSet
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter
 import t.platform.BioParameter
@@ -39,6 +37,7 @@ import t.sparql.SampleStore
 import t.viewer.server.Conversions._
 import t.viewer.server.Conversions.asScalaSample
 import t.common.shared.GWTTypes
+import t.db.VarianceSet
 
 class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
 
@@ -126,7 +125,7 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
    * @param cg control group; used to compute upper/lower bounds for parameters
    */
   private def fromAttributes(cg: Option[VarianceSet], sample: Sample,
-    attribs: Iterable[(Attribute, Option[String])]): Annotation = {
+                             attribs: Iterable[(Attribute, Option[String])]): Annotation = {
 
     def asJDouble(d: Option[Double]) =
       d.map(new java.lang.Double(_)).getOrElse(null)
@@ -135,10 +134,9 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
       bp.kind match {
         case "numerical" =>
           val t = sample.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.attribute, 1))
-          val ub = cg.flatMap(_.upperBound(bp.attribute, 1))
-
-          numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
+          val lb = cg.map(_.lowerBound(bp.attribute, 1)).getOrElse(null)
+          val ub = cg.map(_.upperBound(bp.attribute, 1)).getOrElse(null)
+          numericalAsShared(bp, lb, ub, dispVal)
         case _ => stringAsShared(bp, dispVal)
       }
     }

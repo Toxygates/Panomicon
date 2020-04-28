@@ -72,9 +72,9 @@ class ControlGroupTest extends TTestSuite {
       /*
        * These limits may need to be adjusted in the future.
        */
-      cg.lowerBound(LiverWeight, 1).get should
+      cg.lowerBound(LiverWeight, 1).doubleValue should
         be (2.9 +- 0.2)
-      cg.upperBound(LiverWeight, 1).get should
+      cg.upperBound(LiverWeight, 1).doubleValue should
         be (3.1 +- 0.2)
     }
   }
