@@ -56,8 +56,6 @@ public interface SampleServiceAsync {
   
   void attributesForSamples(SampleClass sc, AsyncCallback<Attribute[]> callback);
 
-  void annotations(Sample sample, AsyncCallback<Annotation> callback);
-
   void parameterValuesForSamples(Sample[] samples, Attribute[] attributes,
                                  AsyncCallback<Sample[]> callback);
 

@@ -29,6 +29,7 @@ import otg.viewer.client.components.TimeDoseGrid;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.future.Future;
@@ -89,24 +90,16 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compounds.get(0));
-      sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
-          screen, "Unable to get samples") {
-        @Override
-        public void handleSuccess(Sample[] bcs) {
-
-          sampleService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
-              screen, "Unable to get annotations.") {
-            @Override
-            public void handleSuccess(Annotation a) {
-              for (BioParamValue e : a.getAnnotations()) {
-                if (e instanceof NumericalBioParamValue) {
-                  annotationSelector.addItem(e.label());
-                }
-              }
+      sampleService.attributesForSamples(sc, new PendingAsyncCallback<Attribute[]>(
+        screen, "Unable to get samples") {
+          @Override
+          public void handleSuccess(Attribute[] attributes) {
+            for (Attribute attribute: attributes) {
+              annotationSelector.addItem(attribute.title());
             }
-          });
+          }
         }
-      });
+      );
     }
     
     return future;

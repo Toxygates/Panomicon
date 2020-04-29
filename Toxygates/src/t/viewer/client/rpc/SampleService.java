@@ -129,13 +129,11 @@ public interface SampleService extends RemoteService {
   Pair<Unit, Unit>[] units(SampleClass[] scs, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
-  Attribute[] attributesForSamples(SampleClass sc) throws TimeoutException;
-
   /**
-   * Annotations are experiment-associated information such as dose, time, biochemical data etc.
-   * This method obtains them for a single sample.
+   * Find all attributes for which at least one of the samples matching the sample
+   * class filter has a value.
    */
-  Annotation annotations(Sample sample) throws TimeoutException;
+  Attribute[] attributesForSamples(SampleClass sc) throws TimeoutException;
 
   Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes);
 

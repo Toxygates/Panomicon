@@ -114,14 +114,6 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
 
   /**
    * Construct an Annotation from sample attributes
-   */
-  def fromAttributes(sample: Sample,
-    ps: Iterable[(Attribute, Option[String])]): Annotation = {
-    fromAttributes(None, sample, ps)
-  }
-
-  /**
-   * Construct an Annotation from sample attributes
    * @param cg control group; used to compute upper/lower bounds for parameters
    */
   private def fromAttributes(cg: Option[VarianceSet], sample: Sample,

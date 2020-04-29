@@ -166,13 +166,9 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   def attributesForSamples(sc: SampleClass): Array[Attribute] = {
-    sampleStore.attributesForSamples(SampleClassFilter(sc))(sf)().toArray
-  }
-
-  @throws[TimeoutException]
-  def annotations(sample: Sample): Annotation = {
-    val params = sampleStore.parameterQuery(sample.id)
-    annotationStore.fromAttributes(sample, params)
+    sampleStore.attributesForSamples(SampleClassFilter(sc))(sf)()
+      .sortBy(attribute => attribute.title())
+      .toArray
   }
 
   @throws[TimeoutException]
