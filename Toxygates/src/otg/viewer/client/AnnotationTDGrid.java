@@ -34,7 +34,10 @@ import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.future.Future;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -49,6 +52,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
   private ListBox annotationSelector;
   private Button annotationButton;
+
+  private Map<String, Sample[]> samplesForCompounds;
   
   public interface Delegate {
     void finishedFetchingAnnotations();
@@ -87,6 +92,11 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     // Clear labels from previous groups
     drawGridInner(grid);
 
+    /* Get list of attributes relevant for the samples we want to look at.
+       This code assumes that we can just look at the samples for the first
+       compound in our compound list; this is probably true for Open TG-GATEs
+       but could be a problem with other data.
+    */
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compounds.get(0));
@@ -101,7 +111,21 @@ public class AnnotationTDGrid extends TimeDoseGrid {
         }
       );
     }
-    
+
+    // Fetch samples (for each compound)
+    samplesForCompounds = new HashMap<String, Sample[]>();
+    for (String compound: compounds) {
+      SampleClass sc = chosenSampleClass.copy();
+      sc.put(OTGAttribute.Compound, compound);
+      sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(screen,
+              "Unable to retrieve samples for the group definition.") {
+        @Override
+        public void handleSuccess(Sample[] samples) {
+          samplesForCompounds.put(compound, samples);
+        }
+      });
+    }
+
     return future;
   }
 
@@ -111,29 +135,27 @@ public class AnnotationTDGrid extends TimeDoseGrid {
         + Integer.toHexString(gg) + Integer.toHexString(bb) + "\">" + html + "</div>");
   }
 
-  private double[][] annotValues;
-  private int annotValuesRemaining = 0;
+  private double[][] parameterValues;
+  private int valuesRemaining = 0;
 
-  private void displayAnnotation(final String annotation, final int row, final int col,
-      final String compound, final String dose, final String time) {
+  private void fetchValuesForCell(final String parameterName, final int row, final int col,
+                                  final String compound, final String dose, final String time) {
 
     SampleClass sc = chosenSampleClass.copy();
     sc.put(OTGAttribute.DoseLevel, dose);
     sc.put(OTGAttribute.ExposureTime, time);
     sc.put(OTGAttribute.Compound, compound);
 
-    sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(screen,
-        "Unable to retrieve samples for the group definition.") {
-      @Override
-      public void handleSuccess(Sample[] samples) {
-        processAnnotationSamples(annotation, row, col, time, samples);
-      }
-    });
+    Sample[] allSamplesForCompound = samplesForCompounds.get(compound);
+    Sample[] cellSamples = Arrays.stream(allSamplesForCompound).
+            filter(s -> s.sampleClass().compatible(sc)).toArray(Sample[]::new);
+    getValuesForParameter(parameterName, row, col, time, cellSamples);
   }
 
-  private double doubleValueFor(Annotation a, String key) throws IllegalArgumentException {
+  private double doubleValueFor(Annotation a, String parameterName)
+          throws IllegalArgumentException {
     for (BioParamValue e : a.getAnnotations()) {      
-      if (e.label().equals(key) && e instanceof NumericalBioParamValue && 
+      if (e.label().equals(parameterName) && e instanceof NumericalBioParamValue &&
           ((NumericalBioParamValue)e).value() != null) {
         return ((NumericalBioParamValue) e).value();
       }
@@ -141,8 +163,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     throw new IllegalArgumentException("Value not available");
   }
   
-  private void processAnnotationSamples(final String annotation, final int row, final int col,
-      final String time, final Sample[] samples) {
+  private void getValuesForParameter(final String parameterName, final int row, final int col,
+                                     final String time, final Sample[] samples) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
     sampleService.annotations(samples, false, new PendingAsyncCallback<Annotation[]>(screen,
         "Unable to get annotations.") {
@@ -152,13 +174,13 @@ public class AnnotationTDGrid extends TimeDoseGrid {
         int n = 0;
         for (Annotation a : as) {
           try {
-            double val = doubleValueFor(a, annotation);
+            double val = doubleValueFor(a, parameterName);
             if (!Double.isNaN(val)) {
               n += 1;
               sum += val;
             }
           } catch (IllegalArgumentException e) {
-            logger.info("No value for parameter " + annotation + " for sample " + a.id());
+            logger.info("No value for parameter " + parameterName + " for sample " + a.id());
           } catch (Exception e) {
             logger.log(Level.WARNING, "Annotation sample processing error", e);
           }
@@ -166,15 +188,15 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
         double avg = (n > 0 ? sum / n : Double.NaN);
         labels[row][col].setText(time + " (" + fmt.format(avg) + ")");
-        annotValues[row][col] = avg;
-        annotValuesRemaining -= 1;
+        parameterValues[row][col] = avg;
+        valuesRemaining -= 1;
 
-        if (annotValuesRemaining == 0) {
+        if (valuesRemaining == 0) {
           // got the final values
           double min = Double.MAX_VALUE;
           double max = Double.MIN_VALUE;
 
-          for (double[] r : annotValues) {
+          for (double[] r : parameterValues) {
             for (double v : r) {
               if (v != Double.NaN && v > max) {
                 max = v;
@@ -184,10 +206,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
               }
             }
           }
-          for (int r = 0; r < annotValues.length; ++r) {
-            for (int c = 0; c < annotValues[0].length; ++c) {
-              if (annotValues[r][c] != Double.NaN) {
-                int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
+          for (int r = 0; r < parameterValues.length; ++r) {
+            for (int c = 0; c < parameterValues[0].length; ++c) {
+              if (parameterValues[r][c] != Double.NaN) {
+                int gg = 255 - (int) ((parameterValues[r][c] - min) * 127 / (max - min));
                 int rr = gg;
                 setColour(r, c, rr, gg, 255);
               }
@@ -201,15 +223,15 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
   private void reloadAnnotations() {
     if (annotationSelector.getSelectedIndex() != -1) {
-      String annot = annotationSelector.getItemText(annotationSelector.getSelectedIndex());
-      displayAnnotation(annot);
+      String parameterName = annotationSelector.getItemText(annotationSelector.getSelectedIndex());
+      fetchValuesForCell(parameterName);
     }
   }
 
-  private void displayAnnotation(String name) {
+  private void fetchValuesForCell(String parameterName) {
     int numMin = minorValues.size();
-    annotValues = new double[chosenCompounds.size()][numMin * 3];
-    annotValuesRemaining = chosenCompounds.size() * numMin * 3;
+    parameterValues = new double[chosenCompounds.size()][numMin * 3];
+    valuesRemaining = chosenCompounds.size() * numMin * 3;
 
     for (int c = 0; c < chosenCompounds.size(); ++c) {
       for (int d = 0; d < 3; ++d) {
@@ -218,7 +240,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
           final String dose = mediumValues.get(d);
 
           final String time = minorValues.get(t);
-          displayAnnotation(name, c, d * numMin + t, compound, dose, time);
+          fetchValuesForCell(parameterName, c, d * numMin + t, compound, dose, time);
         }
       }
     }
