@@ -153,6 +153,10 @@ App elements
 	padding-left: 8px;
 }
 
+.waitDialog {
+    z-index: 1000;
+}
+
 .gwt-DialogBox .Caption {
 	font-size: 1.25em;
 }

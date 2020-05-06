@@ -347,6 +347,7 @@ public class Utils {
 
   public static DialogBox waitDialog() {
     DialogBox waitDialog = new DialogBox(false, true);
+    waitDialog.addStyleName("waitDialog");
     waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));
     return waitDialog;
   }
