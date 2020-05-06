@@ -59,6 +59,9 @@ public interface SampleServiceAsync {
   void parameterValuesForSamples(Sample[] samples, Attribute[] attributes,
                                  AsyncCallback<Sample[]> callback);
 
+  void samplesWithAttributeValues(Sample[] samples, boolean importantOnly,
+                                  AsyncCallback<Sample[]> callback);
+
   void annotations(Sample[] samples, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);
 

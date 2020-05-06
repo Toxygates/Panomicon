@@ -30,7 +30,8 @@ import t.common.shared.sample._
 import t.common.shared.sample.search.MatchCondition
 import t.db
 import t.model.SampleClass
-import t.model.sample.{Attribute, SampleLike}
+import t.model.sample.{Attribute, CoreParameter, SampleLike}
+import t.platform.SSVarianceSet
 import t.sparql._
 import t.sparql.secondary._
 import t.viewer.client.rpc._
@@ -177,6 +178,23 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
                                ): Array[Sample] = {
     val queryResult: Seq[db.Sample] = sampleStore.sampleAttributeValues(samples.map(_.id), attributes)
     queryResult.map(asJavaSample(_)).toArray
+  }
+
+  @throws[TimeoutException]
+  def samplesWithAttributeValues(samples: Array[Sample],
+                                 importantOnly: Boolean = false
+                                ): Array[Sample] = {
+    val keys = if (importantOnly) baseConfig.attributes.getPreviewDisplay.asScala.toSeq
+      else baseConfig.attributes.getAll.asScala.toSeq
+
+    samples.map(sample => {
+      val ps: Seq[(Attribute, Option[String])] = sampleStore.parameterQuery(sample.id, keys)
+      val attributeValueMap = (Map() ++ (for {
+        (attribute, valueOption) <- ps
+        value <- valueOption
+      } yield (attribute, value))).asJava
+      new Sample(sample.id, new SampleClass(attributeValueMap))
+    })
   }
 
   @throws[TimeoutException]

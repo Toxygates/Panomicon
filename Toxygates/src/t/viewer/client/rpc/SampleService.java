@@ -137,6 +137,8 @@ public interface SampleService extends RemoteService {
 
   Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes);
 
+  Sample[] samplesWithAttributeValues(Sample[] samples, boolean importantOnly);
+
   /**
    * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
    * values for all of the specified attributes will be returned.

@@ -53,6 +53,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private ListBox annotationSelector;
   private Button annotationButton;
 
+  private Attribute[] currentAttributes;
   private Map<String, Sample[]> samplesForCompounds;
   
   public interface Delegate {
@@ -104,7 +105,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
         screen, "Unable to get samples") {
           @Override
           public void handleSuccess(Attribute[] attributes) {
-            for (Attribute attribute: attributes) {
+            currentAttributes = Arrays.stream(attributes).filter(a -> a.isNumerical()).toArray(Attribute[]::new);
+            for (Attribute attribute: currentAttributes) {
               annotationSelector.addItem(attribute.title());
             }
           }
@@ -138,8 +140,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private double[][] parameterValues;
   private int valuesRemaining = 0;
 
-  private void fetchValuesForCell(final String parameterName, final int row, final int col,
-                                  final String compound, final String dose, final String time) {
+  private void fetchValuesForAttribute(final Attribute attribute, final int row, final int col,
+                                       final String compound, final String dose, final String time) {
 
     SampleClass sc = chosenSampleClass.copy();
     sc.put(OTGAttribute.DoseLevel, dose);
@@ -149,38 +151,37 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     Sample[] allSamplesForCompound = samplesForCompounds.get(compound);
     Sample[] cellSamples = Arrays.stream(allSamplesForCompound).
             filter(s -> s.sampleClass().compatible(sc)).toArray(Sample[]::new);
-    getValuesForParameter(parameterName, row, col, time, cellSamples);
+    getValuesForParameter(attribute, row, col, time, cellSamples);
   }
 
-  private double doubleValueFor(Annotation a, String parameterName)
+  private double doubleValueFor(Sample sample, Attribute parameter)
           throws IllegalArgumentException {
-    for (BioParamValue e : a.getAnnotations()) {      
-      if (e.label().equals(parameterName) && e instanceof NumericalBioParamValue &&
-          ((NumericalBioParamValue)e).value() != null) {
-        return ((NumericalBioParamValue) e).value();
-      }
+    String valueString = sample.get(parameter);
+    if (valueString == null) {
+      throw new IllegalArgumentException("Value not available");
+    } else {
+      return Double.parseDouble(valueString);
     }
-    throw new IllegalArgumentException("Value not available");
   }
   
-  private void getValuesForParameter(final String parameterName, final int row, final int col,
+  private void getValuesForParameter(final Attribute parameter, final int row, final int col,
                                      final String time, final Sample[] samples) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
-    sampleService.annotations(samples, false, new PendingAsyncCallback<Annotation[]>(screen,
+    sampleService.samplesWithAttributeValues(samples, false, new PendingAsyncCallback<Sample[]>(screen,
         "Unable to get annotations.") {
       @Override
-      public void handleSuccess(Annotation[] as) {
+      public void handleSuccess(Sample[] fetchedSamples) {
         double sum = 0;
         int n = 0;
-        for (Annotation a : as) {
+        for (Sample sample : fetchedSamples) {
           try {
-            double val = doubleValueFor(a, parameterName);
+            double val = doubleValueFor(sample, parameter);
             if (!Double.isNaN(val)) {
               n += 1;
               sum += val;
             }
           } catch (IllegalArgumentException e) {
-            logger.info("No value for parameter " + parameterName + " for sample " + a.id());
+            logger.info("No value for parameter " + parameter.title() + " for sample " + sample.id());
           } catch (Exception e) {
             logger.log(Level.WARNING, "Annotation sample processing error", e);
           }
@@ -223,12 +224,12 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
   private void reloadAnnotations() {
     if (annotationSelector.getSelectedIndex() != -1) {
-      String parameterName = annotationSelector.getItemText(annotationSelector.getSelectedIndex());
-      fetchValuesForCell(parameterName);
+      Attribute parameter = currentAttributes[annotationSelector.getSelectedIndex()];
+      fetchValuesForAttribute(parameter);
     }
   }
 
-  private void fetchValuesForCell(String parameterName) {
+  private void fetchValuesForAttribute(Attribute attribute) {
     int numMin = minorValues.size();
     parameterValues = new double[chosenCompounds.size()][numMin * 3];
     valuesRemaining = chosenCompounds.size() * numMin * 3;
@@ -240,7 +241,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
           final String dose = mediumValues.get(d);
 
           final String time = minorValues.get(t);
-          fetchValuesForCell(parameterName, c, d * numMin + t, compound, dose, time);
+          fetchValuesForAttribute(attribute, c, d * numMin + t, compound, dose, time);
         }
       }
     }
