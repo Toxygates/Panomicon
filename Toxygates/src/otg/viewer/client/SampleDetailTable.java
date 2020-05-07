@@ -23,13 +23,16 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.SafeHtmlHeader;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.sample.*;
+import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -38,97 +41,92 @@ import t.viewer.client.table.TooltipColumn;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
- * A table that displays sample annotations for a small set of samples.
+ * A table that displays attribute values for a small set of samples.
  */
 
 public class SampleDetailTable extends Composite {
-  private CellTable<BioParamValue[]> table;
+  private CellTable<Attribute> table;
   private Sample[] samples;
   private SampleServiceAsync sampleService;
-  private final @Nullable String title;
+  private final @Nullable String sectionTitle;
   private final boolean isSection;
   private final OTGScreen screen;
   public Delegate delegate;
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
-  
+
   public interface Delegate {
     void sampleDetailTableFinishedSettingData();
   }
-  
+
   public interface Resources extends CellTable.Resources {
     @Override
     @Source("t/viewer/client/table/Tables.gss")
     CellTable.Style cellTableStyle();
   }
 
-  protected static class BioParamColumn extends TooltipColumn<BioParamValue[]> {
+  protected static class AttributeValueColumn extends TooltipColumn<Attribute> {
 
-    private final int i;
-    public BioParamColumn(Cell<String> cell, int column) {
+    private final Sample sample;
+    public AttributeValueColumn(Cell<String> cell, Sample sample) {
       super(cell);
-      i = column;
+      this.sample = sample;
     }
 
     @Override
-    public String getValue(BioParamValue[] object) {
-      return object[i].displayValue();
+    public String getValue(Attribute attribute) {
+      return sample.get(attribute);
     }
 
     @Override
-    protected String getTooltip(BioParamValue[] item) {
-      return item[i].tooltip();
+    protected String getTooltip(Attribute attribute) {
+      return sample.get(attribute);
     }
 
     @Override
-    protected void htmlBeforeContent(SafeHtmlBuilder sb, BioParamValue[] object) {
-      super.htmlBeforeContent(sb, object);
-      BioParamValue bpv = object[i];
-      if (bpv instanceof NumericalBioParamValue) {
-        NumericalBioParamValue nbpv = (NumericalBioParamValue) bpv;
-        if (nbpv.value() == null) {
-          // otherwise we get NullPointerExceptions on nbpv.isAbove() 
-        } else if (nbpv.isAbove()) {
-          sb.append(TEMPLATES.startStyled("numericalParameterAbove"));                  
-        } else if (nbpv.isBelow()) {
-          sb.append(TEMPLATES.startStyled("numericalParameterBelow"));
-        } else if (nbpv.isPathological()) {
-          sb.append(TEMPLATES.startStyled("numericalParameterPathological"));
-        } else {
+    protected void htmlBeforeContent(SafeHtmlBuilder sb, Attribute attribute) {
+      super.htmlBeforeContent(sb, attribute);
+      if (attribute.isNumerical()) {
+        try {
+          Double value = Double.parseDouble(sample.get(attribute));
+        } catch (NumberFormatException e) {
+          // TODO: deal with numbers that are above/below
+          //          sb.append(TEMPLATES.startStyled("numericalParameterAbove"));
+          //          sb.append(TEMPLATES.startStyled("numericalParameterBelow"));
           sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
         }
-      }        
+      }
     }
 
     @Override
-    protected void htmlAfterContent(SafeHtmlBuilder sb, BioParamValue[] object) {
+    protected void htmlAfterContent(SafeHtmlBuilder sb, Attribute object) {
       super.htmlAfterContent(sb, object);
-      BioParamValue bpv = object[i];
-      if (bpv instanceof NumericalBioParamValue) {
+      if (object.isNumerical()) {
         sb.append(TEMPLATES.endStyled());
       }
-    }        
+    }
   }
 
-  public SampleDetailTable(OTGScreen screen, @Nullable String title, boolean isSection) {
-    this.title = title != null ? title : DEFAULT_SECTION_TITLE;
+  public SampleDetailTable(OTGScreen screen, @Nullable String sectionTitle, boolean isSection) {
+    this.sectionTitle = sectionTitle != null ? sectionTitle : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.screen = screen;
     sampleService = screen.manager().sampleService();
     Resources resources = GWT.create(Resources.class);
-    table = new CellTable<BioParamValue[]>(15, resources);
+    table = new CellTable<Attribute>(15, resources);
     initWidget(table);
     table.setWidth("100%", true); // use fixed layout so we can control column width explicitly
-    table.setSelectionModel(new NoSelectionModel<BioParamValue[]>());
+    table.setSelectionModel(new NoSelectionModel<Attribute>());
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
   }
 
-  public @Nullable String sectionTitle() { return title; }
+  public @Nullable String sectionTitle() { return sectionTitle; }
   
-  public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {
-    sampleService.annotations(c.getSamples(), importantOnly, new PendingAsyncCallback<Annotation[]>(
+  public void loadFrom(final HasSamples<Sample> sampleSource, boolean importantOnly) {
+    sampleService.samplesWithAttributeValues(sampleSource.getSamples(), importantOnly, new PendingAsyncCallback<Sample[]>(
             screen) {
       @Override
       public void handleFailure(Throwable caught) {
@@ -137,37 +135,37 @@ public class SampleDetailTable extends Composite {
       }
 
       @Override
-      public void handleSuccess(Annotation[] as) {
-        setData(c, as);
+      public void handleSuccess(Sample[] samples) {
+        setData(samples);
       }
     });
   }
   
-  private void setupColumns(HasSamples<Sample> c) {
-    samples = c.getSamples();    
+  private void setupColumns(Sample[] samples) {
+    this.samples = samples;
     while (table.getColumnCount() > 0) {
       table.removeColumn(0);
     }
     
-    TextColumn<BioParamValue[]> labelCol = new TextColumn<BioParamValue[]>() {
+    TextColumn<Attribute> labelCol = new TextColumn<Attribute>() {
       @Override
-      public String getValue(BioParamValue[] object) {
-        return object[0].label();
+      public String getValue(Attribute attribute) {
+        return attribute.title();
       }      
     };   
-    table.addColumn(labelCol, title);
+    table.addColumn(labelCol, sectionTitle);
     table.addColumnStyleName(0, "sampleDetailTitleColumn");
     
-    TextCell tc = new TextCell();
+    TextCell cell = new TextCell();
     for (int i = 1; i < samples.length + 1; ++i) {
       String name = samples[i - 1].id();
-      BioParamColumn bpc = new BioParamColumn(tc, i - 1);
+      AttributeValueColumn column = new AttributeValueColumn(cell, samples[i-1]);
       String borderStyle = i == 1 ? "darkBorderLeft" : "lightBorderLeft";
-      bpc.setCellStyleNames(borderStyle);
+      column.setCellStyleNames(borderStyle);
       String displayTitle = abbreviate(name);      
       SafeHtmlHeader header = new SafeHtmlHeader(Utils.tooltipSpan(name, displayTitle));
       header.setHeaderStyleNames(borderStyle);
-      table.addColumn(bpc, header);
+      table.addColumn(column, header);
       table.addColumnStyleName(i, "sampleDetailDataColumn");
     }
     table.setWidth((15 + 9 * samples.length) + "em", true);
@@ -182,55 +180,26 @@ public class SampleDetailTable extends Composite {
     }
   }
 
-  /**
-   * For a single parameter, make a row containing its value for all the samples.
-   * 
-   * @return The row, or null if no samples had a display value for the parameter.
-   */
-  private @Nullable BioParamValue[] makeAnnotItem(int i, Annotation[] as) {
-    BioParamValue[] item = new BioParamValue[samples.length];
+  void setData(Sample[] samples) {
+    setupColumns(samples);
+    if (samples.length > 0) {
+      List<Attribute> processed = new ArrayList();
+      Sample firstSample = samples[0];
 
-    boolean hasDisplayValue = false;
-    for (int j = 0; j < as.length && j < samples.length; ++j) {
-      item[j] = as[j].getAnnotations().get(i);
-      if (item[j].displayValue() != null) {
-        hasDisplayValue = true;
-      }
-    }
-    if (hasDisplayValue) {
-      return item;
-    } else {
-      return null;
-    }
-  }
-  
-  void setData(HasSamples<Sample> c, Annotation[] annotations) {
-    setupColumns(c);
-    if (annotations.length > 0) {
-      List<BioParamValue[]> processed = new ArrayList<BioParamValue[]>();
-      Annotation a = annotations[0];
-      final int numEntries = a.getAnnotations().size();
+      // This assumes all samples will have the same attributes
+      List<Attribute> sortedAttributes = firstSample.sampleClass().getKeys().stream().collect(Collectors.toList());
+      Collections.sort(sortedAttributes);
+      final int numEntries = sortedAttributes.size();
+
       for (int i = 0; i < numEntries; i++) {
-        BioParamValue value = a.getAnnotations().get(i);
-        String sec = value.section();
-        if (!isSection || (sec == null && title.equals(DEFAULT_SECTION_TITLE))
-            || (sec != null && sec.equals(title))) {
-
-          BioParamValue[] row = makeAnnotItem(i, annotations);
-          if (row != null) {
-            processed.add(row);
-          }
+        Attribute attribute = sortedAttributes.get(i);
+        String sectionForAttribute = attribute.section();
+        if (!isSection ||
+            (sectionForAttribute == null && sectionTitle.equals(DEFAULT_SECTION_TITLE)) ||
+            (sectionForAttribute != null && sectionForAttribute.equals(sectionTitle))) {
+          processed.add(attribute);
         }
       }
-      Collections.sort(processed, new Comparator<BioParamValue[]>() {
-        @Override
-        public int compare(BioParamValue[] o1, BioParamValue[] o2) {
-          if (o1 == null || o2 == null || o1.length < 1 || o2.length < 1) {
-            return 0;
-          }
-          return o1[0].label().compareTo(o2[0].label());
-        }        
-      });
       table.setRowData(processed);
     }
     if (delegate != null) {

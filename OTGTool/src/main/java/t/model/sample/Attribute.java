@@ -25,7 +25,7 @@ import java.io.Serializable;
 /**
  * An attribute of a sample
  */
-public class Attribute implements Serializable {
+public class Attribute implements Serializable, Comparable<Attribute> {
 
   private String id, title;
   private @Nullable String section;
@@ -86,6 +86,11 @@ public class Attribute implements Serializable {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public int compareTo(Attribute other) {
+    return title().compareTo(other.title());
   }
 
   public static final String NOT_AVAILABLE = "na";

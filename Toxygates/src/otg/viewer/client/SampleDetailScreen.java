@@ -54,7 +54,7 @@ public class SampleDetailScreen extends MinimalScreen
   public static final String key = "ad";
 
   VerticalPanel sectionsPanel;
-  private Map<String, SampleDetailTable> sections = new HashMap<String, SampleDetailTable>();
+  private Map<String, OldSampleDetailTable> sections = new HashMap<String, OldSampleDetailTable>();
 
   private ListBox columnList = new ListBox();
 
@@ -102,9 +102,9 @@ public class SampleDetailScreen extends MinimalScreen
     return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
   }
 
-  private SampleDetailTable addSection(String section, Annotation[] annotations,
-      HasSamples<Sample> c, boolean isSection) {
-    SampleDetailTable sdt = new SampleDetailTable(SampleDetailScreen.this, section, isSection);
+  private OldSampleDetailTable addSection(String section, Annotation[] annotations,
+                                          HasSamples<Sample> c, boolean isSection) {
+    OldSampleDetailTable sdt = new OldSampleDetailTable(SampleDetailScreen.this, section, isSection);
     sections.put(section, sdt);
     sdt.setData(c, annotations);
     return sdt;
@@ -127,11 +127,11 @@ public class SampleDetailScreen extends MinimalScreen
         if (annotations.length < 1) {
           return;
         }
-        SampleDetailTable sec = addSection(null, annotations, hasSamples, true);
+        OldSampleDetailTable sec = addSection(null, annotations, hasSamples, true);
         sectionsPanel.add(sec);
 
-        LinkedList<SampleDetailTable> secList =
-            new LinkedList<SampleDetailTable>();
+        LinkedList<OldSampleDetailTable> secList =
+            new LinkedList<OldSampleDetailTable>();
         for (BioParamValue bp: annotations[0].getAnnotations()) {
           if (bp.section() != null &&
               !sections.containsKey(bp.section())) {
@@ -139,13 +139,13 @@ public class SampleDetailScreen extends MinimalScreen
           }
         }
 
-        Collections.sort(secList, new Comparator<SampleDetailTable>() {
+        Collections.sort(secList, new Comparator<OldSampleDetailTable>() {
           @Override
-          public int compare(SampleDetailTable o1, SampleDetailTable o2) {
+          public int compare(OldSampleDetailTable o1, OldSampleDetailTable o2) {
             return o1.sectionTitle().compareTo(o2.sectionTitle());
           }
         });
-        for (SampleDetailTable sdt: secList) {
+        for (OldSampleDetailTable sdt: secList) {
           sectionsPanel.add(sdt);
         }
       }
