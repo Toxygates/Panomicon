@@ -54,8 +54,8 @@ public class AttributeSet extends t.model.sample.AttributeSet {
   synchronized public static AttributeSet getDefault() {
     if (defaultSet == null) {
       List<Attribute> attributes = new ArrayList<Attribute>();
-      Collections.addAll(attributes, CoreParameter.values());
-      Collections.addAll(attributes, otg.model.sample.OTGAttribute.values());
+      Collections.addAll(attributes, CoreParameter.all());
+      Collections.addAll(attributes, otg.model.sample.OTGAttribute.all());
       List<Attribute> required = new ArrayList<Attribute>();
       
       Collections.addAll(required, SampleId, ControlGroup, Platform, Type);

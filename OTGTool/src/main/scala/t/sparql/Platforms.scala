@@ -26,7 +26,6 @@ import t.platform.ProbeRecord
 import t.util.TempFiles
 import t.platform.BioParameter
 import t.platform.BioParameters
-import t.model.sample.BasicAttribute
 import t.model.sample.AttributeSet
 import t.BaseConfig
 

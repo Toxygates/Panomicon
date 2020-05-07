@@ -20,12 +20,11 @@
 package t.common.shared
 
 import org.junit.runner.RunWith
-
 import t.TTestSuite
 import t.common.server.GWTUtils._
 import t.model.SampleClass
-import t.model.sample.BasicAttribute
 import org.scalatest.junit.JUnitRunner
+import t.model.sample.Attribute
 
 @RunWith(classOf[JUnitRunner])
 class SampleMultiFilterTest extends TTestSuite {
@@ -39,11 +38,11 @@ class SampleMultiFilterTest extends TTestSuite {
   def jmap[T,U](x: Map[T, U]): java.util.Map[T, U] =
     x.asGWT
 
-  val x = new BasicAttribute("x", "x", false, null)
-  val y = new BasicAttribute("y", "y", false, null)
-  val z = new BasicAttribute("y", "y", false, null)
-  val c = new BasicAttribute("a", "a", false, null)
-  val b = new BasicAttribute("b", "b", false, null)
+  val x = new Attribute("x", "x", false, null)
+  val y = new Attribute("y", "y", false, null)
+  val z = new Attribute("y", "y", false, null)
+  val c = new Attribute("a", "a", false, null)
+  val b = new Attribute("b", "b", false, null)
 
   test("Empty") {
     val smf = new SampleMultiFilter(jmap(Map()))

@@ -26,7 +26,6 @@ import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
 import t.model.sample.Attribute
-import t.model.sample.BasicAttribute
 import otg.model.sample.OTGAttribute._
 
 import scala.collection.JavaConverters._

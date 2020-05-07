@@ -133,7 +133,7 @@ abstract public class AttributeSet implements Serializable {
       return byId.get(id);
     }
     
-    Attribute a = new BasicAttribute(id, title, kind, section);
+    Attribute a = new Attribute(id, title, kind, section);
     add(a);
     return a;
   }

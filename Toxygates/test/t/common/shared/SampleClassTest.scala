@@ -26,17 +26,16 @@ import org.junit.runner.RunWith
 import t.TTestSuite
 import t.model.SampleClass
 import t.model.sample.Attribute
-import t.model.sample.BasicAttribute
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SampleClassTest extends TTestSuite {
 
-  val x = new BasicAttribute("x", "x", false, null)
-  val y = new BasicAttribute("y", "y", false, null)
-  val z = new BasicAttribute("y", "y", false, null)
-  val c = new BasicAttribute("a", "a", false, null)
-  val b = new BasicAttribute("b", "b", false, null)
+  val x = new Attribute("x", "x", false, null)
+  val y = new Attribute("y", "y", false, null)
+  val z = new Attribute("y", "y", false, null)
+  val c = new Attribute("a", "a", false, null)
+  val b = new Attribute("b", "b", false, null)
 
   val testMap: Map[Attribute, String] = Map(x -> "x",
       y -> "y",
@@ -71,7 +70,7 @@ class SampleClassTest extends TTestSuite {
 
   test("collect") {
     assert(SampleClass.collect((List(testSc, incomp).asJava),
-      new BasicAttribute("x", "whatever", false, null)).asScala
+      new Attribute("x", "whatever", false, null)).asScala
         == Set("x", "y"))
   }
 }

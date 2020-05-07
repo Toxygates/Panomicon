@@ -31,7 +31,6 @@ import t.common.client.components.ItemSelector;
 import t.common.shared.sample.search.AtomicMatch;
 import t.common.shared.sample.search.MatchType;
 import t.model.sample.Attribute;
-import t.model.sample.BasicAttribute;
 import t.viewer.client.Utils;
 
 public class AtomicEditor extends MatchEditor {
@@ -43,7 +42,7 @@ public class AtomicEditor extends MatchEditor {
   Attribute[] attributes;
 
   final static Attribute UNDEFINED_ITEM =
-      new BasicAttribute("undefined", "Undefined", false, null);
+      new Attribute("undefined", "Undefined", false, null);
   
   public AtomicEditor(@Nullable MatchEditor parent, 
       final Collection<Attribute> parameters) {

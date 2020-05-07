@@ -19,59 +19,47 @@
 
 package otg.model.sample;
 
-import static otg.model.sample.Section.*;
-
+import org.json.Test;
 import t.model.sample.Attribute;
+
+import java.util.Arrays;
 
 /**
  * Attributes available in Open TG-GATEs.
- * This enum defines essential attributes (needed in code) only.
+ * This class defines essential attributes (needed in code) only.
  * Additional attributes are defined in the triplestore.
  */
-public enum OTGAttribute implements Attribute {
-  DoseLevel("dose_level", "Dose level", false, SampleDetails),
-  Individual("individual_id", "Individual", false, SampleDetails), 
-  ExposureTime("exposure_time", "Exposure Time", false, SampleDetails),
-  Dose("dose", "Dose", false, SampleDetails),
-  DoseUnit("dose_unit", "Dose unit", false, SampleDetails),
-  Compound("compound_name", "Compound", false, SampleDetails),
-  
-  Organism("organism", "Organism", false, SampleDetails),
-  Organ("organ_id", "Organ", false, SampleDetails),
-  Repeat("sin_rep_type", "Repeat?", false, SampleDetails),
-  TestType("test_type", "Test type", false, SampleDetails),
-  
-  Dataset("dataset", "Dataset", false, Meta),
+public class OTGAttribute {
+  private static final String SampleDetails = "Sample details";
+  private static final String OrganWeight = "Organ weight";
+  private static final String Meta = "Meta";
 
-  AdmRoute("adm_route_type", "Administration route", false, SampleDetails),
+  public static final Attribute DoseLevel = new Attribute("dose_level", "Dose level", false, SampleDetails);
+  public static final Attribute Individual = new Attribute("individual_id", "Individual", false, SampleDetails);
+  public static final Attribute ExposureTime = new Attribute("exposure_time", "Exposure Time", false, SampleDetails);
+  public static final Attribute Dose = new Attribute("dose", "Dose", false, SampleDetails);
+  public static final Attribute DoseUnit = new Attribute("dose_unit", "Dose unit", false, SampleDetails);
+  public static final Attribute Compound = new Attribute("compound_name", "Compound", false, SampleDetails);
   
-  LiverWeight("liver_wt", "Liver weight (g)", true, OrganWeight),
-  KidneyWeight("kidney_total_wt", "Kidney weight total (g)", true, OrganWeight);
+  public static final Attribute Organism = new Attribute("organism", "Organism", false, SampleDetails);
+  public static final Attribute Organ = new Attribute("organ_id", "Organ", false, SampleDetails);
+  public static final Attribute Repeat = new Attribute("sin_rep_type", "Repeat?", false, SampleDetails);
+  public static final Attribute TestType = new Attribute("test_type", "Test type", false, SampleDetails);
+  
+  public static final Attribute Dataset = new Attribute("dataset", "Dataset", false, Meta);
 
-  private String id, title;
-  boolean isNumerical;
-  private String section;
+  public static final Attribute AdmRoute = new Attribute("adm_route_type", "Administration route", false, SampleDetails);
   
-  OTGAttribute(String id, String title, boolean numerical, String section) {
-    this.id = id;
-    this.title = title;
-    this.isNumerical = numerical;
-    this.section = section;
+  public static final Attribute LiverWeight = new Attribute("liver_wt", "Liver weight (g)", true, OrganWeight);
+  public static final Attribute KidneyWeight = new Attribute("kidney_total_wt", "Kidney weight total (g)", true, OrganWeight);
+
+  private static final Attribute[] _all = { DoseLevel, Individual, ExposureTime,
+          Dose, DoseUnit, Compound, Organism, Organ, Repeat, TestType, Dataset,
+          AdmRoute, LiverWeight, KidneyWeight };
+
+  public static Attribute[] all() {
+    return Arrays.copyOf(_all, _all.length);
   }
-  
-  OTGAttribute(String id, String title, boolean numerical, Section sec) {
-    this(id, title, numerical, sec.title);
-  }
-  
-  @Override
-  public String id() { return id; }
 
-  @Override
-  public String title() { return title; }
-
-  @Override
-  public boolean isNumerical() { return isNumerical; }
-  
-  @Override
-  public String section() { return section; }
+  private OTGAttribute() {}
 }

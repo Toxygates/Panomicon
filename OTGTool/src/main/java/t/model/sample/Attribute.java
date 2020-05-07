@@ -20,41 +20,83 @@
 package t.model.sample;
 
 import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
  * An attribute of a sample
  */
-public interface Attribute {
+public class Attribute implements Serializable {
+
+  private String id, title;
+  private @Nullable String section;
+  private boolean isNumerical;
+
+  //GWT constructor
+  public Attribute() {}
+
+  public Attribute(String id, String title, boolean isNumerical, @Nullable String section) {
+    this.id = id;
+    this.title = title;
+    this.isNumerical = isNumerical;
+    this.section = section;
+  }
+
+  public Attribute(String id, String title, String kind, @Nullable String section) {
+    this(id, title, "numerical".equals(kind), section);
+  }
+
+  public Attribute(String id, String title) {
+    this(id, title, false, null);
+  }
 
   /**
    * Internal ID for database purposes
    */
-  String id();
+  public String id() { return id; }
   
   /**
    * Human-readable title
    */
-  String title();
+  public String title() { return title; }
   
   /**
    * Whether the attribute is numerical
    */
-  boolean isNumerical();
+  public boolean isNumerical() { return isNumerical; }
   
   /**
    * The section that the attribute belongs to, if any.
    */
-  @Nullable String section();
+  public @Nullable String section() { return section; }
 
-  String NOT_AVAILABLE = "na";
+  @Override
+  public String toString() {
+    return title;
+  }
+
+  @Override
+  public int hashCode() {
+    return AttributeSet.attributeHash(this);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Attribute) {
+      return AttributeSet.attributesEqual(this, (Attribute) obj);
+    } else {
+      return false;
+    }
+  }
+
+  public static final String NOT_AVAILABLE = "na";
 
   /**
    * Marker for values that were measured, but the result is judged to be not defined.
    */
-  String UNDEFINED_VALUE = "undef";
+  public static final String UNDEFINED_VALUE = "undef";
 
   /**
    * Marker for values that were measured, but the result is judged to be not defined.
    */
-  String UNDEFINED_VALUE_2 = "n.d";
+  public static final String UNDEFINED_VALUE_2 = "n.d";
 }
