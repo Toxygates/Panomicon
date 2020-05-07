@@ -49,6 +49,8 @@ public interface Screen {
 
   void removePendingRequest();
 
+  int numPendingRequests();
+
   //Accessors
   String getTitle();
   String key();

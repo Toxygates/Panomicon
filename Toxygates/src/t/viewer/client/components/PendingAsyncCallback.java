@@ -91,6 +91,15 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
     return result;
   }
 
+  /**
+   * Returns true if this is PendingAsyncCallback is the callback for the last
+   * pending request sent by the screen. In other words, , if true, the
+   * "Please wait..." dialog will be hidden after this callback finishes.
+   */
+  public boolean isTheLastCallback() {
+    return screen.numPendingRequests() == 1;
+  }
+
   public void handleSuccess(T t) {
     if (success != null) {
       success.run(t);

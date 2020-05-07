@@ -147,6 +147,13 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     samples.map(asJavaSample).toArray
   }
 
+  @throws[TimeoutException]
+  def samplesWithAttributes(sc: SampleClass, importantOnly: Boolean = false
+                           ): Array[Sample] = {
+    val matchingSamples = samples(sc)
+    samplesWithAttributeValues(matchingSamples, importantOnly)
+  }
+
   private def samples(sc: SampleClass, param: String,
       paramValues: Array[String]) =
     sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_))

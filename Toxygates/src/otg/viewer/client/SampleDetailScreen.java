@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  */
 
 public class SampleDetailScreen extends MinimalScreen
-    implements AnnotationTDGrid.Delegate {
+    implements HeatmapTDGrid.Delegate {
   private SampleServiceAsync sampleService;
   
   private DialogBox heatmapDialog;
@@ -58,7 +58,7 @@ public class SampleDetailScreen extends MinimalScreen
 
   private ListBox columnList = new ListBox();
 
-  private AnnotationTDGrid atd;// = new AnnotationTDGrid(this);
+  private HeatmapTDGrid atd;// = new AnnotationTDGrid(this);
 
   //  private List<Group> lastColumns;
   private @Nullable SampleColumn currentColumn;
@@ -73,7 +73,7 @@ public class SampleDetailScreen extends MinimalScreen
     super("Sample details", key, man);
     groups = new Groups(getStorage().groupsStorage);
     sampleService = man.sampleService();
-    atd = new AnnotationTDGrid(this, this);
+    atd = new HeatmapTDGrid(this, this);
     mkTools();
   }
 
@@ -281,7 +281,7 @@ public class SampleDetailScreen extends MinimalScreen
   
   // AnnotationTDGrid.Delegate method
   @Override
-  public void finishedFetchingAnnotations() {
+  public void finishedDisplayingValues() {
     Utils.positionPanel(heatmapDialog, DialogPosition.Center);
   }
 }

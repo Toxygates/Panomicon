@@ -93,6 +93,8 @@ public interface SampleService extends RemoteService {
    */
   Sample[] samples(SampleClass sc) throws TimeoutException;
 
+  Sample[] samplesWithAttributes(SampleClass sc, boolean importantOnly);
+
   /**
    * Obtain samples for the given sample classes, with a filter on one parameter, populated with the
    * standard attributes.

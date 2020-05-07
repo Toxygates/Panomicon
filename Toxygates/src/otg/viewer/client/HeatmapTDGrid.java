@@ -19,8 +19,8 @@
 
 package otg.viewer.client;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 import otg.model.sample.OTGAttribute;
@@ -41,26 +41,24 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a
- * microarray sample annotation.
+ * A time and dose grid that can show some variable as a mini heat map.
  */
-public class AnnotationTDGrid extends TimeDoseGrid {
+public class HeatmapTDGrid extends TimeDoseGrid {
 
   private Delegate delegate;
   
   private HTML[][] labels;
 
-  private ListBox annotationSelector;
-  private Button annotationButton;
+  private ListBox attributeSelector;
 
   private Attribute[] currentAttributes;
   private Map<String, Sample[]> samplesForCompounds;
   
   public interface Delegate {
-    void finishedFetchingAnnotations();
+    void finishedDisplayingValues();
   }
 
-  public AnnotationTDGrid(OTGScreen screen, Delegate delegate) {
+  public HeatmapTDGrid(OTGScreen screen, Delegate delegate) {
     super(screen, false);
     this.delegate = delegate;
   }
@@ -68,19 +66,16 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   @Override
   protected void initTools(HorizontalPanel toolPanel) {
     super.initTools(toolPanel);
-    toolPanel.add(new Label("Annotation:"));
-    annotationSelector = new ListBox();
-    toolPanel.add(annotationSelector);
-    annotationButton = new Button("Show");
-    annotationButton.addClickHandler(new ClickHandler() {
+    toolPanel.add(new Label("Parameter:"));
+    attributeSelector = new ListBox();
+    attributeSelector.addChangeHandler(new ChangeHandler() {
       @Override
-      public void onClick(ClickEvent ce) {
-        reloadAnnotations();
-        Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION,
-            Analytics.ACTION_DISPLAY_MINI_HEATMAP);
+      public void onChange(ChangeEvent changeEvent) {
+        displayValuesForSelectedAttribute();
       }
     });
-    toolPanel.add(annotationButton);
+    attributeSelector.setEnabled(false);
+    toolPanel.add(attributeSelector);
   }
 
   @Override
@@ -98,7 +93,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
        compound in our compound list; this is probably true for Open TG-GATEs
        but could be a problem with other data.
     */
-    if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
+    if (attributeSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compounds.get(0));
       sampleService.attributesForSamples(sc, new PendingAsyncCallback<Attribute[]>(
@@ -107,7 +102,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
           public void handleSuccess(Attribute[] attributes) {
             currentAttributes = Arrays.stream(attributes).filter(a -> a.isNumerical()).toArray(Attribute[]::new);
             for (Attribute attribute: currentAttributes) {
-              annotationSelector.addItem(attribute.title());
+              attributeSelector.addItem(attribute.title());
             }
           }
         }
@@ -119,11 +114,16 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     for (String compound: compounds) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compound);
-      sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(screen,
+      sampleService.samplesWithAttributes(sc, false, new PendingAsyncCallback<Sample[]>(screen,
               "Unable to retrieve samples for the group definition.") {
         @Override
         public void handleSuccess(Sample[] samples) {
           samplesForCompounds.put(compound, samples);
+
+          if (isTheLastCallback()) {
+            displayValuesForSelectedAttribute();
+            attributeSelector.setEnabled(true);
+          }
         }
       });
     }
@@ -140,7 +140,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   private double[][] parameterValues;
   private int valuesRemaining = 0;
 
-  private void fetchValuesForAttribute(final Attribute attribute, final int row, final int col,
+  private void displayValueForGridCell(final Attribute attribute, final int row, final int col,
                                        final String compound, final String dose, final String time) {
 
     SampleClass sc = chosenSampleClass.copy();
@@ -151,7 +151,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     Sample[] allSamplesForCompound = samplesForCompounds.get(compound);
     Sample[] cellSamples = Arrays.stream(allSamplesForCompound).
             filter(s -> s.sampleClass().compatible(sc)).toArray(Sample[]::new);
-    getValuesForParameter(attribute, row, col, time, cellSamples);
+    computeValueForGridCell(attribute, row, col, time, cellSamples);
   }
 
   private double doubleValueFor(Sample sample, Attribute parameter)
@@ -164,86 +164,79 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     }
   }
   
-  private void getValuesForParameter(final Attribute parameter, final int row, final int col,
-                                     final String time, final Sample[] samples) {
+  private void computeValueForGridCell(final Attribute parameter, final int row, final int col,
+                                       final String time, final Sample[] samples) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
-    sampleService.samplesWithAttributeValues(samples, false, new PendingAsyncCallback<Sample[]>(screen,
-        "Unable to get annotations.") {
-      @Override
-      public void handleSuccess(Sample[] fetchedSamples) {
-        double sum = 0;
-        int n = 0;
-        for (Sample sample : fetchedSamples) {
-          try {
-            double val = doubleValueFor(sample, parameter);
-            if (!Double.isNaN(val)) {
-              n += 1;
-              sum += val;
-            }
-          } catch (IllegalArgumentException e) {
-            logger.info("No value for parameter " + parameter.title() + " for sample " + sample.id());
-          } catch (Exception e) {
-            logger.log(Level.WARNING, "Annotation sample processing error", e);
-          }
+
+    double sum = 0;
+    int n = 0;
+    for (Sample sample : samples) {
+      try {
+        double val = doubleValueFor(sample, parameter);
+        if (!Double.isNaN(val)) {
+          n += 1;
+          sum += val;
         }
-
-        double avg = (n > 0 ? sum / n : Double.NaN);
-        labels[row][col].setText(time + " (" + fmt.format(avg) + ")");
-        parameterValues[row][col] = avg;
-        valuesRemaining -= 1;
-
-        if (valuesRemaining == 0) {
-          // got the final values
-          double min = Double.MAX_VALUE;
-          double max = Double.MIN_VALUE;
-
-          for (double[] r : parameterValues) {
-            for (double v : r) {
-              if (v != Double.NaN && v > max) {
-                max = v;
-              }
-              if (v != Double.NaN && v < min) {
-                min = v;
-              }
-            }
-          }
-          for (int r = 0; r < parameterValues.length; ++r) {
-            for (int c = 0; c < parameterValues[0].length; ++c) {
-              if (parameterValues[r][c] != Double.NaN) {
-                int gg = 255 - (int) ((parameterValues[r][c] - min) * 127 / (max - min));
-                int rr = gg;
-                setColour(r, c, rr, gg, 255);
-              }
-            }
-          }
-        }
-        delegate.finishedFetchingAnnotations();
+      } catch (IllegalArgumentException e) {
+        logger.info("No value for parameter " + parameter.title() + " for sample " + sample.id());
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Sample processing error", e);
       }
-    });
-  }
-
-  private void reloadAnnotations() {
-    if (annotationSelector.getSelectedIndex() != -1) {
-      Attribute parameter = currentAttributes[annotationSelector.getSelectedIndex()];
-      fetchValuesForAttribute(parameter);
     }
-  }
 
-  private void fetchValuesForAttribute(Attribute attribute) {
-    int numMin = minorValues.size();
-    parameterValues = new double[chosenCompounds.size()][numMin * 3];
-    valuesRemaining = chosenCompounds.size() * numMin * 3;
+    double avg = (n > 0 ? sum / n : Double.NaN);
+    labels[row][col].setText(time + " (" + fmt.format(avg) + ")");
+    parameterValues[row][col] = avg;
+    valuesRemaining -= 1;
 
-    for (int c = 0; c < chosenCompounds.size(); ++c) {
-      for (int d = 0; d < 3; ++d) {
-        for (int t = 0; t < numMin; ++t) {
-          final String compound = chosenCompounds.get(c);
-          final String dose = mediumValues.get(d);
+    if (valuesRemaining == 0) {
+      // got the final values
+      double min = Double.MAX_VALUE;
+      double max = Double.MIN_VALUE;
 
-          final String time = minorValues.get(t);
-          fetchValuesForAttribute(attribute, c, d * numMin + t, compound, dose, time);
+      for (double[] r : parameterValues) {
+        for (double v : r) {
+          if (v != Double.NaN && v > max) {
+            max = v;
+          }
+          if (v != Double.NaN && v < min) {
+            min = v;
+          }
         }
       }
+      for (int r = 0; r < parameterValues.length; ++r) {
+        for (int c = 0; c < parameterValues[0].length; ++c) {
+          if (parameterValues[r][c] != Double.NaN) {
+            int gg = 255 - (int) ((parameterValues[r][c] - min) * 127 / (max - min));
+            int rr = gg;
+            setColour(r, c, rr, gg, 255);
+          }
+        }
+      }
+    }
+    delegate.finishedDisplayingValues();
+  }
+
+  private void displayValuesForSelectedAttribute() {
+    if (attributeSelector.getSelectedIndex() != -1) {
+      Attribute parameter = currentAttributes[attributeSelector.getSelectedIndex()];
+      int numMin = minorValues.size();
+      parameterValues = new double[chosenCompounds.size()][numMin * 3];
+      valuesRemaining = chosenCompounds.size() * numMin * 3;
+
+      for (int c = 0; c < chosenCompounds.size(); ++c) {
+        for (int d = 0; d < 3; ++d) {
+          for (int t = 0; t < numMin; ++t) {
+            final String compound = chosenCompounds.get(c);
+            final String dose = mediumValues.get(d);
+
+            final String time = minorValues.get(t);
+            displayValueForGridCell(parameter, c, d * numMin + t, compound, dose, time);
+          }
+        }
+      }
+      Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION,
+              Analytics.ACTION_DISPLAY_MINI_HEATMAP);
     }
   }
 

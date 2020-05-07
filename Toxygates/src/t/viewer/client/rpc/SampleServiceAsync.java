@@ -45,6 +45,9 @@ public interface SampleServiceAsync {
 
   void samples(SampleClass sc, AsyncCallback<Sample[]> callback);
 
+  void samplesWithAttributes(SampleClass sc, boolean importantOnly,
+                             AsyncCallback<Sample[]> callback);
+
   void samples(SampleClass[] scs, String param, String[] paramValues,
       AsyncCallback<Sample[]> callback);
 

@@ -464,6 +464,11 @@ public abstract class MinimalScreen implements OTGScreen {
       throw new RuntimeException("Tried to remove pending request while numPendingRequests <= 0");
     }
   }
+
+  @Override
+  public int numPendingRequests() {
+    return numPendingRequests;
+  }
   
   /**
    * Rebuild the GUI of this screen completely.
