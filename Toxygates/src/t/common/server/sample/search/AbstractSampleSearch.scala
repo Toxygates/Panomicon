@@ -29,12 +29,8 @@ import t.common.shared.sample.search.AtomicMatch
 import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
 import t.common.shared.sample.search.OrMatch
-import t.db.VarianceSet
 import t.model.SampleClass
-import t.model.sample.Attribute
-import t.model.sample.AttributeSet
-import t.model.sample.CoreParameter
-import t.model.sample.SampleLike
+import t.model.sample.{Attribute, AttributeSet, CoreParameter, SampleLike, VarianceSet}
 import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.SampleStore

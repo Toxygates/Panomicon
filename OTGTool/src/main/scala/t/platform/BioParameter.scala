@@ -21,11 +21,11 @@ package t.platform
 
 import t.db.file.TSVMetadata
 import t.db.file.MapMetadata
-import t.db.{Metadata, Sample, VarianceSet}
+import t.db.{Metadata, Sample}
 import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
-import t.model.sample.Attribute
+import t.model.sample.{Attribute, VarianceSet}
 import otg.model.sample.OTGAttribute._
 
 import scala.collection.JavaConverters._
@@ -86,7 +86,7 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
 /**
  * A VarianceSet that retrieves attribute values from a SampleSet
  */
-class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends t.db.VarianceSet {
+class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends VarianceSet {
   val paramVals = samples.map(Map() ++ sampleSet.sampleAttributes(_))
 
   def standardDeviation(attribute: Attribute) = {

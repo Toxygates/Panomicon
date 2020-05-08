@@ -29,15 +29,13 @@ import t.common.shared.sample.Annotation
 import t.common.shared.sample.NumericalBioParamValue
 import t.common.shared.sample.Sample
 import t.common.shared.sample.StringBioParamValue
-import t.model.sample.Attribute
-import t.model.sample.CoreParameter
+import t.model.sample.{Attribute, CoreParameter, VarianceSet}
 import t.platform.BioParameter
 import t.platform.SSVarianceSet
 import t.sparql.SampleStore
 import t.viewer.server.Conversions._
 import t.viewer.server.Conversions.asScalaSample
 import t.common.shared.GWTTypes
-import t.db.VarianceSet
 
 class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
 

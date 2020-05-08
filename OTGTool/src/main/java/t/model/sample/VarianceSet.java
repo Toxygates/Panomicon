@@ -1,4 +1,4 @@
-package t.db;
+package t.model.sample;
 
 import t.model.sample.Attribute;
 

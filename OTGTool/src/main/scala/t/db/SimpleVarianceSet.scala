@@ -19,8 +19,9 @@
 
 package t.db
 
-import t.model.sample.Attribute
+import t.model.sample.{Attribute, VarianceSet}
 import org.apache.commons.math3.stat.StatUtils
+
 import scala.collection.mutable.HashMap
 
 /**

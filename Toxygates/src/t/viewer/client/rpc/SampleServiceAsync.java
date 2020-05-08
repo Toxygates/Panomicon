@@ -28,9 +28,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
+import t.db.SimpleVarianceSet;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
+import t.model.sample.VarianceSet;
 
 public interface SampleServiceAsync {
 
@@ -62,8 +64,8 @@ public interface SampleServiceAsync {
   void parameterValuesForSamples(Sample[] samples, Attribute[] attributes,
                                  AsyncCallback<Sample[]> callback);
 
-  void samplesWithAttributeValues(Sample[] samples, boolean importantOnly,
-                                  AsyncCallback<Sample[]> callback);
+  void attributeValuesAndVariance(Sample[] samples, boolean importantOnly,
+                                  AsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>> callback);
 
   void annotations(Sample[] samples, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);

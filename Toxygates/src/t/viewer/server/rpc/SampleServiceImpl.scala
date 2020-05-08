@@ -23,15 +23,16 @@ import java.util
 import java.util.{List => JList}
 import java.util.{Map => JMap}
 import java.util.HashMap
+import java.util.stream.Collectors
 
 import t.common.server.GWTUtils._
 import t.common.shared._
 import t.common.shared.sample._
 import t.common.shared.sample.search.MatchCondition
 import t.db
+import t.db.SimpleVarianceSet
 import t.model.SampleClass
-import t.model.sample.{Attribute, CoreParameter, SampleLike}
-import t.platform.SSVarianceSet
+import t.model.sample.{Attribute, CoreParameter, SampleLike, VarianceSet}
 import t.sparql._
 import t.sparql.secondary._
 import t.viewer.client.rpc._
@@ -151,11 +152,11 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   def samplesWithAttributes(sc: SampleClass, importantOnly: Boolean = false
                            ): Array[Sample] = {
     val matchingSamples = samples(sc)
-    samplesWithAttributeValues(matchingSamples, importantOnly)
+    attributeValuesForSamples(matchingSamples, importantOnly)
   }
 
   private def samples(sc: SampleClass, param: String,
-      paramValues: Array[String]) =
+                      paramValues: Array[String]) =
     sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_))
 
   @throws[TimeoutException]
@@ -188,7 +189,28 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   @throws[TimeoutException]
-  def samplesWithAttributeValues(samples: Array[Sample],
+  def attributeValuesAndVariance(samples: Array[Sample],
+                                 importantOnly: Boolean = false
+                                ): Pair[Array[Sample], util.Map[String, PrecomputedVarianceSet]] = {
+    val mp = schema.mediumParameter()
+    val numericalAttributes = baseConfig.attributes.getAll.asScala.filter(_.isNumerical).toArray
+
+    val samplesWithAttributes = attributeValuesForSamples(samples, importantOnly)
+    val groupedSamples = samplesWithAttributes.groupBy(_.get(CoreParameter.ControlGroup))
+
+    val varianceSetMap: Map[String, PrecomputedVarianceSet] = Map() ++ (for {
+      (_, samples) <- groupedSamples
+      controlSamples = samples.filter(s => schema.isControlValue(s.get(mp)))
+      varianceSet = new PrecomputedVarianceSet(new SimpleVarianceSet(controlSamples),
+                                               numericalAttributes)
+      sample <- samples
+    } yield sample.id -> varianceSet)
+    new Pair(samplesWithAttributes,
+             new util.HashMap[String, PrecomputedVarianceSet](varianceSetMap.asJava))
+  }
+
+  @throws[TimeoutException]
+  def attributeValuesForSamples(samples: Array[Sample],
                                  importantOnly: Boolean = false
                                 ): Array[Sample] = {
     val keys = if (importantOnly) baseConfig.attributes.getPreviewDisplay.asScala.toSeq

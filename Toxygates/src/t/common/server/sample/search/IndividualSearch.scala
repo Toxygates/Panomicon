@@ -23,10 +23,9 @@ import otg.model.sample.OTGAttribute._
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition
-import t.db.{SimpleVarianceSet, VarianceSet}
+import t.db.SimpleVarianceSet
 import t.model.SampleClass
-import t.model.sample.AttributeSet
-import t.model.sample.CoreParameter
+import t.model.sample.{AttributeSet, CoreParameter, VarianceSet}
 import t.sparql.SampleFilter
 import t.sparql.SampleStore
 import t.viewer.server.UnitsHelper

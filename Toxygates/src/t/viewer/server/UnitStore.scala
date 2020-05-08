@@ -24,9 +24,10 @@ import t.common.shared.Pair
 import t.common.shared.sample.Sample
 import t.common.shared.sample.SampleClassUtils
 import t.common.shared.sample.Unit
-import t.db.{SimpleVarianceSet, VarianceSet}
+import t.db.SimpleVarianceSet
 import t.model.SampleClass
 import t.model.sample.CoreParameter._
+import t.model.sample.VarianceSet
 import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.SampleStore

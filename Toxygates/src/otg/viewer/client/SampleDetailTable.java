@@ -31,8 +31,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
 import otg.viewer.client.components.OTGScreen;
+import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
+import t.model.sample.VarianceSet;
 import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -50,6 +52,7 @@ import java.util.stream.Collectors;
 public class SampleDetailTable extends Composite {
   private CellTable<Attribute> table;
   private Sample[] samples;
+  private Map<String, PrecomputedVarianceSet> varianceMap;
   private SampleServiceAsync sampleService;
   private final @Nullable String sectionTitle;
   private final boolean isSection;
@@ -68,7 +71,7 @@ public class SampleDetailTable extends Composite {
     CellTable.Style cellTableStyle();
   }
 
-  protected static class AttributeValueColumn extends TooltipColumn<Attribute> {
+  protected class AttributeValueColumn extends TooltipColumn<Attribute> {
 
     private final Sample sample;
     public AttributeValueColumn(Cell<String> cell, Sample sample) {
@@ -92,10 +95,15 @@ public class SampleDetailTable extends Composite {
       if (attribute.isNumerical()) {
         try {
           Double value = Double.parseDouble(sample.get(attribute));
+          VarianceSet varianceSet = varianceMap.get(sample.id());
+          if (value < varianceSet.lowerBound(attribute, 1)) {
+            sb.append(TEMPLATES.startStyled("numericalParameterBelow"));
+          } else if (value > varianceSet.upperBound(attribute, 1)) {
+            sb.append(TEMPLATES.startStyled("numericalParameterAbove"));
+          } else {
+            sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
+          }
         } catch (NumberFormatException e) {
-          // TODO: deal with numbers that are above/below
-          //          sb.append(TEMPLATES.startStyled("numericalParameterAbove"));
-          //          sb.append(TEMPLATES.startStyled("numericalParameterBelow"));
           sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
         }
       }
@@ -126,8 +134,8 @@ public class SampleDetailTable extends Composite {
   public @Nullable String sectionTitle() { return sectionTitle; }
   
   public void loadFrom(final HasSamples<Sample> sampleSource, boolean importantOnly) {
-    sampleService.samplesWithAttributeValues(sampleSource.getSamples(), importantOnly, new PendingAsyncCallback<Sample[]>(
-            screen) {
+    sampleService.attributeValuesAndVariance(sampleSource.getSamples(), importantOnly,
+            new PendingAsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>>(screen) {
       @Override
       public void handleFailure(Throwable caught) {
         screen.getLogger().log(Level.WARNING, "sampleService.annotations failed", caught);
@@ -135,8 +143,8 @@ public class SampleDetailTable extends Composite {
       }
 
       @Override
-      public void handleSuccess(Sample[] samples) {
-        setData(samples);
+      public void handleSuccess(Pair<Sample[], Map<String, PrecomputedVarianceSet>> pair) {
+        setData(pair.first(), pair.second());
       }
     });
   }
@@ -180,10 +188,11 @@ public class SampleDetailTable extends Composite {
     }
   }
 
-  void setData(Sample[] samples) {
+  void setData(Sample[] samples, Map<String, PrecomputedVarianceSet> varianceMap) {
+    this.varianceMap = varianceMap;
     setupColumns(samples);
     if (samples.length > 0) {
-      List<Attribute> processed = new ArrayList();
+      List<Attribute> processed = new ArrayList<Attribute>();
       Sample firstSample = samples[0];
 
       // This assumes all samples will have the same attributes

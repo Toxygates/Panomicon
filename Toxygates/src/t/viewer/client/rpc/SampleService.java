@@ -35,6 +35,7 @@ import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
+import t.model.sample.VarianceSet;
 import t.viewer.shared.TimeoutException;
 
 /**
@@ -137,9 +138,10 @@ public interface SampleService extends RemoteService {
    */
   Attribute[] attributesForSamples(SampleClass sc) throws TimeoutException;
 
-  Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes);
+  Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes) throws TimeoutException;
 
-  Sample[] samplesWithAttributeValues(Sample[] samples, boolean importantOnly);
+  Pair<Sample[], Map<String, PrecomputedVarianceSet>> attributeValuesAndVariance(Sample[] samples, boolean importantOnly)
+    throws TimeoutException;
 
   /**
    * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
