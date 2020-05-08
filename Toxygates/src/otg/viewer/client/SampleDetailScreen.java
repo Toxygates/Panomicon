@@ -24,8 +24,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import otg.viewer.client.components.MinimalScreen;
 import otg.viewer.client.components.ScreenManager;
+import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 import t.viewer.client.*;
 import t.viewer.client.components.PendingAsyncCallback;
@@ -54,7 +56,7 @@ public class SampleDetailScreen extends MinimalScreen
   public static final String key = "ad";
 
   VerticalPanel sectionsPanel;
-  private Map<String, OldSampleDetailTable> sections = new HashMap<String, OldSampleDetailTable>();
+  private Map<String, SampleDetailTable> sections = new HashMap<String, SampleDetailTable>();
 
   private ListBox columnList = new ListBox();
 
@@ -102,18 +104,19 @@ public class SampleDetailScreen extends MinimalScreen
     return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
   }
 
-  private OldSampleDetailTable addSection(String section, Annotation[] annotations,
-                                          HasSamples<Sample> c, boolean isSection) {
-    OldSampleDetailTable sdt = new OldSampleDetailTable(SampleDetailScreen.this, section, isSection);
+  private SampleDetailTable addSection(String section, Sample[] samples,
+                                       Map<String, PrecomputedVarianceSet> varianceMap,
+                                       boolean isSection) {
+    SampleDetailTable sdt = new SampleDetailTable(SampleDetailScreen.this, section, isSection);
     sections.put(section, sdt);
-    sdt.setData(c, annotations);
+    sdt.setData(samples, varianceMap);
     return sdt;
   }
 
   public void loadSections(final HasSamples<Sample> hasSamples, boolean importantOnly) {
     downloadButton.setEnabled(false);
-      sampleService.annotations(hasSamples.getSamples(), importantOnly, new PendingAsyncCallback<Annotation[]>(
-        SampleDetailScreen.this) {
+      sampleService.attributeValuesAndVariance(hasSamples.getSamples(), importantOnly,
+              new PendingAsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>>(SampleDetailScreen.this) {
       @Override
       public void handleFailure(Throwable caught) {
           getLogger().log(Level.WARNING, "sampleService.annotations failed", caught);
@@ -121,31 +124,29 @@ public class SampleDetailScreen extends MinimalScreen
       }
 
       @Override
-      public void handleSuccess(Annotation[] annotations) {
+      public void handleSuccess(Pair<Sample[], Map<String, PrecomputedVarianceSet>> pair) {
         sections.clear();
         sectionsPanel.clear();
-        if (annotations.length < 1) {
+        Sample[] samples = pair.first();
+        Map<String, PrecomputedVarianceSet> varianceMap = pair.second();
+        if (samples.length < 1) {
           return;
         }
-        OldSampleDetailTable sec = addSection(null, annotations, hasSamples, true);
-        sectionsPanel.add(sec);
 
-        LinkedList<OldSampleDetailTable> secList =
-            new LinkedList<OldSampleDetailTable>();
-        for (BioParamValue bp: annotations[0].getAnnotations()) {
-          if (bp.section() != null &&
-              !sections.containsKey(bp.section())) {
-            secList.add(addSection(bp.section(), annotations, hasSamples, true));
+        // We ensure that the  "default section", which contains basic
+        // information about the sample, will show up first.
+        sectionsPanel.add(addSection(SampleDetailTable.DEFAULT_SECTION_TITLE, samples, varianceMap, true));
+
+        LinkedList<SampleDetailTable> secList = new LinkedList<>();
+        for (Attribute attribute: samples[0].getKeys()) {
+          String section = attribute.section();
+          if (section != null && !sections.containsKey(section)) {
+            secList.add(addSection(section, samples, varianceMap, true));
           }
         }
 
-        Collections.sort(secList, new Comparator<OldSampleDetailTable>() {
-          @Override
-          public int compare(OldSampleDetailTable o1, OldSampleDetailTable o2) {
-            return o1.sectionTitle().compareTo(o2.sectionTitle());
-          }
-        });
-        for (OldSampleDetailTable sdt: secList) {
+        Collections.sort(secList, Comparator.comparing(SampleDetailTable::sectionTitle));
+        for (SampleDetailTable sdt: secList) {
           sectionsPanel.add(sdt);
         }
       }

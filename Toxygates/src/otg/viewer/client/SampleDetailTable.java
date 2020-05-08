@@ -41,6 +41,7 @@ import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.table.TooltipColumn;
 
 import javax.annotation.Nullable;
+import javax.xml.bind.annotation.XmlType;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -59,6 +60,12 @@ public class SampleDetailTable extends Composite {
   private final OTGScreen screen;
   public Delegate delegate;
 
+  /* The (rather infelicitously named) "Sample details" section contains
+     some attributes with basic information about a sample. If no section title
+     is specified, then we assume that we are displaying that seciton. Also,
+     if an attribute doesn't specify a section, then it actually belongs in the
+     Sample details section.
+   */
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
 
   public interface Delegate {
@@ -119,7 +126,7 @@ public class SampleDetailTable extends Composite {
   }
 
   public SampleDetailTable(OTGScreen screen, @Nullable String sectionTitle, boolean isSection) {
-    this.sectionTitle = sectionTitle != null ? sectionTitle : DEFAULT_SECTION_TITLE;
+    this.sectionTitle = sectionTitle;
     this.isSection = isSection;
     this.screen = screen;
     sampleService = screen.manager().sampleService();
@@ -204,8 +211,8 @@ public class SampleDetailTable extends Composite {
         Attribute attribute = sortedAttributes.get(i);
         String sectionForAttribute = attribute.section();
         if (!isSection ||
-            (sectionForAttribute == null && sectionTitle.equals(DEFAULT_SECTION_TITLE)) ||
-            (sectionForAttribute != null && sectionForAttribute.equals(sectionTitle))) {
+            (sectionForAttribute != null && sectionForAttribute.equals(sectionTitle)) ||
+            (sectionForAttribute == null && sectionTitle.equals(DEFAULT_SECTION_TITLE))) {
           processed.add(attribute);
         }
       }
