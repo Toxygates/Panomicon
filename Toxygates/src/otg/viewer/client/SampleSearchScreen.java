@@ -19,26 +19,33 @@
 
 package otg.viewer.client;
 
-import java.util.*;
-
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-
-import otg.viewer.client.components.*;
+import otg.viewer.client.components.FilterScreen;
+import otg.viewer.client.components.FilterTools;
+import otg.viewer.client.components.ScreenManager;
 import t.common.shared.Dataset;
-import t.common.shared.sample.*;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.model.SampleClass;
-import t.model.sample.*;
-import t.viewer.client.*;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
+import t.model.sample.SampleLike;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
+import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.components.TickMenuItem;
 import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.future.Future;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import java.util.*;
 
 public class SampleSearchScreen extends FilterScreen
     implements Search.Delegate, ResultTable.Delegate, FilterTools.Delegate {
@@ -95,8 +102,8 @@ public class SampleSearchScreen extends FilterScreen
     List<Attribute> searchParams = attributes().getNumerical();
     List<Attribute> nonSearchParams = attributes().getString();
     
-    java.util.Collections.sort(searchParams, new AttributeComparator());
-    java.util.Collections.sort(nonSearchParams, new AttributeComparator());
+    java.util.Collections.sort(searchParams);
+    java.util.Collections.sort(nonSearchParams);
 
     numericalParameters = searchParams;
     stringParameters = nonSearchParams;
