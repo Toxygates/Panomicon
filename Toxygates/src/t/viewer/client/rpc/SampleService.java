@@ -144,18 +144,6 @@ public interface SampleService extends RemoteService {
     throws TimeoutException;
 
   /**
-   * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
-   * values for all of the specified attributes will be returned.
-   *
-   * @param samples the samples to obtain annotations for
-   * @param importantOnly If true, a smaller set of core annotations will be obtained. If false, all
-   *        annotations will be obtained.
-   * @return
-   */
-  Annotation[] annotations(Sample[] samples, boolean importantOnly)
-      throws TimeoutException;
-
-  /**
    * Prepare a CSV file with annotation information for download.
    *
    * @param samples The samples to include in the downloadable file.

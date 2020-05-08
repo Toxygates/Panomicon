@@ -21,9 +21,6 @@ package t.viewer.server.rpc
 
 import java.util
 import java.util.{List => JList}
-import java.util.{Map => JMap}
-import java.util.HashMap
-import java.util.stream.Collectors
 
 import t.common.server.GWTUtils._
 import t.common.shared._
@@ -32,7 +29,7 @@ import t.common.shared.sample.search.MatchCondition
 import t.db
 import t.db.SimpleVarianceSet
 import t.model.SampleClass
-import t.model.sample.{Attribute, CoreParameter, SampleLike, VarianceSet}
+import t.model.sample.{Attribute, CoreParameter, SampleLike}
 import t.sparql._
 import t.sparql.secondary._
 import t.viewer.client.rpc._
@@ -225,10 +222,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       new Sample(sample.id, new SampleClass(attributeValueMap))
     })
   }
-
-  @throws[TimeoutException]
-  def annotations(samples: Array[Sample], importantOnly: Boolean = false): Array[Annotation] =
-    annotationStore.forSamples(sampleStore, samples, importantOnly)
 
   @throws[TimeoutException]
   def prepareAnnotationCSVDownload(samples: Array[Sample]): String =

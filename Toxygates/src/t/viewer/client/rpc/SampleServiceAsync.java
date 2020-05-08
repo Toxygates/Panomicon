@@ -67,9 +67,6 @@ public interface SampleServiceAsync {
   void attributeValuesAndVariance(Sample[] samples, boolean importantOnly,
                                   AsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>> callback);
 
-  void annotations(Sample[] samples, boolean importantOnly,
-      AsyncCallback<Annotation[]> callback);
-
   void prepareAnnotationCSVDownload(Sample[] samples,
       AsyncCallback<String> callback);
 
