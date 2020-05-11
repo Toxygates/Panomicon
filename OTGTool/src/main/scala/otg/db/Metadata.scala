@@ -19,7 +19,6 @@
 
 package otg.db
 
-import t.db.ParameterSet
 import t.db.Sample
 import otg.model.sample.OTGAttribute._
 import t.model.sample.CoreParameter._

@@ -20,8 +20,6 @@
 package t
 import t.sparql._
 import t.db.file.TSVMetadata
-import t.db.ParameterSet
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.db.file.MapMetadata
 import t.db.Metadata
 import t.model.sample.AttributeSet
