@@ -22,7 +22,7 @@ package otg.testing
 import otg.DoseSeries
 import otg.OTGSeries
 import otg.TimeSeries
-import otg.db.Metadata
+import t.db.Metadata
 import t.model.sample.OTGAttribute._
 import t.Factory
 import t.db._

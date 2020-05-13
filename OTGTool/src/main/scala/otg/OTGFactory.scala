@@ -19,7 +19,7 @@
 
 package otg
 
-import otg.db.Metadata
+import t.db.Metadata
 import otg.sparql.OTGSampleStore
 import otg.sparql.OTGProbeStore
 import t.BaseConfig
@@ -46,18 +46,18 @@ class OTGFactory extends t.Factory {
   }
 
   override def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
-    new MapMetadata(data, attr) with otg.db.Metadata
+    new MapMetadata(data, attr) with t.db.Metadata
 
   override def triplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
                                    querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): TriplestoreMetadata =
-    new TriplestoreMetadata(sampleStore, attributeSet, querySet)(sf) with otg.db.Metadata
+    new TriplestoreMetadata(sampleStore, attributeSet, querySet)(sf) with t.db.Metadata
 
   override def cachingTriplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
                                           querySet: Iterable[Attribute] = Seq())
       (implicit sf: SampleFilter): CachingTriplestoreMetadata =
-    new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf) with otg.db.Metadata
+    new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf) with t.db.Metadata
     
   override def filteredMetadata(from: t.db.Metadata, sampleView: Iterable[Sample]) =
-    new FilteredMetadata(from, sampleView) with otg.db.Metadata
+    new FilteredMetadata(from, sampleView) with t.db.Metadata
 }
