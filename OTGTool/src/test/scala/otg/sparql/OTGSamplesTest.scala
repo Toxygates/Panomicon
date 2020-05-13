@@ -22,19 +22,18 @@ package otg.sparql
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import otg.OTGMatrixContext
-import t.platform.Species.Rat
-import t.{DoseSeries, TTestSuite, TimeSeries}
-import t.model.shared.SampleClassHelper
-import t.sparql._
-import t.testing.TestConfig
 import t.model.sample.OTGAttribute._
+import t.model.shared.SampleClassHelper
+import t.sparql.{SampleClassFilter, SampleFilter, SampleStore}
+import t.testing.TestConfig
+import t.{DoseSeries, TTestSuite, TimeSeries}
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config
   implicit val context = new OTGMatrixContext(config)
-  val samples = new OTGSampleStore(config)
+  val samples = new SampleStore(config)
 
   after {
     samples.close

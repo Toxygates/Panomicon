@@ -19,16 +19,14 @@
 
 package otg.sparql
 
-import t.TTestSuite
-import scala.collection.JavaConversions._
-import t.platform.Species._
-import t.platform.Probe
-import t.sparql._
-import t.sparql.Triplestore
-import t.sparql.secondary._
-import t.testing.TestConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.TTestSuite
+import t.platform.Probe
+import t.platform.Species._
+import t.sparql.ProbeStore
+import t.sparql.secondary._
+import t.testing.TestConfig
 
 @RunWith(classOf[JUnitRunner])
 class SPARQLTest extends TTestSuite {

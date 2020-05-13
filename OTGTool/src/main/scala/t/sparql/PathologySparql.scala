@@ -17,10 +17,9 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.sparql
+package t.sparql
 
 import t.Pathology
-import t.sparql.Triplestore
 
 /**
  * SPARQL queries and filters for pathology data.

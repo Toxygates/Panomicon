@@ -26,10 +26,10 @@ import otg.OTGBConfig
 import t.TTestSuite
 import t.common.shared.AType
 import t.model.SampleClass
-import t.sparql.{ProbeStore, SampleFilter}
+import t.sparql.{SampleStore, ProbeStore, SampleFilter}
 import t.sparql.secondary._
 import t.model.sample.{Attribute, OTGAttribute}
-import otg.sparql._
+import t.sparql._
 import t.viewer.server.Platforms
 import t.platform.mirna.TargetTable
 
@@ -58,7 +58,7 @@ class AssociationResolverTest extends TTestSuite {
 
   val tsc = conf.tsConfig
   val probeStore = new ProbeStore(tsc)
-  val sampleStore = new OTGSampleStore(baseConf)
+  val sampleStore = new SampleStore(baseConf)
   val b2rKegg = new B2RKegg(tsc.triplestore)
   val uniprot = new LocalUniprot(tsc.triplestore)
 

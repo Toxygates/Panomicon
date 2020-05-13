@@ -20,20 +20,19 @@
 package otg
 
 import t.db.Metadata
-import otg.sparql.OTGSampleStore
 import t.BaseConfig
 import t.DataConfig
 import t.TriplestoreConfig
 import t.db.file.MapMetadata
 import t.model.sample.AttributeSet
-import t.sparql.{ProbeStore, _}
+import t.sparql.{SampleStore, ProbeStore, _}
 import t.model.sample.Attribute
 import t.db.FilteredMetadata
 import t.db.Sample
 
 class OTGFactory extends t.Factory {
-  override def samples(config: BaseConfig): OTGSampleStore =
-    new OTGSampleStore(config)
+  override def samples(config: BaseConfig): SampleStore =
+    new SampleStore(config)
 
   override def probes(config: TriplestoreConfig): ProbeStore =
     new ProbeStore(config)

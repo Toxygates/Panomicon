@@ -21,7 +21,7 @@ package otg.viewer.server
 
 import scala.collection.{ Set => CSet }
 
-import otg.sparql._
+import t.sparql._
 import t._
 import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
@@ -41,7 +41,7 @@ class LimitState {
   @volatile var exceeded = false
 }
 
-class DrugTargetResolver(sampleStore: OTGSampleStore, chembl: ChEMBL,
+class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
                          drugBank: DrugBank) {
 
   def lookup: AssociationLookup = {
@@ -118,7 +118,7 @@ class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.Platforms
  * Subresolvers provide partial functions that perform the resolution.
  */
 class AssociationResolver(probeStore: ProbeStore,
-                          sampleStore: OTGSampleStore,
+                          sampleStore: SampleStore,
                           b2rKegg: B2RKegg) {
 
   var limitState = new LimitState

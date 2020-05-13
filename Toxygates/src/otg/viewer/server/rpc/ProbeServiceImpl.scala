@@ -19,7 +19,7 @@
 
 package otg.viewer.server.rpc
 
-import otg.sparql._
+import t.sparql._
 import otg.viewer.server.AppInfoLoader
 import otg.viewer.server.DrugTargetResolver
 import otg.viewer.server.MirnaResolver
@@ -39,7 +39,7 @@ import t.viewer.shared.TimeoutException
 class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
   with OTGServiceServlet with otg.viewer.client.rpc.ProbeService {
 
-  protected def sampleStore: otg.sparql.OTGSampleStore = context.sampleStore
+  protected def sampleStore: SampleStore = context.sampleStore
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _

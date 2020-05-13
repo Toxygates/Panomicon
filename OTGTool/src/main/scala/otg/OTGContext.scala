@@ -19,10 +19,9 @@
 
 package otg
 
-import otg.sparql.OTGSampleStore
 import t.db._
 import t.db.kyotocabinet.KCSeriesDB
-import t.sparql.ProbeStore
+import t.sparql.{SampleStore, ProbeStore}
 import t.{BaseConfig, OTGDoseSeriesBuilder, OTGTimeSeriesBuilder, TriplestoreConfig}
 
 object OTGContext {
@@ -37,7 +36,7 @@ object OTGContext {
 class OTGContext(override val config: OTGBConfig,
                  override val factory: OTGFactory,
                  override val probeStore: ProbeStore,
-                 override val sampleStore: OTGSampleStore,
+                 override val sampleStore: SampleStore,
                  override val matrix: OTGMatrixContext)
   extends t.Context(config, factory, probeStore, sampleStore, matrix)
 
@@ -53,8 +52,8 @@ class OTGMatrixContext(baseConfig: BaseConfig) extends MatrixContext {
   def enumMaps = maps.latest.enumMaps
   def sampleMap = maps.latest.sampleMap
 
-  lazy val samples: OTGSampleStore =
-    new OTGSampleStore(baseConfig)
+  lazy val samples: SampleStore =
+    new SampleStore(baseConfig)
 
   /**
    * Obtain a reader for the absolute value/normalized intensity
