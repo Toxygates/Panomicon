@@ -21,9 +21,9 @@ package t.platform
 
 import java.io._
 
-import otg.sparql.OTGProbeStore
 import t.intermine.{Connector, OrthologProteins}
 import t.platform.Species._
+import t.sparql.ProbeStore
 import t.sparql.secondary.Gene
 
 import scala.collection.mutable.{HashMap => MHMap, Set => MSet}
@@ -33,7 +33,7 @@ import scala.io._
  * Convert SSearch similarity files to TTL format, by using
  * already inserted platform information.
  */
-class SSOrthTTL(probes: OTGProbeStore, output: String) {
+class SSOrthTTL(probes: ProbeStore, output: String) {
   import t.util.DoThenClose._
 
   val probeToGene = probes.allGeneIds()

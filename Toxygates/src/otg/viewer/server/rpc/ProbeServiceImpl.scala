@@ -50,7 +50,7 @@ class ProbeServiceImpl extends t.viewer.server.rpc.ProbeServiceImpl
     drugBank = new DrugBank()
   }
 
-  private def probeStore: OTGProbeStore = context.probeStore
+  private def probeStore: ProbeStore = context.probeStore
 
   override protected def reloadAppInfo = {
     val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load

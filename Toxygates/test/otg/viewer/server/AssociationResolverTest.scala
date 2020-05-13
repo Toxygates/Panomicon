@@ -26,7 +26,7 @@ import otg.OTGBConfig
 import t.TTestSuite
 import t.common.shared.AType
 import t.model.SampleClass
-import t.sparql.SampleFilter
+import t.sparql.{ProbeStore, SampleFilter}
 import t.sparql.secondary._
 import t.model.sample.{Attribute, OTGAttribute}
 import otg.sparql._
@@ -57,7 +57,7 @@ class AssociationResolverTest extends TTestSuite {
 //  val geneIds = Array("361510", "362972")
 
   val tsc = conf.tsConfig
-  val probeStore = new OTGProbeStore(tsc)
+  val probeStore = new ProbeStore(tsc)
   val sampleStore = new OTGSampleStore(baseConf)
   val b2rKegg = new B2RKegg(tsc.triplestore)
   val uniprot = new LocalUniprot(tsc.triplestore)

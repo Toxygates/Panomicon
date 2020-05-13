@@ -60,7 +60,7 @@ class DrugTargetResolver(sampleStore: OTGSampleStore, chembl: ChEMBL,
   }
 }
 
-class MirnaResolver(probeStore: OTGProbeStore, platforms: t.viewer.server.Platforms, mirnaTable: TargetTable,
+class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.Platforms, mirnaTable: TargetTable,
                     sidePlatform: Option[String]) {
 
   var limitState = new LimitState()
@@ -117,7 +117,7 @@ class MirnaResolver(probeStore: OTGProbeStore, platforms: t.viewer.server.Platfo
  * The association resolver looks up probe associations based on the AType enum.
  * Subresolvers provide partial functions that perform the resolution.
  */
-class AssociationResolver(probeStore: OTGProbeStore,
+class AssociationResolver(probeStore: ProbeStore,
                           sampleStore: OTGSampleStore,
                           b2rKegg: B2RKegg) {
 

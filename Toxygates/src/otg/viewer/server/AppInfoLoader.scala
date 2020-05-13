@@ -20,7 +20,6 @@
 package otg.viewer.server
 
 import t.BaseConfig
-import otg.sparql.OTGProbeStore
 import otg.viewer.server.AppInfoLoader._
 import t.viewer.server.Configuration
 import t.viewer.shared.mirna.MirnaSource
@@ -29,6 +28,7 @@ import t.common.server.GWTUtils._
 import t.viewer.server.Conversions._
 import t.common.shared.FirstKeyedPair
 import t.platform.mirna.MiRDBConverter
+import t.sparql.ProbeStore
 
 object AppInfoLoader {
   //ID strings for the various miRNA sources that we support.
@@ -38,7 +38,7 @@ object AppInfoLoader {
   val MIRAW_SOURCE: String = "MiRAW"
 }
 
-class AppInfoLoader(probeStore: OTGProbeStore,
+class AppInfoLoader(probeStore: ProbeStore,
                     configuration: Configuration, baseConfig: BaseConfig,
                     appName: String)
     extends t.viewer.server.AppInfoLoader(probeStore,

@@ -20,12 +20,10 @@
 package otg
 
 import otg.sparql.OTGSampleStore
-import otg.sparql.OTGProbeStore
-import t.{BaseConfig, OTGDoseSeriesBuilder, OTGTimeSeriesBuilder, TriplestoreConfig}
 import t.db._
 import t.db.kyotocabinet.KCSeriesDB
-import t.model.sample.CoreParameter
 import t.sparql.ProbeStore
+import t.{BaseConfig, OTGDoseSeriesBuilder, OTGTimeSeriesBuilder, TriplestoreConfig}
 
 object OTGContext {
   val factory = new OTGFactory()
@@ -38,7 +36,7 @@ object OTGContext {
 
 class OTGContext(override val config: OTGBConfig,
                  override val factory: OTGFactory,
-                 override val probeStore: OTGProbeStore,
+                 override val probeStore: ProbeStore,
                  override val sampleStore: OTGSampleStore,
                  override val matrix: OTGMatrixContext)
   extends t.Context(config, factory, probeStore, sampleStore, matrix)
