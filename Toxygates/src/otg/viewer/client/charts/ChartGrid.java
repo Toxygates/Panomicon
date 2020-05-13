@@ -23,7 +23,7 @@ import java.util.List;
 
 import com.google.gwt.user.client.ui.*;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import otg.viewer.client.charts.google.GVizChartGrid;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.DataSchema;

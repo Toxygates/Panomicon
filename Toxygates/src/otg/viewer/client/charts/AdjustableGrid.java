@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 import com.google.gwt.user.client.ui.*;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import otg.viewer.client.components.OTGScreen;
 import t.common.client.components.ItemSelector;
 import t.common.shared.*;

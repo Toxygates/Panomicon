@@ -23,7 +23,7 @@ import otg.DoseSeries
 import otg.OTGSeries
 import otg.TimeSeries
 import otg.db.Metadata
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.Factory
 import t.db._
 import t.model.sample.Attribute

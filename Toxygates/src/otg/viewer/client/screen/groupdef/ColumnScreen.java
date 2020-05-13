@@ -26,7 +26,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import otg.viewer.client.components.*;
 import otg.viewer.client.components.compoundsel.CompoundSelector;
 import otg.viewer.client.screen.data.DataScreen;

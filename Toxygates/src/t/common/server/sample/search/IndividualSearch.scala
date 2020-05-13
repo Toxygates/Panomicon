@@ -19,7 +19,7 @@
 
 package t.common.server.sample.search
 
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition

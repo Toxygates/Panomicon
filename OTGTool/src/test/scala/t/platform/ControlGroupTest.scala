@@ -25,7 +25,7 @@ import otg.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import scala.collection.JavaConverters._
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 
 @RunWith(classOf[JUnitRunner])

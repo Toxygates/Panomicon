@@ -28,7 +28,7 @@ import t.TTestSuite
 import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import otg.TimeSeries
 import otg.DoseSeries
 

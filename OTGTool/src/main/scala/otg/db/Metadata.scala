@@ -20,7 +20,7 @@
 package otg.db
 
 import t.db.Sample
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.model.sample.CoreParameter._
 
 /**

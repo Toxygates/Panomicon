@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 import com.google.gwt.user.client.Window;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import otg.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.components.OTGScreen;

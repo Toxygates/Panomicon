@@ -21,7 +21,7 @@ package otg.viewer.client.charts;
 
 import java.util.*;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import otg.viewer.client.charts.DataSource.*;
 import otg.viewer.client.components.OTGScreen;
 import t.common.shared.*;

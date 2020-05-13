@@ -20,7 +20,7 @@
 package t.common.server.sample.search
 
 import scala.collection.JavaConverters._
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.common.shared.sample.Sample
 import t.common.shared.sample.Unit
 import t.common.shared.sample.search.MatchCondition

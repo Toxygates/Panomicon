@@ -18,7 +18,7 @@
  */
 package t.common.testing;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import t.common.shared.DataSchema;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;

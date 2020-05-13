@@ -24,7 +24,7 @@ import t.common.shared.maintenance.MaintenanceException
 import t.db.Metadata
 import t.model.sample._
 import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute._
+import OTGAttribute._
 
 class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
   with OTGServiceServlet {

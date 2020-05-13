@@ -19,13 +19,14 @@
 
 package otg.model.sample;
 
-import static otg.model.sample.OTGAttribute.*;
+import static t.model.sample.OTGAttribute.*;
 import static t.model.sample.CoreParameter.*;
 
 import java.util.*;
 
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
+import t.model.sample.OTGAttribute;
 
 /**
  * An AttributeSet for Open TG-GATEs data.
@@ -55,7 +56,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
     if (defaultSet == null) {
       List<Attribute> attributes = new ArrayList<Attribute>();
       Collections.addAll(attributes, CoreParameter.all());
-      Collections.addAll(attributes, otg.model.sample.OTGAttribute.all());
+      Collections.addAll(attributes, OTGAttribute.all());
       List<Attribute> required = new ArrayList<Attribute>();
       
       Collections.addAll(required, SampleId, ControlGroup, Platform, Type);

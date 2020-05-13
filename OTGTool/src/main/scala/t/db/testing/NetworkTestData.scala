@@ -24,10 +24,9 @@ import t.platform._
 import t.sparql.Platforms
 import t.sparql.secondary.Compound
 import t.db.Sample
-import t.model.sample.Attribute
+import t.model.sample.{Attribute, OTGAttribute}
 import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute
-import otg.model.sample.OTGAttribute._
+import OTGAttribute._
 import t.testing.FakeContext
 import t.db.ProbeIndex
 

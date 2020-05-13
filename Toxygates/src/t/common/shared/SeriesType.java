@@ -19,7 +19,7 @@
 
 package t.common.shared;
 import t.model.sample.Attribute;
-import static otg.model.sample.OTGAttribute.*;
+import static t.model.sample.OTGAttribute.*;
 
 /**
  * The type of series to be ranked.

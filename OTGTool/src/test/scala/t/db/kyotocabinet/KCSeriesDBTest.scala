@@ -24,7 +24,7 @@ import t.TTestSuite
 import t.db.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import kyotocabinet.DB
 import t.model.sample._
 

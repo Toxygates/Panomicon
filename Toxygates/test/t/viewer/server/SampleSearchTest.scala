@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 
 import org.junit.runner.RunWith
 
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import otg.testing.TestData
 import otg.viewer.shared.OTGSchema
 import t.TTestSuite

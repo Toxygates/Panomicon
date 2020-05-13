@@ -24,7 +24,7 @@ import otg.model.sample.AttributeSet
 import t.model.SampleClass
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.model.sample.OTGAttribute
+import t.model.sample.OTGAttribute
 import t.viewer.client.storage.Packer
 
 /**

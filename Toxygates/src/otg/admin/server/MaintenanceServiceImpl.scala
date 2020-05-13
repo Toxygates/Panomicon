@@ -22,7 +22,7 @@ package otg.admin.server
 import otg.viewer.server.rpc.OTGServiceServlet
 import t.model.sample._
 import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute._
+import OTGAttribute._
 
 class MaintenanceServiceImpl extends t.admin.server.MaintenanceServiceImpl
   with OTGServiceServlet {

@@ -21,7 +21,7 @@ package otg.viewer.shared;
 
 import java.util.*;
 
-import otg.model.sample.OTGAttribute;
+import t.model.sample.OTGAttribute;
 import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;

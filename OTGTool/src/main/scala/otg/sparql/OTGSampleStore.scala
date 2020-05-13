@@ -25,7 +25,7 @@ import t.db.Sample
 import t.sparql._
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 
 class OTGSampleStore(bc: BaseConfig) extends SampleStore(bc) {

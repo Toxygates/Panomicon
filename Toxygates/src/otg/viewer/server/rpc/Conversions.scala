@@ -21,7 +21,6 @@ package otg.viewer.server.rpc
 
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
-
 import otg.OTGContext
 import otg.OTGSeries
 import otg.viewer.shared.Pathology
@@ -32,11 +31,11 @@ import t.SeriesRanking
 import t.common.shared.sample._
 import t.db.MatrixContext
 import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import otg.OTGSeriesType
 import otg.TimeSeries
-import otg.model.sample.OTGAttribute
 import otg.DoseSeries
+import t.model.sample.OTGAttribute
 
 /**
  * Conversions between Scala and Java types.

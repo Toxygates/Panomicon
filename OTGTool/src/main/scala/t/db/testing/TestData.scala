@@ -25,7 +25,7 @@ import t.testing.FakeContext
 import t.platform.OrthologMapping
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.platform._
 import t.platform.mirna._
 

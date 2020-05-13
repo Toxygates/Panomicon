@@ -280,7 +280,7 @@ abstract class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
    */
   def sampleCountQuery(attributes: Iterable[Attribute])(implicit sf: SampleFilter):
     Query[Seq[Map[String, String]]] = {
-    import otg.model.sample.OTGAttribute._
+    import t.model.sample.OTGAttribute._
 
     val pattr = attributes.filter(isPredicateAttribute).toSeq ++ Seq(Compound, DoseLevel)
     val queryVars = pattr.map(a => s"?${a.id}").mkString(" ")

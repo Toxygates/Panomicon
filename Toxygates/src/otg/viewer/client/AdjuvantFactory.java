@@ -19,7 +19,7 @@
 
 package otg.viewer.client;
 
-import static otg.model.sample.OTGAttribute.*;
+import static t.model.sample.OTGAttribute.*;
 
 import otg.viewer.client.components.OTGScreen;
 import t.common.client.ValueAcceptor;

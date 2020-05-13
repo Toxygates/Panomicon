@@ -252,7 +252,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       samples.sampleCountQuery(allAttribs)(sf)()
     }).filter(_.keySet.size > 1) //For empty batches, the only key will be 'count'
 
-    import otg.model.sample.OTGAttribute._
+    import t.model.sample.OTGAttribute._
     val compoundEdit = Compound.id + "Edit"
 
     def getKey(data: Map[String, String])(key: Attribute) =

@@ -17,10 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.model.sample;
-
-import org.json.Test;
-import t.model.sample.Attribute;
+package t.model.sample;
 
 import java.util.Arrays;
 

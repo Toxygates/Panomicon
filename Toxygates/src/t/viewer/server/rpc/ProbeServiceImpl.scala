@@ -19,18 +19,16 @@
 
 package t.viewer.server.rpc
 
-import java.util.{ List => JList }
+import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-
 import javax.annotation.Nullable
-import otg.model.sample.OTGAttribute
 import t.BaseConfig
 import t.common.server.ScalaUtils
 import t.common.shared._
 import t.common.shared.sample.Sample
 import t.model.SampleClass
-import t.model.sample.CoreParameter
+import t.model.sample.{CoreParameter, OTGAttribute}
 import t.platform.Probe
 import t.sparql.Datasets
 import t.sparql.ProbeStore
@@ -38,7 +36,6 @@ import t.sparql.SampleFilter
 import t.sparql.secondary._
 import t.util.PeriodicRefresh
 import t.util.Refreshable
-
 import t.viewer.client.rpc.ProbeService
 import t.viewer.server._
 import t.viewer.server.Conversions._

@@ -20,20 +20,19 @@
 package t.viewer.server.rpc
 
 import scala.language.implicitConversions
-
-import otg.model.sample.OTGAttribute
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import otg.viewer.client.rpc.SeriesService
 import otg.viewer.server.rpc.Conversions.asScala
 import otg.viewer.shared.MatchResult
 import otg.viewer.shared.RankRule
-import otg.viewer.shared.{ Series => SSeries }
+import otg.viewer.shared.{Series => SSeries}
 import t.SeriesRanking
 import t.common.server.GWTUtils._
 import t.common.shared.Dataset
 import t.common.shared.SeriesType
 import t.db._
 import t.model.SampleClass
+import t.model.sample.OTGAttribute
 import t.sparql._
 import t.util.SafeMath
 import t.viewer.server.Configuration

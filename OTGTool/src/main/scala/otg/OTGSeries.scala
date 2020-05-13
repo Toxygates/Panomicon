@@ -20,7 +20,7 @@
 package otg
 
 import t.platform.Species._
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 import t.db.{MatrixDBReader, Series => TSeries, _}
 import t.model.sample.Attribute
 

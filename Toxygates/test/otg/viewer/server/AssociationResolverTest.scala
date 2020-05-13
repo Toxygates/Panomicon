@@ -20,18 +20,15 @@
 package otg.viewer.server
 
 import scala.collection.JavaConverters._
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 import otg.OTGBConfig
 import t.TTestSuite
 import t.common.shared.AType
 import t.model.SampleClass
 import t.sparql.SampleFilter
 import t.sparql.secondary._
-import otg.model.sample.OTGAttribute
-import t.model.sample.Attribute
+import t.model.sample.{Attribute, OTGAttribute}
 import otg.sparql._
 import t.viewer.server.Platforms
 import t.platform.mirna.TargetTable

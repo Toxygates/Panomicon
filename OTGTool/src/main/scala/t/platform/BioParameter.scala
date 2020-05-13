@@ -26,7 +26,7 @@ import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
 import t.model.sample.{Attribute, VarianceSet}
-import otg.model.sample.OTGAttribute._
+import t.model.sample.OTGAttribute._
 
 import scala.collection.JavaConverters._
 

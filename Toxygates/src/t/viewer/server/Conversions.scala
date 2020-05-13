@@ -19,26 +19,27 @@
 
 package t.viewer.server
 
-import java.util.{ HashMap => JHMap }
-import java.util.{ HashSet => JHSet }
+import java.util.{HashMap => JHMap}
+import java.util.{HashSet => JHSet}
 
 import scala.collection.JavaConverters._
 import t.common.server.GWTUtils._
-import scala.collection.{ Map => CMap }
-import scala.collection.{ Set => CSet }
-import scala.language.implicitConversions
 
+import scala.collection.{Map => CMap}
+import scala.collection.{Set => CSet}
+import scala.language.implicitConversions
 import t.common.shared.FirstKeyedPair
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
 import t.db.{ExprValue => TExprValue}
 import t.platform.Species
-import otg.model.sample.OTGAttribute
 import t.viewer.shared.AssociationValue
 import t.common.shared.GroupUtils
 import t.common.shared.sample.Group
 import java.util.NoSuchElementException
+
 import t.db.BioObject
+import t.model.sample.OTGAttribute
 
 object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Option[Species.Species] =
