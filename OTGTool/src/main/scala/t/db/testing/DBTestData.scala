@@ -29,7 +29,7 @@ import t.model.sample.OTGAttribute._
 import t.platform._
 import t.platform.mirna._
 
-object TestData {
+object DBTestData {
   def pickOne[T](xs: Seq[T]): T = {
     val n = Math.random * xs.size
     xs(n.toInt)
@@ -191,7 +191,7 @@ object TestData {
     }
   }
 
-  implicit val context = new FakeContext(dbIdMap, probeMap)
+  implicit val context = new FakeContext
 
   val orthologs: OrthologMapping = {
     val n = 100

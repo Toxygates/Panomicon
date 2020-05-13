@@ -25,14 +25,14 @@ import t.TTestSuite
 import t.common.shared.sample.Group
 import t.common.testing.{TestData => OTestData}
 import t.db.ExprValue
-import t.db.testing.TestData
+import t.db.testing.DBTestData
 import t.viewer.server.Conversions._
 import t.viewer.server._
 import org.scalactic.source.Position.apply
 
 @RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {
-  import TestData._
+  import DBTestData._
 
   val os = orthologs
   val pm = new OrthologProbeMapper(orthologs)
@@ -79,7 +79,7 @@ class MatrixMapperTest extends TTestSuite {
     def foldBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
       probes.map(probeMap.unpack))
 
-    val groups = TestData.samples.take(10).grouped(2).zipWithIndex.map(ss => {
+    val groups = DBTestData.samples.take(10).grouped(2).zipWithIndex.map(ss => {
       val sss = ss._1.map(s => asJavaSample(s))
       new Group(schema, "Gr" + ss._2, sss.toArray)
     }).toSeq

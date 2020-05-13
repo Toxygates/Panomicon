@@ -24,11 +24,11 @@ import org.scalatest.Matchers
 import org.scalatest.junit.JUnitRunner
 
 import t.db._
-import t.db.testing.TestData
+import t.db.testing.DBTestData
 
 @RunWith(classOf[JUnitRunner])
 object KCDBTest extends Matchers {
-  import TestData._
+  import DBTestData._
 
   /**
    * General test case for databases that implement MatrixDB.

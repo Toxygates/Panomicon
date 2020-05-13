@@ -22,14 +22,14 @@ package otg
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.platform.Species._
-import t.testing.TestConfig
+import t.testing.{FakeContext, TestConfig}
 import t.TTestSuite
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class OTGContextTest extends TTestSuite {
 
-  val context = new otg.testing.FakeContext
+  val context = new FakeContext
 
   test("probe map") {
     val m1 = context.probeMap

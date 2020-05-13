@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 
 import t.db._
 import t.db.testing.FakeBasicMatrixDB
-import t.db.testing.TestData
+import t.db.testing.DBTestData
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import org.scalatest.junit.JUnitRunner
@@ -32,7 +32,7 @@ import scala.concurrent.Future
 @RunWith(classOf[JUnitRunner])
 class MatrixInsertTest extends TTestSuite {
 
-  import t.db.testing.TestData._
+  import t.db.testing.DBTestData._
 
   def await[T](task: Task[T]) = {
     val fut = TaskRunner.runThenFinally(task)(())

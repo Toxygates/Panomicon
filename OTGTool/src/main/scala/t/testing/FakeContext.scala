@@ -19,15 +19,18 @@
 
 package t.testing
 
+import t.{OTGDoseSeriesBuilder, OTGTimeSeriesBuilder}
 import t.platform.Species._
 import t.db._
-import t.db.testing.TestData
+import t.db.kyotocabinet.KCSeriesDB
+import t.db.testing.DBTestData._
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.db.testing.DBTestData
 
-class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
-  val enumMaps: Map[String, Map[String, Int]] = Map(),
-  val metadata: Option[Metadata] = None) extends MatrixContext {
-  import TestData._
+class FakeContext extends MatrixContext {
+  val sampleMap: SampleMap = DBTestData.dbIdMap
+  val probeMap: ProbeMap = DBTestData.probeMap
+  val enumMaps: Map[String, Map[String, Int]] = DBTestData.enumMaps
 
   def species = List(Rat)
 
@@ -44,16 +47,19 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   lazy val absoluteDBReader: ExtMatrixDBReader = ???
   lazy val foldsDBReader: ExtMatrixDB = new KCChunkMatrixDB(folds, false)(this)
 
-  def timeSeriesDBReader: SeriesDB[_] = ???
-  def timeSeriesBuilder: SeriesBuilder[_] = ???
-  def doseSeriesDBReader: SeriesDB[_] = ???
-  def doseSeriesBuilder: SeriesBuilder[_] = ???
+  val timeSeriesDB = t.db.testing.DBTestData.memDBHash
+  val doseSeriesDB = t.db.testing.DBTestData.memDBHash
+
+  def timeSeriesBuilder = OTGTimeSeriesBuilder
+  def timeSeriesDBReader = new KCSeriesDB(timeSeriesDB, false, timeSeriesBuilder, true)(this)
+  def doseSeriesBuilder = OTGDoseSeriesBuilder
+  def doseSeriesDBReader = new KCSeriesDB(doseSeriesDB, false, doseSeriesBuilder, true)(this)
 
   def populate() {
     populate(testData)
   }
-  
+
   def populate(d: ColumnExpressionData) {
-    TestData.populate(foldsDBReader, d)(probeMap)
+    DBTestData.populate(foldsDBReader, d)(probeMap)
   }
 }

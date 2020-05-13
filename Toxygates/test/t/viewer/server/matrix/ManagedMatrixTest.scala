@@ -25,12 +25,12 @@ import otg.viewer.server.rpc.Conversions._
 import t.TTestSuite
 import t.common.shared.sample._
 import t.db.testing._
-import t.db.testing.TestData._
+import t.db.testing.DBTestData._
 import org.scalactic.source.Position.apply
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {
-  import TestData._
+  import DBTestData._
   import t.common.testing.TestData.groups
 
   val schema = t.common.testing.TestData.dataSchema
@@ -69,7 +69,7 @@ class ManagedMatrixTest extends TTestSuite {
 
   test("sort and select") {
     val m = foldBuilder.build(groups, false, true)
-    val ps = TestData.probes.take(10).map(probeMap.unpack)
+    val ps = DBTestData.probes.take(10).map(probeMap.unpack)
 
     val preSort = m.current
 

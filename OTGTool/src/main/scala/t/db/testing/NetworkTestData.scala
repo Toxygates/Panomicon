@@ -19,16 +19,13 @@
 
 package t.db.testing
 
-import t.platform.mirna._
-import t.platform._
-import t.sparql.Platforms
-import t.sparql.secondary.Compound
-import t.db.Sample
-import t.model.sample.{Attribute, OTGAttribute}
+import t.db.{ProbeIndex, Sample}
 import t.model.sample.CoreParameter._
-import OTGAttribute._
+import t.model.sample.OTGAttribute._
+import t.model.sample.{Attribute, OTGAttribute}
+import t.platform._
+import t.platform.mirna._
 import t.testing.FakeContext
-import t.db.ProbeIndex
 
 /**
  * Data for testing interaction networks.
@@ -36,9 +33,9 @@ import t.db.ProbeIndex
  * as well as relations between the two platforms.
  */
 object NetworkTestData {
-  val refseqIds = TestData.platform(1000, "refseq")
-  val mirnaIds = TestData.platform(1000, "mirna")
-  val mrnaIds = TestData.platform(1000, "mrna")
+  val refseqIds = DBTestData.platform(1000, "refseq")
+  val mirnaIds = DBTestData.platform(1000, "mirna")
+  val mrnaIds = DBTestData.platform(1000, "mrna")
 
   def targetTable(mirnaPlatform: Iterable[String],
     refseqPlatform: Iterable[String],
@@ -62,7 +59,7 @@ object NetworkTestData {
   val mrnaProbes = mrnaIds.map(m => {
     Probe(m,
       transcripts = Seq(RefSeq(m.replace("mrna", "refseq"))),
-      platform = TestData.mrnaPlatformId)
+      platform = DBTestData.mrnaPlatformId)
   })
   val mirnaProbes = mirnaIds.map(m => {
     Probe(m, platform = mirnaPlatformId)
@@ -70,7 +67,7 @@ object NetworkTestData {
   val probes = mrnaProbes.map(_.identifier) ++ mirnaProbes.map(_.identifier)
   implicit val probeIndex = new ProbeIndex(Map() ++ probes.zipWithIndex)
 
-  val ids = (TestData.samples.size + 1 until TestData.samples.size + 1000).
+  val ids = (DBTestData.samples.size + 1 until DBTestData.samples.size + 1000).
     map(i => s"mir-s$i").iterator
 
   val mirnaSamples = for (
@@ -82,18 +79,18 @@ object NetworkTestData {
           Type -> "miRNA",
           Platform -> "mirnaTest",
           TestType -> "Vivo", Organism -> "Rat",
-          ControlGroup -> TestData.cgroup(time, "acetaminophen"));
+          ControlGroup -> DBTestData.cgroup(time, "acetaminophen"));
     s = Sample(ids.next, values)
   ) yield s
 
-  val samples = TestData.samples.toSeq ++ mirnaSamples
-  val sampleIndex = TestData.sampleIndex(samples)
+  val samples = DBTestData.samples.toSeq ++ mirnaSamples
+  val sampleIndex = DBTestData.sampleIndex(samples)
 
-  implicit val context = new FakeContext(sampleIndex, probeIndex)
+  implicit val context = new FakeContext
 
   def populate() {
-    val mirnaData = TestData.makeTestData(false, mirnaSamples)
-    val mrnaData = TestData.makeTestData(false, TestData.samples)
+    val mirnaData = DBTestData.makeTestData(false, mirnaSamples)
+    val mrnaData = DBTestData.makeTestData(false, DBTestData.samples)
     context.populate(mirnaData)
     context.populate(mrnaData)
   }

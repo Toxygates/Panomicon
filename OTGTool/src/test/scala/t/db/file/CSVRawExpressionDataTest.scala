@@ -22,13 +22,13 @@ package t.db.file
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
-import t.db.testing.TestData
+import t.db.testing.DBTestData
 import otg.OTGContext
 import t.testing.TestConfig
 
 @RunWith(classOf[JUnitRunner])
 class CSVRawExpressionDataTest extends TTestSuite {
-  import TestData._
+  import DBTestData._
   val fact = OTGContext.factory
   val meta = TSVMetadata.apply(fact, "testData/meta.tsv",
     TestConfig.config.attributes, println(_))

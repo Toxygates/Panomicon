@@ -17,19 +17,18 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.testing
+package t.testing
 
-import t.db.Metadata
-import t.model.sample.OTGAttribute._
-import t.{DoseSeries, Factory, OTGSeries, TimeSeries}
-import t.db._
+import t.db.{Metadata, _}
 import t.model.sample
+import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, OTGAttributeSet}
 import t.model.shared.SampleClassHelper._
 import t.platform._
+import t.{DoseSeries, Factory, OTGSeries, TimeSeries}
 
 object TestData {
-  import t.db.testing.TestData._
+  import t.db.testing.DBTestData._
 
   def mkPoint(pr: String, t: Int) = {
      val e = randomExpr()
@@ -75,7 +74,7 @@ object TestData {
 
   private def controlGroup(s: Sample) = ???
 
-  import t.model.sample.CoreParameter.{ ControlGroup => CGParam }
+  import t.model.sample.CoreParameter.{ControlGroup => CGParam}
 
   lazy val controlGroups: Map[Sample, SSVarianceSet] = {
     val gr = samples.groupBy(_(CGParam))
@@ -101,13 +100,13 @@ object TestData {
     Math.random * range + (mean - range/2)
 
   def liverWeight(s: Sample) =
-    t.db.testing.TestData.liverWeight(s(DoseLevel), s(Individual))
+    t.db.testing.DBTestData.liverWeight(s(DoseLevel), s(Individual))
 
   def kidneyWeight(s: Sample) =
-    t.db.testing.TestData.kidneyWeight(s(DoseLevel), s(Individual))
+    t.db.testing.DBTestData.kidneyWeight(s(DoseLevel), s(Individual))
 
   def metadata: Metadata = new Metadata {
-    def samples = t.db.testing.TestData.samples
+    def samples = t.db.testing.DBTestData.samples
 
     def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
