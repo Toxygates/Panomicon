@@ -21,16 +21,13 @@ package otg.sparql
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 import otg.OTGMatrixContext
 import t.platform.Species.Rat
-import t.TTestSuite
+import t.{DoseSeries, TTestSuite, TimeSeries}
 import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
 import t.model.sample.OTGAttribute._
-import otg.TimeSeries
-import otg.DoseSeries
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {

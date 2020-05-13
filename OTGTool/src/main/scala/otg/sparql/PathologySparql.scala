@@ -19,7 +19,7 @@
 
 package otg.sparql
 
-import otg.Pathology
+import t.Pathology
 import t.sparql.Triplestore
 
 /**

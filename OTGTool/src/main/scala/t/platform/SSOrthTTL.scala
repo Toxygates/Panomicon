@@ -17,22 +17,17 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.platform
+package t.platform
 
 import java.io._
 
-import scala.collection.mutable.{ HashMap => MHMap }
-import scala.collection.mutable.{ HashMap => MHMap }
-import scala.collection.mutable.{ Set => MSet }
-import scala.collection.mutable.{ Set => MSet }
-import scala.io._
-
 import otg.sparql.OTGProbeStore
-import t.platform.Probe
-import t.sparql.secondary.Gene
-import t.intermine.OrthologProteins
-import t.intermine.Connector
+import t.intermine.{Connector, OrthologProteins}
 import t.platform.Species._
+import t.sparql.secondary.Gene
+
+import scala.collection.mutable.{HashMap => MHMap, Set => MSet}
+import scala.io._
 
 /**
  * Convert SSearch similarity files to TTL format, by using

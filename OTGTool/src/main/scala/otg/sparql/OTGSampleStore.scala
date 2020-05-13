@@ -19,11 +19,10 @@
 
 package otg.sparql
 
-import otg.Pathology
-import t.BaseConfig
+import t.{BaseConfig, Pathology}
 import t.db.Sample
 import t.sparql._
-import t.sparql.{ Filter => TFilter }
+import t.sparql.{Filter => TFilter}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute

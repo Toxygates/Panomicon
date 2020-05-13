@@ -20,10 +20,10 @@
 package otg
 
 import friedrich.util.CmdLineOptions
-import otg.platform.SSOrthTTL
 import t.platform.Species._
 import t._
 import t.model.sample.OTGAttributeSet
+import t.platform.SSOrthTTL
 
 object Manager extends t.Manager[OTGContext, OTGBConfig] with CmdLineOptions {
   override protected def handleArgs(args: Array[String])(implicit context: OTGContext) {

@@ -20,7 +20,7 @@
 package t.db.kyotocabinet
 
 import otg._
-import t.TTestSuite
+import t.{DoseSeries, OTGDoseSeriesBuilder, OTGSeries, OTGSeriesBuilder, OTGSeriesType, OTGTimeSeriesBuilder, TTestSuite, TimeSeries}
 import t.db.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -94,7 +94,7 @@ class KCSeriesDBTest extends TTestSuite {
       val db = testType.nonNormalizingReader()
       val compound = cmap.keys.head
 
-      var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      var key = t.OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
       var nExpected = testType.inputSeries.size / cmap.size / TestData.probes.size
       val builtKeys = testType.builderType.keysFor(key)      
       (builtKeys.size * testType.keyFraction) should equal(nExpected)
@@ -106,7 +106,7 @@ class KCSeriesDBTest extends TTestSuite {
       ss should contain theSameElementsAs(expect)
 
       val organ = TestData.enumValues(Organ.id).head
-      key = OTGSeries(testType.seriesType, null, organ, null, 13, compound, null, null)
+      key = t.OTGSeries(testType.seriesType, null, organ, null, 13, compound, null, null)
       nExpected = nExpected / TestData.enumValues(Organ.id).size
       expect = testType.inputSeries.filter(s => s.compound == compound && s.probe == 13 && s.organ == organ)
       ss = db.read(key)
@@ -135,7 +135,7 @@ class KCSeriesDBTest extends TTestSuite {
       for (s <- insertionData) {
         w.addPoints(s)
       }
-      val key = OTGSeries(testType.seriesType, null, null, null, testProbe, compound, null, null)
+      val key = t.OTGSeries(testType.seriesType, null, null, null, testProbe, compound, null, null)
       val db = testType.normalizingReader()
       var ss = db.read(key)
       ss should contain theSameElementsAs (expected)
@@ -152,7 +152,7 @@ class KCSeriesDBTest extends TTestSuite {
         w.removePoints(s)
       }
 
-      var key = OTGSeries(testType.seriesType, null, null, null, 100, null, null, null)
+      var key = t.OTGSeries(testType.seriesType, null, null, null, 100, null, null, null)
       var expect = testType.inputSeries.filter(s => s.compound != compound && s.probe == 100)
       var ss = w.read(key)
       ss should contain theSameElementsAs (expect)
@@ -172,7 +172,7 @@ class KCSeriesDBTest extends TTestSuite {
         w.removePoints(s.copy(points = s.points.filter(_.code == attribValuePacked)))
       }
 
-      var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      var key = t.OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
       var expect = testType.inputSeries.filter(s => s.compound == compound && 
         s.probe == testProbe).map(s =>
           s.copy(points = s.points.filter(_.code != attribValuePacked)))

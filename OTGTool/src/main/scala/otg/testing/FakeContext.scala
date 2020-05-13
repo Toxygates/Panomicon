@@ -21,11 +21,10 @@ package otg.testing
 
 import t.db.SampleMap
 import t.db.ProbeMap
-import otg.OTGTimeSeriesBuilder
+import t.{OTGDoseSeriesBuilder, OTGTimeSeriesBuilder}
 import t.db.kyotocabinet.KCSeriesDB
 import t.db.testing.{TestData => TData}
 import t.db.Sample
-import otg.OTGDoseSeriesBuilder
 
 class FakeContext(sampleMap: SampleMap = TData.dbIdMap,
     probeMap: ProbeMap = TData.probeMap,

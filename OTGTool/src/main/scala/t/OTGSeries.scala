@@ -17,12 +17,11 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg
+package t
 
-import t.platform.Species._
-import t.model.sample.OTGAttribute._
 import t.db.{MatrixDBReader, Series => TSeries, _}
 import t.model.sample.Attribute
+import t.model.sample.OTGAttribute._
 
 import scala.reflect.ClassTag
 

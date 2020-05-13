@@ -19,13 +19,12 @@
 
 package otg
 
-import friedrich.data.Statistics
-import t.util.SafeMath
+import t.OTGSeries
 import t.db._
+import t.util.SafeMath
 
 class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGSeries)
 (implicit context: OTGMatrixContext) extends t.SeriesRanking[OTGSeries](db, key) {
-  import Statistics._
   import SafeMath._
   import t.SeriesRanking._
 

@@ -20,8 +20,7 @@
 package otg
 
 import org.junit.runner.RunWith
-
-import t.TTestSuite
+import t.{DoseSeries, OTGDoseSeriesBuilder, OTGSeries, OTGSeriesBuilder, OTGSeriesType, OTGTimeSeriesBuilder, TTestSuite, TimeSeries}
 import t.db._
 import t.db.testing.TestData
 import t.model.shared.SampleClassHelper._

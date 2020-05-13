@@ -18,6 +18,7 @@
  */
 
 
+import t.OTGSeries
 import t.db.SeriesDB
 package object otg {
   type SDB = SeriesDB[OTGSeries]

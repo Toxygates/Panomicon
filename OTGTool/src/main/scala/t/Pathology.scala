@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg
+package t
 
 /**
  * A representation of a pathology, as well as a way of filtering by pathologies.

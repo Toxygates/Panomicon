@@ -22,19 +22,15 @@ package otg.viewer.server.rpc
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 import otg.OTGContext
-import otg.OTGSeries
 import otg.viewer.shared.Pathology
 import otg.viewer.shared.RankRule
 import otg.viewer.shared.Series
 import otg.viewer.shared.RuleType
-import t.SeriesRanking
+import t.{DoseSeries, OTGSeries, OTGSeriesType, SeriesRanking, TimeSeries}
 import t.common.shared.sample._
 import t.db.MatrixContext
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
-import otg.OTGSeriesType
-import otg.TimeSeries
-import otg.DoseSeries
 import t.model.sample.OTGAttribute
 
 /**
@@ -46,7 +42,7 @@ import t.model.sample.OTGAttribute
 object Conversions {
   import t.viewer.server.Conversions._
 
-  implicit def asJava(path: otg.Pathology): Pathology =
+  implicit def asJava(path: t.Pathology): Pathology =
     new Pathology(path.sampleId, path.topography.getOrElse(null),
       path.finding.getOrElse(null),
       path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);

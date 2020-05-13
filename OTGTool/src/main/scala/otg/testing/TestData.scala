@@ -19,12 +19,9 @@
 
 package otg.testing
 
-import otg.DoseSeries
-import otg.OTGSeries
-import otg.TimeSeries
 import t.db.Metadata
 import t.model.sample.OTGAttribute._
-import t.Factory
+import t.{DoseSeries, Factory, OTGSeries, TimeSeries}
 import t.db._
 import t.model.sample
 import t.model.sample.{Attribute, OTGAttributeSet}

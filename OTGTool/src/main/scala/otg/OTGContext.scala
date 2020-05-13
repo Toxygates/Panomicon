@@ -21,8 +21,7 @@ package otg
 
 import otg.sparql.OTGSampleStore
 import otg.sparql.OTGProbeStore
-import t.BaseConfig
-import t.TriplestoreConfig
+import t.{BaseConfig, OTGDoseSeriesBuilder, OTGTimeSeriesBuilder, TriplestoreConfig}
 import t.db._
 import t.db.kyotocabinet.KCSeriesDB
 import t.model.sample.CoreParameter

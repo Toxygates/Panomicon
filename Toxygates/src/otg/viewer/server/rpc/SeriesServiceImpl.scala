@@ -19,11 +19,8 @@
 
 package otg.viewer.server.rpc
 
-import otg.OTGDoseSeriesBuilder
-import otg.OTGSeries
-import otg.OTGSeriesBuilder
-import otg.OTGTimeSeriesBuilder
-import otg.viewer.shared.{ Series => SSeries }
+import otg.viewer.shared.{Series => SSeries}
+import t.{OTGDoseSeriesBuilder, OTGSeries, OTGSeriesBuilder, OTGTimeSeriesBuilder}
 import t.db.SeriesDB
 import t.common.shared.SeriesType
 

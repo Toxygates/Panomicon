@@ -22,7 +22,7 @@ package otg
 import t.SeriesRanking.safePCorrelation
 import friedrich.data.Statistics.pearsonCorrelation
 import org.scalatest.junit.JUnitRunner
-import t.TTestSuite
+import t.{OTGSeries, TTestSuite, TimeSeries}
 import t.db._
 import t.testing.TestConfig
 import t.db.testing.TestData
