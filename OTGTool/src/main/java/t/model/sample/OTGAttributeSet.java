@@ -17,42 +17,41 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.model.sample;
+package t.model.sample;
 
-import static t.model.sample.OTGAttribute.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import static t.model.sample.CoreParameter.*;
-
-import java.util.*;
-
-import t.model.sample.Attribute;
-import t.model.sample.CoreParameter;
-import t.model.sample.OTGAttribute;
+import static t.model.sample.OTGAttribute.*;
 
 /**
  * An AttributeSet for Open TG-GATEs data.
  */
 @SuppressWarnings("serial")
-public class AttributeSet extends t.model.sample.AttributeSet {
+public class OTGAttributeSet extends t.model.sample.AttributeSet {
   
   //GWT constructor
-  public AttributeSet() {}
+  public OTGAttributeSet() {}
   
   /**
    * Internal constructor. Users should not access this constructor directly.
    */
-  AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
+  OTGAttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
     super(attributes, required);
     Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute, Type);
     Collections.addAll(highLevel, Type, Organism, Organ, TestType, Repeat);
     Collections.addAll(unitLevel, Compound, DoseLevel, ExposureTime);
   }
     
-  private static AttributeSet defaultSet;
+  private static OTGAttributeSet defaultSet;
 
   /**
    * Obtain the Open TG-GATEs AttributeSet singleton.
    */
-  synchronized public static AttributeSet getDefault() {
+  synchronized public static OTGAttributeSet getDefault() {
     if (defaultSet == null) {
       List<Attribute> attributes = new ArrayList<Attribute>();
       Collections.addAll(attributes, CoreParameter.all());
@@ -63,7 +62,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
       Collections.addAll(required, Organism, TestType, Repeat, Organ,
         Compound, DoseLevel, ExposureTime);
       
-      defaultSet = new AttributeSet(attributes, required);
+      defaultSet = new OTGAttributeSet(attributes, required);
     }
     return defaultSet;
   }

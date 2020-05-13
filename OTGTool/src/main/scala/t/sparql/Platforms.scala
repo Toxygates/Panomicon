@@ -26,7 +26,7 @@ import t.platform.ProbeRecord
 import t.util.TempFiles
 import t.platform.BioParameter
 import t.platform.BioParameters
-import t.model.sample.AttributeSet
+import t.model.sample.{AttributeSet, OTGAttributeSet}
 import t.BaseConfig
 
 object Platforms extends RDFClass {
@@ -152,7 +152,7 @@ class Platforms(baseConfig: BaseConfig) extends
       |   }
       |}""".stripMargin, timeout)
 
-    val attribSet = otg.model.sample.AttributeSet.getDefault
+    val attribSet = OTGAttributeSet.getDefault
 
     val bpcons = bps.map(x => BioParameter(
         attribSet.findOrCreate(x("id"), x("desc"), x("type")),

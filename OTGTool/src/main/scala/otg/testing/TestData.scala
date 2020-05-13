@@ -26,7 +26,8 @@ import otg.db.Metadata
 import t.model.sample.OTGAttribute._
 import t.Factory
 import t.db._
-import t.model.sample.Attribute
+import t.model.sample
+import t.model.sample.{Attribute, OTGAttributeSet}
 import t.model.shared.SampleClassHelper._
 import t.platform._
 
@@ -90,7 +91,7 @@ object TestData {
   }
 
   //temporary
-  val attribSet = otg.model.sample.AttributeSet.getDefault
+  val attribSet = OTGAttributeSet.getDefault
 
   val bioParams = Seq(
       BioParameter(LiverWeight, None, None, None),
@@ -116,7 +117,7 @@ object TestData {
     def attributeValues(attribute: Attribute): Seq[String] =
       enumMaps(attribute.id).keys.toSeq.distinct
 
-    def attributeSet = otg.model.sample.AttributeSet.getDefault
+    def attributeSet = sample.OTGAttributeSet.getDefault
 
     def sampleAttributes(s: Sample): Seq[(Attribute, String)] = {
       samples.find(_ == s).get.sampleClass.asScalaMap.toSeq ++ Seq(

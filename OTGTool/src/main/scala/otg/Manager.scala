@@ -23,6 +23,7 @@ import friedrich.util.CmdLineOptions
 import otg.platform.SSOrthTTL
 import t.platform.Species._
 import t._
+import t.model.sample.OTGAttributeSet
 
 object Manager extends t.Manager[OTGContext, OTGBConfig] with CmdLineOptions {
   override protected def handleArgs(args: Array[String])(implicit context: OTGContext) {
@@ -60,5 +61,5 @@ case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends 
 
   def appName = "Toxygates"
 
-  def attributes = otg.model.sample.AttributeSet.getDefault
+  def attributes = OTGAttributeSet.getDefault
 }

@@ -25,7 +25,7 @@ import t.db.{Metadata, Sample}
 import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
-import t.model.sample.{Attribute, VarianceSet}
+import t.model.sample.{Attribute, OTGAttributeSet, VarianceSet}
 import t.model.sample.OTGAttribute._
 
 import scala.collection.JavaConverters._
@@ -120,7 +120,7 @@ object BioParameter {
 
   def main(args: Array[String]) {
      val f = new otg.OTGFactory
-     val attrs = otg.model.sample.AttributeSet.getDefault
+     val attrs = OTGAttributeSet.getDefault
      val data = TSVMetadata.apply(f, args(0), attrs)
      var out = Map[Attribute, Seq[String]]()
 
