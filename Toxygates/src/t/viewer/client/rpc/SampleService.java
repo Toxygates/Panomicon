@@ -19,24 +19,23 @@
 
 package t.viewer.client.rpc;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.common.shared.Dataset;
+import t.common.shared.Pair;
+import t.common.shared.RequestResult;
+import t.common.shared.sample.PrecomputedVarianceSet;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
-import t.model.sample.VarianceSet;
 import t.viewer.shared.TimeoutException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A service that provides information about samples, datasets, and 
@@ -94,6 +93,14 @@ public interface SampleService extends RemoteService {
    */
   Sample[] samples(SampleClass sc) throws TimeoutException;
 
+  /**
+   * Obtain all samples matching the constraints in a sample class
+   * @param sc the sample class to select samples from
+   * @param importantOnly if true, only attributes for the preview display
+   *                      will be fetched. Otherwise, all attributes will be
+   *                      fetched
+   * @return
+   */
   Sample[] samplesWithAttributes(SampleClass sc, boolean importantOnly);
 
   /**
@@ -138,8 +145,26 @@ public interface SampleService extends RemoteService {
    */
   Attribute[] attributesForSamples(SampleClass sc) throws TimeoutException;
 
+  /**
+   * Fetch parameter values for the given samples
+   * @param samples the samples for which to fetch values
+   * @param attributes the parameters to fetch
+   * @return an array of Sample objects populated with attribute values
+   * @throws TimeoutException
+   */
   Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes) throws TimeoutException;
 
+  /**
+   * Fetch parameter values for the given samples, as well as variance information
+   * @param samples the samples for which to fetch parameter values
+   * @param importantOnly if true, only the parameters for the preview
+   *                      display will be fetched. Otherwise, all attributes
+   *                      will be fetched.
+   * @return a Pair, where the first element is an array of samples with
+   * attribute values, and the second element is a Map from sample IDs to
+   * PrecomputedVarianceSets
+   * @throws TimeoutException
+   */
   Pair<Sample[], Map<String, PrecomputedVarianceSet>> attributeValuesAndVariance(Sample[] samples, boolean importantOnly)
     throws TimeoutException;
 
