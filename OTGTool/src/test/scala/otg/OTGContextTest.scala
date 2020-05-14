@@ -27,7 +27,7 @@ import t.TTestSuite
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
-class OTGContextTest extends TTestSuite {
+class ContextTest extends TTestSuite {
 
   val context = new FakeContext
 

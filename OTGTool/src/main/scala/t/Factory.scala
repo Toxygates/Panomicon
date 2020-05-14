@@ -31,13 +31,15 @@ import t.db.Sample
  * Note: It may be a good idea to make ts and data constructor parameters,
  * and then store them and the resulting context, baseconfig
  */
-abstract class Factory {
-  def samples(config: BaseConfig): SampleStore
+class Factory {
+  def samples(config: BaseConfig): SampleStore =
+    new SampleStore(config)
 
-  def probes(config: TriplestoreConfig): ProbeStore
+  def probes(config: TriplestoreConfig): ProbeStore =
+    new ProbeStore(config)
 
   def tsvMetadata(file: String, attr: AttributeSet,
-      warningHandler: (String) => Unit = println): Metadata =
+                  warningHandler: (String) => Unit = println): Metadata =
     TSVMetadata.apply(this, file, attr, warningHandler)
 
   def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
@@ -45,18 +47,21 @@ abstract class Factory {
 
   def triplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
                           querySet: Iterable[Attribute] = Seq())
-      (implicit sf: SampleFilter): TriplestoreMetadata =
+                         (implicit sf: SampleFilter): TriplestoreMetadata =
     new TriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
 
   def cachingTriplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
                                  querySet: Iterable[Attribute] = Seq())
-      (implicit sf: SampleFilter): TriplestoreMetadata =
+                                (implicit sf: SampleFilter): TriplestoreMetadata =
     new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
 
   def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
     new FilteredMetadata(from, sampleView)
 
-  def context(ts: TriplestoreConfig, data: DataConfig): Context
+  def context(ts: TriplestoreConfig, data: DataConfig) = {
+    val bc = new BaseConfig(ts, data)
+    t.Context(bc)
+  }
 
   def dataConfig(dir: String, matrixDbOptions: String): DataConfig =
     DataConfig.apply(dir, matrixDbOptions)

@@ -19,8 +19,7 @@
 
 package t.testing
 
-import otg.OTGBConfig
-import t._
+import t.{BaseConfig, _}
 
 object TestConfig {
   //Not in use
@@ -33,5 +32,5 @@ object TestConfig {
    */
   val tsConfig = new TriplestoreConfig("http://monomorphic.org:3030/Toxygates/query",
     null, "x", "y", "")
-  val config = new OTGBConfig(tsConfig, dataConfig)
+  val config = new BaseConfig(tsConfig, dataConfig)
 }

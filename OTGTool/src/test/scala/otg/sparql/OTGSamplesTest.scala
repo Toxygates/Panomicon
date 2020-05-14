@@ -17,16 +17,15 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.sparql
+package t.sparql
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.OTGMatrixContext
+
 import t.model.sample.OTGAttribute._
 import t.model.shared.SampleClassHelper
-import t.sparql.{SampleClassFilter, SampleFilter, SampleStore}
 import t.testing.TestConfig
-import t.{DoseSeries, TTestSuite, TimeSeries}
+import t.{DoseSeries, OTGMatrixContext, TTestSuite, TimeSeries}
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {

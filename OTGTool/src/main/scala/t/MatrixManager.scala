@@ -31,7 +31,7 @@ import t.sparql.SampleClassFilter
  */
 object MatrixManager extends ManagerTool {
 
-  def apply(args: Seq[String], m: Manager[_, _])(implicit context: Context): Unit = {
+  def apply(args: Seq[String], m: Manager)(implicit context: Context): Unit = {
 
     def config = context.config
     def factory = context.factory

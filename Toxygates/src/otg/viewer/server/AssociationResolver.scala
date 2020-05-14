@@ -19,10 +19,6 @@
 
 package otg.viewer.server
 
-import scala.collection.{ Set => CSet }
-
-import t.sparql._
-import t._
 import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
 import t.common.shared.AType._
@@ -30,12 +26,13 @@ import t.db.DefaultBio
 import t.model.SampleClass
 import t.platform.Probe
 import t.platform.mirna.TargetTable
-import t.sparql._
 import t.sparql.secondary._
-import t.sparql.toBioMap
-import t.viewer.server._
+import t.sparql.{toBioMap, _}
 import t.viewer.server.Conversions._
+import t.viewer.server._
 import t.viewer.shared.Association
+
+import scala.collection.{Set => CSet}
 
 class LimitState {
   @volatile var exceeded = false

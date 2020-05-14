@@ -19,7 +19,6 @@
 
 package otg.viewer.server.rpc
 
-import t.sparql._
 import otg.viewer.server.AppInfoLoader
 import otg.viewer.server.DrugTargetResolver
 import otg.viewer.server.MirnaResolver

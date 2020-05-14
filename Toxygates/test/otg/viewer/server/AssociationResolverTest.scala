@@ -19,19 +19,16 @@
 
 package otg.viewer.server
 
-import scala.collection.JavaConverters._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.OTGBConfig
-import t.TTestSuite
 import t.common.shared.AType
 import t.model.SampleClass
-import t.sparql.{SampleStore, ProbeStore, SampleFilter}
-import t.sparql.secondary._
 import t.model.sample.{Attribute, OTGAttribute}
-import t.sparql._
-import t.viewer.server.Platforms
-import t.platform.mirna.TargetTable
+import t.sparql.secondary._
+import t.sparql.{ProbeStore, SampleFilter, SampleStore}
+import t.{BaseConfig, TTestSuite}
+
+import scala.collection.JavaConverters._
 
 object AssociationResolverTest {
 
@@ -48,7 +45,7 @@ class AssociationResolverTest extends TTestSuite {
 
   import t.viewer.testing.TestConfiguration
   def conf = TestConfiguration.config
-  def baseConf = new OTGBConfig(TestConfiguration.tc.tsConfig,
+  def baseConf = new BaseConfig(TestConfiguration.tc.tsConfig,
       TestConfiguration.tc.dataConfig)
 
   def sc = AssociationResolverTest.testSampleClass

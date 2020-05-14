@@ -17,18 +17,14 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.sparql
+package t.sparql
 
+import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
-import otg._
-import t.platform.Species._
-import t.TTestSuite
-import t.sparql._
+import t.platform.Probe
 import t.sparql.secondary._
 import t.testing.TestConfig
-import t.platform.Probe
-import org.junit.runner.RunWith
+import t.{OTGMatrixContext, TTestSuite}
 
 @RunWith(classOf[JUnitRunner])
 class AffyProbesTest extends TTestSuite {

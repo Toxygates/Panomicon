@@ -22,7 +22,7 @@ package t.platform
 import t.db.file.TSVMetadata
 import t.db.file.MapMetadata
 import t.db.{Metadata, Sample}
-import t.BaseConfig
+import t.{BaseConfig, Factory}
 import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
 import t.model.sample.{Attribute, OTGAttributeSet, VarianceSet}
@@ -119,7 +119,7 @@ object BioParameter {
     }
 
   def main(args: Array[String]) {
-     val f = new otg.OTGFactory
+     val f = new Factory
      val attrs = OTGAttributeSet.getDefault
      val data = TSVMetadata.apply(f, args(0), attrs)
      var out = Map[Attribute, Seq[String]]()

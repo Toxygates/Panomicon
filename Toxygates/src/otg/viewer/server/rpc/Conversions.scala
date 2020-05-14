@@ -21,12 +21,11 @@ package otg.viewer.server.rpc
 
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
-import otg.OTGContext
 import otg.viewer.shared.Pathology
 import otg.viewer.shared.RankRule
 import otg.viewer.shared.Series
 import otg.viewer.shared.RuleType
-import t.{DoseSeries, OTGSeries, OTGSeriesType, SeriesRanking, TimeSeries}
+import t.{DoseSeries, Context, OTGSeries, OTGSeriesType, SeriesRanking, TimeSeries}
 import t.common.shared.sample._
 import t.db.MatrixContext
 import t.model.sample.CoreParameter._
@@ -58,7 +57,7 @@ object Conversions {
       p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
   }
 
-  def asJava(series: OTGSeries, geneSym: String)(implicit context: OTGContext): Series = {
+  def asJava(series: OTGSeries, geneSym: String)(implicit context: Context): Series = {
     implicit val mc = context.matrix
     val name = series.compound + " " + series.doseOrTime
     val sc = new t.model.SampleClass
@@ -72,7 +71,7 @@ object Conversions {
         sc, series.values.map(t.viewer.server.Conversions.asJava).toArray)
   }
 
-  implicit def asJava(series: OTGSeries)(implicit context: OTGContext): Series = {
+  implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
     asJava(series, "")
   }
 

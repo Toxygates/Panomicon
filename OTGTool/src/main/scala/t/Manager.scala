@@ -19,17 +19,18 @@
 
 package t
 
-import scala.collection.JavaConverters._
-import scala.concurrent._
-
 import friedrich.util.CmdLineOptions
 import t.global.KCDBRegistry
+import t.platform.SSOrthTTL
+import t.platform.Species.{Human, Mouse, Rat}
+
+import scala.collection.JavaConverters._
 
 /**
  * Management tool for T framework applications.
  */
-abstract class Manager[C <: Context, B <: BaseConfig] {
-  import scala.collection.{ Map => CMap }
+class Manager extends CmdLineOptions {
+  import scala.collection.{Map => CMap}
 
   def requireEnv(env: scala.collection.Map[String, String], key: String, errMsg: String) =
     env.getOrElse(key, throw new Exception(s"Missing environment variable $key: $errMsg"))
@@ -47,17 +48,19 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
-  def getBaseConfig(): B = {
+  def getBaseConfig(): BaseConfig = {
     val env = System.getenv().asScala
     val ts = getTSConfig(env)
     val d = getDataConfig(env)
     makeBaseConfig(ts, d)
   }
 
-  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): B
+  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): BaseConfig =
+    BaseConfig(ts, d)
 
-  def factory: Factory
-  def initContext(bc: B): C
+  lazy val factory: Factory = new Factory()
+
+  def initContext(bc: BaseConfig): Context = Context(bc)
 
   def main(args: Array[String]) {
     implicit val c = initContext(getBaseConfig)
@@ -90,8 +93,20 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
     println(" batch, instance, platform, matrix")
   }
 
-  protected def handleArgs(args: Array[String])(implicit context: C) {
+  protected def handleArgs(args: Array[String])(implicit context: Context) {
     args(0) match {
+      case "orthologs" =>
+        val output = require(stringOption(args, "-output"),
+          "Please specify an output file with -output")
+        val intermineURL = require(stringOption(args, "-intermineURL"),
+          "Please specify an intermine URL with -intermineURL, e.g. https://mizuguchilab.org/targetmine/service")
+        val intermineAppName = require(stringOption(args, "-intermineAppName"),
+          "Please specify an intermine app name with -intermineAppName, e.g. targetmine")
+
+        val spPairs = Seq((Rat, Human), (Human, Mouse), (Mouse, Rat))
+
+        val conn = new t.intermine.Connector(intermineAppName, intermineURL)
+        new SSOrthTTL(context.probeStore, output).generateFromIntermine(conn, spPairs)
       case "batch"    => BatchManager(args.drop(1))
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
@@ -99,8 +114,6 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       case _ => showHelp()
     }
   }
-
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   /**
    * Wait for the task runner and monitor its progress on the console

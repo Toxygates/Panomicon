@@ -17,14 +17,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.sparql
+package t.sparql
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
 import t.platform.Probe
 import t.platform.Species._
-import t.sparql.ProbeStore
 import t.sparql.secondary._
 import t.testing.TestConfig
 

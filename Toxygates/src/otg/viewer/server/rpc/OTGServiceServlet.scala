@@ -21,27 +21,27 @@ package otg.viewer.server.rpc
 
 import otg._
 import otg.viewer.shared.OTGSchema
+import t.{BaseConfig, Factory, Context}
 import t.viewer.server.Configuration
-
 import t.viewer.server.rpc.TServiceServlet
 
 trait OTGServiceServlet extends TServiceServlet {
-  override protected def context: OTGContext = _context
-  override protected def factory: OTGFactory = _factory
+  override protected def context: Context = _context
+  override protected def factory: Factory = _factory
 
-  protected var _context: OTGContext = _
-  protected var _factory: OTGFactory = _
+  protected var _context: Context = _
+  protected var _factory: Factory = _
 
   /**
    * Subclasses that override localInit can assume that factory and context are available.
    */
   override abstract def localInit(config: Configuration) {
-    _factory = new OTGFactory
+    _factory = new Factory
     _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
     super.localInit(config)
   }
 
-  override protected def baseConfig: OTGBConfig = context.config
+  override protected def baseConfig: BaseConfig = context.config
 
   protected val schema: OTGSchema = new OTGSchema()
 

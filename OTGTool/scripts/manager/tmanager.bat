@@ -26,4 +26,4 @@ set T_DATA_MATDBCONFIG=#pccap=1073741824#msiz=4294967296
 
 ::echo "%OTGTOOL_ROOT%\bin;%CLASSPATH%"
 
-scala -Djava.library.path=%KC_LIBDIR% -J-Xmx4g -classpath "%OTGTOOL_ROOT%\bin;%CLASSPATH%" otg.Manager %*
+scala -Djava.library.path=%KC_LIBDIR% -J-Xmx4g -classpath "%OTGTOOL_ROOT%\bin;%CLASSPATH%" t.Manager %*
