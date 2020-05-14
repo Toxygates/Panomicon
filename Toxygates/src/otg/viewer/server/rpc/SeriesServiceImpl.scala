@@ -31,7 +31,7 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
   implicit def ctxt = context
 
   protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) =
-    new otg.SeriesRanking(db, key)
+    new t.SeriesRanking(db, key)
 
   override protected def asShared(s: OTGSeries, geneSym: String): SSeries =
     Conversions.asJava(s, geneSym)

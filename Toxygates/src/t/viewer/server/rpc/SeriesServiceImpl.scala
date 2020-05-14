@@ -19,17 +19,12 @@
 
 package t.viewer.server.rpc
 
-import scala.language.implicitConversions
-import t.model.sample.OTGAttribute._
 import otg.viewer.client.rpc.SeriesService
 import otg.viewer.server.rpc.Conversions.asScala
-import otg.viewer.shared.MatchResult
-import otg.viewer.shared.RankRule
-import otg.viewer.shared.{Series => SSeries}
+import otg.viewer.shared.{MatchResult, RankRule, Series => SSeries}
 import t.SeriesRanking
 import t.common.server.GWTUtils._
-import t.common.shared.Dataset
-import t.common.shared.SeriesType
+import t.common.shared.{Dataset, SeriesType}
 import t.db._
 import t.model.SampleClass
 import t.model.sample.OTGAttribute
@@ -38,6 +33,8 @@ import t.util.SafeMath
 import t.viewer.server.Configuration
 import t.viewer.shared.NoSuchProbeException
 
+import scala.language.implicitConversions
+
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   private var config: Configuration = _
   private implicit def mcontext: MatrixContext = context.matrix
@@ -45,7 +42,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   protected def getDB(seriesType: SeriesType): SeriesDB[S]
 
-  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S]
+  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking
 
   implicit def asShared(s: S): SSeries = asShared(s, "")
   protected def asShared(s: S, geneSym: String): SSeries

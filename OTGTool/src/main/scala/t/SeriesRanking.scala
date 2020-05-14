@@ -23,18 +23,63 @@ import t.util.SafeMath
 import t.db._
 import friedrich.data.Statistics
 
-abstract class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit context: MatrixContext) {
-  protected def getScores(rt: SeriesRanking.RankType): Iterable[(S, Double)] = {
-    rt.matchOneProbe(this, key.probe)
+class SeriesRanking(val db: SeriesDB[OTGSeries], val key: OTGSeries)
+                   (implicit context: MatrixContext)  {
+  import SafeMath._
+  import t.SeriesRanking._
+
+  def packProbe(p: String): Int = context.probeMap.pack(p)
+  def withProbe(newProbe: Int) = new SeriesRanking(db, key.copy(probe = newProbe))
+  def withProbe(newProbe: String) = new SeriesRanking(db, key.copy(probe = packProbe(newProbe)))
+
+  def loadRefCurves(key: OTGSeries) = {
+    val refCurves = db.read(key)
+    println("Initialised " + refCurves.size + " reference curves")
+    refCurves
+  }
+
+  protected def getScores(mt: RankType): Iterable[(OTGSeries, Double)] = {
+    mt match {
+      case r: ReferenceCompound => {
+        //Init this once and reuse across all the compounds
+        r.refCurves = loadRefCurves(key.copy(compound = r.compound,
+          doseOrTime = r.doseOrTime))
+      }
+      case _ => {}
+    }
+    mt.matchOneProbe(this, key.probe)
   }
 
   /**
    * This method is currently the only entry point used by the web application.
-   * Identifies the best matching dose level (in case of time series).
    * Returns (compound, dose, score)
    */
-  def rankCompoundsCombined(probesAndRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)]
+  def rankCompoundsCombined(probesRules: Seq[(String, RankType)]): Iterable[(String, String, Double)] = {
 
+    // Get scores for each rule
+    val allScores = probesRules.map(pr => withProbe(pr._1).getScores(pr._2))
+    val dosesOrTimes = allScores.flatMap(_.map(_._1.doseOrTime)).distinct
+    val compounds = allScores.flatMap(_.map(_._1.compound)).distinct
+
+    //We score each combination of compounds and fixed doses (for time series)
+    //or fixed times (for dose series) independently
+
+    val products = (for (
+      dt <- dosesOrTimes; c <- compounds;
+      allCorresponding = allScores.map(_.find(series =>
+        series._1.doseOrTime == dt && series._1.compound == c));
+      scores = allCorresponding.map(_.map(_._2).getOrElse(Double.NaN));
+      product = safeProduct(scores);
+      result = (c, dt, product)
+    ) yield result)
+
+    val byCompound = products.groupBy(_._1)
+    byCompound.map(x => {
+      //highest scoring dose or time for each compound
+      //NaN values must be handled properly
+      x._2.sortWith((a, b) => safeIsGreater(a._3, b._3)).head
+    })
+  }
 }
 
 /*
@@ -54,7 +99,7 @@ object SeriesRanking {
      * Note that the probe in the pattern 'key' may or may not correspond to the probe being ranked.
      * The returned values are tuples of the compound names and matching scores for the various doses/times.
      */
-    def matchOneProbe[S <: Series[S]](c: SeriesRanking[S], probe: Int): Iterable[(S, Double)] = {
+    def matchOneProbe(c: SeriesRanking, probe: Int): Iterable[(OTGSeries, Double)] = {
       val key = c.key.asSingleProbeKey
       val data = c.db.read(key)
       println(s"Read for key: $key result size ${data.size}")
@@ -62,31 +107,31 @@ object SeriesRanking {
       scoreAllSeries(data.toSeq)
     }
 
-    def scoreAllSeries[S <: Series[S]](series: Seq[S]): Iterable[(S, Double)] = {
+    def scoreAllSeries(series: Seq[OTGSeries]): Iterable[(OTGSeries, Double)] = {
       series.map(s => (s, scoreSeries(s)))
     }
 
-    def scoreSeries[S <: Series[S]](s: S): Double
+    def scoreSeries(s: OTGSeries): Double
   }
 
   case class MultiSynthetic(pattern: Vector[Double]) extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double =
+    def scoreSeries(s: OTGSeries): Double =
       safePCorrelation(pattern, s.values.toVector.map(_.value)) + 1
   }
 
   object Sum extends RankType {
     // Note: numbers like 50 are ad hoc to 'guarantee' a positive result
-    def scoreSeries[S <: Series[S]](s: S): Double =
+    def scoreSeries(s: OTGSeries): Double =
       (50 + safeMean(s.presentValues)) / 50
   }
 
   object NegativeSum extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double =
+    def scoreSeries(s: OTGSeries): Double =
       (50 - safeMean(s.presentValues)) / 50
   }
 
   object Unchanged extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double =
+    def scoreSeries(s: OTGSeries): Double =
       (1000 - safeSum(s.presentValues.map(x => x * x))) / 1000
   }
 
@@ -94,7 +139,7 @@ object SeriesRanking {
    * This match type maximises standard deviation.
    */
   object HighVariance extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double =
+    def scoreSeries(s: OTGSeries): Double =
       (10 + safeSigma(s.presentValues)) / 10
   }
 
@@ -102,12 +147,12 @@ object SeriesRanking {
    * This match type minimises standard deviation.
    */
   object LowVariance extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double =
+    def scoreSeries(s: OTGSeries): Double =
       (10 - safeSigma(s.presentValues)) / 10
   }
 
   object MonotonicIncreasing extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double = {
+    def scoreSeries(s: OTGSeries): Double = {
       var score = 5
       if (s.values(0).value < 0 || s.values(0).call == 'A') { //optional: remove this constraint
         score -= 1
@@ -130,7 +175,7 @@ object SeriesRanking {
   }
 
   object MonotonicDecreasing extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double = {
+    def scoreSeries(s: OTGSeries): Double = {
       var score = 5
       if (s.values(0).value > 0 || s.values(0).call == 'A') { //optional: remove this constraint
         score -= 1
@@ -150,17 +195,17 @@ object SeriesRanking {
   }
 
   object MinFold extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double = 20 - safeMin(s.presentValues)
+    def scoreSeries(s: OTGSeries): Double = 20 - safeMin(s.presentValues)
   }
 
   object MaxFold extends RankType {
-    def scoreSeries[S <: Series[S]](s: S): Double = 20 + safeMax(s.presentValues)
+    def scoreSeries(s: OTGSeries): Double = 20 + safeMax(s.presentValues)
   }
 
   class ReferenceCompound(val compound: String, val doseOrTime: String,
       var refCurves: Iterable[Series[_]] = Seq()) extends RankType {
 
-    def scoreSeries[T <: Series[T]](s: T): Double = {
+    def scoreSeries(s: OTGSeries): Double = {
       if (refCurves.isEmpty) {
         Console.err.println("Warning: no reference curves available")
       }
