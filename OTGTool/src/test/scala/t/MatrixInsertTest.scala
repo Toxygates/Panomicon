@@ -20,14 +20,13 @@
 package t
 
 import org.junit.runner.RunWith
-
+import org.scalatest.junit.JUnitRunner
 import t.db._
 import t.db.testing.FakeBasicMatrixDB
-import t.db.testing.DBTestData
+import t.manager.{Task, TaskRunner}
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import org.scalatest.junit.JUnitRunner
-import scala.concurrent.Future
 
 @RunWith(classOf[JUnitRunner])
 class MatrixInsertTest extends TTestSuite {

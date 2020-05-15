@@ -20,8 +20,8 @@
 package t.common.server.maintenance
 
 import javax.annotation.Nullable
-import t.BatchManager
-import t.TaskRunner
+import t.manager.BatchManager
+import t.manager.TaskRunner
 import t.common.shared.Dataset
 import t.common.shared.ManagedItem
 import t.common.shared.maintenance.Batch

@@ -17,11 +17,12 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t
+package t.platform
 
-/**
- * Dataset management CLI - to be developed
- */
-object DatasetManager {
+sealed trait PlatformFormat
+case object AffymetrixPlatform extends PlatformFormat
+case object EnsemblPlatform extends PlatformFormat
+case object GeneralPlatform extends PlatformFormat
+case object BioPlatform extends PlatformFormat
 
-}
+

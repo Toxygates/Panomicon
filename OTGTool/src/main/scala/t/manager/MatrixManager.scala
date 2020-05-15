@@ -1,29 +1,10 @@
-/*
- * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
- *
- * This file is part of Toxygates.
- *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
- */
+package t.manager
 
-package t
+import t.Context
+import t.db._
+import t.sparql.{Batches, SampleClassFilter}
 
 import scala.collection.JavaConverters._
-
-import t.db._
-import t.sparql.Batches
-import t.sparql.SampleClassFilter
 
 /**
  * Mid-level copy tool for copying matrix data between different formats.
@@ -42,10 +23,10 @@ object MatrixManager extends ManagerTool {
     }
 
     def matcopy[E >: Null <: ExprValue](from: MatrixDBReader[E],
-      batch: Option[String],
-      getDB: () => MatrixDBWriter[PExprValue],
-      formVal: E => FoldPExpr,
-      label: String)(implicit mat: MatrixContext) {
+                                        batch: Option[String],
+                                        getDB: () => MatrixDBWriter[PExprValue],
+                                        formVal: E => FoldPExpr,
+                                        label: String)(implicit mat: MatrixContext) {
       val allProbes = from.sortProbes(mat.probeMap.keys)
       def allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)))
 

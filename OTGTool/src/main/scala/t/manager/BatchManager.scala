@@ -17,8 +17,8 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t
-
+package t.manager
+import t._
 import t.db._
 import t.db.file.{CSVRawExpressionData, CachedCSVRawExpressionData, PFoldValueBuilder}
 import t.db.kyotocabinet._

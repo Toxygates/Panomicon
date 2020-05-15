@@ -3,7 +3,7 @@ package t.platform
 import friedrich.util.formats.TSVFile
 import t.db.ProbeId
 
-object EnsemblPlatform {
+object EnsemblPlatformHelper {
 
   //Convert e.g. XM_931290.1 into XM_931290
   def removeVersionNumber(probe: String) = {

@@ -1,30 +1,11 @@
-/*
- * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
- *
- * This file is part of Toxygates.
- *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
- */
+package t.manager
 
-package t
-
+import scala.collection.JavaConverters._
 import friedrich.util.CmdLineOptions
 import t.global.KCDBRegistry
 import t.platform.SSOrthTTL
-import t.platform.Species.{Human, Mouse, Rat}
-
-import scala.collection.JavaConverters._
+import t.{BaseConfig, Context, DataConfig, Factory, TriplestoreConfig}
+import t.platform.Species._
 
 /**
  * Management tool for T framework applications.
@@ -133,19 +114,4 @@ class Manager extends CmdLineOptions {
       Thread.sleep(50)
     }
   }
-}
-
-trait ManagerTool extends CmdLineOptions {
-  def expectArgs(args: Seq[String], n: Int) {
-    if (args.size < n) {
-      showHelp()
-      throw new Exception("Insufficient arguments")
-    }
-  }
-
-  def startTaskRunner(task: Task[_]) {
-    TaskRunner.runThenFinally(task)(())
-  }
-
-  def showHelp(): Unit
 }

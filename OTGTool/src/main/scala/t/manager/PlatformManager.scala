@@ -1,92 +1,16 @@
-/*
- * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
- *
- * This file is part of Toxygates.
- *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
- */
-
-package t
+package t.manager
 
 import t.db.kyotocabinet.KCIndexDB
 import t.global.KCDBRegistry
-import t.platform.PlatformDefFile
+import t.platform.{AffymetrixPlatform, BioPlatform, EnsemblPlatform, GeneralPlatform, PlatformDefFile, PlatformFormat}
 import t.platform.affy.Converter
-import t.sparql.Platforms
-import t.sparql.ProbeStore
-import t.sparql.TRDF
+import t.sparql.{Platforms, ProbeStore, TRDF}
 import t.util.TempFiles
-import t.util.DoThenClose._
-
-/**
- * Platform/probe management CLI
- */
-object PlatformManager extends ManagerTool {
-  def format(command: String): PlatformFormat = command match {
-    case "add" => GeneralPlatform
-    case "addEnsembl" => EnsemblPlatform
-    case "addAffy" => AffymetrixPlatform
-  }
-
-  def apply(args: Seq[String])(implicit context: Context): Unit = {
-
-    if (args.size < 1) {
-      showHelp()
-    } else {
-      val manager = new PlatformManager(context)
-      val platforms = new Platforms(context.config)
-      try {
-        args(0) match {
-          case "add" | "addEnsembl" =>
-            val pfFormat = format(args(0))
-
-            val title = require(stringOption(args, "-title"),
-              "Please specify a title with -title")
-            val inputFile = require(stringOption(args, "-input"),
-              "Please specify a definition file with -input")
-            val defns = new PlatformDefFile(inputFile).records
-            val comment = stringOption(args, "-comment").getOrElse("")
-            startTaskRunner(manager.add(title, comment, inputFile, pfFormat))
-          case "delete" =>
-            val title = require(stringOption(args, "-title"),
-              "Please specify a title with -title")
-            startTaskRunner(manager.delete(title))
-          case "list" =>
-            for (p <- platforms.list) {
-              println(p)
-            }
-          case _ => showHelp()
-        }
-      } finally {
-        KCDBRegistry.closeWriters()
-      }
-    }
-  }
-
-  def showHelp() {
-    println("Please specify a command (add/addEnsembl/addAffy/delete/list)")
-  }
-}
-
-sealed trait PlatformFormat
-case object AffymetrixPlatform extends PlatformFormat
-case object EnsemblPlatform extends PlatformFormat
-case object GeneralPlatform extends PlatformFormat
-case object BioPlatform extends PlatformFormat
+import t.util.DoThenClose.doThenClose
+import t.Context
 
 class PlatformManager(context: Context) {
-  import TRDF._
+  import t.sparql.TRDF._
   def config = context.config
 
   /*
@@ -234,4 +158,54 @@ class PlatformManager(context: Context) {
         })
       }
     }
+}
+
+/**
+ * Platform/probe management CLI
+ */
+object PlatformManager extends ManagerTool {
+  def format(command: String): PlatformFormat = command match {
+    case "add" => GeneralPlatform
+    case "addEnsembl" => EnsemblPlatform
+    case "addAffy" => AffymetrixPlatform
+  }
+
+  def apply(args: Seq[String])(implicit context: Context): Unit = {
+
+    if (args.size < 1) {
+      showHelp()
+    } else {
+      val manager = new PlatformManager(context)
+      val platforms = new Platforms(context.config)
+      try {
+        args(0) match {
+          case "add" | "addEnsembl" =>
+            val pfFormat = format(args(0))
+
+            val title = require(stringOption(args, "-title"),
+              "Please specify a title with -title")
+            val inputFile = require(stringOption(args, "-input"),
+              "Please specify a definition file with -input")
+            val defns = new PlatformDefFile(inputFile).records
+            val comment = stringOption(args, "-comment").getOrElse("")
+            startTaskRunner(manager.add(title, comment, inputFile, pfFormat))
+          case "delete" =>
+            val title = require(stringOption(args, "-title"),
+              "Please specify a title with -title")
+            startTaskRunner(manager.delete(title))
+          case "list" =>
+            for (p <- platforms.list) {
+              println(p)
+            }
+          case _ => showHelp()
+        }
+      } finally {
+        KCDBRegistry.closeWriters()
+      }
+    }
+  }
+
+  def showHelp() {
+    println("Please specify a command (add/addEnsembl/addAffy/delete/list)")
+  }
 }

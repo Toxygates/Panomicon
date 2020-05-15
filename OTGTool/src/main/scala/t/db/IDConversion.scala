@@ -2,7 +2,7 @@ package t.db
 
 import friedrich.util.formats.TSVFile
 import t.Context
-import t.platform.{EnsemblPlatform, Species}
+import t.platform.{EnsemblPlatformHelper, Species}
 
 import scala.collection.{Map => CMap}
 
@@ -87,7 +87,7 @@ object IDConverter {
 
 
   def fromEnsembl(file: String) = {
-    convert(EnsemblPlatform.loadConversionTable(file))(_)
+    convert(EnsemblPlatformHelper.loadConversionTable(file))(_)
   }
 
   val probeIdColumn = "probe_id"
