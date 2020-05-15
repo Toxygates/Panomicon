@@ -718,7 +718,10 @@ class BatchManager(context: Context) {
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val md = context.factory.triplestoreMetadata(samples, config.attributes)(sf)
+
+      val md = context.factory.cachingTriplestoreMetadata(samples, config.attributes,
+        config.attributes.getRequired.asScala ++ config.attributes.getHighLevel.asScala
+          ++ config.attributes.getUnitLevel.asScala)(sf)
 
       val controlGroups = md.treatedControlGroups(md.samples)
       val treated = controlGroups.toSeq.flatMap(_._1)

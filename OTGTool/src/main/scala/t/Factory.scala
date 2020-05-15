@@ -52,7 +52,7 @@ class Factory {
 
   def cachingTriplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
                                  querySet: Iterable[Attribute] = Seq())
-                                (implicit sf: SampleFilter): TriplestoreMetadata =
+                                (implicit sf: SampleFilter): CachingTriplestoreMetadata =
     new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
 
   def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
