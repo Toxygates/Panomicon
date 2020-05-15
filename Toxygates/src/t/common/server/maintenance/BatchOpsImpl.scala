@@ -20,27 +20,20 @@
 package t.common.server.maintenance
 
 import javax.annotation.Nullable
-import t.manager.BatchManager
-import t.manager.TaskRunner
-import t.common.shared.Dataset
-import t.common.shared.ManagedItem
-import t.common.shared.maintenance.Batch
-import t.common.shared.maintenance.BatchUploadException
-import t.common.shared.maintenance.MaintenanceConstants._
-import t.common.shared.maintenance.MaintenanceException
-import t.db.{IDConverter, Metadata}
-import t.model.sample.{Attribute, CoreParameter}
-import t.sparql.Batches
-import t.sparql.Datasets
-import t.sparql.SampleFilter
-import t.sparql.TRDF
-import t.util.TempFiles
-import collection.JavaConverters._
-import scala.language.implicitConversions
-
-import t.viewer.server.rpc.TServiceServlet
 import t.BaseConfig
-import gwtupload.server.UploadServlet
+import t.common.shared.{Dataset, ManagedItem}
+import t.common.shared.maintenance.MaintenanceConstants._
+import t.common.shared.maintenance.{Batch, BatchUploadException, MaintenanceException}
+import t.db.{IDConverter, Metadata}
+import t.manager.BatchManager
+import t.model.sample.CoreParameter.{ControlGroup, Platform, Type}
+import t.model.sample.OTGAttribute._
+import t.model.sample.{Attribute, CoreParameter}
+import t.sparql.{Batches, Datasets, SampleFilter, TRDF}
+import t.viewer.server.rpc.TServiceServlet
+
+import scala.collection.JavaConverters._
+import scala.language.implicitConversions
 
 /**
  * Routines for servlets that support the management of batches.
@@ -179,7 +172,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   protected def overviewParameters: Seq[Attribute] =
-    context.config.attributes.getRequired.asScala.toSeq
+    //context.config.attributes.getRequired.asScala.toSeq
+    Seq(Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
+      ExposureTime, Platform, ControlGroup)
 
   def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.sampleStore

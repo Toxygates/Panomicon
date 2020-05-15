@@ -9,5 +9,7 @@
 	<inherits name='com.google.gwt.user.theme.clean.Clean' />
 	
 	<source path="client" />
-	<source path="shared" />	
+	<source path="shared" />
+
+	<entry-point class="t.admin.client.AdminConsole"></entry-point>
 </module>

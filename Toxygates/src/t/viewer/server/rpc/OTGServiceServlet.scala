@@ -17,13 +17,11 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.server.rpc
+package t.viewer.server.rpc
 
-import otg._
 import otg.viewer.shared.OTGSchema
-import t.{BaseConfig, Factory, Context}
 import t.viewer.server.Configuration
-import t.viewer.server.rpc.TServiceServlet
+import t.{BaseConfig, Context, Factory}
 
 trait OTGServiceServlet extends TServiceServlet {
   override protected def context: Context = _context

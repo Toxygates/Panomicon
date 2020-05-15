@@ -23,19 +23,19 @@ import javax.servlet.http.HttpSession
 import t.admin.client.MaintenanceService
 import t.admin.shared.PlatformType
 import t.common.server.maintenance.BatchOpsImpl
-import t.common.shared.{Dataset, ManagedItem, Platform}
 import t.common.shared.maintenance.MaintenanceConstants._
 import t.common.shared.maintenance.{Instance, _}
+import t.common.shared.{Dataset, ManagedItem, Platform}
 import t.manager.{PlatformManager, Task}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat}
 import t.sparql.{Datasets, Instances, Platforms, ProbeStore, TRDF}
+import t.viewer.server.rpc.OTGServiceServlet
 import t.viewer.server.{Configuration, SharedDatasets}
-import t.viewer.server.rpc.TServiceServlet
 
 import scala.sys.process.Process
 
-abstract class MaintenanceServiceImpl extends TServiceServlet
-with BatchOpsImpl with MaintenanceService {
+class MaintenanceServiceImpl extends OTGServiceServlet
+  with BatchOpsImpl with MaintenanceService {
 
   private var homeDir: String = _
 

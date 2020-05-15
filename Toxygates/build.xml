@@ -114,7 +114,7 @@
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
       <arg value="otg.viewer.toxygates"/>
-      <arg value="otg.admin.OTGAdmin"/>
+      <arg value="t.admin.AdminConsole"/>
     </java>
 
   </target>
@@ -130,7 +130,7 @@
       <jvmarg value="-Xmx3g"/>
       <jvmarg value="-Djava.library.path=${env.KC_LIB_DIR}"/>
       <arg value="otg.viewer.Toxygates"/>
-      <arg value="otg.admin.OTGAdmin"/>
+      <arg value="t.admin.AdminConsole"/>
     </java>
   </target>
 

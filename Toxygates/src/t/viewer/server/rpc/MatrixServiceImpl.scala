@@ -19,26 +19,21 @@
 
 package t.viewer.server.rpc
 
-import java.util.{ List => JList }
 import java.util.logging.Logger
+import java.util.{List => JList}
 
 import javax.annotation.Nullable
 import t.Context
 import t.clustering.server.RClustering
 import t.clustering.shared.Algorithm
 import t.common.shared.ValueType
-import t.common.shared.sample.ExpressionRow
-import t.common.shared.sample.Group
+import t.common.shared.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
-import t.platform.OrthologMapping
-import t.platform.Probe
-import t.sparql.makeRich
-import t.viewer.client.rpc.MatrixService
-import t.viewer.client.rpc.NetworkService
+import t.platform.{OrthologMapping, Probe}
+import t.viewer.client.rpc.{MatrixService, NetworkService}
 import t.viewer.server._
 import t.viewer.server.matrix._
 import t.viewer.shared._
-import t.common.server.ScalaUtils
 
 object MatrixServiceImpl {
 
@@ -92,12 +87,11 @@ class MatrixState {
  * This servlet is responsible for obtaining and manipulating matrices
  * with gene expression data.
  */
-abstract class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService {
-  import scala.collection.JavaConverters._
-  import t.viewer.server.Conversions._
-  import t.common.server.GWTUtils._
-  import ScalaUtils._
+class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService with OTGServiceServlet {
   import MatrixServiceImpl._
+  import t.common.server.GWTUtils._
+
+  import scala.collection.JavaConverters._
 
   protected implicit var mcontext: MatrixContext = _
   private def probes = context.probeStore

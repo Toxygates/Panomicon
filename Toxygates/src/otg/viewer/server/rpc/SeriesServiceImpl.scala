@@ -23,6 +23,7 @@ import otg.viewer.shared.{Series => SSeries}
 import t.{OTGDoseSeriesBuilder, OTGSeries, OTGSeriesBuilder, OTGTimeSeriesBuilder}
 import t.db.SeriesDB
 import t.common.shared.SeriesType
+import t.viewer.server.rpc.OTGServiceServlet
 
 class SeriesServiceImpl extends
 t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {

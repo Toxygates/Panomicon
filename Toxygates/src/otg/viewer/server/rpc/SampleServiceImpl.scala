@@ -22,6 +22,7 @@ package otg.viewer.server.rpc
 import otg.viewer.shared.Pathology
 import t.common.shared.sample.Sample
 import t.sparql.SampleStore
+import t.viewer.server.rpc.OTGServiceServlet
 import t.viewer.shared.TimeoutException
 
 class SampleServiceImpl extends t.viewer.server.rpc.SampleServiceImpl with OTGServiceServlet

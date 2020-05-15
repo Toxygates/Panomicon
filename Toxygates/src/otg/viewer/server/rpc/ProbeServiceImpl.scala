@@ -31,7 +31,7 @@ import t.sparql._
 import t.sparql.secondary._
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
-import t.viewer.server.rpc.NetworkState
+import t.viewer.server.rpc.{NetworkState, OTGServiceServlet}
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
 

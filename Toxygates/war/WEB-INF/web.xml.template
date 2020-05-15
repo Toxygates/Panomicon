@@ -139,7 +139,7 @@
 
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.IntermineServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.intermine.IntermineServiceImpl</servlet-class>
 	</servlet>
     <servlet-mapping>
 		<servlet-name>intermineServlet</servlet-name>

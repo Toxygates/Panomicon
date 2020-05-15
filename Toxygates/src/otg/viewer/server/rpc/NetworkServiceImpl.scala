@@ -19,13 +19,11 @@
 
 package otg.viewer.server.rpc
 
-import otg.viewer.server.AppInfoLoader;
-import t.intermine.MiRNATargets
-import t.platform.mirna.MiRDBConverter
-import t.platform.mirna.TargetTable
-import t.platform.mirna.TargetTableBuilder
+import otg.viewer.server.AppInfoLoader
+import t.intermine.{MiRNATargets, MiRawImporter}
+import t.platform.mirna.{MiRDBConverter, TargetTable}
+import t.viewer.server.rpc.OTGServiceServlet
 import t.viewer.shared.mirna.MirnaSource
-import t.intermine.MiRawImporter
 
 class NetworkServiceImpl extends t.viewer.server.rpc.NetworkServiceImpl
   with OTGServiceServlet {

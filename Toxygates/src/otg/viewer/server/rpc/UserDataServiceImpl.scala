@@ -20,11 +20,11 @@
 package otg.viewer.server.rpc
 
 import t.common.shared.maintenance.MaintenanceException
-
 import t.db.Metadata
 import t.model.sample._
 import t.model.sample.CoreParameter._
 import OTGAttribute._
+import t.viewer.server.rpc.OTGServiceServlet
 
 class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
   with OTGServiceServlet {
