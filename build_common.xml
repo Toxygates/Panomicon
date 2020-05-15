@@ -53,12 +53,3 @@
       <include name="**/*.java" />
     </scaladoc>
   </target>
-
-  <target name="clean">
-    <delete dir="${build.dir}" failonerror="false" />
-    <delete dir="${testbuild.dir}" failonerror="false" />
-  </target>
-
-
-
-

@@ -133,5 +133,11 @@
       <arg value="otg.admin.OTGAdmin"/>
     </java>
   </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}" failonerror="false" />
+    <delete dir="${testbuild.dir}" failonerror="false" />
+  </target>
+
 </project>
 
