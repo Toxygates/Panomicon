@@ -20,24 +20,32 @@
 package t.viewer.server
 
 import t.BaseConfig
-import t.common.shared.Platform
-import t.sparql._
-import t.sparql.ProbeStore
+import t.common.shared.{FirstKeyedPair, GWTTypes, Platform}
+import t.platform.mirna.MiRDBConverter
+import t.sparql.{ProbeStore, _}
 import t.viewer.server.Conversions._
-import scala.collection.JavaConverters._
-import t.viewer.shared.AppInfo
-import t.viewer.shared.StringList
+import t.viewer.shared.{AppInfo, StringList}
 import t.viewer.shared.clustering.ProbeClustering
 import t.viewer.shared.mirna.MirnaSource
-import t.common.shared.GWTTypes
+
+import scala.collection.JavaConverters._
+
+object AppInfoLoader {
+  //ID strings for the various miRNA sources that we support.
+
+  val TARGETMINE_SOURCE: String = "TargetMine"
+  val MIRDB_SOURCE: String = MiRDBConverter.mirdbGraph
+  val MIRAW_SOURCE: String = "MiRAW"
+}
 
 class AppInfoLoader(probeStore: ProbeStore,
                     configuration: Configuration,
                     baseConfig: BaseConfig,
                     appName: String) {
 
-  import t.common.server.GWTUtils._
+  import AppInfoLoader._
   import GWTTypes._
+  import t.common.server.GWTUtils._
 
   /**
    * Called when AppInfo needs a full refresh.
@@ -81,7 +89,17 @@ class AppInfoLoader(probeStore: ProbeStore,
       (dynamic ++ static).map(_._2))
   }
 
-  def staticAnnotationInfo: Seq[(String, String)] = Seq()
+  def staticAnnotationInfo: Seq[(String, String)] = {
+    /*
+     * Note: the only data sources hardcoded here should be the ones
+     * whose provisioning is independent of SPARQL data that we
+     * control. For example, the ones obtained solely from remote
+     * sources.
+     */
+    Seq(
+      ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
+      ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
+  }
 
   /**
    * Generate a new user key, to be used when the client does not already have one.
@@ -116,5 +134,24 @@ class AppInfoLoader(probeStore: ProbeStore,
   /**
    * MiRNA sources that are hardcoded into the application.
    */
-  protected def staticMirnaSources: Seq[MirnaSource] = Seq()
+  protected def staticMirnaSources: Seq[MirnaSource] = {
+    val mtbLevels = t.intermine.MiRNATargets.supportLevels.toSeq.sortBy(_._2).reverse.map(x =>
+      new FirstKeyedPair(x._1, asJDouble(x._2))).asGWT
+
+    /*
+     * Sizes obtained through:
+     * $wc -l tm_mirtarbase.txt
+     * $wc -l mirdb_filter.txt
+     */
+    Seq(
+      new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3,
+        1188967, "Experimentally verified", mtbLevels,
+        "http://mirtarbase.mbc.nctu.edu.tw/php/index.php"),
+      new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90,
+        3117189, "Predicted, score 0-100", null,
+        "http://mirdb.org"),
+      new MirnaSource(MIRAW_SOURCE, "MiRAW 6_1_10_AE10 NLL", false, null,
+        1557789, "Predicted", null,
+        "https://bitbucket.org/bipous/miraw_data"))
+  }
 }

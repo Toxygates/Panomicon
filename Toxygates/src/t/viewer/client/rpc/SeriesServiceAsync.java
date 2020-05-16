@@ -17,16 +17,17 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.client.rpc;
-
-import java.util.List;
+package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import otg.viewer.shared.*;
+import otg.viewer.shared.MatchResult;
+import otg.viewer.shared.RankRule;
+import otg.viewer.shared.Series;
 import t.common.shared.Dataset;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;
+
+import java.util.List;
 
 public interface SeriesServiceAsync {
   void rankedCompounds(SeriesType seriesType, Dataset[] ds, SampleClass sc, RankRule[] rules,

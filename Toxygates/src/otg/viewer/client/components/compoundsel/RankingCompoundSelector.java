@@ -27,7 +27,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otg.viewer.client.charts.SeriesCharts;
 import otg.viewer.client.components.OTGScreen;
-import otg.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.client.rpc.SeriesServiceAsync;
 import otg.viewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;

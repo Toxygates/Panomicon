@@ -30,7 +30,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.model.sample.OTGAttribute;
 import otg.viewer.client.components.*;
-import otg.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 import otg.viewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;

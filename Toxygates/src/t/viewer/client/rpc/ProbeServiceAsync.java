@@ -19,8 +19,7 @@
 
 package t.viewer.client.rpc;
 
-import java.util.List;
-
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import t.common.shared.AType;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
@@ -28,7 +27,7 @@ import t.model.SampleClass;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import java.util.List;
 
 public interface ProbeServiceAsync {
   void appInfo(String userDataKey, AsyncCallback<AppInfo> callback);
@@ -59,4 +58,7 @@ public interface ProbeServiceAsync {
 
   void associations(SampleClass sc, AType[] types, String[] probes,
       AsyncCallback<Association[]> callback);
+
+  void probesTargetedByCompound(SampleClass sc, String compound, String service,
+                                boolean homologous, AsyncCallback<String[]> callback);
 }

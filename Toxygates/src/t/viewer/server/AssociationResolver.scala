@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.server
+package t.viewer.server
 
 import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
@@ -29,7 +29,6 @@ import t.platform.mirna.TargetTable
 import t.sparql.secondary._
 import t.sparql.{toBioMap, _}
 import t.viewer.server.Conversions._
-import t.viewer.server._
 import t.viewer.shared.Association
 
 import scala.collection.{Set => CSet}

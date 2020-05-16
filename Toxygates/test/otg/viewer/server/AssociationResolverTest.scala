@@ -26,6 +26,7 @@ import t.model.SampleClass
 import t.model.sample.{Attribute, OTGAttribute}
 import t.sparql.secondary._
 import t.sparql.{ProbeStore, SampleFilter, SampleStore}
+import t.viewer.server.AssociationResolver
 import t.{BaseConfig, TTestSuite}
 
 import scala.collection.JavaConverters._

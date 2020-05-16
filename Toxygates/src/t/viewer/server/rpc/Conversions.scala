@@ -17,20 +17,15 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.server.rpc
+package t.viewer.server.rpc
 
-import scala.collection.JavaConversions._
-import scala.language.implicitConversions
-import otg.viewer.shared.Pathology
-import otg.viewer.shared.RankRule
-import otg.viewer.shared.Series
-import otg.viewer.shared.RuleType
-import t.{DoseSeries, Context, OTGSeries, OTGSeriesType, SeriesRanking, TimeSeries}
-import t.common.shared.sample._
+import otg.viewer.shared.{Pathology, RankRule, RuleType, Series}
 import t.db.MatrixContext
-import t.model.sample.CoreParameter._
-import t.model.sample.OTGAttribute._
 import t.model.sample.OTGAttribute
+import t.model.sample.OTGAttribute._
+import t._
+
+import scala.language.implicitConversions
 
 /**
  * Conversions between Scala and Java types.
@@ -39,7 +34,6 @@ import t.model.sample.OTGAttribute
  * GWT can only serialise Java classes that follow certain constraints.
  */
 object Conversions {
-  import t.viewer.server.Conversions._
 
   implicit def asJava(path: t.Pathology): Pathology =
     new Pathology(path.sampleId, path.topography.getOrElse(null),

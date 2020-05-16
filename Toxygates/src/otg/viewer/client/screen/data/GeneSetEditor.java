@@ -31,7 +31,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.*;
-import otg.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;

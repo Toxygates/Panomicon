@@ -17,17 +17,36 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.client.rpc;
+package t.viewer.client.rpc;
 
+import java.util.List;
+
+import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import otg.viewer.shared.Pathology;
-import t.common.shared.sample.Sample;
-import t.viewer.shared.TimeoutException;
 
-@RemoteServiceRelativePath("sample")
-public interface SampleService extends t.viewer.client.rpc.SampleService {
-  /**
-   * Obtain pathologies for a set of samples
-   */
-  Pathology[] pathologies(Sample[] samples) throws TimeoutException;
+import otg.viewer.shared.*;
+import t.common.shared.Dataset;
+import t.common.shared.SeriesType;
+import t.model.SampleClass;
+
+/**
+ * A service for retrieving averaged time series and for ranking compounds.
+ * 
+ * @author johan
+ * 
+ */
+@RemoteServiceRelativePath("series")
+public interface SeriesService extends RemoteService {
+
+  MatchResult[] rankedCompounds(SeriesType seriesType, Dataset[] ds, SampleClass sc,
+      RankRule[] rules);
+
+  Series getSingleSeries(SeriesType seriesType, SampleClass sc, String probe, String timeDose,
+      String compound);
+
+  List<Series> getSeries(SeriesType seriesType, SampleClass sc, String[] probes, String timeDose,
+      String[] compounds);
+
+  String[] expectedIndependentPoints(SeriesType seriesType, Series s);
+
 }

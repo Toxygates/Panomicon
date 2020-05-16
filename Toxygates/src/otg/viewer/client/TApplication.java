@@ -19,18 +19,20 @@
 
 package otg.viewer.client;
 
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
-
-import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.MetaElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
@@ -39,14 +41,12 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-
-import otg.viewer.client.components.*;
-import otg.viewer.client.rpc.ProbeService;
-import otg.viewer.client.rpc.ProbeServiceAsync;
-import otg.viewer.client.rpc.SampleService;
-import otg.viewer.client.rpc.SampleServiceAsync;
-import otg.viewer.client.rpc.SeriesService;
-import otg.viewer.client.rpc.SeriesServiceAsync;
+import otg.viewer.client.components.FeedbackForm;
+import otg.viewer.client.components.ImportingScreen;
+import otg.viewer.client.components.OTGScreen;
+import otg.viewer.client.components.ScreenManager;
+import t.viewer.client.rpc.SeriesService;
+import t.viewer.client.rpc.SeriesServiceAsync;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleGroup;
 import t.viewer.client.Analytics;
@@ -56,6 +56,11 @@ import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history

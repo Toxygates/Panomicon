@@ -19,20 +19,21 @@
 
 package t.viewer.client.rpc;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import otg.viewer.shared.Pathology;
+import t.common.shared.Dataset;
+import t.common.shared.Pair;
+import t.common.shared.RequestResult;
+import t.common.shared.sample.PrecomputedVarianceSet;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
-import t.db.SimpleVarianceSet;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
-import t.model.sample.VarianceSet;
+
+import java.util.List;
+import java.util.Map;
 
 public interface SampleServiceAsync {
 
@@ -78,4 +79,6 @@ public interface SampleServiceAsync {
 
   void prepareCSVDownload(SampleLike[] samples, Attribute[] attributes,
       AsyncCallback<String> callback);
+
+  void pathologies(Sample[] samples, AsyncCallback<Pathology[]> callback);
 }

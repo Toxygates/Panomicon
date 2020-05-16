@@ -22,6 +22,7 @@ package t.viewer.server.rpc
 import java.util
 import java.util.{List => JList}
 
+import otg.viewer.shared.Pathology
 import t.common.server.GWTUtils._
 import t.common.shared._
 import t.common.shared.sample._
@@ -35,7 +36,7 @@ import t.sparql.secondary._
 import t.viewer.client.rpc._
 import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
-import t.viewer.server._
+import t.viewer.server.{rpc, _}
 import t.viewer.shared._
 
 import scala.collection.JavaConverters._
@@ -47,8 +48,8 @@ class SampleState(instanceURI: Option[String]) {
 /**
  * Servlet for querying sample related information.
  */
-abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
-  SampleService {
+class SampleServiceImpl extends StatefulServlet[SampleState] with
+  SampleService with OTGServiceServlet {
 
   type DataColumn = t.common.shared.sample.DataColumn[Sample]
 
@@ -270,4 +271,8 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       CSVHelper.writeCSV("toxygates", configuration.csvDirectory, csvFile)
   }
 
+  @throws[TimeoutException]
+  override def pathologies(column: Array[Sample]): Array[Pathology] =
+    column.flatMap(x => sampleStore.pathologies(x.id)).map(
+      rpc.Conversions.asJava(_))
 }

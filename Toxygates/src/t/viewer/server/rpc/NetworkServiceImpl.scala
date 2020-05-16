@@ -18,19 +18,18 @@
  */
 
 package t.viewer.server.rpc
-import java.util.{ List => JList }
+import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-
 import t.common.shared.GroupUtils
 import t.common.shared.ValueType
 import t.common.shared.sample.Group
+import t.intermine.{MiRNATargets, MiRawImporter}
 import t.platform.mirna._
 import t.platform.mirna.TargetTable
 import t.sparql.ProbeStore
 import t.viewer.client.rpc.NetworkService
-import t.viewer.server.CSVHelper
-import t.viewer.server.Configuration
+import t.viewer.server.{AppInfoLoader, CSVHelper, Configuration}
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.MatrixController
@@ -75,7 +74,8 @@ class NetworkState extends MatrixState {
   var networks = Map[String, NetworkController]()
 }
 
-abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
+class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService
+    with OTGServiceServlet {
   protected def stateKey = NetworkState.stateKey
   protected def newState = new NetworkState
   var config: Configuration = _
@@ -88,8 +88,6 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
   override def localInit(c: Configuration) {
     config = c
   }
-
-  protected def mirnaTargetTable(source: MirnaSource): Option[TargetTable]
 
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
@@ -174,5 +172,54 @@ abstract class NetworkServiceImpl extends StatefulServlet[NetworkState] with Net
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)
     s"${config.csvUrlBase}/$file"
+  }
+
+  protected def tryReadTargetTable(file: String, doRead: String => TargetTable) =
+    try {
+      println(s"Try to read $file")
+      val t = doRead(file)
+      println(s"Read ${t.size} miRNA targets from $file")
+      Some(t)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        None
+    }
+
+  lazy val mirdbTable =
+    tryReadTargetTable(
+      s"$mirnaDir/mirdb_filter.txt",
+      new MiRDBConverter(_, "MiRDB 5.0").makeTable)
+
+  lazy val mirtarbaseTable =
+    tryReadTargetTable(
+      s"$mirnaDir/tm_mirtarbase.txt",
+      MiRNATargets.tableFromFile(_))
+
+  lazy val miRawTable = {
+    val allTranscripts = platforms.data.valuesIterator.flatten.flatMap(_.transcripts).toSet
+
+    tryReadTargetTable(
+      s"$mirnaDir/miraw_hsa_targets.txt",
+      MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _, allTranscripts))
+  }
+
+  protected def mirnaTargetTable(source: MirnaSource) = {
+    val table = source.id match {
+      case AppInfoLoader.MIRDB_SOURCE      => mirdbTable
+      case AppInfoLoader.TARGETMINE_SOURCE => mirtarbaseTable
+      case AppInfoLoader.MIRAW_SOURCE      => miRawTable
+      case _                               => throw new Exception("Unexpected MiRNA source")
+    }
+    table match {
+      case Some(t) =>
+        Option(source.limit) match {
+          case Some(l) => Some(t.scoreFilter(l))
+          case _       => Some(t)
+        }
+      case None =>
+        Console.err.println(s"MirnaSource target table unavailable for ${source.id}")
+        None
+    }
   }
 }

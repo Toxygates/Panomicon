@@ -19,23 +19,23 @@
 
 package t.viewer.server.rpc
 
+import javax.servlet.http.HttpSession
 import t.common.server.maintenance.BatchOpsImpl
 import t.common.shared.Dataset
-import t.common.shared.maintenance.Batch
-import t.common.shared.maintenance.MaintenanceException
+import t.common.shared.maintenance.{Batch, MaintenanceException}
 import t.db.Metadata
-import t.global.KCDBRegistry
-
+import t.model.sample.Attribute
+import t.model.sample.CoreParameter.{ControlGroup, Platform}
+import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
 import t.viewer.client.rpc.UserDataService
 import t.viewer.server.Configuration
-import javax.servlet.http.HttpSession
 
 /**
  * A servlet for managing user data (as batches).
  * In practice, this is a restricted variant of the maintenanc
  * servlet.
  */
-abstract class UserDataServiceImpl extends TServiceServlet
+class UserDataServiceImpl extends OTGServiceServlet
   with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
 
@@ -126,5 +126,52 @@ abstract class UserDataServiceImpl extends TServiceServlet
     val desc = if (Dataset.isSharedDataset(ds)) "User data (public)" else "My data"
      val d = new Dataset(ds, desc, "Auto-generated", null, "Auto-generated", 0)
     addDataset(d, false)
+  }
+
+  //See MaintenanceServiceServlet
+  //Note: might want to factor this out
+  override protected def overviewParameters: Seq[Attribute] = {
+    Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel, ExposureTime,
+      Platform, ControlGroup)
+  }
+
+  override protected def checkMetadata(md: Metadata): Unit = {
+    super.checkMetadata(md)
+    //See OTGSeries.enums.
+    //May create new: organ ID, compound name, exposure time
+    val mayNotCreateNew = Seq(Repeat, TestType, Organism,
+      DoseLevel)
+
+    val enums = context.matrix.enumMaps
+    for (p <- mayNotCreateNew) {
+      val existing = enums(p.id).keySet
+      md.attributeValues(p).find(!existing.contains(_)) match {
+        case Some(v) =>
+          throw new MaintenanceException(s"Metadata error: the value $v is unknown for parameter $p.")
+        case None =>
+      }
+    }
+
+    val pfs = md.attributeValues(Platform)
+    pfs.find(!context.probeStore.platformsAndProbes.keySet.contains(_)) match {
+      case Some(pf) =>
+        throw new MaintenanceException(s"Metadata error: the platform_id $pf is unknown.")
+      case None =>
+    }
+
+    try {
+      //Note: consider how we handle new time points, test
+      val timeUnits = md.attributeValues(ExposureTime).map(_.split(" ")(1))
+      println(s"timeUnits: $timeUnits")
+      val accepted = Seq("hr", "day")
+      timeUnits.find(!accepted.contains(_)) match {
+        case Some(v) =>
+          throw new MaintenanceException(s"Metadata error: the unit $v is unacceptable for exposure_time")
+        case None =>
+      }
+    } catch {
+      case e: Exception =>
+        throw new MaintenanceException("Metadata error: couldn't parse exposure_time")
+    }
   }
 }
