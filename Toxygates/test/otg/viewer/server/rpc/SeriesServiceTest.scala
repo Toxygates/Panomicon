@@ -22,14 +22,13 @@ package otg.viewer.server.rpc
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import otg.viewer.server.AssociationResolverTest
-import otg.viewer.shared.RankRule
-import otg.viewer.shared.RuleType
 import t.TTestSuite
 import t.common.shared.SeriesType
 import t.common.shared.Dataset
 import java.util.Date
 
 import t.viewer.server.rpc.SeriesServiceImpl
+import t.viewer.shared.{RankRule, RuleType}
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {

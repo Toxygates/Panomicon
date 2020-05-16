@@ -17,14 +17,14 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.shared;
-
-import java.io.Serializable;
+package t.viewer.shared;
 
 import t.common.shared.HasClass;
 import t.common.shared.sample.ExpressionValue;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+
+import java.io.Serializable;
 
 /**
  * An expression value series that fixes all parameters except one, which varies on the x-axis.

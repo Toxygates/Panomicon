@@ -24,10 +24,12 @@ import java.util.List;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-import otg.viewer.shared.*;
 import t.common.shared.Dataset;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;
+import t.viewer.shared.MatchResult;
+import t.viewer.shared.RankRule;
+import t.viewer.shared.Series;
 
 /**
  * A service for retrieving averaged time series and for ranking compounds.
@@ -39,10 +41,10 @@ import t.model.SampleClass;
 public interface SeriesService extends RemoteService {
 
   MatchResult[] rankedCompounds(SeriesType seriesType, Dataset[] ds, SampleClass sc,
-      RankRule[] rules);
+                                RankRule[] rules);
 
   Series getSingleSeries(SeriesType seriesType, SampleClass sc, String probe, String timeDose,
-      String compound);
+                         String compound);
 
   List<Series> getSeries(SeriesType seriesType, SampleClass sc, String[] probes, String timeDose,
       String[] compounds);

@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import otg.viewer.client.components.*;
-import otg.viewer.shared.Series;
+import t.viewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;

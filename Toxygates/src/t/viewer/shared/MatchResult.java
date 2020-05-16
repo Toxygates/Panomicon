@@ -17,39 +17,47 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.shared;
+package t.viewer.shared;
 
 import java.io.Serializable;
 
 /**
- * Rule types for compound ranking. See otg.viewer.server.Conversions for conversions to the Scala
- * equivalents.
+ * A result item in a compound ranking.
  * 
  * @author johan
  *
  */
-public enum RuleType implements Serializable {
-  Sum("Total upregulation"), NegativeSum("Total downregulation"), Synthetic("User pattern"), MaximalFold(
-      "Maximal fold"), MinimalFold("Minimal fold"), ReferenceCompound("Reference compound"), MonotonicUp(
-      "Monotonic up"), MonotonicDown("Monotonic down"), Unchanged("Unchanged"), LowVariance(
-      "Low variance"), HighVariance("High variance");
+@SuppressWarnings("serial")
+public class MatchResult implements Serializable {
 
-  private String name;
+  public MatchResult() {}
 
-  RuleType(String name) {
-    this.name = name;
+  private String _fixedValue;
+
+  public String fixedValue() {
+    return _fixedValue;
   }
 
+  private double _score;
+
+  public double score() {
+    return _score;
+  }
+
+  private String _compound;
+
+  public String compound() {
+    return _compound;
+  }
+
+  public MatchResult(String compound, double score, String fixedValue) {
+    _fixedValue = fixedValue;
+    _compound = compound;
+    _score = score;
+  }
+
+  @Override
   public String toString() {
-    return name;
-  }
-
-  public static RuleType parse(String s) {
-    for (RuleType rt : RuleType.values()) {
-      if (s.equals(rt.toString())) {
-        return rt;
-      }
-    }
-    return null;
+    return "MatchResult(" + _compound + "/" + _fixedValue + " = " + _score + ")";
   }
 }

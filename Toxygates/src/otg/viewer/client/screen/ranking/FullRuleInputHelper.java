@@ -26,8 +26,8 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.*;
 
 import t.model.sample.OTGAttribute;
-import otg.viewer.shared.RankRule;
-import otg.viewer.shared.RuleType;
+import t.viewer.shared.RankRule;
+import t.viewer.shared.RuleType;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;
 import t.viewer.client.components.PendingAsyncCallback;

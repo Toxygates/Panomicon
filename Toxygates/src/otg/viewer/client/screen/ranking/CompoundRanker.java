@@ -30,7 +30,7 @@ import otg.viewer.client.Resources;
 import otg.viewer.client.components.GeneOracle;
 import otg.viewer.client.components.OTGScreen;
 import otg.viewer.client.components.compoundsel.RankingCompoundSelector;
-import otg.viewer.shared.RankRule;
+import t.viewer.shared.RankRule;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.DataSchema;
 import t.common.shared.SeriesType;

@@ -28,7 +28,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import otg.viewer.client.charts.SeriesCharts;
 import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import otg.viewer.shared.*;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.shared.SeriesType;
@@ -38,6 +37,9 @@ import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.future.Future;
+import t.viewer.shared.MatchResult;
+import t.viewer.shared.RankRule;
+import t.viewer.shared.Series;
 
 public class RankingCompoundSelector extends CompoundSelector {
 

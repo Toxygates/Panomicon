@@ -20,9 +20,9 @@
 package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import otg.viewer.shared.MatchResult;
-import otg.viewer.shared.RankRule;
-import otg.viewer.shared.Series;
+import t.viewer.shared.MatchResult;
+import t.viewer.shared.RankRule;
+import t.viewer.shared.Series;
 import t.common.shared.Dataset;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;

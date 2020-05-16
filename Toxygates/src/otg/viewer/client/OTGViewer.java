@@ -22,7 +22,7 @@ package otg.viewer.client;
 import otg.viewer.client.screen.data.DataScreen;
 import otg.viewer.client.screen.groupdef.ColumnScreen;
 import otg.viewer.client.screen.ranking.RankingScreen;
-import otg.viewer.shared.OTGSchema;
+import t.viewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 
 public class OTGViewer extends TApplication {

@@ -19,8 +19,8 @@
 
 package t.viewer.server.rpc
 
-import otg.viewer.shared.OTGSchema
 import t.viewer.server.Configuration
+import t.viewer.shared.OTGSchema
 import t.{BaseConfig, Context, Factory}
 
 trait OTGServiceServlet extends TServiceServlet {

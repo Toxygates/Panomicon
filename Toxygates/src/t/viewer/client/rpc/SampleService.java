@@ -21,7 +21,7 @@ package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import otg.viewer.shared.Pathology;
+import t.viewer.shared.Pathology;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;

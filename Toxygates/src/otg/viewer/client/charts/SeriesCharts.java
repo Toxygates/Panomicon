@@ -30,7 +30,7 @@ import otg.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otg.viewer.client.charts.google.GDTDataset;
 import otg.viewer.client.components.OTGScreen;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import otg.viewer.shared.Series;
+import t.viewer.shared.Series;
 import t.common.shared.*;
 import t.model.SampleClass;
 import t.viewer.client.components.PendingAsyncCallback;

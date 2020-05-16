@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.shared;
+package t.viewer.shared;
 
 import java.io.Serializable;
 import java.util.Arrays;

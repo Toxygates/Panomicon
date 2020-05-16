@@ -28,8 +28,8 @@ import com.google.gwt.user.client.ui.*;
 
 import otg.viewer.client.components.*;
 import otg.viewer.client.components.compoundsel.RankingCompoundSelector;
-import otg.viewer.shared.MatchResult;
-import otg.viewer.shared.RankRule;
+import t.viewer.shared.MatchResult;
+import t.viewer.shared.RankRule;
 import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;

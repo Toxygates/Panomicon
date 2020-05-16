@@ -19,7 +19,7 @@
 
 package otg.viewer.client.screen.ranking;
 
-import otg.viewer.shared.RuleType;
+import t.viewer.shared.RuleType;
 
 public class SimpleRuleInputHelper extends RuleInputHelper {
 

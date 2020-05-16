@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.*;
 import t.model.sample.OTGAttribute;
 import otg.viewer.client.components.*;
 import t.viewer.client.rpc.SampleServiceAsync;
-import otg.viewer.shared.Pathology;
+import t.viewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.Sample;

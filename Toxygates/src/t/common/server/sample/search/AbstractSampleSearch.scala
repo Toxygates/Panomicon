@@ -21,7 +21,6 @@ package t.common.server.sample.search
 
 import scala.collection.JavaConverters._
 import scala.collection.Seq
-import otg.viewer.shared.OTGSchema
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.AndMatch
@@ -36,6 +35,7 @@ import t.sparql.SampleFilter
 import t.sparql.SampleStore
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.UnitsHelper
+import t.viewer.shared.OTGSchema
 
   /**
    * Companion object to create sample search objects; meant to encapsulate

@@ -19,11 +19,12 @@
 
 package t.viewer.server.rpc
 
-import otg.viewer.shared.{Pathology, RankRule, RuleType, Series}
+import t._
 import t.db.MatrixContext
 import t.model.sample.OTGAttribute
 import t.model.sample.OTGAttribute._
-import t._
+import t.viewer.shared
+import t.viewer.shared.{RankRule, Series}
 
 import scala.language.implicitConversions
 
@@ -35,8 +36,8 @@ import scala.language.implicitConversions
  */
 object Conversions {
 
-  implicit def asJava(path: t.Pathology): Pathology =
-    new Pathology(path.sampleId, path.topography.getOrElse(null),
+  implicit def asJava(path: t.Pathology): shared.Pathology =
+    new shared.Pathology(path.sampleId, path.topography.getOrElse(null),
       path.finding.getOrElse(null),
       path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 
@@ -70,7 +71,7 @@ object Conversions {
   }
 
   implicit def asScala(rr: RankRule): SeriesRanking.RankType = {
-    import RuleType._
+    import t.viewer.shared.RuleType._
     rr.`type`() match {
       case Synthetic => {
         println("Correlation curve: " + rr.data.toVector)

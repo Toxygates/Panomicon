@@ -24,8 +24,8 @@ import java.util.List;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.shared.RankRule;
-import otg.viewer.shared.RuleType;
+import t.viewer.shared.RankRule;
+import t.viewer.shared.RuleType;
 import t.common.client.components.ItemSelector;
 import t.model.SampleClass;
 
