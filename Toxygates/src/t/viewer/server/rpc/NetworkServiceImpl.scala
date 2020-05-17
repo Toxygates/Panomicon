@@ -86,6 +86,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   lazy val platforms = t.viewer.server.Platforms(probeStore)
 
   override def localInit(c: Configuration) {
+    super.localInit(c)
     config = c
   }
 
