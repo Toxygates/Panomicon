@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.components.ImportingScreen;
+import t.viewer.client.components.ImportingScreen;
 import t.viewer.client.Utils;
 import t.viewer.shared.StringList;
 import t.viewer.shared.network.Network;

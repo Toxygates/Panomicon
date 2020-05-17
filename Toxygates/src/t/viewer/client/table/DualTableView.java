@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.screen.data.DataScreen;
-import otg.viewer.client.screen.data.NetworkMenu;
+import t.viewer.client.screen.data.DataScreen;
+import t.viewer.client.screen.data.NetworkMenu;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.*;

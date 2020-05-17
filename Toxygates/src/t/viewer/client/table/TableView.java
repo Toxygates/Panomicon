@@ -28,10 +28,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
-import otg.viewer.client.UIFactory;
-import otg.viewer.client.components.ScreenManager;
-import otg.viewer.client.screen.data.*;
-import otg.viewer.client.screen.groupdef.ColumnScreen;
+import t.viewer.client.UIFactory;
+import t.viewer.client.components.ScreenManager;
+import t.viewer.client.screen.groupdef.ColumnScreen;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
@@ -40,6 +39,9 @@ import t.viewer.client.ClientGroup;
 import t.viewer.client.components.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.screen.data.DataScreen;
+import t.viewer.client.screen.data.HeatmapViewer;
+import t.viewer.client.screen.data.MirnaSourceDialog;
 import t.viewer.shared.*;
 import t.viewer.shared.mirna.MirnaSource;
 

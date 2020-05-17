@@ -28,7 +28,7 @@ import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import otg.viewer.client.components.OTGScreen;
+import t.viewer.client.components.OTGScreen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
