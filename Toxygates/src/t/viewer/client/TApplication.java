@@ -43,7 +43,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.components.FeedbackForm;
 import t.viewer.client.components.ImportingScreen;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.components.ScreenManager;
 import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
@@ -96,18 +96,18 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * All screens in order of links being displayed at the top
    */
-  private List<OTGScreen> screens = new ArrayList<OTGScreen>();
+  private List<Screen> screens = new ArrayList<Screen>();
   
   /**
    * All available screens. The key in this map is the "key" field of each Screen instance, which
    * also corresponds to the history token used with GWT's history tracking mechanism.
    */
-  protected Map<String, OTGScreen> screensBykey = new HashMap<String, OTGScreen>();
+  protected Map<String, Screen> screensBykey = new HashMap<String, Screen>();
 
   /**
    * The screen currently being displayed.
    */
-  protected OTGScreen currentScreen;
+  protected Screen currentScreen;
 
   protected final Logger logger = SharedUtils.getLogger("application");
 
@@ -371,9 +371,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * enabled() method of each screen is used to test whether that screen is currently available for
    * use or not.
    */
-  void addWorkflowLinks(OTGScreen current) {
+  void addWorkflowLinks(Screen current) {
     navPanel.clear();
-    for (OTGScreen s: screens) {
+    for (Screen s: screens) {
       String link = s.getTitle();
       final Label label = new Label(link);
       label.setStylePrimaryName("navlink");
@@ -406,7 +406,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * Display the screen that corresponds to a given history token.
    */
   private void showScreenForToken(String token, boolean firstLoad) {
-    OTGScreen screen;
+    Screen screen;
     if (firstLoad && readURLParameters()) {
       screen = importingScreen;
     } else {
@@ -419,7 +419,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * Switch screens.
    */
-  protected void showScreen(OTGScreen s) {
+  protected void showScreen(Screen s) {
     if (currentScreen != null) {
       mainDockPanel.remove(currentScreen.widget());
       currentScreen.hide();
@@ -449,7 +449,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @return
    */
-  protected OTGScreen pickScreen(String token) {
+  protected Screen pickScreen(String token) {
     if (!screensBykey.containsKey(token)) {
       return screensBykey.get(defaultScreenKey()); // default
     } else {
@@ -466,7 +466,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   @Override
   public void attemptProceed(String to) {
-    OTGScreen s = pickScreen(to);
+    Screen s = pickScreen(to);
     if (s.enabled()) {
       History.newItem(to);
     } else {
@@ -478,7 +478,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * Helper method for initialising screens
    */
-  protected void addScreenSeq(OTGScreen s) {
+  protected void addScreenSeq(Screen s) {
     screensBykey.put(s.key(), s);    
     screens.add(s);
     s.initGUI();

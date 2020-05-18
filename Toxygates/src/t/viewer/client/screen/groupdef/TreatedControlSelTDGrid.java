@@ -18,7 +18,7 @@
  */
 package t.viewer.client.screen.groupdef;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.sample.Unit;
 
 /**
@@ -26,7 +26,7 @@ import t.common.shared.sample.Unit;
  */
 public class TreatedControlSelTDGrid extends SelectionTDGrid {
 
-  public TreatedControlSelTDGrid(OTGScreen screen) {
+  public TreatedControlSelTDGrid(Screen screen) {
     super(screen);
   }
 

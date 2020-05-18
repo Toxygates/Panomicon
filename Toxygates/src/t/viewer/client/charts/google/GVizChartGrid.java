@@ -33,7 +33,7 @@ import com.google.gwt.visualization.client.visualizations.corechart.AxisOptions;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.components.ScreenUtils;
 import t.common.shared.sample.Sample;
 import t.viewer.client.charts.ChartGrid;
@@ -49,10 +49,10 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 
   public static final int MAX_WIDTH = 400;
 
-  public GVizChartGrid(OTGScreen screen, GDTDataset table,
-      List<String> rowFilters, List<String> rowLabels, List<String> organisms,
-      boolean rowsAreMajors,
-      String[] timesOrDoses, boolean columnsAreTimes, int totalWidth) {
+  public GVizChartGrid(Screen screen, GDTDataset table,
+                       List<String> rowFilters, List<String> rowLabels, List<String> organisms,
+                       boolean rowsAreMajors,
+                       String[] timesOrDoses, boolean columnsAreTimes, int totalWidth) {
     super(screen, table, rowFilters, rowLabels, organisms, rowsAreMajors, timesOrDoses,
         columnsAreTimes, totalWidth);
   }

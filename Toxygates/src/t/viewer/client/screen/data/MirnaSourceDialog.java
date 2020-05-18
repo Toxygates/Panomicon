@@ -27,7 +27,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.shared.mirna.MirnaSource;
@@ -41,7 +41,7 @@ public class MirnaSourceDialog extends InteractionDialog {
     void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources);
   }
 
-  public MirnaSourceDialog(OTGScreen parent, Delegate delegate,
+  public MirnaSourceDialog(Screen parent, Delegate delegate,
                            MirnaSource[] availableSources,
                            List<MirnaSource> value) {
     super(parent);

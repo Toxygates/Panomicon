@@ -22,7 +22,7 @@ package t.viewer.client.screen.ranking;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.components.compoundsel.RankingCompoundSelector;
 import t.clustering.shared.ClusteringList;
 import t.common.shared.DataSchema;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 abstract public class CompoundRanker extends Composite {
   protected final Resources resources;
   private RankingCompoundSelector selector;
-  protected final OTGScreen screen;
+  protected final Screen screen;
   protected ListChooser listChooser;
 
   final GeneOracle oracle;
@@ -90,7 +90,7 @@ abstract public class CompoundRanker extends Composite {
   /**
    * @param selector the selector that this CompoundRanker will communicate with.
    */
-  public CompoundRanker(OTGScreen _screen) {
+  public CompoundRanker(Screen _screen) {
     screen = _screen;
     oracle = new GeneOracle(screen);
     schema = screen.schema();

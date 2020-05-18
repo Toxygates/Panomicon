@@ -35,7 +35,7 @@ import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  */
 public class ETMatrixManager {
 
-  private OTGScreen screen;
+  private Screen screen;
   private final MatrixServiceAsync matrixService;
   private String matrixId;
   private ManagedMatrixInfo matrixInfo = null;
@@ -102,8 +102,8 @@ public class ETMatrixManager {
     void loadInitialMatrix(ValueType valueType, int initPageSize, List<ColumnFilter> initFilters);
   }
 
-  public ETMatrixManager(OTGScreen screen, TableFlags flags, Delegate delegate, Loader loader,
-      DataGrid<ExpressionRow> grid) {
+  public ETMatrixManager(Screen screen, TableFlags flags, Delegate delegate, Loader loader,
+                         DataGrid<ExpressionRow> grid) {
     this.screen = screen;
     this.loader = loader;
     this.delegate = delegate;

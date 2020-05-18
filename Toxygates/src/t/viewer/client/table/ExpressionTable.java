@@ -40,7 +40,7 @@ import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
 import t.viewer.client.charts.ChartParameters;
 import t.viewer.client.charts.MatrixCharts;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -75,7 +75,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
 
   private final String COLUMN_WIDTH = "10em";
 
-  private OTGScreen screen;
+  private Screen screen;
   private AssociationManager<ExpressionRow> associations;
   private ETMatrixManager matrix;
   private ETColumns columns;
@@ -109,9 +109,9 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     void afterGetRows(ExpressionTable table);
   }
 
-  public ExpressionTable(OTGScreen _screen, TableFlags flags, TableStyle style,
-      ETMatrixManager.Loader loader, Delegate delegate,
-      AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
+  public ExpressionTable(Screen _screen, TableFlags flags, TableStyle style,
+                         ETMatrixManager.Loader loader, Delegate delegate,
+                         AssociationManager.ViewDelegate<ExpressionRow> viewDelegate) {
     super(_screen, style, flags);
     screen = _screen;
     this.matrix = new ETMatrixManager(_screen, flags, this, loader, grid);
@@ -142,7 +142,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
   }
 
   @Override
-  protected ETColumns makeColumnHelper(OTGScreen screen) {
+  protected ETColumns makeColumnHelper(Screen screen) {
     this.columns = new ETColumns(this, screen.manager().resources(), COLUMN_WIDTH);
     return columns;
   }

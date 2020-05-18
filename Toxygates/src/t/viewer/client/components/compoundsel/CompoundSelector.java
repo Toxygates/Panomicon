@@ -22,7 +22,7 @@ package t.viewer.client.components.compoundsel;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.client.components.SetEditor;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.FreeEdit;
@@ -49,7 +49,7 @@ public class CompoundSelector extends Composite implements RequiresResize {
   private DockLayoutPanel dp;
 
   private Widget north;
-  protected final OTGScreen screen;
+  protected final Screen screen;
   protected final Delegate delegate;
 
   private final static int MAX_AUTO_SEL = 20;
@@ -69,13 +69,13 @@ public class CompoundSelector extends Composite implements RequiresResize {
     void compoundSelectorCompoundsChanged(List<String> compounds);
   }
 
-  public <T extends OTGScreen & Delegate> CompoundSelector(T screen, String heading,
-      boolean withListSelector, boolean withFreeEdit) {
+  public <T extends Screen & Delegate> CompoundSelector(T screen, String heading,
+                                                        boolean withListSelector, boolean withFreeEdit) {
     this(screen, screen, heading, withListSelector, withFreeEdit);
   }
 
-  public CompoundSelector(final OTGScreen screen, Delegate delegate, String heading,
-      boolean withListSelector, boolean withFreeEdit) {
+  public CompoundSelector(final Screen screen, Delegate delegate, String heading,
+                          boolean withListSelector, boolean withFreeEdit) {
     this.screen = screen;
     logger = screen.getLogger();
     this.delegate = delegate;

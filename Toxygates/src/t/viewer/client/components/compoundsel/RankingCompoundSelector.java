@@ -24,7 +24,7 @@ import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.shared.SeriesType;
@@ -64,11 +64,11 @@ public class RankingCompoundSelector extends CompoundSelector {
     SampleClass currentSampleClass();
   }
   
-  public <T extends OTGScreen & Delegate> RankingCompoundSelector(T screen, String heading) {
+  public <T extends Screen & Delegate> RankingCompoundSelector(T screen, String heading) {
     this(screen, screen, heading);
   }
 
-  public RankingCompoundSelector(final OTGScreen screen, Delegate delegate, String heading) {
+  public RankingCompoundSelector(final Screen screen, Delegate delegate, String heading) {
     super(screen, delegate, heading, false, false);
     this.delegate = delegate;
     this.seriesService = screen.manager().seriesService();

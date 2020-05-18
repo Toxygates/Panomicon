@@ -19,7 +19,7 @@
 
 package t.viewer.client.charts;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
@@ -45,10 +45,10 @@ abstract class Charts {
    * Note: ideally this should be instantiated/chosen by some dependency injection system
    */
   protected GVizFactory factory = new GVizFactory();
-  protected OTGScreen screen;
+  protected Screen screen;
   protected SampleClass[] sampleClasses;
 
-  protected Charts(OTGScreen screen) {
+  protected Charts(Screen screen) {
     schema = screen.manager().schema();
     storageProvider = screen.getStorage();
     this.screen = screen;

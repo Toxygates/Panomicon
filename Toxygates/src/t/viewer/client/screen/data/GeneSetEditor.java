@@ -24,7 +24,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.components.GeneOracle;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
@@ -496,7 +496,7 @@ public class GeneSetEditor extends Composite {
   }
 
   private void doTargetLookup(final String service, final boolean homologs) {
-    final OTGScreen w = screen;
+    final Screen w = screen;
     if (compoundList.getSelectedIndex() != -1) {
       String compound = compoundList.getItemText(compoundList.getSelectedIndex());
 

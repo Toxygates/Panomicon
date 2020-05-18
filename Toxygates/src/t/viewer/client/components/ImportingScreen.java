@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface ImportingScreen extends OTGScreen {
+public interface ImportingScreen extends Screen {
   void setUrlProbes(String[] probes);
 
   void runEnrichment(@Nullable IntermineInstance preferredInstance);

@@ -20,7 +20,7 @@
 package t.viewer.client.charts;
 
 import com.google.gwt.user.client.Window;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.FirstKeyedPair;
 import t.common.shared.Pair;
 import t.common.shared.SampleMultiFilter;
@@ -52,14 +52,14 @@ public class SeriesCharts extends Charts {
     void acceptCharts(ChartGrid<?> cg);
   }
 
-  public SeriesCharts(OTGScreen screen, SampleClass[] sampleClasses) {
+  public SeriesCharts(Screen screen, SampleClass[] sampleClasses) {
     super(screen);
     this.sampleClasses = sampleClasses;
     this.seriesService = screen.manager().seriesService();
   }
 
   public void make(final SeriesType seriesType, final List<Series> series,
-      final String highlightDoseOrTime, final Acceptor acceptor, final OTGScreen screen,
+      final String highlightDoseOrTime, final Acceptor acceptor, final Screen screen,
       final String compoundName) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0),
         new PendingAsyncCallback<String[]>(screen,
@@ -68,7 +68,7 @@ public class SeriesCharts extends Charts {
   }
 
   private void finish(SeriesType seriesType, final List<Series> series, final String[] indepPoints,
-      final String highlightFixed, final Acceptor acceptor, final OTGScreen screen,
+      final String highlightFixed, final Acceptor acceptor, final Screen screen,
       final String compoundName) {
     try {
       final String[] fixedVals = series.stream().map(s -> s.get(seriesType.fixedAttribute()))

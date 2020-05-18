@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import com.google.gwt.user.client.ui.*;
 
 import t.model.sample.OTGAttribute;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -53,7 +53,7 @@ public class AdjustableGrid<DS extends Dataset<?>> extends Composite {
   private List<ClientGroup> groups;
   private VerticalPanel vp;
   private VerticalPanel chartsVerticalPanel;
-  private OTGScreen screen;
+  private Screen screen;
   private Factory<DS> factory;
   private int computedWidth;
 

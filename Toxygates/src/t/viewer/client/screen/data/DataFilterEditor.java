@@ -24,7 +24,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
@@ -127,7 +127,7 @@ public class DataFilterEditor extends Composite {
     return sampleClass;
   }
 
-  public DataFilterEditor(OTGScreen screen, Delegate delegate) {
+  public DataFilterEditor(Screen screen, Delegate delegate) {
     this.delegate = delegate;
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);

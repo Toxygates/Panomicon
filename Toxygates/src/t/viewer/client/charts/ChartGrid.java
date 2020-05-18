@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.model.sample.OTGAttribute;
 import t.viewer.client.charts.google.GVizChartGrid;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
@@ -45,7 +45,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
   List<String> organisms;
   String[] minsOrMeds;
   protected Dataset<D> dataset;
-  protected OTGScreen screen;
+  protected Screen screen;
   protected D[][] tables;
   final int totalWidth;
   final static String NO_ORGANISM = "";
@@ -56,10 +56,10 @@ abstract public class ChartGrid<D extends Data> extends Composite {
    * @param rowLabels labels to be displayed at each row in the chart grid. 
    */
 
-  public ChartGrid(OTGScreen screen, Dataset<D> dataset,
-      final List<String> rowFilters, final List<String> rowLabels,
-      final List<String> organisms, boolean rowsAreMajors,
-      String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
+  public ChartGrid(Screen screen, Dataset<D> dataset,
+                   final List<String> rowFilters, final List<String> rowLabels,
+                   final List<String> organisms, boolean rowsAreMajors,
+                   String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
     super();
     this.organisms = organisms;
     this.rowFilters = rowFilters;

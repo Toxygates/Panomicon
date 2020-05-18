@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-public abstract class MinimalScreen implements OTGScreen {
+public abstract class MinimalScreen implements Screen {
     
   private String title;
 

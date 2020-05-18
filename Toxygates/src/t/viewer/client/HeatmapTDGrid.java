@@ -23,7 +23,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
@@ -58,7 +58,7 @@ public class HeatmapTDGrid extends TimeDoseGrid {
     void finishedDisplayingValues();
   }
 
-  public HeatmapTDGrid(OTGScreen screen, Delegate delegate) {
+  public HeatmapTDGrid(Screen screen, Delegate delegate) {
     super(screen, false);
     this.delegate = delegate;
   }

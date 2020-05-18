@@ -24,7 +24,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.SampleDetailTable;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.components.TimeDoseGrid;
 import t.common.shared.Pair;
 import t.common.shared.sample.Group;
@@ -120,7 +120,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid implements SampleDeta
 
   protected abstract UnitUI makeUnitUI(final Unit unit);
 
-  public SelectionTDGrid(OTGScreen screen) {
+  public SelectionTDGrid(Screen screen) {
     super(screen, true);
   }
   

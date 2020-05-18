@@ -19,7 +19,7 @@
 
 package t.viewer.client.charts;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.GroupUtils;
 import t.common.shared.Pair;
 import t.common.shared.ValueType;
@@ -71,7 +71,7 @@ public class MatrixCharts extends Charts {
    * @param groups The user's selected groups. Based on these, additional surrounding sample classes
    *        will also be included to give context in the charts.
    */
-  public MatrixCharts(OTGScreen screen, List<ClientGroup> groups) {
+  public MatrixCharts(Screen screen, List<ClientGroup> groups) {
     super(screen);
     this.groups = groups;
     this.sampleService = screen.manager().sampleService();

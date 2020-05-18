@@ -19,32 +19,41 @@
 
 package t.viewer.client.components;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
-
 import t.common.shared.DataSchema;
 import t.model.sample.AttributeSet;
+import t.viewer.client.Resources;
+import t.viewer.client.UIFactory;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * High-level building block for applications. A screen is a GUI with a specific
  * theme or purpose. An application consists of a series of screens.
  */
 public interface Screen {
-  AppInfo appInfo();
-  
-  DataSchema schema();
-  
-  AttributeSet attributes();
+  default StorageProvider getStorage() {
+    return manager().getStorage();
+  }
+
+  default AppInfo appInfo() {
+    return manager().appInfo();
+  }
+
+  default DataSchema schema() {
+    return manager().schema();
+  }
+
+  default AttributeSet attributes() {
+    return manager().appInfo().attributes();
+  }
 
   Logger getLogger();
 
-  StorageProvider getStorage();
-  
   void addPendingRequest();
 
   void removePendingRequest();
@@ -68,7 +77,7 @@ public interface Screen {
    * This allows menus and the main content to change in response to saved state.
    */
   default void preShow() {}
-  
+
   void show();
 
   void hide();
@@ -78,8 +87,20 @@ public interface Screen {
   void showGuide();
 
   void showHelp();
-  
+
   void showToolbar(Widget toolbar);
-  
+
   void hideToolbar(Widget toolbar);
+
+  // Below methods used to come from OTGScreen subinterface
+  default UIFactory factory() {
+    return manager().factory();
+  }
+
+  default Resources resources() {
+    return manager().resources();
+  }
+
+  // Accessors
+  ScreenManager manager();
 }

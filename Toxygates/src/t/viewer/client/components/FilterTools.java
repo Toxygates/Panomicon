@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 public class FilterTools extends Composite implements DataFilterEditor.Delegate {
   private HorizontalPanel filterTools;
   public DataFilterEditor dataFilterEditor;
-  final OTGScreen screen;
+  final Screen screen;
   final Delegate delegate;
 
   private Logger logger;
@@ -54,11 +54,11 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
         List<Dataset> datasets);
   }
 
-  public <T extends OTGScreen & Delegate> FilterTools(T screen) {
+  public <T extends Screen & Delegate> FilterTools(T screen) {
     this(screen, screen);
   }
 
-  public FilterTools(final OTGScreen screen, Delegate delegate) {
+  public FilterTools(final Screen screen, Delegate delegate) {
     this.screen = screen;
     this.delegate = delegate;
     logger = screen.getLogger();

@@ -32,7 +32,7 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;
@@ -44,7 +44,7 @@ import t.viewer.client.components.TickMenuItem;
  * to each other.
  */
 abstract public class RichTable<T> extends Composite implements RequiresResize {
-  protected OTGScreen screen;
+  protected Screen screen;
   protected PublicHeaderDataGrid<T> grid;
   protected ColumnHelper<T> columnHelper;
   protected Label titleLabel = new Label();
@@ -76,7 +76,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
     DataGrid.Style dataGridStyle();
   }
 
-  public RichTable(OTGScreen screen, TableStyle style, TableFlags flags) {
+  public RichTable(Screen screen, TableStyle style, TableFlags flags) {
     this.screen = screen;
     this.schema = screen.manager().schema();
     this.style = style;
@@ -125,7 +125,7 @@ abstract public class RichTable<T> extends Composite implements RequiresResize {
    * constructor argument, because constructing a ColumnHelper might need some
    * logic from a subclass (of RichTable).
    */
-  protected abstract ColumnHelper<T> makeColumnHelper(OTGScreen screen);
+  protected abstract ColumnHelper<T> makeColumnHelper(Screen screen);
 
   public void setTitleHeader(String title) {
     titleLabel.setText(title);

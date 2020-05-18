@@ -19,12 +19,12 @@
 
 package t.viewer.client.screen.ranking;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.Utils;
 
 public class FullCompoundRanker extends CompoundRanker {
 
-  public FullCompoundRanker(OTGScreen _screen) {
+  public FullCompoundRanker(Screen _screen) {
     super(_screen);
   }
 

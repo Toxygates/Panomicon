@@ -30,7 +30,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.PrecomputedVarianceSet;
@@ -60,7 +60,7 @@ public class SampleDetailTable extends Composite {
   private SampleServiceAsync sampleService;
   private final @Nullable String sectionTitle;
   private final boolean isSection;
-  private final OTGScreen screen;
+  private final Screen screen;
   public Delegate delegate;
 
   /* The (rather infelicitously named) "Sample details" section contains
@@ -128,7 +128,7 @@ public class SampleDetailTable extends Composite {
     }
   }
 
-  public SampleDetailTable(OTGScreen screen, @Nullable String sectionTitle, boolean isSection) {
+  public SampleDetailTable(Screen screen, @Nullable String sectionTitle, boolean isSection) {
     this.sectionTitle = sectionTitle;
     this.isSection = isSection;
     this.screen = screen;

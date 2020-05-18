@@ -20,7 +20,7 @@ package t.viewer.client;
 
 import t.viewer.client.components.GroupLabels;
 import t.viewer.client.components.ImportingScreen;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.GeneSetEditor;
 import t.viewer.client.screen.data.GeneSetsMenu;
@@ -43,14 +43,14 @@ import java.util.List;
  */
 public interface UIFactory {
 
-  SelectionTDGrid selectionTDGrid(OTGScreen scr);
+  SelectionTDGrid selectionTDGrid(Screen scr);
 
-  CompoundRanker compoundRanker(OTGScreen _screen);
+  CompoundRanker compoundRanker(Screen _screen);
   
-  GroupInspector groupInspector(OTGScreen scr,
+  GroupInspector groupInspector(Screen scr,
                                 GroupInspector.Delegate delegate);
   
-  GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups);
+  GroupLabels groupLabels(Screen screen, DataSchema schema, List<ClientGroup> groups);
   
   GeneSetEditor geneSetEditor(ImportingScreen screen);
   
@@ -87,7 +87,7 @@ public interface UIFactory {
    * The resulting summary table will be sent to the provided callback. 
    * The call will not be made if the table should not be displayed.
    */
-  default void sampleSummaryTable(OTGScreen screen, 
+  default void sampleSummaryTable(Screen screen,
                                   ValueAcceptor<StringArrayTable> acceptor) {    
   }
   

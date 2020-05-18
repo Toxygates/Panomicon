@@ -19,7 +19,7 @@
 
 package t.viewer.client.charts;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.storage.StorageProvider;
 
 import java.util.List;
@@ -44,9 +44,9 @@ abstract public class Factory<DS extends Dataset<?>> {
    * 
    * @return
    */
-  abstract public ChartGrid<?> grid(OTGScreen screen, DS table, List<String> rowFilters,
-      List<String> rowLabels, List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
-      boolean columnsAreTimes, int totalWidth);
+  abstract public ChartGrid<?> grid(Screen screen, DS table, List<String> rowFilters,
+                                    List<String> rowLabels, List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses,
+                                    boolean columnsAreTimes, int totalWidth);
 
   abstract public int gridMaxWidth();
 }

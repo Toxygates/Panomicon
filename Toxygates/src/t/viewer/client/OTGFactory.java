@@ -23,14 +23,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import t.viewer.client.components.ImportingScreen;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.client.screen.groupdef.TreatedControlGroupInspector;
 import t.viewer.client.screen.ranking.CompoundRanker;
 import t.viewer.client.screen.ranking.SimpleCompoundRanker;
 import t.common.shared.DataSchema;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.UIFactory;
 import t.viewer.client.components.GroupLabels;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.GeneSetEditor;
@@ -48,23 +46,23 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class OTGFactory implements UIFactory {
 
   @Override
-  public SelectionTDGrid selectionTDGrid(OTGScreen scr) {
+  public SelectionTDGrid selectionTDGrid(Screen scr) {
     return new TreatedControlSelTDGrid(scr);
   }
 
   @Override
-  public CompoundRanker compoundRanker(OTGScreen _screen) {
+  public CompoundRanker compoundRanker(Screen _screen) {
     return new SimpleCompoundRanker(_screen);
   }
 
   @Override
-  public GroupInspector groupInspector(OTGScreen scr,
+  public GroupInspector groupInspector(Screen scr,
                                        GroupInspector.Delegate delegate) {
     return new TreatedControlGroupInspector(scr, delegate);
   }
 
   @Override
-  public GroupLabels groupLabels(OTGScreen screen, DataSchema schema, List<ClientGroup> groups) {
+  public GroupLabels groupLabels(Screen screen, DataSchema schema, List<ClientGroup> groups) {
     return new GroupLabels(screen, schema, groups);
   }
 

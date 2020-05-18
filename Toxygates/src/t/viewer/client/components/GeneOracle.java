@@ -37,7 +37,7 @@ import java.util.List;
 public class GeneOracle extends SuggestOracle {
 
   private SampleClass sampleClass;
-  private OTGScreen screen;
+  private Screen screen;
 
   public void setFilter(SampleClass sc) {
     this.sampleClass = sc;
@@ -66,7 +66,7 @@ public class GeneOracle extends SuggestOracle {
 
   }
 
-  public GeneOracle(OTGScreen screen) {
+  public GeneOracle(Screen screen) {
     probeService = screen.manager().probeService();
     this.screen = screen;
   }

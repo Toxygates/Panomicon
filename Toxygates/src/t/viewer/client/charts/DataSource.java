@@ -19,7 +19,7 @@
 
 package t.viewer.client.charts;
 
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -167,10 +167,10 @@ abstract public class DataSource {
     protected final MatrixServiceAsync matrixService;
 
     protected String[] probes;
-    protected OTGScreen screen;
+    protected Screen screen;
 
     DynamicExpressionRowSource(DataSchema schema, String[] probes, Sample[] samples,
-        OTGScreen screen) {
+        Screen screen) {
       super(schema, samples, new ArrayList<ExpressionRow>());
       this.probes = probes;
       this.screen = screen;
@@ -216,7 +216,7 @@ abstract public class DataSource {
   static class DynamicUnitSource extends DynamicExpressionRowSource {
     private Unit[] units;
 
-    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, OTGScreen screen) {
+    DynamicUnitSource(DataSchema schema, String[] probes, Unit[] units, Screen screen) {
       super(schema, probes, Unit.collectSamples(units), screen);
       this.units = units;
     }

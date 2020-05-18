@@ -23,7 +23,7 @@ import t.viewer.client.charts.AdjustableGrid;
 import t.viewer.client.charts.ChartParameters;
 import t.viewer.client.charts.DataSource;
 import t.viewer.client.charts.Factory;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.charts.DataPoint;
 import t.viewer.client.storage.StorageProvider;
 
@@ -41,7 +41,7 @@ public class GVizFactory extends Factory<GDTDataset> {
   }
 
   @Override
-  public GVizChartGrid grid(OTGScreen screen, GDTDataset table, List<String> rowFilters,
+  public GVizChartGrid grid(Screen screen, GDTDataset table, List<String> rowFilters,
                             List<String> rowLabels,
                             List<String> organisms, boolean rowsAreMajors, String[] timesOrDoses, boolean columnsAreTimes,
                             int totalWidth) {

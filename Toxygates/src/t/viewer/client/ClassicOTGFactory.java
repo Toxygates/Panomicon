@@ -21,7 +21,7 @@ package t.viewer.client;
 import t.viewer.client.screen.ranking.CompoundRanker;
 import t.viewer.client.screen.ranking.FullCompoundRanker;
 import t.viewer.client.components.ImportingScreen;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.GeneSetEditor;
 import t.viewer.client.screen.data.GeneSetsMenu;
@@ -32,7 +32,7 @@ import t.viewer.client.screen.data.GeneSetsMenu;
  */
 public class ClassicOTGFactory extends OTGFactory {
   @Override
-  public CompoundRanker compoundRanker(OTGScreen _screen) {
+  public CompoundRanker compoundRanker(Screen _screen) {
     return new FullCompoundRanker(_screen);
   }
 

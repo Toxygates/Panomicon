@@ -21,11 +21,11 @@ package t.viewer.client.screen.groupdef;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import t.viewer.client.ClientGroup;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 
 public class TreatedControlGroupInspector extends GroupInspector {
 
-  public TreatedControlGroupInspector(OTGScreen scr, Delegate delegate) {
+  public TreatedControlGroupInspector(Screen scr, Delegate delegate) {
     super(scr, delegate);
   }
 

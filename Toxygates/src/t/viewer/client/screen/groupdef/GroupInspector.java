@@ -26,7 +26,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.OTGScreen;
+import t.viewer.client.components.Screen;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
@@ -60,7 +60,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
   public final Groups groups;
 
   public SelectionTDGrid selectionGrid;
-  private final OTGScreen screen;
+  private final Screen screen;
   private final Delegate delegate;
   private final DataSchema schema;
   /**
@@ -100,7 +100,7 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     Style buttonCellBaseStyle();
   }
 
-  public GroupInspector(OTGScreen scr, Delegate delegate) {
+  public GroupInspector(Screen scr, Delegate delegate) {
     this.screen = scr;
     this.delegate = delegate;
     
