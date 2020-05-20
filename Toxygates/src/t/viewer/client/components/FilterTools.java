@@ -26,6 +26,7 @@ import t.common.client.Utils;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.future.Future;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.screen.data.DataFilterEditor;
 import t.viewer.shared.AppInfo;
 

@@ -29,6 +29,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
+import t.viewer.client.screen.Screen;
 
 import java.util.List;
 

@@ -29,7 +29,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.UIFactory;
-import t.viewer.client.components.ScreenManager;
+import t.viewer.client.screen.ScreenManager;
 import t.viewer.client.screen.groupdef.ColumnScreen;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;

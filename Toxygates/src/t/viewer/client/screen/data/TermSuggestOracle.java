@@ -22,7 +22,7 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.shared.AType;
 import t.common.shared.Pair;
 import t.common.shared.Term;

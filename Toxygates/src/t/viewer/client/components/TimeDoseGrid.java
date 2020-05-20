@@ -31,6 +31,7 @@ import t.viewer.client.Utils;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.screen.Screen;
 
 import java.util.ArrayList;
 import java.util.Arrays;

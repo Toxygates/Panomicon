@@ -40,7 +40,7 @@ import com.google.gwt.view.client.SelectionModel.AbstractSelectionModel;
 
 import t.viewer.client.charts.ChartParameters;
 import t.viewer.client.charts.MatrixCharts;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;

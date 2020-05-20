@@ -17,22 +17,21 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.components;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.OTGAttribute;
-import t.viewer.client.components.PendingAsyncCallback;
-import t.viewer.client.components.TimeDoseGrid;
+import t.viewer.client.Analytics;
 import t.viewer.client.future.Future;
+import t.viewer.client.screen.Screen;
 
 import java.util.Arrays;
 import java.util.HashMap;

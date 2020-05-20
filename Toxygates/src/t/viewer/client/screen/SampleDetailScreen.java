@@ -17,19 +17,21 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.screen;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.MinimalScreen;
-import t.viewer.client.components.ScreenManager;
+import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
+import t.viewer.client.Utils;
+import t.viewer.client.components.*;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
-import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.Packer.UnpackInputException;

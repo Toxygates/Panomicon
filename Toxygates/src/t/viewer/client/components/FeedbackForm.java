@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.screen.Screen;
 
 public class FeedbackForm extends InteractionDialog {
 

@@ -32,7 +32,7 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.client.Utils;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;

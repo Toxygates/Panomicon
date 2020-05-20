@@ -27,8 +27,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import t.model.sample.OTGAttribute;
-import t.viewer.client.components.FilterAndSelectorScreen;
-import t.viewer.client.components.ScreenManager;
+import t.viewer.client.screen.FilterAndSelectorScreen;
+import t.viewer.client.screen.ScreenManager;
 import t.viewer.client.components.compoundsel.CompoundSelector;
 import t.viewer.client.screen.data.DataScreen;
 import t.common.shared.Dataset;
@@ -40,7 +40,6 @@ import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.FilterTools;
 import t.viewer.client.future.Future;
-import t.viewer.client.screen.groupdef.GroupInspector;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.

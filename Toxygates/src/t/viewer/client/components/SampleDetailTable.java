@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.components;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
@@ -30,15 +30,15 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
-import t.viewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.PrecomputedVarianceSet;
 import t.common.shared.sample.Sample;
 import t.model.sample.Attribute;
 import t.model.sample.VarianceSet;
-import t.viewer.client.components.PendingAsyncCallback;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.table.TooltipColumn;
 
 import javax.annotation.Nullable;

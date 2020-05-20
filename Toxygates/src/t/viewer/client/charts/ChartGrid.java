@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.model.sample.OTGAttribute;
 import t.viewer.client.charts.google.GVizChartGrid;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
 import t.model.sample.Attribute;

@@ -21,7 +21,7 @@ package t.viewer.client.screen.groupdef;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import t.viewer.client.ClientGroup;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 
 public class TreatedControlGroupInspector extends GroupInspector {
 

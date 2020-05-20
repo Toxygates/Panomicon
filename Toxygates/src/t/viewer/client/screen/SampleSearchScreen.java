@@ -17,16 +17,17 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.screen;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.FilterScreen;
-import t.viewer.client.components.FilterTools;
-import t.viewer.client.components.ScreenManager;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
+import t.viewer.client.Utils;
+import t.viewer.client.components.*;
 import t.common.shared.Dataset;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -35,8 +36,6 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 import t.model.sample.SampleLike;
-import t.viewer.client.components.PendingAsyncCallback;
-import t.viewer.client.components.TickMenuItem;
 import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.future.Future;

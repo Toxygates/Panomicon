@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.SuggestOracle;
 import t.common.shared.Pair;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.screen.Screen;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -21,7 +21,7 @@ package t.viewer.client;
 
 import static t.model.sample.OTGAttribute.*;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;

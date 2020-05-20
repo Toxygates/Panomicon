@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import t.viewer.client.Utils;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 
 abstract public class InteractionDialog {
 

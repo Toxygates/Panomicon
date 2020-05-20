@@ -19,6 +19,7 @@
 
 package t.viewer.client;
 
+import t.viewer.client.screen.*;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.groupdef.ColumnScreen;
 import t.viewer.client.screen.ranking.RankingScreen;

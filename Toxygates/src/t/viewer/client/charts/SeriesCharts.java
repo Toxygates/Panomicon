@@ -20,7 +20,7 @@
 package t.viewer.client.charts;
 
 import com.google.gwt.user.client.Window;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.shared.FirstKeyedPair;
 import t.common.shared.Pair;
 import t.common.shared.SampleMultiFilter;

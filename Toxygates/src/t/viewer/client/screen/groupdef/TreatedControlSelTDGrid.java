@@ -18,7 +18,7 @@
  */
 package t.viewer.client.screen.groupdef;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.shared.sample.Unit;
 
 /**

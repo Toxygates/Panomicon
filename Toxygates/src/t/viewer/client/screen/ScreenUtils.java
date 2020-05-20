@@ -17,9 +17,8 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.components;
+package t.viewer.client.screen;
 
-import t.viewer.client.SampleDetailScreen;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 

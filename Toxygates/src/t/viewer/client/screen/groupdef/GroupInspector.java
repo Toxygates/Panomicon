@@ -26,7 +26,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;

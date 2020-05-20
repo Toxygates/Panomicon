@@ -35,7 +35,7 @@ import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;

@@ -17,18 +17,18 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.screen;
 
-import static t.common.client.Utils.makeScrolled;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
+import t.common.client.components.StringArrayTable;
+import t.viewer.client.Utils;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.ui.*;
-
-import t.viewer.client.components.MinimalScreen;
-import t.viewer.client.components.ScreenManager;
-import t.common.client.components.StringArrayTable;
-import t.viewer.client.Utils;
+import static t.common.client.Utils.makeScrolled;
 
 /**
  * This is the first screen, where a dataset can be selected.

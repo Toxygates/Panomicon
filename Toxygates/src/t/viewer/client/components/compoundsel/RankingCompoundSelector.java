@@ -24,7 +24,7 @@ import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.shared.SeriesType;

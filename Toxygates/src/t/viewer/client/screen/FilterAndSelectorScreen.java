@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.components;
+package t.viewer.client.screen;
 
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;

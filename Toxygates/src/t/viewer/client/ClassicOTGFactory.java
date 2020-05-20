@@ -20,8 +20,8 @@ package t.viewer.client;
 
 import t.viewer.client.screen.ranking.CompoundRanker;
 import t.viewer.client.screen.ranking.FullCompoundRanker;
-import t.viewer.client.components.ImportingScreen;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.ImportingScreen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.GeneSetEditor;
 import t.viewer.client.screen.data.GeneSetsMenu;

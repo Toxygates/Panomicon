@@ -19,7 +19,7 @@
 
 package t.viewer.client.screen.ranking;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.Utils;
 
 public class FullCompoundRanker extends CompoundRanker {

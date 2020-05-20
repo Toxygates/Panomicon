@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client;
+package t.viewer.client.screen;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
@@ -29,9 +29,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.model.sample.OTGAttribute;
-import t.viewer.client.components.MinimalScreen;
-import t.viewer.client.components.ScreenManager;
-import t.viewer.client.components.ScreenUtils;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Groups;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.Pathology;
 import t.common.client.ImageClickCell;

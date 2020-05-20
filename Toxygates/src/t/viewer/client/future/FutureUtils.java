@@ -23,7 +23,7 @@ import java.util.logging.Level;
 
 import com.google.gwt.user.client.Window;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 
 /**
  * Utility methods for Futures

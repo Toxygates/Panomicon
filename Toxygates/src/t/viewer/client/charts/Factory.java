@@ -19,7 +19,7 @@
 
 package t.viewer.client.charts;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.storage.StorageProvider;
 
 import java.util.List;

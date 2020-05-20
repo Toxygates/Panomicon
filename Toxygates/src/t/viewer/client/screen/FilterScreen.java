@@ -17,12 +17,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.components;
+package t.viewer.client.screen;
 
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
+import t.viewer.client.components.FilterTools;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
 

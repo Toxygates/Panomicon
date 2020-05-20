@@ -23,7 +23,7 @@ import t.viewer.client.charts.AdjustableGrid;
 import t.viewer.client.charts.ChartParameters;
 import t.viewer.client.charts.DataSource;
 import t.viewer.client.charts.Factory;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.charts.DataPoint;
 import t.viewer.client.storage.StorageProvider;
 

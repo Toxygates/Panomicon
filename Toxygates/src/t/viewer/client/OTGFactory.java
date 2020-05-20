@@ -22,8 +22,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.viewer.client.components.ImportingScreen;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.ImportingScreen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.client.screen.groupdef.TreatedControlGroupInspector;
 import t.viewer.client.screen.ranking.CompoundRanker;

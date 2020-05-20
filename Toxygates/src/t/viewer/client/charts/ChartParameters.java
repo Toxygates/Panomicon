@@ -22,7 +22,7 @@ package t.viewer.client.charts;
 import java.util.LinkedList;
 import java.util.List;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.common.shared.ValueType;
 import t.viewer.client.ClientGroup;
 

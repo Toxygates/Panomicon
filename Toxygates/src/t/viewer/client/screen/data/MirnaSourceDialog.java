@@ -27,7 +27,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.shared.mirna.MirnaSource;

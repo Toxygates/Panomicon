@@ -19,12 +19,12 @@
 
 package t.viewer.client.components;
 
-import java.util.logging.Level;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import t.viewer.client.screen.Screen;
+
+import javax.annotation.Nullable;
+import java.util.logging.Level;
 
 /**
  * Callback that interacts with a screen to display a "please wait" popup.
