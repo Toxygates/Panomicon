@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.client.components;
+package t.viewer.client.components.stackedlist;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,6 +32,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.viewer.client.Utils;
+import t.viewer.client.components.ListChooser;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.StringList;
 
@@ -55,7 +56,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
   protected VerticalPanel northVp;
 
-  protected @Nullable ListChooser listChooser;
+  protected @Nullable
+  ListChooser listChooser;
 
   /**
    * @param itemTitle Header for the item type being selected (in certain cases)

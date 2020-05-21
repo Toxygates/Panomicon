@@ -16,16 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package t.viewer.client.components;
-
-import java.util.*;
-
-import javax.annotation.Nullable;
+package t.viewer.client.components.stackedlist;
 
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-
 import t.common.client.components.SetEditor;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * A selection method is a particular user interface for editing the list.
