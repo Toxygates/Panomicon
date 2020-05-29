@@ -46,14 +46,14 @@ class Factory {
     new MapMetadata(data, attr)
 
   def triplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
-                          querySet: Iterable[Attribute] = Seq())
-                         (implicit sf: SampleFilter): TriplestoreMetadata =
-    new TriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
+                          querySet: Iterable[Attribute] = Seq(),
+                          sf: SampleFilter): TriplestoreMetadata =
+    new TriplestoreMetadata(sampleStore, attributeSet, querySet, sf)
 
   def cachingTriplestoreMetadata(sampleStore: SampleStore, attributeSet: AttributeSet,
-                                 querySet: Iterable[Attribute] = Seq())
-                                (implicit sf: SampleFilter): CachingTriplestoreMetadata =
-    new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet)(sf)
+                                 querySet: Iterable[Attribute] = Seq(),
+                                 sf: SampleFilter): CachingTriplestoreMetadata =
+    new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet, sf)
 
   def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
     new FilteredMetadata(from, sampleView)

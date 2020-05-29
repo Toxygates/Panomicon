@@ -89,8 +89,6 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
     s
   }
 
-  protected implicit def sf: SampleFilter = getState.sampleFilter
-
   /**
    * Generate a new user key, to be used when the client does not already have one.
    */
@@ -113,7 +111,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
     println("Choose datasets: " + ds.map(_.getId).mkString(" "))
     getState.sampleFilter = sampleFilterFor(ds, Some(getState.sampleFilter))
 
-    sampleStore.sampleClasses.map(x => new SampleClass(x.asGWT)).toArray
+    sampleStore.sampleClasses(getState.sampleFilter).map(x => new SampleClass(x.asGWT)).toArray
   }
 
   @throws[TimeoutException]
@@ -122,26 +120,26 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
     //Get the parameters without changing the persistent datasets in getState
     val filter = sampleFilterFor(ds, Some(getState.sampleFilter))
     val attr = baseConfig.attributes.byId(parameter)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr)(filter).
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr, filter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     val attr = baseConfig.attributes.byId(parameter)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr).
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr, getState.sampleFilter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   private def samplesById(ids: Array[String]) =
-    sampleStore.samples(SampleClassFilter(), "id", ids).map(asJavaSample(_)).toArray
+    sampleStore.samples(SampleClassFilter(), "id", ids, getState.sampleFilter).map(asJavaSample(_)).toArray
 
   def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
     ids.asScala.map(samplesById(_)).asGWT
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val samples = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+    val samples = sampleStore.sampleQuery(SampleClassFilter(sc), getState.sampleFilter)()
     samples.map(asJavaSample).toArray
   }
 
@@ -154,7 +152,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
 
   private def samples(sc: SampleClass, param: String,
                       paramValues: Array[String]) =
-    sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_))
+    sampleStore.samples(SampleClassFilter(sc), param, paramValues, getState.sampleFilter).map(asJavaSample(_))
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
@@ -164,7 +162,8 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
   @throws[TimeoutException]
   def units(sc: SampleClass,
       param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
-      new UnitStore(schema, sampleStore).units(sc, param, paramValues)
+      new UnitStore(schema, sampleStore).units(sc, param, paramValues,
+        getState.sampleFilter)
 
   def units(scs: Array[SampleClass], param: String,
       paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
@@ -172,7 +171,8 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   def attributesForSamples(sc: SampleClass): Array[Attribute] = {
-    sampleStore.attributesForSamples(SampleClassFilter(sc))(sf)()
+    sampleStore.attributesForSamples(SampleClassFilter(sc),
+      getState.sampleFilter)()
       .sortBy(attribute => attribute.title())
       .toArray
   }
@@ -232,7 +232,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
       RequestResult[Pair[Sample, Pair[Unit, Unit]]] = {
 
     val sampleSearch = t.common.server.sample.search.IndividualSearch(cond,
-        sc, sampleStore, schema, baseConfig.attributes)
+        sc, sampleStore, schema, baseConfig.attributes, getState.sampleFilter)
     val pairs = sampleSearch.pairedResults.take(maxResults).map {
       case (sample, (treated, control)) =>
         new Pair(sample, new Pair(treated, control))
@@ -244,7 +244,8 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
       RequestResult[Pair[Unit, Unit]] = {
 
     val unitSearch = t.common.server.sample.search.UnitSearch(cond,
-        sc, sampleStore, schema, baseConfig.attributes)
+      sc, sampleStore, schema, baseConfig.attributes,
+      getState.sampleFilter)
     val pairs = unitSearch.pairedResults.take(maxResults).map {
       case (treated, control) =>
         new Pair(treated, control)

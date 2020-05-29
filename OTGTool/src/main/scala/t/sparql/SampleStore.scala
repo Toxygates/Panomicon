@@ -93,8 +93,8 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
          |  GRAPH ?g { ?x a $itemClass ; rdfs:label ?l } }""".stripMargin)
   }
 
-  def compounds(filter: TFilter)(implicit sf: SampleFilter) =
-    sampleAttributeQuery(OTGAttribute.Compound).constrain(filter)()
+  def compounds(filter: TFilter, sf: SampleFilter) =
+    sampleAttributeQuery(OTGAttribute.Compound, sf).constrain(filter)()
 
   def pathologyQuery(constraints: String): Vector[Pathology] =
     PathologySparql.pathologyQuery(triplestore, constraints)
@@ -144,7 +144,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Constructs a sample query that respects a SampleClassFilter and normal SampleFilter
    */
-  def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
+  def sampleQuery(filter: SampleClassFilter, sf: SampleFilter): Query[Vector[Sample]] = {
     val standardPred = standardAttributes.filter(isPredicateAttribute)
 
     val filterString = if(filter.constraints.isEmpty) "" else
@@ -176,8 +176,8 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   def samples() = ???
 
-  def samples(sc: SampleClassFilter)(implicit sf: SampleFilter): Seq[Sample] =
-    sampleQuery(sc)(sf)()
+  def samples(sc: SampleClassFilter, sf: SampleFilter): Seq[Sample] =
+    sampleQuery(sc, sf)()
 
   def allValuesForSampleAttribute(attribute: String,
                                   graphURI: Option[String] = None): Iterable[String] = {
@@ -198,12 +198,12 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
       " }")
   }
 
-  def samples(sc: SampleClassFilter, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
-    sampleQuery(sc).constrain(
+  def samples(sc: SampleClassFilter, fparam: String, fvalues: Iterable[String], sf: SampleFilter): Seq[Sample] = {
+    sampleQuery(sc, sf).constrain(
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
 
-  def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]] = {
+  def sampleClasses(sf: SampleFilter): Seq[Map[Attribute, String]] = {
     val hlPred = hlAttributes.filter(isPredicateAttribute)
 
     val vars = hlPred.map(a => s"?${a.id}").mkString(" ")
@@ -304,7 +304,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Get all distinct values for an attribute inside specified SampleFilter
    */
-  def sampleAttributeQuery(attribute: Attribute)(implicit sf: SampleFilter): Query[Seq[String]] = {
+  def sampleAttributeQuery(attribute: Attribute, sf: SampleFilter): Query[Seq[String]] = {
     if (!isPredicateAttribute(attribute)) {
       throw new Exception("Invalid query")
     }
@@ -371,9 +371,9 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
    * missing any of the specified attributes, however, will not be fetched.
    * Does not support specification of batch graph in the SampleClassFilter.
    */
-  def sampleAttributeQuery(attributes: Iterable[Attribute], sampleClassFilter: SampleClassFilter =
-  SampleClassFilter())
-                          (implicit sampleFilter: SampleFilter): Query[Seq[Sample]] = {
+  def sampleAttributeQuery(attributes: Iterable[Attribute], sampleFilter: SampleFilter,
+                           sampleClassFilter: SampleClassFilter = SampleClassFilter()
+                          ): Query[Seq[Sample]] = {
 
     val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ SampleId).distinct
     val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
@@ -401,8 +401,8 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
       ))
   }
 
-  def attributeValues(filter: TFilter, attribute: Attribute)(implicit sf: SampleFilter) =
-    sampleAttributeQuery(attribute).constrain(filter)()
+  def attributeValues(filter: TFilter, attribute: Attribute, sf: SampleFilter) =
+    sampleAttributeQuery(attribute, sf).constrain(filter)()
 
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes + '\n' +
@@ -417,7 +417,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
     val mq = triplestore.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
-    val withAttributes = sampleQuery(SampleClassFilter())(sf).constrain(
+    val withAttributes = sampleQuery(SampleClassFilter(), sf).constrain(
       "FILTER (?id IN (" + allIds.map('"' + _ + '"').mkString(",") + ")).")()
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 
@@ -431,8 +431,8 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
    * Find all attributes for which at least one of the samples matching the sample
    * class filter has a value.
    */
-  def attributesForSamples(sampleClassFilter: SampleClassFilter = SampleClassFilter())
-                          (implicit sampleFilter: SampleFilter): Query[Vector[Attribute]] = {
+  def attributesForSamples(sampleClassFilter: SampleClassFilter = SampleClassFilter(),
+                           sampleFilter: SampleFilter): Query[Vector[Attribute]] = {
 
     val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
 

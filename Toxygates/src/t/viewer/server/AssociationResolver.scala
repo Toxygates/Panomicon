@@ -41,13 +41,14 @@ class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
                          drugBank: DrugBank) {
 
   def lookup: AssociationLookup = {
-    case (Drugbank, sc, sf, probes) => getTargeting(sc, drugBank, probes)(sf)
-    case (Chembl, sc, sf, probes)   => getTargeting(sc, chembl, probes)(sf)
+    case (Drugbank, sc, sf, probes) => getTargeting(sc, drugBank, probes, sf)
+    case (Chembl, sc, sf, probes)   => getTargeting(sc, chembl, probes, sf)
   }
 
-  def getTargeting(sc: SampleClass, from: CompoundTargets, probes: Iterable[Probe])
-    (implicit sf: SampleFilter): MMap[Probe, Compound] = {
-    val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll).map(Compound.make(_))
+  def getTargeting(sc: SampleClass, from: CompoundTargets,
+                   probes: Iterable[Probe], sf: SampleFilter
+                  ): MMap[Probe, Compound] = {
+    val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll, sf).map(Compound.make(_))
 
     val proteins = toBioMap(probes, (_: Probe).proteins)
 

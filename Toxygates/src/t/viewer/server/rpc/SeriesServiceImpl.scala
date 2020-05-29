@@ -74,13 +74,13 @@ class SeriesServiceImpl extends OTGServiceServlet with SeriesService {
 
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
     val ids = ds.map(_.getId).distinct.toList
-    implicit val sf = SampleFilter(instanceURI = config.instanceURI,
+    val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = ids.map(Datasets.packURI(_)))
 
     val majAttr = schema.majorParameter()
 
     context.sampleStore.attributeValues(SampleClassFilter(sc).filterAll,
-      majAttr).toSet
+      majAttr, sf).toSet
   }
 
   final private def withDB[T](seriesType: SeriesType, f: SeriesDB[OTGSeries] => T): T = {

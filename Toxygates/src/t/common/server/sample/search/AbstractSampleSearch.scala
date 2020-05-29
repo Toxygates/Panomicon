@@ -49,14 +49,14 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
                            sampleFilter: SampleFilter, sampleStore: SampleStore, schema: DataSchema,
                            attributes: AttributeSet): Seq[Sample] = {
 
-    sampleStore.sampleAttributeQuery(condition.neededParameters().asScala ++
-        attributes.getUnitLevel().asScala ++ Seq(CoreParameter.ControlGroup),
-        SampleClassFilter(sampleClass))(sampleFilter)().map(asJavaSample)
+    val queryAttributes = condition.neededParameters().asScala ++
+      attributes.getUnitLevel().asScala ++ Seq(CoreParameter.ControlGroup)
+    sampleStore.sampleAttributeQuery(queryAttributes, sampleFilter, SampleClassFilter(sampleClass))().map(asJavaSample)
   }
 
-  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: SampleStore,
-            schema: DataSchema, attributes: AttributeSet)
-      (implicit sampleFilter: SampleFilter): SS = {
+  def apply(condition: MatchCondition, sampleClass: SampleClass,
+            sampleStore: SampleStore, schema: DataSchema,
+            attributes: AttributeSet, sampleFilter: SampleFilter): SS = {
     val samples = rawSamples(condition, sampleClass, sampleFilter,
         sampleStore, schema, attributes)
     val unitHelper = new UnitsHelper(schema)

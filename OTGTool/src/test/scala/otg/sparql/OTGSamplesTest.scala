@@ -49,33 +49,33 @@ class OTGSamplesTest extends TTestSuite {
   implicit val sampleFilter = SampleFilter()
 
   test("organs") {
-    val sf = SampleClassFilter(
+    val sampleClassFilter = SampleClassFilter(
         SampleClassHelper(Map(
       Organ -> "Kidney",
       Repeat -> "Repeat") ++ baseConstraints)
       ).filterAll
 
-    val os = samples.sampleAttributeQuery(Organ).
-      constrain(sf)()
+    val os = samples.sampleAttributeQuery(Organ, sampleFilter).
+      constrain(sampleClassFilter)()
 
     os.toSet should (contain("Kidney"))
   }
 
   test("dose levels") {
-    val sf = SampleClassFilter(fullConstraints).filterAll
+    val sampleClassFilter = SampleClassFilter(fullConstraints).filterAll
 
-    val ds = samples.sampleAttributeQuery(DoseLevel).
-      constrain(sf)()
+    val ds = samples.sampleAttributeQuery(DoseLevel, sampleFilter).
+      constrain(sampleClassFilter)()
 
     //Constants like these should probably be moved to Attribute/AttributeSet
     assert(ds.toSet === Set("Control") ++ DoseSeries.allDoses)
   }
 
   test("times") {
-    val sf = SampleClassFilter(fullConstraints).filterAll
+    val sampleClassFilter = SampleClassFilter(fullConstraints).filterAll
 
-    val ts = samples.sampleAttributeQuery(ExposureTime).
-      constrain(sf)()
+    val ts = samples.sampleAttributeQuery(ExposureTime, sampleFilter).
+      constrain(sampleClassFilter)()
 
     assert(TimeSeries.singleVivoExpected.toSet subsetOf ts.toSet)
   }

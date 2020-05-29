@@ -104,7 +104,7 @@ object BatchManager extends ManagerTool {
                 config.attributes.getHighLevel.asScala ++
                 config.attributes.getUnitLevel.asScala ++
                 List(CoreParameter.Platform, CoreParameter.ControlGroup,
-                  CoreParameter.Batch))(sampleFilter)
+                  CoreParameter.Batch), sampleFilter)
           startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
             Batch(title, "", None, None), metadata))
 
@@ -721,7 +721,7 @@ class BatchManager(context: Context) {
 
       val md = context.factory.cachingTriplestoreMetadata(samples, config.attributes,
         config.attributes.getRequired.asScala ++ config.attributes.getHighLevel.asScala
-          ++ config.attributes.getUnitLevel.asScala)(sf)
+          ++ config.attributes.getUnitLevel.asScala, sf)
 
       val controlGroups = md.treatedControlGroups(md.samples)
       val treated = controlGroups.toSeq.flatMap(_._1)
