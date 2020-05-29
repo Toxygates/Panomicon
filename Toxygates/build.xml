@@ -113,7 +113,6 @@
       <arg value="war"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
-      <arg value="otg.viewer.toxygates"/>
       <arg value="t.admin.AdminConsole"/>
     </java>
 
