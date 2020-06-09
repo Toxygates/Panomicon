@@ -10,7 +10,7 @@ import t.platform.Species._
 /**
  * Management tool for T framework applications.
  */
-class Manager extends CmdLineOptions {
+object Manager extends CmdLineOptions {
   import scala.collection.{Map => CMap}
 
   def requireEnv(env: scala.collection.Map[String, String], key: String, errMsg: String) =
@@ -91,7 +91,7 @@ class Manager extends CmdLineOptions {
       case "batch"    => BatchManager(args.drop(1))
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
-      case "matrix"   => MatrixManager(args.drop(1), this)
+      case "matrix"   => MatrixManager(args.drop(1))
       case _ => showHelp()
     }
   }

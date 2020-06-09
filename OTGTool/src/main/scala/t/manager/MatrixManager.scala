@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
  */
 object MatrixManager extends ManagerTool {
 
-  def apply(args: Seq[String], m: Manager)(implicit context: Context): Unit = {
+  def apply(args: Seq[String])(implicit context: Context): Unit = {
 
     def config = context.config
     def factory = context.factory
@@ -57,8 +57,8 @@ object MatrixManager extends ManagerTool {
             "Please specify a destination directory with -toDir")
           val tsconfig = config.triplestore
           val dataParams = System.getenv().asScala + ("T_DATA_DIR" -> todir)
-          val toDConfig = m.getDataConfig(dataParams)
-          val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
+          val toDConfig = Manager.getDataConfig(dataParams)
+          val toBConfig = Manager.makeBaseConfig(tsconfig, toDConfig)
           //If the batch is specified, only that batch will be copied.
           //Otherwise, all batches are copied.
           val batch = stringOption(args, "-batch")
