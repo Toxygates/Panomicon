@@ -25,10 +25,9 @@ import t.common.shared.sample.Sample
 import t.common.shared.sample.SampleClassUtils
 import t.common.shared.sample.Unit
 import t.db.SimpleVarianceSet
-import t.db.VarianceSet
 import t.model.SampleClass
 import t.model.sample.CoreParameter._
-
+import t.model.sample.VarianceSet
 import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.SampleStore
@@ -42,16 +41,17 @@ class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
    * Task: sensitive algorithm, should simplify and possibly move to OTGTool.
    */
   @throws[TimeoutException]
-  def units(sc: SampleClass,
-      param: String, paramValues: Array[String])(implicit sf: SampleFilter) : Array[Pair[Unit, Unit]] = {
+  def units(sc: SampleClass, param: String, paramValues: Array[String],
+            sf: SampleFilter) : Array[Pair[Unit, Unit]] = {
 
     //This will filter by the chosen parameter - usually compound name
-    val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
-    units(sc, rs).map(x => new Pair(x._1, x._2.getOrElse(null))).toArray
+    val rs = sampleStore.samples(SampleClassFilter(sc), param,
+      paramValues.toSeq, sf)
+    units(sc, rs, sf).map(x => new Pair(x._1, x._2.getOrElse(null))).toArray
   }
 
-  def units(sc: SampleClass, samples: Iterable[t.db.Sample])
-  (implicit sf: SampleFilter): Iterable[(Unit, Option[Unit])] = {
+  def units(sc: SampleClass, samples: Iterable[t.db.Sample],
+            sf: SampleFilter): Iterable[(Unit, Option[Unit])] = {
     def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
 
     def unit(s: Sample) = SampleClassUtils.asUnit(s.sampleClass, schema)
@@ -67,8 +67,8 @@ class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
             x.sampleClass(ControlGroup)))
 
     val cgs = groupedSamples.keys.toSeq.map(_._2).distinct
-    val potentialControls = sampleStore.samples(SampleClassFilter(sc), ControlGroup.id, cgs).
-      filter(isControl).map(asJavaSample)
+    val potentialControls = sampleStore.samples(SampleClassFilter(sc),
+      ControlGroup.id, cgs, sf).filter(isControl).map(asJavaSample)
 
       /*
        * For each unit of treated samples inside a control group, all

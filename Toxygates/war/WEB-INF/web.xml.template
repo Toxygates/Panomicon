@@ -72,22 +72,22 @@
 	
 	<servlet>
 		<servlet-name>sampleServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.SampleServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.rpc.SampleServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>probeServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.ProbeServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.rpc.ProbeServiceImpl</servlet-class>
 	</servlet>
 	
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.SeriesServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.rpc.SeriesServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>matrixServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.MatrixServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.rpc.MatrixServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
@@ -112,7 +112,7 @@
   	
   	<servlet>
 		<servlet-name>userDataServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.UserDataServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.rpc.UserDataServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>userDataServlet</servlet-name>
@@ -121,7 +121,7 @@
 
  	<servlet>
 		<servlet-name>networkServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.NetworkServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.rpc.NetworkServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>networkServlet</servlet-name>
@@ -139,7 +139,7 @@
 
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.IntermineServiceImpl</servlet-class>
+		<servlet-class>t.viewer.server.intermine.IntermineServiceImpl</servlet-class>
 	</servlet>
     <servlet-mapping>
 		<servlet-name>intermineServlet</servlet-name>

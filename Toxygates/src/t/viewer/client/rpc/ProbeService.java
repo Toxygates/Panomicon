@@ -19,18 +19,18 @@
 
 package t.viewer.client.rpc;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
 import t.common.shared.AType;
 import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
-import t.viewer.shared.*;
+import t.viewer.shared.AppInfo;
+import t.viewer.shared.Association;
+import t.viewer.shared.TimeoutException;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * A service that provides information about probes and related objects
@@ -131,4 +131,13 @@ public interface ProbeService extends RemoteService {
   Association[] associations(SampleClass sc, AType[] types, String[] probes)
       throws TimeoutException;
 
+  /**
+   * Obtain probes that correspond to proteins targeted by the named compound.
+   *
+   * @param service Service to use for lookup (currently DrugBank or CHEMBL)
+   * (note: it might be better to use an enum)
+   * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
+   */
+  String[] probesTargetedByCompound(SampleClass sc, String compound, String service,
+                                    boolean homologous) throws TimeoutException;
 }

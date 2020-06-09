@@ -19,16 +19,10 @@
 
 package t.sparql
 
-import java.io.File
-
-import t.TriplestoreConfig
-import t.platform.ProbeRecord
-import t.util.TempFiles
-import t.platform.BioParameter
-import t.platform.BioParameters
-import t.model.sample.BasicAttribute
-import t.model.sample.AttributeSet
 import t.BaseConfig
+import t.model.sample.{AttributeSet, OTGAttributeSet}
+import t.platform.{BioParameter, BioParameters, ProbeRecord}
+import t.util.TempFiles
 
 object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
@@ -42,8 +36,8 @@ object Platforms extends RDFClass {
 
 class Platforms(baseConfig: BaseConfig) extends
   ListManager(baseConfig.triplestore) {
-  import Triplestore._
   import Platforms._
+  import Triplestore._
 
   def config = baseConfig.triplestore
   def itemClass = Platforms.itemClass
@@ -57,8 +51,6 @@ class Platforms(baseConfig: BaseConfig) extends
     if (biological) {
       triplestore.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
     }
-
-    val probes = new ProbeStore(config)
 
     val tempFiles = new TempFiles()
     try {
@@ -153,7 +145,7 @@ class Platforms(baseConfig: BaseConfig) extends
       |   }
       |}""".stripMargin, timeout)
 
-    val attribSet = otg.model.sample.AttributeSet.getDefault
+    val attribSet = OTGAttributeSet.getDefault
 
     val bpcons = bps.map(x => BioParameter(
         attribSet.findOrCreate(x("id"), x("desc"), x("type")),

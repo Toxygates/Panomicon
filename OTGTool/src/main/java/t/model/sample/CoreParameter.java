@@ -19,36 +19,24 @@
 
 package t.model.sample;
 
+import java.util.Arrays;
+
 /**
  * Key attributes expected from all samples in a t framework database.
  */
-public enum CoreParameter implements Attribute {
-  SampleId("sample_id", "Sample ID", "Sample details"),
-  Batch("batchGraph", "Batch", "System details"),
-  ControlGroup("control_group", "Control group", "Sample details"),
-  Platform("platform_id", "Platform ID", "Sample details"),
-  Type("type", "Type", "Sample details"),
-  ControlSampleId("control_sample_id", "Control Sample ID", "Sample details");
-  
-  CoreParameter(String id, String title, String section) {
-    this.id = id;
-    this.title = title;
-    this.isNumerical = false;
-    this.section = section;
+public class CoreParameter {
+  public static final Attribute SampleId = new Attribute("sample_id", "Sample ID", false, "Sample details");
+  public static final Attribute Batch = new Attribute("batchGraph", "Batch", false, "System details");
+  public static final Attribute ControlGroup = new Attribute("control_group", "Control group", false, "Sample details");
+  public static final Attribute Platform = new Attribute("platform_id", "Platform ID", false, "Sample details");
+  public static final Attribute Type = new Attribute("type", "Type", false, "Sample details");
+  public static final Attribute ControlSampleId = new Attribute("control_sample_id", "Control Sample ID", false, "Sample details");
+
+  private static final Attribute[] _all = { SampleId, Batch, ControlGroup, Platform, Type, ControlSampleId };
+
+  public static Attribute[] all() {
+    return Arrays.copyOf(_all, _all.length);
   }
-  
-  private String id;
-  private String title;
-  private boolean isNumerical;
-  private String section;
-  
-  @Override
-  public String id() { return id; }
-  @Override
-  public String title() { return title; }
-  @Override
-  public boolean isNumerical() { return isNumerical; }
-  @Override
-  public String section() { return section; }
-  
+
+  private CoreParameter() {}
 }

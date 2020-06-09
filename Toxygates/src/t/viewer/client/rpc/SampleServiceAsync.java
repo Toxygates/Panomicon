@@ -19,16 +19,21 @@
 
 package t.viewer.client.rpc;
 
-import java.util.List;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.viewer.shared.Pathology;
+import t.common.shared.Dataset;
+import t.common.shared.Pair;
+import t.common.shared.RequestResult;
+import t.common.shared.sample.PrecomputedVarianceSet;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
+
+import java.util.List;
+import java.util.Map;
 
 public interface SampleServiceAsync {
 
@@ -43,6 +48,9 @@ public interface SampleServiceAsync {
 
   void samples(SampleClass sc, AsyncCallback<Sample[]> callback);
 
+  void samplesWithAttributes(SampleClass sc, boolean importantOnly,
+                             AsyncCallback<Sample[]> callback);
+
   void samples(SampleClass[] scs, String param, String[] paramValues,
       AsyncCallback<Sample[]> callback);
 
@@ -54,12 +62,11 @@ public interface SampleServiceAsync {
   
   void attributesForSamples(SampleClass sc, AsyncCallback<Attribute[]> callback);
 
-  void annotations(Sample sample, AsyncCallback<Annotation> callback);
+  void parameterValuesForSamples(Sample[] samples, Attribute[] attributes,
+                                 AsyncCallback<Sample[]> callback);
 
-  void annotations(Sample[] samples, Attribute[] attributes, AsyncCallback<Annotation[]> callback);
-
-  void annotations(Sample[] samples, boolean importantOnly,
-      AsyncCallback<Annotation[]> callback);
+  void attributeValuesAndVariance(Sample[] samples, boolean importantOnly,
+                                  AsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>> callback);
 
   void prepareAnnotationCSVDownload(Sample[] samples,
       AsyncCallback<String> callback);
@@ -72,4 +79,6 @@ public interface SampleServiceAsync {
 
   void prepareCSVDownload(SampleLike[] samples, Attribute[] attributes,
       AsyncCallback<String> callback);
+
+  void pathologies(Sample[] samples, AsyncCallback<Pathology[]> callback);
 }

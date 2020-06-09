@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import org.scalatest.junit.JUnitRunner
 
-import otg.viewer.server.rpc.Conversions._
+import t.viewer.server.rpc.Conversions._
 import t.TTestSuite
 import t.common.shared.ValueType
 import t.common.shared.sample.Group
@@ -54,7 +54,7 @@ class ManagedNetworkTest extends TTestSuite {
 
   val mirnaGroup = new Group(dataSchema, "mirnaGroup", mirnaSamples.map(s => asJavaSample(s)).toArray)
   val platforms = new Platforms(Map(
-    t.db.testing.TestData.mrnaPlatformId -> mrnaProbes.toSet,
+    t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
     mirnaPlatformId -> mirnaProbes.toSet))
 
   val mrnaGroups = t.common.testing.TestData.groups take 5
@@ -108,7 +108,7 @@ class ManagedNetworkTest extends TTestSuite {
 
   test("forward network") {
     val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
-    networkTest(side, mrnaGroups, t.db.testing.TestData.mrnaPlatformId, true)
+    networkTest(side, mrnaGroups, t.db.testing.DBTestData.mrnaPlatformId, true)
   }
 
   test("reverse network") {

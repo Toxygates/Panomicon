@@ -21,13 +21,13 @@ package t.db.kyotocabinet
 
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import t.db.testing.TestData
+import t.db.testing.DBTestData
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class KCIndexDBTest extends TTestSuite {
   import KCDBTest._
-  import TestData._
+  import DBTestData._
 
   test("basic") {
     val db = memDBHash
@@ -39,7 +39,7 @@ class KCIndexDBTest extends TTestSuite {
     m.keys.toSet should equal(probeMap.tokens)
     m.values.toSet should equal ((0 until probeMap.data.size).toSet)
 
-    val remove = TestData.probeMap.tokens.take(5)
+    val remove = DBTestData.probeMap.tokens.take(5)
     val removed = probeMap.tokens -- remove
     val removedKeys = probeMap.keys -- remove.map(m)
 

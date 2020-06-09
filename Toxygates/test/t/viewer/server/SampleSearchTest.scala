@@ -20,12 +20,8 @@
 package t.viewer.server
 
 import scala.collection.JavaConverters._
-
 import org.junit.runner.RunWith
-
-import otg.model.sample.OTGAttribute._
-import otg.testing.TestData
-import otg.viewer.shared.OTGSchema
+import t.model.sample.OTGAttribute._
 import t.TTestSuite
 import t.common.server.sample.search.IndividualSearch
 import t.common.server.sample.search.UnitSearch
@@ -37,6 +33,8 @@ import t.common.shared.sample.search.OrMatch
 import t.model.sample.Attribute
 import t.viewer.server.Conversions._
 import org.scalatest.junit.JUnitRunner
+import t.testing.TestData
+import t.viewer.shared.OTGSchema
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
@@ -53,7 +51,7 @@ class SampleSearchTest extends TTestSuite {
     new AndMatch(Seq(mc1, mc2).asJava)
 
   val schema = new OTGSchema
-  val samples = t.db.testing.TestData.samples.toSeq.map(asJavaSample)
+  val samples = t.db.testing.DBTestData.samples.toSeq.map(asJavaSample)
 
   val attributes = TestData.attribSet
 

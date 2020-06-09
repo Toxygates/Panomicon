@@ -22,10 +22,10 @@ package otg
 import t.SeriesRanking.safePCorrelation
 import friedrich.data.Statistics.pearsonCorrelation
 import org.scalatest.junit.JUnitRunner
-import t.TTestSuite
+import t.{OTGSeries, TTestSuite, TimeSeries}
 import t.db._
-import t.testing.TestConfig
-import t.db.testing.TestData
+import t.testing.{FakeContext, TestConfig}
+import t.db.testing.DBTestData
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
@@ -33,7 +33,7 @@ class SeriesMatchingTest extends TTestSuite {
   import friedrich.data.Statistics._
 
   val config = TestConfig.config
-  implicit val context = new otg.testing.FakeContext()
+  implicit val context = new FakeContext()
 
   def mkSeries(points: Seq[ExprValue]) = {
     val doses = context.enumMaps("dose_level")

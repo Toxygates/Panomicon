@@ -19,59 +19,71 @@
 
 package t.viewer.server.rpc
 
-import scala.language.implicitConversions
-
-import otg.model.sample.OTGAttribute
-import otg.model.sample.OTGAttribute._
-import otg.viewer.client.rpc.SeriesService
-import otg.viewer.server.rpc.Conversions.asScala
-import otg.viewer.shared.MatchResult
-import otg.viewer.shared.RankRule
-import otg.viewer.shared.{ Series => SSeries }
-import t.SeriesRanking
+import Conversions.asScala
+import t.{Context, OTGDoseSeriesBuilder, OTGMatrixContext, OTGSeries, OTGSeriesBuilder, OTGTimeSeriesBuilder, SeriesRanking}
 import t.common.server.GWTUtils._
-import t.common.shared.Dataset
-import t.common.shared.SeriesType
+import t.common.shared.{Dataset, SeriesType}
 import t.db._
 import t.model.SampleClass
+import t.model.sample.OTGAttribute
 import t.sparql._
 import t.util.SafeMath
+import t.viewer.client.rpc.SeriesService
 import t.viewer.server.Configuration
-import t.viewer.shared.NoSuchProbeException
+import t.viewer.shared
+import t.viewer.shared.{MatchResult, NoSuchProbeException, RankRule}
 
-abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
+import scala.language.implicitConversions
+
+class SeriesServiceImpl extends OTGServiceServlet with SeriesService {
   private var config: Configuration = _
-  private implicit def mcontext: MatrixContext = context.matrix
-  implicit protected def context: t.Context
+  protected implicit def mcontext: OTGMatrixContext = context.matrix
+  implicit protected def implicitContext: Context = context
 
-  protected def getDB(seriesType: SeriesType): SeriesDB[S]
+  protected def getDB(seriesType: SeriesType): SeriesDB[OTGSeries] = {
+    import SeriesType._
+    seriesType match {
+      case Time => mcontext.timeSeriesDBReader
+      case Dose => mcontext.doseSeriesDBReader
+    }
+  }
 
-  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S]
+  protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries): SeriesRanking =
+    new t.SeriesRanking(db, key)
 
-  implicit def asShared(s: S): SSeries = asShared(s, "")
-  protected def asShared(s: S, geneSym: String): SSeries
-  implicit protected def fromShared(s: SSeries): S
+  implicit def asShared(s: OTGSeries): shared.Series = asShared(s, "")
+  protected def asShared(s: OTGSeries, geneSym: String): shared.Series =
+    Conversions.asJava(s, geneSym)
+  protected def fromShared(s: shared.Series): OTGSeries =
+    Conversions.asScala(s)
 
-  protected def builder(s: SeriesType): SeriesBuilder[S]
+  protected def builder(s: SeriesType): OTGSeriesBuilder = {
+    import SeriesType._
+    s match {
+      case Dose => OTGDoseSeriesBuilder
+      case Time => OTGTimeSeriesBuilder
+    }
+  }
 
   protected def attributes = baseConfig.attributes
 
   override def localInit(config: Configuration): Unit = {
+    super.localInit(config)
     this.config = config
   }
 
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
     val ids = ds.map(_.getId).distinct.toList
-    implicit val sf = SampleFilter(instanceURI = config.instanceURI,
+    val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = ids.map(Datasets.packURI(_)))
 
     val majAttr = schema.majorParameter()
 
     context.sampleStore.attributeValues(SampleClassFilter(sc).filterAll,
-      majAttr).toSet
+      majAttr, sf).toSet
   }
 
-  final private def withDB[T](seriesType: SeriesType, f: SeriesDB[S] => T): T = {
+  final private def withDB[T](seriesType: SeriesType, f: SeriesDB[OTGSeries] => T): T = {
     val db = getDB(seriesType)
     try {
       f(db)
@@ -98,7 +110,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     })
 
     withDB(seriesType, db => {
-      val key: S = new SSeries("", probesRules.head._1, "",
+      val key: OTGSeries = new shared.Series("", probesRules.head._1, "",
           OTGAttribute.ExposureTime, sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
@@ -127,9 +139,9 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   def getSingleSeries(seriesType: SeriesType,
       sc: SampleClass, probe: String, timeDose: String,
-      compound: String): SSeries = {
+      compound: String): shared.Series = {
     withDB(seriesType, db => {
-      val key: S = new SSeries("", probe, "", seriesType.independentAttribute, sc, Array.empty)
+      val key: OTGSeries = new shared.Series("", probe, "", seriesType.independentAttribute, sc, Array.empty)
       db.read(key).head
     })
   }
@@ -137,7 +149,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   def getSeries(
     seriesType: SeriesType,
     sc: SampleClass, probes: Array[String], timeDose: String,
-    compounds: Array[String]): GWTList[SSeries] = {
+    compounds: Array[String]): GWTList[shared.Series] = {
     val validated = context.probeStore.identifiersToProbes(
       mcontext.probeMap, probes, true, true)
     val lookup = Map() ++ context.probeStore.withAttributes(validated).
@@ -146,7 +158,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     val preFilter = withDB(seriesType, db => {
       validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p.identifier, "",
+          db.read(fromShared(new shared.Series("", p.identifier, "",
               seriesType.independentAttribute,
             sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
     })
@@ -163,4 +175,6 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     javaSeries.asGWT
   }
 
+  def expectedIndependentPoints(stype: SeriesType, s: shared.Series): Array[String] =
+    builder(stype).expectedIndependentVariablePoints(fromShared(s)).toArray
 }

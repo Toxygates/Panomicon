@@ -19,34 +19,25 @@
 
 package t.viewer.server.rpc
 
-import java.util.{ List => JList }
-
-import scala.collection.JavaConverters._
+import java.util.{List => JList}
 
 import javax.annotation.Nullable
-import otg.model.sample.OTGAttribute
-import t.BaseConfig
-import t.common.server.ScalaUtils
-import t.common.shared._
-import t.common.shared.sample.Sample
-import t.model.SampleClass
-import t.model.sample.CoreParameter
-import t.platform.Probe
-import t.sparql.Datasets
-import t.sparql.ProbeStore
-import t.sparql.SampleFilter
-import t.sparql.secondary._
-import t.util.PeriodicRefresh
-import t.util.Refreshable
-
-import t.viewer.client.rpc.ProbeService
-import t.viewer.server._
-import t.viewer.server.Conversions._
 import t.common.server.GWTUtils._
-import t.viewer.server.Configuration
-import t.viewer.shared.AppInfo
-import t.viewer.shared.TimeoutException
-import t.viewer.shared.mirna.MirnaSource
+import t.common.shared._
+import t.common.shared.sample.{Group, Sample}
+import t.model.SampleClass
+import t.model.sample.{CoreParameter, OTGAttribute}
+import t.platform.Probe
+import t.platform.mirna.TargetTable
+import t.sparql.secondary._
+import t.sparql.{Datasets, ProbeStore, SampleFilter, SampleStore}
+import t.util.{PeriodicRefresh, Refreshable}
+import t.viewer.client.rpc.ProbeService
+import t.viewer.server.Conversions.{asJavaSample, asSpecies}
+import t.viewer.server.{Configuration, _}
+import t.viewer.shared.{AppInfo, Association, TimeoutException}
+
+import scala.collection.JavaConverters._
 
 object ProbeServiceImpl {
   val APPINFO_KEY = "appInfo"
@@ -55,12 +46,12 @@ object ProbeServiceImpl {
 /**
  * Servlet for querying probe related information.
  */
-abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
+class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   import ProbeServiceImpl._
-  import ScalaUtils._
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
-  private def probeStore: ProbeStore = context.probeStore
+  protected def sampleStore: SampleStore = context.sampleStore
+  protected def probeStore: ProbeStore = context.probeStore
   protected var instanceURI: Option[String] = None
 
   protected var uniprot: Uniprot = _
@@ -68,6 +59,11 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
     new B2RKegg(baseConfig.triplestore.triplestore)
 
   protected var configuration: Configuration = _
+
+  var chembl: ChEMBL = _
+  var drugBank: DrugBank = _
+
+  private lazy val drugTargetResolver = new DrugTargetResolver(sampleStore, chembl, drugBank).lookup
 
   //AppInfo refreshes at most once per day in a given instance of the ProbeServiceImpl.
   //This is to allow updates such as clusterings, annotation info etc to feed through.
@@ -87,11 +83,17 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
     uniprot = new LocalUniprot(triplestore)
     //Preload
     appInfoLoader.latest
+
+    chembl = new ChEMBL()
+    drugBank = new DrugBank()
   }
 
-  protected def reloadAppInfo =
-    new AppInfoLoader(probeStore, configuration, baseConfig,
-      appName).load
+  protected def reloadAppInfo = {
+    val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load
+    r.setPredefinedGroups(predefinedGroups)
+    r
+  }
+
 
   private def sDatasets(userKey: String): Iterable[Dataset] = {
     val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
@@ -179,7 +181,8 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
 
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
-    probesForGoTerm(goTerm, null)
+    val pmap = context.matrix.probeMap
+    probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 
   @throws[TimeoutException]
@@ -249,5 +252,61 @@ abstract class ProbeServiceImpl extends TServiceServlet with ProbeService {
 
       probeStore.probesForPartialSymbol(plat, partialName).map(x =>
         new Pair(x._1, x._2)).toArray
+  }
+
+  @throws[TimeoutException]
+  private def predefinedGroups: Array[Group] = {
+    //we call this from localInit and sessionInfo.sampleFilter
+    //will not be available yet
+
+    val sf = SampleFilter(instanceURI = instanceURI)
+    val r = sampleStore.sampleGroups(sf).filter(!_._2.isEmpty).map(x =>
+      new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
+    r.toArray
+  }
+
+  @throws[TimeoutException]
+  override def goTerms(pattern: String): Array[String] =
+    probeStore.goTerms(pattern).map(_.name).toArray
+
+  //Task: try to remove the sc argument (and the need for sp in orthologs)
+  @throws[TimeoutException]
+  override def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
+                                        homologous: Boolean): Array[String] = {
+    val cmp = Compound.make(compound)
+    val sp = asSpecies(sc).get
+    val proteins = service match {
+      case "CHEMBL" => chembl.targetsFor(cmp)
+      case "DrugBank" => drugBank.targetsFor(cmp)
+      case _ => throw new Exception("Unexpected probe target service request: " + service)
+    }
+    val pbs = if (homologous) {
+      val oproteins = uniprot.orthologsFor(proteins, sp).values.flatten.toSet
+      probeStore.forUniprots(oproteins ++ proteins)
+      //      OTGProbes.probesForEntrezGenes(genes)
+    } else {
+      probeStore.forUniprots(proteins)
+    }
+    val pmap = context.matrix.probeMap // context.probes(filter)
+    pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
+  }
+
+  override def associations(sc: SampleClass, types: Array[AType],
+                            probes: Array[String]): Array[Association] = {
+    implicit val sf = defaultSampleFilter
+
+    val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
+    //    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
+    val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
+    val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
+
+    val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
+    val resolvers = Seq(drugTargetResolver,
+      mirnaRes.lookup)
+    val mainRes =  new AssociationResolver(probeStore, sampleStore,
+      b2rKegg)
+    mirnaRes.limitState = mainRes.limitState
+
+    mainRes.resolve(types, sc, sf, probes, resolvers)
   }
 }

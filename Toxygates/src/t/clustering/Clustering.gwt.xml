@@ -10,7 +10,7 @@ InChLib.
 <module>
 	<inherits name="com.google.gwt.user.User" />
 	<inherits name="com.google.gwt.logging.Logging"/>
-	<inherits name="t.viewer.Viewer"/>
+	<inherits name="t.viewer.Toxygates"/>
 	<source path="client"/>
 	<source path="shared"/>
 </module>

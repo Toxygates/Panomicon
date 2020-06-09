@@ -19,12 +19,12 @@
 
 package t.viewer.client.components;
 
-import java.util.logging.Level;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import t.viewer.client.screen.Screen;
+
+import javax.annotation.Nullable;
+import java.util.logging.Level;
 
 /**
  * Callback that interacts with a screen to display a "please wait" popup.
@@ -89,6 +89,15 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
   
   public T result() {
     return result;
+  }
+
+  /**
+   * Returns true if this is PendingAsyncCallback is the callback for the last
+   * pending request sent by the screen. In other words, , if true, the
+   * "Please wait..." dialog will be hidden after this callback finishes.
+   */
+  public boolean isTheLastCallback() {
+    return screen.numPendingRequests() == 1;
   }
 
   public void handleSuccess(T t) {

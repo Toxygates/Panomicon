@@ -33,11 +33,13 @@ import t.model.sample.AttributeSet
  * @param sampleStore The triplestore to be queried.
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(sampleStore: SampleStore, val attributeSet: AttributeSet,
-                          querySet: Iterable[Attribute] = Seq())
-(implicit sf: SampleFilter) extends Metadata {
+class TriplestoreMetadata(sampleStore: SampleStore,
+                          val attributeSet: AttributeSet,
+                          querySet: Iterable[Attribute] = Seq(),
+                          sf: SampleFilter)
+  extends Metadata {
 
-  override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
+  override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter(), sf)
 
   override def sampleAttributes(s: Sample): Seq[(Attribute, String)] = {
     sampleStore.parameterQuery(s.identifier, querySet).collect( {
@@ -46,7 +48,7 @@ class TriplestoreMetadata(sampleStore: SampleStore, val attributeSet: AttributeS
   }
 
   override def attributeValues(attribute: Attribute): Seq[String] =
-    sampleStore.sampleAttributeQuery(attribute)(sf)().distinct
+    sampleStore.sampleAttributeQuery(attribute, sf)().distinct
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 }
@@ -54,15 +56,17 @@ class TriplestoreMetadata(sampleStore: SampleStore, val attributeSet: AttributeS
 /**
  * Caching triplestore metadata that reads all the data once and stores it.
  */
-class CachingTriplestoreMetadata(os: SampleStore, attributes: AttributeSet,
-                                 querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
-    extends TriplestoreMetadata(os, attributes, querySet) {
+class CachingTriplestoreMetadata(os: SampleStore,
+                                 attributes: AttributeSet,
+                                 querySet: Iterable[Attribute] = Seq(),
+                                 sf: SampleFilter)
+    extends TriplestoreMetadata(os, attributes, querySet, sf) {
 
   val useQuerySet = (querySet.toSeq :+ SampleId).distinct
 
   override lazy val sampleIds: Set[DSampleId] = rawData.keySet
 
-  override lazy val samples = os.sampleAttributeQuery(useQuerySet)(sf)()
+  override lazy val samples = os.sampleAttributeQuery(useQuerySet, sf)()
 
   lazy val rawData = {
     Map() ++ samples.map(r => new DSampleId(r(SampleId)) -> r)

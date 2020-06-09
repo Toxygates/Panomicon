@@ -21,14 +21,14 @@ package t.db.kyotocabinet
 
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
-import t.db.testing.TestData
+import t.db.testing.DBTestData
 import org.junit.runner.RunWith
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 
 @RunWith(classOf[JUnitRunner])
 class KCExtMatrixDBTest extends TTestSuite {
   import KCDBTest._
-  import TestData._
+  import DBTestData._
 
   test("basic") {
     val db = memDBHash

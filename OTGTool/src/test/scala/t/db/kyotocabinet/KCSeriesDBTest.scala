@@ -19,20 +19,18 @@
 
 package t.db.kyotocabinet
 
-import otg._
-import t.TTestSuite
-import t.db.testing.TestData
+import kyotocabinet.DB
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.model.sample.OTGAttribute._
-import kyotocabinet.DB
-import t.model.sample._
+import t.db.testing.DBTestData
+import t.model.sample.OTGAttribute._
+import t.testing.FakeContext
+import t._
 
 @RunWith(classOf[JUnitRunner])
 class KCSeriesDBTest extends TTestSuite {
-
-  import otg.testing.{TestData => OData}
-  implicit var context: otg.testing.FakeContext = _
+  import t.testing.{TestData => OData}
+  implicit var context: FakeContext = _
   def cmap = context.enumMaps("compound_name")
 
   trait seriesTestType {
@@ -60,7 +58,7 @@ class KCSeriesDBTest extends TTestSuite {
     val attributeValue = OData.absentTime
     
     val keyFraction = OData.usedDosePoints.size.toDouble / 
-      TestData.enumValues(DoseLevel.id).size    
+      DBTestData.enumValues(DoseLevel.id).size
     val inputSeries = OData.series
   }
 
@@ -72,14 +70,14 @@ class KCSeriesDBTest extends TTestSuite {
     val attributeValue = OData.absentDose
     
     val keyFraction = OData.usedTimePoints.size.toDouble / 
-      TestData.enumValues(ExposureTime.id).size
+      DBTestData.enumValues(ExposureTime.id).size
     val inputSeries = OData.doseSeries
   }
 
   val testTypes = List(timeSeriesTest, doseSeriesTest)
 
   before {
-    context = new otg.testing.FakeContext()    
+    context = new FakeContext()
     for (testType <- testTypes) {
       val w = testType.writer()
       println(s"Insert ${testType.inputSeries.size} series")
@@ -94,8 +92,8 @@ class KCSeriesDBTest extends TTestSuite {
       val db = testType.nonNormalizingReader()
       val compound = cmap.keys.head
 
-      var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
-      var nExpected = testType.inputSeries.size / cmap.size / TestData.probes.size
+      var key = t.OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      var nExpected = testType.inputSeries.size / cmap.size / DBTestData.probes.size
       val builtKeys = testType.builderType.keysFor(key)      
       (builtKeys.size * testType.keyFraction) should equal(nExpected)
 
@@ -105,9 +103,9 @@ class KCSeriesDBTest extends TTestSuite {
       expect.size should equal(ss.size)
       ss should contain theSameElementsAs(expect)
 
-      val organ = TestData.enumValues(Organ.id).head
-      key = OTGSeries(testType.seriesType, null, organ, null, 13, compound, null, null)
-      nExpected = nExpected / TestData.enumValues(Organ.id).size
+      val organ = DBTestData.enumValues(Organ.id).head
+      key = t.OTGSeries(testType.seriesType, null, organ, null, 13, compound, null, null)
+      nExpected = nExpected / DBTestData.enumValues(Organ.id).size
       expect = testType.inputSeries.filter(s => s.compound == compound && s.probe == 13 && s.organ == organ)
       ss = db.read(key)
       ss.size should equal(nExpected)
@@ -121,7 +119,7 @@ class KCSeriesDBTest extends TTestSuite {
       val testProbe = 100
       val probe = context.probeMap.unpack(testProbe)
 
-      val attribValuePacked = TestData.enumMaps(testType.attribute.id())(testType.attributeValue) 
+      val attribValuePacked = DBTestData.enumMaps(testType.attribute.id())(testType.attributeValue)
 
       val baseSeries = testType.inputSeries.filter(s => s.compound == compound && 
         s.probe == testProbe)
@@ -135,7 +133,7 @@ class KCSeriesDBTest extends TTestSuite {
       for (s <- insertionData) {
         w.addPoints(s)
       }
-      val key = OTGSeries(testType.seriesType, null, null, null, testProbe, compound, null, null)
+      val key = t.OTGSeries(testType.seriesType, null, null, null, testProbe, compound, null, null)
       val db = testType.normalizingReader()
       var ss = db.read(key)
       ss should contain theSameElementsAs (expected)
@@ -152,7 +150,7 @@ class KCSeriesDBTest extends TTestSuite {
         w.removePoints(s)
       }
 
-      var key = OTGSeries(testType.seriesType, null, null, null, 100, null, null, null)
+      var key = t.OTGSeries(testType.seriesType, null, null, null, 100, null, null, null)
       var expect = testType.inputSeries.filter(s => s.compound != compound && s.probe == 100)
       var ss = w.read(key)
       ss should contain theSameElementsAs (expect)
@@ -163,7 +161,7 @@ class KCSeriesDBTest extends TTestSuite {
     test("Point deletion - " + testType.name) { 
       val compound = cmap.keys.head
       val testProbe = 100
-      val attribValuePacked = TestData.enumMaps(testType.attribute.id())(testType.attributeValue)
+      val attribValuePacked = DBTestData.enumMaps(testType.attribute.id())(testType.attributeValue)
 
       var del = testType.inputSeries.filter(s => s.compound == compound && 
         s.probe == testProbe)
@@ -172,7 +170,7 @@ class KCSeriesDBTest extends TTestSuite {
         w.removePoints(s.copy(points = s.points.filter(_.code == attribValuePacked)))
       }
 
-      var key = OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
+      var key = t.OTGSeries(testType.seriesType, null, null, null, 100, compound, null, null)
       var expect = testType.inputSeries.filter(s => s.compound == compound && 
         s.probe == testProbe).map(s =>
           s.copy(points = s.points.filter(_.code != attribValuePacked)))
@@ -196,7 +194,7 @@ class KCSeriesDBTest extends TTestSuite {
       (s.compound, s.organ, s.organism, s.probe, s.repeat, s.testType));
       t <- OData.usedTimePoints) {
       val dpoints = ss.map(s => s.points.filter(_.code == t._2).
-        head.copy(code = TestData.enumMaps(DoseLevel.id)(s.doseOrTime)))
+        head.copy(code = DBTestData.enumMaps(DoseLevel.id)(s.doseOrTime)))
       val dseries = ss.head.copy(seriesType = DoseSeries, points = dpoints,
         doseOrTime = t._1)
       dwriter.addPoints(dseries)      

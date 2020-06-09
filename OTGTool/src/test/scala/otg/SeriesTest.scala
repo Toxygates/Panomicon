@@ -20,18 +20,16 @@
 package otg
 
 import org.junit.runner.RunWith
-
-import t.TTestSuite
-import t.db._
-import t.db.testing.TestData
-import t.model.shared.SampleClassHelper._
 import org.scalatest.junit.JUnitRunner
+import t.db.testing.DBTestData
+import t.model.shared.SampleClassHelper._
+import t.testing.FakeContext
+import t._
 
 @RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
-
-  import otg.testing.{ TestData => OData }
-  implicit val context = new otg.testing.FakeContext()
+  import t.testing.{TestData => OData}
+  implicit val context = new FakeContext()
   val cmap = context.enumMaps("compound_name")
 
   //Note: much code shared with KCSeriesDBTest - could factor out
@@ -103,12 +101,12 @@ class SeriesTest extends TTestSuite {
           expectedPointCodes.map(indepVarMap(_)))
       }
 
-      for (s <- TestData.samples) {
+      for (s <- DBTestData.samples) {
         val x = tt.builderType.buildEmpty(s, meta)
         ss.exists(_.classCode == x.classCode) should be(true)
       }
 
-      val xs = TestData.samples.map(x => tt.builderType.buildEmpty(x, meta))
+      val xs = DBTestData.samples.map(x => tt.builderType.buildEmpty(x, meta))
       for (s <- ss) {
         xs.exists(_.classCode == s.classCode) should be(true)
       }

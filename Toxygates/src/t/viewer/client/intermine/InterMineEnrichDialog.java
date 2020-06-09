@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.client.components.ItemSelector;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.shared.intermine.*;
 
 public class InterMineEnrichDialog extends InterMineSyncDialog {

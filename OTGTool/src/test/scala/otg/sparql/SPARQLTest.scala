@@ -17,25 +17,22 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.sparql
+package t.sparql
 
-import t.TTestSuite
-import scala.collection.JavaConversions._
-import t.platform.Species._
-import t.platform.Probe
-import t.sparql._
-import t.sparql.Triplestore
-import t.sparql.secondary._
-import t.testing.TestConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.TTestSuite
+import t.platform.Probe
+import t.platform.Species._
+import t.sparql.secondary._
+import t.testing.TestConfig
 
 @RunWith(classOf[JUnitRunner])
 class SPARQLTest extends TTestSuite {
 
   val config = TestConfig.config
 
-  val affyProbes = new OTGProbeStore(config.triplestore)
+  val affyProbes = new ProbeStore(config.triplestore)
   val homologene = new B2RHomologene
 //  val iproclass = new B2RIProClass
   val kegg = new B2RKegg(config.triplestore.triplestore)

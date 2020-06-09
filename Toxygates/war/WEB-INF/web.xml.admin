@@ -43,42 +43,6 @@
 	
   <!-- Servlets -->
 
-	<servlet>
-		<servlet-name>sparqlServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.SparqlServiceImpl</servlet-class>
-	</servlet>
-
-	<servlet>
-		<servlet-name>seriesServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.SeriesServiceImpl</servlet-class>
-	</servlet>
-
-	<servlet>
-		<servlet-name>matrixServlet</servlet-name>
-		<servlet-class>otg.viewer.server.rpc.MatrixServiceImpl</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>sparqlServlet</servlet-name>
-		<url-pattern>/toxygates/sparql</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>seriesServlet</servlet-name>
-		<url-pattern>/toxygates/series</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>matrixServlet</servlet-name>
-    	<url-pattern>/toxygates/matrix</url-pattern>
-  	</servlet-mapping>
-  	
-  	<servlet>
-		<servlet-name>targetmineServlet</servlet-name>
-		<servlet-class>otg.viewer.server.targetmine.TargetmineServiceImpl</servlet-class>
-	</servlet>
-
-  
   	<!-- For AdminGUI -->
 	<servlet>
 		<servlet-name>uploadServlet</servlet-name>
@@ -92,11 +56,11 @@
 
 	<servlet>
 		<servlet-name>maintenanceServlet</servlet-name>
-		<servlet-class>otg.admin.server.MaintenanceServiceImpl</servlet-class>
+		<servlet-class>t.admin.server.MaintenanceServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>maintenanceServlet</servlet-name>
-		<url-pattern>/OTGAdmin/maintenance</url-pattern>
+		<url-pattern>/AdminConsole/maintenance</url-pattern>
 	</servlet-mapping>
   
   

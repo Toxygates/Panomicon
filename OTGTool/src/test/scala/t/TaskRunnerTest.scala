@@ -26,7 +26,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.concurrent.Promise
 import scala.util.Random
-import scala.util.Try
+import t.manager.{Task, TaskRunner, AtomicTask}
 
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {

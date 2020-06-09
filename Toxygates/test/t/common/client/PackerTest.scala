@@ -20,11 +20,10 @@
 package t.common.client
 
 import org.scalatest._
-import otg.model.sample.AttributeSet
 import t.model.SampleClass
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.model.sample.OTGAttribute
+import t.model.sample.{OTGAttribute, OTGAttributeSet}
 import t.viewer.client.storage.Packer
 
 /**
@@ -32,7 +31,7 @@ import t.viewer.client.storage.Packer
  */
 @RunWith(classOf[JUnitRunner])
 class PackerTest extends FunSuite with Matchers {
-  val attributes = AttributeSet.getDefault
+  val attributes = OTGAttributeSet.getDefault
 
 //  test("unpackSampleClass gracefully handles an odd number of input tokens") {
 //    val input = "test_type,,,SAT,,,sin_rep_type"

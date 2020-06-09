@@ -21,15 +21,13 @@ package t.platform
 
 import t.db.file.TSVMetadata
 import t.db.file.MapMetadata
-import t.db.Metadata
-import t.db.Sample
-import t.BaseConfig
-import org.apache.commons.math3.stat.StatUtils.variance
-import org.apache.commons.math3.stat.StatUtils.mean
+import t.db.{Metadata, Sample}
+import t.{BaseConfig, Factory}
+import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
-import t.model.sample.Attribute
-import t.model.sample.BasicAttribute
-import otg.model.sample.OTGAttribute._
+import t.model.sample.{Attribute, OTGAttributeSet, VarianceSet}
+import t.model.sample.OTGAttribute._
+
 import scala.collection.JavaConverters._
 
 /**
@@ -88,17 +86,26 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
 /**
  * A VarianceSet that retrieves attribute values from a SampleSet
  */
-class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends t.db.VarianceSet {
+class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends VarianceSet {
   val paramVals = samples.map(Map() ++ sampleSet.sampleAttributes(_))
 
-  def varAndMean(param: Attribute): Option[(Double, Double)] = {
-    val vs = paramVals.flatMap(_.get(param))
-    val nvs = vs.flatMap(BioParameter.tryParseDouble)
-
+  def standardDeviation(attribute: Attribute) = {
+    val nvs = paramVals.flatMap(_.get(attribute)).
+      flatMap(BioParameter.tryParseDouble)
     if (nvs.size < 2) {
-      None
+      null
     } else {
-      Some((variance(nvs.toArray), mean(nvs.toArray)))
+      Math.sqrt(StatUtils.variance(nvs.toArray))
+    }
+  }
+
+  def mean(attribute: Attribute): java.lang.Double = {
+    val nvs = paramVals.flatMap(_.get(attribute)).
+      flatMap(BioParameter.tryParseDouble)
+    if (nvs.size < 2) {
+      null
+    } else {
+      StatUtils.mean(nvs.toArray)
     }
   }
 }
@@ -112,8 +119,8 @@ object BioParameter {
     }
 
   def main(args: Array[String]) {
-     val f = new otg.OTGFactory
-     val attrs = otg.model.sample.AttributeSet.getDefault
+     val f = new Factory
+     val attrs = OTGAttributeSet.getDefault
      val data = TSVMetadata.apply(f, args(0), attrs)
      var out = Map[Attribute, Seq[String]]()
 
@@ -132,8 +139,8 @@ object BioParameter {
 
         val rawdata = rawValues.map(_.find( _._1 == attr).get).map(x => tryParseDouble(x._2))
         if (!rawdata.isEmpty) {
-          val v = variance(rawdata.flatten.toArray)
-          val m = mean(rawdata.flatten.toArray)
+          val v = StatUtils.variance(rawdata.flatten.toArray)
+          val m = StatUtils.mean(rawdata.flatten.toArray)
           val sd = Math.sqrt(v)
           val upper = m + 2 * sd
           val lower = m - 2 * sd

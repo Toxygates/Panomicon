@@ -77,5 +77,15 @@
   <target name="compile" depends="classfiles">
   </target>
 
+  <target name="clean">
+    <delete failonerror="false" quiet="false" includeemptydirs="true">
+      <fileset dir="${build.dir}">
+        <include name="**" />
+        <exclude name="log4j2.xml" />
+      </fileset>
+    </delete>
+    <delete dir="${testbuild.dir}" failonerror="false" />
+  </target>
+  
 </project>
 

@@ -19,30 +19,23 @@
 
 package t.admin.server
 
-import scala.sys.process.Process
-import t.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat, PlatformManager, Task, TaskRunner}
+import javax.servlet.http.HttpSession
 import t.admin.client.MaintenanceService
 import t.admin.shared.PlatformType
 import t.common.server.maintenance.BatchOpsImpl
-import t.common.shared.Dataset
-import t.common.shared.ManagedItem
-import t.common.shared.Platform
-import t.common.shared.maintenance._
-import t.common.shared.maintenance.Instance
 import t.common.shared.maintenance.MaintenanceConstants._
-import t.sparql.Datasets
-import t.sparql.Instances
-import t.sparql.Platforms
-import t.sparql.ProbeStore
-import t.sparql.TRDF
-import t.util.TempFiles
-import t.viewer.server.Configuration
-import t.viewer.server.SharedDatasets
-import t.viewer.server.rpc.TServiceServlet
-import javax.servlet.http.HttpSession
+import t.common.shared.maintenance.{Instance, _}
+import t.common.shared.{Dataset, ManagedItem, Platform}
+import t.manager.{PlatformManager, Task}
+import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat}
+import t.sparql.{Datasets, Instances, Platforms, ProbeStore, TRDF}
+import t.viewer.server.rpc.OTGServiceServlet
+import t.viewer.server.{Configuration, SharedDatasets}
 
-abstract class MaintenanceServiceImpl extends TServiceServlet
-with BatchOpsImpl with MaintenanceService {
+import scala.sys.process.Process
+
+class MaintenanceServiceImpl extends OTGServiceServlet
+  with BatchOpsImpl with MaintenanceService {
 
   private var homeDir: String = _
 

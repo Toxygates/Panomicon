@@ -19,9 +19,16 @@
 
 package t
 
-import t.sparql.SampleStore
-import t.sparql.ProbeStore
-import t.db.MatrixContext
+import t.sparql.{ProbeStore, SampleStore}
+
+object Context {
+  val factory = new Factory()
+
+  def apply(bc: BaseConfig) =
+    new Context(bc, factory,
+      factory.probes(bc.triplestore), factory.samples(bc),
+      new OTGMatrixContext(bc))
+}
 
 /**
  * Top level configuration object for a T framework
@@ -31,7 +38,7 @@ class Context(val config: BaseConfig,
               val factory: Factory,
               val probeStore: ProbeStore,
               val sampleStore: SampleStore,
-              val matrix: MatrixContext) {
+              val matrix: OTGMatrixContext) {
 
   /*
    * Note: this may not be the best location for the auxSortMap

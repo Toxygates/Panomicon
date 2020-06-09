@@ -19,21 +19,24 @@
 
 package t.viewer.server.rpc
 
+import java.util
 import java.util.{List => JList}
 
 import t.common.server.GWTUtils._
 import t.common.shared._
 import t.common.shared.sample._
 import t.common.shared.sample.search.MatchCondition
+import t.db
+import t.db.SimpleVarianceSet
 import t.model.SampleClass
-import t.model.sample.{Attribute, SampleLike}
+import t.model.sample.{Attribute, CoreParameter, SampleLike}
 import t.sparql._
 import t.sparql.secondary._
 import t.viewer.client.rpc._
 import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
-import t.viewer.server._
-import t.viewer.shared._
+import t.viewer.server.{rpc, _}
+import t.viewer.shared.{Pathology, _}
 
 import scala.collection.JavaConverters._
 
@@ -44,8 +47,8 @@ class SampleState(instanceURI: Option[String]) {
 /**
  * Servlet for querying sample related information.
  */
-abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
-  SampleService {
+class SampleServiceImpl extends StatefulServlet[SampleState] with
+  SampleService with OTGServiceServlet {
 
   type DataColumn = t.common.shared.sample.DataColumn[Sample]
 
@@ -86,8 +89,6 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     s
   }
 
-  protected implicit def sf: SampleFilter = getState.sampleFilter
-
   /**
    * Generate a new user key, to be used when the client does not already have one.
    */
@@ -110,7 +111,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     println("Choose datasets: " + ds.map(_.getId).mkString(" "))
     getState.sampleFilter = sampleFilterFor(ds, Some(getState.sampleFilter))
 
-    sampleStore.sampleClasses.map(x => new SampleClass(x.asGWT)).toArray
+    sampleStore.sampleClasses(getState.sampleFilter).map(x => new SampleClass(x.asGWT)).toArray
   }
 
   @throws[TimeoutException]
@@ -119,32 +120,39 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
     //Get the parameters without changing the persistent datasets in getState
     val filter = sampleFilterFor(ds, Some(getState.sampleFilter))
     val attr = baseConfig.attributes.byId(parameter)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr)(filter).
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr, filter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     val attr = baseConfig.attributes.byId(parameter)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr).
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr, getState.sampleFilter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   private def samplesById(ids: Array[String]) =
-    sampleStore.samples(SampleClassFilter(), "id", ids).map(asJavaSample(_)).toArray
+    sampleStore.samples(SampleClassFilter(), "id", ids, getState.sampleFilter).map(asJavaSample(_)).toArray
 
   def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
     ids.asScala.map(samplesById(_)).asGWT
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val samples = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+    val samples = sampleStore.sampleQuery(SampleClassFilter(sc), getState.sampleFilter)()
     samples.map(asJavaSample).toArray
   }
 
+  @throws[TimeoutException]
+  def samplesWithAttributes(sc: SampleClass, importantOnly: Boolean = false
+                           ): Array[Sample] = {
+    val matchingSamples = samples(sc)
+    attributeValuesForSamples(matchingSamples, importantOnly)
+  }
+
   private def samples(sc: SampleClass, param: String,
-      paramValues: Array[String]) =
-    sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_))
+                      paramValues: Array[String]) =
+    sampleStore.samples(SampleClassFilter(sc), param, paramValues, getState.sampleFilter).map(asJavaSample(_))
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
@@ -154,7 +162,8 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   @throws[TimeoutException]
   def units(sc: SampleClass,
       param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
-      new UnitStore(schema, sampleStore).units(sc, param, paramValues)
+      new UnitStore(schema, sampleStore).units(sc, param, paramValues,
+        getState.sampleFilter)
 
   def units(scs: Array[SampleClass], param: String,
       paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
@@ -162,22 +171,57 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
   }
 
   def attributesForSamples(sc: SampleClass): Array[Attribute] = {
-    sampleStore.attributesForSamples(SampleClassFilter(sc))(sf)().toArray
+    sampleStore.attributesForSamples(SampleClassFilter(sc),
+      getState.sampleFilter)()
+      .sortBy(attribute => attribute.title())
+      .toArray
   }
 
   @throws[TimeoutException]
-  def annotations(sample: Sample): Annotation = {
-    val params = sampleStore.parameterQuery(sample.id)
-    annotationStore.fromAttributes(sample, params)
+  def parameterValuesForSamples(samples: Array[Sample],
+                                attributes: Array[Attribute]
+                               ): Array[Sample] = {
+    val queryResult: Seq[db.Sample] = sampleStore.sampleAttributeValues(samples.map(_.id), attributes)
+    queryResult.map(asJavaSample(_)).toArray
   }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] =
-    annotationStore.forSamples(sampleStore, samples, attributes)
+  def attributeValuesAndVariance(samples: Array[Sample],
+                                 importantOnly: Boolean = false
+                                ): Pair[Array[Sample], util.Map[String, PrecomputedVarianceSet]] = {
+    val mp = schema.mediumParameter()
+    val numericalAttributes = baseConfig.attributes.getAll.asScala.filter(_.isNumerical).toArray
+
+    val samplesWithAttributes = attributeValuesForSamples(samples, importantOnly)
+    val groupedSamples = samplesWithAttributes.groupBy(_.get(CoreParameter.ControlGroup))
+
+    val varianceSetMap: Map[String, PrecomputedVarianceSet] = Map() ++ (for {
+      (_, samples) <- groupedSamples
+      controlSamples = samples.filter(s => schema.isControlValue(s.get(mp)))
+      varianceSet = new PrecomputedVarianceSet(new SimpleVarianceSet(controlSamples),
+                                               numericalAttributes)
+      sample <- samples
+    } yield sample.id -> varianceSet)
+    new Pair(samplesWithAttributes,
+             new util.HashMap[String, PrecomputedVarianceSet](varianceSetMap.asJava))
+  }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], importantOnly: Boolean = false): Array[Annotation] =
-    annotationStore.forSamples(sampleStore, samples, importantOnly)
+  def attributeValuesForSamples(samples: Array[Sample],
+                                 importantOnly: Boolean = false
+                                ): Array[Sample] = {
+    val keys = if (importantOnly) baseConfig.attributes.getPreviewDisplay.asScala.toSeq
+      else baseConfig.attributes.getAll.asScala.toSeq
+
+    samples.map(sample => {
+      val ps: Seq[(Attribute, Option[String])] = sampleStore.parameterQuery(sample.id, keys)
+      val attributeValueMap = (Map() ++ (for {
+        (attribute, valueOption) <- ps
+        value <- valueOption
+      } yield (attribute, value))).asJava
+      new Sample(sample.id, new SampleClass(attributeValueMap))
+    })
+  }
 
   @throws[TimeoutException]
   def prepareAnnotationCSVDownload(samples: Array[Sample]): String =
@@ -188,7 +232,7 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       RequestResult[Pair[Sample, Pair[Unit, Unit]]] = {
 
     val sampleSearch = t.common.server.sample.search.IndividualSearch(cond,
-        sc, sampleStore, schema, baseConfig.attributes)
+        sc, sampleStore, schema, baseConfig.attributes, getState.sampleFilter)
     val pairs = sampleSearch.pairedResults.take(maxResults).map {
       case (sample, (treated, control)) =>
         new Pair(sample, new Pair(treated, control))
@@ -200,7 +244,8 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       RequestResult[Pair[Unit, Unit]] = {
 
     val unitSearch = t.common.server.sample.search.UnitSearch(cond,
-        sc, sampleStore, schema, baseConfig.attributes)
+      sc, sampleStore, schema, baseConfig.attributes,
+      getState.sampleFilter)
     val pairs = unitSearch.pairedResults.take(maxResults).map {
       case (treated, control) =>
         new Pair(treated, control)
@@ -226,4 +271,8 @@ abstract class SampleServiceImpl extends StatefulServlet[SampleState] with
       CSVHelper.writeCSV("toxygates", configuration.csvDirectory, csvFile)
   }
 
+  @throws[TimeoutException]
+  override def pathologies(column: Array[Sample]): Array[Pathology] =
+    column.flatMap(x => sampleStore.pathologies(x.id)).map(
+      rpc.Conversions.asJava(_))
 }

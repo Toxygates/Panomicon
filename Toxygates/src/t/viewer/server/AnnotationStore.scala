@@ -19,151 +19,20 @@
 
 package t.viewer.server
 
-import java.lang.{ Double => JDouble }
-
-import scala.collection.JavaConverters._
-import scala.language.implicitConversions
-
 import t.BaseConfig
 import t.common.shared.DataSchema
-import t.common.shared.sample.Annotation
-import t.common.shared.sample.NumericalBioParamValue
 import t.common.shared.sample.Sample
-import t.common.shared.sample.StringBioParamValue
-import t.db.VarianceSet
-import t.model.sample.Attribute
-import t.model.sample.CoreParameter
 import t.platform.BioParameter
-import t.platform.SSVarianceSet
 import t.sparql.SampleStore
-import t.viewer.server.Conversions._
-import t.viewer.server.Conversions.asScalaSample
-import t.common.shared.GWTTypes
+
+import scala.language.implicitConversions
 
 class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
-
-  import GWTTypes._
 
   //Note: currently this cannot be updated without restarting the application
   lazy val bioParameters = {
     val pfs = new t.sparql.Platforms(baseConfig)
     pfs.bioParameters
-  }
-
-  /**
-   * Fetch annotations for given samples. Does not compute any bounds for
-   * any parameters. Annotations will only be returned for samples that
-   * have values for *all* of the attributes selected.
-   * @param samples the samples for which to fetch annotations
-   * @param attributes the attributes to fetch
-   */
-  def forSamples(sampleStore: SampleStore, samples: Iterable[Sample],
-                 attributes: Iterable[Attribute]): Array[Annotation] = {
-    val queryResult = sampleStore.sampleAttributeValues(samples.map(_.id),
-        attributes)
-    samples.map(s => fromAttributes(None, s, queryResult(s.id))).toArray
-  }
-
-  /**
-   * For given samples, which may be in different control groups, fetch
-   * annotations, using the control samples in the provided samples to
-   * compute bounds for values if appropriate.
-   * @param sampleStore data source
-   * @param samples the samples for which we fetch annotations
-   */
-   //Task: get these from schema, etc.
-  def forSamples(sampleStore: SampleStore, samples: Iterable[Sample],
-                 importantOnly: Boolean = false): Array[Annotation] = {
-
-    val cgs = samples.groupBy(_.get(CoreParameter.ControlGroup))
-
-    val rs = for (
-      (cgroup, ss) <- cgs;
-      results = forSamplesSingleGroup(sampleStore, ss, importantOnly)
-    ) yield results
-
-    rs.flatten.toArray
-  }
-
-  /**
-   * Fetch annotations for samples from the same control group, using
-   * provided control samples to generate bounds for variable, if applicable
-   */
-  private def forSamplesSingleGroup(sampleStore: SampleStore,
-                                    samples: Iterable[Sample], importantOnly: Boolean) = {
-
-    val (cg, keys) = if (importantOnly) {
-      (None,
-        baseConfig.attributes.getPreviewDisplay.asScala.toSeq)
-    } else {
-      val mp = schema.mediumParameter()
-      val controls = samples.filter(s => schema.isControlValue(s.get(mp)))
-      if (controls.isEmpty) {
-        (None,
-          bioParameters.sampleParameters)
-      } else {
-        (Some(new SSVarianceSet(sampleStore, controls.map(asScalaSample))),
-          bioParameters.sampleParameters)
-      }
-    }
-    samples.map(x => {
-      val ps = sampleStore.parameterQuery(x.id, keys)
-      fromAttributes(cg, x, ps)
-    })
-  }
-
-  /**
-   * Construct a shared API bio parameter object (numerical)
-   */
-  private def numericalAsShared(bp: BioParameter, lower: JDouble,
-      upper: JDouble, value: Option[String]) =
-    new NumericalBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
-        lower, upper, value.getOrElse(null))
-
-  /**
-   * Construct a shared API bio parameter object (string)
-   */
-  private def stringAsShared(bp: BioParameter, value: Option[String]) =
-    new StringBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
-        value.getOrElse(null))
-
-  /**
-   * Construct an Annotation from sample attributes
-   */
-  def fromAttributes(sample: Sample,
-    ps: Iterable[(Attribute, Option[String])]): Annotation = {
-    fromAttributes(None, sample, ps)
-  }
-
-  /**
-   * Construct an Annotation from sample attributes
-   * @param cg control group; used to compute upper/lower bounds for parameters
-   */
-  private def fromAttributes(cg: Option[VarianceSet], sample: Sample,
-    attribs: Iterable[(Attribute, Option[String])]): Annotation = {
-
-    def asJDouble(d: Option[Double]) =
-      d.map(new java.lang.Double(_)).getOrElse(null)
-
-    def bioParamValue(bp: BioParameter, dispVal: Option[String]) = {
-      bp.kind match {
-        case "numerical" =>
-          val t = sample.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.attribute, 1))
-          val ub = cg.flatMap(_.upperBound(bp.attribute, 1))
-
-          numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
-        case _ => stringAsShared(bp, dispVal)
-      }
-    }
-
-    val params = for {
-      x <- attribs.toSeq
-      bp <- bioParameters.get(x._1)
-      bpv = bioParamValue(bp, x._2)
-    } yield bpv
-
-    new Annotation(sample.id, mkList(params.asJava))
   }
 
   //Task: use ControlGroup to calculate bounds here too

@@ -29,7 +29,7 @@ import t.viewer.server.matrix.ExprMatrix
  * @author johan
  */
 object TestData {
-  import t.db.testing.{TestData => TTestData}
+  import t.db.testing.{DBTestData => TTestData}
   val dataSchema = new TestSchema()
 
   def exprMatrix: ExprMatrix = exprMatrix(TTestData.makeTestData(true))

@@ -17,27 +17,22 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.sparql
+package t.sparql
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import otg.OTGMatrixContext
-import t.platform.Species.Rat
-import t.TTestSuite
+import t.model.sample.OTGAttribute._
 import t.model.shared.SampleClassHelper
-import t.sparql._
 import t.testing.TestConfig
-import otg.model.sample.OTGAttribute._
-import otg.TimeSeries
-import otg.DoseSeries
+import t.{DoseSeries, OTGMatrixContext, TTestSuite, TimeSeries}
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config
   implicit val context = new OTGMatrixContext(config)
-  val samples = new OTGSampleStore(config)
+  val samples = new SampleStore(config)
 
   after {
     samples.close
@@ -54,33 +49,33 @@ class OTGSamplesTest extends TTestSuite {
   implicit val sampleFilter = SampleFilter()
 
   test("organs") {
-    val sf = SampleClassFilter(
+    val sampleClassFilter = SampleClassFilter(
         SampleClassHelper(Map(
       Organ -> "Kidney",
       Repeat -> "Repeat") ++ baseConstraints)
       ).filterAll
 
-    val os = samples.sampleAttributeQuery(Organ).
-      constrain(sf)()
+    val os = samples.sampleAttributeQuery(Organ, sampleFilter).
+      constrain(sampleClassFilter)()
 
     os.toSet should (contain("Kidney"))
   }
 
   test("dose levels") {
-    val sf = SampleClassFilter(fullConstraints).filterAll
+    val sampleClassFilter = SampleClassFilter(fullConstraints).filterAll
 
-    val ds = samples.sampleAttributeQuery(DoseLevel).
-      constrain(sf)()
+    val ds = samples.sampleAttributeQuery(DoseLevel, sampleFilter).
+      constrain(sampleClassFilter)()
 
     //Constants like these should probably be moved to Attribute/AttributeSet
     assert(ds.toSet === Set("Control") ++ DoseSeries.allDoses)
   }
 
   test("times") {
-    val sf = SampleClassFilter(fullConstraints).filterAll
+    val sampleClassFilter = SampleClassFilter(fullConstraints).filterAll
 
-    val ts = samples.sampleAttributeQuery(ExposureTime).
-      constrain(sf)()
+    val ts = samples.sampleAttributeQuery(ExposureTime, sampleFilter).
+      constrain(sampleClassFilter)()
 
     assert(TimeSeries.singleVivoExpected.toSet subsetOf ts.toSet)
   }

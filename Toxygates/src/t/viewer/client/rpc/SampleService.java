@@ -19,20 +19,24 @@
 
 package t.viewer.client.rpc;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.viewer.shared.Pathology;
+import t.common.shared.Dataset;
+import t.common.shared.Pair;
+import t.common.shared.RequestResult;
+import t.common.shared.sample.PrecomputedVarianceSet;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A service that provides information about samples, datasets, and 
@@ -91,6 +95,16 @@ public interface SampleService extends RemoteService {
   Sample[] samples(SampleClass sc) throws TimeoutException;
 
   /**
+   * Obtain all samples matching the constraints in a sample class
+   * @param sc the sample class to select samples from
+   * @param importantOnly if true, only attributes for the preview display
+   *                      will be fetched. Otherwise, all attributes will be
+   *                      fetched
+   * @return
+   */
+  Sample[] samplesWithAttributes(SampleClass sc, boolean importantOnly);
+
+  /**
    * Obtain samples for the given sample classes, with a filter on one parameter, populated with the
    * standard attributes.
    * 
@@ -126,35 +140,34 @@ public interface SampleService extends RemoteService {
   Pair<Unit, Unit>[] units(SampleClass[] scs, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
+  /**
+   * Find all attributes for which at least one of the samples matching the sample
+   * class filter has a value.
+   */
   Attribute[] attributesForSamples(SampleClass sc) throws TimeoutException;
 
   /**
-   * Annotations are experiment-associated information such as dose, time, biochemical data etc.
-   * This method obtains them for a single sample.
+   * Fetch parameter values for the given samples
+   * @param samples the samples for which to fetch values
+   * @param attributes the parameters to fetch
+   * @return an array of Sample objects populated with attribute values
+   * @throws TimeoutException
    */
-  Annotation annotations(Sample sample) throws TimeoutException;
+  Sample[] parameterValuesForSamples(Sample[] samples, Attribute[] attributes) throws TimeoutException;
 
   /**
-   * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
-   * values for all of the specified attributes will be returned.
-   * 
-   * @param samples
-   * @param attributes the attributes to fetch
-   * @return
+   * Fetch parameter values for the given samples, as well as variance information
+   * @param samples the samples for which to fetch parameter values
+   * @param importantOnly if true, only the parameters for the preview
+   *                      display will be fetched. Otherwise, all attributes
+   *                      will be fetched.
+   * @return a Pair, where the first element is an array of samples with
+   * attribute values, and the second element is a Map from sample IDs to
+   * PrecomputedVarianceSets
+   * @throws TimeoutException
    */
-  Annotation[] annotations(Sample[] samples, Attribute[] attributes) throws TimeoutException;
-
-  /**
-   * Obtain "annotations" (currently attribute values) for a set of samples. Only samples that have
-   * values for all of the specified attributes will be returned.
-   *
-   * @param samples the samples to obtain annotations for
-   * @param importantOnly If true, a smaller set of core annotations will be obtained. If false, all
-   *        annotations will be obtained.
-   * @return
-   */
-  Annotation[] annotations(Sample[] samples, boolean importantOnly)
-      throws TimeoutException;
+  Pair<Sample[], Map<String, PrecomputedVarianceSet>> attributeValuesAndVariance(Sample[] samples, boolean importantOnly)
+    throws TimeoutException;
 
   /**
    * Prepare a CSV file with annotation information for download.
@@ -199,4 +212,9 @@ public interface SampleService extends RemoteService {
    * @throws TimeoutException
    */
   String prepareCSVDownload(SampleLike[] samples, Attribute[] attributes) throws TimeoutException;
+
+  /**
+   * Obtain pathologies for a set of samples
+   */
+  Pathology[] pathologies(Sample[] samples) throws TimeoutException;
 }

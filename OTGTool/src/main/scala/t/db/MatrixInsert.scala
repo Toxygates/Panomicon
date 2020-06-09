@@ -19,8 +19,8 @@
 
 package t.db
 
-import t.AtomicTask
-import t.Task
+import t.manager.AtomicTask
+import t.manager.Task
 
 /*
  * Note: this is currently only used in tests.

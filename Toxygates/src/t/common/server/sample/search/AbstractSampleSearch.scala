@@ -21,8 +21,6 @@ package t.common.server.sample.search
 
 import scala.collection.JavaConverters._
 import scala.collection.Seq
-
-import otg.viewer.shared.OTGSchema
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.AndMatch
@@ -30,17 +28,14 @@ import t.common.shared.sample.search.AtomicMatch
 import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
 import t.common.shared.sample.search.OrMatch
-import t.db.VarianceSet
 import t.model.SampleClass
-import t.model.sample.Attribute
-import t.model.sample.AttributeSet
-import t.model.sample.CoreParameter
-import t.model.sample.SampleLike
+import t.model.sample.{Attribute, AttributeSet, CoreParameter, SampleLike, VarianceSet}
 import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.SampleStore
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.UnitsHelper
+import t.viewer.shared.OTGSchema
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -54,14 +49,14 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
                            sampleFilter: SampleFilter, sampleStore: SampleStore, schema: DataSchema,
                            attributes: AttributeSet): Seq[Sample] = {
 
-    sampleStore.sampleAttributeQuery(condition.neededParameters().asScala ++
-        attributes.getUnitLevel().asScala ++ Seq(CoreParameter.ControlGroup),
-        SampleClassFilter(sampleClass))(sampleFilter)().map(asJavaSample)
+    val queryAttributes = condition.neededParameters().asScala ++
+      attributes.getUnitLevel().asScala ++ Seq(CoreParameter.ControlGroup)
+    sampleStore.sampleAttributeQuery(queryAttributes, sampleFilter, SampleClassFilter(sampleClass))().map(asJavaSample)
   }
 
-  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: SampleStore,
-            schema: DataSchema, attributes: AttributeSet)
-      (implicit sampleFilter: SampleFilter): SS = {
+  def apply(condition: MatchCondition, sampleClass: SampleClass,
+            sampleStore: SampleStore, schema: DataSchema,
+            attributes: AttributeSet, sampleFilter: SampleFilter): SS = {
     val samples = rawSamples(condition, sampleClass, sampleFilter,
         sampleStore, schema, attributes)
     val unitHelper = new UnitsHelper(schema)
@@ -73,7 +68,7 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
 }
 
 abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
-    varianceSets: Map[String, VarianceSet], samples: Iterable[ST]) {
+                                                      varianceSets: Map[String, VarianceSet], samples: Iterable[ST]) {
 
   protected def zTestSampleSize(s: ST): Int
   protected def sortObject(s: ST): (String, Int, Int)
@@ -116,14 +111,14 @@ abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
   private def paramIsHigh(sample: ST, attribute: Attribute): Option[Boolean] = {
     paramComparison(sample, attribute,
       x => varianceSets.get(x.get(CoreParameter.SampleId)).
-          flatMap(_.upperBound(attribute, zTestSampleSize(sample))),
+          flatMap(x => Option(x.upperBound(attribute, zTestSampleSize(sample)))),
       _ > _)
   }
 
   private def paramIsLow(sample: ST, attribute: Attribute): Option[Boolean] = {
     paramComparison(sample, attribute,
       x => varianceSets.get(x.get(CoreParameter.SampleId)).
-          flatMap(_.lowerBound(attribute, zTestSampleSize(sample))),
+          flatMap(x => Option(x.lowerBound(attribute, zTestSampleSize(sample)))),
       _ < _)
   }
 

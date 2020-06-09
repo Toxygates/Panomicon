@@ -19,30 +19,37 @@
 
 package t.viewer.client.table;
 
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.view.client.*;
-
-import otg.viewer.client.components.OTGScreen;
-import otg.viewer.client.screen.data.FilterEditor;
-import t.common.shared.*;
+import com.google.gwt.view.client.AsyncDataProvider;
+import com.google.gwt.view.client.HasData;
+import com.google.gwt.view.client.Range;
+import t.viewer.client.screen.data.FilterEditor;
+import t.common.shared.GroupUtils;
+import t.common.shared.SharedUtils;
+import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.*;
+import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.SortKey;
+import t.viewer.shared.Synthetic;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Helper class for ExpressionTable, encapsulating operations involving a
@@ -51,7 +58,7 @@ import t.viewer.shared.*;
  */
 public class ETMatrixManager {
 
-  private OTGScreen screen;
+  private Screen screen;
   private final MatrixServiceAsync matrixService;
   private String matrixId;
   private ManagedMatrixInfo matrixInfo = null;
@@ -95,8 +102,8 @@ public class ETMatrixManager {
     void loadInitialMatrix(ValueType valueType, int initPageSize, List<ColumnFilter> initFilters);
   }
 
-  public ETMatrixManager(OTGScreen screen, TableFlags flags, Delegate delegate, Loader loader,
-      DataGrid<ExpressionRow> grid) {
+  public ETMatrixManager(Screen screen, TableFlags flags, Delegate delegate, Loader loader,
+                         DataGrid<ExpressionRow> grid) {
     this.screen = screen;
     this.loader = loader;
     this.delegate = delegate;

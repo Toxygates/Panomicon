@@ -19,29 +19,11 @@
 
 package t.db
 
-import friedrich.util.formats.TSVFile
 import t.Factory
+import t.model.sample.CoreParameter.{Batch, ControlGroup}
+import t.model.sample.OTGAttribute.{DoseLevel, ExposureTime}
 import t.sample.SampleSet
-import t.model.sample.Attribute
-import t.model.sample.AttributeSet
-
-trait ParameterSet {
-  /**
-   * Retrieve the set of control samples corresponding to a given sample.
-   */
-  def controlSamples(metadata: Metadata, s: Sample): Iterable[Sample] = Seq()
-
-  /**
-   * Compute groups of treated and control samples for p-value computation.
-   * This is a naive implementation which needs to be overridden if control samples are
-   * shared between multiple treated groups.
-   */
-  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
-    ss.groupBy(controlSamples(metadata, _)).toSeq.map(sg => {
-      sg._2.partition(!metadata.isControl(_))
-    })
-  }
-}
+import t.model.sample.{Attribute, AttributeSet, OTGAttribute}
 
 trait Metadata extends SampleSet {
   def samples: Iterable[Sample]
@@ -67,7 +49,7 @@ trait Metadata extends SampleSet {
 
   def platform(s: Sample): String = parameter(s, "platform_id").get
 
-  def isControl(s: Sample): Boolean = false
+  def isControl(s: Sample): Boolean = sampleAttribute(s, OTGAttribute.DoseLevel).get == "Control"
 
   /**
    * Obtain a new metadata set after applying a mapping function to one
@@ -75,11 +57,24 @@ trait Metadata extends SampleSet {
    */
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata
 
-  def controlSamples(s: Sample): Iterable[Sample] = ???
+
+  private def controlGroupKey(s: Sample) =
+    (sampleAttribute(s, ControlGroup), sampleAttribute(s, ExposureTime), sampleAttribute(s, Batch))
+
+  def controlSamples(s: Sample): Iterable[Sample] = {
+    val key = controlGroupKey(s)
+    samples.filter(controlGroupKey(_) == key).filter(isControl)
+  }
 
   def treatedControlGroups(ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
-    ss.groupBy(controlSamples(_)).toSeq.map(sg => {
+    // gs was the return value for the old t (non-otg) implementation
+    val gs = ss.groupBy(controlSamples(_)).toSeq.map(sg => {
       sg._2.partition(!isControl(_))
+    })
+    gs.flatMap({
+      case (treated, control) => {
+        treated.groupBy(sampleAttribute(_, DoseLevel)).values.toSeq.map(ts => (ts, control))
+      }
     })
   }
 }

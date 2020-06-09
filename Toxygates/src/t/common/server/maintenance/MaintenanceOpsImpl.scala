@@ -26,8 +26,7 @@ import org.apache.commons.fileupload.FileItem
 import gwtupload.server.UploadServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
-import t.Task
-import t.TaskRunner
+import t.manager.{Task, TaskRunner}
 import t.common.shared.maintenance.MaintenanceException
 import t.common.shared.maintenance.OperationResults
 import t.common.shared.maintenance.Progress

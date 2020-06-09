@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.Utils;
 import t.viewer.client.components.InputGrid;
-import t.viewer.client.components.Screen;
+import t.viewer.client.screen.Screen;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.shared.intermine.IntermineInstance;
 
