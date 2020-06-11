@@ -5,6 +5,10 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
+    <!-- Configuration file for the Panomicon/Toxygates admin interface.
+    Please see web.xml.template for comments on what most of these parameters do, and also
+    see the specific comments about security at the end of this file. -->
+
 	<context-param>
 		<param-name>repositoryURL</param-name>
 		<param-value>http://localhost:3030/Toxygates/query</param-value>		
@@ -81,6 +85,8 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+<!-- For dev mode, or if no access control to the admin GUI is needed (note that this interface can view,
+  edit and delete all data), remove or comment the security-constraint and login-config sections below. -->
 <security-constraint>
   <web-resource-collection>
      <web-resource-name>Toxygates (Development version)</web-resource-name>
