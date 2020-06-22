@@ -198,7 +198,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
       MiRNATargets.tableFromFile(_))
 
   lazy val miRawTable = {
-    val allTranscripts = platforms.data.valuesIterator.flatten.flatMap(_.transcripts).toSet
+    val allTranscripts = platforms.allProbes.iterator.flatMap(_.transcripts).toSet
 
     tryReadTargetTable(
       s"$mirnaDir/miraw_hsa_targets.txt",

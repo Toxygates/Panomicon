@@ -61,15 +61,15 @@ object ProbeStore extends RDFClass {
   var _platformsAndProbes: Map[String, Iterable[Probe]] = null
 
   //This lookup takes time, so we keep it here as a static resource
-  def platformsAndProbes(p: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
+  def platformsAndProbes(pfs: Platforms, prs: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
     if (_platformsAndProbes == null) {
-      _platformsAndProbes = p.platformsAndProbesLookup
+      _platformsAndProbes = prs.platformsAndProbesLookup(pfs)
     }
     _platformsAndProbes
   }
 }
 
-class ProbeStore(config: TriplestoreConfig) extends ListManager(config)
+class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
   with Store[Probe]{
   import QueryUtils._
   import Triplestore._
@@ -100,57 +100,73 @@ class ProbeStore(config: TriplestoreConfig) extends ListManager(config)
                                |}""".stripMargin)
   }
 
-  def platformsAndProbes: Map[String, Iterable[Probe]] =
-    ProbeStore.platformsAndProbes(this)
-
   /**
-   * Read all platforms. Slow.
-   * Probes will be potentially annotated with
-   * entrez, refseq atranscript and symbol information only.
+   * Obtain all probes in a given platform, with a few key annotations.
    */
-  private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
+  def annotatedProbesForPlatform(platform: String): Iterable[Probe] = {
+    val platformGraph = s"<${Platforms.defaultPrefix}/$platform>"
     /*
-     * An important concern with these queries is reducing the number of tuples being returned.
-     * Doing SELECT DISTINCT on all the variables (e.g. ?ent, ?trn, ?sym)
-     * will cause a combinatorial explosion in
-     * this case, where one probe can have e.g. multiple gene symbols and transcripts.
-     * GROUP_CONCAT aggregates such multiple values so that only one tuple is returned for all
-     * such combinations.
-     * Another interesting aggregation function that may be used is SAMPLE.
-     */
+        * An important concern with these queries is reducing the number of tuples being returned.
+        * Doing SELECT DISTINCT on all the variables (e.g. ?ent, ?trn, ?sym)
+        * will cause a combinatorial explosion in
+        * this case, where one probe can have e.g. multiple gene symbols and transcripts.
+        * GROUP_CONCAT aggregates such multiple values so that only one tuple is returned for all
+        * such combinations.
+        * Another interesting aggregation function that may be used is SAMPLE.
+        */
 
     val query = s"""$tPrefixes
-                   |SELECT ?gl ?pl
+                   |SELECT ?pl
                    |  (GROUP_CONCAT(?ent; separator = ":") AS ?entCon)
                    |  (GROUP_CONCAT(?trn; separator = ":") AS ?trnCon)
                    |  (GROUP_CONCAT(?sym; separator = ":") AS ?symCon) WHERE {
-                   |  GRAPH ?g {
+                   |  GRAPH $platformGraph {
                    |    ?p a t:probe; rdfs:label ?pl.
                    |    OPTIONAL {
                    |      ?p t:entrez ?ent.
                    |      ?p t:refseqTrn ?trn.
                    |      ?p t:symbol ?sym.
                    |    }
-                   |   } . ?g rdfs:label ?gl .
+                   |   } .
                    |}
-                   |GROUP BY ?pl ?gl
+                   |GROUP BY ?pl
                    |""".stripMargin
 
     val r = triplestore.mapQuery(query, 120000)
 
-    val all = for (probe <- r;
-                   probeId = probe("pl");
-                   platform = probe("gl");
-                   entrez = probe.get("entCon").toSeq.flatMap(_.split(":")).map(Gene(_));
-                   transcripts = probe.get("trnCon").toSeq.flatMap(_.split(":")).map(RefSeq(_));
-                   symbols = probe.get("symCon").toSeq.flatMap(_.split(":"));
-                   pr = Probe(probeId, genes = entrez.distinct,
-                     platform = platform,
-                     transcripts = transcripts.distinct,
-                     symbols = symbols.distinct)
-                   ) yield (platform, pr)
+    (for {
+      probe <- r;
+      probeId = probe("pl");
+      entrez = probe.get("entCon").toSeq.flatMap(_.split(":")).map(Gene(_));
+      transcripts = probe.get("trnCon").toSeq.flatMap(_.split(":")).map(RefSeq(_));
+      symbols = probe.get("symCon").toSeq.flatMap(_.split(":"));
+      pr = Probe(probeId, genes = entrez.distinct,
+        platform = platform,
+        transcripts = transcripts.distinct,
+        symbols = symbols.distinct)
+    } yield pr)
+  }
 
-    Map() ++ all.groupBy(_._1).mapValues(_.map(_._2))
+  /**
+   * Obtain a full platform/probe lookup map.
+   * It is preferred to query for a single platform only using annotatedProbesForPlatform above
+   * when possible.
+   * @return
+   */
+  def platformsAndProbes: Map[String, Iterable[Probe]] = {
+    val pfs = new Platforms(config)
+    ProbeStore.platformsAndProbes(pfs, this)
+  }
+
+  /**
+   * Read all platforms. Slow.
+   * Probes will be potentially annotated with
+   * entrez, refseq atranscript and symbol information only.
+   * It is preferred to query for a single platform only using annotatedProbesForPlatform above
+   * when possible.
+   */
+  private def platformsAndProbesLookup(pfs: Platforms): Map[String, Iterable[Probe]] = {
+    pfs.list.map(x => (x, annotatedProbesForPlatform(x))).toMap
   }
 
   def numProbes(): Map[String, Int] = {

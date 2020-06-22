@@ -233,7 +233,6 @@ class BatchManager(context: Context) {
       override lazy val probeSets =
         new ProbeStore(config.triplestore).platformsAndProbes.
           mapValues(_.toSeq.map(p => probeMap.pack(p.identifier)))
-
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
         doThenClose(db)(db => db.enumMaps(config.timeSeriesBuilder.enums))
