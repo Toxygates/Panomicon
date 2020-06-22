@@ -111,11 +111,13 @@
 		<servlet-class>t.viewer.server.rpc.SampleServiceImpl</servlet-class>
 	</servlet>
 
-	<servlet>
-		<servlet-name>probeServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.ProbeServiceImpl</servlet-class>
-	</servlet>
-	
+    <servlet>
+        <servlet-name>probeServlet</servlet-name>
+        <servlet-class>t.viewer.server.rpc.ProbeServiceImpl</servlet-class>
+        <!-- give ProbeServlet a chance to preload platforms -->
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
 		<servlet-class>t.viewer.server.rpc.SeriesServiceImpl</servlet-class>

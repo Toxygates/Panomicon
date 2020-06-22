@@ -48,6 +48,7 @@ object ProbeServiceImpl {
  */
 class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   import ProbeServiceImpl._
+
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
   protected def sampleStore: SampleStore = context.sampleStore
@@ -86,6 +87,7 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
 
     chembl = new ChEMBL()
     drugBank = new DrugBank()
+    platformsCache //force preloading all platforms
   }
 
   protected def reloadAppInfo = {
