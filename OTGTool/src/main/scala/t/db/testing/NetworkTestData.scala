@@ -89,8 +89,8 @@ object NetworkTestData {
   implicit val context = new FakeContext
 
   def populate() {
-    val mirnaData = DBTestData.makeTestData(false, mirnaSamples)
-    val mrnaData = DBTestData.makeTestData(false, DBTestData.samples)
+    val mirnaData = DBTestData.makeTestData(false, mirnaSamples, mirnaIds)
+    val mrnaData = DBTestData.makeTestData(false, DBTestData.samples, mrnaIds)
     context.populate(mirnaData)
     context.populate(mrnaData)
   }

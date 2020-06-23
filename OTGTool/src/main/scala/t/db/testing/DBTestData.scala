@@ -143,15 +143,18 @@ object DBTestData {
   }
 
   def makeTestData(sparse: Boolean): ColumnExpressionData = {
-    makeTestData(sparse, samples)
+    makeTestData(sparse, samples, probeMap.tokens)
   }
 
-  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample])
-    (implicit probeMap: ProbeMap): ColumnExpressionData = {
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): ColumnExpressionData = {
+    makeTestData(sparse, useSamples, probeMap.tokens)
+  }
+
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample], useProbes: Iterable[String]): ColumnExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
     for (s <- useSamples) {
       var thisProbe = Map[String, (Double, Char, Double)]()
-      for (p <- probeMap.tokens) {
+      for (p <- useProbes) {
         if (!sparse || Math.random > 0.5) {
           thisProbe += (p -> randomExpr())
         }
@@ -161,7 +164,7 @@ object DBTestData {
     new ColumnExpressionData {
       val d = testData
       def samples = d.keys.toSeq
-      def probes = probeMap.tokens.toSeq
+      def probes = useProbes.toSeq
       def data(s: Sample) = d(s)
     }
   }

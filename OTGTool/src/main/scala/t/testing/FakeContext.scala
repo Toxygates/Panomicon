@@ -55,6 +55,10 @@ class FakeContext extends MatrixContext {
   def doseSeriesBuilder = OTGDoseSeriesBuilder
   def doseSeriesDBReader = new KCSeriesDB(doseSeriesDB, false, doseSeriesBuilder, true)(this)
 
+  override def expectedProbes(x: Sample) = {
+    probeMap.keys.toSeq
+  }
+
   def populate() {
     populate(testData)
   }
