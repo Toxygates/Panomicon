@@ -83,7 +83,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   def mirnaDir = context.config.data.mirnaDir
 
   private def probeStore: ProbeStore = context.probeStore
-  lazy val platforms = t.viewer.server.Platforms(probeStore)
+  lazy val platforms = t.viewer.server.PlatformRegistry(probeStore)
 
   override def localInit(c: Configuration) {
     super.localInit(c)

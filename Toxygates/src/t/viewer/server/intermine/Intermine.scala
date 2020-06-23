@@ -32,12 +32,12 @@ import t.viewer.shared.StringList
 import t.sparql._
 import t.sparql.ProbeStore
 import t.sparql.secondary._
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import t.viewer.shared.intermine._
 import t.intermine._
 
 class IntermineConnector(instance: IntermineInstance,
-    platforms: Platforms) extends t.intermine.Connector(instance.appName,
+    platforms: PlatformRegistry) extends t.intermine.Connector(instance.appName,
       instance.serviceURL) {
 
   def title = instance.title()
@@ -170,7 +170,7 @@ class IntermineConnector(instance: IntermineInstance,
 }
 
 class Intermines(instances: Iterable[IntermineInstance]) {
-  def connector(inst: IntermineInstance, platforms: Platforms) = {
+  def connector(inst: IntermineInstance, platforms: PlatformRegistry) = {
     //Simple security/sanity check - refuse to connect to a URL that
     //we didn't know about from before. This is because instance objects
     //may be passed from the client side.

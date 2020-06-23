@@ -22,7 +22,7 @@ package t.viewer.server.intermine
 import org.intermine.webservice.client.results.TabTableResult
 import t.sparql.ProbeStore
 import t.viewer.client.intermine.IntermineService
-import t.viewer.server.{Configuration, Platforms}
+import t.viewer.server.{Configuration, PlatformRegistry}
 import t.viewer.server.rpc.OTGServiceServlet
 import t.viewer.shared.StringList
 import t.viewer.shared.intermine._
@@ -31,14 +31,14 @@ import scala.collection.JavaConverters._
 
 abstract class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
   var affyProbes: ProbeStore = _
-  var platforms: Platforms = _
+  var platforms: PlatformRegistry = _
   var mines: Intermines = _
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
     affyProbes = context.probeStore
-    platforms = Platforms(affyProbes)
+    platforms = PlatformRegistry(affyProbes)
     mines = new Intermines(config.intermineInstances)
   }
 

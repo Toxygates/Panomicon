@@ -25,7 +25,7 @@ import t.common.shared.ValueType
 import t.common.shared.sample.Group
 import t.viewer.server.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.shared.network.Network
 
@@ -38,10 +38,10 @@ import t.viewer.shared.network.Network
  * ManagedNetwork (managedMatrix) to contain the latest updated targets.
  */
 class NetworkController(params: ControllerParams,
-    val sideMatrix: ManagedMatrix, targets: TargetTable,
-    platforms: Platforms,
-    initMainPageSize: Int,
-    sideIsMRNA: Boolean) extends MatrixController(params) {
+                        val sideMatrix: ManagedMatrix, targets: TargetTable,
+                        platforms: PlatformRegistry,
+                        initMainPageSize: Int,
+                        sideIsMRNA: Boolean) extends MatrixController(params) {
 
   type Mat = ManagedNetwork
 

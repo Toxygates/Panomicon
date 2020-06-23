@@ -26,7 +26,7 @@ import t.platform.mirna._
 import t.viewer.server.rpc.NetworkState
 import t.viewer.shared.network.NetworkInfo
 import t.viewer.shared.network.Network
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import scala.collection.JavaConverters._
 import t.common.shared.sample.ExpressionRow
 import t.common.shared.GWTTypes
@@ -43,11 +43,11 @@ import t.common.server.GWTUtils
  * (i.e. pre-filtered for species, platform etc)
  */
 class ManagedNetwork(mainParams: LoadParams,
-    val sideMatrix: ManagedMatrix,
-    var targets: TargetTable,
-    platforms: Platforms,
-    var currentPageSize: Int,
-    sideIsMRNA: Boolean) extends ManagedMatrix(mainParams) {
+                     val sideMatrix: ManagedMatrix,
+                     var targets: TargetTable,
+                     platforms: PlatformRegistry,
+                     var currentPageSize: Int,
+                     sideIsMRNA: Boolean) extends ManagedMatrix(mainParams) {
 
   protected var currentPageRows: Option[(Int, Int)] = None
 

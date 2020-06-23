@@ -24,19 +24,19 @@ import t.platform.Probe
 import t.sparql.ProbeStore
 import t.platform.Species.Species
 
-object Platforms {
-  def apply(probeStore: ProbeStore): Platforms = {
+object PlatformRegistry {
+  def apply(probeStore: ProbeStore): PlatformRegistry = {
 
     val pfs = new t.sparql.Platforms(probeStore.config)
     val pps = ProbeStore.platformsAndProbes(pfs, probeStore)
-    new Platforms(pps.map(x => x._1 -> x._2.toSet))
+    new PlatformRegistry(pps.map(x => x._1 -> x._2.toSet))
   }
 }
 
 /**
  * A probe and platform registry. Caches data to avoid heavy sparql queries.
  */
-class Platforms(private val data: Map[String, Set[Probe]]) {
+class PlatformRegistry(private val data: Map[String, Set[Probe]]) {
   //map platform to probe sets
   private lazy val platformSets = data.mapValues(_.map(_.identifier))
 

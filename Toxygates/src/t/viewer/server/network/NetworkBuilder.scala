@@ -22,7 +22,7 @@ package t.viewer.server.network
 import t.common.server.GWTUtils._
 import t.platform.Probe
 import t.platform.mirna._
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.Interaction
 import t.viewer.shared.network.Network
@@ -39,10 +39,10 @@ object NetworkBuilder {
    * @param mainSize defines the size of the current page in the main matrix.
    */
   def extractSideProbes(targets: TargetTable,
-                        platforms: Platforms,
-      main: ManagedMatrix,
-      side: ManagedMatrix,
-      mainOffset: Int, mainSize: Int): Seq[String] = {
+                        platforms: PlatformRegistry,
+                        main: ManagedMatrix,
+                        side: ManagedMatrix,
+                        mainOffset: Int, mainSize: Int): Seq[String] = {
     val mainType = main.params.typ
     val expPlatform = side.params.platform
 
@@ -62,8 +62,8 @@ object NetworkBuilder {
 }
 
 class NetworkBuilder(targets: TargetTable,
-    platforms: Platforms,
-    main: ManagedMatrix, side: ManagedMatrix) {
+                     platforms: PlatformRegistry,
+                     main: ManagedMatrix, side: ManagedMatrix) {
   import GWTTypes._
 
   val mainType = main.params.typ

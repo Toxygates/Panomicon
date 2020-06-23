@@ -34,7 +34,7 @@ import t.viewer.server.Conversions._
 import t.viewer.shared.DBUnavailableException
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.server.matrix._
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import t.viewer.shared.SortKey
 import t.common.shared.sample.ExpressionRow
 import t.db.MatrixContext
@@ -64,7 +64,7 @@ object ControllerParams {
     initProbes: Seq[String], groupPlatforms: Iterable[String],
     typ: ValueType, fullLoad: Boolean): ControllerParams =
       ControllerParams(context.matrix,
-      Platforms(context.probeStore), groups, initProbes, groupPlatforms, typ,
+      PlatformRegistry(context.probeStore), groups, initProbes, groupPlatforms, typ,
       fullLoad)
 }
 
@@ -72,12 +72,12 @@ object ControllerParams {
  * Principal parameters that a matrix controller needs to load a matrix.
  */
 case class ControllerParams(val matrixContext: MatrixContext,
-    val platforms: Platforms,
-    val groups: Seq[Group],
-    val initProbes: Seq[String],
-    val groupPlatforms: Iterable[String],
-    val typ: ValueType,
-    fullLoad: Boolean)
+                            val platforms: PlatformRegistry,
+                            val groups: Seq[Group],
+                            val initProbes: Seq[String],
+                            val groupPlatforms: Iterable[String],
+                            val typ: ValueType,
+                            fullLoad: Boolean)
 
 /**
  * A managed matrix session and associated state.

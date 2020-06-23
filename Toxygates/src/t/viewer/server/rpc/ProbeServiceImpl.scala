@@ -49,7 +49,7 @@ object ProbeServiceImpl {
 class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   import ProbeServiceImpl._
 
-  lazy val platformsCache = t.viewer.server.Platforms(probeStore)
+  lazy val platformsCache = t.viewer.server.PlatformRegistry(probeStore)
 
   protected def sampleStore: SampleStore = context.sampleStore
   protected def probeStore: ProbeStore = context.probeStore

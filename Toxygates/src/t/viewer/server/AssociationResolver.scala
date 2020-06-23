@@ -57,7 +57,7 @@ class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
   }
 }
 
-class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.Platforms, mirnaTable: TargetTable,
+class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformRegistry, mirnaTable: TargetTable,
                     sidePlatform: Option[String]) {
 
   var limitState = new LimitState()
