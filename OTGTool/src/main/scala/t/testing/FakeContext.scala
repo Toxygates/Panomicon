@@ -27,9 +27,9 @@ import t.db.testing.DBTestData._
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.db.testing.DBTestData
 
-class FakeContext extends MatrixContext {
-  val sampleMap: SampleMap = DBTestData.dbIdMap
-  val probeMap: ProbeMap = DBTestData.probeMap
+class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap) extends MatrixContext {
+  def this() { this(DBTestData.sampleMap, DBTestData.probeMap) }
+
   val enumMaps: Map[String, Map[String, Int]] = DBTestData.enumMaps
 
   def species = List(Rat)

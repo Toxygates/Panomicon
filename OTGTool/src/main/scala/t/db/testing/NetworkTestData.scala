@@ -86,7 +86,7 @@ object NetworkTestData {
   val samples = DBTestData.samples.toSeq ++ mirnaSamples
   val sampleIndex = DBTestData.sampleIndex(samples)
 
-  implicit val context = new FakeContext
+  implicit val context = new FakeContext(sampleIndex, probeIndex)
 
   def populate() {
     val mirnaData = DBTestData.makeTestData(false, mirnaSamples, mirnaIds)

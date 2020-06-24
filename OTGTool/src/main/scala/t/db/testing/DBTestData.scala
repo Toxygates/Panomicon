@@ -135,7 +135,7 @@ object DBTestData {
 
   val unpackedProbes = probes.map(probeMap.unpack)
 
-  val dbIdMap = sampleIndex(samples)
+  val sampleMap = sampleIndex(samples)
 
   def sampleIndex(samples: Iterable[Sample]) = {
     val dbIds = Map() ++ samples.zipWithIndex.map(s => (s._1.sampleId -> s._2))
