@@ -114,11 +114,13 @@ class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformR
  * The association resolver looks up probe associations based on the AType enum.
  * Subresolvers provide partial functions that perform the resolution.
  */
-class AssociationResolver(probeStore: ProbeStore,
+class AssociationResolver(mirnaResolver: MirnaResolver,
+                           probeStore: ProbeStore,
                           sampleStore: SampleStore,
                           b2rKegg: B2RKegg) {
 
   var limitState = new LimitState
+  mirnaResolver.limitState = limitState
 
   val mainResolver: AssociationLookup = {
     case (GOMF, _, _, probes)       => probeStore.mfGoTerms(probes)
@@ -145,7 +147,7 @@ class AssociationResolver(probeStore: ProbeStore,
    */
   def associationLookup(at: AType,  sc: SampleClass, sf: SampleFilter,
                         probes: Iterable[Probe], extraResolvers: Iterable[AssociationLookup]): BBMap = {
-    val resolvers = (Seq(mainResolver) ++ extraResolvers).reduce(_ orElse _)
+    val resolvers = (Seq(mainResolver, mirnaResolver.lookup) ++ extraResolvers).reduce(_ orElse _)
 
     resolvers.lift(at, sc, sf, probes) match {
       case Some(r) => r

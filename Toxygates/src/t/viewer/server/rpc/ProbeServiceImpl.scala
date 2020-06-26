@@ -297,18 +297,21 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
                             probes: Array[String]): Array[Association] = {
     implicit val sf = defaultSampleFilter
 
+    //The TargetTable, which contains the user's miRNA-mRNA associations, is essential for
+    //fetching miRNA-mRNA mapping columns (miRNA association column in a mRNA table or vice versa).
+    //It is stored in the NetworkService's state.
     val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
-    //    val mirnaSources = netState.map(_.mirnaSources).getOrElse(Array())
     val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
+
+    //Side table platform for the first network in the NetState
+    //For miRNA-mRNA resolutions, this is the platform that we resolve into.
     val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
-
     val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
-    val resolvers = Seq(drugTargetResolver,
-      mirnaRes.lookup)
-    val mainRes =  new AssociationResolver(probeStore, sampleStore,
-      b2rKegg)
-    mirnaRes.limitState = mainRes.limitState
 
-    mainRes.resolve(types, sc, sf, probes, resolvers)
+    //The AssociationResolver contains enough resources to resolve most association types by itself.
+    //We also supply special resolvers that require additional resources from outside.
+    val mainResolver =  new AssociationResolver(mirnaRes, probeStore, sampleStore, b2rKegg)
+    val customResolvers = Seq(drugTargetResolver)
+    mainResolver.resolve(types, sc, sf, probes, customResolvers)
   }
 }
