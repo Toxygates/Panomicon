@@ -12,7 +12,8 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$KC_LIBDIR"
 export OTGTOOL_CLASSPATH="${OTGTOOL_ROOT}/lib/jar/*:${OTGTOOL_ROOT}/lib/bundle/*:${OTGTOOL_ROOT}/mlib/*:${OTGTOOL_ROOT}/classes"
 
 export REPO=Toxygates
-export T_TS_BASE=http://localhost:3030/$REPO
+export T_TS_ROOT=http://localhost:3030
+export T_TS_BASE=$T_TS_ROOT/$REPO
 export T_TS_URL=$T_TS_BASE/query
 export T_TS_UPDATE_URL=$T_TS_BASE/update
 

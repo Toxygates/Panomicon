@@ -6,7 +6,7 @@ source $(dirname $0)/../functions.sh
 
 #export T_DATA_DIR=kcchunk:/home/johan/data_dev
 export T_DATA_DIR=kcchunk:/shiba/scratch/toxygates/rebuild_test
-export T_DATA_MATDBCONFIG="#pccap=1073741824#msiz=4294967296"
+export T_DATA_MATDBCONFIG="#msiz=4294967296"
 
 echo $FULL_CLASSPATH
 runfull -Djava.library.path=$KC_LIBDIR -J-Xmx4g otg.Manager "$@"
