@@ -5,7 +5,7 @@
 #This script may take a long time to run.
 
 BASE=$(dirname $0)/..
-source $BASE/functions.sh
+source $BASE/config.sh
 
 INPUTS=$TOXY_SCRATCH/inputs
 GENERATED=$TOXY_SCRATCH/generated

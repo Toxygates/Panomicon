@@ -3,9 +3,7 @@
 #Script to filter ensembl annotations (RDF) to generate a platform in Panomicon - work in progress
 #We filter the raw annotation files from ensembl mainly to keep the sizes manageable.
 
-#You must configure scripts/triplestore/replace.sh with the correct URL, username and password for the
-#triplestore (e.g. Fuseki) for this to work.
-#It is also necessary to configure functions.sh (general settings) and manager/tmanager.sh.
+#You must set up config.sh correctly for this to work (used by replace.sh)
 
 #Triplestore repository
 REPO=$1

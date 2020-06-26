@@ -15,7 +15,7 @@ GRAPH=$1
 shift
 
 BASE=$(dirname $0)
-source $BASE/../functions.sh
+source $BASE/../config.sh
 
 NAMED=no
 
