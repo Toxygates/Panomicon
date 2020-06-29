@@ -3,11 +3,9 @@
 #Script to filter ensembl annotations (RDF) to generate a platform in Panomicon - work in progress
 #We filter the raw annotation files from ensembl mainly to keep the sizes manageable.
 
-#You must set up config.sh correctly for this to work (used by replace.sh)
-
-#Triplestore repository
-REPO=$1
-shift
+#You must set up config.sh correctly for this to work.
+BASE=$(dirname $0)
+source $BASE/config.sh
 
 BASEURL=ftp://ftp.ensembl.org/pub/current_rdf
 DIR=downloads
@@ -32,17 +30,19 @@ function process_species {
   curl -O $BASEURL/$SPECIES/$XREF
 
   OUT=${SPECIES}_filtered.ttl
-  zcat $XREF | egrep "prefix|refseq|uniprot|ncbigene|identifiers/go" > $OUT
-  zcat $FILE | grep SO_transcribed_from >> $OUT
-  zcat $FILE | grep SO_translates_to >> $OUT
+
+  #This way of invoking zcat works on both linux and Mac OS
+  zcat < $XREF | egrep "prefix|refseq|uniprot|ncbigene|identifiers/go" > $OUT
+  zcat < $FILE | grep SO_transcribed_from >> $OUT
+  zcat < $FILE | grep SO_translates_to >> $OUT
 
   popd
 
   STITLE=$(species_shortcode $SPECIES).ensembl
   GRAPH=http://level-five.jp/t/platform/$STITLE
-  TITLE="\"$SPECIES Ensembl latest $(date)\""
-  ./triplestore/replace.sh $DIR/$OUT $REPO $GRAPH $TITLE
-  ./manager/tmanager.sh platform addEnsembl -title $STITLE -input $DIR/$OUT
+  COMMENT="$SPECIES Ensembl latest $(date)"
+  ./triplestore/replace.sh $DIR/$OUT $REPO $GRAPH "$COMMENT"
+  ./manager/tmanager.sh platform addEnsembl -title "$STITLE" -input $DIR/$OUT
 }
 
 mkdir -p $DIR
