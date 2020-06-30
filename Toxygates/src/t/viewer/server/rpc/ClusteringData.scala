@@ -61,7 +61,7 @@ class ClusteringData(val controller: MatrixController,
   /**
    * Obtain column-major data for the specified rows and columns
    */
-  def data: Array[Array[Double]] = mat.selectColumns(columns.map(_._2)).data.
+  def data: Array[Array[Double]] = mat.selectColumns(columns.map(_._2)).rowData.
     map(_.map(_.value).toArray).toArray
 
   /**

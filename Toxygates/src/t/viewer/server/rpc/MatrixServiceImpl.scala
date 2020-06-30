@@ -174,7 +174,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
 
     val grouped = mm.getPageView(offset, size)
     val rowNames = grouped.map(_.getProbe)
-    val rawData = mm.rawUngrouped.selectNamedRows(rowNames).data
+    val rawData = mm.rawUngrouped.selectNamedRows(rowNames).rowData
 
     for (
       (gr, rr) <- grouped zip rawData;

@@ -89,20 +89,20 @@ trait AbstractMatrix[T, V <: Seq[T]] {
 
 }
 
-abstract class DataMatrix[T, V <: IndexedSeq[T]](val data: IndexedSeq[V], val rows: Int, val columns: Int)
+abstract class DataMatrix[T, V <: IndexedSeq[T]](val rowData: IndexedSeq[V], val rows: Int, val columns: Int)
   extends AbstractMatrix[T, V] {
 
   type Self <: DataMatrix[T, V]
 
-  def apply(row: Int, col: Int): T = data(row)(col)
+  def apply(row: Int, col: Int): T = rowData(row)(col)
 
-  def row(x: Int): V = data(x)
-  def column(x: Int): V = makeVector(data.map(_(x)))
+  def row(x: Int): V = rowData(x)
+  def column(x: Int): V = makeVector(rowData.map(_(x)))
 
-  def appendColumn(col: Iterable[T]): Self = copyWith(data.zip(col).map(x => makeVector(x._1 :+ x._2)))
+  def appendColumn(col: Iterable[T]): Self = copyWith(rowData.zip(col).map(x => makeVector(x._1 :+ x._2)))
 
   def adjoinRight(other: Self): Self = {
-    val nrows = (0 until rows).map(i => makeVector(data(i) ++ other.row(i)))
+    val nrows = (0 until rows).map(i => makeVector(rowData(i) ++ other.row(i)))
     copyWith(nrows)
   }
 
@@ -124,15 +124,15 @@ abstract class DataMatrix[T, V <: IndexedSeq[T]](val data: IndexedSeq[V], val ro
 /**
  * A vector (here, some seq type) backed data matrix that also has keyed rows and columns.
  *
- * Type parameters: Self is the matrix selftype,
+ * Type parameters:
  * T: element,
  * V: vectors,
  * Row: row keys,
  * Column: column keys
  */
 abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
-(data: IndexedSeq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
-  extends DataMatrix[T, V](data, rows, columns)
+(rowData: IndexedSeq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
+  extends DataMatrix[T, V](rowData, rows, columns)
   with RowColKeys[V, Row, Column] {
 
   type Self <: KeyedDataMatrix[T, V, Row, Column]
@@ -142,8 +142,8 @@ abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
   def copyWith(rows: Seq[Seq[T]]): Self = copyWith(rows, rowMap, columnMap)
   def copyWith(rows: Seq[Seq[T]], rowMap: Map[Row, Int], columnMap: Map[Column, Int]): Self
 
-  def copyWithRowKeys(keys: Map[Row, Int]): Self = copyWith(data, keys, columnMap)
-  def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(data, rowMap, keys)
+  def copyWithRowKeys(keys: Map[Row, Int]): Self = copyWith(rowData, keys, columnMap)
+  def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(rowData, rowMap, keys)
 
   override def adjoinRight(other: Self): Self = {
     val rows = super.adjoinRight(other).toRowVectors
