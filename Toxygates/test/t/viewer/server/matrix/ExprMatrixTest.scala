@@ -233,30 +233,6 @@ class ExprMatrixTest extends TTestSuite {
     assert(r.rows === 5)
   }
 
-  test("joint modify") {
-    val em = testMatrix
-    val rows = List(List(1),
-        List(2),
-        List(3),
-        List(4),
-        List(5)).map(_.map(ExprValue(_)))
-
-    val small = ExprMatrix.withRows(rows)
-
-    val (s1, s2) = em.modifyJointly(small,
-        _.sortRows((v1, v2) => v1(0).value < v2(0).value))
-    println(em.rowMap)
-    println(s1.rowMap)
-    assert(s2.rowMap === s1.rowMap)
-    assert(s2.annotations === s1.annotations)
-    println(em.annotations.toVector)
-    println(s2.annotations.toVector)
-    println(s1.annotations.toVector)
-    assert(s2.annotations(0).probe === "p2")
-    assert(s2.annotations(1).probe === "p3")
-    assert(s2.annotations(2).probe === "p1")
-  }
-
   test("empty matrix") {
     val m = testMatrix
     val empty = m.copyWithColumns(Seq())

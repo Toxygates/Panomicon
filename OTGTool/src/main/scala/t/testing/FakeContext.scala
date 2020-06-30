@@ -59,8 +59,8 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap) extends Matr
     probeMap.keys.toSeq
   }
 
-  def populate() {
-    populate(testData)
+  def populate(sparse: Boolean = true) {
+    populate(makeTestData(sparse))
   }
 
   def populate(d: ColumnExpressionData) {

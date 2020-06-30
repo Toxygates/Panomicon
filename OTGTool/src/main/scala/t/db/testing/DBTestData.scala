@@ -29,6 +29,8 @@ import t.model.sample.OTGAttribute._
 import t.platform._
 import t.platform.mirna._
 
+import scala.collection.mutable
+
 object DBTestData {
   def pickOne[T](xs: Seq[T]): T = {
     val n = Math.random * xs.size
@@ -152,19 +154,22 @@ object DBTestData {
 
   def makeTestData(sparse: Boolean, useSamples: Iterable[Sample], useProbes: Iterable[String]): ColumnExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
+    val usedProbes = mutable.Set.empty[String]
+
     for (s <- useSamples) {
-      var thisProbe = Map[String, (Double, Char, Double)]()
+      var thisSample = Map[String, (Double, Char, Double)]()
       for (p <- useProbes) {
         if (!sparse || Math.random > 0.5) {
-          thisProbe += (p -> randomExpr())
+          thisSample += (p -> randomExpr())
+          usedProbes += p
         }
       }
-      testData += (s -> thisProbe)
+      testData += (s -> thisSample)
     }
     new ColumnExpressionData {
       val d = testData
       def samples = d.keys.toSeq
-      def probes = useProbes.toSeq
+      def probes = usedProbes.toSeq
       def data(s: Sample) = d(s)
     }
   }

@@ -92,7 +92,7 @@ class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: In
 
   override def toString:String = s"ExprMatrix $rows x $columns"
 
-  def fromSeq(s: Seq[ExprValue]) = ExprMatrix.fromSeq(s)
+  def makeVector(s: Seq[ExprValue]) = ExprMatrix.fromSeq(s)
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
