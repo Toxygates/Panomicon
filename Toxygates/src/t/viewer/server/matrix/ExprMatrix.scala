@@ -82,11 +82,12 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
 class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
     val annotations: Seq[RowAnnotation])
-    extends KeyedDataMatrix[ExprMatrix, ExprValue,
-      IndexedSeq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
+    extends KeyedDataMatrix[ExprValue, IndexedSeq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._
   import t.util.SafeMath._
+
+  type Self = ExprMatrix
 
   println(this)
 

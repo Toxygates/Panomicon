@@ -11,7 +11,7 @@ package friedrich.data.immutable
  * by creating new copies with changes.
  */
 trait RowColKeys[V <: Seq[_], Row, Column] {
-  this: AbstractMatrix[_, _, V] =>
+  this: AbstractMatrix[_, V] =>
 
   val columnMap: Map[Column, Int]
   val rowMap: Map[Row, Int]

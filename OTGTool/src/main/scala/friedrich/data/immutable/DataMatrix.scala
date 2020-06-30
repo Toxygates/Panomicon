@@ -15,7 +15,9 @@ import scala.collection.generic.CanBuildFrom
  * @tparam T Cell type
  * @tparam V Vector type
  */
-trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]] {
+trait AbstractMatrix[T, V <: Seq[T]] {
+
+  type Self <: AbstractMatrix[T, V]
 
   def rows: Int
 
@@ -87,8 +89,10 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]] {
 
 }
 
-abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: IndexedSeq[T]](val data: IndexedSeq[V], val rows: Int, val columns: Int)
-  extends AbstractMatrix[Self, T, V] {
+abstract class DataMatrix[T, V <: IndexedSeq[T]](val data: IndexedSeq[V], val rows: Int, val columns: Int)
+  extends AbstractMatrix[T, V] {
+
+  type Self <: DataMatrix[T, V]
 
   def apply(row: Int, col: Int): T = data(row)(col)
 
@@ -126,10 +130,12 @@ abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: IndexedSeq[T]]
  * Row: row keys,
  * Column: column keys
  */
-abstract class KeyedDataMatrix[Self <: KeyedDataMatrix[Self, T, V, Row, Column], T, V <: IndexedSeq[T], Row, Column]
+abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
 (data: IndexedSeq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
-  extends DataMatrix[Self, T, V](data, rows, columns)
+  extends DataMatrix[T, V](data, rows, columns)
   with RowColKeys[V, Row, Column] {
+
+  type Self <: KeyedDataMatrix[T, V, Row, Column]
 
   def apply(row: Row, col: Column): T = apply(rowMap(row), columnMap(col))
 
@@ -140,39 +146,41 @@ abstract class KeyedDataMatrix[Self <: KeyedDataMatrix[Self, T, V, Row, Column],
   def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(data, rowMap, keys)
 
   override def adjoinRight(other: Self): Self = {
-    val r = super.adjoinRight(other)
+    val rows = super.adjoinRight(other).toRowVectors
     other match {
       case ra: RowColKeys[V, Row, Column] => {
-        r.copyWithColKeys(rightAdjoinedColKeys(ra))
+        copyWith(rows, rowMap, rightAdjoinedColKeys(ra))
       }
-      case _ => r //what's the right behaviour?
+      case _ => ???
     }
   }
 
   override def selectRows(rows: Seq[Int]): Self =
-    super.selectRows(rows).copyWithRowKeys(selectedRowKeys(rows))
+    copyWith(super.selectRows(rows).toRowVectors, selectedRowKeys(rows), columnMap)
 
   /**
    * NB this allows for permutation as well as selection. Columns are returned
    * in the order requested.
    */
-  def selectNamedRows(rows: Seq[Row]): Self = selectRows(rows.flatMap(rowMap.get(_)))
+  def selectNamedRows(rows: Seq[Row]): Self =
+    selectRows(rows.flatMap(rowMap.get(_)))
 
   override def selectColumns(columns: Seq[Int]): Self =
-    super.selectColumns(columns).copyWithColKeys(selectedColumnKeys(columns))
+    copyWith(super.selectColumns(columns).toRowVectors, rowMap, selectedColumnKeys(columns))
 
   /**
    * NB this allows for permutation as well as selection. Columns are returned
    * in the order requested.
    */
-  def selectNamedColumns(columns: Seq[Column]): Self = selectColumns(columns.flatMap(columnMap.get(_)))
+  def selectNamedColumns(columns: Seq[Column]): Self =
+    selectColumns(columns.flatMap(columnMap.get(_)))
 
   /**
    * Append a column, also registering it by its key
    */
   def appendColumn(col: Iterable[T], key: Column): Self = {
-    val r = appendColumn(col)
-    r.copyWithColKeys(columnMap + (key -> columns))
+    copyWith(appendColumn(col).toRowVectors, rowMap,
+      columnMap + (key -> columns))
   }
 
   override def filterRows(f: V => Boolean): Self = {
