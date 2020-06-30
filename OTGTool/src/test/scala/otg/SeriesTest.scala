@@ -80,7 +80,7 @@ class SeriesTest extends TTestSuite {
       val indepVarMap = tt.seriesType.independentVariableMap
 
       val ss = tt.builderType.makeNew(context.foldsDBReader, meta)
-      val data = context.testData
+      val data = context.sparseTestData
       for (
         s <- ss;
         const = s.constraints.filter(_._2 != null).toSet;

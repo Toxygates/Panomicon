@@ -74,7 +74,7 @@ class MatrixMapperTest extends TTestSuite {
   test("managedMatrix") {
     val mm = new MatrixMapper(pm, vm)
     val schema = OTestData.dataSchema
-    val data = context.testData
+    val data = context.sparseTestData
 
     def foldBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
       probes.map(probeMap.unpack))

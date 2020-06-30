@@ -48,7 +48,7 @@ class ManagedMatrixTest extends TTestSuite {
     val m = foldBuilder.build(groups, false, true)
     val cur = m.current
 
-    val usedSet = context.testData.probes.toSet
+    val usedSet = context.sparseTestData.probes.toSet
     val sortedProbes = probes.sorted.map(probeMap.unpack).filter(usedSet.contains)
 
     cur.sortedRowMap.map(_._1) should equal(sortedProbes)
@@ -69,7 +69,7 @@ class ManagedMatrixTest extends TTestSuite {
 
   test("sort and select") {
     val m = foldBuilder.build(groups, false, true)
-    val ps = context.testData.probes.take(10)
+    val ps = context.sparseTestData.probes.take(10)
 
     val preSort = m.current
 
@@ -80,7 +80,7 @@ class ManagedMatrixTest extends TTestSuite {
     mat.rows should equal(ps.size)
     val srm = mat.sortedRowMap
 
-    val usedSet = context.testData.probes
+    val usedSet = context.sparseTestData.probes
 
     mat = m.rawGrouped
     mat.rows should equal(usedSet.size)

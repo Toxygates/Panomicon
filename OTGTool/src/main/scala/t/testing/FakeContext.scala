@@ -39,7 +39,8 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap) extends Matr
 
   def samples = ???
 
-  val testData = makeTestData(true)
+  val sparseTestData = makeTestData(true)
+  val nonsparseTestData = makeTestData(false)
 
   private val folds = memDBHash
   private val abs = memDBHash
@@ -60,7 +61,10 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap) extends Matr
   }
 
   def populate(sparse: Boolean = true) {
-    populate(makeTestData(sparse))
+    if (sparse)
+      populate(sparseTestData)
+    else
+      populate(nonsparseTestData)
   }
 
   def populate(d: ColumnExpressionData) {
