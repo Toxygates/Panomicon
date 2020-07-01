@@ -19,7 +19,6 @@
 
 package t.viewer.server
 
-import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
 import t.common.shared.AType._
 import t.db.DefaultBio
@@ -163,12 +162,6 @@ class AssociationResolver(mirnaResolver: MirnaResolver,
     new Association(t,
     convertAssociations(errorVals(probes)), false, false)
 
-  def queryOrEmpty[T](t: AType, probes: Iterable[Probe], data: => BBMap): Association = {
-    gracefully(new Association(t,
-        convertAssociations(data),
-      limitState.exceeded, true), errorAssoc(t, probes))
-  }
-
   def resolve(types: Iterable[AType], sc: SampleClass, sf: SampleFilter,
     probes: Iterable[String],
     extraResolvers: Iterable[AssociationLookup] = Seq()): Array[Association] = {
@@ -180,7 +173,19 @@ class AssociationResolver(mirnaResolver: MirnaResolver,
     //Note: this might not be needed - platformsCache might do a better job
     val aprobes = probeStore.withAttributes(probes.map(Probe(_)))
 
-    types.par.map(t => queryOrEmpty(t, aprobes,
-      associationLookup(t, sc, sf, aprobes, extraResolvers))).seq.toArray
+    val allAssociations = for {
+      t <- types.par
+      // catch exceptions here to prevent them from stopping the whole
+      // parallel loop
+      association = try {
+        val data = associationLookup(t, sc, sf, aprobes, extraResolvers)
+        new Association(t, convertAssociations(data), limitState.exceeded, true)
+      } catch {
+        case e: Exception =>
+          e.printStackTrace()
+          errorAssoc(t, aprobes)
+      }
+    } yield association
+    allAssociations.seq.toArray
   }
 }
