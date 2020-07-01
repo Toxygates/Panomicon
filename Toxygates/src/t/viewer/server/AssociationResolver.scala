@@ -163,8 +163,7 @@ class AssociationResolver(mirnaResolver: MirnaResolver,
     new Association(t,
     convertAssociations(errorVals(probes)), false, false)
 
-  def queryOrEmpty[T](t: AType, probes: Iterable[Probe], f: => BBMap): Association = {
-    val data = f
+  def queryOrEmpty[T](t: AType, probes: Iterable[Probe], data: => BBMap): Association = {
     gracefully(new Association(t,
         convertAssociations(data),
       limitState.exceeded, true), errorAssoc(t, probes))
