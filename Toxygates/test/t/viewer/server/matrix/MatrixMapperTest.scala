@@ -74,7 +74,7 @@ class MatrixMapperTest extends TTestSuite {
   test("managedMatrix") {
     val mm = new MatrixMapper(pm, vm)
     val schema = OTestData.dataSchema
-    val data = context.testData
+    val data = context.sparseTestData
 
     def foldBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
       probes.map(probeMap.unpack))
@@ -84,7 +84,7 @@ class MatrixMapperTest extends TTestSuite {
       new Group(schema, "Gr" + ss._2, sss.toArray)
     }).toSeq
 
-    context.populate
+    context.populate(true)
     val m = foldBuilder.build(groups, false, true)
 
     val conv = mm.convert(m)
