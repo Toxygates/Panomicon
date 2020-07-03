@@ -13,13 +13,6 @@ GENERATED=$TOXY_SCRATCH/generated
 mkdir -p $INPUTS
 mkdir -p $GENERATED
 
-#Download from http://www.mirdb.org/download.html
-echo mirDB
-runfull t.platform.mirna.MiRDBConverter $INPUTS/miRDB_5.0_filter.txt \
-	$GENERATED/mirdb.trig
-$BASE/triplestore/replace.sh $GENERATED/mirdb.trig $REPO http://level-five.jp/t/mapping/mirdb
-
-	
 echo SSorth
 $BASE/manager/tmanager.sh orthologs -output $GENERATED/ssorth.ttl -intermineURL https://targetmine.mizuguchilab.org/targetmine/service -intermineAppName targetmine
 ORTH_GRAPH=http://level-five.jp/t/ssorth.ttl
