@@ -34,7 +34,7 @@ object AppInfoLoader {
   //ID strings for the various miRNA sources that we support.
 
   val TARGETMINE_SOURCE: String = "TargetMine"
-  val MIRDB_SOURCE: String = MiRDBConverter.mirdbGraph
+  val MIRDB_SOURCE: String = "miRDB"
   val MIRAW_SOURCE: String = "MiRAW"
 }
 
@@ -119,16 +119,7 @@ class AppInfoLoader(probeStore: ProbeStore,
   }
 
   protected def getMirnaSourceInfo: Array[MirnaSource] = {
-    val dynamic = probeStore.mirnaSources.map(s =>
-      new MirnaSource(s._1, s._2, s._3, asJDouble(s._4), s._5.getOrElse(0),
-        s._6.getOrElse(null), null, null))
-
-    //Currently, triplestore-provided "dynamic" miRNA sources cannot have
-    //cutoff levels with labels. Such levels can only be set in static sources.
-
-    val static = staticMirnaSources
-    //Dynamic sources take precedence over static ones, based on id
-    dynamic.toArray ++ static.filter(s => !dynamic.exists(_.id == s.id))
+    staticMirnaSources.toArray
   }
 
   /**
@@ -147,7 +138,7 @@ class AppInfoLoader(probeStore: ProbeStore,
       new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3,
         1188967, "Experimentally verified", mtbLevels,
         "http://mirtarbase.mbc.nctu.edu.tw/php/index.php"),
-      new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90,
+      new MirnaSource(MIRDB_SOURCE, "miRDB 5.0", true, 90,
         3117189, "Predicted, score 0-100", null,
         "http://mirdb.org"),
       new MirnaSource(MIRAW_SOURCE, "MiRAW 6_1_10_AE10 NLL", false, null,
