@@ -109,7 +109,7 @@ class ManagedNetwork(mainParams: LoadParams,
 
     if (sideIsMRNA) {
       val all = platforms.platformProbes(sideMatrix.params.platform)
-      val rowTargets = targets.targets(lookup.map(MiRNA), all)
+      val rowTargets = targets.targetsForPlatform(lookup.map(MiRNA), all)
       rowTargets.groupBy(_._2).map(x => {
         //the same association can occur through multiple mappings - count
         //distinct end to end mappings here

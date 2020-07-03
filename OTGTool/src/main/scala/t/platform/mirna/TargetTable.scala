@@ -19,11 +19,10 @@
 
 package t.platform.mirna
 
-import t.sparql._
-import t.platform._
 import t.db._
 import t.platform.Species.Species
-import scala.collection.immutable.DefaultMap
+import t.platform._
+import t.sparql._
 
 object TargetTable {
   def empty = (new TargetTableBuilder).build
@@ -104,21 +103,35 @@ class TargetTable(
 
   /**
    * miRNA to mRNA lookup without a platform. Simple RefSeq IDs will be returned.
+   * @param countLimit An optional limit on the number of targets to return for
+   *                   each probe. Note: if countLimit = Some(n) and >n targets
+   *                   are found, then n+1 will be returned.
    */
-  def targets(miRNAs: Iterable[MiRNA]): Iterable[(MiRNA, RefSeq, Double, String)] = {
+  def targets(miRNAs: Iterable[MiRNA],
+              countLimit: Option[Int] = None
+             ): Iterable[(MiRNA, RefSeq, Double, String)] = {
     val allMicro = miRNAs.toSet
-    for {
+    val allResults = for {
       (origin, target, score, info) <- this;
       if (allMicro.contains(origin))
     } yield (origin, target, score, info.label(score))
+    countLimit match {
+      case Some(n) => allResults.groupBy(_._1).mapValues(_.slice(0, n+1)).values.flatten
+      case None => allResults
+    }
   }
 
   /**
    * Efficient miRNA to mRNA lookup for a specific mRNA platform.
    * mRNA probes in the platform must have transcripts populated.
+   * @param countLimit An optional limit on the number of targets to return for
+   *                   each probe. Note: if countLimit = Some(n) and >n targets
+   *                   are found, then n+1 will be returned.
    */
-  def targets(miRNAs: Iterable[MiRNA], platform: Iterable[Probe]): Iterable[(MiRNA, Probe, Double, String)] = {
-    val allTrn = targets(miRNAs)
+  def targetsForPlatform(miRNAs: Iterable[MiRNA], platform: Iterable[Probe],
+                         countLimit: Option[Int] = None
+             ): Iterable[(MiRNA, Probe, Double, String)] = {
+    val allTrn = targets(miRNAs, countLimit)
     val probeLookup = Map() ++ probesForTranscripts(platform, allTrn.map(_._2))
     //note: we are not deduplicating here, should define how to do it
     //(handling multiple scores for the same pair, etc)
@@ -131,47 +144,54 @@ class TargetTable(
   /**
    * Efficient mRNA to miRNA lookup.
    * Probes must have transcripts populated.
+   * @param countLimit An optional limit on the number of targets to return for
+   *                   each probe. Note: if countLimit = Some(n) and >n targets
+   *                   are found, then n+1 will be returned.
    */
-  def reverseTargets(mRNAs: Iterable[Probe]): Iterable[(Probe, MiRNA, Double, String)] = {
+  def reverseTargets(mRNAs: Iterable[Probe],
+                     countLimit: Option[Int] = None
+                    ): Iterable[(Probe, MiRNA, Double, String)] = {
     val allTrns = mRNAs.flatMap(p => p.transcripts.map(tr => (tr, p)))
     val allTrLookup = allTrns.groupBy(_._1)
     val allTrKeys = allTrLookup.keySet
     println(s"Size ${allTrKeys.size} transcript key set")
-    for {
+    val allResults = for {
       (origin, target, score, info) <- this;
       if allTrKeys contains target;
       (refSeq, probe) <- allTrLookup(target)
     } yield (probe, origin, score, info.label(score))
-  }
-
-  final def limitSize[T](data: Iterable[T], limit: Option[Int]) = limit match {
-    case Some(n) => data take n
-    case None    => data
+    countLimit match {
+      case Some(n) => allResults.groupBy(_._1).mapValues(_.slice(0, n+1)).values.flatten
+      case None => allResults
+    }
   }
 
   /**
    * Convenience method.
    * If not from MiRNA, then probes must have transcripts populated.
    * If from MiRNA, then any platform given must have transcripts populated.
+   * @param countLimit An optional limit on the number of targets to return for
+   *                   each probe. Note: if countLimit = Some(n) and >n targets
+   *                   are found, then n+1 will be returned.
    */
   def associationLookup(
     probes: Seq[Probe],
     fromMirna: Boolean,
     platform: Option[Iterable[Probe]],
-    sizeLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
+    countLimit: Option[Int] = Some(3)): MMap[Probe, DefaultBio] = {
     if (fromMirna) {
       val targetRes = platform match {
         //Return probes in the requested mRNA platform
-        case Some(p) => targets(probes.map(p => MiRNA(p.identifier)), p).map(x =>
+        case Some(p) => targetsForPlatform(probes.map(p => MiRNA(p.identifier)), p, countLimit).map(x =>
           (x._1.asProbe, DefaultBio(x._2.identifier, x._2.identifier, Some(x._4))))
         //Return plain RefSeq IDs
-        case None => targets(probes.map(p => MiRNA(p.identifier))).map(x =>
+        case None => targets(probes.map(p => MiRNA(p.identifier)), countLimit).map(x =>
           (x._1.asProbe, DefaultBio(x._2.id, x._2.id, Some(x._4))))
       }
 
-      makeMultiMap(limitSize(targetRes.toSeq.distinct, sizeLimit))
+      makeMultiMap(targetRes.toSeq.distinct)
     } else {
-      makeMultiMap(limitSize(reverseTargets(probes).toSeq.distinct, sizeLimit).map(x =>
+      makeMultiMap(reverseTargets(probes, countLimit).toSeq.distinct.map(x =>
         (x._1, DefaultBio(x._2.id, x._2.id, Some(x._4)))))
     }
   }
