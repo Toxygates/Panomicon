@@ -6,9 +6,6 @@
 
 package friedrich.data.immutable
 
-import scala.collection.SeqLike
-import scala.collection.generic.CanBuildFrom
-
 /**
  * A matrix of data that can be represented and modified as row or column vectors.
  * @tparam Self
