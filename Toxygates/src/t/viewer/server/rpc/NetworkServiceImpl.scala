@@ -21,15 +21,14 @@ package t.viewer.server.rpc
 import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-import t.common.shared.GroupUtils
-import t.common.shared.ValueType
+import t.common.shared.{GroupUtils, ValueType}
 import t.common.shared.sample.Group
 import t.intermine.{MiRNATargets, MiRawImporter}
 import t.platform.mirna._
 import t.platform.mirna.TargetTable
 import t.sparql.ProbeStore
 import t.viewer.client.rpc.NetworkService
-import t.viewer.server.{AppInfoLoader, CSVHelper, Configuration}
+import t.viewer.server.{CSVHelper, Configuration, MirnaSources}
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.MatrixController
@@ -205,12 +204,13 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
       MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _, allTranscripts))
   }
 
+  import MirnaSources._
   protected def mirnaTargetTable(source: MirnaSource) = {
     val table = source.id match {
-      case AppInfoLoader.MIRDB_SOURCE      => mirdbTable
-      case AppInfoLoader.TARGETMINE_SOURCE => mirtarbaseTable
-      case AppInfoLoader.MIRAW_SOURCE      => miRawTable
-      case _                               => throw new Exception("Unexpected MiRNA source")
+      case MIRDB_SOURCE => mirdbTable
+      case TARGETMINE_SOURCE => mirtarbaseTable
+      case MIRAW_SOURCE => miRawTable
+      case _ => throw new Exception("Unexpected MiRNA source")
     }
     table match {
       case Some(t) =>
@@ -224,3 +224,5 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     }
   }
 }
+
+

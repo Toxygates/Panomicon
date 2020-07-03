@@ -27,25 +27,15 @@ import t.viewer.server.Conversions._
 import t.viewer.shared.{AppInfo, StringList}
 import t.viewer.shared.clustering.ProbeClustering
 import t.viewer.shared.mirna.MirnaSource
-
+import t.common.server.GWTUtils._
 import scala.collection.JavaConverters._
-
-object AppInfoLoader {
-  //ID strings for the various miRNA sources that we support.
-
-  val TARGETMINE_SOURCE: String = "TargetMine"
-  val MIRDB_SOURCE: String = "miRDB"
-  val MIRAW_SOURCE: String = "MiRAW"
-}
 
 class AppInfoLoader(probeStore: ProbeStore,
                     configuration: Configuration,
                     baseConfig: BaseConfig,
                     appName: String) {
 
-  import AppInfoLoader._
   import GWTTypes._
-  import t.common.server.GWTUtils._
 
   /**
    * Called when AppInfo needs a full refresh.
@@ -119,13 +109,21 @@ class AppInfoLoader(probeStore: ProbeStore,
   }
 
   protected def getMirnaSourceInfo: Array[MirnaSource] = {
-    staticMirnaSources.toArray
+    MirnaSources.all.toArray
   }
+}
+
+object MirnaSources {
+  //ID strings for the various miRNA sources that we support.
+
+  val TARGETMINE_SOURCE: String = "TargetMine"
+  val MIRDB_SOURCE: String = "miRDB"
+  val MIRAW_SOURCE: String = "MiRAW"
 
   /**
    * MiRNA sources that are hardcoded into the application.
    */
-  protected def staticMirnaSources: Seq[MirnaSource] = {
+  def all: Seq[MirnaSource] = {
     val mtbLevels = t.intermine.MiRNATargets.supportLevels.toSeq.sortBy(_._2).reverse.map(x =>
       new FirstKeyedPair(x._1, asJDouble(x._2))).asGWT
 
