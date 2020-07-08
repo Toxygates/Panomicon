@@ -32,10 +32,6 @@ import t.viewer.shared.Association
 
 import scala.collection.{Set => CSet}
 
-class LimitState {
-  @volatile var exceeded = false
-}
-
 class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
                          drugBank: DrugBank) {
 
@@ -59,8 +55,6 @@ class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
 class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformRegistry, mirnaTable: TargetTable,
                     sidePlatform: Option[String]) {
 
-  var limitState = new LimitState()
-
   def lookup: AssociationLookup = {
       case (MiRNA, sc, _, probes)      => resolveMiRNA(sc, probes, false)
       case (MRNA, sc, _, probes)       => resolveMiRNA(sc, probes, true)
@@ -72,7 +66,6 @@ class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformR
   def resolveMiRNAInner(sc: SampleClass, probes: Iterable[Probe],
     fromMirna: Boolean): MMap[Probe, DefaultBio] = {
     val species = asSpecies(sc)
-    val sizeLimit = Some(1000)
 
     if (mirnaTable.size == 0) {
       Console.err.println("Target table is empty; no mRNA-miRNA associations will be found")
@@ -85,13 +78,13 @@ class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformR
     val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
 
     val platform = sidePlatform.map(probeStore.platformsAndProbes)
+    // Note: we pass None for the sizeLimit argument here because we have no way of
+    // getting the sizeLimit argument from AssociationResolver. In the future it may
+    // make sense to add a sizeLimit argument to AssociationLookup
     val data = filtTable.associationLookup(lookedUp, fromMirna,
-      platform, sizeLimit)
+      platform, None)
 
     val total = data.values.map(_.size).sum
-    if (sizeLimit.map(_ <= total).getOrElse(false)) {
-      limitState.exceeded = true
-    }
     data
   }
 
@@ -117,9 +110,6 @@ class AssociationResolver(mirnaResolver: MirnaResolver,
                            probeStore: ProbeStore,
                           sampleStore: SampleStore,
                           b2rKegg: B2RKegg) {
-
-  var limitState = new LimitState
-  mirnaResolver.limitState = limitState
 
   val mainResolver: AssociationLookup = {
     case (GOMF, _, _, probes)       => probeStore.mfGoTerms(probes)
@@ -158,16 +148,13 @@ class AssociationResolver(mirnaResolver: MirnaResolver,
   def errorVals(probes: Iterable[Probe]) = Map() ++
     probes.map(p => (Probe(p.identifier) -> emptyVal))
 
-  def errorAssoc(t: AType, probes: Iterable[Probe]) =
+  def errorAssoc(t: AType, probes: Iterable[Probe], sizeLimit: Int) =
     new Association(t,
-    convertAssociations(errorVals(probes)), false, false)
+    convertAssociations(errorVals(probes)), sizeLimit, false)
 
   def resolve(types: Iterable[AType], sc: SampleClass, sf: SampleFilter,
-    probes: Iterable[String],
-    extraResolvers: Iterable[AssociationLookup] = Seq()): Array[Association] = {
-
-    //reset state
-    limitState.exceeded = false
+    probes: Iterable[String], extraResolvers: Iterable[AssociationLookup] = Seq(),
+    sizeLimit: Int = 10): Array[Association] = {
 
     //Look up all core associations first.
     //Note: this might not be needed - platformsCache might do a better job
@@ -179,11 +166,11 @@ class AssociationResolver(mirnaResolver: MirnaResolver,
       // parallel loop
       association = try {
         val data = associationLookup(t, sc, sf, aprobes, extraResolvers)
-        new Association(t, convertAssociations(data), limitState.exceeded, true)
+        new Association(t, convertAssociations(data), sizeLimit, true)
       } catch {
         case e: Exception =>
           e.printStackTrace()
-          errorAssoc(t, aprobes)
+          errorAssoc(t, aprobes, sizeLimit)
       }
     } yield association
     allAssociations.seq.toArray

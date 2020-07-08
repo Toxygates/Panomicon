@@ -178,7 +178,7 @@ class TargetTable(
     probes: Seq[Probe],
     fromMirna: Boolean,
     platform: Option[Iterable[Probe]],
-    countLimit: Option[Int] = Some(3)): MMap[Probe, DefaultBio] = {
+    countLimit: Option[Int] = None): MMap[Probe, DefaultBio] = {
     if (fromMirna) {
       val targetRes = platform match {
         //Return probes in the requested mRNA platform

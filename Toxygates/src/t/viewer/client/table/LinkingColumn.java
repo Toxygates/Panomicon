@@ -38,7 +38,7 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
     this(c, name, style.initVisibility(col), style.initWidth(col), col);
   }
 
-  final int MAX_ITEMS = 10;
+  public static final int MAX_ITEMS = 10;
 
   // Note: might move this method down or parameterise AssociationValue,
   // use an interface etc
@@ -58,7 +58,7 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
         }
       }
       if (i == MAX_ITEMS + 1) {
-        r.add("<div> ... (" + values.size() +
+        r.add("<div> ... (" + Math.min(values.size(), MAX_ITEMS) +
                 ( values.size() > MAX_ITEMS ? "+ items" : " items") +
             ")");
       }

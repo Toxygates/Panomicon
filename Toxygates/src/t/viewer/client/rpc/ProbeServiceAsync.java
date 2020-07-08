@@ -57,7 +57,7 @@ public interface ProbeServiceAsync {
   void probesForGoTerm(String pattern, List<Sample> samples, AsyncCallback<String[]> callback);
 
   void associations(SampleClass sc, AType[] types, String[] probes,
-      AsyncCallback<Association[]> callback);
+      int sizeLimit, AsyncCallback<Association[]> callback);
 
   void probesTargetedByCompound(SampleClass sc, String compound, String service,
                                 boolean homologous, AsyncCallback<String[]> callback);
