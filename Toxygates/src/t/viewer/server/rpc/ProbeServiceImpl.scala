@@ -56,8 +56,9 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   protected var instanceURI: Option[String] = None
 
   protected var uniprot: Uniprot = _
-  protected lazy val b2rKegg: B2RKegg =
-    new B2RKegg(baseConfig.triplestore.triplestore)
+  protected lazy val b2rKegg: B2RKegg = new B2RKegg(baseConfig.triplestore.triplestore)
+  
+  lazy val associationResolver =  new AssociationResolver(probeStore, sampleStore, b2rKegg)
 
   protected var configuration: Configuration = _
 
@@ -297,21 +298,20 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
                             probes: Array[String], sizeLimit: Int): Array[Association] = {
     implicit val sf = defaultSampleFilter
 
-    //The TargetTable, which contains the user's miRNA-mRNA associations, is essential for
-    //fetching miRNA-mRNA mapping columns (miRNA association column in a mRNA table or vice versa).
-    //It is stored in the NetworkService's state.
-    val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
-    val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
+    // If resolving mRNA-miRNA associations, obtain target table and side platform
+    // in order to create a MirnaResolver
+    val customResolvers = if (types.contains(AType.MiRNA) || types.contains(AType.MRNA)) {
+      val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
+      val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
 
-    //Side table platform for the first network in the NetState
-    //For miRNA-mRNA resolutions, this is the platform that we resolve into.
-    val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
-    val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
+      val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
+      val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
 
-    //The AssociationResolver contains enough resources to resolve most association types by itself.
-    //We also supply special resolvers that require additional resources from outside.
-    val mainResolver =  new AssociationResolver(mirnaRes, probeStore, sampleStore, b2rKegg)
-    val customResolvers = Seq(drugTargetResolver)
-    mainResolver.resolve(types, sc, sf, probes, customResolvers, sizeLimit)
+      Seq(drugTargetResolver, mirnaRes.lookup)
+    } else {
+      Seq(drugTargetResolver)
+    }
+
+    associationResolver.resolve(types, sc, sf, probes, customResolvers, sizeLimit)
   }
 }
