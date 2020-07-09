@@ -19,14 +19,14 @@
 
 package t.viewer.client.table;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.cell.client.SafeHtmlCell;
-
 import t.common.shared.SharedUtils;
 import t.viewer.shared.AssociationValue;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
   public LinkingColumn(SafeHtmlCell c, String name, boolean initState, String width,
@@ -38,11 +38,11 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
     this(c, name, style.initVisibility(col), style.initWidth(col), col);
   }
 
-  final int MAX_ITEMS = 10;
+  public static final int MAX_ITEMS = 10;
 
   // Note: might move this method down or parameterise AssociationValue,
   // use an interface etc
-  protected List<String> makeLinks(Collection<AssociationValue> values, boolean limitExceeded) {
+  protected List<String> makeLinks(Collection<AssociationValue> values) {
     List<String> r = new ArrayList<String>();
     int i = 0;
     for (AssociationValue v : values) {
@@ -58,8 +58,8 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
         }
       }
       if (i == MAX_ITEMS + 1) {
-        r.add("<div> ... (" + values.size() +
-                ( limitExceeded ? "+ items" : " items") +
+        r.add("<div> ... (" + Math.min(values.size(), MAX_ITEMS) +
+                ( values.size() > MAX_ITEMS ? "+ items" : " items") +
             ")");
       }
     }
@@ -68,16 +68,11 @@ public abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {
 
   @Override
   protected String getHtml(T row) {
-    return SharedUtils.mkString(makeLinks(getLinkableValues(row),
-        wasSizeExceeded(row)), "");
+    return SharedUtils.mkString(makeLinks(getLinkableValues(row)), "");
   }
 
   protected Collection<AssociationValue> getLinkableValues(T data) {
     return new ArrayList<AssociationValue>();
-  }
-
-  protected boolean wasSizeExceeded(T data) {
-    return false;
   }
 
   protected abstract String formLink(String value);

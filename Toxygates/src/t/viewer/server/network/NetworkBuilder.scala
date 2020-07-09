@@ -54,7 +54,7 @@ object NetworkBuilder {
       case Network.mirnaType =>
         val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
         val allProbes = platforms.platformProbes(expPlatform).toSeq
-        val range = targets.targets(domain.map(new MiRNA(_)), allProbes)
+        val range = targets.targetsForPlatform(domain.map(new MiRNA(_)), allProbes)
         range.map(_._2.identifier).toSeq.distinct
       case _ => throw new Exception(s"Unable to extract side probes: unexpected column type $mainType for main table")
     }
@@ -88,7 +88,7 @@ class NetworkBuilder(targets: TargetTable,
   }
 
   def targetsForMirna(mirna: Iterable[MiRNA], targetPlatform: Iterable[Probe]) =
-    targets.targets(mirna, targetPlatform)
+    targets.targetsForPlatform(mirna, targetPlatform)
 
   def targetsForMrna(mrna: Iterable[Probe]) =
     targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4))

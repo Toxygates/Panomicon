@@ -19,15 +19,16 @@
 
 package t.viewer.client.components;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
-import com.google.gwt.user.client.ui.*;
-
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.Widget;
 import t.common.shared.ValueType;
 import t.viewer.client.ClientGroup;
 import t.viewer.shared.Association;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * A composite that displays information from a set of columns and a 
@@ -62,7 +63,7 @@ public abstract class DataView extends Composite {
   
   protected void associationsUpdated(Association[] result) {
     Optional<Association> overLimit = 
-        Arrays.stream(result).filter(a -> a.overSizeLimit()).findAny();
+        Arrays.stream(result).filter(a -> a.anyOverSizeLimit()).findAny();
     if (overLimit.isPresent()) {       
       displayInfo("Too many associations, limited view.");
     } else {

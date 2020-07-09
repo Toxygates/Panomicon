@@ -19,10 +19,11 @@
 
 package t.viewer.shared;
 
+import t.common.shared.AType;
+
 import java.io.Serializable;
 import java.util.*;
-
-import t.common.shared.AType;
+import java.util.stream.Collectors;
 
 /**
  * An association is a mapping from probes to other objects. They are used as "dynamic columns" in
@@ -34,7 +35,8 @@ public class Association implements Serializable {
   private AType _type;
   private Map<String, ? extends Set<AssociationValue>> _data =
       new HashMap<String, HashSet<AssociationValue>>();
-  private boolean _overSizeLimit;
+  private int  _sizeLimit;
+  private boolean _anyOverSizeLimit;
   private boolean _success;
 
   public Association() {}
@@ -43,12 +45,31 @@ public class Association implements Serializable {
    * Construct an Association result with data.
    * @param type
    * @param data Association data keyed on probe id:s.
+   * @param sizeLimit A limit on the number of associations to return for
+   *                  each probe. The results in the data wil be truncated
+   *                  based on this limit. Note: if >n associations are found
+   *                  for a probe, then n+1 will be kept, in order to provide an
+   *                  indication that >n results were found.
    */
   public Association(AType type, Map<String, ? extends Set<AssociationValue>> data,
-      boolean overSizeLimit, boolean success) {
+                     int sizeLimit, boolean success) {
     this(type, success);
-    _data = data;
-    _overSizeLimit = overSizeLimit;
+
+    // Go through the data and truncate the values so there are no more than sizeLimit+1
+    // for each probe
+    Map<String, ? extends Set<AssociationValue>> newData = data.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(),
+      entry -> {
+        Set<AssociationValue> values = entry.getValue();
+        if (values.size() > sizeLimit) {
+          _anyOverSizeLimit = true;
+        }
+        int newSize = Math.min(sizeLimit + 1, values.size());
+        AssociationValue[] valuesArray = values.toArray(new AssociationValue[newSize]);
+        AssociationValue[] newValuesArray = Arrays.copyOfRange(valuesArray, 0, newSize);
+        return new HashSet<AssociationValue>(Arrays.asList(newValuesArray));
+      }));
+    _sizeLimit = sizeLimit;
+    _data = newData;
   }
   
   /**
@@ -72,9 +93,15 @@ public class Association implements Serializable {
     return _data;
   }
   
-  public boolean overSizeLimit() {
-    return _overSizeLimit;
+  public int sizeLimit() {
+    return _sizeLimit;
   }
+
+  /**
+   * @return true iff the data provided when creating this Association had more
+   *         results than _sizeLimit for at least one probe.
+   */
+  public boolean anyOverSizeLimit() { return _anyOverSizeLimit; }
   
   /**
    * Was the data successfully fetched?

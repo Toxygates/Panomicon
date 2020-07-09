@@ -94,7 +94,7 @@ class ManagedNetworkTest extends TTestSuite {
     val expSideTargets = if (reverseLookup) {
       targets.reverseTargets(platforms.resolve(mainProbes)).map(_._2.id)
     } else {
-      targets.targets(mainProbes.map(MiRNA(_)), mrnaProbes).map(_._2.identifier)
+      targets.targetsForPlatform(mainProbes.map(MiRNA(_)), mrnaProbes).map(_._2.identifier)
     }
     checkEqualSets(sideProbes.toSet, expSideTargets.toSet)
 

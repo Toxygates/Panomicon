@@ -124,12 +124,16 @@ public interface ProbeService extends RemoteService {
    * Obtain associations -- the "dynamic columns" on the data screen.
    * 
    * @param types the association types to get.
-   * @param filter
    * @param probes
+   * @param sizeLimit A limit on the number of associations to return for
+   *                  each probe. The results in the data wil be truncated
+   *                  based on this limit. Note: if >n associations are found
+   *                  for a probe, then n+1 will be kept, in order to provide an
+   *                  indication that >n results were found.
    * @return
    */
-  Association[] associations(SampleClass sc, AType[] types, String[] probes)
-      throws TimeoutException;
+  Association[] associations(SampleClass sc, AType[] types, String[] probes,
+      int sizeLimit) throws TimeoutException;
 
   /**
    * Obtain probes that correspond to proteins targeted by the named compound.

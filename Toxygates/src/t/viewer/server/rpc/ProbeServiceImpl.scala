@@ -294,7 +294,7 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   }
 
   override def associations(sc: SampleClass, types: Array[AType],
-                            probes: Array[String]): Array[Association] = {
+                            probes: Array[String], sizeLimit: Int): Array[Association] = {
     implicit val sf = defaultSampleFilter
 
     //The TargetTable, which contains the user's miRNA-mRNA associations, is essential for
@@ -312,6 +312,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
     //We also supply special resolvers that require additional resources from outside.
     val mainResolver =  new AssociationResolver(mirnaRes, probeStore, sampleStore, b2rKegg)
     val customResolvers = Seq(drugTargetResolver)
-    mainResolver.resolve(types, sc, sf, probes, customResolvers)
+    mainResolver.resolve(types, sc, sf, probes, customResolvers, sizeLimit)
   }
 }

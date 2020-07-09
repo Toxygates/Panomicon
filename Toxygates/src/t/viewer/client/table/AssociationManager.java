@@ -19,23 +19,24 @@
 
 package t.viewer.client.table;
 
-import java.util.*;
-import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import t.viewer.client.screen.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.ExpressionRow;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.screen.Screen;
 import t.viewer.shared.Association;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Manages Associations for a RichTable
@@ -156,7 +157,8 @@ public class AssociationManager<T extends ExpressionRow> implements AssociationC
 
       logger
           .info("Fetching associations " + associationsToFetch + " for " + dispAtomic.length + " probes");
-      probeService.associations(tableDelegate.chosenSampleClass(), associationsToFetch, dispAtomic, assocCallback);
+      probeService.associations(tableDelegate.chosenSampleClass(), associationsToFetch, dispAtomic,
+              LinkingColumn.MAX_ITEMS, assocCallback);
     }
   }
   
