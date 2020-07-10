@@ -10,4 +10,4 @@ rdf/ - scripts for accessing and manipulating various RDF data from external sou
 otg/ - scripts for maintaining Open TG-GATEs data
 tcga/ - scripts for working with the Cancer Genome Atlas (TCGA), work in progress
 experimental/ - various scripts under development
-
+nibiohn/ - scripts for use inside NIBIOHN, which have not yet been adapted for public use

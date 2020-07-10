@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#Script to generate and insert auxiliary RDF data into the triplestore.
-#Edit $BASE/triplestore/replace.sh to set the correct URL and credentials.
-#This script may be slow, depending on the performance and configuration of your triplestore.
-
 BASE=$(dirname $0)/..
 source $BASE/config.sh
 
