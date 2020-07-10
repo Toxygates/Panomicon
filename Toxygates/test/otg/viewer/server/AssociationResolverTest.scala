@@ -61,7 +61,7 @@ class AssociationResolverTest extends TTestSuite {
   val uniprot = new LocalUniprot(tsc.triplestore)
 
   //TODO
-  val ar = new AssociationResolver(null, probeStore, sampleStore, b2rKegg)
+  val ar = new AssociationResolver(probeStore, sampleStore, b2rKegg)
 
   private def testAssociation(typ: AType) = {
     val as = ar.resolve(Seq(typ), sc, SampleFilter(), probes)

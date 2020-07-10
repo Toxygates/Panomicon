@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Script for updating annotations on the NIBIOHN Toxygates/Panomicon server.
+#Updates GO terms and KEGG pathways.
+
 #Note, /home/nibioadmin on toxygates is separate from the same directory on the cluster,
 #as the former is not a cluster machine.
 #We assume that this script is run from a cluster machine.
