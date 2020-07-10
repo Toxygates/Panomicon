@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#Script to filter ensembl annotations (RDF) to generate a platform in Panomicon - work in progress
+#Script to filter ensembl annotations (RDF) to generate a platform in Panomicon.
 #We filter the raw annotation files from ensembl mainly to keep the sizes manageable.
 
 #You must set up config.sh correctly for this to work.

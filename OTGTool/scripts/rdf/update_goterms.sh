@@ -3,6 +3,8 @@
 BASE=$(dirname $0)/..
 source $BASE/config.sh
 
+#Script to download and insert Gene Ontology (GO) terms.
+
 DIR=$BASE/downloads
 mkdir -p $DIR
 

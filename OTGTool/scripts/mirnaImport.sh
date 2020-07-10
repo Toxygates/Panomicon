@@ -3,6 +3,9 @@
 BASE=$(dirname $0)
 source $BASE/config.sh
 
+#Imports miRNA related data.
+#Currently miRDB (as a mRNA-miRNA association source) and MirBase (as a platform).
+
 echo miRDB
 pushd downloads
 MIRDB=miRDB_v6.0_prediction_result.txt.gz
