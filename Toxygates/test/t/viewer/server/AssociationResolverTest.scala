@@ -17,17 +17,16 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.server
+package t.viewer.server
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import t.common.shared.AType
 import t.model.SampleClass
 import t.model.sample.{Attribute, OTGAttribute}
 import t.sparql.secondary._
 import t.sparql.{ProbeStore, SampleFilter, SampleStore}
-import t.viewer.server.AssociationResolver
 import t.{BaseConfig, TTestSuite}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 import scala.collection.JavaConverters._
 
@@ -60,7 +59,6 @@ class AssociationResolverTest extends TTestSuite {
   val b2rKegg = new B2RKegg(tsc.triplestore)
   val uniprot = new LocalUniprot(tsc.triplestore)
 
-  //TODO
   val ar = new AssociationResolver(probeStore, sampleStore, b2rKegg)
 
   private def testAssociation(typ: AType) = {

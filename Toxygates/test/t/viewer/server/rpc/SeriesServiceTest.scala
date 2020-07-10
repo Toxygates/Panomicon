@@ -17,18 +17,16 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.server.rpc
+package t.viewer.server.rpc
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import otg.viewer.server.AssociationResolverTest
-import t.TTestSuite
-import t.common.shared.SeriesType
-import t.common.shared.Dataset
 import java.util.Date
 
-import t.viewer.server.rpc.SeriesServiceImpl
+import t.TTestSuite
+import t.common.shared.{Dataset, SeriesType}
+import t.viewer.server.AssociationResolverTest
 import t.viewer.shared.{RankRule, RuleType}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {
