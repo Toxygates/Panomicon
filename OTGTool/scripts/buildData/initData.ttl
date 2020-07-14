@@ -1,0 +1,22 @@
+<http://level-five.jp/t/dataset/Data>
+        a       <http://level-five.jp/t/dataset> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Data" ;
+        <http://level-five.jp/t/comment>
+                "Auto-generated default dataset" ;
+        <http://level-five.jp/t/description>
+                "Auto-generated default dataset" ;
+        <http://level-five.jp/t/publicComment>
+                "" ;
+        <http://level-five.jp/t/timestamp>
+                "2020-07-09 16:34:32" .
+
+<http://level-five.jp/t/instance/dev>
+        a       <http://level-five.jp/t/instance> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "dev" ;
+        <http://level-five.jp/t/comment>
+                "Auto-generated default instance" ;
+        <http://level-five.jp/t/timestamp>
+                "2020-07-14 14:01:27" .
+
