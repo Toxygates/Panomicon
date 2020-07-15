@@ -34,6 +34,8 @@ import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.Analytics;
 import t.viewer.client.Resources;
+import t.viewer.client.future.Future;
+import t.viewer.client.future.FutureUtils;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class MyDataScreen extends MinimalScreen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
-  private String userKey;   
+  private Future<String> userKeyFuture;
   private String userDataset;
   private String userSharedDataset;
   
@@ -63,10 +65,17 @@ public class MyDataScreen extends MinimalScreen {
     addToolbar(cmds, 35);
     
     String key = getStorage().getItem("userDataKey");
+    userKeyFuture = new Future<>();
     if (key == null) {
-      key = manager().appInfo().getUserKey();
+      FutureUtils.beginPendingRequestHandling(userKeyFuture,
+              this, "Unable to obtain new user key");
+      userKeyFuture.addSuccessCallback(newKey -> {
+        setUserKey(newKey);
+      });
+      man.userDataService().newUserKey(userKeyFuture);
+    } else {
+      userKeyFuture.onSuccess(key);
     }
-    setUserKey(key);    
   }
   
   @Override
@@ -170,8 +179,11 @@ public class MyDataScreen extends MinimalScreen {
     
     HTML h = new HTML();
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
-    cmds.add(h); 
-    keyLabel = new Label("Access key: " + userKey);
+    cmds.add(h);
+    keyLabel = new Label("Fetching access key...");
+    userKeyFuture.addSuccessCallback(userKey -> {
+      keyLabel.setText("Access key: " + userKey);
+    });
     cmds.add(keyLabel);
     Button b = new Button("Change ...");
     b.addClickHandler(new ClickHandler() {      
@@ -190,8 +202,10 @@ public class MyDataScreen extends MinimalScreen {
         }
       }
     });
-    cmds.add(b);    
-    refreshBatches();    
+    cmds.add(b);
+    userKeyFuture.addSuccessCallback(r -> {
+      refreshBatches();
+    });
     return bp.table();
   }
   
@@ -204,11 +218,10 @@ public class MyDataScreen extends MinimalScreen {
   
   private void setUserKey(String key) {
     getStorage().setItem("userDataKey", key);    
-    userKey = key;
     userDataset = Dataset.userDatasetId(key);
     userSharedDataset = Dataset.userSharedDatasetId(key);        
     if (keyLabel != null) {
-      keyLabel.setText("Your access key is: " + userKey);
+      keyLabel.setText("Your access key is: " + key);
     }
   }
 

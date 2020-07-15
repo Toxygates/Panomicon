@@ -48,8 +48,7 @@ class AppInfoLoader(probeStore: ProbeStore,
     new AppInfo(configuration.instanceName, mkList(),
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
-      probeClusterings(probeLists.asScala), appName,
-      makeUserKey(), getAnnotationInfo,
+      probeClusterings(probeLists.asScala), appName, getAnnotationInfo,
       baseConfig.attributes,
       getMirnaSourceInfo)
   }
@@ -89,15 +88,6 @@ class AppInfoLoader(probeStore: ProbeStore,
     Seq(
       ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
       ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
-  }
-
-  /**
-   * Generate a new user key, to be used when the client does not already have one.
-   */
-  def makeUserKey(): String = {
-    val time = System.currentTimeMillis()
-    val random = (Math.random * Int.MaxValue).toInt
-    "%x%x".format(time, random)
   }
 
   /**

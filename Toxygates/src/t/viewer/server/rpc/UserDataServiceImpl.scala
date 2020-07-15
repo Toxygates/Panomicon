@@ -174,4 +174,13 @@ class UserDataServiceImpl extends OTGServiceServlet
         throw new MaintenanceException("Metadata error: couldn't parse exposure_time")
     }
   }
+
+  /**
+   * Generate a new user key, to be used when the client does not already have one.
+   */
+  def newUserKey(): String = {
+    val time = System.currentTimeMillis()
+    val random = (Math.random * Int.MaxValue).toInt
+    "%x%x".format(time, random)
+  }
 }
