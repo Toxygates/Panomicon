@@ -66,12 +66,12 @@ public class MyDataScreen extends MinimalScreen {
     
     String key = getStorage().getItem("userDataKey");
     userKeyFuture = new Future<>();
+    userKeyFuture.addSuccessCallback(newKey -> {
+      setUserKey(newKey);
+    });
     if (key == null) {
       FutureUtils.beginPendingRequestHandling(userKeyFuture,
               this, "Unable to obtain new user key");
-      userKeyFuture.addSuccessCallback(newKey -> {
-        setUserKey(newKey);
-      });
       man.userDataService().newUserKey(userKeyFuture);
     } else {
       userKeyFuture.onSuccess(key);
@@ -221,7 +221,7 @@ public class MyDataScreen extends MinimalScreen {
     userDataset = Dataset.userDatasetId(key);
     userSharedDataset = Dataset.userSharedDatasetId(key);        
     if (keyLabel != null) {
-      keyLabel.setText("Your access key is: " + key);
+      keyLabel.setText("Access key: " + key);
     }
   }
 
