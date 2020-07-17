@@ -25,22 +25,22 @@ import kyotocabinet.DB
 import t.global.KCDBRegistry
 
 abstract class KyotoCabinetDB(db: DB, writeMode: Boolean) extends Closeable {
-  def get(key: Array[Byte]): Option[Array[Byte]] = {
-    val d = db.get(key)
-    if (d != null) {
-      Some(d)
-    } else {
-      None
-    }
-  }
+  def get(key: Array[Byte]): Option[Array[Byte]] =
+    Option(db.get(key))
 
   def release() {
     val path = db.path()
     if (path != null &&
         path != "*" && //in memory cache DB
         path != "%" && //in-memory tree DB
-        ! writeMode) {
-      KCDBRegistry.releaseReader(path)
+      //if maintenance mode, all DBs are closed together when the application exits
+      ! KCDBRegistry.isMaintenanceMode
+        ) {
+      if (writeMode) {
+       KCDBRegistry.releaseWriter(path)
+      } else {
+        db.close()
+      }
     }
   }
 
