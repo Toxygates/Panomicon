@@ -34,7 +34,7 @@ public interface ProbeServiceAsync {
 
   void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
 
-  void filterProbesByGroup(String[] probes, List<Sample> samples, AsyncCallback<String[]> callback);
+//  void filterProbesByGroup(String[] probes, List<Sample> samples, AsyncCallback<String[]> callback);
 
   void geneSuggestions(SampleClass sc, String partialName,
       AsyncCallback<Pair<String, String>[]> callback);

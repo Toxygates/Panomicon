@@ -77,11 +77,6 @@ public interface ProbeService extends RemoteService {
       boolean quick, boolean titlePatternMatch, @Nullable List<Sample> samples);
 
   /**
-   * Filter probes by given samples
-   */
-  String[] filterProbesByGroup(String[] probes, List<Sample> samples);
-
-  /**
    * Obtain suggestions from a partial gene symbol
    * 
    * @return An array of pairs, where the first item is the precise gene symbol and the second is

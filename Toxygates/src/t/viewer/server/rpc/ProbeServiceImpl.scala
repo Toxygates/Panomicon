@@ -243,10 +243,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
       case None     => result.toArray
     }
 
-  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
-    filterProbesByGroupInner(probes, samples.asScala).toArray
-  }
-
    @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[Pair[String, String]] = {
       val plat = for (scl <- Option(sc);
