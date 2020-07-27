@@ -146,10 +146,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   }
 
   @throws[TimeoutException]
-  def pathways(pattern: String): Array[String] =
-    b2rKegg.forPattern(pattern).toArray
-
-  @throws[TimeoutException]
   def geneSyms(_probes: Array[String]): Array[Array[String]] = {
     //Don't look up more than 500 probes
     val (lookup, nonLookup) = _probes.splitAt(500)
@@ -180,12 +176,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
       b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++
         probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
     }.toArray
-  }
-
-  @throws[TimeoutException]
-  def probesForGoTerm(goTerm: String): Array[String] = {
-    val pmap = context.matrix.probeMap
-    probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 
   @throws[TimeoutException]
@@ -263,10 +253,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
       new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
     r.toArray
   }
-
-  @throws[TimeoutException]
-  override def goTerms(pattern: String): Array[String] =
-    probeStore.goTerms(pattern).map(_.name).toArray
 
   //Task: try to remove the sc argument (and the need for sp in orthologs)
   @throws[TimeoutException]

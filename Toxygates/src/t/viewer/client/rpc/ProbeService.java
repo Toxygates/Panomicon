@@ -83,11 +83,6 @@ public interface ProbeService extends RemoteService {
    *         the full gene name.
    */
   Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
-  
-  /**
-   * Obtain pathway names matching the pattern (partial name)
-   */
-  String[] pathways(String pattern) throws TimeoutException;
 
   /**
    * Obtain filtered probes that belong to the named pathway.
@@ -98,16 +93,6 @@ public interface ProbeService extends RemoteService {
    */
   String[] probesForPathway(String pathway, @Nullable List<Sample> samples)
       throws TimeoutException;
-
-  /**
-   * Obtain GO terms matching the given pattern (partial name)
-   */
-  String[] goTerms(String pattern) throws TimeoutException;
-
-  /**
-   * Obtain probes for a given GO term (fully named)
-   */
-  String[] probesForGoTerm(String goTerm) throws TimeoutException;
 
   /**
    * Obtain filtered probes for a given GO term (fully named)
