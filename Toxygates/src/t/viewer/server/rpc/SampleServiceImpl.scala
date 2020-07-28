@@ -89,15 +89,6 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
     s
   }
 
-  /**
-   * Generate a new user key, to be used when the client does not already have one.
-   */
-  protected def makeUserKey(): String = {
-    val time = System.currentTimeMillis()
-    val random = (Math.random * Int.MaxValue).toInt
-    "%x%x".format(time, random)
-  }
-
   private def sampleFilterFor(ds: Iterable[Dataset], base: Option[SampleFilter]) = {
      val ids = ds.toList.map(_.getId)
      val URIs = ids.map(Datasets.packURI(_))
