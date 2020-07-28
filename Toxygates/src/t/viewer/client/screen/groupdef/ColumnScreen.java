@@ -59,7 +59,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
       // update group inspector state if compounds were fetched, or if chosen compounds changed
       if (future.doneAndSuccessful() || 
           (future.doneWithoutError() && oldCompounds != null && !oldCompounds.equals(chosenCompounds))) {
-        groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, 
+        groupInspector.initializeState(chosenSampleClass, chosenCompounds,
             datasetsChanged);
       }
       if (future.doneWithoutError()) {
@@ -157,7 +157,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   public Future<String[]> setSampleClassAndFetchCompounds(SampleClass newSampleClass) {
     Future<String[]> future = super.setSampleClassAndFetchCompounds(newSampleClass);
     future.addSuccessCallback(r ->  {
-      groupInspector.initializeState(chosenDatasets, newSampleClass, chosenCompounds, false);
+      groupInspector.initializeState(newSampleClass, chosenCompounds, false);
     });
     return future;
   }
@@ -166,7 +166,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
   public Future<?> filterToolsDatasetsChanged(List<Dataset> datasets) {
     Future<?> compoundsFuture = super.filterToolsDatasetsChanged(datasets);
     compoundsFuture.addSuccessCallback(sampleClasses -> {
-      groupInspector.initializeState(chosenDatasets, chosenSampleClass, chosenCompounds, true);
+      groupInspector.initializeState(chosenSampleClass, chosenCompounds, true);
     });
     groupInspector.datasetsChanged(datasets);
     return compoundsFuture;
