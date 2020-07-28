@@ -92,7 +92,7 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
   }
 
   protected def reloadAppInfo = {
-    val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load
+    val r = new AppInfoLoader(probeStore, configuration, baseConfig).load
     r.setPredefinedGroups(predefinedGroups)
     r
   }
