@@ -45,5 +45,9 @@
   <!-- r 1.8.1 is known to work -->  
   <dependency org="org.rosuda.REngine" name="Rserve" rev="latest.integration"/>
 
+  <dependency org="com.lihaoyi" name="upickle_2.12" rev ="0.9.5" />
+
+    <!-- required for upickle -->
+  <dependency org="org.scala-lang.modules" name="scala-collection-compat_2.12" rev="2.1.6" />
 </dependencies>
 </ivy-module>
