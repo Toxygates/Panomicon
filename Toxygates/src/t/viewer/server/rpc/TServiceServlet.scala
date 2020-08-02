@@ -54,8 +54,6 @@ abstract class TServiceServlet extends RemoteServiceServlet {
 
   protected def schema: DataSchema
 
-  protected def appName: String
-
   override def doUnexpectedFailure(t: Throwable) {
     t.printStackTrace()
     super.doUnexpectedFailure(t)

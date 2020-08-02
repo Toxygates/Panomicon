@@ -42,6 +42,4 @@ trait OTGServiceServlet extends TServiceServlet {
   override protected def baseConfig: BaseConfig = context.config
 
   protected val schema: OTGSchema = new OTGSchema()
-
-  def appName: String = "Toxygates"
 }

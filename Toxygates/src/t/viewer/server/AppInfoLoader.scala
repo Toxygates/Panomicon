@@ -32,8 +32,7 @@ import scala.collection.JavaConverters._
 
 class AppInfoLoader(probeStore: ProbeStore,
                     configuration: Configuration,
-                    baseConfig: BaseConfig,
-                    appName: String) {
+                    baseConfig: BaseConfig) {
 
   import GWTTypes._
 
@@ -48,7 +47,9 @@ class AppInfoLoader(probeStore: ProbeStore,
     new AppInfo(configuration.instanceName,
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
-      probeClusterings(probeLists.asScala), appName, getAnnotationInfo,
+      probeClusterings(probeLists.asScala),
+      configuration.applicationName,
+      getAnnotationInfo,
       baseConfig.attributes,
       getMirnaSourceInfo)
   }
