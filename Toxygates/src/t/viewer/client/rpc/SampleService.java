@@ -54,8 +54,10 @@ public interface SampleService extends RemoteService {
    * @return Sample classes in the new dataset view.
    * @throws TimeoutException
    */
-  SampleClass[] chooseDatasets(Dataset[] enabled) throws TimeoutException;
-  
+  SampleClass[] chooseDatasets(String userKey, Dataset[] enabled) throws TimeoutException;
+
+  Dataset[] datasetsForUser(String userKey) throws TimeoutException;
+
   /**
    * Obtain all values for a given parameter.
    * 

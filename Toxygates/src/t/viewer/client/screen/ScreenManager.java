@@ -21,8 +21,10 @@ package t.viewer.client.screen;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ProvidesResize;
+import t.common.shared.Dataset;
 import t.viewer.client.Resources;
 import t.viewer.client.UIFactory;
+import t.viewer.client.future.Future;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.common.shared.DataSchema;
 import t.viewer.client.rpc.*;
@@ -65,4 +67,8 @@ public interface ScreenManager extends ProvidesResize {
   UIFactory factory();
   
   StorageProvider getStorage();
+
+  Dataset[] datasets();
+
+  Future<Dataset[]> updateDatasets();
 }

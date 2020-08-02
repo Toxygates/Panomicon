@@ -19,8 +19,6 @@
 
 package t.viewer.client.components;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.common.client.Utils;
 import t.common.shared.Dataset;
@@ -28,9 +26,9 @@ import t.model.SampleClass;
 import t.viewer.client.future.Future;
 import t.viewer.client.screen.Screen;
 import t.viewer.client.screen.data.DataFilterEditor;
-import t.viewer.shared.AppInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -83,24 +81,16 @@ public class FilterTools extends Composite implements DataFilterEditor.Delegate 
     //datasets
     
     logger.info("fetching app info");
-    screen.manager().reloadAppInfo(new AsyncCallback<AppInfo>() {      
-      @Override
-      public void onSuccess(AppInfo result) {
-        logger.info("app info fetched");
-        proceedShowSelector(result);
-      }
-      
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failed to load datasets from server");        
-      }
-    });    
+    Future<Dataset[]> future = screen.manager().updateDatasets();
+    future.addSuccessCallback(datasets -> {
+      proceedShowSelector(datasets);
+    });
   }
   
-  protected void proceedShowSelector(AppInfo info) {    
+  protected void proceedShowSelector(Dataset[] datasets) {
     final DialogBox db = new DialogBox(false, true);    
     DatasetSelector dsel =
-        new DatasetSelector(info.datasets(),
+        new DatasetSelector(Arrays.asList(datasets),
             chosenDatasets) {
           @Override
           public void onOK() {

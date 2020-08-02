@@ -52,7 +52,8 @@ public abstract class FilterScreen extends MinimalScreen {
   public Future<SampleClass[]> fetchSampleClasses(Future<SampleClass[]> future,
       List<Dataset> datasets) {
     logger.info("Request sample classes for " + datasets.size() + " datasets");
-    manager().sampleService().chooseDatasets(datasets.toArray(new Dataset[0]), future);
+    String userDataKey = manager().getStorage().getItem("userDataKey");
+    manager().sampleService().chooseDatasets(userDataKey, datasets.toArray(new Dataset[0]), future);
     FutureUtils.beginPendingRequestHandling(future, this, "Unable to choose datasets and fetch sample classes");
     future.addSuccessCallback(sampleClasses -> {
       logger.info("sample classes fetched");

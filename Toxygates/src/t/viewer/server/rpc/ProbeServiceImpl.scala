@@ -22,7 +22,6 @@ package t.viewer.server.rpc
 import java.util.{List => JList}
 
 import javax.annotation.Nullable
-import t.common.server.GWTUtils._
 import t.common.shared._
 import t.common.shared.sample.{Group, Sample}
 import t.model.SampleClass
@@ -30,7 +29,7 @@ import t.model.sample.{CoreParameter, OTGAttribute}
 import t.platform.Probe
 import t.platform.mirna.TargetTable
 import t.sparql.secondary._
-import t.sparql.{Datasets, ProbeStore, SampleFilter, SampleStore}
+import t.sparql.{ProbeStore, SampleFilter, SampleStore}
 import t.util.{PeriodicRefresh, Refreshable}
 import t.viewer.client.rpc.ProbeService
 import t.viewer.server.Conversions.{asJavaSample, asSpecies}
@@ -97,17 +96,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
     r
   }
 
-
-  private def sDatasets(userKey: String): Iterable[Dataset] = {
-    val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
-    var r = (instanceURI match {
-      case Some(u) => datasets.sharedListForInstance(u)
-      case None => datasets.sharedList
-    })
-
-    r.filter(ds => Dataset.isDataVisible(ds.getId, userKey))
-  }
-
   protected def defaultSampleFilter = SampleFilter(instanceURI = instanceURI)
 
   /**
@@ -117,12 +105,6 @@ class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
    */
   def appInfo(@Nullable userKey: String): AppInfo = {
     val appInfo = appInfoLoader.latest
-
-    /*
-     * Reload the datasets since they can change often (with user data, admin
-     * operations etc.)
-     */
-    appInfo.setDatasets(sDatasets(userKey).toSeq.asGWT)
 
     val sess = getThreadLocalRequest.getSession
 

@@ -19,27 +19,28 @@
 
 package t.viewer.client.screen.groupdef;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-
-import t.model.sample.OTGAttribute;
-import t.viewer.client.screen.FilterAndSelectorScreen;
-import t.viewer.client.screen.ScreenManager;
-import t.viewer.client.components.compoundsel.CompoundSelector;
-import t.viewer.client.screen.data.DataScreen;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import t.common.shared.Dataset;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.model.sample.OTGAttribute;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.components.FilterTools;
+import t.viewer.client.components.compoundsel.CompoundSelector;
 import t.viewer.client.future.Future;
+import t.viewer.client.screen.FilterAndSelectorScreen;
+import t.viewer.client.screen.ScreenManager;
+import t.viewer.client.screen.data.DataScreen;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
@@ -130,6 +131,11 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
 
   public List<Dataset> additionalNeededDatasets(Collection<ClientGroup> groups, 
       List<Dataset> currentDatasets) {
+    // If chosenDatasets is empty, the user hasn't chosen datasets, and all of them
+    // are considered to be enabled
+    if (chosenDatasets.size() == 0) {
+      return new ArrayList<Dataset>();
+    }
     List<String> neededDatasetNames = Group.collectAll(groups, OTGAttribute.Dataset)
          .collect(Collectors.toList());
     logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasetNames, ", "));
@@ -143,7 +149,7 @@ public class ColumnScreen extends FilterAndSelectorScreen implements FilterTools
       HashSet<String> missing = new HashSet<String>(neededDatasetNames);
       missing.removeAll(enabledDatasetNames);
       
-      for (Dataset d : appInfo().datasets()) {
+      for (Dataset d : manager().datasets()) {
         if (missing.contains(d.getId())) {
           additionalNeededDatasets.add(d);
         }

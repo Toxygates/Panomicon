@@ -73,20 +73,21 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
     this.instanceURI = conf.instanceURI
   }
 
-  protected def appInfo = {
-    val ai = Option(getSessionAttr[AppInfo](ProbeServiceImpl.APPINFO_KEY))
-    ai.getOrElse(throw new NoSessionException("AppInfo not initialised"))
-  }
-
   protected def stateKey = "sparql"
   protected def newState = {
-    //Initialise the selected datasets by selecting all, except shared user data.
-    val defaultVisible = appInfo.datasets.asScala.filter(ds =>
-      Dataset.isInDefaultSelection(ds.getId))
+    // This default is fine because chooseDatasets always gets called
+    // during initialization
+    new SampleState(instanceURI)
+  }
 
-    val s = new SampleState(instanceURI)
-    s.sampleFilter = sampleFilterFor(defaultVisible, None)
-    s
+  def datasetsForUser(userKey: String): Array[Dataset] = {
+    val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
+    var r: Array[Dataset] = (instanceURI match {
+      case Some(u) => datasets.sharedListForInstance(u)
+      case None => datasets.sharedList
+    }).filter(ds => Dataset.isDataVisible(ds.getId, userKey)).toArray
+
+    r
   }
 
   private def sampleFilterFor(ds: Iterable[Dataset], base: Option[SampleFilter]) = {
@@ -98,9 +99,11 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with
      }
   }
 
-  def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = {
+  def chooseDatasets(userKey: String, ds: Array[Dataset]): Array[t.model.SampleClass] = {
     println("Choose datasets: " + ds.map(_.getId).mkString(" "))
-    getState.sampleFilter = sampleFilterFor(ds, Some(getState.sampleFilter))
+    val datasets: Iterable[Dataset] = if (ds.size == 0) datasetsForUser(userKey) else ds
+
+    getState.sampleFilter = sampleFilterFor(datasets, Some(getState.sampleFilter))
 
     sampleStore.sampleClasses(getState.sampleFilter).map(x => new SampleClass(x.asGWT)).toArray
   }

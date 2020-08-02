@@ -19,7 +19,6 @@
 
 package t.viewer.shared;
 
-import t.common.shared.Dataset;
 import t.common.shared.Platform;
 import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
@@ -43,7 +42,6 @@ public class AppInfo implements Serializable {
 
   private Platform[] platforms = new Platform[0];
   private Group[] predefGroups = new Group[0];
-  private List<Dataset> datasets;
   private List<StringList> predefProbeLists = new ArrayList<StringList>();
   private List<ProbeClustering> probeClusterings = new ArrayList<ProbeClustering>();
 
@@ -60,7 +58,7 @@ public class AppInfo implements Serializable {
   
   public AppInfo() {}
 
-  public AppInfo(String instanceName_, List<Dataset> datasets, Platform[] platforms,
+  public AppInfo(String instanceName_, Platform[] platforms,
       List<StringList> probeLists, IntermineInstance[] instances,
       List<ProbeClustering> probeClusterings, String appName,
       String[][] annotationInfo,
@@ -70,7 +68,6 @@ public class AppInfo implements Serializable {
     this.pathologyTermsURL = "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf";    
     this.applicationName = appName;
     this.intermineInstances = instances;
-    this.datasets = datasets;
     this.platforms = platforms;
     this.predefProbeLists = probeLists;
     this.probeClusterings = probeClusterings;
@@ -106,14 +103,6 @@ public class AppInfo implements Serializable {
     predefGroups = gs;
   }
 
-  public List<Dataset> datasets() {
-    return datasets;
-  }
-  
-  public void setDatasets(List<Dataset> ds) {
-    this.datasets = ds;
-  }
-  
   public Platform[] platforms() {
     return platforms;
   }

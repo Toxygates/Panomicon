@@ -32,10 +32,9 @@ import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.Resources;
-import t.viewer.client.future.Future;
-import t.viewer.client.future.FutureUtils;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
 import java.util.ArrayList;
@@ -52,7 +51,6 @@ public class MyDataScreen extends MinimalScreen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
-  private Future<String> userKeyFuture;
   private String userDataset;
   private String userSharedDataset;
   
@@ -63,19 +61,11 @@ public class MyDataScreen extends MinimalScreen {
     userData = man.userDataService();
     resources = man.resources();
     addToolbar(cmds, 35);
-    
-    String key = getStorage().getItem("userDataKey");
-    userKeyFuture = new Future<>();
-    userKeyFuture.addSuccessCallback(newKey -> {
-      setUserKey(newKey);
-    });
-    if (key == null) {
-      FutureUtils.beginPendingRequestHandling(userKeyFuture,
-              this, "Unable to obtain new user key");
-      man.userDataService().newUserKey(userKeyFuture);
-    } else {
-      userKeyFuture.onSuccess(key);
-    }
+  }
+
+  @Override
+  public void loadState(AttributeSet attributes) {
+    setUserKey(getStorage().getItem("userDataKey"));
   }
   
   @Override
@@ -181,9 +171,7 @@ public class MyDataScreen extends MinimalScreen {
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
     cmds.add(h);
     keyLabel = new Label("Fetching access key...");
-    userKeyFuture.addSuccessCallback(userKey -> {
-      keyLabel.setText("Access key: " + userKey);
-    });
+    keyLabel.setText("Access key: " + getStorage().getItem("userDataKey"));
     cmds.add(keyLabel);
     Button b = new Button("Change ...");
     b.addClickHandler(new ClickHandler() {      
@@ -203,9 +191,7 @@ public class MyDataScreen extends MinimalScreen {
       }
     });
     cmds.add(b);
-    userKeyFuture.addSuccessCallback(r -> {
-      refreshBatches();
-    });
+    refreshBatches();
     return bp.table();
   }
   

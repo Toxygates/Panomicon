@@ -45,7 +45,7 @@ class AppInfoLoader(probeStore: ProbeStore,
 
     new t.sparql.Platforms(baseConfig).populateAttributes(baseConfig.attributes)
 
-    new AppInfo(configuration.instanceName, mkList(),
+    new AppInfo(configuration.instanceName,
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
       probeClusterings(probeLists.asScala), appName, getAnnotationInfo,

@@ -41,17 +41,17 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
+import t.common.shared.Dataset;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.SampleGroup;
 import t.viewer.client.components.FeedbackForm;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.MetadataInfo;
+import t.viewer.client.future.Future;
+import t.viewer.client.rpc.*;
 import t.viewer.client.screen.ImportingScreen;
 import t.viewer.client.screen.Screen;
 import t.viewer.client.screen.ScreenManager;
-import t.viewer.client.rpc.SeriesService;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.SampleGroup;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.MetadataInfo;
-import t.viewer.client.rpc.*;
 import t.viewer.client.screen.StartScreen;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
@@ -85,6 +85,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
   protected MenuBar menuBar;
+
+  private Dataset[] datasets;
 
   // Menu items to be shown to the left of menu items belonging to the current screen.
   protected List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
@@ -150,6 +152,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     });
   }
 
+
+
   /**
    * This is the entry point method.
    */
@@ -179,19 +183,30 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         return e;
       }
     });
-    
-    reloadAppInfo(new AsyncCallback<AppInfo>() {
-      @Override
-      public void onSuccess(AppInfo result) {
-        setupUIBase();
-        prepareScreens();        
-      }
 
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failed to obtain application information.");
-      }
+    // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
+    String userKey = tryGetStorage().getItem(storagePrefix() + ".userDataKey");
+
+    Future<String> userKeyFuture = new Future<>();
+    Future<AppInfo> appInfoFuture = new Future<>();
+    reloadAppInfo(appInfoFuture);
+
+    userKeyFuture.addSuccessCallback(newKey -> {
+      tryGetStorage().setItem(storagePrefix() + ".userDataKey", newKey);
+      Future<Dataset[]> datasetFuture = updateDatasets();
+      // The callback for this combined future has to be set here because
+      // datasetFuture is created inside this callback
+      Future.combine(datasetFuture, appInfoFuture).addSuccessCallback(result -> {
+        setupUIBase();
+        prepareScreens();
+      });
     });
+
+    if (userKey == null) {
+      userDataService.newUserKey(userKeyFuture);
+    } else {
+      userKeyFuture.onSuccess(userKey);
+    }
 
     Logger l = SharedUtils.getLogger();
     l.info("onModuleLoad() finished");
@@ -513,6 +528,23 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
     rootPanel.onResize();
   }
+
+  @Override
+  public Future<Dataset[]> updateDatasets() {
+    Future<Dataset[]> future = new Future<>();
+
+    future.addSuccessCallback(datasets -> {
+      this.datasets = datasets;
+      });
+    // We don't use StorageProvider here, because this can be called
+    // before AppInfo initialization
+    sampleService.datasetsForUser(tryGetStorage().getItem(storagePrefix() + ".userDataKey"), future);
+
+    return future;
+  }
+
+  @Override
+  public Dataset[] datasets() { return datasets; }
 
   @Override
   public Resources resources() {
