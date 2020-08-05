@@ -73,8 +73,7 @@ class NetworkState extends MatrixState {
   var networks = Map[String, NetworkController]()
 }
 
-class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService
-    with OTGServiceServlet {
+class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
   protected def stateKey = NetworkState.stateKey
   protected def newState = new NetworkState
   var config: Configuration = _

@@ -35,8 +35,7 @@ import t.viewer.server.Configuration
  * In practice, this is a restricted variant of the maintenanc
  * servlet.
  */
-class UserDataServiceImpl extends OTGServiceServlet
-  with BatchOpsImpl with UserDataService {
+class UserDataServiceImpl extends TServiceServlet with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
 
   override def localInit(config: Configuration) {

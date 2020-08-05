@@ -47,8 +47,7 @@ class SampleState(instanceURI: Option[String]) {
 /**
  * Servlet for querying sample related information.
  */
-class SampleServiceImpl extends StatefulServlet[SampleState] with
-  SampleService with OTGServiceServlet {
+class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService {
 
   type DataColumn = t.common.shared.sample.DataColumn[Sample]
 

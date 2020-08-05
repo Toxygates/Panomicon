@@ -45,7 +45,7 @@ object ProbeServiceImpl {
 /**
  * Servlet for querying probe related information.
  */
-class ProbeServiceImpl extends OTGServiceServlet with ProbeService {
+class ProbeServiceImpl extends TServiceServlet with ProbeService {
   import ProbeServiceImpl._
 
   lazy val platformsCache = t.viewer.server.PlatformRegistry(probeStore)

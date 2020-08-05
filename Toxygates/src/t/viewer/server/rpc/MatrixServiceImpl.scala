@@ -87,7 +87,7 @@ class MatrixState {
  * This servlet is responsible for obtaining and manipulating matrices
  * with gene expression data.
  */
-class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService with OTGServiceServlet {
+class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService {
   import MatrixServiceImpl._
   import t.common.server.GWTUtils._
 

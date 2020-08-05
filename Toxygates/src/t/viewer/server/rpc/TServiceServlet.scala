@@ -20,28 +20,53 @@
 package t.viewer.server.rpc
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
-import javax.servlet.ServletConfig
-import javax.servlet.ServletException
-import t.Context
-import t.Factory
-import t.common.shared.DataSchema
+import javax.servlet.{ServletConfig, ServletException}
+import javax.servlet.http.HttpServlet
+import t.{BaseConfig, Context, Factory}
 import t.viewer.server.Configuration
+import t.viewer.shared.OTGSchema
 
-abstract class TServiceServlet extends RemoteServiceServlet {
-  protected def context: Context
-  protected def factory: Factory
+/**
+ * Minimal trait for HTTPServlets to participate in the framework with a basic configuration.
+ */
+trait MinimalTServlet {
+  this: HttpServlet =>
 
+  protected def context: Context = _context
+  protected def factory: Factory = _factory
+
+  protected var _context: Context = _
+  protected var _factory: Factory = _
+
+  //Subclasses should override init() and call this method
   @throws(classOf[ServletException])
-  override def init(config: ServletConfig) {
-    super.init(config)
+  def tServletInit(config: ServletConfig): Configuration = {
     try {
-      localInit(Configuration.fromServletConfig(config))
+      val conf = Configuration.fromServletConfig(config)
+      _factory = new Factory
+      _context = _factory.context(conf.tsConfig, conf.dataConfig(_factory))
+      conf
     } catch {
       case e: Exception =>
         e.printStackTrace()
         throw e
     }
+  }
+
+  protected def baseConfig: BaseConfig = context.config
+
+  protected val schema = new OTGSchema()
+}
+
+/**
+ * A MinimalTServlet that is also a GWT RemoteServiceServlet
+ */
+abstract class TServiceServlet extends RemoteServiceServlet with MinimalTServlet {
+
+  override def init(config: ServletConfig): Unit = {
+    super.init(config)
+    val conf = tServletInit(config)
+    localInit(conf)
   }
 
   /**
@@ -50,41 +75,9 @@ abstract class TServiceServlet extends RemoteServiceServlet {
    */
   def localInit(config: Configuration): Unit = {}
 
-  protected def baseConfig = context.config
-
-  protected def schema: DataSchema
-
   override def doUnexpectedFailure(t: Throwable) {
     t.printStackTrace()
     super.doUnexpectedFailure(t)
-  }
-
-  /**
-   * Obtain an in-session object that can be used for synchronizing session state between servlet threads.
-   * Code that expects to read from another thread or publish to another thread via the session
-   * should lock on this. (This could happen, for example, if the session manages transactional state.)
-   * The servlet container will ensure that different requests from the same client see an up-to-date
-   * session object, so this mutex is not needed for that purpose.
-   *
-   * This is not currently used.
-   *
-   * Inspired by: https://stackoverflow.com/questions/616601/is-httpsession-thread-safe-are-set-get-attribute-thread-safe-operations
-   * And http://web.archive.org/web/20110806042745/http://www.ibm.com/developerworks/java/library/j-jtp09238/index.html
-   *
-   */
-  protected def mutex: AnyRef = {
-    val mutId = "mutex"
-    val ses = getThreadLocalRequest.getSession
-    Option(ses.getAttribute(mutId)) match {
-      case Some(m) => m
-      case None =>
-        ServletSessions.synchronized {
-          if (ses.getAttribute(mutId) == null) {
-            ses.setAttribute(mutId, new Object)
-          }
-          ses.getAttribute(mutId)
-        }
-    }
   }
 
   protected def hasSession: Boolean = (getThreadLocalRequest.getSession(false) != null)
@@ -115,8 +108,6 @@ abstract class TServiceServlet extends RemoteServiceServlet {
     Option(getSessionAttr[OState](key))
 
 }
-
-object ServletSessions
 
 abstract class StatefulServlet[State >: Null] extends TServiceServlet {
 

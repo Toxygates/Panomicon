@@ -3,7 +3,8 @@ package t.viewer.server.rpc
 import java.io.PrintWriter
 import java.util.Date
 
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import javax.servlet.ServletConfig
+import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import t.model.SampleClass
 import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
 import t.viewer.server.{Configuration, SharedDatasets}
@@ -22,11 +23,13 @@ package json {
   case class Sample(id: String, `type`: String, platform: String)
 }
 
-class JSONServiceImpl extends OTGServiceServlet {
+class JSONServiceImpl extends HttpServlet with MinimalTServlet {
 
   var sampleFilter: SampleFilter = _
-  override def localInit(conf: Configuration): Unit = {
-    super.localInit(conf)
+
+  override def init(config: ServletConfig): Unit = {
+    super.init(config)
+    val conf = tServletInit(config)
     sampleFilter = SampleFilter(conf.instanceURI)
   }
 
@@ -73,9 +76,17 @@ class JSONServiceImpl extends OTGServiceServlet {
     import t.model.sample.CoreParameter._
 
     val limit = Option(req.getParameter("limit"))
+    val paramKey = Option(req.getParameter("paramKey"))
+    val sc = paramKey match {
+      case Some(k) =>
+        val attrib = baseConfig.attributes.byId(k)
+        val paramVal = req.getParameter("paramValue")
+        SampleClassFilter(Map(attrib -> paramVal))
+      case _ => SampleClassFilter()
+    }
 
     val out = new PrintWriter(resp.getOutputStream)
-    val samples = sampleStore.sampleQuery(SampleClassFilter(), sampleFilter)().map(s =>
+    val samples = sampleStore.sampleQuery(sc, sampleFilter)().map(s =>
       json.Sample(s.sampleId, s.sampleClass(Type), s.sampleClass(Platform)))
 
     limit match {
@@ -100,6 +111,13 @@ class JSONServiceImpl extends OTGServiceServlet {
       case Some("/parameter") => getParameterValues(req, resp)
       case Some("/samples") => getSamples(req, resp)
       case _ => getTime(req, resp)
+    }
+  }
+
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    Option(req.getPathInfo) match {
+      case Some("/samples") => getSamples(req, resp)
+      case _ => ???
     }
   }
 }

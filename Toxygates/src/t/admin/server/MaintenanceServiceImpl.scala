@@ -29,12 +29,12 @@ import t.common.shared.{Dataset, ManagedItem, Platform}
 import t.manager.{PlatformManager, Task}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat}
 import t.sparql.{Datasets, Instances, Platforms, ProbeStore, TRDF}
-import t.viewer.server.rpc.OTGServiceServlet
+import t.viewer.server.rpc.{TServiceServlet}
 import t.viewer.server.{Configuration, SharedDatasets}
 
 import scala.sys.process.Process
 
-class MaintenanceServiceImpl extends OTGServiceServlet
+class MaintenanceServiceImpl extends TServiceServlet
   with BatchOpsImpl with MaintenanceService {
 
   private var homeDir: String = _
