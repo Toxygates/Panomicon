@@ -19,6 +19,8 @@
 
 package t.viewer.server.servlet
 
+import scala.collection.JavaConverters._
+
 import java.io.PrintWriter
 import java.util.Date
 
@@ -92,18 +94,27 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   def getSamples(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     import t.model.sample.CoreParameter._
 
+    val body = req.getReader.lines.iterator.asScala.mkString("\n")
+
+    //read uses upickle to decode a given type from JSON
+    val constraints: Map[String, String] = read[Map[String, String]](body)
+
+    val scf = SampleClassFilter(
+      constraints.flatMap(x => {
+        val attrib = Option(baseConfig.attributes.byId(x._1))
+        attrib match {
+          case Some(a) => Some(a -> x._2)
+          case None =>
+            Console.err.println(s"Unknown attribute in request: ${x._1}")
+            None
+        }
+      })
+    )
+    println(s"Decoded: ${scf.constraints}")
     val limit = Option(req.getParameter("limit"))
-    val paramKey = Option(req.getParameter("paramKey"))
-    val sc = paramKey match {
-      case Some(k) =>
-        val attrib = baseConfig.attributes.byId(k)
-        val paramVal = req.getParameter("paramValue")
-        SampleClassFilter(Map(attrib -> paramVal))
-      case _ => SampleClassFilter()
-    }
 
     val out = new PrintWriter(resp.getOutputStream)
-    val samples = sampleStore.sampleQuery(sc, sampleFilter)().map(s =>
+    val samples = sampleStore.sampleQuery(scf, sampleFilter)().map(s =>
       json.Sample(s.sampleId, s.sampleClass(Type), s.sampleClass(Platform)))
 
     limit match {
@@ -126,7 +137,6 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     Option(req.getPathInfo) match {
       case Some("/datasets") => getDatasets(req, resp)
       case Some("/parameter") => getParameterValues(req, resp)
-      case Some("/samples") => getSamples(req, resp)
       case _ => getTime(req, resp)
     }
   }
@@ -134,7 +144,7 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     Option(req.getPathInfo) match {
       case Some("/samples") => getSamples(req, resp)
-      case _ => ???
+      case _ => getTime(req, resp)
     }
   }
 }
