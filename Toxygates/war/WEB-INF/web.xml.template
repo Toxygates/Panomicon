@@ -99,7 +99,7 @@
 	</context-param>
 
 	
-  <!-- Servlets -->
+  <!-- GWT servlets -->
   
 	<servlet>
 		<servlet-name>uploadServlet</servlet-name>
@@ -170,15 +170,6 @@
 		<servlet-name>networkServlet</servlet-name>
 		<url-pattern>/toxygates/network</url-pattern>
 	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>geneSetServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.GeneSetServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>geneSetServlet</servlet-name>
-		<url-pattern>/geneSet/*</url-pattern>
-	</servlet-mapping>
 
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
@@ -197,6 +188,29 @@
     	<servlet-name>remoteLogging</servlet-name>
     	<url-pattern>/toxygates/remote_logging</url-pattern>
 	</servlet-mapping>
+	<!-- End GWT servlets -->
+
+
+    <!-- Non-GWT servlets -->
+	<servlet>
+		<servlet-name>geneSetServlet</servlet-name>
+		<servlet-class>t.viewer.server.servlet.GeneSetServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>geneSetServlet</servlet-name>
+		<url-pattern>/geneSet/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+    	<servlet-name>jsonServlet</servlet-name>
+    	<servlet-class>t.viewer.server.servlet.JSONServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+   		<servlet-name>jsonServlet</servlet-name>
+   		<url-pattern>/toxygates/json/*</url-pattern>
+   	</servlet-mapping>
+   	<!-- End non-GWT servlets -->
+
 
   	<!-- Identifies available intermine instances by ID strings. Each one has its own configuration parameters below. -->
   	<context-param>

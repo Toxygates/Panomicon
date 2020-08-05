@@ -20,43 +20,9 @@
 package t.viewer.server.rpc
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import javax.servlet.{ServletConfig, ServletException}
-import javax.servlet.http.HttpServlet
-import t.{BaseConfig, Context, Factory}
+import javax.servlet.{ServletConfig}
 import t.viewer.server.Configuration
-import t.viewer.shared.OTGSchema
-
-/**
- * Minimal trait for HTTPServlets to participate in the framework with a basic configuration.
- */
-trait MinimalTServlet {
-  this: HttpServlet =>
-
-  protected def context: Context = _context
-  protected def factory: Factory = _factory
-
-  protected var _context: Context = _
-  protected var _factory: Factory = _
-
-  //Subclasses should override init() and call this method
-  @throws(classOf[ServletException])
-  def tServletInit(config: ServletConfig): Configuration = {
-    try {
-      val conf = Configuration.fromServletConfig(config)
-      _factory = new Factory
-      _context = _factory.context(conf.tsConfig, conf.dataConfig(_factory))
-      conf
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        throw e
-    }
-  }
-
-  protected def baseConfig: BaseConfig = context.config
-
-  protected val schema = new OTGSchema()
-}
+import t.viewer.server.servlet.MinimalTServlet
 
 /**
  * A MinimalTServlet that is also a GWT RemoteServiceServlet

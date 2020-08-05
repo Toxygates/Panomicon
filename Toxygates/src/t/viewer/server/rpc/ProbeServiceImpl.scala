@@ -33,6 +33,7 @@ import t.sparql.{ProbeStore, SampleFilter, SampleStore}
 import t.util.{PeriodicRefresh, Refreshable}
 import t.viewer.client.rpc.ProbeService
 import t.viewer.server.Conversions.{asJavaSample, asSpecies}
+import t.viewer.server.servlet.GeneSetServlet
 import t.viewer.server.{Configuration, _}
 import t.viewer.shared.{AppInfo, Association, TimeoutException}
 

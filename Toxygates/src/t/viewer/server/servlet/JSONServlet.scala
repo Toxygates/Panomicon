@@ -1,29 +1,46 @@
-package t.viewer.server.rpc
+/*
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package t.viewer.server.servlet
 
 import java.io.PrintWriter
 import java.util.Date
 
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
-import t.model.SampleClass
 import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
-import t.viewer.server.{Configuration, SharedDatasets}
+import t.viewer.server.SharedDatasets
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW}
-
 
 package json {
   object Dataset {
     //Needed for upickle to convert this class to/from JSON
     implicit val rw: RW[Dataset] = macroRW
   }
-  case class Dataset(id: String, title: String, numBatches: Int)
 
+  case class Dataset(id: String, title: String, numBatches: Int)
   object Sample { implicit val rw: RW[Sample] = macroRW }
   case class Sample(id: String, `type`: String, platform: String)
 }
 
-class JSONServiceImpl extends HttpServlet with MinimalTServlet {
+class JSONServlet extends HttpServlet with MinimalTServlet {
 
   var sampleFilter: SampleFilter = _
 
@@ -121,3 +138,12 @@ class JSONServiceImpl extends HttpServlet with MinimalTServlet {
     }
   }
 }
+  object Dataset {
+    //Needed for upickle to convert this class to/from JSON
+    implicit val rw: RW[Dataset] = macroRW
+  }
+
+  case class Dataset(id: String, title: String, numBatches: Int)
+  object Sample { implicit val rw: RW[Sample] = macroRW }
+
+case class Sample(id: String, `type`: String, platform: String)
