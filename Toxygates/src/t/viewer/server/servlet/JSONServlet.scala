@@ -133,6 +133,11 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     out.flush()
   }
 
+  /**
+   * Respond to a GET request
+   * @param req
+   * @param resp
+   */
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     Option(req.getPathInfo) match {
       case Some("/datasets") => getDatasets(req, resp)
@@ -141,6 +146,11 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     }
   }
 
+  /**
+   * Respond to a POST request
+   * @param req
+   * @param resp
+   */
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     Option(req.getPathInfo) match {
       case Some("/samples") => getSamples(req, resp)
@@ -148,12 +158,3 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     }
   }
 }
-  object Dataset {
-    //Needed for upickle to convert this class to/from JSON
-    implicit val rw: RW[Dataset] = macroRW
-  }
-
-  case class Dataset(id: String, title: String, numBatches: Int)
-  object Sample { implicit val rw: RW[Sample] = macroRW }
-
-case class Sample(id: String, `type`: String, platform: String)
