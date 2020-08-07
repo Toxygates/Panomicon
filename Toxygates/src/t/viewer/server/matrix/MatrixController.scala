@@ -46,45 +46,36 @@ object MatrixController {
   }
 
   def apply(context: Context, orthologs: () => Iterable[OrthologMapping],
-    groups: Seq[Group], initProbes: Seq[String], typ: ValueType,
-    fullLoad: Boolean): MatrixController = {
+    groups: Seq[Group], initProbes: Seq[String], typ: ValueType): MatrixController = {
     val pfs = groupPlatforms(context, groups)
-    val params = ControllerParams(context, groups, initProbes,
-          pfs, typ, fullLoad)
+    val params = ControllerParams(groups, initProbes,
+          pfs, typ)
+    val platforms = PlatformRegistry(context.probeStore)
+
     if (pfs.size > 1) {
-      new MergedMatrixController(params, orthologs)
+      new MergedMatrixController(context.matrix, platforms, params, orthologs)
     } else {
-      new DefaultMatrixController(params)
+      new DefaultMatrixController(context.matrix, platforms, params)
     }
   }
-}
-
-object ControllerParams {
-  def apply(context: Context, groups: Seq[Group],
-    initProbes: Seq[String], groupPlatforms: Iterable[String],
-    typ: ValueType, fullLoad: Boolean): ControllerParams =
-      ControllerParams(context.matrix,
-      PlatformRegistry(context.probeStore), groups, initProbes, groupPlatforms, typ,
-      fullLoad)
 }
 
 /**
  * Principal parameters that a matrix controller needs to load a matrix.
  */
-case class ControllerParams(val matrixContext: MatrixContext,
-                            val platforms: PlatformRegistry,
-                            val groups: Seq[Group],
+case class ControllerParams(val groups: Seq[Group],
                             val initProbes: Seq[String],
                             val groupPlatforms: Iterable[String],
-                            val typ: ValueType,
-                            fullLoad: Boolean)
+                            val typ: ValueType)
 
 /**
  * A managed matrix session and associated state.
  * The matrix is loaded automatically when a MatrixController
  * instance is created.
  */
-abstract class MatrixController(params: ControllerParams) {
+abstract class MatrixController(matrixContext: MatrixContext,
+                                platforms: PlatformRegistry,
+                                params: ControllerParams) {
   val groups = params.groups
   val initProbes = params.initProbes
   val groupPlatforms = params.groupPlatforms
@@ -94,10 +85,6 @@ abstract class MatrixController(params: ControllerParams) {
    * The type of the matrix that is managed.
    */
   type Mat <: ManagedMatrix
-
-  protected def platforms = params.platforms
-
-  private implicit val mcontext = params.matrixContext
 
   def groupSpecies = groups.headOption.flatMap(g => asSpecies(g.getSamples()(0).sampleClass()))
 
@@ -110,13 +97,13 @@ abstract class MatrixController(params: ControllerParams) {
   protected def enhancedCols = true
 
   protected def makeMatrix(probes: Seq[String],
-      typ: ValueType, fullLoad: Boolean): ManagedMatrix = {
+      typ: ValueType): ManagedMatrix = {
 
     val reader = try {
       if (typ == ValueType.Absolute) {
-        mcontext.absoluteDBReader
+        matrixContext.absoluteDBReader
       } else {
-        mcontext.foldsDBReader
+        matrixContext.foldsDBReader
       }
     } catch {
       case e: Exception =>
@@ -142,7 +129,7 @@ abstract class MatrixController(params: ControllerParams) {
 
       //Note: clarify the best code location of this heuristic
       val sparseRead = probes.size <= 10
-      b.build(groups, sparseRead, fullLoad)
+      b.build(groups, sparseRead)(matrixContext)
     } finally {
       reader.release()
     }
@@ -153,7 +140,7 @@ abstract class MatrixController(params: ControllerParams) {
   def _managedMatrix: Mat = {
 
     val mm = if (filteredProbes.nonEmpty) {
-      finish(makeMatrix(filteredProbes.toSeq, typ, params.fullLoad))
+      finish(makeMatrix(filteredProbes.toSeq, typ))
     } else {
       val emptyMatrix = new ExprMatrix(Vector(), 0, 0, Map(), Map(), List())
       finish(new ManagedMatrix(
@@ -213,7 +200,8 @@ abstract class MatrixController(params: ControllerParams) {
 /**
  * A controller that produces ManagedMatrix instances and can apply a mapper.
  */
-class DefaultMatrixController(params: ControllerParams) extends MatrixController(params) {
+class DefaultMatrixController(matrixContext: MatrixContext, platforms: PlatformRegistry,
+                              params: ControllerParams) extends MatrixController(matrixContext, platforms, params) {
   type Mat = ManagedMatrix
   def finish(mm: ManagedMatrix): ManagedMatrix = mm
 
@@ -238,8 +226,10 @@ class DefaultMatrixController(params: ControllerParams) extends MatrixController
 /**
  * A matrix controller that applies the MedianValueMapper.
  */
-class MergedMatrixController(params: ControllerParams, orthologs: () => Iterable[OrthologMapping])
-    extends DefaultMatrixController(params) {
+class MergedMatrixController(matrixContext: MatrixContext,
+                             platforms: PlatformRegistry,
+                             params: ControllerParams, orthologs: () => Iterable[OrthologMapping])
+    extends DefaultMatrixController(matrixContext, platforms, params) {
 
   override protected def enhancedCols = false
 

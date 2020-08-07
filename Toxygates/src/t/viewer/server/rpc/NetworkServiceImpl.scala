@@ -114,7 +114,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     val orthMappings = () => List()
 
     getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, scSideColumns, Seq(), typ, false))
+      MatrixController(context, orthMappings, scSideColumns, Seq(), typ))
     val sideMat = getState.matrix(sideId)
 
     val sidetype = GroupUtils.groupType(scSideColumns(0))
@@ -127,12 +127,12 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     val scMainColumns = mainColumns.asScala
     //Always load the empty probe set(all probes), to be able to revert to this view.
     //We optionally filter probes below.
-    val params = ControllerParams(context, scMainColumns, Seq(),
-      MatrixController.groupPlatforms(context, scMainColumns), typ, false)
+    val params = ControllerParams(scMainColumns, Seq(),
+      MatrixController.groupPlatforms(context, scMainColumns), typ)
 
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-    val net = new NetworkController(params, sideMat, targets, platforms, mainPageSize,
+    val net = new NetworkController(context.matrix, platforms, params, sideMat, targets, mainPageSize,
       sideIsMRNA)
     getState.controllers += mainId -> net
     getState.networks += mainId -> net

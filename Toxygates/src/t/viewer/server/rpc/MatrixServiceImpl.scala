@@ -119,7 +119,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     //later.
     getState.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
-          groups.asScala, allProbes, typ, false))
+          groups.asScala, allProbes, typ))
     val mat = getState.matrix(id)
 
     if (!probes.isEmpty) {
@@ -196,7 +196,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val groups = Vector() ++ gs.asScala
     val controller = MatrixController(context, () => getOrthologs(context),
-        groups, rprobes, typ, true)
+        groups, rprobes, typ)
     val mm = controller.managedMatrix
 
     val raw = if (groups.size == 1) {
@@ -278,7 +278,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     //the ones in the current session
     val cont = if (getState.needsReload(id, groups.asScala, valueType)) {
       MatrixController(context, () => getOrthologs(context),
-          groups.asScala, probesScala, valueType, false)
+          groups.asScala, probesScala, valueType)
     } else {
       getState.controller(id)
     }

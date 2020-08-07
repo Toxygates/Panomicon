@@ -35,12 +35,6 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   public Group() {}
 
-  public Group(DataSchema schema, String name, Sample[] sampleIds, String color,
-      Unit[] units) {
-    super(schema, name, sampleIds, color);
-    _units = units;
-  }
-  
   public Group(DataSchema schema, String name, Sample[] sampleIds, String color) {
     super(schema, name, sampleIds, color);
     _units = Unit.formUnits(schema, sampleIds);

@@ -38,10 +38,8 @@ import scala.reflect.ClassTag
 abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBReader[E], val probes: Seq[String]) {
   import ManagedMatrix._
 
-  def build(requestColumns: Seq[Group], sparseRead: Boolean,
-    fullLoad: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
-    loadRawData(requestColumns, reader, sparseRead,
-      fullLoad)
+  def build(requestColumns: Seq[Group], sparseRead: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
+    loadRawData(requestColumns, reader, sparseRead)
   }
 
   /**
@@ -89,13 +87,11 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
   }
 
   def loadRawData(requestColumns: Seq[Group],
-    reader: MatrixDBReader[E], sparseRead: Boolean,
-    fullLoad: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
+    reader: MatrixDBReader[E], sparseRead: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
     val packedProbes = probes.map(context.probeMap.pack)
 
-    val samples = requestColumns.flatMap(g =>
-      (if (fullLoad) g.getSamples else samplesToLoad(g)).
-          toVector).distinct
+    val samples = requestColumns.flatMap(g => g.getSamples).distinct
+
     val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
     val data = reader.valuesForSamplesAndProbes(sortedSamples,
         packedProbes, sparseRead, false).map(_.toSeq).
@@ -150,11 +146,6 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
 
-  protected def samplesToLoad(g: Group): Array[SSample] = {
-    val (tus, cus) = treatedAndControl(g)
-    tus.flatMap(_.getSamples())
-  }
-
   protected def treatedAndControl(g: Group) = {
     val sc = g.getSchema
     g.getUnits().partition(u => !sc.isControl(u))
@@ -203,10 +194,6 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
       val i = columnInfo(g)
       (rows, i)
     }
-  }
-
-  override protected def samplesToLoad(g: Group): Array[SSample] = {
-    g.getSamples()
   }
 }
 
