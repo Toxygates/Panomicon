@@ -20,13 +20,10 @@
 package t.viewer.server.network
 
 import scala.collection.JavaConverters._
-
 import org.junit.runner.RunWith
-
 import org.scalatest.junit.JUnitRunner
-
 import t.viewer.server.rpc.Conversions._
-import t.TTestSuite
+import t.{Context, TTestSuite}
 import t.common.shared.ValueType
 import t.common.shared.sample.Group
 import t.db.testing.NetworkTestData
@@ -60,8 +57,8 @@ class ManagedNetworkTest extends TTestSuite {
   val mrnaGroups = t.common.testing.TestData.groups take 5
 
   test("basic") {
-    val main = mrnaBuilder.build(mrnaGroups, false, true)
-    val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
+    val main = mrnaBuilder.build(mrnaGroups, false)
+    val side = mirnaBuilder.build(Seq(mirnaGroup), false)
     val builder = new NetworkBuilder(targets, platforms, main, side)
     val network = builder.build
 
@@ -107,21 +104,23 @@ class ManagedNetworkTest extends TTestSuite {
   }
 
   test("forward network") {
-    val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
+    val side = mirnaBuilder.build(Seq(mirnaGroup), false)
     networkTest(side, mrnaGroups, t.db.testing.DBTestData.mrnaPlatformId, true)
   }
 
   test("reverse network") {
-    val side = mrnaBuilder.build(mrnaGroups, false, true)
+    val side = mrnaBuilder.build(mrnaGroups, false)
     networkTest(side, Seq(mirnaGroup), mirnaPlatformId, false)
   }
 
   def networkTest(side: ManagedMatrix, mainGroups: Seq[Group],
       mainPlatform: String, reverseLookup: Boolean) {
-    val params = ControllerParams(context, platforms, mainGroups, Seq(),
-      Seq(mainPlatform), ValueType.Folds, false)
+
+    val testContext = new Context(null, null, null, null, context)
+
+    val params = ControllerParams(mainGroups, Seq(), ValueType.Folds)
     val mainPageSize = 100
-    val netCon = new NetworkController(params, side, targets, platforms, mainPageSize,
+    val netCon = new NetworkController(testContext, platforms, params, side, targets, mainPageSize,
       false)
     val main = netCon.managedMatrix
 

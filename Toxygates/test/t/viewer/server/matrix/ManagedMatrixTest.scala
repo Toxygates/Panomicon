@@ -45,7 +45,7 @@ class ManagedMatrixTest extends TTestSuite {
   context.populate(false)
 
   test("build") {
-    val m = foldBuilder.build(groups, false, true)
+    val m = foldBuilder.build(groups, false)
     val cur = m.current
 
     val usedSet = context.sparseTestData.probes.toSet
@@ -68,7 +68,7 @@ class ManagedMatrixTest extends TTestSuite {
   }
 
   test("sort and select") {
-    val m = foldBuilder.build(groups, false, true)
+    val m = foldBuilder.build(groups, false)
     val ps = context.sparseTestData.probes.take(10)
 
     val preSort = m.current

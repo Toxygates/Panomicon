@@ -19,9 +19,7 @@
 
 package t.viewer.server.matrix
 
-import java.util.logging.Logger
-
-import t.viewer.server.rpc.Conversions._
+import scala.collection.JavaConverters._
 import t.Context
 import t.common.shared._
 import t.common.shared.sample.Group
@@ -29,33 +27,25 @@ import t.db.ExtMatrixDB
 import t.db.PExprValue
 import t.db.TransformingWrapper
 import t.platform.OrthologMapping
-
 import t.viewer.server.Conversions._
 import t.viewer.shared.DBUnavailableException
 import t.viewer.shared.ManagedMatrixInfo
-import t.viewer.server.matrix._
 import t.viewer.server.PlatformRegistry
 import t.viewer.shared.SortKey
 import t.common.shared.sample.ExpressionRow
-import t.db.MatrixContext
+import t.model.sample.CoreParameter
 
 object MatrixController {
-  def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
-    val samples = groups.toList.flatMap(_.getSamples.map(_.id))
-    context.sampleStore.platforms(samples)
-  }
-
   def apply(context: Context, orthologs: () => Iterable[OrthologMapping],
     groups: Seq[Group], initProbes: Seq[String], typ: ValueType): MatrixController = {
-    val pfs = groupPlatforms(context, groups)
-    val params = ControllerParams(groups, initProbes,
-          pfs, typ)
+
+    val params = ControllerParams(groups, initProbes, typ)
     val platforms = PlatformRegistry(context.probeStore)
 
-    if (pfs.size > 1) {
-      new MergedMatrixController(context.matrix, platforms, params, orthologs)
+    if (params.platforms(context).size > 1) {
+      new MergedMatrixController(context, platforms, params, orthologs)
     } else {
-      new DefaultMatrixController(context.matrix, platforms, params)
+      new DefaultMatrixController(context, platforms, params)
     }
   }
 }
@@ -65,20 +55,31 @@ object MatrixController {
  */
 case class ControllerParams(val groups: Seq[Group],
                             val initProbes: Seq[String],
-                            val groupPlatforms: Iterable[String],
-                            val typ: ValueType)
+                            val typ: ValueType) {
 
+  def platforms(context: Context): Iterable[String] = {
+    val samples = groups.toList.flatMap(_.getSamples)
+    if (samples.exists(!_.sampleClass.contains(CoreParameter.Platform))) {
+      val ids = samples.map(_.id)
+      context.sampleStore.platforms(ids)
+    } else {
+      samples.map(_.sampleClass.get(CoreParameter.Platform)).distinct
+    }
+  }
+}
 /**
  * A managed matrix session and associated state.
  * The matrix is loaded automatically when a MatrixController
  * instance is created.
  */
-abstract class MatrixController(matrixContext: MatrixContext,
+abstract class MatrixController(context: Context,
                                 platforms: PlatformRegistry,
                                 params: ControllerParams) {
+
+  def matrixContext = context.matrix
   val groups = params.groups
   val initProbes = params.initProbes
-  val groupPlatforms = params.groupPlatforms
+  val groupPlatforms = params.platforms(context)
   val typ = params.typ
 
   /**
@@ -200,8 +201,8 @@ abstract class MatrixController(matrixContext: MatrixContext,
 /**
  * A controller that produces ManagedMatrix instances and can apply a mapper.
  */
-class DefaultMatrixController(matrixContext: MatrixContext, platforms: PlatformRegistry,
-                              params: ControllerParams) extends MatrixController(matrixContext, platforms, params) {
+class DefaultMatrixController(context: Context, platforms: PlatformRegistry,
+                              params: ControllerParams) extends MatrixController(context, platforms, params) {
   type Mat = ManagedMatrix
   def finish(mm: ManagedMatrix): ManagedMatrix = mm
 
@@ -226,10 +227,10 @@ class DefaultMatrixController(matrixContext: MatrixContext, platforms: PlatformR
 /**
  * A matrix controller that applies the MedianValueMapper.
  */
-class MergedMatrixController(matrixContext: MatrixContext,
+class MergedMatrixController(context: Context,
                              platforms: PlatformRegistry,
                              params: ControllerParams, orthologs: () => Iterable[OrthologMapping])
-    extends DefaultMatrixController(matrixContext, platforms, params) {
+    extends DefaultMatrixController(context, platforms, params) {
 
   override protected def enhancedCols = false
 

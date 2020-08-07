@@ -85,7 +85,7 @@ class MatrixMapperTest extends TTestSuite {
     }).toSeq
 
     context.populate(true)
-    val m = foldBuilder.build(groups, false, true)
+    val m = foldBuilder.build(groups, false)
 
     val conv = mm.convert(m)
     val cur = conv.current

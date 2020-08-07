@@ -38,11 +38,11 @@ import t.viewer.shared.network.Network
  * Will not be used for subsequent calls to makeNetwork, as we expect the
  * ManagedNetwork (managedMatrix) to contain the latest updated targets.
  */
-class NetworkController(matrixContext: MatrixContext, platforms: PlatformRegistry,
+class NetworkController(context: Context, platforms: PlatformRegistry,
                         params: ControllerParams,
                         val sideMatrix: ManagedMatrix, targets: TargetTable,
                         initMainPageSize: Int,
-                        sideIsMRNA: Boolean) extends MatrixController(matrixContext, platforms, params) {
+                        sideIsMRNA: Boolean) extends MatrixController(context, platforms, params) {
 
   type Mat = ManagedNetwork
 
