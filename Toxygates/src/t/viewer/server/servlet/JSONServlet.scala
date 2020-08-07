@@ -65,11 +65,10 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
         !data.id.startsWith("user-")
   }
 
-  def getDatasets(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+  def getDatasets(req: HttpServletRequest, out: PrintWriter): Unit = {
     val reqId = Option(req.getParameter("id"))
     val userKey = Option(req.getParameter("userKey")).getOrElse("")
 
-    val out = new PrintWriter(resp.getOutputStream)
     val data = reqId match {
       case Some(id) => datasets.filter(_.id == id)
       case _ => datasets.filter(isDataVisible(_, userKey))
@@ -77,24 +76,19 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
 
     //Write (from upickle) converts objects to a JSON string
     out.println(write(data))
-    out.flush()
   }
 
-  def getParameterValues(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+  def getParameterValues(req: HttpServletRequest, out: PrintWriter): Unit = {
     val param = Option(req.getParameter("param")).getOrElse(throw new Exception("Please specify parameter"))
-    val out = new PrintWriter(resp.getOutputStream)
     val attr = baseConfig.attributes.byId(param)
     val values = sampleStore.attributeValues(SampleClassFilter().filterAll,
       attr, sampleFilter).toArray
 
     out.println(write(values))
-    out.flush()
   }
 
-  def getSamples(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+  def getSamples(req: HttpServletRequest, body: String, out: PrintWriter): Unit = {
     import t.model.sample.CoreParameter._
-
-    val body = req.getReader.lines.iterator.asScala.mkString("\n")
 
     //read uses upickle to decode a given type from JSON
     val constraints: Map[String, String] = read[Map[String, String]](body)
@@ -105,7 +99,7 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
         attrib match {
           case Some(a) => Some(a -> x._2)
           case None =>
-            Console.err.println(s"Unknown attribute in request: ${x._1}")
+            Console.err.println(s"Unknown attribute in request: ${x._1}. Ignoring!")
             None
         }
       })
@@ -113,7 +107,6 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     println(s"Decoded: ${scf.constraints}")
     val limit = Option(req.getParameter("limit"))
 
-    val out = new PrintWriter(resp.getOutputStream)
     val samples = sampleStore.sampleQuery(scf, sampleFilter)().map(s =>
       json.Sample(s.sampleId, s.sampleClass(Type), s.sampleClass(Platform)))
 
@@ -123,7 +116,10 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
       case None =>
         out.println(write(samples))
     }
-    out.flush()
+  }
+
+  def getMatrix(req: HttpServletRequest, body: String, out: PrintWriter): Unit = {
+
   }
 
   def getTime(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
@@ -131,6 +127,28 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     out.println("Invalid request. Current time:")
     out.println(new Date())
     out.flush()
+    resp.sendError(418) //I'm a teapot
+  }
+
+  private def serveGet(req: HttpServletRequest, resp: HttpServletResponse,
+                       handler: (HttpServletRequest, PrintWriter) => Unit) = {
+    val out = new PrintWriter(resp.getOutputStream)
+    try {
+      handler(req, out)
+    } finally {
+      out.flush()
+    }
+  }
+
+  private def servePost(req: HttpServletRequest, resp: HttpServletResponse,
+                        handler: (HttpServletRequest, String, PrintWriter) => Unit) = {
+    val out = new PrintWriter(resp.getOutputStream)
+    val body = req.getReader.lines.iterator.asScala.mkString("\n")
+    try {
+      handler(req, body, out)
+    } finally {
+      out.flush()
+    }
   }
 
   /**
@@ -140,8 +158,8 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
    */
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     Option(req.getPathInfo) match {
-      case Some("/datasets") => getDatasets(req, resp)
-      case Some("/parameter") => getParameterValues(req, resp)
+      case Some("/datasets") => serveGet(req, resp, getDatasets)
+      case Some("/parameter") => serveGet(req, resp, getParameterValues)
       case _ => getTime(req, resp)
     }
   }
@@ -153,7 +171,8 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
    */
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     Option(req.getPathInfo) match {
-      case Some("/samples") => getSamples(req, resp)
+      case Some("/samples") => servePost(req, resp, getSamples)
+      case Some("/matrix") => servePost(req, resp, getMatrix)
       case _ => getTime(req, resp)
     }
   }
