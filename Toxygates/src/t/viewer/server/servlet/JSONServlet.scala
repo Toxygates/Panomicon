@@ -20,14 +20,17 @@
 package t.viewer.server.servlet
 
 import scala.collection.JavaConverters._
-
 import java.io.PrintWriter
 import java.util.Date
 
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
+import t.common.shared.ValueType
 import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
 import t.viewer.server.SharedDatasets
+import t.viewer.shared.OTGSchema
+import t.viewer.server.Conversions._
+import t.viewer.server.matrix.MatrixController
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW}
 
@@ -36,10 +39,16 @@ package json {
     //Needed for upickle to convert this class to/from JSON
     implicit val rw: RW[Dataset] = macroRW
   }
-
   case class Dataset(id: String, title: String, numBatches: Int)
+
   object Sample { implicit val rw: RW[Sample] = macroRW }
   case class Sample(id: String, `type`: String, platform: String)
+
+  object Group { implicit val rw: RW[Group] = macroRW}
+  case class Group(title: String, samples: Seq[Sample])
+
+  object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
+  case class MatrixParams(groups: Seq[Group], valueType: String, initProbes: Seq[String] = Seq())
 }
 
 class JSONServlet extends HttpServlet with MinimalTServlet {
@@ -119,7 +128,23 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   }
 
   def getMatrix(req: HttpServletRequest, body: String, out: PrintWriter): Unit = {
+    val params: json.MatrixParams = read[json.MatrixParams](body)
+    println(s"Load request: $params")
+    val valueType = ValueType.valueOf(params.valueType)
 
+    val samples = params.groups.flatMap(_.samples.map(_.id))
+    val fullSamples = Map.empty ++
+      context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, samples)().map(
+        s => (s.sampleId -> asJavaSample(s)))
+
+    val schema = new OTGSchema()
+    val groups = params.groups.map(g =>
+      new t.common.shared.sample.Group(schema, g.title, g.samples.map(s => fullSamples(s.id)).toArray)
+    )
+    val controller = MatrixController(context, () => Iterable.empty,
+      groups, params.initProbes, valueType)
+
+    controller.managedMatrix.current
   }
 
   def getTime(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
