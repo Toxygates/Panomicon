@@ -58,7 +58,7 @@ object ProbeStore extends RDFClass {
     f
   }
 
-  var _platformsAndProbes: Map[String, Iterable[Probe]] = null
+  private var _platformsAndProbes: Map[String, Iterable[Probe]] = null
 
   //This lookup takes time, so we keep it here as a static resource
   def platformsAndProbes(pfs: Platforms, prs: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
@@ -384,15 +384,15 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
   def probesForPartialSymbol(platform: Option[String], title: String): Vector[(String, String)] = {
     val query = s"""$prefixes
                    |SELECT DISTINCT ?s ?l WHERE {
+                   |  ${platform.map(x => "?g rdfs:label \"" + x + "\".").getOrElse("")}
+                   |  ?g a t:platform .
                    |  GRAPH ?g {
                    |    ?p a $itemClass; rdfs:label ?l.
                    |    OPTIONAL { ?p t:symbol ?s. }
                    |  }
-                   |  ${platform.map(x => "?g rdfs:label \"" + x + "\".").getOrElse("")}
                    |  FILTER (
                    |   REGEX(STR(?s), "^$title.*", "i") || REGEX(STR(?l), "^$title.*", "i")
                    |  )
-                   |
                    |}
                    |LIMIT 10""".stripMargin
     triplestore.mapQuery(query).map(x =>

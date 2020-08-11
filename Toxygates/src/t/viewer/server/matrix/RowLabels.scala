@@ -22,7 +22,7 @@ package t.viewer.server.matrix
 import t.Context
 import t.common.shared.DataSchema
 import t.common.shared.sample.ExpressionRow
-import t.platform.Probe
+import t.platform.{Probe, Species}
 
 /**
  * Row labels for normal, single-species matrices.
@@ -70,7 +70,6 @@ class RowLabels(context: Context, schema: DataSchema) {
       pr.flatMap(_.genes.map(_.identifier)), pr.flatMap(_.symbols),
       r.getValues)
   }
-
 }
 
 /**
@@ -98,10 +97,14 @@ class MergedRowLabels(context: Context, schema: DataSchema) extends RowLabels(co
   override def processRow(pm: Map[String, Probe], r: ExpressionRow): ExpressionRow = {
     val atomics = r.getAtomicProbes()
     val ps = atomics.flatMap(pm.get(_))
+
+    def speciesPrefix(pf: String) =
+      Species.forKnownPlatform(pf).map(_.shortCode).getOrElse("???")
+
     val expandedGenes = ps.flatMap(p =>
-      p.genes.map(g => (schema.platformSpecies(p.platform), g.identifier)))
+      p.genes.map(g => (speciesPrefix(p.platform), g.identifier)))
     val expandedSymbols = ps.flatMap(p =>
-      p.symbols.map(schema.platformSpecies(p.platform) + ":" + _))
+      p.symbols.map(speciesPrefix(p.platform) + ":" + _))
 
     val nr = new ExpressionRow(atomics.mkString("/"),
       atomics, repeatStrings(ps.map(p => p.name)),

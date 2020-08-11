@@ -189,41 +189,6 @@ public class OTGSchema extends DataSchema {
   }
 
   /**
-   * Resolve the organism for a given platform name.
-   * 
-   * Note: this is brittle, given that platform names may change externally. This information
-   * should probably be encoded in the triplestore instead.
-   */
-  public String platformOrganism(String platform) {
-    if (platform.startsWith("HG")) {
-      return "Human";
-    } else if (platform.startsWith("Rat")) {
-      return "Rat";
-    } else if (platform.startsWith("Mouse")) {
-      return "Mouse";
-    } else {
-      return super.platformSpecies(platform);
-    }
-  }
-
-  /**
-   * Resolve the main platform for a given organism.
-   * Also see the comment on platformOrganism above.
-   */
-  @Override
-  public String organismPlatform(String organism) {
-    if (organism.equals("Human")) {
-      return "HG-U133_Plus_2";
-    } else if (organism.equals("Rat")) {
-      return "Rat230_2";
-    } else if (organism.equals("Mouse")) {
-      return "Mouse430_2";
-    } else {
-      return null;
-    }
-  }
-
-  /**
    * The "expected" standard number of data points in a time/dose series.
    * This is highly specific to Open TG-GATEs, and it's not obvious that it should be
    * here in the long term.

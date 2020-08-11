@@ -181,10 +181,6 @@ public abstract class DataSchema implements Serializable {
     return hc.sampleClass().get(majorParameter());
   }
 
-  public String platformSpecies(String platform) {
-    return platform.substring(0, 3) + "..";
-  }
-
   public abstract int numDataPointsInSeries(SampleClass sc, SeriesType st);
 
   // Note: should move down to otg

@@ -19,12 +19,7 @@
 
 package t.platform
 
-import t.sparql.Platforms
 
-/*
- * Note: Some of this code might be moved to Java enums, and then
- * shared with the front-end, e.g. in OTGSchema/DataSchema.
- */
 object Species extends Enumeration(0) {
   type Species = Value
   val Human, Rat, Mouse = Value
@@ -51,6 +46,16 @@ object Species extends Enumeration(0) {
       case Mouse => "mmu"
     }
     val ensemblPlatform = shortCode + ".ensembl"
+
+    def affyPlatform = s match {
+      case Human => Some("HG-U133_Plus_2")
+      case Rat => Some("Rat230_2")
+      case Mouse => Some("Mouse430_2")
+      case _ => None
+    }
+
+    def platformsForProbeSuggestion: Seq[String] =
+      Seq(affyPlatform, Some(ensemblPlatform)).flatten
   }
 
   val supportedSpecies = List(Rat, Human, Mouse)

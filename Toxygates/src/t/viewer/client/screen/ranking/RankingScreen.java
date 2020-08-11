@@ -71,7 +71,7 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
       @Override
       protected void availableCompoundsChanged(List<String> compounds) {
         super.availableCompoundsChanged(compounds);
-        compoundRanker.availableCompoundsChanged(compounds);
+        compoundRanker.availableCompoundsChanged(compounds, chosenSampleClass);
       }
     };
     compoundSelector = rankingSelector;

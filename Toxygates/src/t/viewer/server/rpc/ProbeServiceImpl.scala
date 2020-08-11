@@ -26,7 +26,7 @@ import t.common.shared._
 import t.common.shared.sample.{Group, Sample}
 import t.model.SampleClass
 import t.model.sample.{CoreParameter, OTGAttribute}
-import t.platform.Probe
+import t.platform.{Probe, Species}
 import t.platform.mirna.TargetTable
 import t.sparql.secondary._
 import t.sparql.{ProbeStore, SampleFilter, SampleStore}
@@ -218,13 +218,19 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
 
    @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[Pair[String, String]] = {
-      val plat = for (scl <- Option(sc);
-        org <- Option(scl.get(OTGAttribute.Organism));
-        pl <- Option(schema.organismPlatform(org))) yield pl
-
-      probeStore.probesForPartialSymbol(plat, partialName).map(x =>
-        new Pair(x._1, x._2)).toArray
-  }
+     if (sc != null) {
+      for {
+        org <- Array(sc.get(OTGAttribute.Organism))
+        sp = Species.withName(org)
+        pl <- sp.platformsForProbeSuggestion
+        hit <- probeStore.probesForPartialSymbol(Some(pl), partialName)
+        suggest = new Pair(hit._1, hit._2)
+      } yield suggest
+     } else {
+       probeStore.probesForPartialSymbol(None, partialName).
+         map(hit => new Pair(hit._1, hit._2)).toArray
+     }
+   }
 
   @throws[TimeoutException]
   private def predefinedGroups: Array[Group] = {

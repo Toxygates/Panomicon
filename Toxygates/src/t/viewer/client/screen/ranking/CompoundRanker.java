@@ -283,7 +283,8 @@ abstract public class CompoundRanker extends Composite {
     chosenCompounds = compounds;
   }
 
-  public void availableCompoundsChanged(List<String> compounds) {
+  public void availableCompoundsChanged(List<String> compounds, SampleClass sampleClass) {
+    sampleClassChanged(sampleClass);
     if (!compounds.equals(availableCompounds)) {
       for (RuleInputHelper rih : inputHelpers) {
         rih.availableCompoundsChanged(compounds);
