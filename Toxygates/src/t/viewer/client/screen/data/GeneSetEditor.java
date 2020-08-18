@@ -587,11 +587,13 @@ public class GeneSetEditor extends Composite {
   }
 
   private void setProbes(String[] probes) {
+    probesList.setEnabled(false);
     probesList.clear();
     for (String p : probes) {
       // note: could look up symbols here
       probesList.addItem(p);
     }
+    probesList.setEnabled(true);
     listedProbes.clear();
     listedProbes.addAll(Arrays.asList(probes));
   }
