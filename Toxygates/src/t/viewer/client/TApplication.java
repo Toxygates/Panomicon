@@ -127,7 +127,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   @Override
   public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
-    final Logger l = SharedUtils.getLogger();
     final DialogBox waitDialog = Utils.waitDialog();
     Utils.displayInCenter(waitDialog);
 
@@ -137,7 +136,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
-        l.info("Got appInfo");
+        logger.info("Got appInfo");
         waitDialog.hide();
         appInfo = result;
         handler.onSuccess(result);
@@ -146,7 +145,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       @Override
       public void onFailure(Throwable caught) {
         waitDialog.hide();
-        l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+        logger.log(Level.WARNING, "Failed to obtain appInfo", caught);
         handler.onFailure(caught);
       }
     });
@@ -208,8 +207,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       userKeyFuture.onSuccess(userKey);
     }
 
-    Logger l = SharedUtils.getLogger();
-    l.info("onModuleLoad() finished");
+    logger.info("onModuleLoad() finished");
   }
 
   protected void setupUIBase() {
@@ -258,12 +256,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   protected boolean readImportedProbes() {
-    Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
 
     if (appInfo.importedGenes() != null) {
       String[] igs = appInfo.importedGenes();
-      l.info("Probes from appInfo/POST request size: " + igs.length);
+      logger.info("Probes from appInfo/POST request size: " + igs.length);
       useProbes = igs;
     }
 
@@ -273,7 +270,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       List<String> pl = params.get("probes");
       if (!pl.isEmpty()) {
         useProbes = pl.get(0).split(",");
-        l.info("probes from URL size: " + useProbes.length);
+        logger.info("probes from URL size: " + useProbes.length);
       }
     }
     if (useProbes != null && useProbes.length > 0) {
@@ -541,6 +538,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     sampleService.datasetsForUser(tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY), future);
 
     return future;
+  }
+
+  @Override
+  public Logger getLogger() {
+    return logger;
   }
 
   @Override
