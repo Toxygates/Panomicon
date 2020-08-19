@@ -336,15 +336,15 @@ public class GeneSetsMenu {
   }
 
   private void geneSetEditor(@Nullable final StringList list) {
-    GeneSetEditor gse = GeneSetEditor.make(screen);
     if (list != null) {
-      gse.edit(list);
-    } else {
-      gse.createNew(screen.displayedAtomicProbes(false));
-    } 
+      if (! GeneSetEditor.withinEditableSize(list)) {
+        Window.alert("That gene set is too large to be edited.");
+        return;
+      }
+    }
+    GeneSetEditor.editOrCreateNewGeneSet(screen, list, false);
   }
 
-  
   /**
    * Refresh menu items on stringListsChanged fired. Note the events would be also
    * fired when the DataScreen is activated. [DataScreen#show -> Screen#show ->

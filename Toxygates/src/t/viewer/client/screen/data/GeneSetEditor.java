@@ -41,6 +41,7 @@ import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.StringList;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -116,13 +117,13 @@ public class GeneSetEditor extends Composite {
    * Construct a gene set editor in a DataScreen and set up listeners
    * appropriately.
    */
-  public static GeneSetEditor make(final DataScreen screen) {
+  private static GeneSetEditor make(final DataScreen screen) {
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {
       @Override
       public void onSaved(String title, List<String> items) {
         String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
+        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE,
             title, itemsArray));
         screen.probesChanged(itemsArray);
         screen.reloadDataIfNeeded();
@@ -132,6 +133,36 @@ public class GeneSetEditor extends Composite {
       public void onCanceled() {}
     });
     return gse;
+  }
+
+  public static final int MAX_EDIT_SIZE = 1000;
+  public static boolean withinEditableSize(StringList list) {
+    return list.size() <= MAX_EDIT_SIZE;
+  }
+
+  public static void editOrCreateNewGeneSet(DataScreen screen, @Nullable StringList list, boolean forceNew) {
+    GeneSetEditor gse = make(screen);
+    String[] geneSet = (list == null ? screen.displayedAtomicProbes(false) : list.items());
+
+    int length = geneSet.length;
+    if (length > MAX_EDIT_SIZE) {
+
+      String saveTitle = Window.prompt("Your current gene set is too large to be edited. If you wish to save it, please enter a name.",
+        screen.geneSets().suggestName(GeneSetEditor.NEW_TITLE_PREFIX));
+      if (saveTitle != null) {
+        //Save
+        save(screen, saveTitle, geneSet, false);
+      }
+
+      //Create new empty list
+      gse.createNew(new String[0]);
+    } else if (list != null && !forceNew) {
+      //Edit small list.
+      gse.edit(list);
+    } else {
+      //Create new small list
+      gse.createNew(geneSet);
+    }
   }
   
   /*
@@ -294,21 +325,17 @@ public class GeneSetEditor extends Composite {
     probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
   }
 
-  private boolean save(String name) {
+  private static boolean save(ImportingScreen screen, String name, String[] geneSet,
+                              boolean overwrite) {
     NamedObjectStorage<StringList> geneSets = screen.geneSets();
-    boolean overwrite = false;
 
-    if (editingExistingGeneSet && name.equals(originalTitle)) {
-      overwrite = true;
-    }
-    
     if (geneSets.validateNewObjectName(name, overwrite)) {
-      geneSets.put(new StringList(StringList.PROBES_LIST_TYPE, name, 
-          listedProbes.toArray(new String[0])));
+      geneSets.put(new StringList(StringList.PROBES_LIST_TYPE, name,
+              geneSet));
       screen.geneSetsChanged();
       if (overwrite) {
         Analytics.trackEvent(Analytics.CATEGORY_GENE_SET,
-            Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
+                Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
 
       } else {
         Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_CREATE_NEW_GENE_SET);
@@ -316,6 +343,11 @@ public class GeneSetEditor extends Composite {
       return true;
     }
     return false;
+  }
+
+  private boolean save(String name) {
+    boolean overwrite = editingExistingGeneSet && name.equals(originalTitle);
+    return save(screen, name, listedProbes.toArray(new String[0]), overwrite);
   }
 
   private ProbeSelector probeSelector() {
@@ -587,13 +619,11 @@ public class GeneSetEditor extends Composite {
   }
 
   private void setProbes(String[] probes) {
-    probesList.setEnabled(false);
     probesList.clear();
     for (String p : probes) {
       // note: could look up symbols here
       probesList.addItem(p);
     }
-    probesList.setEnabled(true);
     listedProbes.clear();
     listedProbes.addAll(Arrays.asList(probes));
   }

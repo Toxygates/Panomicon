@@ -75,15 +75,11 @@ public class GeneSetToolbar extends Composite {
   }
 
   private void geneSetEditorNew() {    
-    geneSetEditor().createNew(screen.displayedAtomicProbes(false));
+    GeneSetEditor.editOrCreateNewGeneSet(screen, (StringList) screen.chosenGeneSet, true);
   }
 
   private void geneSetEditorEdit() {
-    geneSetEditor().edit((StringList) screen.chosenGeneSet);
-  }
-
-  private GeneSetEditor geneSetEditor() {
-    return GeneSetEditor.make(screen);
+    GeneSetEditor.editOrCreateNewGeneSet(screen, (StringList) screen.chosenGeneSet, false);
   }
 
   public Widget selector() {
