@@ -197,6 +197,16 @@ public class StorageProvider implements Storage.StorageProvider {
     return Stream.concat(activeGroupsStream, inactiveGroupsStream).collect(Collectors.toList());
   }
 
+  public static String USERDATA_KEY = "userDataKey";
+
+  public void setUserDataKey(String newKey) {
+    setItem(USERDATA_KEY, newKey);
+  }
+
+  public String getUserDataKey() {
+    return getItem(USERDATA_KEY);
+  }
+
   @Override
   public void setItem(String key, String value) {
     storage.setItem(prefix + "." + key, value);

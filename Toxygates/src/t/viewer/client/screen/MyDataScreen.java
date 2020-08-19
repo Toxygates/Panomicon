@@ -65,7 +65,7 @@ public class MyDataScreen extends MinimalScreen {
 
   @Override
   public void loadState(AttributeSet attributes) {
-    setUserKey(getStorage().getItem("userDataKey"));
+    setUserKey(getStorage().getUserDataKey());
   }
   
   @Override
@@ -171,7 +171,7 @@ public class MyDataScreen extends MinimalScreen {
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
     cmds.add(h);
     keyLabel = new Label("Fetching access key...");
-    keyLabel.setText("Access key: " + getStorage().getItem("userDataKey"));
+    keyLabel.setText("Access key: " + getStorage().getUserDataKey());
     cmds.add(keyLabel);
     Button b = new Button("Change ...");
     b.addClickHandler(new ClickHandler() {      
@@ -203,7 +203,7 @@ public class MyDataScreen extends MinimalScreen {
   }
   
   private void setUserKey(String key) {
-    getStorage().setItem("userDataKey", key);    
+    getStorage().setUserDataKey(key);
     userDataset = Dataset.userDatasetId(key);
     userSharedDataset = Dataset.userSharedDatasetId(key);        
     if (keyLabel != null) {

@@ -133,7 +133,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
     @Nullable
-    String existingKey = tryGetStorage().getItem(storagePrefix() + ".userDataKey");
+    String existingKey = tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY);
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
@@ -185,14 +185,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     });
 
     // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
-    String userKey = tryGetStorage().getItem(storagePrefix() + ".userDataKey");
+    String userKey = tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY);
 
     Future<String> userKeyFuture = new Future<>();
     Future<AppInfo> appInfoFuture = new Future<>();
     reloadAppInfo(appInfoFuture);
 
     userKeyFuture.addSuccessCallback(newKey -> {
-      tryGetStorage().setItem(storagePrefix() + ".userDataKey", newKey);
+      tryGetStorage().setItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY, newKey);
       Future<Dataset[]> datasetFuture = updateDatasets();
       // The callback for this combined future has to be set here because
       // datasetFuture is created inside this callback
@@ -538,7 +538,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       });
     // We don't use StorageProvider here, because this can be called
     // before AppInfo initialization
-    sampleService.datasetsForUser(tryGetStorage().getItem(storagePrefix() + ".userDataKey"), future);
+    sampleService.datasetsForUser(tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY), future);
 
     return future;
   }
