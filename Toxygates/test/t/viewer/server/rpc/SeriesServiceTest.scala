@@ -35,6 +35,7 @@ class SeriesServiceTest extends TTestSuite {
   before {
     val conf = t.viewer.testing.TestConfiguration.config
     s = new SeriesServiceImpl()
+    s.tServletInit(conf)
     s.localInit(conf)
   }
 

@@ -42,14 +42,19 @@ trait MinimalTServlet {
   def tServletInit(config: ServletConfig): Configuration = {
     try {
       val conf = Configuration.fromServletConfig(config)
-      _factory = new Factory
-      _context = _factory.context(conf.tsConfig, conf.dataConfig(_factory))
+      tServletInit(conf)
       conf
     } catch {
       case e: Exception =>
         e.printStackTrace()
         throw e
     }
+  }
+
+  //Exposed for testing purposes
+  def tServletInit(config: Configuration): Unit = {
+    _factory = new Factory
+    _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
   }
 
   protected def baseConfig: BaseConfig = context.config
