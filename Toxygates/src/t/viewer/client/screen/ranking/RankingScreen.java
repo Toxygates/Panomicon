@@ -120,7 +120,7 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
     manager().seriesService().rankedCompounds(seriesType, 
         chosenDatasets.toArray(new Dataset[0]),
         filterTools.dataFilterEditor.currentSampleClassShowing(), rules, future);
-    FutureUtils.beginPendingRequestHandling(future, this, "Unable to rank compounds");
+    FutureUtils.beginPendingRequestHandling(future, manager(), "Unable to rank compounds");
     
     future.addSuccessCallback(result -> {
       rankingSelector.acceptRankedCompounds(result);

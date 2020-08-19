@@ -106,13 +106,13 @@ public class MatrixCharts extends Charts {
     if (organisms.length > 1) {
       logger.info("Get rows for chart based on units");
       sampleService.units(sampleClasses, schema.majorParameter().id(), majorVals,
-          new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen, "Unable to obtain chart data",
+          new PendingAsyncCallback<Pair<Unit, Unit>[]>(screen.manager(), "Unable to obtain chart data",
               result -> finish(params, probes, result, acceptor)));
 
     } else if (samples == null) {
       logger.info("Get rows for chart based on sample classes");
       sampleService.samples(sampleClasses, schema.majorParameter().id(), majorVals,
-          new PendingAsyncCallback<Sample[]>(screen, "Unable to obtain chart data",
+          new PendingAsyncCallback<Sample[]>(screen.manager(), "Unable to obtain chart data",
               samples -> {
                 finish(params, probes, samples, acceptor);
                 MatrixCharts.this.samples = samples;

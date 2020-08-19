@@ -540,6 +540,42 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return future;
   }
 
+  private int numPendingRequests = 0;
+
+  private DialogBox waitDialog;
+
+  // Load indicator handling
+  @Override
+  public void addPendingRequest() {
+    numPendingRequests += 1;
+    if (numPendingRequests == 1) {
+      if (waitDialog == null) {
+        waitDialog = Utils.waitDialog();
+      }
+      /* Utils.displayInCenter immediately shows the dialog, and centers it in a
+       * deferred command. If showing the dialog is deferred as well, like with
+       * many other dialogs, this can cause a race condition that results in the
+       * dialog not being hidden even when all pending requests are done. */
+      Utils.displayInCenter(waitDialog);
+    }
+  }
+
+  @Override
+  public void removePendingRequest() {
+    numPendingRequests -= 1;
+    if (numPendingRequests == 0) {
+      waitDialog.hide();
+    } else if (numPendingRequests < 0) {
+      numPendingRequests = 0;
+      throw new RuntimeException("Tried to remove pending request while numPendingRequests <= 0");
+    }
+  }
+
+  @Override
+  public int numPendingRequests() {
+    return numPendingRequests;
+  }
+
   @Override
   public Logger getLogger() {
     return logger;

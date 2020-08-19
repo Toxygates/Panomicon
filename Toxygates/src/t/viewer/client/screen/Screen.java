@@ -54,12 +54,6 @@ public interface Screen {
 
   Logger getLogger();
 
-  void addPendingRequest();
-
-  void removePendingRequest();
-
-  int numPendingRequests();
-
   //Accessors
   String getTitle();
   String key();

@@ -145,7 +145,7 @@ public class SampleDetailTable extends Composite {
   
   public void loadFrom(final HasSamples<Sample> sampleSource, boolean importantOnly) {
     sampleService.attributeValuesAndVariance(sampleSource.getSamples(), importantOnly,
-            new PendingAsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>>(screen) {
+            new PendingAsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>>(screen.manager()) {
       @Override
       public void handleFailure(Throwable caught) {
         screen.getLogger().log(Level.WARNING, "sampleService.annotations failed", caught);

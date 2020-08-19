@@ -74,5 +74,11 @@ public interface ScreenManager extends ProvidesResize {
 
   Future<Dataset[]> updateDatasets();
 
+  void addPendingRequest();
+
+  void removePendingRequest();
+
+  int numPendingRequests();
+
   Logger getLogger();
 }

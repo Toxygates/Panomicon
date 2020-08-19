@@ -96,7 +96,7 @@ public class HeatmapTDGrid extends TimeDoseGrid {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compounds.get(0));
       sampleService.attributesForSamples(sc, new PendingAsyncCallback<Attribute[]>(
-        screen, "Unable to get samples") {
+        screen.manager(), "Unable to get samples") {
           @Override
           public void handleSuccess(Attribute[] attributes) {
             currentAttributes = Arrays.stream(attributes).filter(a -> a.isNumerical()).toArray(Attribute[]::new);
@@ -113,7 +113,7 @@ public class HeatmapTDGrid extends TimeDoseGrid {
     for (String compound: compounds) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put(OTGAttribute.Compound, compound);
-      sampleService.samplesWithAttributes(sc, false, new PendingAsyncCallback<Sample[]>(screen,
+      sampleService.samplesWithAttributes(sc, false, new PendingAsyncCallback<Sample[]>(screen.manager(),
               "Unable to retrieve samples for the group definition.") {
         @Override
         public void handleSuccess(Sample[] samples) {

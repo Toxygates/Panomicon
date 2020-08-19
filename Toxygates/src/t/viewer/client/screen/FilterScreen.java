@@ -54,7 +54,7 @@ public abstract class FilterScreen extends MinimalScreen {
     logger.info("Request sample classes for " + datasets.size() + " datasets");
     String userDataKey = manager().getStorage().getUserDataKey();
     manager().sampleService().chooseDatasets(userDataKey, datasets.toArray(new Dataset[0]), future);
-    FutureUtils.beginPendingRequestHandling(future, this, "Unable to choose datasets and fetch sample classes");
+    FutureUtils.beginPendingRequestHandling(future, manager(), "Unable to choose datasets and fetch sample classes");
     future.addSuccessCallback(sampleClasses -> {
       logger.info("sample classes fetched");
       filterTools.dataFilterEditor.setAvailable(sampleClasses);

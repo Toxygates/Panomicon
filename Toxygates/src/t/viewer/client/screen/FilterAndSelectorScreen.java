@@ -168,7 +168,7 @@ public abstract class FilterAndSelectorScreen extends FilterScreen {
    */
   public Future<String[]> fetchCompounds(Future<String[]> future, SampleClass sampleClass) {
     manager().sampleService().parameterValues(sampleClass, schema().majorParameter().id(), future);
-    FutureUtils.beginPendingRequestHandling(future, this, "Unable to retrieve values for parameter: ");
+    FutureUtils.beginPendingRequestHandling(future, manager(), "Unable to retrieve values for parameter: ");
     return future;
   }
 

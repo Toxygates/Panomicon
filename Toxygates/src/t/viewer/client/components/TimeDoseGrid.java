@@ -132,7 +132,7 @@ abstract public class TimeDoseGrid extends Composite {
     Future<String[]> minorsFuture = new Future<String[]>(); 
     if (prepareToFetchMinors(sampleClass) || datasetsChanged) {
       logger.info("fetching minors - initializeState");
-      FutureUtils.beginPendingRequestHandling(minorsFuture, screen, "Unable to fetch minor parameter for samples");
+      FutureUtils.beginPendingRequestHandling(minorsFuture, screen.manager(), "Unable to fetch minor parameter for samples");
       sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(), 
           minorsFuture);
     } else {
@@ -142,7 +142,7 @@ abstract public class TimeDoseGrid extends Composite {
     Future<Pair<Unit, Unit>[]> samplesFuture = new Future<Pair<Unit, Unit>[]>(); 
     if (prepareToFetchSamples(compounds)) {
       logger.info("fetching samples - initializeState");
-      FutureUtils.beginPendingRequestHandling(samplesFuture, screen, "Unable to obtain samples.");
+      FutureUtils.beginPendingRequestHandling(samplesFuture, screen.manager(), "Unable to obtain samples.");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
           chosenCompounds.toArray(new String[0]), samplesFuture);
     } else {
@@ -178,7 +178,7 @@ abstract public class TimeDoseGrid extends Composite {
       logger.info("fetching samples - setCompounds");
       sampleService.units(chosenSampleClass, schema.majorParameter().id(), 
           chosenCompounds.toArray(new String[0]), future);
-      FutureUtils.beginPendingRequestHandling(future, screen,
+      FutureUtils.beginPendingRequestHandling(future, screen.manager(),
           "Unable to obtain samples");
       future.addSuccessCallback(units -> {
         logger.info("samples fetched");
