@@ -191,7 +191,7 @@ public class ETMatrixManager {
 
   void removeTests() {
     matrixService.removeSyntheticColumns(matrixId, new PendingAsyncCallback<ManagedMatrixInfo>(
-        screen, "There was an error removing the test columns.") {
+        screen.manager(), "There was an error removing the test columns.") {
       /*
        * Note that the number of rows can change as a result of this operation, due to filtering
        * being affected.
@@ -210,7 +210,7 @@ public class ETMatrixManager {
     synth.setGroups(g1, g2);
 
     matrixService.addSyntheticColumn(matrixId, synth,
-        new PendingAsyncCallback<ManagedMatrixInfo>(screen, "Adding test column failed") {
+        new PendingAsyncCallback<ManagedMatrixInfo>(screen.manager(), "Adding test column failed") {
           @Override
           public void handleSuccess(ManagedMatrixInfo r) {
             matrixInfo = r;
@@ -222,7 +222,7 @@ public class ETMatrixManager {
 
   public void downloadCSV(boolean individualSamples) {
     matrixService.prepareCSVDownload(matrixId, individualSamples,
-        new PendingAsyncCallback<String>(screen, "Unable to prepare the requested data for download.") {
+        new PendingAsyncCallback<String>(screen.manager(), "Unable to prepare the requested data for download.") {
           @Override
           public void handleSuccess(String url) {
             Utils.displayURL("Your download is ready.", "Download", url);

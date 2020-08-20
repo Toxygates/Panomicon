@@ -22,7 +22,7 @@ package t.viewer.server.network
 import t.common.server.GWTUtils._
 import t.platform.Probe
 import t.platform.mirna._
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import t.viewer.server.matrix.ManagedMatrix
 import t.viewer.shared.network.Interaction
 import t.viewer.shared.network.Network
@@ -39,10 +39,10 @@ object NetworkBuilder {
    * @param mainSize defines the size of the current page in the main matrix.
    */
   def extractSideProbes(targets: TargetTable,
-                        platforms: Platforms,
-      main: ManagedMatrix,
-      side: ManagedMatrix,
-      mainOffset: Int, mainSize: Int): Seq[String] = {
+                        platforms: PlatformRegistry,
+                        main: ManagedMatrix,
+                        side: ManagedMatrix,
+                        mainOffset: Int, mainSize: Int): Seq[String] = {
     val mainType = main.params.typ
     val expPlatform = side.params.platform
 
@@ -53,8 +53,8 @@ object NetworkBuilder {
         range.map(_._2.id).toSeq.distinct
       case Network.mirnaType =>
         val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
-        val allProbes = platforms.data(expPlatform).toSeq
-        val range = targets.targets(domain.map(new MiRNA(_)), allProbes)
+        val allProbes = platforms.platformProbes(expPlatform).toSeq
+        val range = targets.targetsForPlatform(domain.map(new MiRNA(_)), allProbes)
         range.map(_._2.identifier).toSeq.distinct
       case _ => throw new Exception(s"Unable to extract side probes: unexpected column type $mainType for main table")
     }
@@ -62,8 +62,8 @@ object NetworkBuilder {
 }
 
 class NetworkBuilder(targets: TargetTable,
-    platforms: Platforms,
-    main: ManagedMatrix, side: ManagedMatrix) {
+                     platforms: PlatformRegistry,
+                     main: ManagedMatrix, side: ManagedMatrix) {
   import GWTTypes._
 
   val mainType = main.params.typ
@@ -82,13 +82,13 @@ class NetworkBuilder(targets: TargetTable,
     }
     useRows.map(r => {
       val probe = r.getProbe
-      val symbols = platforms.identifierLookup(probe).symbols.asGWT
+      val symbols = platforms.getProbe(probe).toList.flatMap(_.symbols).asGWT
       Node.fromRow(r, symbols, mtype, info)
     })
   }
 
-  def targetsForMirna(mirna: Iterable[MiRNA], platform: Iterable[Probe]) =
-    targets.targets(mirna, platform)
+  def targetsForMirna(mirna: Iterable[MiRNA], targetPlatform: Iterable[Probe]) =
+    targets.targetsForPlatform(mirna, targetPlatform)
 
   def targetsForMrna(mrna: Iterable[Probe]) =
     targets.reverseTargets(mrna).map(x => (x._2, x._1, x._3, x._4))
@@ -98,11 +98,10 @@ class NetworkBuilder(targets: TargetTable,
     case Network.mirnaType => t._1.id
   }
 
-  def probeTargets(probes: Seq[Probe], allPlatforms: Seq[Probe]) = mainType match {
+  def probeTargets(probes: Seq[Probe], targetPlatform: Seq[Probe]) = mainType match {
      case Network.mrnaType => targetsForMrna(probes)
       case Network.mirnaType =>
-        val pf = platforms.data.toSeq.flatMap(_._2)
-        targetsForMirna(probes.map(p => MiRNA(p.identifier)), pf)
+        targetsForMirna(probes.map(p => MiRNA(p.identifier)), targetPlatform)
   }
 
   /**
@@ -178,12 +177,13 @@ class NetworkBuilder(targets: TargetTable,
     }
 
     val probes = platforms.resolve(main.current.orderedRowKeys)
-    val pfs = platforms.data.toSeq.flatMap(_._2)
-    val allTargets = probeTargets(probes, pfs)
+    val sidePlatform = side.params.platform
+    val sidePlatformProbes = platforms.platformProbes(sidePlatform).toSeq
+    val allTargets = probeTargets(probes, sidePlatformProbes)
 
     val keepNodes = topProbesWithInteractions(allTargets.map(x => (x._1, x._2)))
     val mainSel = main.current.selectNamedRows(keepNodes)
-    val mainTargets = probeTargets(platforms.resolve(mainSel.orderedRowKeys), pfs)
+    val mainTargets = probeTargets(platforms.resolve(mainSel.orderedRowKeys), sidePlatformProbes)
     val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
       filter(sideTableProbeSet.contains)

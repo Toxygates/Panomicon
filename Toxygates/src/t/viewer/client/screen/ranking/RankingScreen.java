@@ -24,20 +24,18 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import t.common.shared.Dataset;
 import t.common.shared.SeriesType;
-import t.common.shared.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
-import t.viewer.client.screen.FilterAndSelectorScreen;
 import t.viewer.client.components.FilterTools;
-import t.viewer.client.screen.ScreenManager;
 import t.viewer.client.components.compoundsel.RankingCompoundSelector;
 import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
+import t.viewer.client.screen.FilterAndSelectorScreen;
+import t.viewer.client.screen.ScreenManager;
 import t.viewer.shared.MatchResult;
 import t.viewer.shared.RankRule;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static t.common.client.Utils.makeScrolled;
@@ -50,8 +48,6 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
   private RankingCompoundSelector rankingSelector;
   private CompoundRanker compoundRanker;
   private ScrollPanel sp;
-
-  protected List<Dataset> chosenDatasets;
 
   @Override
   public void loadState(AttributeSet attributes) {
@@ -67,7 +63,6 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
     super("Compound ranking", key, man,
         man.resources().compoundRankingHTML(),
         man.resources().compoundRankingHelp());
-    chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
 
     compoundRanker = factory().compoundRanker(this);
@@ -76,7 +71,7 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
       @Override
       protected void availableCompoundsChanged(List<String> compounds) {
         super.availableCompoundsChanged(compounds);
-        compoundRanker.availableCompoundsChanged(compounds);
+        compoundRanker.availableCompoundsChanged(compounds, chosenSampleClass);
       }
     };
     compoundSelector = rankingSelector;
@@ -121,13 +116,11 @@ public class RankingScreen extends FilterAndSelectorScreen implements FilterTool
   @Override
   public Future<MatchResult[]> getRankedCompounds(SeriesType seriesType, 
       RankRule[] rules) {
-    logger.info("Ranking compounds for datasets: "
-        + SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
-    Future<MatchResult[]> future = new Future<MatchResult[]>();    
+    Future<MatchResult[]> future = new Future<MatchResult[]>();
     manager().seriesService().rankedCompounds(seriesType, 
         chosenDatasets.toArray(new Dataset[0]),
         filterTools.dataFilterEditor.currentSampleClassShowing(), rules, future);
-    FutureUtils.beginPendingRequestHandling(future, this, "Unable to rank compounds");
+    FutureUtils.beginPendingRequestHandling(future, manager(), "Unable to rank compounds");
     
     future.addSuccessCallback(result -> {
       rankingSelector.acceptRankedCompounds(result);

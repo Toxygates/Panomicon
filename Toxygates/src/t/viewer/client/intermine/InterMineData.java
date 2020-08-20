@@ -81,7 +81,7 @@ public class InterMineData {
   private void doImport(final IntermineInstance instance, final String user, final String pass,
       final boolean asProbes, final boolean replace) {
     tmService.importLists(instance, user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
-        parent, "Unable to import lists from " + instance.title()) {
+        parent.manager(), "Unable to import lists from " + instance.title()) {
       @Override
       public void handleSuccess(StringList[] data) {
         Collection<ItemList> rebuild =
@@ -124,7 +124,7 @@ public class InterMineData {
   private void doExport(final IntermineInstance instance, final String user, final String pass,
       final List<StringList> lists, final boolean replace) {
     tmService.exportLists(instance, user, pass, lists.toArray(new StringList[0]), replace,
-        new PendingAsyncCallback<Void>(parent, "Unable to export lists to " + instance.title()) {
+        new PendingAsyncCallback<Void>(parent.manager(), "Unable to export lists to " + instance.title()) {
           @Override
           public void handleSuccess(Void v) {
             Window.alert("The lists were successfully exported.");
@@ -163,7 +163,7 @@ public class InterMineData {
       return;
     }
 
-    tmService.getSession(instance, new PendingAsyncCallback<String>(parent,
+    tmService.getSession(instance, new PendingAsyncCallback<String>(parent.manager(),
         "Failed to obtain Intermine session token") {
       @Override
       public void handleSuccess(String token) {
@@ -181,7 +181,7 @@ public class InterMineData {
       @Override
       public void run() {
         tmService.enrichment(instance, list, params, imTokens.get(instance),
-            new PendingAsyncCallback<String[][]>(parent, "Unable to perform enrichment analysis") {
+            new PendingAsyncCallback<String[][]>(parent.manager(), "Unable to perform enrichment analysis") {
               @Override
               public void handleSuccess(String[][] result) {
                 StringArrayTable.displayDialog(result, "Enrichment results", 800, 600);
@@ -228,7 +228,7 @@ public class InterMineData {
             lists,
             params,
             imTokens.get(instance),
-            new PendingAsyncCallback<String[][][]>(parent, "Unable to perform enrichment analysis") {
+            new PendingAsyncCallback<String[][][]>(parent.manager(), "Unable to perform enrichment analysis") {
               @Override
               public void handleSuccess(String[][][] result) {
                 List<String[]> best = new ArrayList<String[]>();

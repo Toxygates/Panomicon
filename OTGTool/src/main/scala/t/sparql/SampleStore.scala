@@ -404,6 +404,10 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
   def attributeValues(filter: TFilter, attribute: Attribute, sf: SampleFilter) =
     sampleAttributeQuery(attribute, sf).constrain(filter)()
 
+  def withRequiredAttributes(filter: SampleClassFilter, sf: SampleFilter, sampleIds: Iterable[String]) =
+    sampleQuery(SampleClassFilter(), sf).constrain(
+      "FILTER (?id IN (" + sampleIds.map('"' + _ + '"').mkString(",") + ")).")
+
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes + '\n' +
       "SELECT DISTINCT ?l ?sid WHERE { " +
@@ -417,8 +421,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
     val mq = triplestore.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
-    val withAttributes = sampleQuery(SampleClassFilter(), sf).constrain(
-      "FILTER (?id IN (" + allIds.map('"' + _ + '"').mkString(",") + ")).")()
+    val withAttributes = withRequiredAttributes(SampleClassFilter(), sf, allIds)()
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 
     for (

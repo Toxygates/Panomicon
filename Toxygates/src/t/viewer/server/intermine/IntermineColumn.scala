@@ -28,11 +28,11 @@ import t.db.DefaultBio
 import t.intermine.Query
 import t.sparql._
 import t.sparql.secondary.Gene
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 
 object TargetmineColumns {
   def connector(mines: Intermines,
-      platforms: Platforms) =
+      platforms: PlatformRegistry) =
         new IntermineConnector(mines.byTitle("TargetMine"), platforms)
 
   def miRNA(connector: IntermineConnector) =

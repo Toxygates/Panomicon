@@ -29,6 +29,8 @@ import t.model.sample.OTGAttribute._
 import t.platform._
 import t.platform.mirna._
 
+import scala.collection.mutable
+
 object DBTestData {
   def pickOne[T](xs: Seq[T]): T = {
     val n = Math.random * xs.size
@@ -135,7 +137,7 @@ object DBTestData {
 
   val unpackedProbes = probes.map(probeMap.unpack)
 
-  val dbIdMap = sampleIndex(samples)
+  val sampleMap = sampleIndex(samples)
 
   def sampleIndex(samples: Iterable[Sample]) = {
     val dbIds = Map() ++ samples.zipWithIndex.map(s => (s._1.sampleId -> s._2))
@@ -143,25 +145,31 @@ object DBTestData {
   }
 
   def makeTestData(sparse: Boolean): ColumnExpressionData = {
-    makeTestData(sparse, samples)
+    makeTestData(sparse, samples, probeMap.tokens)
   }
 
-  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample])
-    (implicit probeMap: ProbeMap): ColumnExpressionData = {
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): ColumnExpressionData = {
+    makeTestData(sparse, useSamples, probeMap.tokens)
+  }
+
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample], useProbes: Iterable[String]): ColumnExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
+    val usedProbes = mutable.Set.empty[String]
+
     for (s <- useSamples) {
-      var thisProbe = Map[String, (Double, Char, Double)]()
-      for (p <- probeMap.tokens) {
+      var thisSample = Map[String, (Double, Char, Double)]()
+      for (p <- useProbes) {
         if (!sparse || Math.random > 0.5) {
-          thisProbe += (p -> randomExpr())
+          thisSample += (p -> randomExpr())
+          usedProbes += p
         }
       }
-      testData += (s -> thisProbe)
+      testData += (s -> thisSample)
     }
     new ColumnExpressionData {
       val d = testData
       def samples = d.keys.toSeq
-      def probes = probeMap.tokens.toSeq
+      def probes = usedProbes.toSeq
       def data(s: Sample) = d(s)
     }
   }

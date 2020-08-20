@@ -50,8 +50,11 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
 
   def numBatches: Map[String, Int] = {
     Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l (COUNT(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
-        " ?d a t:dataset; rdfs:label ?l } GROUP BY ?l").map(x => {
-        x("l") -> x("n").toInt
+        " ?d a t:dataset; rdfs:label ?l } GROUP BY ?l").flatMap(x => {
+        x.get("l") match {
+          case Some(label) => Some((label -> x("n").toInt))
+          case _ => None
+        }
     })
   }
 

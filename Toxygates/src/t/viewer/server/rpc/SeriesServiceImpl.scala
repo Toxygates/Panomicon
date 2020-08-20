@@ -35,9 +35,9 @@ import t.viewer.shared.{MatchResult, NoSuchProbeException, RankRule}
 
 import scala.language.implicitConversions
 
-class SeriesServiceImpl extends OTGServiceServlet with SeriesService {
+class SeriesServiceImpl extends TServiceServlet with SeriesService {
   private var config: Configuration = _
-  protected implicit def mcontext: OTGMatrixContext = context.matrix
+  protected implicit def mcontext: MatrixContext = context.matrix
   implicit protected def implicitContext: Context = context
 
   protected def getDB(seriesType: SeriesType): SeriesDB[OTGSeries] = {

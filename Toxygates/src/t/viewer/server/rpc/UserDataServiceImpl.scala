@@ -35,8 +35,7 @@ import t.viewer.server.Configuration
  * In practice, this is a restricted variant of the maintenanc
  * servlet.
  */
-class UserDataServiceImpl extends OTGServiceServlet
-  with BatchOpsImpl with UserDataService {
+class UserDataServiceImpl extends TServiceServlet with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
 
   override def localInit(config: Configuration) {
@@ -173,5 +172,14 @@ class UserDataServiceImpl extends OTGServiceServlet
       case e: Exception =>
         throw new MaintenanceException("Metadata error: couldn't parse exposure_time")
     }
+  }
+
+  /**
+   * Generate a new user key, to be used when the client does not already have one.
+   */
+  def newUserKey(): String = {
+    val time = System.currentTimeMillis()
+    val random = (Math.random * Int.MaxValue).toInt
+    "%x%x".format(time, random)
   }
 }

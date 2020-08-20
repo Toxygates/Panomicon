@@ -183,8 +183,8 @@ abstract public class GroupInspector extends Composite implements RequiresResize
    * selection grid. The datasetsChanged flag will determine whether the selection grid
    * will fetch time points when the sample class hasn't changed.
    */
-  public void initializeState(List<Dataset> datasets, SampleClass sc, 
-      List<String> compounds, boolean datasetsChanged) {
+  public void initializeState(SampleClass sc, List<String> compounds,
+                              boolean datasetsChanged) {
     selectionGrid.initializeState(sc, compounds, selectionGrid.getSelectedCombinations(), 
         datasetsChanged).addNonErrorCallback(f -> {
       setEditMode();

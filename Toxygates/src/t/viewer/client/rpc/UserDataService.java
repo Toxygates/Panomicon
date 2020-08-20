@@ -31,6 +31,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("userData")
 public interface UserDataService extends RemoteService, BatchOperations {
-
-
+    String newUserKey();
 }

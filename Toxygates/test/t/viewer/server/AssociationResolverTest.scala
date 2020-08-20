@@ -17,17 +17,16 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.viewer.server
+package t.viewer.server
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import t.common.shared.AType
 import t.model.SampleClass
 import t.model.sample.{Attribute, OTGAttribute}
 import t.sparql.secondary._
 import t.sparql.{ProbeStore, SampleFilter, SampleStore}
-import t.viewer.server.AssociationResolver
 import t.{BaseConfig, TTestSuite}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 import scala.collection.JavaConverters._
 

@@ -318,7 +318,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     if (redraw) {
       for (int i = 0; i < displayedProbes.length; ++i) {
         if (highlighted.contains(displayedProbes[i]) || oldIndicated.contains(displayedProbes[i])) {
-          grid.redrawRow(i);
+          grid.redrawRow(i + grid.getPageStart());
         }
       }
     }

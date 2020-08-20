@@ -17,11 +17,11 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server.rpc
+package t.viewer.server.servlet
 
-import scala.collection.JavaConversions._
-import scala.io._
 import javax.servlet.http._
+
+import scala.io._
 
 object GeneSetServlet {
   val IMPORT_SESSION_KEY = "importedGenes"
@@ -29,7 +29,6 @@ object GeneSetServlet {
 
 class GeneSetServlet extends HttpServlet {
   import GeneSetServlet._
-
   import HttpServletResponse._
 
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse) = {

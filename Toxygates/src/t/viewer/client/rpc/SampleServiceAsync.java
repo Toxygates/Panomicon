@@ -20,7 +20,6 @@
 package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import t.viewer.shared.Pathology;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
@@ -31,13 +30,16 @@ import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
+import t.viewer.shared.Pathology;
 
 import java.util.List;
 import java.util.Map;
 
 public interface SampleServiceAsync {
 
-  void chooseDatasets(Dataset[] enabled, AsyncCallback<SampleClass[]> callback);
+  void chooseDatasets(String userKey, Dataset[] enabled, AsyncCallback<SampleClass[]> callback);
+
+  void datasetsForUser(String userKey, AsyncCallback<Dataset[]> callback);
 
   void parameterValues(Dataset[] ds, SampleClass sc, String parameter,
       AsyncCallback<String[]> callback);

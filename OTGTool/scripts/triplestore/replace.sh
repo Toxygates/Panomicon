@@ -14,6 +14,8 @@ shift
 GRAPH=$1
 shift
 
+BASE=$(dirname $0)
+source $BASE/../config.sh
 
 NAMED=no
 
@@ -46,20 +48,18 @@ case $INPUT in
     exit 1
 esac
 
-URLBASE="http://localhost:3030/$REPO"
-USER=x
-PASS=y
+URLBASE="$T_TS_ROOT/$REPO"
 
 QUERY="DROP GRAPH <$GRAPH>"
-curl -u $USER:$PASS "$URLBASE/" --data-urlencode update="$QUERY" 
+curl -u $T_TS_USER:$T_TS_PASS "$URLBASE/" --data-urlencode update="$QUERY" 
 
 if [[ "$NAMED" == "yes" ]]
 then
   #insert into a named graph
-  curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/data?graph=$GRAPH" --data-binary @$INPUT
+  curl -u $T_TS_USER:$T_TS_PASS -X POST -H "Content-type:$MIME" "$URLBASE/data?graph=$GRAPH" --data-binary @$INPUT
 else
   #graph names are already present in the raw data
-  curl -u $USER:$PASS -X POST -H "Content-type:$MIME" "$URLBASE/" --data-binary @$INPUT
+  curl -u $T_TS_USER:$T_TS_PASS -X POST -H "Content-type:$MIME" "$URLBASE/" --data-binary @$INPUT
 fi
 
 if [[ $# -lt 5 ]]
@@ -82,4 +82,4 @@ cat > temp.trig <<EOF
 
 <$GRAPH> { <$GRAPH> a t:annotation; rdfs:label "$TITLE"; t:comment "$COMMENT". }
 EOF
-curl -u $USER:$PASS -H "Content-type:application/x-trig" -X POST "$URLBASE/" --data-binary @temp.trig
+curl -u $T_TS_USER:$T_TS_PASS -H "Content-type:application/x-trig" -X POST "$URLBASE/" --data-binary @temp.trig

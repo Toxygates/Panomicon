@@ -19,26 +19,36 @@
 
 package t.viewer.client.table;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
-
-import t.viewer.client.screen.data.DataScreen;
-import t.viewer.client.screen.data.NetworkMenu;
-import t.common.shared.*;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
+import t.common.shared.AType;
+import t.common.shared.GroupUtils;
+import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.*;
+import t.viewer.client.Analytics;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.Utils;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.network.*;
 import t.viewer.client.rpc.NetworkService;
 import t.viewer.client.rpc.NetworkServiceAsync;
+import t.viewer.client.screen.data.DataScreen;
+import t.viewer.client.screen.data.NetworkMenu;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.shared.Association;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.mirna.MirnaSource;
-import t.viewer.shared.network.*;
+import t.viewer.shared.network.Format;
+import t.viewer.shared.network.Network;
+import t.viewer.shared.network.NetworkInfo;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A DataView that displays an interaction network as two tables.
@@ -321,7 +331,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         chosenProbes, sideMatrix, 
         ClientGroup.convertToGroups(sideExpressionTable.chosenColumns), 
         valueType, initPageSize, 
-      new PendingAsyncCallback<NetworkInfo>(this.screen, "Unable to load network") {
+      new PendingAsyncCallback<NetworkInfo>(screen.manager(), "Unable to load network") {
         
         @Override
         public void handleSuccess(NetworkInfo result) {
@@ -339,7 +349,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   // NetworkMenu.Delegate methods
   @Override
   public void visualizeNetwork() {
-    networkService.currentView(mainMatrix, new PendingAsyncCallback<Network>(this.screen, 
+    networkService.currentView(mainMatrix, new PendingAsyncCallback<Network>(screen.manager(),
         "Unable to load network view") {
       @Override
       public void handleSuccess(Network result) {
@@ -359,7 +369,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
         : sideExpressionTable.matrix().info().columnName(0);
     networkService.prepareNetworkDownload(mainMatrix, format, 
       messengerFirstColumn, microFirstColumn,
-        new PendingAsyncCallback<String>(screen) {
+        new PendingAsyncCallback<String>(screen.manager()) {
       @Override
       public void handleSuccess(String url) {
         Utils.displayURL("Your download is ready.", "Download", url);
@@ -418,12 +428,12 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
 
   @Override
   public void addPendingRequest() {
-    screen.addPendingRequest();
+    screen.manager().addPendingRequest();
   }
 
   @Override
   public void removePendingRequest() {
-    screen.removePendingRequest();
+    screen.manager().removePendingRequest();
   }
 
   // ExpressionTable.Delegate methods
@@ -442,13 +452,13 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     } else if (table == sideExpressionTable) {
       if (netvizDialog != null) {
         networkService.currentView(mainMatrix,
-            new PendingAsyncCallback<Network>(this.screen, "Unable to load network view") {
+            new PendingAsyncCallback<Network>(screen.manager(), "Unable to load network view") {
               @Override
               public void handleSuccess(Network result) {
                 netvizDialog.loadNetwork(result);
                 // Resume accepting user input, which would have been blocked in 
                 // onApplyColumnFilter or mirnaSourcesDialogMirnaSourcesChanged
-                screen.removePendingRequest();
+                screen.manager().removePendingRequest();
               }
             });
       }
@@ -460,7 +470,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
     // If the network visualization dialog is open, we block user input until 
     // we eventually get a new network (which happens in afterGetRows)
     if (netvizDialog != null) {
-      screen.addPendingRequest();
+      screen.manager().addPendingRequest();
     }
   }
 
@@ -477,7 +487,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   public void mirnaSourceDialogMirnaSourcesChanged(MirnaSource[] mirnaSources) {
     // As in onApplyColumnFilter, block user input until we get a new network in afterGetRows
     if (netvizDialog != null) {
-      screen.addPendingRequest();
+      screen.manager().addPendingRequest();
     }
     super.mirnaSourceDialogMirnaSourcesChanged(mirnaSources);
   }

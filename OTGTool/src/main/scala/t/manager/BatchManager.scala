@@ -233,7 +233,6 @@ class BatchManager(context: Context) {
       override lazy val probeSets =
         new ProbeStore(config.triplestore).platformsAndProbes.
           mapValues(_.toSeq.map(p => probeMap.pack(p.identifier)))
-
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
         doThenClose(db)(db => db.enumMaps(config.timeSeriesBuilder.enums))
@@ -482,16 +481,19 @@ class BatchManager(context: Context) {
       var newSamples, existingSamples: Int = 0
       val dbfile = config.data.sampleIndex
       val db = KCIndexDB(dbfile, true)
-      log(s"Writing to $dbfile")
-      for (s <- metadata.samples; id = s.identifier) {
-        db.get(id) match {
-          case Some(id) => existingSamples += 1
-          case None =>
-            db.put(id)
-            newSamples += 1
+      doThenClose(db)(db => {
+        log(s"Writing to $dbfile")
+        for (s <- metadata.samples; id = s.identifier) {
+          db.get(id) match {
+            case Some(id) => existingSamples += 1
+            case None =>
+              db.put(id)
+              newSamples += 1
+          }
         }
+        logResult(s"$newSamples new samples added, $existingSamples samples already existed")
       }
-      logResult(s"$newSamples new samples added, $existingSamples samples already existed")
+      )
     }
   }
 
@@ -499,9 +501,11 @@ class BatchManager(context: Context) {
     override def run(): Unit = {
       val dbfile = config.data.sampleIndex
       val db = KCIndexDB(dbfile, true)
-      log(s"Opened $dbfile for writing")
-      val bs = new Batches(config.triplestore)
-      db.remove(bs.samples(title))
+      doThenClose(db)(db => {
+        log(s"Opened $dbfile for writing")
+        val bs = new Batches(config.triplestore)
+        db.remove(bs.samples(title))
+      })
     }
   }
 

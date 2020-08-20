@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
+ * Copyright (c) 2012-2010 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
@@ -23,44 +24,47 @@ import kyotocabinet.DB
 import scala.collection.mutable.Map
 
 /**
- * The KCDBRegistry handles concurrent database requests.
- * The goal is to keep a DB object open as long as possible in a given
- * process, to maximise the benefits of the cache, yet honour incoming
- * write requests from the admin UI or user data.
- *
- * IMPORTANT: only one KCDBRegistry object must be in existence for
- * every given file that must be accessed. Multiple processes/classloaders
- * must not attempt to access the same file through this object.
- *
+ * The KCDBRegistry tracks open Kyoto Cabinet databases.
+ * 
  * Cases that need to be kept in mind when changing this class are:
+ *
  * 1. Multiple readers/writers accessing concurrently (users can upload data,
- * the admin GUI can be used to insert data)
- * 2. Other instances of Toxygates accessing the same files concurrently,
- * but from the same JVM (e.g. /adjuvant). Note that such instances can have their own classloaders
- * and, potentially, other versions of this class.
- * 3. Other JVMs accessing the same files concurrently
- * (not currently supported/considered)
+ * the admin GUI can be used to insert data). Handled by only allowing one outstanding writer per file.
+ * 2. Other instances of Toxygates accessing the same files concurrently, 
+ * but from the same JVM (e.g. /adjuvant). If this is a possibility, handled
+ * by ensuring that a global classloader in the servlet container (e.g. Tomcat) loads this class.
+ * Otherwise different webapps could have different instances of it.
+ * 3. Other JVMs accessing the same files concurrently 
+ * (this case is not currently supported/considered)
  */
 object KCDBRegistry {
 
-  private var readCount = Map[String, Int]()
-  private var inWriting = Set[String]()
-  private var openDBs = Map[String, DB]()
+  /**
+   * Maps file path to DB object for open writers
+   */
+  @volatile
+  private var openWriters = Map[String, DB]()
 
-  //Special mode for maintenance.
   private var maintenance: Boolean = false
+
+  def isMaintenanceMode: Boolean = maintenance
+
+  /**
+   * If maintenance mode is on, everybody gets the same DB handle for a given path,
+   * always in write mode, and they are
+   * kept open until closeWriters is called at the end.
+   * Useful for unrestricted, simple use, if concurrent use is not a concern.
+   */
   def setMaintenance(maintenance: Boolean) {
     this.maintenance = maintenance
   }
 
-//  def isMaintenance: Boolean = maintenance
-
   /**
    * Remove kyoto cabinet options from file name
    */
-  private def realPath(file: String) = file.split("#")(0)
+  private def onlyFileName(file: String) = file.split("#")(0)
 
-  def get(file: String, writeMode: Boolean) = {
+  def get(file: String, writeMode: Boolean): Option[DB] = {
     if (writeMode) {
       getWriter(file)
     } else {
@@ -69,159 +73,104 @@ object KCDBRegistry {
   }
 
   /**
-   * Get a reader. The reader count is increased.
-   * Readers should be released with the release() call after use.
+   * Get a reader.
+   * This class will not track readers. Users should close them manually after use.
    */
   def getReader(file: String): Option[DB] = synchronized {
     println(s"Read request for $file")
-    val rp = realPath(file)
+    val rp = onlyFileName(file)
     if (maintenance) {
-      return getWriter(file)
-    }
-
-    incrReadCount(rp)
-    if (openDBs.contains(rp)) {
-      Some(openDBs(rp))
+      getWriter(file)
     } else {
-      val d = openRead(file)
-      openDBs += rp -> d
-      Some(d)
+     Some(openRead(file))
     }
   }
 
-  protected[global] def getReadCount(file: String): Int = {
-    readCount.getOrElse(realPath(file), 0)
-  }
-
-  protected[global] def isInWriting(file: String): Boolean = {
-    inWriting.contains(realPath(file))
-  }
-
-  private def incrReadCount(file: String) {
-    val rp = realPath(file)
-    val oc = readCount.getOrElse(rp, 0)
-    println(s"Read count: $oc")
-    readCount += rp -> (oc + 1)
+  private def tryGetWriter(file: String): Option[DB] = synchronized {
+    val onlyFile = onlyFileName(file)
+    if (openWriters.contains(onlyFile)) {
+      //Only one open writer per file allowed concurrently
+      None
+    } else {
+      openWrite(file) match {
+        case Some(w) =>
+          openWriters += onlyFile -> w
+          Some(w)
+        case None =>
+          throw new Exception("Failed to open database")
+      }
+    }
   }
 
   /**
    * Get a writer.
-   * The request will block until all current readers
-   * are finished. If the DB was opened for reading, it will be
-   * closed and reopened for writing.
-   * Writers should be released with closeWriters() after use.
+   * Only one outstanding writer per file is allowed. The request
+   * will block until any current writers are closed.
+   * Writers should be released after use.
+   * Note that not even the same thread may request the same writer twice without
+   * first closing the first one.
    */
   def getWriter(file: String): Option[DB] = {
     println(s"Write request for $file")
 
-    val rp = realPath(file)
-    synchronized {
-      if (inWriting.contains(rp)) {
-        return Some(openDBs(rp))
+    val filePath = onlyFileName(file)
+    if (openWriters.contains(filePath)) {
+      if (maintenance) {
+        return Some(openWriters(filePath))
       }
     }
 
-    var count = 0
-    var r: Option[DB] = innerGetWriter(file)
-    //sleep at most 20s here, waiting for readers to finish
-    while (count < 200 && r == None) {
-      Thread.sleep(100)
-      count += 1
-      r = innerGetWriter(file)
+    var w = tryGetWriter(file)
+    while(w == None) {
+      println(s"Waiting for writer on $file")
+      Thread.sleep(1000)
+      w = tryGetWriter(file)
     }
-    if (r == None) {
-      println("Writer request timed out")
-    }
-    r
+    w
   }
 
-  private def innerGetWriter(file: String): Option[DB] = synchronized {
-    val rp = realPath(file)
-    val rc = readCount.getOrElse(rp, 0)
-    println(s"Read count for $file: $rc (waiting for 0)")
-    if (rc == 0) {
-      if (openDBs.contains(rp)) {
-        openDBs(rp).close()
-        openDBs -= rp
-      }
-      val w = openWrite(file)
-      inWriting += rp
-      openDBs += rp -> w
-      Some(w)
-    } else {
-      None
-    }
+  def releaseWriter(path: String): Unit = synchronized {
+    val file = onlyFileName(path)
+    assert (openWriters.contains(file))
+    println(s"Close $file")
+    openWriters(file).close()
+    openWriters -= file
   }
 
   /**
-   * Release a previously obtained reader. Writers should be closed with
-   * closeWriters.
+   * This method should be called when we shut down to close all writers.
+   * Intended for maintenance mode and as a failsafe to guard against data corruption.
+   * In normal operation, each writer should be released individually after use.
    */
-  def releaseReader(file: String): Unit = synchronized {
-    if (maintenance) {
-      return
-    }
-
-    val rp = realPath(file)
-    if (readCount.getOrElse(rp, 0) > 0) {
-      readCount += (rp -> (readCount(rp) - 1))
-      //note we could close the DB here but we keep it open
-      //for future users
-    } else {
-      System.err.println(s"Warning, incorrect release request - $file was not open for reading")
-    }
-  }
-
-  def closeWriters(): Unit = {
-    closeWriters(false)
-  }
-
-  /**
-   * This method should be called after writing has been finished
-   * to close all writers.
-   * @param force if true, we close writers even if readers are also open on the same files.
-   */
-  def closeWriters(force: Boolean): Unit = {
-    while(inWriting.size > 0) {
-      tryCloseWriters(force)
-      if (inWriting.size > 0) {
-        println(s"Trying to close writers (waiting for: $inWriting)")
-        Thread.sleep(100)
-      }
-    }
-  }
-
-  private def tryCloseWriters(force: Boolean): Unit = synchronized {
-    val all = inWriting
-    for (f <- all; if (getReadCount(f) == 0 || force)) {
-      openDBs(f).close()
-      inWriting -= f
-      openDBs -= f
+  def closeWriters(): Unit = synchronized {
+    for ((f, db) <- openWriters) {
+      releaseWriter(f)
     }
   }
 
   /**
    * Open a database for reading.
    */
-  private[global] def openRead(file: String): DB = {
+  private def openRead(file: String): DB = {
     println(s"Attempting to open $file for reading")
     val db = new DB()
-    if (!db.open(file, DB.OREADER | DB.OCREATE)) {
+    if (!db.open(file, DB.OREADER)) {
       throw new Exception("Unable to open db")
     }
     db
   }
 
   /**
-   * Open a database for writing.
+   * Open a database for writing. Will create it if it does not exist.
    */
-  private[global] def openWrite(file: String): DB = {
+  private def openWrite(file: String): Option[DB] = {
     println(s"Attempting to open $file for writing")
     val db = new DB()
     if (!db.open(file, DB.OWRITER | DB.OCREATE)) {
-      throw new Exception("Unable to open db")
+      System.out.println("Unable to open db at the moment...")
+      None
+    } else {
+      Some(db)
     }
-    db
   }
-
 }

@@ -19,7 +19,7 @@
 
 package t.sparql
 
-import t.BaseConfig
+import t.{BaseConfig, TriplestoreConfig}
 import t.model.sample.{AttributeSet, OTGAttributeSet}
 import t.platform.{BioParameter, BioParameters, ProbeRecord}
 import t.util.TempFiles
@@ -34,12 +34,12 @@ object Platforms extends RDFClass {
   def context(name: String) = defaultPrefix + "/" + name
 }
 
-class Platforms(baseConfig: BaseConfig) extends
-  ListManager(baseConfig.triplestore) {
+class Platforms(val config: TriplestoreConfig) extends ListManager(config) {
   import Platforms._
   import Triplestore._
 
-  def config = baseConfig.triplestore
+  def this(config: BaseConfig) = this(config.triplestore)
+
   def itemClass = Platforms.itemClass
   def defaultPrefix = Platforms.defaultPrefix
 

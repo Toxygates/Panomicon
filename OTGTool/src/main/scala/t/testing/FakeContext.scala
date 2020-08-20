@@ -27,9 +27,9 @@ import t.db.testing.DBTestData._
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.db.testing.DBTestData
 
-class FakeContext extends MatrixContext {
-  val sampleMap: SampleMap = DBTestData.dbIdMap
-  val probeMap: ProbeMap = DBTestData.probeMap
+class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap) extends MatrixContext {
+  def this() { this(DBTestData.sampleMap, DBTestData.probeMap) }
+
   val enumMaps: Map[String, Map[String, Int]] = DBTestData.enumMaps
 
   def species = List(Rat)
@@ -39,7 +39,8 @@ class FakeContext extends MatrixContext {
 
   def samples = ???
 
-  val testData = makeTestData(true)
+  val sparseTestData = makeTestData(true)
+  val nonsparseTestData = makeTestData(false)
 
   private val folds = memDBHash
   private val abs = memDBHash
@@ -55,8 +56,15 @@ class FakeContext extends MatrixContext {
   def doseSeriesBuilder = OTGDoseSeriesBuilder
   def doseSeriesDBReader = new KCSeriesDB(doseSeriesDB, false, doseSeriesBuilder, true)(this)
 
-  def populate() {
-    populate(testData)
+  override def expectedProbes(x: Sample) = {
+    probeMap.keys.toSeq
+  }
+
+  def populate(sparse: Boolean = true) {
+    if (sparse)
+      populate(sparseTestData)
+    else
+      populate(nonsparseTestData)
   }
 
   def populate(d: ColumnExpressionData) {

@@ -5,7 +5,7 @@
 #This script may take a long time to run.
 
 BASE=$(dirname $0)/..
-source $BASE/functions.sh
+source $BASE/config.sh
 
 INPUTS=$TOXY_SCRATCH/inputs
 GENERATED=$TOXY_SCRATCH/generated
@@ -25,11 +25,3 @@ $BASE/manager/tmanager.sh platform add -title "HG-U133_Plus_2" -input $GENERATED
 $BASE/manager/tmanager.sh platform add -title "Mouse430_2" -input $GENERATED/Mouse430_2.na34_platform.csv
 $BASE/manager/tmanager.sh platform add -title "Rat230_2" -input $GENERATED/Rat230_2.na34_platform.csv 
 
-
-#Download miRNA.dat from http://www.mirbase.org/ftp.shtml and rename
-echo Mirbase
-runfull t.platform.mirna.MiRBaseConverter $INPUTS/mirbase-v21.dat tplatform \
-	> $GENERATED/mirbase-v21_platform.tsv
-
-$BASE/manager/tmanager.sh platform add -title "mirbase-v21" -input $GENERATED/mirbase-v21_platform.tsv
-	

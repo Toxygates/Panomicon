@@ -19,6 +19,7 @@
 
 package t
 
+import t.db.MatrixContext
 import t.sparql.{ProbeStore, SampleStore}
 
 object Context {
@@ -38,7 +39,7 @@ class Context(val config: BaseConfig,
               val factory: Factory,
               val probeStore: ProbeStore,
               val sampleStore: SampleStore,
-              val matrix: OTGMatrixContext) {
+              val matrix: MatrixContext) {
 
   /*
    * Note: this may not be the best location for the auxSortMap

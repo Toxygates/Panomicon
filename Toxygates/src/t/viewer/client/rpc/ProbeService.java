@@ -77,22 +77,12 @@ public interface ProbeService extends RemoteService {
       boolean quick, boolean titlePatternMatch, @Nullable List<Sample> samples);
 
   /**
-   * Filter probes by given samples
-   */
-  String[] filterProbesByGroup(String[] probes, List<Sample> samples);
-
-  /**
    * Obtain suggestions from a partial gene symbol
    * 
    * @return An array of pairs, where the first item is the precise gene symbol and the second is
    *         the full gene name.
    */
   Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
-  
-  /**
-   * Obtain pathway names matching the pattern (partial name)
-   */
-  String[] pathways(String pattern) throws TimeoutException;
 
   /**
    * Obtain filtered probes that belong to the named pathway.
@@ -105,16 +95,6 @@ public interface ProbeService extends RemoteService {
       throws TimeoutException;
 
   /**
-   * Obtain GO terms matching the given pattern (partial name)
-   */
-  String[] goTerms(String pattern) throws TimeoutException;
-
-  /**
-   * Obtain probes for a given GO term (fully named)
-   */
-  String[] probesForGoTerm(String goTerm) throws TimeoutException;
-
-  /**
    * Obtain filtered probes for a given GO term (fully named)
    */
   String[] probesForGoTerm(String goTerm, @Nullable List<Sample> samples)
@@ -124,12 +104,16 @@ public interface ProbeService extends RemoteService {
    * Obtain associations -- the "dynamic columns" on the data screen.
    * 
    * @param types the association types to get.
-   * @param filter
    * @param probes
+   * @param sizeLimit A limit on the number of associations to return for
+   *                  each probe. The results in the data wil be truncated
+   *                  based on this limit. Note: if >n associations are found
+   *                  for a probe, then n+1 will be kept, in order to provide an
+   *                  indication that >n results were found.
    * @return
    */
-  Association[] associations(SampleClass sc, AType[] types, String[] probes)
-      throws TimeoutException;
+  Association[] associations(SampleClass sc, AType[] types, String[] probes,
+      int sizeLimit) throws TimeoutException;
 
   /**
    * Obtain probes that correspond to proteins targeted by the named compound.

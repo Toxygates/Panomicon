@@ -33,28 +33,15 @@ class KCDBRegistryTest extends TTestSuite {
     val w = KCDBRegistry.getWriter(testFile)
     w should not equal(None)
 
-    KCDBRegistry.isInWriting(testFile) should equal(true)
-
-    KCDBRegistry.getReadCount(testFile) should equal(0)
     val r = KCDBRegistry.getReader(testFile)
-    KCDBRegistry.getReadCount(testFile) should equal(1)
-    assert (r.get eq w.get)
+    assert (! (r.get eq w.get))
 
     KCDBRegistry.getReader(testFile)
-    KCDBRegistry.getReadCount(testFile) should equal(2)
-    KCDBRegistry.getReadCount(testFileShort) should equal(2)
-
-    KCDBRegistry.releaseReader(testFile)
-    KCDBRegistry.getReadCount(testFile) should equal(1)
-
-    KCDBRegistry.releaseReader(testFile)
-    KCDBRegistry.getReadCount(testFile) should equal(0)
-    KCDBRegistry.getReadCount(testFileShort) should equal(0)
-
     KCDBRegistry.closeWriters()
 
-    KCDBRegistry.isInWriting(testFile) should equal(false)
-    KCDBRegistry.getReadCount(testFile) should equal(0)
+    val w2 = KCDBRegistry.getWriter(testFile)
+    assert (!(w2.get eq w.get))
+    KCDBRegistry.closeWriters()
   }
 
 }

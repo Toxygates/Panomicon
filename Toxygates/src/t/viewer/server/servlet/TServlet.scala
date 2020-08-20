@@ -1,3 +1,5 @@
+package t.viewer.server.servlet
+
 /*
  * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
  *
@@ -17,31 +19,45 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server.rpc
-
+import javax.servlet.{ServletConfig, ServletException}
+import javax.servlet.http.HttpServlet
+import t.{BaseConfig, Context, Factory}
 import t.viewer.server.Configuration
 import t.viewer.shared.OTGSchema
-import t.{BaseConfig, Context, Factory}
 
-trait OTGServiceServlet extends TServiceServlet {
-  override protected def context: Context = _context
-  override protected def factory: Factory = _factory
+/**
+ * Minimal trait for HTTPServlets to participate in the framework with a basic configuration.
+ */
+trait MinimalTServlet {
+  this: HttpServlet =>
+
+  protected def context: Context = _context
+  protected def factory: Factory = _factory
 
   protected var _context: Context = _
   protected var _factory: Factory = _
 
-  /**
-   * Subclasses that override localInit can assume that factory and context are available.
-   */
-  override abstract def localInit(config: Configuration) {
-    _factory = new Factory
-    _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
-    super.localInit(config)
+  //Subclasses should override init() and call this method
+  @throws(classOf[ServletException])
+  def tServletInit(config: ServletConfig): Configuration = {
+    try {
+      val conf = Configuration.fromServletConfig(config)
+      tServletInit(conf)
+      conf
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw e
+    }
   }
 
-  override protected def baseConfig: BaseConfig = context.config
+  //Exposed for testing purposes
+  def tServletInit(config: Configuration): Unit = {
+    _factory = new Factory
+    _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
+  }
 
-  protected val schema: OTGSchema = new OTGSchema()
+  protected def baseConfig: BaseConfig = context.config
 
-  def appName: String = "Toxygates"
+  protected val schema = new OTGSchema()
 }

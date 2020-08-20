@@ -42,15 +42,15 @@ class ManagedMatrixTest extends TTestSuite {
   def foldBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
       probes.map(probeMap.unpack))
 
-  context.populate()
+  context.populate(false)
 
   test("build") {
-    val m = foldBuilder.build(groups, false, true)
+    val m = foldBuilder.build(groups, false)
     val cur = m.current
-    val sortedProbes = probes.sorted.map(probeMap.unpack)
 
-    cur.rows should equal(probes.size)
-    cur.columns should equal(groups.size)
+    val usedSet = context.sparseTestData.probes.toSet
+    val sortedProbes = probes.sorted.map(probeMap.unpack).filter(usedSet.contains)
+
     cur.sortedRowMap.map(_._1) should equal(sortedProbes)
 
     val info = m.info
@@ -68,8 +68,8 @@ class ManagedMatrixTest extends TTestSuite {
   }
 
   test("sort and select") {
-    val m = foldBuilder.build(groups, false, true)
-    val ps = DBTestData.probes.take(10).map(probeMap.unpack)
+    val m = foldBuilder.build(groups, false)
+    val ps = context.sparseTestData.probes.take(10)
 
     val preSort = m.current
 
@@ -80,27 +80,17 @@ class ManagedMatrixTest extends TTestSuite {
     mat.rows should equal(ps.size)
     val srm = mat.sortedRowMap
 
+    val usedSet = context.sparseTestData.probes
+
     mat = m.rawGrouped
-    mat.rows should equal(probes.size)
+    mat.rows should equal(usedSet.size)
 
     mat = m.rawUngrouped
-    mat.rows should equal(probes.size)
+    mat.rows should equal(usedSet.size)
 
     for (p <- ps) {
       preSort.row(p) should equal(m.current.row(p))
       preSort.row(p) should equal(m.rawGrouped.row(p))
     }
   }
-
-//
-//  test("adjoined sorting") {
-//    val em = testMatrix
-//    val adjData = List(List(3),
-//         List(1),
-//         List(2),
-//         List(5),
-//         List(4)).map(xs => EVArray(xs.map(new ExpressionValue(_))))
-//    val em2 = ExprMatrix.withRows(adjData)
-//
-//  }
 }

@@ -32,6 +32,7 @@ import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.Resources;
 import t.viewer.client.rpc.UserDataServiceAsync;
@@ -50,7 +51,6 @@ public class MyDataScreen extends MinimalScreen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
-  private String userKey;   
   private String userDataset;
   private String userSharedDataset;
   
@@ -61,12 +61,11 @@ public class MyDataScreen extends MinimalScreen {
     userData = man.userDataService();
     resources = man.resources();
     addToolbar(cmds, 35);
-    
-    String key = getStorage().getItem("userDataKey");
-    if (key == null) {
-      key = manager().appInfo().getUserKey();
-    }
-    setUserKey(key);    
+  }
+
+  @Override
+  public void loadState(AttributeSet attributes) {
+    setUserKey(getStorage().getUserDataKey());
   }
   
   @Override
@@ -170,8 +169,9 @@ public class MyDataScreen extends MinimalScreen {
     
     HTML h = new HTML();
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
-    cmds.add(h); 
-    keyLabel = new Label("Access key: " + userKey);
+    cmds.add(h);
+    keyLabel = new Label("Fetching access key...");
+    keyLabel.setText("Access key: " + getStorage().getUserDataKey());
     cmds.add(keyLabel);
     Button b = new Button("Change ...");
     b.addClickHandler(new ClickHandler() {      
@@ -190,8 +190,8 @@ public class MyDataScreen extends MinimalScreen {
         }
       }
     });
-    cmds.add(b);    
-    refreshBatches();    
+    cmds.add(b);
+    refreshBatches();
     return bp.table();
   }
   
@@ -203,12 +203,11 @@ public class MyDataScreen extends MinimalScreen {
   }
   
   private void setUserKey(String key) {
-    getStorage().setItem("userDataKey", key);    
-    userKey = key;
+    getStorage().setUserDataKey(key);
     userDataset = Dataset.userDatasetId(key);
     userSharedDataset = Dataset.userSharedDatasetId(key);        
     if (keyLabel != null) {
-      keyLabel.setText("Your access key is: " + userKey);
+      keyLabel.setText("Access key: " + key);
     }
   }
 

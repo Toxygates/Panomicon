@@ -19,12 +19,14 @@
 
 package t.db
 
+import t.OTGSeries
+
 import scala.Vector
 import scala.language.postfixOps
-
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter
+
 import scala.reflect.ClassTag
 
 object MatrixDB {
@@ -44,8 +46,8 @@ trait MatrixContext {
 
   def absoluteDBReader: MatrixDBReader[PExprValue]
   def foldsDBReader: MatrixDBReader[PExprValue]
-  def timeSeriesDBReader: SeriesDB[_]
-  def doseSeriesDBReader: SeriesDB[_]
+  def timeSeriesDBReader: SeriesDB[OTGSeries]
+  def doseSeriesDBReader: SeriesDB[OTGSeries]
 
   def timeSeriesBuilder: SeriesBuilder[_]
   def doseSeriesBuilder: SeriesBuilder[_]

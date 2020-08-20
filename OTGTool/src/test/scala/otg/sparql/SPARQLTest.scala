@@ -70,29 +70,32 @@ class SPARQLTest extends TTestSuite {
 //  }
 
   import t.sparql.secondary.Compound
-  test("ChEMBL") {
-    val t1 = chembl.targetsFor(Compound.make("acetaminophen"))
-    println(t1)
-    t1.size should (be >= 10)
-    val t2 = chembl.targetingFor(List("Q99685", "P07541").map(Protein(_)),
-      List("tylEnol", "phenaphen", "Paracetamol").map(Compound.make))
-    println(t2)
-    t2.allValues.size should equal(3)
-  }
 
-  test("DrugBank") {
-    val t1 = drugbank.targetsFor(Compound.make("niTrofurazone"))
-    println(t1)
-    t1.size should equal(4)
-    val t2 = drugbank.targetsFor(Compound.make("acetaminophen"))
-    println(t2)
-    t2.size should equal(2)
-    val t3 = drugbank.targetingFor(List("P61889", "P23219").map(Protein(_)),
-      List("NitrOfurazone", "acetaminophen", "lornoxicam").map(Compound.make))
+  //ChEMBL SPARQL endpoint currently defunct - test disabled
+//  test("ChEMBL") {
+//    val t1 = chembl.targetsFor(Compound.make("acetaminophen"))
+//    println(t1)
+//    t1.size should (be >= 10)
+//    val t2 = chembl.targetingFor(List("Q99685", "P07541").map(Protein(_)),
+//      List("tylEnol", "phenaphen", "Paracetamol").map(Compound.make))
+//    println(t2)
+//    t2.allValues.size should equal(3)
+//  }
 
-    println(t3)
-    t3.size should equal(2)
-  }
+  //DrugBank SPARQL endpoint currently defunct - test disabled
+//  test("DrugBank") {
+//    val t1 = drugbank.targetsFor(Compound.make("niTrofurazone"))
+//    println(t1)
+//    t1.size should equal(4)
+//    val t2 = drugbank.targetsFor(Compound.make("acetaminophen"))
+//    println(t2)
+//    t2.size should equal(2)
+//    val t3 = drugbank.targetingFor(List("P61889", "P23219").map(Protein(_)),
+//      List("NitrOfurazone", "acetaminophen", "lornoxicam").map(Compound.make))
+//
+//    println(t3)
+//    t3.size should equal(2)
+//  }
 
   test("Uniprot") {
     val kos = uniprot.keggOrthologs(Protein("Q21549"))

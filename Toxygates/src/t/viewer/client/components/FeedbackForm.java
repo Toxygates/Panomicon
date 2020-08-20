@@ -69,7 +69,7 @@ public class FeedbackForm extends InteractionDialog {
         String name = ig.getValue(0);
         String email = ig.getValue(1);
         String fb = commentArea.getText();
-        matrixService.sendFeedback(name, email, fb, new PendingAsyncCallback<Void>(parent,
+        matrixService.sendFeedback(name, email, fb, new PendingAsyncCallback<Void>(parent.manager(),
             "There was a problem sending your feedback.") {
           @Override
           public void handleSuccess(Void t) {

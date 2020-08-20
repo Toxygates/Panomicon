@@ -19,12 +19,16 @@
 
 package t.viewer.client.table;
 
-import java.util.*;
-
 import com.google.gwt.cell.client.SafeHtmlCell;
-
 import t.common.shared.AType;
-import t.viewer.shared.*;
+import t.viewer.shared.Association;
+import t.viewer.shared.AssociationValue;
+import t.viewer.shared.SortKey;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSortable {
   private Delegate<T> delegate;
@@ -106,15 +110,5 @@ public class AssociationColumn<T> extends LinkingColumn<T> implements MatrixSort
     } else {
     	return ("(Waiting for data...)");
     } 
-  }
-
-  @Override
-  protected boolean wasSizeExceeded(T data) {
-    if (delegate.associations().containsKey(assoc)) {
-      Association a = delegate.associations().get(assoc);
-      return a.overSizeLimit();
-    } else {
-      return super.wasSizeExceeded(data);
-    }
   }
 }

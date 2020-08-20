@@ -19,17 +19,18 @@
 
 package t.viewer.shared;
 
-import java.io.Serializable;
-import java.util.*;
-
-import javax.annotation.Nullable;
-
-import t.common.shared.*;
+import t.common.shared.Platform;
 import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.shared.clustering.ProbeClustering;
 import t.viewer.shared.intermine.IntermineInstance;
 import t.viewer.shared.mirna.MirnaSource;
+
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Container for various client side application parameters.
@@ -41,7 +42,6 @@ public class AppInfo implements Serializable {
 
   private Platform[] platforms = new Platform[0];
   private Group[] predefGroups = new Group[0];
-  private List<Dataset> datasets;
   private List<StringList> predefProbeLists = new ArrayList<StringList>();
   private List<ProbeClustering> probeClusterings = new ArrayList<ProbeClustering>();
 
@@ -58,19 +58,16 @@ public class AppInfo implements Serializable {
   
   public AppInfo() {}
 
-  public AppInfo(String instanceName_, List<Dataset> datasets, Platform[] platforms,
+  public AppInfo(String instanceName_, Platform[] platforms,
       List<StringList> probeLists, IntermineInstance[] instances,
       List<ProbeClustering> probeClusterings, String appName,
-      String userKey,
       String[][] annotationInfo,
       AttributeSet attributes,
       MirnaSource[] mirnaSources) {
     this.instanceName = instanceName_;
     this.pathologyTermsURL = "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf";    
     this.applicationName = appName;
-    this.userKey = userKey;
-    this.intermineInstances = instances;    
-    this.datasets = datasets;
+    this.intermineInstances = instances;
     this.platforms = platforms;
     this.predefProbeLists = probeLists;
     this.probeClusterings = probeClusterings;
@@ -106,14 +103,6 @@ public class AppInfo implements Serializable {
     predefGroups = gs;
   }
 
-  public List<Dataset> datasets() {
-    return datasets;
-  }
-  
-  public void setDatasets(List<Dataset> ds) {
-    this.datasets = ds;
-  }
-  
   public Platform[] platforms() {
     return platforms;
   }
@@ -137,11 +126,7 @@ public class AppInfo implements Serializable {
   public AttributeSet attributes() {
     return attributes;
   }
-  
-  public String getUserKey() {
-    return userKey;
-  }
-  
+
   public IntermineInstance[] intermineInstances() { 
     return intermineInstances; 
   }

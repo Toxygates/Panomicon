@@ -62,7 +62,7 @@ public class SeriesCharts extends Charts {
       final String highlightDoseOrTime, final Acceptor acceptor, final Screen screen,
       final String compoundName) {
     seriesService.expectedIndependentPoints(seriesType, series.get(0),
-        new PendingAsyncCallback<String[]>(screen,
+        new PendingAsyncCallback<String[]>(screen.manager(),
             "Unable to obtain independent points for series.", result -> finish(seriesType, series,
                 result, highlightDoseOrTime, acceptor, screen, compoundName)));
   }

@@ -34,8 +34,6 @@ public interface ProbeServiceAsync {
 
   void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
 
-  void filterProbesByGroup(String[] probes, List<Sample> samples, AsyncCallback<String[]> callback);
-
   void geneSuggestions(SampleClass sc, String partialName,
       AsyncCallback<Pair<String, String>[]> callback);
 
@@ -44,20 +42,13 @@ public interface ProbeServiceAsync {
 
   void keywordSuggestions(String partialName, int maxSize,
       AsyncCallback<Pair<String, AType>[]> callback);
-  
-  void pathways(String pattern, AsyncCallback<String[]> callback);
 
   void probesForPathway(String pathway, List<Sample> samples, AsyncCallback<String[]> callback);
-
-  void goTerms(String pattern, AsyncCallback<String[]> callback);
-
-  @Deprecated
-  void probesForGoTerm(String term, AsyncCallback<String[]> callback);
 
   void probesForGoTerm(String pattern, List<Sample> samples, AsyncCallback<String[]> callback);
 
   void associations(SampleClass sc, AType[] types, String[] probes,
-      AsyncCallback<Association[]> callback);
+      int sizeLimit, AsyncCallback<Association[]> callback);
 
   void probesTargetedByCompound(SampleClass sc, String compound, String service,
                                 boolean homologous, AsyncCallback<String[]> callback);

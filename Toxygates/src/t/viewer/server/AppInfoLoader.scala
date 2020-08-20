@@ -27,25 +27,14 @@ import t.viewer.server.Conversions._
 import t.viewer.shared.{AppInfo, StringList}
 import t.viewer.shared.clustering.ProbeClustering
 import t.viewer.shared.mirna.MirnaSource
-
+import t.common.server.GWTUtils._
 import scala.collection.JavaConverters._
-
-object AppInfoLoader {
-  //ID strings for the various miRNA sources that we support.
-
-  val TARGETMINE_SOURCE: String = "TargetMine"
-  val MIRDB_SOURCE: String = MiRDBConverter.mirdbGraph
-  val MIRAW_SOURCE: String = "MiRAW"
-}
 
 class AppInfoLoader(probeStore: ProbeStore,
                     configuration: Configuration,
-                    baseConfig: BaseConfig,
-                    appName: String) {
+                    baseConfig: BaseConfig) {
 
-  import AppInfoLoader._
   import GWTTypes._
-  import t.common.server.GWTUtils._
 
   /**
    * Called when AppInfo needs a full refresh.
@@ -55,11 +44,12 @@ class AppInfoLoader(probeStore: ProbeStore,
 
     new t.sparql.Platforms(baseConfig).populateAttributes(baseConfig.attributes)
 
-    new AppInfo(configuration.instanceName, mkList(),
+    new AppInfo(configuration.instanceName,
       sPlatforms(), probeLists,
       configuration.intermineInstances.toArray,
-      probeClusterings(probeLists.asScala), appName,
-      makeUserKey(), getAnnotationInfo,
+      probeClusterings(probeLists.asScala),
+      configuration.applicationName,
+      getAnnotationInfo,
       baseConfig.attributes,
       getMirnaSourceInfo)
   }
@@ -102,15 +92,6 @@ class AppInfoLoader(probeStore: ProbeStore,
   }
 
   /**
-   * Generate a new user key, to be used when the client does not already have one.
-   */
-  def makeUserKey(): String = {
-    val time = System.currentTimeMillis()
-    val random = (Math.random * Int.MaxValue).toInt
-    "%x%x".format(time, random)
-  }
-
-  /**
    * "shared" platforms
    */
   def sPlatforms(): Array[Platform] = {
@@ -119,22 +100,21 @@ class AppInfoLoader(probeStore: ProbeStore,
   }
 
   protected def getMirnaSourceInfo: Array[MirnaSource] = {
-    val dynamic = probeStore.mirnaSources.map(s =>
-      new MirnaSource(s._1, s._2, s._3, asJDouble(s._4), s._5.getOrElse(0),
-        s._6.getOrElse(null), null, null))
-
-    //Currently, triplestore-provided "dynamic" miRNA sources cannot have
-    //cutoff levels with labels. Such levels can only be set in static sources.
-
-    val static = staticMirnaSources
-    //Dynamic sources take precedence over static ones, based on id
-    dynamic.toArray ++ static.filter(s => !dynamic.exists(_.id == s.id))
+    MirnaSources.all.toArray
   }
+}
+
+object MirnaSources {
+  //ID strings for the various miRNA sources that we support.
+
+  val TARGETMINE_SOURCE: String = "TargetMine"
+  val MIRDB_SOURCE: String = "miRDB"
+  val MIRAW_SOURCE: String = "MiRAW"
 
   /**
    * MiRNA sources that are hardcoded into the application.
    */
-  protected def staticMirnaSources: Seq[MirnaSource] = {
+  def all: Seq[MirnaSource] = {
     val mtbLevels = t.intermine.MiRNATargets.supportLevels.toSeq.sortBy(_._2).reverse.map(x =>
       new FirstKeyedPair(x._1, asJDouble(x._2))).asGWT
 
@@ -147,7 +127,7 @@ class AppInfoLoader(probeStore: ProbeStore,
       new MirnaSource(TARGETMINE_SOURCE, "miRTarBase (via TargetMine)", true, 3,
         1188967, "Experimentally verified", mtbLevels,
         "http://mirtarbase.mbc.nctu.edu.tw/php/index.php"),
-      new MirnaSource(MIRDB_SOURCE, "MirDB 5.0", true, 90,
+      new MirnaSource(MIRDB_SOURCE, "miRDB 5.0", true, 90,
         3117189, "Predicted, score 0-100", null,
         "http://mirdb.org"),
       new MirnaSource(MIRAW_SOURCE, "MiRAW 6_1_10_AE10 NLL", false, null,

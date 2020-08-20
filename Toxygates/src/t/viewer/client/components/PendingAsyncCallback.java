@@ -21,7 +21,7 @@ package t.viewer.client.components;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import t.viewer.client.screen.Screen;
+import t.viewer.client.screen.ScreenManager;
 
 import javax.annotation.Nullable;
 import java.util.logging.Level;
@@ -35,7 +35,7 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
     void run(T t);
   }
 
-  private Screen screen;
+  private ScreenManager manager;
   private String onErrorMessage;
   private @Nullable SuccessAction<T> success = null;
 
@@ -46,32 +46,32 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
    * Construct a PendingAsyncCallback. If no SuccessAction is passed in, handleSuccess should be
    * overridden.
    * 
-   * @param _screen Used to display wait popup
+   * @param screenManager Used to display wait popup
    * @param _onErrorMessage
    */
-  public PendingAsyncCallback(Screen _screen, String _onErrorMessage) {
-    screen = _screen;
+  public PendingAsyncCallback(ScreenManager screenManager, String _onErrorMessage) {
+    manager = screenManager;
     onErrorMessage = _onErrorMessage;
-    screen.addPendingRequest();
+    manager.addPendingRequest();
   }
 
   /**
    * Construct a PendingAsyncCallback. As a syntactic convenience, this constructor allows a lambda
    * to be used.
    * 
-   * @param _screen Used to display wait popup
+   * @param screenManager Used to display wait popup
    * @param _onErrorMessage
    * @param onSuccess callback to run on successful completion.
    */
-  public PendingAsyncCallback(Screen _screen, String _onErrorMessage, SuccessAction<T> onSuccess) {
-    screen = _screen;
+  public PendingAsyncCallback(ScreenManager screenManager, String _onErrorMessage, SuccessAction<T> onSuccess) {
+    manager = screenManager;
     onErrorMessage = _onErrorMessage;
     success = onSuccess;
-    screen.addPendingRequest();
+    manager.addPendingRequest();
   }
 
 
-  public PendingAsyncCallback(Screen _widget) {
+  public PendingAsyncCallback(ScreenManager _widget) {
     this(_widget, "There was a server-side error.");
   }
 
@@ -80,7 +80,7 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
     completedSuccessfully = true;
     result = t;
     handleSuccess(t);
-    screen.removePendingRequest();
+    manager.removePendingRequest();
   }
   
   public boolean wasSuccessful() {
@@ -97,7 +97,7 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
    * "Please wait..." dialog will be hidden after this callback finishes.
    */
   public boolean isTheLastCallback() {
-    return screen.numPendingRequests() == 1;
+    return manager.numPendingRequests() == 1;
   }
 
   public void handleSuccess(T t) {
@@ -109,12 +109,12 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
   @Override
   public void onFailure(Throwable caught) {
     handleFailure(caught);
-    screen.removePendingRequest();
+    manager.removePendingRequest();
   }
 
   public void handleFailure(Throwable caught) {
     Window.alert(onErrorMessage + ":" + caught);
-    screen.getLogger().log(Level.SEVERE, onErrorMessage, caught);
+    manager.getLogger().log(Level.SEVERE, onErrorMessage, caught);
   }
 
 }

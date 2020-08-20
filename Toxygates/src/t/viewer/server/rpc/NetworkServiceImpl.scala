@@ -21,15 +21,14 @@ package t.viewer.server.rpc
 import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-import t.common.shared.GroupUtils
-import t.common.shared.ValueType
+import t.common.shared.{GroupUtils, ValueType}
 import t.common.shared.sample.Group
 import t.intermine.{MiRNATargets, MiRawImporter}
 import t.platform.mirna._
 import t.platform.mirna.TargetTable
 import t.sparql.ProbeStore
 import t.viewer.client.rpc.NetworkService
-import t.viewer.server.{AppInfoLoader, CSVHelper, Configuration}
+import t.viewer.server.{CSVHelper, Configuration, MirnaSources}
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.MatrixController
@@ -74,8 +73,7 @@ class NetworkState extends MatrixState {
   var networks = Map[String, NetworkController]()
 }
 
-class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService
-    with OTGServiceServlet {
+class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkService {
   protected def stateKey = NetworkState.stateKey
   protected def newState = new NetworkState
   var config: Configuration = _
@@ -83,7 +81,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   def mirnaDir = context.config.data.mirnaDir
 
   private def probeStore: ProbeStore = context.probeStore
-  lazy val platforms = t.viewer.server.Platforms(probeStore)
+  lazy val platforms = t.viewer.server.PlatformRegistry(probeStore)
 
   override def localInit(c: Configuration) {
     super.localInit(c)
@@ -116,7 +114,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     val orthMappings = () => List()
 
     getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, scSideColumns, Seq(), typ, false))
+      MatrixController(context, orthMappings, scSideColumns, Seq(), typ))
     val sideMat = getState.matrix(sideId)
 
     val sidetype = GroupUtils.groupType(scSideColumns(0))
@@ -129,12 +127,11 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     val scMainColumns = mainColumns.asScala
     //Always load the empty probe set(all probes), to be able to revert to this view.
     //We optionally filter probes below.
-    val params = ControllerParams(context, scMainColumns, Seq(),
-      MatrixController.groupPlatforms(context, scMainColumns), typ, false)
+    val params = ControllerParams(scMainColumns, Seq(), typ)
 
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-    val net = new NetworkController(params, sideMat, targets, platforms, mainPageSize,
+    val net = new NetworkController(context, platforms, params, sideMat, targets, mainPageSize,
       sideIsMRNA)
     getState.controllers += mainId -> net
     getState.networks += mainId -> net
@@ -198,19 +195,20 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
       MiRNATargets.tableFromFile(_))
 
   lazy val miRawTable = {
-    val allTranscripts = platforms.data.valuesIterator.flatten.flatMap(_.transcripts).toSet
+    val allTranscripts = platforms.allProbes.iterator.flatMap(_.transcripts).toSet
 
     tryReadTargetTable(
       s"$mirnaDir/miraw_hsa_targets.txt",
       MiRawImporter.makeTable("MiRaw 6_1_10_AE10 NLL", _, allTranscripts))
   }
 
+  import MirnaSources._
   protected def mirnaTargetTable(source: MirnaSource) = {
     val table = source.id match {
-      case AppInfoLoader.MIRDB_SOURCE      => mirdbTable
-      case AppInfoLoader.TARGETMINE_SOURCE => mirtarbaseTable
-      case AppInfoLoader.MIRAW_SOURCE      => miRawTable
-      case _                               => throw new Exception("Unexpected MiRNA source")
+      case MIRDB_SOURCE => mirdbTable
+      case TARGETMINE_SOURCE => mirtarbaseTable
+      case MIRAW_SOURCE => miRawTable
+      case _ => throw new Exception("Unexpected MiRNA source")
     }
     table match {
       case Some(t) =>
@@ -224,3 +222,5 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     }
   }
 }
+
+

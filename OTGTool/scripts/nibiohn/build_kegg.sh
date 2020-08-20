@@ -1,7 +1,9 @@
 #!/bin/bash
 
-export PATH=$PATH:/usr/local/bin
+#Script for updating KEGG pathways on the NIBIOHN server.
+#Uses NIBIOHN downloads of licensed data and bio2rdf scripts.
 
+export PATH=$PATH:/usr/local/bin
 
 KEGGBASE=/home/nibioadmin/toxygates/kegg_rdf
 OUTDIR=$KEGGBASE/download

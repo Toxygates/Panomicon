@@ -19,21 +19,24 @@
 
 package t.viewer.client.storage;
 
+import com.google.gwt.user.client.Window;
+import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.model.SampleClass;
+import t.viewer.client.ClientGroup;
+import t.viewer.client.network.PackedNetwork;
+import t.viewer.shared.AppInfo;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
+import t.viewer.shared.mirna.MirnaSource;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.gwt.user.client.Window;
-
-import t.common.shared.*;
-import t.common.shared.sample.Group;
-import t.model.SampleClass;
-import t.viewer.client.ClientGroup;
-import t.viewer.client.network.PackedNetwork;
-import t.viewer.shared.*;
-import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * Refactoring in progress. Methods for converting objects to and from strings
@@ -175,7 +178,7 @@ public class StorageProvider implements Storage.StorageProvider {
     customColumnStorage = new Storage<Group>("customColumn", groupPacker, this);
     
     datasetsStorage = new Storage<List<Dataset>>("datasets", datasetsPacker, this,
-        () -> Dataset.defaultSelection(info.datasets()));
+        () -> new ArrayList<Dataset>());
   }
   
   /**
@@ -192,6 +195,16 @@ public class StorageProvider implements Storage.StorageProvider {
     Stream<ClientGroup> inactiveGroupsStream = 
         inactiveGroups.stream().map(group -> new ClientGroup(group, false));
     return Stream.concat(activeGroupsStream, inactiveGroupsStream).collect(Collectors.toList());
+  }
+
+  public static String USERDATA_KEY = "userDataKey";
+
+  public void setUserDataKey(String newKey) {
+    setItem(USERDATA_KEY, newKey);
+  }
+
+  public String getUserDataKey() {
+    return getItem(USERDATA_KEY);
   }
 
   @Override

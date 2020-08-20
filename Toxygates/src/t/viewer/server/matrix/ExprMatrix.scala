@@ -79,20 +79,21 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  * The main data matrix class. Tracks names of columns and rows.
  * This class is immutable. The various operations produce modified copies.
  */
-class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: Int,
-    rowMap: Map[String, Int], columnMap: Map[String, Int],
-    val annotations: Seq[RowAnnotation])
-    extends KeyedDataMatrix[ExprMatrix, ExprValue,
-      IndexedSeq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
+class ExprMatrix(rowData: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: Int,
+                 rowMap: Map[String, Int], columnMap: Map[String, Int],
+                 val annotations: Seq[RowAnnotation])
+    extends KeyedDataMatrix[ExprValue, IndexedSeq[ExprValue], String, String](rowData, rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._
   import t.util.SafeMath._
+
+  type Self = ExprMatrix
 
   println(this)
 
   override def toString:String = s"ExprMatrix $rows x $columns"
 
-  def fromSeq(s: Seq[ExprValue]) = ExprMatrix.fromSeq(s)
+  def makeVector(s: Seq[ExprValue]) = ExprMatrix.fromSeq(s)
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
@@ -112,7 +113,7 @@ class ExprMatrix(data: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: In
   }
 
   def copyWithAnnotations(annots: Seq[RowAnnotation]): ExprMatrix = {
-    copyWith(data, rowMap, columnMap, annots)
+    copyWith(rowData, rowMap, columnMap, annots)
   }
 
   lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)

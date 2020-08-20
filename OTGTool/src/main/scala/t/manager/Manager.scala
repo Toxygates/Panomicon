@@ -55,7 +55,7 @@ object Manager extends CmdLineOptions {
     // Runs on normal shutdown or when user interrupt received
     Runtime.getRuntime.addShutdownHook(new Thread() { override def run = {
       if (TaskRunner.busy) TaskRunner.shutdown()
-      KCDBRegistry.closeWriters(true)
+      KCDBRegistry.closeWriters()
       mainThread.join() // because program will shut down when this thread does
     }})
 

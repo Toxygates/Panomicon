@@ -24,27 +24,30 @@ import t.platform.Probe
 import t.sparql.ProbeStore
 import t.platform.Species.Species
 
-object Platforms {
-  def apply(probeStore: ProbeStore): Platforms = {
-    /*
-     * Note: if this query becomes too slow, it may be desirable to load
-     * the platforms incrementally, e.g. by species
-     */
-    val pps = ProbeStore.platformsAndProbes(probeStore)
-    new Platforms(pps.map(x => x._1 -> x._2.toSet))
+object PlatformRegistry {
+  def apply(probeStore: ProbeStore): PlatformRegistry = {
+
+    val pfs = new t.sparql.Platforms(probeStore.config)
+    val pps = ProbeStore.platformsAndProbes(pfs, probeStore)
+    new PlatformRegistry(pps.map(x => x._1 -> x._2.toSet))
   }
 }
 
 /**
  * A probe and platform registry. Caches data to avoid heavy sparql queries.
  */
-class Platforms(val data: Map[String, Set[Probe]]) {
+class PlatformRegistry(private val data: Map[String, Set[Probe]]) {
   //map platform to probe sets
-  lazy val platformSets = data.mapValues(_.map(_.identifier))
+  private lazy val platformSets = data.mapValues(_.map(_.identifier))
 
   //map ID to probe
-  lazy val identifierLookup =
+  private lazy val identifierLookup =
     Map() ++ data.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
+
+  def allProbes: Iterable[Probe] = data.values.toSeq.flatten
+  def getProbe(id: String): Option[Probe] = identifierLookup.get(id)
+  def probeIdentifiers(platform: String): Set[String] = platformSets(platform)
+  def platformProbes(platform: String): Iterable[Probe] = data(platform)
 
   lazy val geneLookup = {
     val raw = (for (
@@ -54,8 +57,6 @@ class Platforms(val data: Map[String, Set[Probe]]) {
       ) yield (gene, pr))
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
-
-//  Note: may eventually need a mechanism for periodic updates
 
   def resolve(identifiers: Seq[String]): Seq[Probe] =
     identifiers.flatMap(identifierLookup.get(_))
@@ -95,7 +96,7 @@ class Platforms(val data: Map[String, Set[Probe]]) {
     } else {
       val pset = probes.toSet
       println(s"Filter (${pset.size}) ${pset take 20} ...")
-      val r = pset.intersect(platformSets(platform))
+      val r = pset.intersect(probeIdentifiers(platform))
       println(s"Result (${r.size}) ${r take 20} ...")
       r.toSeq
     }

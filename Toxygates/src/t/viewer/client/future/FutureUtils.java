@@ -19,11 +19,10 @@
 
 package t.viewer.client.future;
 
-import java.util.logging.Level;
-
 import com.google.gwt.user.client.Window;
+import t.viewer.client.screen.ScreenManager;
 
-import t.viewer.client.screen.Screen;
+import java.util.logging.Level;
 
 /**
  * Utility methods for Futures
@@ -37,18 +36,19 @@ public class FutureUtils {
    * completes.
    * 2) if the future completes with an error, display it in a popup
    * @param future the future to add a callback to
-   * @param screen the screen whose pending requests counter should be modified, and in 
+   * @param manager the screen whose pending requests counter should be modified, and in
    * which an error message should be shown if necessary 
    * @param errorMessage the message to show before the future's throwable's message, in
    * case the future completes with an error
    * @return
    */
-  public static <T> Future<T> beginPendingRequestHandling(Future<T> future, Screen screen, String errorMessage) {
-    screen.addPendingRequest();
+  public static <T> Future<T> beginPendingRequestHandling(Future<T> future,
+      ScreenManager manager, String errorMessage) {
+    manager.addPendingRequest();
     future.addCallback(f -> {
-      screen.removePendingRequest();
+      manager.removePendingRequest();
       if (f.doneWithError()) {
-        screen.getLogger().log(Level.SEVERE, errorMessage, f.caught());
+        manager.getLogger().log(Level.SEVERE, errorMessage, f.caught());
         Window.alert(errorMessage + ": " + f.caught());
       }
     });

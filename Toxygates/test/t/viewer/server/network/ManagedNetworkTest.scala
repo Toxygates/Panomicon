@@ -20,19 +20,16 @@
 package t.viewer.server.network
 
 import scala.collection.JavaConverters._
-
 import org.junit.runner.RunWith
-
 import org.scalatest.junit.JUnitRunner
-
 import t.viewer.server.rpc.Conversions._
-import t.TTestSuite
+import t.{Context, TTestSuite}
 import t.common.shared.ValueType
 import t.common.shared.sample.Group
 import t.db.testing.NetworkTestData
 import t.platform.mirna._
 import t.viewer.server.Conversions._
-import t.viewer.server.Platforms
+import t.viewer.server.PlatformRegistry
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.ExtFoldBuilder
 import t.viewer.shared.network.Network
@@ -53,15 +50,15 @@ class ManagedNetworkTest extends TTestSuite {
     mirnaIds)
 
   val mirnaGroup = new Group(dataSchema, "mirnaGroup", mirnaSamples.map(s => asJavaSample(s)).toArray)
-  val platforms = new Platforms(Map(
+  val platforms = new PlatformRegistry(Map(
     t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
     mirnaPlatformId -> mirnaProbes.toSet))
 
   val mrnaGroups = t.common.testing.TestData.groups take 5
 
   test("basic") {
-    val main = mrnaBuilder.build(mrnaGroups, false, true)
-    val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
+    val main = mrnaBuilder.build(mrnaGroups, false)
+    val side = mirnaBuilder.build(Seq(mirnaGroup), false)
     val builder = new NetworkBuilder(targets, platforms, main, side)
     val network = builder.build
 
@@ -94,7 +91,7 @@ class ManagedNetworkTest extends TTestSuite {
     val expSideTargets = if (reverseLookup) {
       targets.reverseTargets(platforms.resolve(mainProbes)).map(_._2.id)
     } else {
-      targets.targets(mainProbes.map(MiRNA(_)), mrnaProbes).map(_._2.identifier)
+      targets.targetsForPlatform(mainProbes.map(MiRNA(_)), mrnaProbes).map(_._2.identifier)
     }
     checkEqualSets(sideProbes.toSet, expSideTargets.toSet)
 
@@ -107,21 +104,23 @@ class ManagedNetworkTest extends TTestSuite {
   }
 
   test("forward network") {
-    val side = mirnaBuilder.build(Seq(mirnaGroup), false, true)
+    val side = mirnaBuilder.build(Seq(mirnaGroup), false)
     networkTest(side, mrnaGroups, t.db.testing.DBTestData.mrnaPlatformId, true)
   }
 
   test("reverse network") {
-    val side = mrnaBuilder.build(mrnaGroups, false, true)
+    val side = mrnaBuilder.build(mrnaGroups, false)
     networkTest(side, Seq(mirnaGroup), mirnaPlatformId, false)
   }
 
   def networkTest(side: ManagedMatrix, mainGroups: Seq[Group],
       mainPlatform: String, reverseLookup: Boolean) {
-    val params = ControllerParams(context, platforms, mainGroups, Seq(),
-      Seq(mainPlatform), ValueType.Folds, false)
+
+    val testContext = new Context(null, null, null, null, context)
+
+    val params = ControllerParams(mainGroups, Seq(), ValueType.Folds)
     val mainPageSize = 100
-    val netCon = new NetworkController(params, side, targets, platforms, mainPageSize,
+    val netCon = new NetworkController(testContext, platforms, params, side, targets, mainPageSize,
       false)
     val main = netCon.managedMatrix
 

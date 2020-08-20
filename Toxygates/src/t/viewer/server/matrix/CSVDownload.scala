@@ -54,7 +54,7 @@ object CSVDownload {
           val ungroupedSel = ungrouped.selectNamedColumns(ids)
           val newNames = Map() ++ ungroupedSel.columnMap.map(x =>
             (info.columnName(g) + ":" + x._1 -> x._2))
-          ungroupedSel.copyWith(ungroupedSel.data, ungroupedSel.rowMap, newNames)
+          ungroupedSel.copyWith(ungroupedSel.rowData, ungroupedSel.rowMap, newNames)
         } else {
           //p-value column, present as it is
           managedMat.current.selectColumns(List(g))
@@ -82,7 +82,7 @@ object CSVDownload {
     CSVHelper.writeCSV("toxygates", directory,
       aux ++ auxColumns(mat),
       rowNames, colNames,
-      mat.data.map(_.map(_.getValue)))
+      mat.rowData.map(_.map(_.getValue)))
   }
 
   def emptyAuxColumns(mat: ExprMatrix) = Seq()
