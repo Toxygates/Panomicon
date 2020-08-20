@@ -74,7 +74,7 @@
 		<param-value>https://toxygates.nibiohn.go.jp/panomicon/csv</param-value>
 	</context-param>
 
-	<! -- Email addresses for the feedback function on the Help menu. -->
+	<!-- Email addresses for the feedback function on the Help menu. -->
 	<context-param>
 		<param-name>feedbackReceivers</param-name>
 		<param-value>jtnystrom@gmail.com,kenji@nibiohn.go.jp,y-igarashi@nibiohn.go.jp</param-value>
