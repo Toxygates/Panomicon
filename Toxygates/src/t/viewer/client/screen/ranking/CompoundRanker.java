@@ -112,7 +112,7 @@ abstract public class CompoundRanker extends Composite {
         // may need to be converted from gene symbols.
 
         probeService.identifiersToProbes(probes, true, false, false, null,
-            new PendingAsyncCallback<String[]>(screen) {
+            new PendingAsyncCallback<String[]>(screen.manager()) {
               @Override
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
@@ -125,7 +125,7 @@ abstract public class CompoundRanker extends Composite {
       protected void itemsChanged(List<String> items) {
         probeService.identifiersToProbes(items.toArray(new String[0]), true, 
             false, false, null,
-            new PendingAsyncCallback<String[]>(screen) {
+            new PendingAsyncCallback<String[]>(screen.manager()) {
               @Override
               public void handleSuccess(String[] resolved) {
                 setProbeList(Arrays.asList(resolved));

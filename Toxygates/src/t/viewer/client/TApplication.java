@@ -127,17 +127,16 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   @Override
   public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
-    final Logger l = SharedUtils.getLogger();
     final DialogBox waitDialog = Utils.waitDialog();
     Utils.displayInCenter(waitDialog);
 
     // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
     @Nullable
-    String existingKey = tryGetStorage().getItem(storagePrefix() + ".userDataKey");
+    String existingKey = tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY);
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
-        l.info("Got appInfo");
+        logger.info("Got appInfo");
         waitDialog.hide();
         appInfo = result;
         handler.onSuccess(result);
@@ -146,7 +145,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       @Override
       public void onFailure(Throwable caught) {
         waitDialog.hide();
-        l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+        logger.log(Level.WARNING, "Failed to obtain appInfo", caught);
         handler.onFailure(caught);
       }
     });
@@ -185,14 +184,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     });
 
     // We don't use StorageProvider here, because Storageprovider initialization requires an appInfo
-    String userKey = tryGetStorage().getItem(storagePrefix() + ".userDataKey");
+    String userKey = tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY);
 
     Future<String> userKeyFuture = new Future<>();
     Future<AppInfo> appInfoFuture = new Future<>();
     reloadAppInfo(appInfoFuture);
 
     userKeyFuture.addSuccessCallback(newKey -> {
-      tryGetStorage().setItem(storagePrefix() + ".userDataKey", newKey);
+      tryGetStorage().setItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY, newKey);
       Future<Dataset[]> datasetFuture = updateDatasets();
       // The callback for this combined future has to be set here because
       // datasetFuture is created inside this callback
@@ -208,8 +207,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       userKeyFuture.onSuccess(userKey);
     }
 
-    Logger l = SharedUtils.getLogger();
-    l.info("onModuleLoad() finished");
+    logger.info("onModuleLoad() finished");
   }
 
   protected void setupUIBase() {
@@ -258,12 +256,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   protected boolean readImportedProbes() {
-    Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
 
     if (appInfo.importedGenes() != null) {
       String[] igs = appInfo.importedGenes();
-      l.info("Probes from appInfo/POST request size: " + igs.length);
+      logger.info("Probes from appInfo/POST request size: " + igs.length);
       useProbes = igs;
     }
 
@@ -273,7 +270,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       List<String> pl = params.get("probes");
       if (!pl.isEmpty()) {
         useProbes = pl.get(0).split(",");
-        l.info("probes from URL size: " + useProbes.length);
+        logger.info("probes from URL size: " + useProbes.length);
       }
     }
     if (useProbes != null && useProbes.length > 0) {
@@ -538,9 +535,50 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       });
     // We don't use StorageProvider here, because this can be called
     // before AppInfo initialization
-    sampleService.datasetsForUser(tryGetStorage().getItem(storagePrefix() + ".userDataKey"), future);
+    sampleService.datasetsForUser(tryGetStorage().getItem(storagePrefix() + "." + StorageProvider.USERDATA_KEY), future);
 
     return future;
+  }
+
+  private int numPendingRequests = 0;
+
+  private DialogBox waitDialog;
+
+  // Load indicator handling
+  @Override
+  public void addPendingRequest() {
+    numPendingRequests += 1;
+    if (numPendingRequests == 1) {
+      if (waitDialog == null) {
+        waitDialog = Utils.waitDialog();
+      }
+      /* Utils.displayInCenter immediately shows the dialog, and centers it in a
+       * deferred command. If showing the dialog is deferred as well, like with
+       * many other dialogs, this can cause a race condition that results in the
+       * dialog not being hidden even when all pending requests are done. */
+      Utils.displayInCenter(waitDialog);
+    }
+  }
+
+  @Override
+  public void removePendingRequest() {
+    numPendingRequests -= 1;
+    if (numPendingRequests == 0) {
+      waitDialog.hide();
+    } else if (numPendingRequests < 0) {
+      numPendingRequests = 0;
+      throw new RuntimeException("Tried to remove pending request while numPendingRequests <= 0");
+    }
+  }
+
+  @Override
+  public int numPendingRequests() {
+    return numPendingRequests;
+  }
+
+  @Override
+  public Logger getLogger() {
+    return logger;
   }
 
   @Override

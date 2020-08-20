@@ -19,15 +19,15 @@
 
 package t.viewer.client;
 
-import static t.model.sample.OTGAttribute.*;
-
-import t.viewer.client.screen.Screen;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
 import t.model.sample.Attribute;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.UserDataServiceAsync;
+import t.viewer.client.screen.Screen;
+
+import static t.model.sample.OTGAttribute.*;
 
 /** 
  * UI factory for the Adjuvant Database application.
@@ -45,7 +45,7 @@ public class AdjuvantFactory extends OTGFactory {
     
     userData.datasetSampleSummary(d, rowAttributes, colAttributes,
         AdmRoute,
-      new PendingAsyncCallback<String[][]>(screen) {
+      new PendingAsyncCallback<String[][]>(screen.manager()) {
         @Override
         public void handleSuccess(String[][] data) {
           StringArrayTable r = new StringArrayTable(data);

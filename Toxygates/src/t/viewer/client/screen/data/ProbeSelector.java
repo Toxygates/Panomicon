@@ -161,7 +161,7 @@ abstract public class ProbeSelector extends Composite implements
    * This callback should be supplied to the RPC methd that retrieves probes for a selection.
    */
   public AsyncCallback<String[]> retrieveProbesCallback() {
-    return new PendingAsyncCallback<String[]>(screen) {
+    return new PendingAsyncCallback<String[]>(screen.manager()) {
       @Override
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get probes.");
@@ -185,7 +185,7 @@ abstract public class ProbeSelector extends Composite implements
   protected void probesLoaded(final String[] probes) {
     if (probes.length > 0) {
       Arrays.sort(probes);
-      probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(screen,
+      probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(screen.manager(),
           "Unable to get gene symbols for probes") {
         @Override
         public void handleSuccess(String[][] syms) {

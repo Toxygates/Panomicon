@@ -377,7 +377,7 @@ public class DataScreen extends MinimalScreen implements ImportingScreen {
   public void getProbes() {
     if (urlProbes != null) {
       manager().probeService().identifiersToProbes(urlProbes, true, true, false, null,
-          new PendingAsyncCallback<String[]>(this,
+          new PendingAsyncCallback<String[]>(manager,
               "Failed to resolve gene identifiers") {
             @Override
             public void handleSuccess(String[] probes) {

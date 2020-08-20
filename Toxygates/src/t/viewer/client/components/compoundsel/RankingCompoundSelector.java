@@ -160,7 +160,7 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
-      return new PendingAsyncCallback<List<Series>>(screen, "Unable to retrieve data.") {
+      return new PendingAsyncCallback<List<Series>>(screen.manager(), "Unable to retrieve data.") {
         @Override
         public void handleSuccess(final List<Series> series) {
           Utils.ensureVisualisationAndThen(new Runnable() {

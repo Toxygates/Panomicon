@@ -117,7 +117,7 @@ public class SampleDetailScreen extends MinimalScreen
   public void loadSections(final HasSamples<Sample> hasSamples, boolean importantOnly) {
     downloadButton.setEnabled(false);
       sampleService.attributeValuesAndVariance(hasSamples.getSamples(), importantOnly,
-              new PendingAsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>>(SampleDetailScreen.this) {
+              new PendingAsyncCallback<Pair<Sample[], Map<String, PrecomputedVarianceSet>>>(SampleDetailScreen.this.manager) {
       @Override
       public void handleFailure(Throwable caught) {
           getLogger().log(Level.WARNING, "sampleService.annotations failed", caught);
@@ -233,7 +233,7 @@ public class SampleDetailScreen extends MinimalScreen
           return;
         }
           sampleService.prepareAnnotationCSVDownload(currentColumn.getSamples(),
-            new PendingAsyncCallback<String>(SampleDetailScreen.this,
+            new PendingAsyncCallback<String>(SampleDetailScreen.this.manager,
             "Unable to prepare the data for download,") {
           @Override
           public void handleSuccess(String url) {

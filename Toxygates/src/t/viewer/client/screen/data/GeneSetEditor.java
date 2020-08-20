@@ -500,7 +500,7 @@ public class GeneSetEditor extends Composite {
     // homogenous format (probes only)
     probeService.identifiersToProbes(probes, true, false, titleMatch, 
         ClientGroup.getAllSamples(screen.chosenColumns()),
-        new PendingAsyncCallback<String[]>(screen,
+        new PendingAsyncCallback<String[]>(screen.manager(),
             "Unable to obtain manual probes (technical error).") {
           @Override
           public void handleSuccess(String[] probes) {
@@ -540,7 +540,7 @@ public class GeneSetEditor extends Composite {
       logger.info("Target lookup for: " + sc.toString());
 
       probeService.probesTargetedByCompound(sc, compound, service, homologs,
-          new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
+          new PendingAsyncCallback<String[]>(screen.manager(), "Unable to get probes (technical error).") {
             @Override
             public void handleSuccess(String[] probes) {
               if (probes.length == 0) {

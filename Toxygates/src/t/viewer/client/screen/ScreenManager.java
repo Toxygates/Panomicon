@@ -31,6 +31,8 @@ import t.viewer.client.rpc.*;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;
 
+import java.util.logging.Logger;
+
 public interface ScreenManager extends ProvidesResize {
 
   /**
@@ -71,4 +73,12 @@ public interface ScreenManager extends ProvidesResize {
   Dataset[] datasets();
 
   Future<Dataset[]> updateDatasets();
+
+  void addPendingRequest();
+
+  void removePendingRequest();
+
+  int numPendingRequests();
+
+  Logger getLogger();
 }

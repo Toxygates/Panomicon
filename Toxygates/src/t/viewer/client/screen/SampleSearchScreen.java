@@ -303,7 +303,7 @@ public class SampleSearchScreen extends FilterScreen
   private void prepareCSVDownload() {
     this.sampleService.prepareCSVDownload((SampleLike[]) currentSearch.searchResult(),
       currentSearch.helper().allAttributes(), new PendingAsyncCallback<String>(
-          SampleSearchScreen.this, "Unable to prepare the data for download.", 
+          SampleSearchScreen.this.manager, "Unable to prepare the data for download.",
           (String url) -> {
             Utils.displayURL("Your download is ready.", "Download", url);
           }));
@@ -363,7 +363,7 @@ public class SampleSearchScreen extends FilterScreen
   
   private void fetchAttributesForSampleClass(SampleClass sc) {
     sampleService.attributesForSamples(sc, new PendingAsyncCallback<Attribute[]>(
-      SampleSearchScreen.this, "Unable to fetch search parameter.", 
+      SampleSearchScreen.this.manager, "Unable to fetch search parameter.",
       (Attribute[] attribs) -> {
         //Logger.getLogger("aoeu").info("got " + attribs.length + " attributes");
         updateEnabledAttributeSet(attribs);
@@ -375,12 +375,12 @@ public class SampleSearchScreen extends FilterScreen
    */
   @Override
   public void searchStarted(Search<?, ?> search) {
-    addPendingRequest();
+    manager.addPendingRequest();
   }
 
   @Override
   public void searchEnded(Search<?, ?> search, String resultCountText) {
-    removePendingRequest();
+    manager.removePendingRequest();
     hideTables();
     resultCountLabel.setText(resultCountText);
     currentSearch = search;
