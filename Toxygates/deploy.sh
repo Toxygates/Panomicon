@@ -47,7 +47,7 @@ cp ${GWT_SDK}/gwt-servlet.jar $WARLIB
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar
-rm $WARLIB/scala-library.jar
+rm $WARLIB/scala-library*.jar
 #These should not be deployed in a servlet context
 rm $WARLIB/servlet-api*.jar
 rm $WARLIB/javax.servlet-api*.jar
