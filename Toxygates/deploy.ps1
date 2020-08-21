@@ -16,7 +16,7 @@ Copy-Item $env:GWT_SDK/gwt-servlet.jar $WARLIB
 
 # These should be in the shared tomcat lib dir (tglobal.jar)
 #Remove-Item ($WARLIB + "/*kyotocabinet*jar")
-#Remove-Item ($WARLIB + "/scala-library.jar") #error
+#Remove-Item ($WARLIB + "/scala-library*.jar") #error
 # These should not be deployed in a servlet context
 #Remove-Item ($WARLIB + "servlet-api*.jar")
 #Remove-Item ($WARLIB + "javax.servlet-api*.jar")
