@@ -158,6 +158,8 @@ public class SampleSearchScreen extends FilterScreen
 
             currentSearch.helper().selectionTable().clearSelection();
 
+            manager().resetWorkflowLinks();
+
             Window.alert("Saved group: " + name);
           } else {
             Window.alert("Sample groups must complain at least one unit. " + '\n'
