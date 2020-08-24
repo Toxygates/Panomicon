@@ -20,14 +20,13 @@
 package t.viewer.server.matrix
 
 import t.Context
-import t.common.shared.DataSchema
 import t.common.shared.sample.ExpressionRow
 import t.platform.{Probe, Species}
 
 /**
  * Row labels for normal, single-species matrices.
  */
-class RowLabels(context: Context, schema: DataSchema) {
+class RowLabels(context: Context) {
   val probes = context.probeStore
 
   private def loadProbes(rows: Iterable[ExpressionRow]) =
@@ -75,7 +74,7 @@ class RowLabels(context: Context, schema: DataSchema) {
 /**
  * Row labels for orthologous matrices.
  */
-class MergedRowLabels(context: Context, schema: DataSchema) extends RowLabels(context, schema) {
+class MergedRowLabels(context: Context) extends RowLabels(context) {
 
   private def repeatStrings[T](xs: Array[T]) =
     withCount(xs).map(x => s"${x._1} (${prbCount(x._2)})")

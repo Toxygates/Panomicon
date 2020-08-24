@@ -32,7 +32,7 @@ import java.util.Arrays;
  * can be used to back hideable columns.
  */
 @SuppressWarnings("serial")
-public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
+public class ExpressionRow implements Serializable {
   private String probe = "";
   private String[] atomicProbeTitles = new String[0];
   private String[] atomicProbes = new String[0];
@@ -65,14 +65,6 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
     geneSyms = _geneSym;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof ExpressionRow) {
-      return (probe == ((ExpressionRow) o).probe && Arrays.equals(val, ((ExpressionRow) o).val));
-    }
-    return false;
-  }
-
   public String getProbe() {
     return probe;
   }
@@ -89,7 +81,7 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
     }
   }
 
-  private ExpressionValue emptyValue() {
+  private static ExpressionValue emptyValue() {
     return new ExpressionValue(0, 'A');
   }
 
@@ -136,14 +128,5 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 
   public String[] getGeneSyms() {
     return geneSyms;
-  }
-
-  @Override
-  public int compareTo(ExpressionRow o) {
-    if (o == null) {
-      return -1;
-    } else {
-      return probe.compareTo(o.probe);
-    }
   }
 }

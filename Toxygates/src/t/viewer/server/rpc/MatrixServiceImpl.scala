@@ -118,8 +118,8 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     //Always load the empty probe set(all probes), to be able to revert to this view
     //later.
     getState.controllers += (id ->
-      MatrixController(context, () => getOrthologs(context),
-          groups.asScala, allProbes, typ))
+      MatrixController(context, groups.asScala, allProbes, typ,
+      () => getOrthologs(context)))
     val mat = getState.matrix(id)
 
     if (!probes.isEmpty) {
@@ -189,14 +189,14 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
       }
       gv.setTooltip(tooltip)
     }
-    cont.insertAnnotations(context, schema, grouped, true).asGWT
+    cont.insertAnnotations(context, grouped, true).asGWT
   }
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val groups = Vector() ++ gs.asScala
-    val controller = MatrixController(context, () => getOrthologs(context),
-        groups, rprobes, typ)
+    val controller = MatrixController(context,
+        groups, rprobes, typ, () => getOrthologs(context))
     val mm = controller.managedMatrix
 
     val raw = if (groups.size == 1) {
@@ -208,8 +208,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
       mm.current.selectNamedColumns(cols).asRows
     }
 
-    val rows =
-      controller.insertAnnotations(context, schema, raw, withSymbols)
+    val rows = controller.insertAnnotations(context, raw, withSymbols)
     new FullMatrix(mm.info, rows.asGWT)
   }
 
@@ -277,8 +276,9 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     //Reload data in a temporary controller if groups do not correspond to
     //the ones in the current session
     val cont = if (getState.needsReload(id, groups.asScala, valueType)) {
-      MatrixController(context, () => getOrthologs(context),
-          groups.asScala, probesScala, valueType)
+      MatrixController(context,
+        groups.asScala, probesScala, valueType,
+        () => getOrthologs(context))
     } else {
       getState.controller(id)
     }

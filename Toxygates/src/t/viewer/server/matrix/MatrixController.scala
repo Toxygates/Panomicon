@@ -36,8 +36,10 @@ import t.common.shared.sample.ExpressionRow
 import t.model.sample.CoreParameter
 
 object MatrixController {
-  def apply(context: Context, orthologs: () => Iterable[OrthologMapping],
-    groups: Seq[Group], initProbes: Seq[String], typ: ValueType): MatrixController = {
+  private def noOrthologs = () => Iterable.empty
+
+  def apply(context: Context, groups: Seq[Group], initProbes: Seq[String], typ: ValueType,
+            orthologs: () => Iterable[OrthologMapping] = noOrthologs): MatrixController = {
 
     val params = ControllerParams(groups, initProbes, typ)
     val platforms = PlatformRegistry(context.probeStore)
@@ -188,12 +190,11 @@ abstract class MatrixController(context: Context,
     managedMatrix
   }
 
-  protected def rowLabels(context: Context, schema: DataSchema): RowLabels = new RowLabels(context, schema)
+  protected def rowLabels(context: Context): RowLabels = new RowLabels(context)
 
-  def insertAnnotations(context: Context, schema: DataSchema,
-      rows: Seq[ExpressionRow],
-      withSymbols: Boolean): Seq[ExpressionRow] = {
-    val rl = rowLabels(context, schema)
+  def insertAnnotations(context: Context,
+      rows: Seq[ExpressionRow], withSymbols: Boolean): Seq[ExpressionRow] = {
+    val rl = rowLabels(context)
     rl.insertAnnotations(rows, withSymbols)
   }
 }
@@ -251,5 +252,5 @@ class MergedMatrixController(context: Context,
     Some(new MatrixMapper(pm, vm))
   }
 
-  override protected def rowLabels(context: Context, schema: DataSchema) = new MergedRowLabels(context, schema)
+  override protected def rowLabels(context: Context) = new MergedRowLabels(context)
 }

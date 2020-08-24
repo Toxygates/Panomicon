@@ -110,11 +110,9 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
                   mainPageSize: Int): NetworkInfo = {
 
     val scSideColumns = sideColumns.asScala
-    //Orthologous mode is not supported for network loading
-    val orthMappings = () => List()
 
     getState.controllers += (sideId ->
-      MatrixController(context, orthMappings, scSideColumns, Seq(), typ))
+      MatrixController(context, scSideColumns, Seq(), typ))
     val sideMat = getState.matrix(sideId)
 
     val sidetype = GroupUtils.groupType(scSideColumns(0))
