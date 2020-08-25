@@ -129,6 +129,8 @@
       </classpath>
       <jvmarg value="-Xmx3g"/>
       <jvmarg value="-Djava.library.path=${env.KC_LIB_DIR}"/>
+      <arg value="-bindAddress"/>
+      <arg value="0.0.0.0"/>
       <arg value="t.viewer.Toxygates"/>
       <arg value="t.admin.AdminConsole"/>
     </java>
