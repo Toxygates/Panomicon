@@ -21,14 +21,9 @@ package t.viewer.server.network
 
 import t.db._
 import t.viewer.server.matrix._
-import t.viewer.shared.ManagedMatrixInfo
 import t.platform.mirna._
-import t.viewer.server.rpc.NetworkState
-import t.viewer.shared.network.NetworkInfo
-import t.viewer.shared.network.Network
 import t.viewer.server.PlatformRegistry
 import scala.collection.JavaConverters._
-import t.common.shared.sample.ExpressionRow
 import t.common.shared.GWTTypes
 import t.common.server.GWTUtils
 

@@ -19,7 +19,6 @@
 
 package t.viewer.server.matrix
 
-import scala.collection.JavaConverters._
 import t.Context
 import t.common.shared._
 import t.common.shared.sample.Group
@@ -32,7 +31,6 @@ import t.viewer.shared.DBUnavailableException
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.server.PlatformRegistry
 import t.viewer.shared.SortKey
-import t.common.shared.sample.ExpressionRow
 import t.model.sample.CoreParameter
 
 object MatrixController {
@@ -235,7 +233,9 @@ class MergedMatrixController(context: Context,
 
   override protected def enhancedCols = false
 
-  lazy val orth = orthologs().filter(_.mappings.nonEmpty).head
+  lazy val orth = orthologs().filter(_.mappings.nonEmpty).headOption.getOrElse(
+    throw new Exception("No ortholog mappings available, unable to create merged matrix.")
+  )
 
   println(s"Using orthologs from ${orth.name} for mapping")
 
