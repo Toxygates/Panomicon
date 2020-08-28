@@ -19,11 +19,6 @@
 
 package t.common.client.components;
 
-import java.util.*;
-import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
-
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
@@ -34,8 +29,11 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
-
 import t.common.shared.SharedUtils;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
@@ -75,7 +73,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
           selected.remove(object);
         }
         selectionChanged(selected);
-        table.redrawRow(index);
+        //table.redrawRow(index);
       }
     });
 
