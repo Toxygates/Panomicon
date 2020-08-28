@@ -20,8 +20,9 @@
 package t.viewer.server.matrix
 
 import t.Context
-import t.common.shared.sample.ExpressionRow
 import t.platform.{Probe, Species}
+
+import scala.reflect.ClassTag
 
 /**
  * Row labels for normal, single-species matrices.
@@ -33,7 +34,7 @@ class RowLabels(context: Context) {
     if (rows.isEmpty) {
       Seq()
     } else {
-      probes.withAttributes(rows.flatMap(r => r.getAtomicProbes.map(Probe(_))))
+      probes.withAttributes(rows.flatMap(r => r.atomicProbes.map(Probe(_))))
     }
 
   /**
@@ -47,11 +48,7 @@ class RowLabels(context: Context) {
         (x.identifier -> x.genes.map(_.identifier).toArray))
 
       //Only insert geneIDs, leave other data intact.
-      rows.map(or => {
-        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
-          or.getAtomicProbes.flatMap(giMap(_)),
-          or.getGeneSyms, or.getValues)
-      })
+      rows.map(or => { or.copy(geneIds = or.atomicProbes.flatMap(p => giMap(p))) } )
     } else {
       val pm = Map() ++ loadProbes(rows).map(a => (a.identifier -> a))
       println(pm.take(5))
@@ -60,14 +57,14 @@ class RowLabels(context: Context) {
   }
 
   def processRow(pm: Map[String, Probe], r: ExpressionRow): ExpressionRow = {
-    val atomics = r.getAtomicProbes()
+    val atomics = r.atomicProbes
     val ps = atomics.flatMap(pm.get(_))
     assert(ps.size == 1)
     val p = atomics(0)
     val pr = pm.get(p).toArray
-    new ExpressionRow(p, pr.flatMap(_.titles),
+    ExpressionRow(p, Array(p), pr.flatMap(_.titles),
       pr.flatMap(_.genes.map(_.identifier)), pr.flatMap(_.symbols),
-      r.getValues)
+      r.values)
   }
 }
 
@@ -76,12 +73,14 @@ class RowLabels(context: Context) {
  */
 class MergedRowLabels(context: Context) extends RowLabels(context) {
 
-  private def repeatStrings[T](xs: Array[T]) =
+  private def repeatStrings[T : ClassTag](xs: Array[T]) =
     withCount(xs).map(x => s"${x._1} (${prbCount(x._2)})")
 
-  //Count the occurrences of each item
-  private def withCount[T](xs: Array[T]) =
-    xs.groupBy(x => x).toArray.map(x => (x._1, x._2.size))
+  //Count the occurrences of each item without changing their order
+  private def withCount[T : ClassTag](xs: Array[T]): Array[(T, Int)] = {
+    val counts = Map() ++ xs.groupBy(x => x).map(x => (x._1, x._2.size))
+    xs.distinct.toArray.map(x => (x, counts(x)))
+  }
 
   private def prbCount(n: Int) = {
     if (n == 0) {
@@ -94,7 +93,7 @@ class MergedRowLabels(context: Context) extends RowLabels(context) {
   }
 
   override def processRow(pm: Map[String, Probe], r: ExpressionRow): ExpressionRow = {
-    val atomics = r.getAtomicProbes()
+    val atomics = r.atomicProbes
     val ps = atomics.flatMap(pm.get(_))
 
     def speciesPrefix(pf: String) =
@@ -105,15 +104,15 @@ class MergedRowLabels(context: Context) extends RowLabels(context) {
     val expandedSymbols = ps.flatMap(p =>
       p.symbols.map(speciesPrefix(p.platform) + ":" + _))
 
-    val nr = new ExpressionRow(atomics.mkString("/"),
+    val nr = ExpressionRow(atomics.mkString("/"),
       atomics, repeatStrings(ps.map(p => p.name)),
       expandedGenes.map(_._2).distinct,
       repeatStrings(expandedSymbols),
-      r.getValues)
+      r.values)
 
-    val gils = withCount(expandedGenes).map(x =>
+    val geneIdLabels = withCount(expandedGenes).map(x =>
       s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})")
-    nr.setGeneIdLabels(gils)
+    nr.geneIdLabels = geneIdLabels
     nr
   }
 }

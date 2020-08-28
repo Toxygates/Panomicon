@@ -52,7 +52,7 @@ class ClusteringData(val controller: MatrixController,
     StringUtils.abbreviate(items.toSeq.distinct.mkString("/"), 30)
 
   def rowNames: Array[String] =
-    allRows.map(r => joinedAbbreviated(r.getAtomicProbes, 20)).toArray
+    allRows.map(r => joinedAbbreviated(r.atomicProbes, 20)).toArray
 
   def colNames: Array[String] = columns.map(_._1).toArray
 
@@ -68,11 +68,11 @@ class ClusteringData(val controller: MatrixController,
    * Gene symbols for the specified rows
    */
   def geneSymbols: Array[String] = {
-    val allAtomics = allRows.flatMap(_.getAtomicProbes.map(p => Probe(p)))
+    val allAtomics = allRows.flatMap(_.atomicProbes.map(p => Probe(p)))
     val aaLookup = Map() ++ probeStore.withAttributes(allAtomics).map(a => a.identifier -> a)
 
     allRows.map(r => {
-      val atrs = r.getAtomicProbes.map(aaLookup(_))
+      val atrs = r.atomicProbes.map(aaLookup(_))
       joinedAbbreviated(atrs.flatMap(_.symbols), 20)
     }).toArray
   }

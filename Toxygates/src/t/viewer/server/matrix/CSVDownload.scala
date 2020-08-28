@@ -36,8 +36,7 @@ object CSVDownload {
    * @return the name of the file generated in the directory.
    */
   def generate(managedMat: ManagedMatrix, probeStore: ProbeStore,
-               directory: String, individualSamples: Boolean,
-               auxColumns: ExprMatrix => Seq[(String, Seq[String])] = emptyAuxColumns): String = {
+               directory: String, individualSamples: Boolean): String = {
 
      var mat = if (individualSamples &&
       managedMat.rawUngrouped != null && managedMat.current != null) {
@@ -70,20 +69,18 @@ object CSVDownload {
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows
     //Task: move into RowLabels if possible
-    val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
+    val rowNames = rows.map(_.atomicProbes.mkString("/"))
 
     //May be slow!
     val gis = probeStore.allGeneIds.mapInnerValues(_.identifier)
-    val atomics = rows.map(_.getAtomicProbes())
+    val atomics = rows.map(_.atomicProbes)
     val geneIds = atomics.map(row =>
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
 
     val aux = List(("Gene", geneIds))
     CSVHelper.writeCSV("toxygates", directory,
-      aux ++ auxColumns(mat),
-      rowNames, colNames,
+      aux, rowNames, colNames,
       mat.rowData.map(_.map(_.getValue)))
   }
 
-  def emptyAuxColumns(mat: ExprMatrix) = Seq()
 }

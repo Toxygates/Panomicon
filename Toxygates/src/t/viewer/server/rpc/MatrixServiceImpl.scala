@@ -172,24 +172,8 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     val cont = stateFor(id).controller(id)
     val mm = cont.applySorting(sortKey, ascending)
 
-    val grouped = mm.getPageView(offset, size)
-    val rowNames = grouped.map(_.getProbe)
-    val rawData = mm.rawUngrouped.selectNamedRows(rowNames).rowData
-
-    for (
-      (gr, rr) <- grouped zip rawData;
-      (gv, i) <- gr.getValues.zipWithIndex
-    ) {
-      val tooltip = if (mm.info.isPValueColumn(i)) {
-        "p-value (t-test treated against control)"
-      } else {
-        val basis = mm.baseColumns(i)
-        val rawRow = basis.map(i => rr(i))
-        ManagedMatrix.makeTooltip(rawRow)
-      }
-      gv.setTooltip(tooltip)
-    }
-    cont.insertAnnotations(context, grouped, true).asGWT
+    val pages = new MatrixPages(context, cont)
+    pages.getPageViewGWT(offset, size, true, true)
   }
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
@@ -209,7 +193,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     }
 
     val rows = controller.insertAnnotations(context, raw, withSymbols)
-    new FullMatrix(mm.info, rows.asGWT)
+    new FullMatrix(mm.info, MatrixPages.asGWT(rows).asGWT)
   }
 
   @throws(classOf[NoDataLoadedException])

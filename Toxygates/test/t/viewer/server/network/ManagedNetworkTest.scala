@@ -63,12 +63,12 @@ class ManagedNetworkTest extends TTestSuite {
     val network = builder.build
 
     val expMainNodes = main.current.asRows take Network.MAX_NODES
-    assert(expMainNodes.map(_.getProbe).toSet.subsetOf(mrnaIds.toSet))
+    assert(expMainNodes.map(_.probe).toSet.subsetOf(mrnaIds.toSet))
 
     val expSideNodes = side.current.asRows
-    assert(expSideNodes.map(_.getProbe).toSet.subsetOf(mirnaIds.toSet))
+    assert(expSideNodes.map(_.probe).toSet.subsetOf(mirnaIds.toSet))
 
-    val ids = (expMainNodes.toSeq ++ expSideNodes).map(_.getProbe)
+    val ids = (expMainNodes.toSeq ++ expSideNodes).map(_.probe)
     network.nodes.asScala.map(_.id).toSet should equal(ids.toSet)
   }
 
@@ -76,17 +76,17 @@ class ManagedNetworkTest extends TTestSuite {
       reverseLookup: Boolean) {
     println(s"Checking network with ${main.current.rows} rows, side ${side.current.rows}, targets ${main.targets.size}")
     //getPageView updates the side matrix based on the new view
-    var probes = main.getPageView(0, 100).map(_.getProbe)
+    var probes = main.getPageView(0, 100).map(_.probe)
     checkSideTable(probes, main.targets, side, reverseLookup)
-    probes = main.getPageView(100, 100).map(_.getProbe)
+    probes = main.getPageView(100, 100).map(_.probe)
     checkSideTable(probes, main.targets, side, reverseLookup)
-    probes = main.getPageView(500, 100).map(_.getProbe)
+    probes = main.getPageView(500, 100).map(_.probe)
     checkSideTable(probes, main.targets, side, reverseLookup)
   }
 
   def checkSideTable(mainProbes: Seq[String], targets: TargetTable, side: ManagedMatrix,
       reverseLookup: Boolean) {
-    val sideProbes = side.current.asRows.map(_.getProbe)
+    val sideProbes = side.current.asRows.map(_.probe)
 
     val expSideTargets = if (reverseLookup) {
       targets.reverseTargets(platforms.resolve(mainProbes)).map(_._2.id)

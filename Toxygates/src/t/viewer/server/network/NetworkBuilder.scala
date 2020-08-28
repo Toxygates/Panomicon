@@ -23,12 +23,12 @@ import t.common.server.GWTUtils._
 import t.platform.Probe
 import t.platform.mirna._
 import t.viewer.server.PlatformRegistry
-import t.viewer.server.matrix.ManagedMatrix
+import t.viewer.server.matrix.{ExprMatrix, ManagedMatrix, MatrixPages}
 import t.viewer.shared.network.Interaction
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.Node
+
 import scala.collection.mutable.{Set => MSet}
-import t.viewer.server.matrix.ExprMatrix
 import t.viewer.shared.ManagedMatrixInfo
 import t.common.shared.GWTTypes
 
@@ -75,7 +75,7 @@ class NetworkBuilder(targets: TargetTable,
    * Extract all nodes of a given type from the given ExprMatrix.
    */
   def getNodes(mat: ExprMatrix, info: ManagedMatrixInfo, mtype: String, maxSize: Option[Int]): Seq[Node] = {
-    val allRows = mat.asRows
+    val allRows = MatrixPages.asGWT(mat.asRows)
     val useRows = maxSize match {
       case Some(n) => allRows take n
       case None    => allRows

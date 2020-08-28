@@ -26,6 +26,7 @@ import java.util.Date
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import t.common.shared.ValueType
+import t.db.{BasicExprValue, ExprValue, PExprValue}
 import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
 import t.viewer.server.SharedDatasets
 import t.viewer.shared.OTGSchema
@@ -44,14 +45,19 @@ package json {
   object Sample { implicit val rw: RW[Sample] = macroRW }
   case class Sample(id: String, `type`: String, platform: String)
 
-  object Group { implicit val rw: RW[Group] = macroRW}
-  case class Group(title: String, samples: Seq[Sample])
+  object Group { implicit val rw: RW[Group] = macroRW }
+  case class Group(name: String, samples: Seq[Sample])
 
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
-  case class MatrixParams(groups: Seq[Group], valueType: String, initProbes: Seq[String] = Seq())
+  case class MatrixParams(groups: Seq[Group], valueType: String, offset: Int = 0, limit: Option[Int] = None,
+                          initProbes: Seq[String] = Seq())
+
+  object DataRow { implicit val rw: RW[DataRow] = macroRW }
+  case class DataRow(probe: String, values: Seq[Double], calls: Seq[Char])
 }
 
 class JSONServlet extends HttpServlet with MinimalTServlet {
+  implicit val bevRw: RW[BasicExprValue] = macroRW
 
   var sampleFilter: SampleFilter = _
 
@@ -139,12 +145,17 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
 
     val schema = new OTGSchema()
     val groups = params.groups.map(g =>
-      new t.common.shared.sample.Group(schema, g.title, g.samples.map(s => fullSamples(s.id)).toArray)
+      new t.common.shared.sample.Group(schema, g.name, g.samples.map(s => fullSamples(s.id)).toArray)
     )
-    val controller = MatrixController(context, () => Iterable.empty,
-      groups, params.initProbes, valueType)
+    val controller = MatrixController(context, groups, params.initProbes, valueType)
 
-    controller.managedMatrix.current
+    //Currently, ExprMatrix always returns BasicExprvalue
+    val data = controller.managedMatrix.current.toRowVectors.asInstanceOf[Seq[Seq[BasicExprValue]]]
+    val page = params.limit match {
+      case Some(l) => data.drop(params.offset).take(l)
+      case None => data.drop(params.offset)
+    }
+    out.println(write(page))
   }
 
   def getTime(req: HttpServletRequest, resp: HttpServletResponse): Unit = {

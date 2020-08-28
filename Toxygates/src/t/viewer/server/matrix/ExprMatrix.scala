@@ -22,10 +22,8 @@ package t.viewer.server.matrix
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
 import friedrich.data.immutable._
-import t.common.shared.sample.ExpressionRow
 import t.db.BasicExprValue
 import t.db.ExprValue
-import t.viewer.server.Conversions
 
 import scala.collection.mutable.WrappedArray
 
@@ -121,8 +119,7 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns:
 
   lazy val asRows: Seq[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
     val ann = x._2
-    new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null,
-        x._1.map(Conversions.asJava).toArray)
+    ExpressionRow(ann.probe, ann.atomics.toArray, Array(), Array(), Array(), x._1.toArray)
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix =
@@ -132,7 +129,7 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns:
     val useProbes = atomics.toSet
     val is = for (
       (r, i) <- asRows.zipWithIndex;
-      ats = r.getAtomicProbes.toSet;
+      ats = r.atomicProbes.toSet;
       if useProbes.intersect(ats).nonEmpty
     ) yield i
     selectRows(is)
