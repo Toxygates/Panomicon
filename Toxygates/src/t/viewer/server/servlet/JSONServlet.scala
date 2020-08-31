@@ -31,7 +31,7 @@ import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
 import t.viewer.server.SharedDatasets
 import t.viewer.shared.OTGSchema
 import t.viewer.server.Conversions._
-import t.viewer.server.matrix.MatrixController
+import t.viewer.server.matrix.{ExpressionRow, MatrixController, MatrixPages}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW}
 
@@ -58,6 +58,7 @@ package json {
 
 class JSONServlet extends HttpServlet with MinimalTServlet {
   implicit val bevRw: RW[BasicExprValue] = macroRW
+  implicit val erRw: RW[ExpressionRow] = macroRW
 
   var sampleFilter: SampleFilter = _
 
@@ -149,11 +150,11 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     )
     val controller = MatrixController(context, groups, params.initProbes, valueType)
 
-    //Currently, ExprMatrix always returns BasicExprvalue
-    val data = controller.managedMatrix.current.toRowVectors.asInstanceOf[Seq[Seq[BasicExprValue]]]
+    val pages = new MatrixPages(context, controller)
+    val defaultLimit = 100
     val page = params.limit match {
-      case Some(l) => data.drop(params.offset).take(l)
-      case None => data.drop(params.offset)
+      case Some(l) => pages.getPageView(params.offset, l, true)
+      case None => pages.getPageView(params.offset, defaultLimit, true)
     }
     out.println(write(page))
   }

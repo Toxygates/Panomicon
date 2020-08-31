@@ -19,7 +19,7 @@
 
 package t.viewer.server.matrix
 
-import t.db.ExprValue
+import t.db.{BasicExprValue, ExprValue}
 import t.viewer.shared.ManagedMatrixInfo
 
 /**
@@ -36,13 +36,13 @@ import t.viewer.shared.ManagedMatrixInfo
  */
 class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
-  private def padToSize(vs: Iterable[ExprValue], n: Int): Iterable[ExprValue] = {
+  private def padToSize(vs: Iterable[BasicExprValue], n: Int): Iterable[BasicExprValue] = {
     val diff = n - vs.size
     val empty = (0 until diff).map(x => ExprValue(Double.NaN, 'A'))
     vs ++ empty
   }
 
-  case class MappedValue(post: ExprValue, prior: Seq[ExprValue])
+  case class MappedValue(post: BasicExprValue, prior: Seq[BasicExprValue])
 
   /**
    * Converts grouped into (grouped, ungrouped)

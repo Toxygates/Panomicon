@@ -22,7 +22,6 @@ package t.viewer.server.matrix
 import t.viewer.server.CSVHelper
 import t.sparql.ProbeStore
 import t.platform.Probe
-import t.viewer.server.Conversions._
 
 object CSVDownload {
 
@@ -80,7 +79,7 @@ object CSVDownload {
     val aux = List(("Gene", geneIds))
     CSVHelper.writeCSV("toxygates", directory,
       aux, rowNames, colNames,
-      mat.rowData.map(_.map(_.getValue)))
+      mat.rowData.map(_.map(_.value)))
   }
 
 }

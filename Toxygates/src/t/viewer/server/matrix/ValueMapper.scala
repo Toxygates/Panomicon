@@ -19,7 +19,7 @@
 
 package t.viewer.server.matrix
 
-import t.db.ExprValue
+import t.db.{BasicExprValue, ExprValue}
 
 /**
  * A value mapper combines all values for a given probe in the range
@@ -31,7 +31,7 @@ trait ValueMapper {
   /**
    * @return the domain value.
    */
-  def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue
+  def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): BasicExprValue
 }
 
 /**
@@ -40,7 +40,7 @@ trait ValueMapper {
 object MedianValueMapper extends ValueMapper {
   def format(x: Double) = ExprValue.nf.format(x)
 
-  def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue = {
+  def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): BasicExprValue = {
     if (domainVs.isEmpty) {
       return ExprValue(0.0, 'A')
     }

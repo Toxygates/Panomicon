@@ -29,11 +29,7 @@ import t.viewer.shared.Synthetic
 import t.common.shared.GroupUtils
 
 object ManagedMatrix {
- type RowData = Seq[ExprValue]
-
-  def log2(value: ExpressionValue): ExpressionValue = {
-    new ExpressionValue(ExprValue.log2(value.getValue), value.getCall, value.getTooltip)
-  }
+ type RowData = Seq[BasicExprValue]
 
   import java.lang.{Double => JDouble}
   def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
@@ -45,10 +41,10 @@ object ManagedMatrix {
 /**
  * Load parameters for a CoreMatrix.
  *
- * @param rawUngroupedMat ungrouped matrix.
+ * @param rawUngrouped ungrouped matrix.
  * Mainly used for computing T- and U-tests. Sorting is irrelevant.
  *
- * @param rawGroupedMat unfiltered matrix.
+ * @param rawGrouped unfiltered matrix.
  *  The final view is obtained by filtering this (if requested).
  */
 case class LoadParams(val initProbes: Seq[String],
@@ -193,7 +189,7 @@ class CoreMatrix(val params: LoadParams) {
     val ev1 = v1(col)
     val ev2 = v2(col)
 
-    def lowPriority(x: ExpressionValue) =
+    def lowPriority(x: ExprValue) =
       !x.present || JDouble.isNaN(x.value)
 
     if (lowPriority(ev1) && !lowPriority(ev2)) {

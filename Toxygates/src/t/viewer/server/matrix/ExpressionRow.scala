@@ -7,7 +7,7 @@ case class ExpressionRow(probe: String,
                          probeTitles: Array[String],
                          geneIds: Array[String],
                          geneSymbols: Array[String],
-                         values: Array[ExprValue]) {
+                         values: Array[BasicExprValue]) {
 
   var geneIdLabels: Array[String] = Array()
 }

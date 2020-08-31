@@ -22,13 +22,11 @@ package t.viewer.server
 import java.util.{HashMap => JHMap}
 import java.util.{HashSet => JHSet}
 
-import scala.collection.JavaConverters._
 import t.common.server.GWTUtils._
 
 import scala.collection.{Map => CMap}
 import scala.collection.{Set => CSet}
 import scala.language.implicitConversions
-import t.common.shared.FirstKeyedPair
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
 import t.db.{ExprValue => TExprValue}
@@ -42,7 +40,7 @@ import t.db.BioObject
 import t.model.sample.OTGAttribute
 
 object Conversions {
-	implicit def asSpecies(sc: t.model.SampleClass): Option[Species.Species] =
+	def asSpecies(sc: t.model.SampleClass): Option[Species.Species] =
 	  try {
 	    Some(Species.withName(sc.get(OTGAttribute.Organism)))
 	  } catch {
@@ -54,15 +52,7 @@ object Conversions {
 	def asJavaSample(s: t.db.Sample): Sample =
     new Sample(s.sampleId, s.sampleClass)
 
-	def asScalaSample(s: Sample) =
-	  new t.db.Sample(s.id, s.sampleClass)
-
-  implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
-  //Loses probe information!
-  implicit def asScala(ev: ExpressionValue): TExprValue = TExprValue(ev.getValue, ev.getCall, "")
-
-  //NB this causes the pairs to be considered equal based on the first item (title) only.
-  def asJavaPair[T,U](v: (T, U)) = new t.common.shared.FirstKeyedPair(v._1, v._2)
+  def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
 
    //Convert from scala coll types to serialization-safe java coll types.
 	def convertAssociations(m: CMap[_ <: BioObject, CSet[_ <: BioObject]]):
@@ -77,12 +67,6 @@ object Conversions {
     r
 	}
 
-   def convert(m: CMap[String, CSet[String]]): JHMap[String, JHSet[String]] = {
-    val r = new JHMap[String, JHSet[String]]
-    addJMultiMap(r, m)
-    r
-  }
-
   def addJMultiMap[K, V](to: JHMap[K, JHSet[V]], from: CMap[K, CSet[V]]) {
     for ((k, v) <- from) {
       if (to.containsKey(k)) {
@@ -96,10 +80,6 @@ object Conversions {
   def asJDouble(x: Double): java.lang.Double =
     new java.lang.Double(x)
 
-  def asJDouble(x: Option[Double]): java.lang.Double =
-    x.map(new java.lang.Double(_)).getOrElse(null)
-
   def groupSpecies(g: Group) =
     Species.withName(GroupUtils.groupAttribute(g, OTGAttribute.Organism))
-
 }

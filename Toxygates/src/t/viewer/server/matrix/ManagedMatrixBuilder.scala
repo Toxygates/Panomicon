@@ -19,16 +19,12 @@
 
 package t.viewer.server.matrix
 
-import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Group
 import t.common.shared.sample.{Sample => SSample}
 import t.common.shared.sample.{Unit => TUnit}
 import t.db._
-import t.model.sample.OTGAttribute
-import t.viewer.server.Conversions._
 import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
-import t.viewer.shared.Synthetic
 
 import scala.reflect.ClassTag
 
@@ -62,7 +58,17 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
   /**
    * Collapse multiple raw expression values into a single cell.
    */
-  protected def buildValue(raw: RowData): ExprValue
+  protected def buildValue(raw: Seq[ExprValue]): BasicExprValue
+
+  /**
+   * Flatten an ExprValue into a BasicExprValue, potentially losing information.
+   */
+  protected def asBasicValue(v: ExprValue): BasicExprValue = {
+    v match {
+      case b: BasicExprValue => b
+      case _ => BasicExprValue(v.value, v.call, v.probe)
+    }
+  }
 
   /**
    * Default tooltip for columns
@@ -73,7 +79,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   protected def defaultColumns[E <: ExprValue](g: Group, treatedIdx: Seq[Int],
                                                treatedUnits: Array[TUnit],
-    data: Seq[RowData]): (Seq[RowData], ManagedMatrixInfo) = {
+    data: Seq[Seq[E]]): (Seq[RowData], ManagedMatrixInfo) = {
     val samples = TUnit.collectSamples(treatedUnits)
 
     val info = new ManagedMatrixInfo()
@@ -113,7 +119,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
     val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
 
-    var ungrouped = ExprMatrix.withRows(data.toSeq.map(_.toSeq),
+    var ungrouped = ExprMatrix.withRows(data.toSeq.map(_.map(asBasicValue).toSeq),
         sortedProbes, sortedSamples.map(_.sampleId))
 
     val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
@@ -135,10 +141,6 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
   protected def finaliseUngrouped(ungr: ExprMatrix): ExprMatrix = ungr
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
-  final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
-    val m = ExprValue.mean(data, presentOnly)
-    new ExpressionValue(m.value, m.call, null)
-  }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
     val ids = us.flatMap(u => u.getSamples.map(_.id)).toSet
@@ -159,7 +161,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) {
   import ManagedMatrix._
 
-  protected def buildValue(raw: RowData): ExprValue = ExprValue.presentMean(raw)
+  protected def buildValue(raw: Seq[ExprValue]): BasicExprValue = ExprValue.presentMean(raw)
 
   override protected def shortName(g: Group): String = "Treated"
 
@@ -204,7 +206,8 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) {
   import ManagedMatrix._
 
-  protected def buildValue(raw: RowData): ExprValue = log2(javaMean(raw))
+  protected def buildValue(raw: Seq[ExprValue]): BasicExprValue =
+    ExprValue.log2(ExprValue.mean(raw, true))
 
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData = {
@@ -215,7 +218,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   }
 
   override protected def finaliseUngrouped(ungr: ExprMatrix) =
-    ungr.map(e => ManagedMatrix.log2(e))
+    ungr.map(e => ExprValue.log2(e))
 
   override protected def shortName(g: Group) = "Log2-fold"
 

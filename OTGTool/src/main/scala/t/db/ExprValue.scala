@@ -31,13 +31,13 @@ object ExprValue {
       allMean(data)
     }
 
-  def presentMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
+  def presentMean(vs: Iterable[ExprValue], probe: ProbeId = ""): BasicExprValue = {
     val present = vs.filter(_.call != 'A')
     val call = if (present.size > 0) 'P' else 'A'
     apply(safeMean(present.map(_.value)), call, probe)
   }
 
-  def allMean(vs: Iterable[ExprValue], probe: ProbeId = ""): ExprValue = {
+  def allMean(vs: Iterable[ExprValue], probe: ProbeId = ""): BasicExprValue = {
     val value = if (vs.size > 0) {
       safeMean(vs.map(_.value))
     } else {
@@ -56,11 +56,11 @@ object ExprValue {
 
   private val l2 = Math.log(2)
   def log2(v: Double): Double = Math.log(v) / l2
-  def log2[E <: ExprValue](value: E): ExprValue = {
+  def log2[E <: ExprValue](value: E): BasicExprValue = {
     ExprValue.apply(log2(value.value), value.call, value.probe)
   }
 
-  def apply(v: RawExprValue, call: PACall = 'P', probe: ProbeId = null) =
+  def apply(v: RawExprValue, call: PACall = 'P', probe: ProbeId = null): BasicExprValue =
     BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()

@@ -35,23 +35,23 @@ object ExprMatrix {
    * Rebuild any Seq into the vector type expected by this
    * matrix.
    */
-  def fromSeq(s: Seq[ExprValue]) = {
+  def fromSeq(s: Seq[BasicExprValue]) = {
     s match {
       //toIndexedSeq will return an immutable IndexedSeq only.
       //Thus, WrappedArray is ineligible.
       //We check this case here to avoid rebuilding arrays into vectors.
-      case a: WrappedArray[ExprValue] => a
+      case a: WrappedArray[BasicExprValue] => a
       case _                  => s.toIndexedSeq
     }
   }
 
-  def fromSeqSeq(ss: Seq[Seq[ExprValue]]) =
+  def fromSeqSeq(ss: Seq[Seq[BasicExprValue]]) =
     ss.map(fromSeq).toIndexedSeq
 
   def safeCountColumns(rows: Seq[Seq[Any]]) =
     if (rows.nonEmpty) { rows.head.size } else 0
 
-  def withRows(data: Seq[Seq[ExprValue]], metadata: ExprMatrix = null) = {
+  def withRows(data: Seq[Seq[BasicExprValue]], metadata: ExprMatrix = null) = {
     if (metadata != null) {
       metadata.copyWith(data)
     } else {
@@ -62,7 +62,7 @@ object ExprMatrix {
     }
   }
 
-  def withRows(data: Seq[Seq[ExprValue]], rowNames: Seq[String], colNames: Seq[String]) =
+  def withRows(data: Seq[Seq[BasicExprValue]], rowNames: Seq[String], colNames: Seq[String]) =
     new ExprMatrix(fromSeqSeq(data), data.size, safeCountColumns(data),
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex,
         emptyAnnotations(data.size))
@@ -77,10 +77,10 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  * The main data matrix class. Tracks names of columns and rows.
  * This class is immutable. The various operations produce modified copies.
  */
-class ExprMatrix(rowData: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns: Int,
+class ExprMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, columns: Int,
                  rowMap: Map[String, Int], columnMap: Map[String, Int],
                  val annotations: Seq[RowAnnotation])
-    extends KeyedDataMatrix[ExprValue, IndexedSeq[ExprValue], String, String](rowData, rows, columns, rowMap, columnMap) {
+    extends KeyedDataMatrix[BasicExprValue, IndexedSeq[BasicExprValue], String, String](rowData, rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._
   import t.util.SafeMath._
@@ -91,12 +91,12 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns:
 
   override def toString:String = s"ExprMatrix $rows x $columns"
 
-  def makeVector(s: Seq[ExprValue]) = ExprMatrix.fromSeq(s)
+  def makeVector(s: Seq[BasicExprValue]) = ExprMatrix.fromSeq(s)
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
-  def copyWith(rowData: Seq[Seq[ExprValue]], rowMap: Map[String, Int],
+  def copyWith(rowData: Seq[Seq[BasicExprValue]], rowMap: Map[String, Int],
       columnMap: Map[String, Int],
       annotations: Seq[RowAnnotation]): ExprMatrix =  {
 
@@ -105,7 +105,7 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[ExprValue]], rows: Int, columns:
             rowMap, columnMap, annotations)
   }
 
-  def copyWith(rowData: Seq[Seq[ExprValue]], rowMap: Map[String, Int],
+  def copyWith(rowData: Seq[Seq[BasicExprValue]], rowMap: Map[String, Int],
       columnMap: Map[String, Int]): ExprMatrix = {
     copyWith(fromSeqSeq(rowData), rowMap, columnMap, annotations)
   }
