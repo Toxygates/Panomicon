@@ -25,7 +25,7 @@ import t.common.shared.Platform
  * Conversion into t.common.shared.Platform
  */
 trait SharedPlatforms {
-  this: t.sparql.Platforms =>
+  this: t.sparql.PlatformStore =>
 
   def sharedList: Iterable[Platform] =
     list.map(asShared)

@@ -42,7 +42,7 @@ class AppInfoLoader(probeStore: ProbeStore,
   def load(): AppInfo = {
     val probeLists = predefProbeLists()
 
-    new t.sparql.Platforms(baseConfig).populateAttributes(baseConfig.attributes)
+    new t.sparql.PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
 
     new AppInfo(configuration.instanceName,
       sPlatforms(), probeLists,
@@ -95,7 +95,7 @@ class AppInfoLoader(probeStore: ProbeStore,
    * "shared" platforms
    */
   def sPlatforms(): Array[Platform] = {
-    val platforms = new t.sparql.Platforms(baseConfig) with SharedPlatforms
+    val platforms = new t.sparql.PlatformStore(baseConfig) with SharedPlatforms
     platforms.sharedList.toArray
   }
 

@@ -4,7 +4,7 @@ import t.db.kyotocabinet.KCIndexDB
 import t.global.KCDBRegistry
 import t.platform.{AffymetrixPlatform, BioPlatform, EnsemblPlatform, GeneralPlatform, PlatformDefFile, PlatformFormat}
 import t.platform.affy.Converter
-import t.sparql.{Platforms, ProbeStore, TRDF}
+import t.sparql.{PlatformStore, ProbeStore, TRDF}
 import t.util.TempFiles
 import t.util.DoThenClose.doThenClose
 import t.Context
@@ -20,7 +20,7 @@ class PlatformManager(context: Context) {
    */
   def add(title: String, comment: String,
     inputFile: String, format: PlatformFormat): Task[Unit] = {
-    val pf = new Platforms(config)
+    val pf = new PlatformStore(config)
 
     consistencyCheck(title) andThen
       (
@@ -50,7 +50,7 @@ class PlatformManager(context: Context) {
       override def run(): Unit = {
         val tf = new TempFiles()
         try {
-          val platforms = new Platforms(config)
+          val platforms = new PlatformStore(config)
           val temp = tf.makeNew("TPLATFORM", "tsv")
           Converter.convert(file, temp.getAbsolutePath())
           val defns = new PlatformDefFile(temp.getAbsolutePath()).records
@@ -69,7 +69,7 @@ class PlatformManager(context: Context) {
             val tg = groups.next
             val ttl = ProbeStore.recordsToTTL(tf, title, tg)
             pcomp += g.toDouble * 100.0 / total
-            platforms.triplestore.addTTL(ttl, Platforms.context(title))
+            platforms.triplestore.addTTL(ttl, PlatformStore.context(title))
           }
         } finally {
           tf.dropAll()
@@ -89,7 +89,7 @@ class PlatformManager(context: Context) {
   def addFromEnsembl(title: String, comment: String, file: String): AtomicTask[Unit] = {
     new AtomicTask[Unit]("Insert platform from Ensembl data") {
       override def run() {
-        val platforms = new Platforms(config)
+        val platforms = new PlatformStore(config)
         platforms.redefineFromEnsembl(title, comment, file)
       }
     }
@@ -105,7 +105,7 @@ class PlatformManager(context: Context) {
     new AtomicTask[Unit]("Add platform (RDF)") {
       override def run(): Unit = {
         val defns = new PlatformDefFile(file).records
-        val platforms = new Platforms(config)
+        val platforms = new PlatformStore(config)
         platforms.redefine(title, TRDF.escape(comment), biological, defns)
       }
     }
@@ -141,7 +141,7 @@ class PlatformManager(context: Context) {
 
   def deleteRDF(title: String): AtomicTask[Unit] = new AtomicTask[Unit]("Delete platform") {
     override def run(): Unit = {
-      val platforms = new Platforms(config)
+      val platforms = new PlatformStore(config)
       platforms.delete(title)
     }
   }
@@ -176,7 +176,7 @@ object PlatformManager extends ManagerTool {
       showHelp()
     } else {
       val manager = new PlatformManager(context)
-      val platforms = new Platforms(context.config)
+      val platforms = new PlatformStore(context.config)
       try {
         args(0) match {
           case "add" | "addEnsembl" =>

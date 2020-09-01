@@ -21,13 +21,13 @@ package t.viewer.server
 
 import t.common.shared.Dataset
 
-import t.sparql.Datasets
+import t.sparql.DatasetStore
 
 /**
  * This trait provides conversion into t.common.sharedDataset
  */
 trait SharedDatasets {
-  this: Datasets =>
+  this: DatasetStore =>
 
   def sharedList: Iterable[Dataset] =
     list.map(asShared)

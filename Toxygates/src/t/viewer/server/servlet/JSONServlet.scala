@@ -19,21 +19,21 @@
 
 package t.viewer.server.servlet
 
-import scala.collection.JavaConverters._
 import java.io.PrintWriter
 import java.util.Date
 
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import t.common.shared.ValueType
-import t.db.{BasicExprValue, ExprValue, PExprValue}
-import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
-import t.viewer.server.SharedDatasets
-import t.viewer.shared.OTGSchema
+import t.db.BasicExprValue
+import t.sparql.{DatasetStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.Conversions._
+import t.viewer.server.SharedDatasets
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, MatrixPages}
-import upickle.default._
-import upickle.default.{macroRW, ReadWriter => RW}
+import t.viewer.shared.OTGSchema
+import upickle.default.{macroRW, ReadWriter => RW, _}
+
+import scala.collection.JavaConverters._
 
 package json {
   object Dataset {
@@ -69,7 +69,7 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   }
 
   private def datasets =
-    (new Datasets(baseConfig.triplestore) with SharedDatasets).sharedList.map(d => {
+    (new DatasetStore(baseConfig.triplestore) with SharedDatasets).sharedList.map(d => {
       json.Dataset(d.getId, d.getUserTitle, d.getNumBatches)
     }).toSeq
 

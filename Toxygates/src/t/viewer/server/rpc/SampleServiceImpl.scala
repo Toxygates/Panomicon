@@ -65,7 +65,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
 
-    val platforms = new t.sparql.Platforms(baseConfig)
+    val platforms = new t.sparql.PlatformStore(baseConfig)
     platforms.populateAttributes(baseConfig.attributes)
 
     this.configuration = conf
@@ -80,7 +80,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
   }
 
   def datasetsForUser(userKey: String): Array[Dataset] = {
-    val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
+    val datasets = new DatasetStore(baseConfig.triplestore) with SharedDatasets
     var r: Array[Dataset] = (instanceURI match {
       case Some(u) => datasets.sharedListForInstance(u)
       case None => datasets.sharedList
@@ -91,7 +91,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
 
   private def sampleFilterFor(ds: Iterable[Dataset], base: Option[SampleFilter]) = {
      val ids = ds.toList.map(_.getId)
-     val URIs = ids.map(Datasets.packURI(_))
+     val URIs = ids.map(DatasetStore.packURI(_))
      base match {
        case Some(b) => b.copy(datasetURIs = URIs)
        case None => SampleFilter(datasetURIs = URIs)

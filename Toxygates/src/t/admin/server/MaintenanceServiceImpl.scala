@@ -28,7 +28,7 @@ import t.common.shared.maintenance.{Instance, _}
 import t.common.shared.{Dataset, ManagedItem, Platform}
 import t.manager.{PlatformManager, Task}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat}
-import t.sparql.{Datasets, Instances, Platforms, ProbeStore, TRDF}
+import t.sparql.{DatasetStore, InstanceStore, PlatformStore, ProbeStore, TRDF}
 import t.viewer.server.rpc.{TServiceServlet}
 import t.viewer.server.{Configuration, SharedDatasets}
 
@@ -100,7 +100,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   private def addInstance(i: Instance): Unit = {
-    val im = new Instances(baseConfig.triplestore)
+    val im = new InstanceStore(baseConfig.triplestore)
 
     val id = i.getId()
     if (!TRDF.isValidIdentifier(id)) {
@@ -150,7 +150,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   private def deleteInstance(id: String): Unit = {
-    val im = new Instances(baseConfig.triplestore)
+    val im = new InstanceStore(baseConfig.triplestore)
     maintenance {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
       println(s"Run command: $cmd")
@@ -164,7 +164,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   private def deleteDataset(id: String): Unit = {
-    val dm = new Datasets(baseConfig.triplestore)
+    val dm = new DatasetStore(baseConfig.triplestore)
     maintenance {
       dm.delete(id)
     }
@@ -173,7 +173,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   def getPlatforms: Array[Platform] = {
     val prs = new ProbeStore(baseConfig.triplestore)
     val np = prs.numProbes()
-    val ps = new Platforms(baseConfig)
+    val ps = new PlatformStore(baseConfig)
     val comments = ps.comments
     val pubComments = ps.publicComments
     val dates = ps.timestamps
@@ -184,7 +184,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   def getInstances: Array[Instance] = {
-    val is = new Instances(baseConfig.triplestore)
+    val is = new InstanceStore(baseConfig.triplestore)
     val com = is.comments
     val ts = is.timestamps
     is.list.map(i => new Instance(i, com.getOrElse(i, ""),
@@ -192,18 +192,18 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   def getDatasets: Array[Dataset] = {
-    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
+    val ds = new DatasetStore(baseConfig.triplestore) with SharedDatasets
     ds.sharedList.toArray
   }
 
   private def updatePlatform(p: Platform): Unit = {
-    val pfs = new Platforms(baseConfig)
+    val pfs = new PlatformStore(baseConfig)
     pfs.setComment(p.getId, p.getComment)
     pfs.setPublicComment(p.getId, p.getPublicComment)
   }
 
   private def updateInstance(i: Instance): Unit = {
-    val is = new Instances(baseConfig.triplestore)
+    val is = new InstanceStore(baseConfig.triplestore)
     is.setComment(i.getId, TRDF.escape(i.getComment))
   }
 

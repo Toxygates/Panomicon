@@ -31,7 +31,7 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
 
   //Note: currently this cannot be updated without restarting the application
   lazy val bioParameters = {
-    val pfs = new t.sparql.Platforms(baseConfig)
+    val pfs = new t.sparql.PlatformStore(baseConfig)
     pfs.bioParameters
   }
 

@@ -29,7 +29,7 @@ import t.manager.BatchManager
 import t.model.sample.CoreParameter.{ControlGroup, Platform, Type}
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
-import t.sparql.{Batches, Datasets, SampleFilter, TRDF}
+import t.sparql.{BatchStore, DatasetStore, SampleFilter, TRDF}
 import t.viewer.server.rpc.TServiceServlet
 
 import scala.collection.JavaConverters._
@@ -47,7 +47,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
    * in the attribute set and populate them once.
    */
   protected def populateAttributes(bc: BaseConfig) {
-    val platforms = new t.sparql.Platforms(bc)
+    val platforms = new t.sparql.PlatformStore(bc)
     platforms.populateAttributes(bc.attributes)
   }
 
@@ -65,7 +65,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     maintenance {
       setLastTask("Add batch")
 
-      val existingBatches = new Batches(context.config.triplestore).list
+      val existingBatches = new BatchStore(context.config.triplestore).list
       if (existingBatches.contains(batch.getId) && !mayAppendBatch) {
         throw BatchUploadException.badID(
             s"The batch ${batch.getId} already exists and appending is not allowed. " +
@@ -141,18 +141,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   import java.util.HashSet
 
-  def getBatches(@Nullable dss: Array[String]): Array[Batch] = {
-    val useDatasets = Option(dss).toSet.flatten
-    val bs = new Batches(baseConfig.triplestore)
-    val ns = bs.numSamples
-    val comments = bs.comments
-    val dates = bs.timestamps
-    val datasets = bs.datasets
-    val r = bs.list.map(b => {
-      val samples = ns.getOrElse(b, 0)
-      new Batch(b, samples, comments.getOrElse(b, ""),
+  def getBatches(@Nullable datasetIds: Array[String]): Array[Batch] = {
+    val useDatasets = Option(datasetIds).toSet.flatten
+    val batchStore = new BatchStore(baseConfig.triplestore)
+    val numSamples = batchStore.numSamples
+    val comments = batchStore.comments
+    val dates = batchStore.timestamps
+    val datasets = batchStore.datasets
+    val r = batchStore.list.map(b => {
+      new Batch(b, numSamples.getOrElse(b, 0), comments.getOrElse(b, ""),
         dates.getOrElse(b, null),
-        new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
+        new HashSet(setAsJavaSet(batchStore.listAccess(b).toSet)),
         datasets.getOrElse(b, ""))
     }).toArray
     r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
@@ -179,7 +178,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.sampleStore
     val params = overviewParameters
-    val batchURI = Batches.packURI(batch.getId)
+    val batchURI = BatchStore.packURI(batch.getId)
     val sf = SampleFilter(None, Some(batchURI))
     val data = samples.sampleAttributeValueQuery(params)(sf)()
     val titles = params.map(_.title).toArray
@@ -200,7 +199,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
    * @param mustNotExist if true, we throw an exception if the dataset already exists.
    */
   protected def addDataset(d: Dataset, mustNotExist: Boolean): Unit = {
-    val dm = new Datasets(baseConfig.triplestore)
+    val dm = new DatasetStore(baseConfig.triplestore)
 
     val id = d.getId()
     if (!TRDF.isValidIdentifier(id)) {
@@ -226,7 +225,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
      * Public user-facing methods that can reach this are responsible for
      * security checking.
      */
-    val ds = new Datasets(baseConfig.triplestore)
+    val ds = new DatasetStore(baseConfig.triplestore)
     ds.setComment(d.getId, TRDF.escape(d.getComment))
     ds.setDescription(d.getId, TRDF.escape(d.getDescription))
     ds.setPublicComment(d.getId, TRDF.escape(d.getPublicComment))
@@ -242,7 +241,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val allAttribs = rowAttributes ++ columnAttributes ++ Option(cellAttribute)
 
     val adata = batches.toSeq.flatMap(b => {
-      val batchURI = Batches.packURI(b.getId)
+      val batchURI = BatchStore.packURI(b.getId)
       val sf = SampleFilter(None, Some(batchURI))
       samples.sampleCountQuery(allAttribs)(sf)()
     }).filter(_.keySet.size > 1) //For empty batches, the only key will be 'count'

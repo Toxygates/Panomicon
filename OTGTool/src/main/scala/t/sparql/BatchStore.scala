@@ -26,7 +26,7 @@ import t.TriplestoreConfig
 import t.db._
 import t.util.TempFiles
 
-object Batches extends RDFClass {
+object BatchStore extends RDFClass {
   val defaultPrefix: String = s"$tRoot/batch"
   val memberRelation = "t:visibleIn"
   val itemClass: String = "t:batch"
@@ -35,8 +35,8 @@ object Batches extends RDFClass {
    * Construct RDF data as a TTL file to represent the given metadata.
    */
   def metadataToTTL(md: Metadata, tempFiles: TempFiles, samples: Iterable[Sample]): File = {
-    val f = tempFiles.makeNew("metadata", "ttl")
-    val fout = new BufferedWriter(new FileWriter(f))
+    val file = tempFiles.makeNew("metadata", "ttl")
+    val fout = new BufferedWriter(new FileWriter(file))
     for (s <- samples) {
       fout.write(s"<${SampleStore.defaultPrefix}/${s.identifier}>\n")
       fout.write(s"  a <$tRoot/sample>; rdfs:label" + "\"" + s.identifier + "\"; \n")
@@ -47,7 +47,7 @@ object Batches extends RDFClass {
     }
 
     fout.close()
-    f
+    file
   }
 
   def context(title: String) = defaultPrefix + "/" + title
@@ -59,7 +59,7 @@ object Batches extends RDFClass {
 abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config) {
   def memberRelation: String
   def groupPrefix: String
-  def batchPrefix = Batches.defaultPrefix
+  def batchPrefix = BatchStore.defaultPrefix
   def groupClass: String
 
   def memberRelation(name: String, group: String): String =
@@ -83,14 +83,14 @@ abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config
  * Note: inheriting BatchGroups (to manage instance membership)
  * makes the public interface of this class large. We may want to use composition instead.
  */
-class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
+class BatchStore(config: TriplestoreConfig) extends BatchGroups(config) {
   import Triplestore._
-  val memberRelation = Batches.memberRelation
+  val memberRelation = BatchStore.memberRelation
 
-  def itemClass = Batches.itemClass
-  def defaultPrefix: String = Batches.defaultPrefix
-  def groupPrefix = Instances.defaultPrefix
-  def groupClass = Instances.itemClass
+  def itemClass = BatchStore.itemClass
+  def defaultPrefix: String = BatchStore.defaultPrefix
+  def groupPrefix = InstanceStore.defaultPrefix
+  def groupClass = InstanceStore.itemClass
 
   def accessRelation(batch: String, instance: String): String =
     memberRelation(batch, instance)
@@ -122,7 +122,7 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
     Map() ++ triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?l ?dataset WHERE {
         |  ?item a $itemClass; rdfs:label ?l ;
-        |  ${Datasets.memberRelation} ?ds. ?ds a ${Datasets.itemClass}; rdfs:label ?dataset .
+        |  ${DatasetStore.memberRelation} ?ds. ?ds a ${DatasetStore.itemClass}; rdfs:label ?dataset .
         |} """.stripMargin).map(x => {
       x("l") -> x("dataset")
     })

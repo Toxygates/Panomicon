@@ -26,20 +26,20 @@ import t.TriplestoreConfig
  * can control visibility.
  * Each batch belongs to exactly one dataset.
  */
-object Datasets extends RDFClass {
+object DatasetStore extends RDFClass {
   val defaultPrefix: String = s"$tRoot/dataset"
   val memberRelation = "t:visibleIn"
   val itemClass = "t:dataset"
 }
 
-class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
+class DatasetStore(config: TriplestoreConfig) extends BatchGroups(config) {
   import Triplestore._
 
-  def memberRelation = Datasets.memberRelation
-  def itemClass: String = Datasets.itemClass
-  def groupClass = Datasets.itemClass
-  def groupPrefix = Datasets.defaultPrefix
-  def defaultPrefix = Datasets.defaultPrefix
+  def memberRelation = DatasetStore.memberRelation
+  def itemClass: String = DatasetStore.itemClass
+  def groupClass = DatasetStore.itemClass
+  def groupPrefix = DatasetStore.defaultPrefix
+  def defaultPrefix = DatasetStore.defaultPrefix
 
   def descriptions: Map[String, String] = {
     Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?desc WHERE { ?item a $itemClass; rdfs:label ?l ; " +
@@ -68,7 +68,7 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
   def withBatchesInInstance(instanceURI: String): Seq[String] = {
     triplestore.simpleQuery(s"$tPrefixes\nSELECT DISTINCT ?l WHERE " +
       s"{ ?item a $itemClass; rdfs:label ?l. " +
-      s"?b a ${Batches.itemClass}; $memberRelation ?item; " +
-        s"${Batches.memberRelation} <$instanceURI> }")
+      s"?b a ${BatchStore.itemClass}; $memberRelation ?item; " +
+        s"${BatchStore.memberRelation} <$instanceURI> }")
   }
 }
