@@ -23,7 +23,7 @@ import t.common.shared.sample.Group
 
 import t.db.ColumnExpressionData
 import t.viewer.server.Conversions._
-import t.viewer.server.matrix.ExprMatrix
+import t.viewer.server.matrix.ExpressionMatrix
 
 /**
  * @author johan

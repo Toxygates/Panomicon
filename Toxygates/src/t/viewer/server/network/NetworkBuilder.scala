@@ -23,7 +23,7 @@ import t.common.server.GWTUtils._
 import t.platform.Probe
 import t.platform.mirna._
 import t.viewer.server.PlatformRegistry
-import t.viewer.server.matrix.{ExprMatrix, ManagedMatrix, MatrixPages}
+import t.viewer.server.matrix.{ExpressionMatrix, ManagedMatrix, PageDecorator}
 import t.viewer.shared.network.Interaction
 import t.viewer.shared.network.Network
 import t.viewer.shared.network.Node
@@ -74,8 +74,8 @@ class NetworkBuilder(targets: TargetTable,
   /**
    * Extract all nodes of a given type from the given ExprMatrix.
    */
-  def getNodes(mat: ExprMatrix, info: ManagedMatrixInfo, mtype: String, maxSize: Option[Int]): Seq[Node] = {
-    val allRows = MatrixPages.asGWT(mat.asRows)
+  def getNodes(mat: ExpressionMatrix, info: ManagedMatrixInfo, mtype: String, maxSize: Option[Int]): Seq[Node] = {
+    val allRows = PageDecorator.asGWT(mat.asRows)
     val useRows = maxSize match {
       case Some(n) => allRows take n
       case None    => allRows
@@ -107,8 +107,8 @@ class NetworkBuilder(targets: TargetTable,
   /**
    * Construct a network from the given main and side sub-matrices
    */
-  def networkFromSelection(mainSel: ExprMatrix, sideSel: ExprMatrix,
-      targets: Iterable[(MiRNA, Probe, Double, String)]) = {
+  def networkFromSelection(mainSel: ExpressionMatrix, sideSel: ExpressionMatrix,
+                           targets: Iterable[(MiRNA, Probe, Double, String)]) = {
 
     val mainNodes = getNodes(mainSel, mainInfo, mainType, None)
     val sideNodes = getNodes(sideSel, sideInfo, sideType, None)

@@ -143,7 +143,7 @@ abstract class MatrixController(context: Context,
     val mm = if (filteredProbes.nonEmpty) {
       finish(makeMatrix(filteredProbes.toSeq, typ))
     } else {
-      val emptyMatrix = new ExprMatrix(Vector(), 0, 0, Map(), Map(), List())
+      val emptyMatrix = new ExpressionMatrix(Vector(), 0, 0, Map(), Map(), List())
       finish(new ManagedMatrix(
         LoadParams(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
         ))
@@ -188,7 +188,7 @@ abstract class MatrixController(context: Context,
     managedMatrix
   }
 
-  protected def rowLabels(context: Context): RowLabels = new RowLabels(context)
+  protected def rowLabels(context: Context): RowDecorator = new RowDecorator(context)
 
   def insertAnnotations(context: Context,
       rows: Seq[ExpressionRow], withSymbols: Boolean): Seq[ExpressionRow] = {
@@ -252,5 +252,5 @@ class MergedMatrixController(context: Context,
     Some(new MatrixMapper(pm, vm))
   }
 
-  override protected def rowLabels(context: Context) = new MergedRowLabels(context)
+  override protected def rowLabels(context: Context) = new MergedRowDecorator(context)
 }

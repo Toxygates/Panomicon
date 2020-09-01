@@ -27,7 +27,7 @@ import t.db.ExprValue
 
 import scala.collection.mutable.WrappedArray
 
-object ExprMatrix {
+object ExpressionMatrix {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
 
@@ -51,19 +51,19 @@ object ExprMatrix {
   def safeCountColumns(rows: Seq[Seq[Any]]) =
     if (rows.nonEmpty) { rows.head.size } else 0
 
-  def withRows(data: Seq[Seq[BasicExprValue]], metadata: ExprMatrix = null) = {
+  def withRows(data: Seq[Seq[BasicExprValue]], metadata: ExpressionMatrix = null) = {
     if (metadata != null) {
       metadata.copyWith(data)
     } else {
       val rows = data.size
       val columns = safeCountColumns(data)
-      new ExprMatrix(data.map(fromSeq).toIndexedSeq,
+      new ExpressionMatrix(data.map(fromSeq).toIndexedSeq,
           rows, columns, Map(), Map(), emptyAnnotations(rows))
     }
   }
 
   def withRows(data: Seq[Seq[BasicExprValue]], rowNames: Seq[String], colNames: Seq[String]) =
-    new ExprMatrix(fromSeqSeq(data), data.size, safeCountColumns(data),
+    new ExpressionMatrix(fromSeqSeq(data), data.size, safeCountColumns(data),
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex,
         emptyAnnotations(data.size))
 
@@ -77,40 +77,40 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  * The main data matrix class. Tracks names of columns and rows.
  * This class is immutable. The various operations produce modified copies.
  */
-class ExprMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, columns: Int,
-                 rowMap: Map[String, Int], columnMap: Map[String, Int],
-                 val annotations: Seq[RowAnnotation])
+class ExpressionMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, columns: Int,
+                       rowMap: Map[String, Int], columnMap: Map[String, Int],
+                       val annotations: Seq[RowAnnotation])
     extends KeyedDataMatrix[BasicExprValue, IndexedSeq[BasicExprValue], String, String](rowData, rows, columns, rowMap, columnMap) {
 
-  import ExprMatrix._
+  import ExpressionMatrix._
   import t.util.SafeMath._
 
-  type Self = ExprMatrix
+  type Self = ExpressionMatrix
 
   println(this)
 
   override def toString:String = s"ExprMatrix $rows x $columns"
 
-  def makeVector(s: Seq[BasicExprValue]) = ExprMatrix.fromSeq(s)
+  def makeVector(s: Seq[BasicExprValue]) = ExpressionMatrix.fromSeq(s)
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
   def copyWith(rowData: Seq[Seq[BasicExprValue]], rowMap: Map[String, Int],
       columnMap: Map[String, Int],
-      annotations: Seq[RowAnnotation]): ExprMatrix =  {
+      annotations: Seq[RowAnnotation]): ExpressionMatrix =  {
 
-        new ExprMatrix(fromSeqSeq(rowData), rowData.size,
+        new ExpressionMatrix(fromSeqSeq(rowData), rowData.size,
             safeCountColumns(rowData),
             rowMap, columnMap, annotations)
   }
 
   def copyWith(rowData: Seq[Seq[BasicExprValue]], rowMap: Map[String, Int],
-      columnMap: Map[String, Int]): ExprMatrix = {
+      columnMap: Map[String, Int]): ExpressionMatrix = {
     copyWith(fromSeqSeq(rowData), rowMap, columnMap, annotations)
   }
 
-  def copyWithAnnotations(annots: Seq[RowAnnotation]): ExprMatrix = {
+  def copyWithAnnotations(annots: Seq[RowAnnotation]): ExpressionMatrix = {
     copyWith(rowData, rowMap, columnMap, annots)
   }
 
@@ -122,10 +122,10 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, col
     ExpressionRow(ann.probe, ann.atomics.toArray, Array(), Array(), Array(), x._1.toArray)
   })
 
-  override def selectRows(rows: Seq[Int]): ExprMatrix =
+  override def selectRows(rows: Seq[Int]): ExpressionMatrix =
     super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)))
 
-  def selectRowsFromAtomics(atomics: Seq[String]): ExprMatrix = {
+  def selectRowsFromAtomics(atomics: Seq[String]): ExpressionMatrix = {
     val useProbes = atomics.toSet
     val is = for (
       (r, i) <- asRows.zipWithIndex;
@@ -139,8 +139,8 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, col
    * Append a two column test, which is based on the data in "sourceData".
    * sourceData must have the same number of rows as this matrix.
    */
-  def appendTwoColTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
-      test: (Seq[Double], Seq[Double]) => Double, minValues: Int, colName: String): ExprMatrix = {
+  def appendTwoColTest(sourceData: ExpressionMatrix, group1: Seq[String], group2: Seq[String],
+                       test: (Seq[Double], Seq[Double]) => Double, minValues: Int, colName: String): ExpressionMatrix = {
     val sourceCols1 = sourceData.selectNamedColumns(group1)
     val sourceCols2 = sourceData.selectNamedColumns(group2)
 
@@ -161,24 +161,24 @@ class ExprMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, col
 
   private def equals0(x: Double) = java.lang.Double.compare(x, 0d) == 0
 
-  def appendTTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
-    colName: String): ExprMatrix =
+  def appendTTest(sourceData: ExpressionMatrix, group1: Seq[String], group2: Seq[String],
+                  colName: String): ExpressionMatrix =
     appendTwoColTest(sourceData, group1, group2,
         (x,y) => ttest.tTest(x.toArray, y.toArray), 2, colName)
 
-  def appendUTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
-    colName: String): ExprMatrix =
+  def appendUTest(sourceData: ExpressionMatrix, group1: Seq[String], group2: Seq[String],
+                  colName: String): ExpressionMatrix =
     appendTwoColTest(sourceData, group1, group2,
         (x,y) => utest.mannWhitneyUTest(x.toArray, y.toArray), 2, colName)
 
-  def appendDiffTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
-    colName: String): ExprMatrix = {
+  def appendDiffTest(sourceData: ExpressionMatrix, group1: Seq[String], group2: Seq[String],
+                     colName: String): ExpressionMatrix = {
     def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
 
     appendTwoColTest(sourceData, group1, group2, diffTest, 1, colName)
   }
 
-  def appendStatic(data: Seq[Double], name: String): ExprMatrix = {
+  def appendStatic(data: Seq[Double], name: String): ExpressionMatrix = {
     val vs = data.map(x => new BasicExprValue(x, 'P'))
     appendColumn(vs, name)
   }

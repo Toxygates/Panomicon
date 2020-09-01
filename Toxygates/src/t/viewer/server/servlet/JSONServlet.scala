@@ -31,7 +31,7 @@ import t.sparql.{Datasets, SampleClassFilter, SampleFilter}
 import t.viewer.server.SharedDatasets
 import t.viewer.shared.OTGSchema
 import t.viewer.server.Conversions._
-import t.viewer.server.matrix.{ExpressionRow, MatrixController, MatrixPages}
+import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW}
 
@@ -150,7 +150,7 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     )
     val controller = MatrixController(context, groups, params.initProbes, valueType)
 
-    val pages = new MatrixPages(context, controller)
+    val pages = new PageDecorator(context, controller)
     val defaultLimit = 100
     val page = params.limit match {
       case Some(l) => pages.getPageView(params.offset, l, true)

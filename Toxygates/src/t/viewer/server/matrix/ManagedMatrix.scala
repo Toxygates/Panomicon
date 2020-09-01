@@ -48,10 +48,10 @@ object ManagedMatrix {
  *  The final view is obtained by filtering this (if requested).
  */
 case class LoadParams(val initProbes: Seq[String],
-    val currentInfo: ManagedMatrixInfo,
-    val rawUngrouped: ExprMatrix,
-    var rawGrouped: ExprMatrix,
-    val baseColumnMap: Map[Int, Seq[Int]]) {
+                      val currentInfo: ManagedMatrixInfo,
+                      val rawUngrouped: ExpressionMatrix,
+                      var rawGrouped: ExpressionMatrix,
+                      val baseColumnMap: Map[Int, Seq[Int]]) {
 
   def platform = GroupUtils.groupPlatform(currentInfo.columnGroup(0))
   def typ = GroupUtils.groupType(currentInfo.columnGroup(0))
@@ -72,7 +72,7 @@ class CoreMatrix(val params: LoadParams) {
 
   import ManagedMatrix._
 
-  var current: ExprMatrix = params.rawGrouped
+  var current: ExpressionMatrix = params.rawGrouped
   def currentInfo = params.currentInfo
   def initProbes = params.initProbes
   def rawGrouped = params.rawGrouped

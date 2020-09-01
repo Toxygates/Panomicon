@@ -25,9 +25,11 @@ import t.platform.{Probe, Species}
 import scala.reflect.ClassTag
 
 /**
- * Row labels for normal, single-species matrices.
+ * Annotates a small number of rows with essential information such as symbols,
+ * gene IDs, gene titles.
+ * This decorator is for a single species matrix.
  */
-class RowLabels(context: Context) {
+class RowDecorator(context: Context) {
   val probes = context.probeStore
 
   private def loadProbes(rows: Iterable[ExpressionRow]) =
@@ -69,9 +71,9 @@ class RowLabels(context: Context) {
 }
 
 /**
- * Row labels for orthologous matrices.
+ * Decorator for a merged (orthologous) matrix
  */
-class MergedRowLabels(context: Context) extends RowLabels(context) {
+class MergedRowDecorator(context: Context) extends RowDecorator(context) {
 
   private def repeatStrings[T : ClassTag](xs: Array[T]) =
     withCount(xs).map(x => s"${x._1} (${prbCount(x._2)})")

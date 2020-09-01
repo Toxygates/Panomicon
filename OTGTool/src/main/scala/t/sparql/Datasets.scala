@@ -32,7 +32,7 @@ object Datasets extends RDFClass {
   val itemClass = "t:dataset"
 }
 
-class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
+class Datasets(config: TriplestoreConfig) extends ListManager(config) with BatchGrouping {
   import Triplestore._
 
   def memberRelation = Datasets.memberRelation

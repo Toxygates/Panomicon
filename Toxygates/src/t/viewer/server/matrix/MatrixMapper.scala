@@ -47,7 +47,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
   /**
    * Converts grouped into (grouped, ungrouped)
    */
-  private def convert(from: ExprMatrix): (ExprMatrix, ExprMatrix, Map[Int, Seq[Int]]) = {
+  private def convert(from: ExpressionMatrix): (ExpressionMatrix, ExpressionMatrix, Map[Int, Seq[Int]]) = {
     println(s"Convert $from")
 
     val rangeProbes = pm.range.toSeq
@@ -98,8 +98,8 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
     val usedRowNames = annots.map(_.probe)
     val ungroupedColNames = (0 until ungroupedVals(0).size).map(i => s"Ungrouped-$i")
-    val grouped = ExprMatrix.withRows(groupedVals, usedRowNames, cols).copyWithAnnotations(annots)
-    val ungrouped = ExprMatrix.withRows(ungroupedVals, usedRowNames, ungroupedColNames)
+    val grouped = ExpressionMatrix.withRows(groupedVals, usedRowNames, cols).copyWithAnnotations(annots)
+    val ungrouped = ExpressionMatrix.withRows(ungroupedVals, usedRowNames, ungroupedColNames)
     (grouped, ungrouped, baseMap)
   }
 

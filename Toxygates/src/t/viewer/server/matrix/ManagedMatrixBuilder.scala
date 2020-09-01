@@ -117,9 +117,9 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
       (d, info)
     })
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
-    val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
+    val grouped = ExpressionMatrix.withRows(groupedData, sortedProbes, colNames)
 
-    var ungrouped = ExprMatrix.withRows(data.toSeq.map(_.map(asBasicValue).toSeq),
+    var ungrouped = ExpressionMatrix.withRows(data.toSeq.map(_.map(asBasicValue).toSeq),
         sortedProbes, sortedSamples.map(_.sampleId))
 
     val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
@@ -138,7 +138,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
       )
   }
 
-  protected def finaliseUngrouped(ungr: ExprMatrix): ExprMatrix = ungr
+  protected def finaliseUngrouped(ungr: ExpressionMatrix): ExpressionMatrix = ungr
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
 
@@ -217,7 +217,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
-  override protected def finaliseUngrouped(ungr: ExprMatrix) =
+  override protected def finaliseUngrouped(ungr: ExpressionMatrix) =
     ungr.map(e => ExprValue.log2(e))
 
   override protected def shortName(g: Group) = "Log2-fold"

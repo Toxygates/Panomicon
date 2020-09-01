@@ -56,7 +56,9 @@ object Batches extends RDFClass {
 /**
  * A way of grouping batches.
  */
-abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config) {
+trait BatchGrouping {
+  this: ListManager =>
+
   def memberRelation: String
   def groupPrefix: String
   def batchPrefix = Batches.defaultPrefix
@@ -83,7 +85,7 @@ abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config
  * Note: inheriting BatchGroups (to manage instance membership)
  * makes the public interface of this class large. We may want to use composition instead.
  */
-class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
+class Batches(config: TriplestoreConfig) extends ListManager(config) with BatchGrouping {
   import Triplestore._
   val memberRelation = Batches.memberRelation
 

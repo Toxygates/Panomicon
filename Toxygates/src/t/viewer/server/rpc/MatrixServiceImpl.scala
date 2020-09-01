@@ -172,7 +172,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     val cont = stateFor(id).controller(id)
     val mm = cont.applySorting(sortKey, ascending)
 
-    val pages = new MatrixPages(context, cont)
+    val pages = new PageDecorator(context, cont)
     pages.getPageViewGWT(offset, size, true, true)
   }
 
@@ -193,7 +193,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     }
 
     val rows = controller.insertAnnotations(context, raw, withSymbols)
-    new FullMatrix(mm.info, MatrixPages.asGWT(rows).asGWT)
+    new FullMatrix(mm.info, PageDecorator.asGWT(rows).asGWT)
   }
 
   @throws(classOf[NoDataLoadedException])

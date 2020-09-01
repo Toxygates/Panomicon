@@ -70,7 +70,7 @@ class ManagedNetwork(mainParams: LoadParams,
     sideMatrix.selectProbes(sideProbes)
   }
 
-  private def filteredCountMap(mat: ExprMatrix) = {
+  private def filteredCountMap(mat: ExpressionMatrix) = {
     if (targets.isEmpty) {
       Console.err.println("Warning: unable to build count map, targets table is empty")
     }
@@ -99,7 +99,7 @@ class ManagedNetwork(mainParams: LoadParams,
    */
   def currentViewCountMap: GWTMap[ProbeId, JDouble] = currentCountMap
 
-  def buildCountMap(mat: ExprMatrix): Map[String, JDouble] = {
+  def buildCountMap(mat: ExpressionMatrix): Map[String, JDouble] = {
     val lookup = mat.rowKeys.toSeq
 
     if (sideIsMRNA) {

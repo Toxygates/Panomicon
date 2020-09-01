@@ -13,8 +13,8 @@ import t.viewer.server.Conversions
  * @param context
  * @param control
  */
-class MatrixPages(context: Context, control: MatrixController) {
-  import MatrixPages._
+class PageDecorator(context: Context, control: MatrixController) {
+  import PageDecorator._
   import t.common.server.GWTUtils._
 
 
@@ -48,23 +48,23 @@ class MatrixPages(context: Context, control: MatrixController) {
     val rawData = mm.rawUngrouped.selectNamedRows(rowNames).rowData
 
     for {
-      (gr, rr) <- grouped zip rawData;
-      (gv, i) <- gr.getValues.zipWithIndex
+      (groupRow, rawRow) <- grouped zip rawData;
+      (groupValue, i) <- groupRow.getValues.zipWithIndex
     } {
       val tooltip = if (mm.info.isPValueColumn(i)) {
         "p-value (t-test treated against control)"
       } else {
         val basis = mm.baseColumns(i)
-        val rawRow = basis.map(i => rr(i))
-        ManagedMatrix.makeTooltip(rawRow)
+        val rawRowCols = basis.map(i => rawRow(i))
+        ManagedMatrix.makeTooltip(rawRowCols)
       }
-      gv.setTooltip(tooltip)
+      groupValue.setTooltip(tooltip)
     }
   }
 
 }
 
-object MatrixPages {
+object PageDecorator {
   def asGWT(rows: Seq[ExpressionRow]): Seq[sample.ExpressionRow] = {
     rows.map(r => {
       val nr = new sample.ExpressionRow(r.probe, r.atomicProbes, r.probeTitles, r.geneIds, r.geneSymbols,

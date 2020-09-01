@@ -50,7 +50,7 @@ class ExprMatrixTest extends TTestSuite {
       Vector(2, 1, 1, 19, 18, 20),
       Vector(4, 4, 4, 2, 1, 2),
       Vector(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
-    new ExprMatrix(data, data.size, data(0).size,
+    new ExpressionMatrix(data, data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
     		(1 to 5).map(x => RowAnnotation("p" + x, List("p" + x))))
@@ -213,7 +213,7 @@ class ExprMatrixTest extends TTestSuite {
 
   test("adjoin") {
     val em = testMatrix
-    val small = ExprMatrix.withRows(List(List(1),
+    val small = ExpressionMatrix.withRows(List(List(1),
         List(2),
         List(3),
         List(4),
