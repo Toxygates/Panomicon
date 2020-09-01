@@ -46,9 +46,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
    * From the triplestore, read attributes that do not yet exist
    * in the attribute set and populate them once.
    */
-  protected def populateAttributes(bc: BaseConfig) {
-    val platforms = new t.sparql.PlatformStore(bc)
-    platforms.populateAttributes(bc.attributes)
+  protected def populateAttributes(baseConfig: BaseConfig) {
+    val platforms = new t.sparql.PlatformStore(baseConfig)
+    platforms.populateAttributes(baseConfig.attributes)
   }
 
   protected def simpleLog2: Boolean = false
@@ -84,7 +84,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 
-      val conversion = probesFile.map(pf => {
+      val conversion = probesFile.map(file => {
         val meta = factory.tsvMetadata(metaFile.get.getAbsolutePath(),
           context.config.attributes)
         val pfs = meta.attributeValues(CoreParameter.Platform)
@@ -92,7 +92,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
           throw BatchUploadException.badPlatformForConversion("Need exactly one platform in batch for probe conversion");
         }
         try {
-          IDConverter.fromPlatform(pfs.head, context, pf.getAbsolutePath)
+          IDConverter.fromPlatform(pfs.head, context, file.getAbsolutePath)
         } catch {
           case e: Exception =>
             e.printStackTrace()
@@ -157,17 +157,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }
 
-  def deleteBatchAsync(b: Batch): Unit = {
+  def deleteBatchAsync(batch: Batch): Unit = {
 
-    val bm = new BatchManager(context)
+    val batchManager = new BatchManager(context)
     maintenance {
       setLastTask("Delete batch")
-      runTasks(bm.delete(b.getId, false))
+      runTasks(batchManager.delete(batch.getId, false))
     }
   }
 
-  protected def updateBatch(b: Batch): Unit = {
-    new BatchManager(context).updateBatch(b).run()
+  protected def updateBatch(batch: Batch): Unit = {
+    new BatchManager(context).updateBatch(batch).run()
   }
 
   protected def overviewParameters: Seq[Attribute] =
@@ -186,11 +186,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     Array(titles) ++ adata
   }
 
-  def update(i: ManagedItem): Unit = {
+  def update(item: ManagedItem): Unit = {
     ensureNotMaintenance()
-    i match {
+    item match {
       case b: Batch => updateBatch(b)
-      case _        => throw new Exception(s"Unexpected item type $i")
+      case _        => throw new Exception(s"Unexpected item type $item")
     }
   }
 
@@ -198,10 +198,10 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
    * Add a new dataset.
    * @param mustNotExist if true, we throw an exception if the dataset already exists.
    */
-  protected def addDataset(d: Dataset, mustNotExist: Boolean): Unit = {
+  protected def addDataset(dataset: Dataset, mustNotExist: Boolean): Unit = {
     val dm = new DatasetStore(baseConfig.triplestore)
 
-    val id = d.getId()
+    val id = dataset.getId()
     if (!TRDF.isValidIdentifier(id)) {
       throw BatchUploadException.badID(
         s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -213,22 +213,22 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
     } else {
       maintenance {
-        dm.addWithTimestamp(id, TRDF.escape(d.getComment))
-        updateDataset(d)
+        dm.addWithTimestamp(id, TRDF.escape(dataset.getComment))
+        updateDataset(dataset)
       }
     }
   }
 
-  protected def updateDataset(d: Dataset): Unit = {
+  protected def updateDataset(dataset: Dataset): Unit = {
     /*
      * This method has no security check since it is not public.
      * Public user-facing methods that can reach this are responsible for
      * security checking.
      */
     val ds = new DatasetStore(baseConfig.triplestore)
-    ds.setComment(d.getId, TRDF.escape(d.getComment))
-    ds.setDescription(d.getId, TRDF.escape(d.getDescription))
-    ds.setPublicComment(d.getId, TRDF.escape(d.getPublicComment))
+    ds.setComment(dataset.getId, TRDF.escape(dataset.getComment))
+    ds.setDescription(dataset.getId, TRDF.escape(dataset.getDescription))
+    ds.setPublicComment(dataset.getId, TRDF.escape(dataset.getPublicComment))
   }
 
   def datasetSampleSummary(dataset: Dataset,
