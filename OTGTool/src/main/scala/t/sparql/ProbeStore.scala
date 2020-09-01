@@ -39,7 +39,7 @@ object ProbeStore extends RDFClass {
     val f = tempFiles.makeNew("probes", "ttl")
     val fout = new BufferedWriter(new FileWriter(f))
 
-    val platform = s"<${Platforms.defaultPrefix}/$platformName>"
+    val platform = s"<${PlatformStore.defaultPrefix}/$platformName>"
 
     try {
       fout.write(s"@prefix t:<$tRoot/>. \n")
@@ -61,7 +61,7 @@ object ProbeStore extends RDFClass {
   private var _platformsAndProbes: Map[String, Iterable[Probe]] = null
 
   //This lookup takes time, so we keep it here as a static resource
-  def platformsAndProbes(pfs: Platforms, prs: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
+  def platformsAndProbes(pfs: PlatformStore, prs: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
     if (_platformsAndProbes == null) {
       _platformsAndProbes = prs.platformsAndProbesLookup(pfs)
     }
@@ -91,7 +91,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
   }
 
   def forPlatform(platformName: String): Iterable[String] = {
-    val platform = s"<${Platforms.defaultPrefix}/$platformName>"
+    val platform = s"<${PlatformStore.defaultPrefix}/$platformName>"
     triplestore.simpleQuery(s"""$tPrefixes
                                |SELECT ?l WHERE {
                                |  GRAPH $platform {
@@ -104,7 +104,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
    * Obtain all probes in a given platform, with a few key annotations.
    */
   def annotatedProbesForPlatform(platform: String): Iterable[Probe] = {
-    val platformGraph = s"<${Platforms.defaultPrefix}/$platform>"
+    val platformGraph = s"<${PlatformStore.defaultPrefix}/$platform>"
     /*
         * An important concern with these queries is reducing the number of tuples being returned.
         * Doing SELECT DISTINCT on all the variables (e.g. ?ent, ?trn, ?sym)
@@ -154,7 +154,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
    * @return
    */
   def platformsAndProbes: Map[String, Iterable[Probe]] = {
-    val pfs = new Platforms(config)
+    val pfs = new PlatformStore(config)
     ProbeStore.platformsAndProbes(pfs, this)
   }
 
@@ -165,14 +165,14 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
    * It is preferred to query for a single platform only using annotatedProbesForPlatform above
    * when possible.
    */
-  private def platformsAndProbesLookup(pfs: Platforms): Map[String, Iterable[Probe]] = {
+  private def platformsAndProbesLookup(pfs: PlatformStore): Map[String, Iterable[Probe]] = {
     pfs.list.map(x => (x, annotatedProbesForPlatform(x))).toMap
   }
 
   def numProbes(): Map[String, Int] = {
     val r = triplestore.mapQuery(s"""$tPrefixes
                                     |SELECT (count(distinct ?p) as ?n) ?l WHERE {
-                                    |  ?pl a ${Platforms.itemClass} ; rdfs:label ?l .
+                                    |  ?pl a ${PlatformStore.itemClass} ; rdfs:label ?l .
                                     |  GRAPH ?pl {
                                     |    ?p a t:probe.
                                     |   }
@@ -497,7 +497,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
                |SELECT DISTINCT ?list ?probeLabel WHERE {
                |  GRAPH ?g1 {""".stripMargin +
       instanceURI.map(u =>
-        s"?g a ${ProbeLists.itemClass}; ${Instances.memberRelation} <$u>. ").getOrElse("") +
+        s"?g a ${ProbeLists.itemClass}; ${InstanceStore.memberRelation} <$u>. ").getOrElse("") +
       s"?g ${ProbeLists.memberRelation} ?probeLabel; rdfs:label ?list. } " +
       //Note: string matching, such as in the following fragment, is impacted by
       //the handling of RDF1.0/1.1 strings (untyped/typed)

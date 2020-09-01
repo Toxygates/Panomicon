@@ -65,7 +65,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
 
-    val platforms = new t.sparql.Platforms(baseConfig)
+    val platforms = new t.sparql.PlatformStore(baseConfig)
     platforms.populateAttributes(baseConfig.attributes)
 
     this.configuration = conf
@@ -80,7 +80,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
   }
 
   def datasetsForUser(userKey: String): Array[Dataset] = {
-    val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
+    val datasets = new DatasetStore(baseConfig.triplestore) with SharedDatasets
     var r: Array[Dataset] = (instanceURI match {
       case Some(u) => datasets.sharedListForInstance(u)
       case None => datasets.sharedList
@@ -89,18 +89,18 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
     r
   }
 
-  private def sampleFilterFor(ds: Iterable[Dataset], base: Option[SampleFilter]) = {
-     val ids = ds.toList.map(_.getId)
-     val URIs = ids.map(Datasets.packURI(_))
+  private def sampleFilterFor(datasets: Iterable[Dataset], base: Option[SampleFilter]) = {
+     val ids = datasets.toList.map(_.getId)
+     val URIs = ids.map(DatasetStore.packURI(_))
      base match {
        case Some(b) => b.copy(datasetURIs = URIs)
        case None => SampleFilter(datasetURIs = URIs)
      }
   }
 
-  def chooseDatasets(userKey: String, ds: Array[Dataset]): Array[t.model.SampleClass] = {
-    println("Choose datasets: " + ds.map(_.getId).mkString(" "))
-    val datasets: Iterable[Dataset] = if (ds.size == 0) datasetsForUser(userKey) else ds
+  def chooseDatasets(userKey: String, userSelection: Array[Dataset]): Array[t.model.SampleClass] = {
+    println("Choose datasets: " + userSelection.map(_.getId).mkString(" "))
+    val datasets: Iterable[Dataset] = if (userSelection.size == 0) datasetsForUser(userKey) else userSelection
 
     getState.sampleFilter = sampleFilterFor(datasets, Some(getState.sampleFilter))
 
@@ -108,19 +108,19 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
   }
 
   @throws[TimeoutException]
-  def parameterValues(ds: Array[Dataset], sc: SampleClass,
-      parameter: String): Array[String] = {
+  def parameterValues(datasets: Array[Dataset], sampleClass: SampleClass,
+                      parameter: String): Array[String] = {
     //Get the parameters without changing the persistent datasets in getState
-    val filter = sampleFilterFor(ds, Some(getState.sampleFilter))
+    val filter = sampleFilterFor(datasets, Some(getState.sampleFilter))
     val attr = baseConfig.attributes.byId(parameter)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr, filter).
+    sampleStore.attributeValues(SampleClassFilter(sampleClass).filterAll, attr, filter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   @throws[TimeoutException]
-  def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
+  def parameterValues(sampleClass: SampleClass, parameter: String): Array[String] = {
     val attr = baseConfig.attributes.byId(parameter)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr, getState.sampleFilter).
+    sampleStore.attributeValues(SampleClassFilter(sampleClass).filterAll, attr, getState.sampleFilter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
@@ -131,40 +131,40 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
     ids.asScala.map(samplesById(_)).asGWT
 
   @throws[TimeoutException]
-  def samples(sc: SampleClass): Array[Sample] = {
-    val samples = sampleStore.sampleQuery(SampleClassFilter(sc), getState.sampleFilter)()
+  def samples(sampleClass: SampleClass): Array[Sample] = {
+    val samples = sampleStore.sampleQuery(SampleClassFilter(sampleClass), getState.sampleFilter)()
     samples.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]
-  def samplesWithAttributes(sc: SampleClass, importantOnly: Boolean = false
+  def samplesWithAttributes(sampleClass: SampleClass, importantOnly: Boolean = false
                            ): Array[Sample] = {
-    val matchingSamples = samples(sc)
+    val matchingSamples = samples(sampleClass)
     attributeValuesForSamples(matchingSamples, importantOnly)
   }
 
-  private def samples(sc: SampleClass, param: String,
+  private def samples(sampleClass: SampleClass, param: String,
                       paramValues: Array[String]) =
-    sampleStore.samples(SampleClassFilter(sc), param, paramValues, getState.sampleFilter).map(asJavaSample(_))
+    sampleStore.samples(SampleClassFilter(sampleClass), param, paramValues, getState.sampleFilter).map(asJavaSample(_))
 
   @throws[TimeoutException]
-  def samples(scs: Array[SampleClass], param: String,
-      paramValues: Array[String]): Array[Sample] =
-        scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
+  def samples(sampleClasses: Array[SampleClass], param: String,
+              paramValues: Array[String]): Array[Sample] =
+        sampleClasses.flatMap(x => samples(x, param, paramValues)).distinct.toArray
 
   @throws[TimeoutException]
-  def units(sc: SampleClass,
-      param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
-      new UnitStore(schema, sampleStore).units(sc, param, paramValues,
+  def units(sampleClass: SampleClass,
+            param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
+      new UnitStore(schema, sampleStore).units(sampleClass, param, paramValues,
         getState.sampleFilter)
 
-  def units(scs: Array[SampleClass], param: String,
-      paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
-    scs.flatMap(units(_, param, paramValues))
+  def units(sampleClasses: Array[SampleClass], param: String,
+            paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
+    sampleClasses.flatMap(units(_, param, paramValues))
   }
 
-  def attributesForSamples(sc: SampleClass): Array[Attribute] = {
-    sampleStore.attributesForSamples(SampleClassFilter(sc),
+  def attributesForSamples(sampleClass: SampleClass): Array[Attribute] = {
+    sampleStore.attributesForSamples(SampleClassFilter(sampleClass),
       getState.sampleFilter)()
       .sortBy(attribute => attribute.title())
       .toArray
@@ -233,11 +233,11 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
     new RequestResult(pairs.toArray, pairs.size)
   }
 
-  def unitSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int):
+  def unitSearch(sampleClass: SampleClass, condition: MatchCondition, maxResults: Int):
       RequestResult[Pair[Unit, Unit]] = {
 
-    val unitSearch = t.common.server.sample.search.UnitSearch(cond,
-      sc, sampleStore, schema, baseConfig.attributes,
+    val unitSearch = t.common.server.sample.search.UnitSearch(condition,
+      sampleClass, sampleStore, schema, baseConfig.attributes,
       getState.sampleFilter)
     val pairs = unitSearch.pairedResults.take(maxResults).map {
       case (treated, control) =>

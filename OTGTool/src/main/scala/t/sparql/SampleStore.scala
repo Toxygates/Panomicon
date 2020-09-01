@@ -43,7 +43,7 @@ case class SampleFilter(instanceURI: Option[String] = None,
                         datasetURIs: List[String] = List()) {
 
   def visibilityRel(variable: String) = instanceURI match {
-    case Some(u) => s"$variable ${Batches.memberRelation} <$u> ."
+    case Some(u) => s"$variable ${BatchStore.memberRelation} <$u> ."
     case None    => ""
   }
 
@@ -63,8 +63,8 @@ case class SampleFilter(instanceURI: Option[String] = None,
   }
 
   def standardSampleFilters = s"$instanceFilter " +
-    s"?batchGraph ${Datasets.memberRelation} ?dataset. " +
-    s"?dataset a ${Datasets.itemClass}." +
+    s"?batchGraph ${DatasetStore.memberRelation} ?dataset. " +
+    s"?dataset a ${DatasetStore.itemClass}." +
     s"$datasetFilter $batchFilter"
 }
 
@@ -84,7 +84,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   val hasRelation = "t:hasSample"
   def hasRelation(batch: String, sample: String): String =
-    s"<${Batches.defaultPrefix}/$batch> $hasRelation <$defaultPrefix/$sample>"
+    s"<${BatchStore.defaultPrefix}/$batch> $hasRelation <$defaultPrefix/$sample>"
 
   override def list(): Seq[String] = {
     triplestore.simpleQuery(
@@ -118,7 +118,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
   protected def adjustSample(map: Map[String, String],
                              overrideBatch: Option[String] = None): Map[String, String] = {
     var result = if (map.contains("dataset")) {
-      map + ("dataset" -> Datasets.unpackURI(map("dataset")))
+      map + ("dataset" -> DatasetStore.unpackURI(map("dataset")))
     } else {
       map
     }

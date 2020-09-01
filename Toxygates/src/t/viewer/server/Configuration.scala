@@ -23,7 +23,7 @@ import javax.servlet.ServletConfig
 import t.Context
 import t.Factory
 import t.TriplestoreConfig
-import t.sparql.Instances
+import t.sparql.InstanceStore
 import t.viewer.shared.intermine.IntermineInstance
 
 object Configuration {
@@ -106,7 +106,7 @@ class Configuration(val repositoryName: String,
     if (instanceName == null || instanceName == "") {
       None
     } else {
-      Some(Instances.defaultPrefix + "/" + instanceName)
+      Some(InstanceStore.defaultPrefix + "/" + instanceName)
     }
 
 }

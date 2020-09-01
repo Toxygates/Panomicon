@@ -24,7 +24,7 @@ import t.model.sample.{AttributeSet, OTGAttributeSet}
 import t.platform.{BioParameter, BioParameters, ProbeRecord}
 import t.util.TempFiles
 
-object Platforms extends RDFClass {
+object PlatformStore extends RDFClass {
   def itemClass: String = "t:platform"
   def defaultPrefix: String = s"$tRoot/platform"
 
@@ -34,14 +34,14 @@ object Platforms extends RDFClass {
   def context(name: String) = defaultPrefix + "/" + name
 }
 
-class Platforms(val config: TriplestoreConfig) extends ListManager(config) {
-  import Platforms._
+class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
+  import PlatformStore._
   import Triplestore._
 
   def this(config: BaseConfig) = this(config.triplestore)
 
-  def itemClass = Platforms.itemClass
-  def defaultPrefix = Platforms.defaultPrefix
+  def itemClass = PlatformStore.itemClass
+  def defaultPrefix = PlatformStore.defaultPrefix
 
   def redefine(name: String, comment: String, biological: Boolean,
       definitions: Iterable[ProbeRecord]): Unit = {
@@ -56,7 +56,7 @@ class Platforms(val config: TriplestoreConfig) extends ListManager(config) {
     try {
       for (g <- definitions.par.toList.grouped(1000)) {
         val ttl = ProbeStore.recordsToTTL(tempFiles, name, g)
-        triplestore.addTTL(ttl, Platforms.context(name))
+        triplestore.addTTL(ttl, PlatformStore.context(name))
       }
     } finally {
       tempFiles.dropAll
@@ -73,7 +73,7 @@ class Platforms(val config: TriplestoreConfig) extends ListManager(config) {
     //with HTTP directly via e.g. curl (scripts/triplestore/replace.sh can be used) instead of the below
 //    triplestore.addTTL(new File(inputFile), Platforms.context(name))
 
-    EnsemblPlatform.constructPlatformFromEnsemblGraph(triplestore, Platforms.context(name))
+    EnsemblPlatform.constructPlatformFromEnsemblGraph(triplestore, PlatformStore.context(name))
   }
 
   /**

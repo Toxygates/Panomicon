@@ -1,7 +1,7 @@
 package t.manager
 
 import t.Context
-import t.sparql.Instances
+import t.sparql.InstanceStore
 
 /**
  * Instance management CLI
@@ -12,7 +12,7 @@ object InstanceManager extends ManagerTool {
     if (args.size < 1) {
       showHelp()
     } else {
-      val instances = new Instances(context.config.triplestore)
+      val instances = new InstanceStore(context.config.triplestore)
       args(0) match {
         case "add" =>
           expectArgs(args, 2)

@@ -27,7 +27,7 @@ import t.platform.Species.Species
 object PlatformRegistry {
   def apply(probeStore: ProbeStore): PlatformRegistry = {
 
-    val pfs = new t.sparql.Platforms(probeStore.config)
+    val pfs = new t.sparql.PlatformStore(probeStore.config)
     val pps = ProbeStore.platformsAndProbes(pfs, probeStore)
     new PlatformRegistry(pps.map(x => x._1 -> x._2.toSet))
   }

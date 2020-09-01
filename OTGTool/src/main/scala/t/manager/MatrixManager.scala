@@ -2,7 +2,7 @@ package t.manager
 
 import t.Context
 import t.db._
-import t.sparql.{Batches, SampleClassFilter}
+import t.sparql.{BatchStore, SampleClassFilter}
 
 import scala.collection.JavaConverters._
 
@@ -18,7 +18,7 @@ object MatrixManager extends ManagerTool {
     def factory = context.factory
 
     def samplesInBatch(batch: String) = {
-      val sf = t.sparql.SampleFilter(None, Some(Batches.packURI(batch)))
+      val sf = t.sparql.SampleFilter(None, Some(BatchStore.packURI(batch)))
       context.sampleStore.samples(SampleClassFilter(), sf)
     }
 

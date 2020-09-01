@@ -28,7 +28,7 @@ import t.common.shared.maintenance.{Instance, _}
 import t.common.shared.{Dataset, ManagedItem, Platform}
 import t.manager.{PlatformManager, Task}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat}
-import t.sparql.{Datasets, Instances, Platforms, ProbeStore, TRDF}
+import t.sparql.{DatasetStore, InstanceStore, PlatformStore, ProbeStore, TRDF}
 import t.viewer.server.rpc.{TServiceServlet}
 import t.viewer.server.{Configuration, SharedDatasets}
 
@@ -53,8 +53,8 @@ class MaintenanceServiceImpl extends TServiceServlet
 
   override protected def request = getThreadLocalRequest
 
-  private def format(pt: PlatformType): PlatformFormat = {
-    pt match {
+  private def format(platformType: PlatformType): PlatformFormat = {
+    platformType match {
       case PlatformType.Standard => GeneralPlatform
       case PlatformType.Affymetrix => AffymetrixPlatform
       case PlatformType.Biological => BioPlatform
@@ -62,7 +62,7 @@ class MaintenanceServiceImpl extends TServiceServlet
     }
   }
 
-  def addPlatformAsync(p: Platform, pt: PlatformType): Unit = {
+  def addPlatformAsync(platform: Platform, platformType: PlatformType): Unit = {
     ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
@@ -76,8 +76,8 @@ class MaintenanceServiceImpl extends TServiceServlet
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
 
-      val id = p.getId
-      val comment = p.getComment
+      val id = platform.getId
+      val comment = platform.getComment
 
       if (!TRDF.isValidIdentifier(id)) {
         throw new MaintenanceException(
@@ -85,29 +85,29 @@ class MaintenanceServiceImpl extends TServiceServlet
       }
 
       runTasks(pm.add(id, TRDF.escape(comment),
-          platformFile.get.getAbsolutePath(), format(pt)) andThen
-          Task.simple("Set platform parameters"){ updatePlatform(p) })
+          platformFile.get.getAbsolutePath(), format(platformType)) andThen
+          Task.simple("Set platform parameters"){ updatePlatform(platform) })
     }
   }
 
-  def add(i: ManagedItem): Unit = {
+  def add(item: ManagedItem): Unit = {
     ensureNotMaintenance()
-    i match {
+    item match {
       case d: Dataset => addDataset(d, true)
       case i: Instance => addInstance(i)
-      case _ => throw new MaintenanceException(s"Illegal API usage, cannot add $i")
+      case _ => throw new MaintenanceException(s"Illegal API usage, cannot add $item")
     }
   }
 
-  private def addInstance(i: Instance): Unit = {
-    val im = new Instances(baseConfig.triplestore)
+  private def addInstance(instance: Instance): Unit = {
+    val im = new InstanceStore(baseConfig.triplestore)
 
-    val id = i.getId()
+    val id = instance.getId()
     if (!TRDF.isValidIdentifier(id)) {
       throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
     }
-    val param = i.getPolicyParameter()
+    val param = instance.getPolicyParameter()
     if (!TRDF.isValidIdentifier(param)) {
       throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -117,13 +117,13 @@ class MaintenanceServiceImpl extends TServiceServlet
     }
 
     maintenance {
-      val ap = i.getAccessPolicy()
+      val ap = instance.getAccessPolicy()
       val policy = ap.toString().toLowerCase();
 
       val cmd = s"sh $homeDir/new_instance.${policy}.sh $id $id $param"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
-      im.addWithTimestamp(id, TRDF.escape(i.getComment))
+      im.addWithTimestamp(id, TRDF.escape(instance.getComment))
       if (p != 0) {
         throw new MaintenanceException(s"Tomcat instance creation failed: return code $p. Please investigate manualy.")
       }
@@ -140,9 +140,9 @@ class MaintenanceServiceImpl extends TServiceServlet
     }
   }
 
-  def delete(i: ManagedItem): Unit = {
+  def delete(item: ManagedItem): Unit = {
     ensureNotMaintenance()
-    i match {
+    item match {
       case i: Instance => deleteInstance(i.getId)
       case d: Dataset => deleteDataset(d.getId)
       case _ => throw new MaintenanceException("Illegal API usage")
@@ -150,7 +150,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   private def deleteInstance(id: String): Unit = {
-    val im = new Instances(baseConfig.triplestore)
+    val im = new InstanceStore(baseConfig.triplestore)
     maintenance {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
       println(s"Run command: $cmd")
@@ -164,7 +164,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   private def deleteDataset(id: String): Unit = {
-    val dm = new Datasets(baseConfig.triplestore)
+    val dm = new DatasetStore(baseConfig.triplestore)
     maintenance {
       dm.delete(id)
     }
@@ -173,7 +173,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   def getPlatforms: Array[Platform] = {
     val prs = new ProbeStore(baseConfig.triplestore)
     val np = prs.numProbes()
-    val ps = new Platforms(baseConfig)
+    val ps = new PlatformStore(baseConfig)
     val comments = ps.comments
     val pubComments = ps.publicComments
     val dates = ps.timestamps
@@ -184,7 +184,7 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   def getInstances: Array[Instance] = {
-    val is = new Instances(baseConfig.triplestore)
+    val is = new InstanceStore(baseConfig.triplestore)
     val com = is.comments
     val ts = is.timestamps
     is.list.map(i => new Instance(i, com.getOrElse(i, ""),
@@ -192,28 +192,28 @@ class MaintenanceServiceImpl extends TServiceServlet
   }
 
   def getDatasets: Array[Dataset] = {
-    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
+    val ds = new DatasetStore(baseConfig.triplestore) with SharedDatasets
     ds.sharedList.toArray
   }
 
-  private def updatePlatform(p: Platform): Unit = {
-    val pfs = new Platforms(baseConfig)
-    pfs.setComment(p.getId, p.getComment)
-    pfs.setPublicComment(p.getId, p.getPublicComment)
+  private def updatePlatform(platform: Platform): Unit = {
+    val pfs = new PlatformStore(baseConfig)
+    pfs.setComment(platform.getId, platform.getComment)
+    pfs.setPublicComment(platform.getId, platform.getPublicComment)
   }
 
-  private def updateInstance(i: Instance): Unit = {
-    val is = new Instances(baseConfig.triplestore)
-    is.setComment(i.getId, TRDF.escape(i.getComment))
+  private def updateInstance(instance: Instance): Unit = {
+    val is = new InstanceStore(baseConfig.triplestore)
+    is.setComment(instance.getId, TRDF.escape(instance.getComment))
   }
 
-  override def update(i: ManagedItem): Unit = {
+  override def update(item: ManagedItem): Unit = {
     ensureNotMaintenance()
-    i match {
+    item match {
       case i: Instance => updateInstance(i)
       case p: Platform => updatePlatform(p)
       case d: Dataset => updateDataset(d)
-      case _ => super.update(i)
+      case _ => super.update(item)
     }
   }
 }

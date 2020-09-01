@@ -21,17 +21,17 @@ package t.sparql
 
 import t.TriplestoreConfig
 
-object Instances extends RDFClass {
+object InstanceStore extends RDFClass {
   val defaultPrefix = s"$tRoot/instance"
   val itemClass = "t:instance"
-  val memberRelation = Batches.memberRelation
+  val memberRelation = BatchStore.memberRelation
 }
 
-class Instances(config: TriplestoreConfig) extends ListManager(config) {
+class InstanceStore(config: TriplestoreConfig) extends ListManager(config) {
   import Triplestore._
-  def memberRelation = Instances.memberRelation
-  def defaultPrefix = Instances.defaultPrefix
-  def itemClass: String = Instances.itemClass
+  def memberRelation = InstanceStore.memberRelation
+  def defaultPrefix = InstanceStore.defaultPrefix
+  def itemClass: String = InstanceStore.itemClass
 
   def listAccess(name: String): Seq[String] = {
     triplestore.simpleQuery(s"$tPrefixes\n select ?bn where " +
@@ -40,10 +40,10 @@ class Instances(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def enableAccess(name: String, batch: String): Unit =
-    new Batches(config).enableAccess(batch, name)
+    new BatchStore(config).enableAccess(batch, name)
 
   def disableAccess(name: String, batch: String): Unit =
-    new Batches(config).disableAccess(batch, name)
+    new BatchStore(config).disableAccess(batch, name)
 
   override def delete(name: String): Unit = {
     val upd = s"$tPrefixes delete { ?batch $memberRelation <$defaultPrefix/$name> } " +
