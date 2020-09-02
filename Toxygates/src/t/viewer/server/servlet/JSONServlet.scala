@@ -26,12 +26,13 @@ import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import t.common.shared.ValueType
 import t.db.BasicExprValue
-import t.sparql.{DatasetStore, SampleClassFilter, SampleFilter}
+import t.sparql.{BatchStore, DatasetStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.Conversions._
-import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.SharedDatasets
+import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.shared.OTGSchema
 import upickle.default.{macroRW, ReadWriter => RW, _}
+
 import scala.collection.JavaConverters._
 
 
@@ -41,6 +42,15 @@ package json {
     implicit val rw: RW[Dataset] = macroRW
   }
   case class Dataset(id: String, title: String, numBatches: Int)
+
+  object Batch { implicit val rw: RW[Batch] = macroRW }
+  case class Batch(id: String, comment: Option[String] = None, dataset: Option[String] = None)
+  // date should be added, either ISO 8601 or millis since 1970
+  // https://stackoverflow.com/a/15952652/689356
+  // also, was using Options with default = None to implement optional parameters;
+  // this works correctly by not serializing a field when its value is None, but
+  // unfortunately Some(foo) gets serialized as an array
+  // cf. https://github.com/lihaoyi/upickle/issues/75
 
   object Sample { implicit val rw: RW[Sample] = macroRW }
   case class Sample(id: String, `type`: String, platform: String)
@@ -92,6 +102,44 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
 
     //Write (from upickle) converts objects to a JSON string
     out.println(write(data))
+  }
+
+  def getBatchesForDataset(req: HttpServletRequest, out: PrintWriter): Unit = {
+    val requestedDatasetId = Option(req.getParameter("id"))
+    if (requestedDatasetId.isEmpty) {
+
+      // should send an error status code, maybe 400?
+      // also probably a JSON object with information on the error rather than this
+      out.println("no id provided")
+
+    } else {
+
+      val datasetsMatchingRequest = datasets.filter(_.id == requestedDatasetId.get)
+      if (datasetsMatchingRequest.isEmpty) {
+
+        // same as above, but status code would probably be 404 here
+        out.println("dataset not found")
+
+      } else {
+
+        // the following duplicates logic from BatchOpsImpl.getBatches
+        // it's also inefficent since it requires three sparql queries
+        val batchStore = new BatchStore(baseConfig.triplestore)
+        val comments = batchStore.comments
+        val datasets = batchStore.datasets
+        val r = batchStore.list.flatMap(batchId => {
+          val datasetForBatch = datasets(batchId)
+          if (datasetForBatch == requestedDatasetId.get) {
+            Some(json.Batch(batchId, Some(comments(batchId)), None))
+          } else {
+            None
+          }
+        })
+        out.println(write(r))
+
+      }
+
+    }
   }
 
   def getParameterValues(req: HttpServletRequest, out: PrintWriter): Unit = {
@@ -196,6 +244,7 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     Option(req.getPathInfo) match {
       case Some("/datasets") => serveGet(req, resp, getDatasets)
+      case Some("/batches") => serveGet(req, resp, getBatchesForDataset)
       case Some("/parameter") => serveGet(req, resp, getParameterValues)
       case _ => getTime(req, resp)
     }
