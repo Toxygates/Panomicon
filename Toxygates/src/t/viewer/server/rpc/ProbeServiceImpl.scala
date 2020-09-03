@@ -49,7 +49,7 @@ object ProbeServiceImpl {
 class ProbeServiceImpl extends TServiceServlet with ProbeService {
   import ProbeServiceImpl._
 
-  lazy val platformsCache = t.viewer.server.PlatformRegistry(probeStore)
+  lazy val platformsCache = new PlatformRegistry(probeStore)
 
   protected def sampleStore: SampleStore = context.sampleStore
   protected def probeStore: ProbeStore = context.probeStore

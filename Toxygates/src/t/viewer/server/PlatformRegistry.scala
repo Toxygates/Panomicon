@@ -24,36 +24,29 @@ import t.platform.Probe
 import t.sparql.ProbeStore
 import t.platform.Species.Species
 
-object PlatformRegistry {
-  def apply(probeStore: ProbeStore): PlatformRegistry = {
+class PlatformRegistry(probeStore: ProbeStore) {
+  private val platformStore = new t.sparql.PlatformStore(probeStore.config)
+  private def allPlatforms = ProbeStore.platformsAndProbes(platformStore, probeStore)
 
-    val pfs = new t.sparql.PlatformStore(probeStore.config)
-    val pps = ProbeStore.platformsAndProbes(pfs, probeStore)
-    new PlatformRegistry(pps.map(x => x._1 -> x._2.toSet))
-  }
-}
-
-/**
- * A probe and platform registry. Caches data to avoid heavy sparql queries.
- */
-class PlatformRegistry(private val data: Map[String, Set[Probe]]) {
   //map platform to probe sets
-  private lazy val platformSets = data.mapValues(_.map(_.identifier))
+  private lazy val platformSets = allPlatforms.mapValues(_.map(_.identifier).toSet)
 
   //map ID to probe
   private lazy val identifierLookup =
-    Map() ++ data.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
+    Map() ++ allPlatforms.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
 
-  def allProbes: Iterable[Probe] = data.values.toSeq.flatten
+  def allProbes: Iterable[Probe] = allPlatforms.values.toSeq.flatten
   def getProbe(id: String): Option[Probe] = identifierLookup.get(id)
-  def probeIdentifiers(platform: String): Set[String] = platformSets(platform)
-  def platformProbes(platform: String): Iterable[Probe] = data(platform)
+  def probeIdentifiers(platform: String): Set[String] =
+    probeStore.probesForPlatform(platform).map(_.identifier).toSet
+  def platformProbes(platform: String): Iterable[Probe] =
+    probeStore.probesForPlatform(platform)
 
   lazy val geneLookup = {
     val raw = (for (
-        (pf, probes) <- data.toSeq;
-        pr <- probes;
-        gene <- pr.genes
+      (pf, probes) <- allPlatforms.toSeq;
+      pr <- probes;
+      gene <- pr.genes
       ) yield (gene, pr))
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
@@ -103,7 +96,7 @@ class PlatformRegistry(private val data: Map[String, Set[Probe]]) {
   }
 
   private def allProbes(platform: String, species: Option[Species]) = {
-    val all = data(platform).toSeq.map(_.identifier)
+    val all = probeIdentifiers(platform)
     if (platform.startsWith("mirbase")) {
       species match {
         case Some(sp) => all.filter(_.startsWith(sp.shortCode))

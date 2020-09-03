@@ -28,7 +28,7 @@ import t.platform.mirna._
 import t.platform.mirna.TargetTable
 import t.sparql.ProbeStore
 import t.viewer.client.rpc.NetworkService
-import t.viewer.server.{CSVHelper, Configuration, MirnaSources}
+import t.viewer.server.{CSVHelper, Configuration, MirnaSources, PlatformRegistry}
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.MatrixController
@@ -81,7 +81,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   def mirnaDir = context.config.data.mirnaDir
 
   private def probeStore: ProbeStore = context.probeStore
-  lazy val platforms = t.viewer.server.PlatformRegistry(probeStore)
+  lazy val platforms = new PlatformRegistry(probeStore)
 
   override def localInit(c: Configuration) {
     super.localInit(c)

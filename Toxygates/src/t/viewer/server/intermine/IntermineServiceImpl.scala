@@ -38,7 +38,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
   override def localInit(config: Configuration) {
     super.localInit(config)
     affyProbes = context.probeStore
-    platforms = PlatformRegistry(affyProbes)
+    platforms = new PlatformRegistry(affyProbes)
     mines = new Intermines(config.intermineInstances)
   }
 

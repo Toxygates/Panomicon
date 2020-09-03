@@ -58,14 +58,30 @@ object ProbeStore extends RDFClass {
     f
   }
 
-  private var _platformsAndProbes: Map[String, Iterable[Probe]] = null
+  /*
+   * Platforms are gradually loaded and cached here when needed
+   */
+  private var platformProbeCache: Map[String, Iterable[Probe]] = Map.empty
+  private var ppCacheFullyLoaded = false
 
-  //This lookup takes time, so we keep it here as a static resource
   def platformsAndProbes(pfs: PlatformStore, prs: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
-    if (_platformsAndProbes == null) {
-      _platformsAndProbes = prs.platformsAndProbesLookup(pfs)
+    if (!ppCacheFullyLoaded) {
+      for {
+        pf <- pfs.list;
+        if !platformProbeCache.contains(pf)
+      } {
+        platformProbeCache += (pf -> prs.annotatedProbesForPlatform(pf))
+      }
+      ppCacheFullyLoaded = true
     }
-    _platformsAndProbes
+    platformProbeCache
+  }
+
+  def loadOrFetchFromCache(prs: ProbeStore, platform: String): Iterable[Probe] = synchronized {
+    if (!platformProbeCache.contains(platform)) {
+      platformProbeCache += (platform -> prs.annotatedProbesForPlatform(platform))
+    }
+    platformProbeCache(platform)
   }
 }
 
@@ -102,8 +118,10 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
 
   /**
    * Obtain all probes in a given platform, with a few key annotations.
+   * Probes will be potentially annotated with
+   * entrez, refseq atranscript and symbol information only.
    */
-  def annotatedProbesForPlatform(platform: String): Iterable[Probe] = {
+  private def annotatedProbesForPlatform(platform: String): Iterable[Probe] = {
     val platformGraph = s"<${PlatformStore.defaultPrefix}/$platform>"
     /*
         * An important concern with these queries is reducing the number of tuples being returned.
@@ -149,24 +167,17 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
 
   /**
    * Obtain a full platform/probe lookup map.
-   * It is preferred to query for a single platform only using annotatedProbesForPlatform above
+   * It is preferred to query for a single platform only using probesForPlatform below
    * when possible.
    * @return
    */
-  def platformsAndProbes: Map[String, Iterable[Probe]] = {
+  def platformsAndProbes: collection.Map[String, Iterable[Probe]] = {
     val pfs = new PlatformStore(config)
     ProbeStore.platformsAndProbes(pfs, this)
   }
 
-  /**
-   * Read all platforms. Slow.
-   * Probes will be potentially annotated with
-   * entrez, refseq atranscript and symbol information only.
-   * It is preferred to query for a single platform only using annotatedProbesForPlatform above
-   * when possible.
-   */
-  private def platformsAndProbesLookup(pfs: PlatformStore): Map[String, Iterable[Probe]] = {
-    pfs.list.map(x => (x, annotatedProbesForPlatform(x))).toMap
+  def probesForPlatform(platform: String): Iterable[Probe] = {
+    ProbeStore.loadOrFetchFromCache(this, platform)
   }
 
   def numProbes(): Map[String, Int] = {

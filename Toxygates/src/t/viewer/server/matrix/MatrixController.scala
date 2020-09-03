@@ -40,7 +40,7 @@ object MatrixController {
             orthologs: () => Iterable[OrthologMapping] = noOrthologs): MatrixController = {
 
     val params = ControllerParams(groups, initProbes, typ)
-    val platforms = PlatformRegistry(context.probeStore)
+    val platforms = new PlatformRegistry(context.probeStore)
 
     if (params.platforms(context).size > 1) {
       new MergedMatrixController(context, platforms, params, orthologs)
@@ -91,9 +91,6 @@ abstract class MatrixController(context: Context,
 
   lazy val filteredProbes =
     platforms.filterProbes(initProbes, groupPlatforms, groupSpecies)
-
-  protected def platformsForProbes(ps: Iterable[String]): Iterable[String] =
-    ps.flatMap(platforms.platformForProbe(_)).toList.distinct
 
   protected def enhancedCols = true
 
