@@ -1,0 +1,5 @@
+{
+  "/toxygates": {
+    "target": "http://localhost:8888"
+  }
+}
