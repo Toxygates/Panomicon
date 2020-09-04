@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
 import { BatchSelectorComponent } from './batch-selector/batch-selector.component';
 import { BatchPickerComponent } from './batch-picker/batch-picker.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 
 
@@ -21,7 +22,8 @@ import { BatchPickerComponent } from './batch-picker/batch-picker.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
