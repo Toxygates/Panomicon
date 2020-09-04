@@ -66,6 +66,11 @@ class DatasetStore(config: TriplestoreConfig) extends ListManager(config) with B
       "\"" + desc + "\" } ")
   }
 
+  /**
+   * Return only datasets that have batches in the given instance.
+   * @param instanceURI
+   * @return
+   */
   def withBatchesInInstance(instanceURI: String): Seq[String] = {
     triplestore.simpleQuery(s"$tPrefixes\nSELECT DISTINCT ?l WHERE " +
       s"{ ?item a $itemClass; rdfs:label ?l. " +

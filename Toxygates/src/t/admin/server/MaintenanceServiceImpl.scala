@@ -193,7 +193,7 @@ class MaintenanceServiceImpl extends TServiceServlet
 
   def getDatasets: Array[Dataset] = {
     val ds = new DatasetStore(baseConfig.triplestore) with SharedDatasets
-    ds.sharedList.toArray
+    ds.sharedList(None).toArray
   }
 
   private def updatePlatform(platform: Platform): Unit = {

@@ -81,10 +81,8 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
 
   def datasetsForUser(userKey: String): Array[Dataset] = {
     val datasets = new DatasetStore(baseConfig.triplestore) with SharedDatasets
-    var r: Array[Dataset] = (instanceURI match {
-      case Some(u) => datasets.sharedListForInstance(u)
-      case None => datasets.sharedList
-    }).filter(ds => Dataset.isDataVisible(ds.getId, userKey)).toArray
+    var r: Array[Dataset] = datasets.sharedList(instanceURI).
+      filter(ds => Dataset.isDataVisible(ds.getId, userKey)).toArray
 
     r
   }

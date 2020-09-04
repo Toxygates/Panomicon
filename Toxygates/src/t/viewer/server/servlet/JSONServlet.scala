@@ -29,9 +29,10 @@ import t.db.BasicExprValue
 import t.sparql.{DatasetStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
-import t.viewer.server.SharedDatasets
+import t.viewer.server.{Configuration, SharedDatasets}
 import t.viewer.shared.OTGSchema
 import upickle.default.{macroRW, ReadWriter => RW, _}
+
 import scala.collection.JavaConverters._
 
 
@@ -51,9 +52,6 @@ package json {
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
   case class MatrixParams(groups: Seq[Group], valueType: String, offset: Int = 0, limit: Option[Int] = None,
                           initProbes: Seq[String] = Seq())
-
-  object DataRow { implicit val rw: RW[DataRow] = macroRW }
-  case class DataRow(probe: String, values: Seq[Double], calls: Seq[Char])
 }
 
 class JSONServlet extends HttpServlet with MinimalTServlet {
@@ -61,15 +59,17 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   implicit val erRw: RW[ExpressionRow] = macroRW
 
   var sampleFilter: SampleFilter = _
+  var config: Configuration = _
 
-  override def init(config: ServletConfig): Unit = {
-    super.init(config)
-    val conf = tServletInit(config)
-    sampleFilter = SampleFilter(conf.instanceURI)
+  override def init(sconfig: ServletConfig): Unit = {
+    super.init(sconfig)
+    config = tServletInit(sconfig)
+    sampleFilter = SampleFilter(config.instanceURI)
   }
 
   private def datasets =
-    (new DatasetStore(baseConfig.triplestore) with SharedDatasets).sharedList.map(d => {
+    (new DatasetStore(baseConfig.triplestore) with SharedDatasets).
+      sharedList(config.instanceURI).map(d => {
       json.Dataset(d.getId, d.getUserTitle, d.getNumBatches)
     }).toSeq
 

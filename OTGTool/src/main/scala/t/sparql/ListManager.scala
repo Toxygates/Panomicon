@@ -85,14 +85,33 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     })
   }
 
+  private val timestampRel = "t:timestamp"
+  private val commentRel = "t:comment"
+  private val publicCommentRel = "t:publicComment"
+
+  def keyAttributes: Iterable[(String, Date, String, String)] = {
+    val query = s"""|$tPrefixes
+    |SELECT * WHERE {
+    | ?item a $itemClass; $timestampRel ?timestamp;
+    |   $commentRel ?comment; $publicCommentRel ?publicComment;
+    |   rdfs:label ?label.
+    |}
+    |""".stripMargin
+
+    val r = triplestore.mapQuery(query, 20000)
+    r.map(x => {
+      (x("label"), dateFormat.parse(x("timestamp")), x("comment"), x("publicComment"))
+    })
+  }
+
   def timestamps: Map[String, Date] =
-    attributeQuery("t:timestamp", dateFormat.parse)
+    attributeQuery(timestampRel, dateFormat.parse)
 
   def comments: Map[String, String] =
-    attributeQuery("t:comment", x => x)
+    attributeQuery(commentRel, x => x)
 
   def publicComments: Map[String, String] =
-    attributeQuery("t:publicComment", x => x)
+    attributeQuery(publicCommentRel, x => x)
 
   def delete(name: String): Unit = {
     triplestore.update(s"$tPrefixes\n " +

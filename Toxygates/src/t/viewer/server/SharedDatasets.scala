@@ -29,22 +29,21 @@ import t.sparql.DatasetStore
 trait SharedDatasets {
   this: DatasetStore =>
 
-  def sharedList: Iterable[Dataset] =
-    list.map(asShared)
-
-  def sharedListForInstance(uri: String): Iterable[Dataset] =
-    withBatchesInInstance(uri).map(asShared)
-
-  private def asShared(d: String): Dataset = {
-    val com = comments
-    val pcom = publicComments
-    val ts = timestamps
-    val descs = descriptions
+  def sharedList(instanceUri: Option[String]): Iterable[Dataset] = {
+    val all = keyAttributes
     val nbs = numBatches
-    new Dataset(d, descs.getOrElse(d, ""),
-      com.getOrElse(d, ""), ts.getOrElse(d, null),
-      pcom.getOrElse(d, ""),
-      nbs.getOrElse(d, 0))
-  }
+    val descs = descriptions
 
+    val filtered = (
+      instanceUri match {
+        case Some(uri) =>
+          val permitted = withBatchesInInstance(uri).toSet
+          all.filter(x => permitted.contains(x._1))
+        case None => all
+      }
+    )
+    filtered.map(x => {
+      new Dataset(x._1, descs.getOrElse(x._1, ""), x._3, x._2, x._4, nbs.getOrElse(x._1, 0))
+    })
+  }
 }
