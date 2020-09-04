@@ -171,7 +171,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
    * when possible.
    * @return
    */
-  def platformsAndProbes: collection.Map[String, Iterable[Probe]] = {
+  def platformsAndProbes: Map[String, Iterable[Probe]] = {
     val pfs = new PlatformStore(config)
     ProbeStore.platformsAndProbes(pfs, this)
   }
