@@ -148,11 +148,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val comments = batchStore.comments
     val dates = batchStore.timestamps
     val datasets = batchStore.datasets
-    val r = batchStore.list.map(b => {
-      new Batch(b, numSamples.getOrElse(b, 0), comments.getOrElse(b, ""),
-        dates.getOrElse(b, null),
-        new HashSet(setAsJavaSet(batchStore.listAccess(b).toSet)),
-        datasets.getOrElse(b, ""))
+    val r = batchStore.list.map(batchId => {
+      new Batch(batchId, numSamples.getOrElse(batchId, 0), comments.getOrElse(batchId, ""),
+        dates.getOrElse(batchId, null),
+        new HashSet(setAsJavaSet(batchStore.listAccess(batchId).toSet)),
+        datasets.getOrElse(batchId, ""))
     }).toArray
     r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }

@@ -1,0 +1,8 @@
+<div *ngIf="!batches">Loading batches...</div>
+<div *ngIf="batches">Batches:</div>
+
+<ul>
+    <li *ngFor="let batch of batches">
+        {{batch.id}}
+    </li>
+</ul>
