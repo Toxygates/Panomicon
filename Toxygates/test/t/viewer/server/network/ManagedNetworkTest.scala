@@ -50,9 +50,10 @@ class ManagedNetworkTest extends TTestSuite {
     mirnaIds)
 
   val mirnaGroup = new Group(dataSchema, "mirnaGroup", mirnaSamples.map(s => asJavaSample(s)).toArray)
-  val platforms = new PlatformRegistry(Map(
-    t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
-    mirnaPlatformId -> mirnaProbes.toSet))
+  val platforms: PlatformRegistry = ???  //TODO
+//  new PlatformRegistry(Map(
+//    t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
+//    mirnaPlatformId -> mirnaProbes.toSet))
 
   val mrnaGroups = t.common.testing.TestData.groups take 5
 
