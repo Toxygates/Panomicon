@@ -92,15 +92,18 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   def keyAttributes: Iterable[(String, Date, String, String)] = {
     val query = s"""|$tPrefixes
     |SELECT * WHERE {
-    | ?item a $itemClass; $timestampRel ?timestamp;
-    |   $commentRel ?comment; $publicCommentRel ?publicComment;
-    |   rdfs:label ?label.
+    | ?item a $itemClass; rdfs:label ?label; $timestampRel ?timestamp.
+    | OPTIONAL {
+    |   ?item $timestampRel ?timestamp;
+    |     $commentRel ?comment; $publicCommentRel ?publicComment.
+    |   }
     |}
     |""".stripMargin
 
     val r = triplestore.mapQuery(query, 20000)
     r.map(x => {
-      (x("label"), dateFormat.parse(x("timestamp")), x("comment"), x("publicComment"))
+      (x.getOrElse("label", ""), dateFormat.parse(x("timestamp")),
+        x.getOrElse("comment", ""), x.getOrElse("publicComment", ""))
     })
   }
 
