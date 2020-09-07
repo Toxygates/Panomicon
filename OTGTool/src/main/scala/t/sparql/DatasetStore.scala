@@ -19,6 +19,8 @@
 
 package t.sparql
 
+import java.util.Date
+
 import t.TriplestoreConfig
 
 /**
@@ -32,8 +34,10 @@ object DatasetStore extends RDFClass {
   val itemClass = "t:dataset"
 }
 
+case class Dataset(id: String, timestamp: Date, comment: String, publicComment: String,
+                   description: String, numBatches: Int = 0)
 
-class DatasetStore(config: TriplestoreConfig) extends ListManager(config) with BatchGrouping {
+class DatasetStore(config: TriplestoreConfig) extends ListManager[Dataset](config) with BatchGrouping {
   import Triplestore._
 
   def memberRelation = DatasetStore.memberRelation
@@ -77,4 +81,26 @@ class DatasetStore(config: TriplestoreConfig) extends ListManager(config) with B
       s"?b a ${BatchStore.itemClass}; $memberRelation ?item; " +
         s"${BatchStore.memberRelation} <$instanceURI> }")
   }
+
+  private def additionalFilter(instanceUri: Option[String]) =
+    instanceUri match {
+      case Some(uri) => s"FILTER EXISTS { ?b a ${BatchStore.itemClass}; $memberRelation ?item; " +
+        s"${BatchStore.memberRelation} <$uri> }"
+      case None => ""
+    }
+
+  override def items(instanceUri: Option[String]): Iterable[Dataset] = {
+
+    val instanceFilter = additionalFilter(instanceUri)
+    val descriptions = this.descriptions
+    val keyAttribs = keyAttributes(instanceFilter)
+    val nb = numBatches
+    keyAttribs.map(x => {
+      Dataset(x.id, x.timestamp, x.comment, x.publicComment, descriptions.getOrElse(x.id, ""), nb.getOrElse(x.id, 0))
+    })
+  }
+
+  def list(instanceUri: Option[String]): Seq[String] =
+    super.list(additionalFilter(instanceUri))
+
 }

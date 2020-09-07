@@ -57,7 +57,7 @@ object BatchStore extends RDFClass {
  * A way of grouping batches.
  */
 trait BatchGrouping {
-  this: ListManager =>
+  this: ListManager[_] =>
 
   def memberRelation: String
   def groupPrefix: String

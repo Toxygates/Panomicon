@@ -27,10 +27,21 @@ import java.util.Date
 import java.util.Calendar
 import java.text.SimpleDateFormat
 
+
+/**
+ * Attributes that we expect each managed item to have in the majority of cases.
+ * @param id
+ * @param timestamp
+ * @param comment
+ * @param publicComment
+ */
+case class KeyItemAttributes(id: String, timestamp: Date,
+                             comment: String, publicComment: String)
+
 /**
  * Manages a list of items of some given class in the triplestore.
  */
-abstract class ListManager(config: TriplestoreConfig) extends Closeable {
+abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
   import Triplestore._
 
   //RDFS class
@@ -45,8 +56,19 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     triplestore.close()
   }
 
-  def list(): Seq[String] = {
-    triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
+  /**
+   * Obtain the IDs of items in this list manager.
+   * @return
+   */
+  def list(): Seq[String] = list("")
+
+  def list(additionalFilter: String): Seq[String] = {
+    triplestore.simpleQuery(s"""|
+                            |$tPrefixes
+                            | SELECT ?l {
+                            |  ?item a $itemClass; rdfs:label ?l.
+                            |  $additionalFilter
+                            | }""".stripMargin)
   }
 
   def verifyExists(item: String): Unit = {
@@ -89,22 +111,38 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   private val commentRel = "t:comment"
   private val publicCommentRel = "t:publicComment"
 
-  def keyAttributes: Iterable[(String, Date, String, String)] = {
+  /**
+   * Obtain core attributes that managed items can reasonably be expected to have.
+   */
+  def keyAttributes(additionalFilter: String = ""): Iterable[KeyItemAttributes] = {
     val query = s"""|$tPrefixes
     |SELECT * WHERE {
-    | ?item a $itemClass; rdfs:label ?label; $timestampRel ?timestamp.
+    | ?item a $itemClass; rdfs:label ?label.
     | OPTIONAL {
-    |   ?item $timestampRel ?timestamp;
+    |    ?item $timestampRel ?timestamp;
     |     $commentRel ?comment; $publicCommentRel ?publicComment.
     |   }
+    | $additionalFilter
     |}
     |""".stripMargin
 
+    val defaultTimestamp = "1970-01-01 00:00:00"
+
     val r = triplestore.mapQuery(query, 20000)
     r.map(x => {
-      (x.getOrElse("label", ""), dateFormat.parse(x("timestamp")),
+      KeyItemAttributes(x.getOrElse("label", ""), dateFormat.parse(x.getOrElse("timestamp", defaultTimestamp)),
         x.getOrElse("comment", ""), x.getOrElse("publicComment", ""))
     })
+  }
+
+  /**
+   * Efficiently obtain the items in this list manager, with as many attributes
+   * as possible populated (possibly not all).
+   * @param instanceUri The instance to filter items for, if any
+   * @return
+   */
+  def items(instanceUri: Option[String] = None): Iterable[T] = {
+    ???
   }
 
   def timestamps: Map[String, Date] =

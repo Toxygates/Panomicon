@@ -20,16 +20,17 @@
 package t.viewer.server.servlet
 
 import java.io.PrintWriter
+import java.text.SimpleDateFormat
 import java.util.Date
 
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import t.common.shared.ValueType
 import t.db.BasicExprValue
-import t.sparql.{BatchStore, DatasetStore, SampleClassFilter, SampleFilter}
+import t.sparql.{BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
-import t.viewer.server.{Configuration, SharedDatasets}
+import t.viewer.server.{Configuration}
 import t.viewer.shared.OTGSchema
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
@@ -37,12 +38,6 @@ import scala.collection.JavaConverters._
 
 
 package json {
-  object Dataset {
-    //Needed for upickle to convert this class to/from JSON
-    implicit val rw: RW[Dataset] = macroRW
-  }
-  case class Dataset(id: String, title: String, numBatches: Int)
-
   object Batch { implicit val rw: RW[Batch] = macroRW }
   case class Batch(id: String, comment: Option[String] = None, dataset: Option[String] = None)
   // date should be added, either ISO 8601 or millis since 1970
@@ -61,11 +56,29 @@ package json {
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
   case class MatrixParams(groups: Seq[Group], valueType: String, offset: Int = 0, limit: Option[Int] = None,
                           initProbes: Seq[String] = Seq())
+
+}
+
+object Encoders {
+  //Work in progress - this supposedly conforms to ISO 8601
+  val jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  implicit val dtRW = readwriter[String].bimap[Date](
+    output => jsonDateFormat.format(output),
+    input =>
+      try {
+        jsonDateFormat.parse(input)
+      } catch {
+        case _: Exception => new Date(0)
+      }
+  )
+
+  implicit val bevRw: RW[BasicExprValue] = macroRW
+  implicit val erRw: RW[ExpressionRow] = macroRW
+  implicit val dsRW: RW[Dataset] = macroRW
 }
 
 class JSONServlet extends HttpServlet with MinimalTServlet {
-  implicit val bevRw: RW[BasicExprValue] = macroRW
-  implicit val erRw: RW[ExpressionRow] = macroRW
+  import Encoders._
 
   var sampleFilter: SampleFilter = _
   var config: Configuration = _
@@ -76,15 +89,12 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     sampleFilter = SampleFilter(config.instanceURI)
   }
 
-  private def datasets =
-    (new DatasetStore(baseConfig.triplestore) with SharedDatasets).
-      sharedList(config.instanceURI).map(d => {
-      json.Dataset(d.getId, d.getUserTitle, d.getNumBatches)
-    }).toSeq
+  private lazy val datasetStore = new DatasetStore(baseConfig.triplestore)
+  private def datasets = datasetStore.items(config.instanceURI)
 
   lazy val sampleStore = context.sampleStore
 
-  def isDataVisible(data: json.Dataset, userKey: String) = {
+  def isDataVisible(data: Dataset, userKey: String) = {
       data.id == t.common.shared.Dataset.userDatasetId(userKey) ||
         t.common.shared.Dataset.isSharedDataset(data.id) ||
         !data.id.startsWith("user-")
@@ -113,12 +123,10 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
 
     } else {
 
-      val datasetsMatchingRequest = datasets.filter(_.id == requestedDatasetId.get)
-      if (datasetsMatchingRequest.isEmpty) {
-
+      val exists = datasetStore.list(config.instanceURI).contains(requestedDatasetId.get)
+      if (!exists) {
         // same as above, but status code would probably be 404 here
         out.println("dataset not found")
-
       } else {
 
         // the following duplicates logic from BatchOpsImpl.getBatches
@@ -127,8 +135,8 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
         val comments = batchStore.comments
         val datasets = batchStore.datasets
         val r = batchStore.list.flatMap(batchId => {
-          val datasetForBatch = datasets(batchId)
-          if (datasetForBatch == requestedDatasetId.get) {
+          val datasetForBatch = datasets.get(batchId)
+          if (datasetForBatch == requestedDatasetId) {
             Some(json.Batch(batchId, Some(comments(batchId)), None))
           } else {
             None

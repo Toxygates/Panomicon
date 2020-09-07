@@ -30,20 +30,9 @@ trait SharedDatasets {
   this: DatasetStore =>
 
   def sharedList(instanceUri: Option[String]): Iterable[Dataset] = {
-    val all = keyAttributes
-    val nbs = numBatches
-    val descs = descriptions
-
-    val filtered = (
-      instanceUri match {
-        case Some(uri) =>
-          val permitted = withBatchesInInstance(uri).toSet
-          all.filter(x => permitted.contains(x._1))
-        case None => all
-      }
-    )
-    filtered.map(x => {
-      new Dataset(x._1, descs.getOrElse(x._1, ""), x._3, x._2, x._4, nbs.getOrElse(x._1, 0))
+    //TODO add description
+    items(instanceUri).map(x => {
+      new Dataset(x.id, x.description, x.comment, x.timestamp, x.publicComment, x.numBatches)
     })
   }
 }

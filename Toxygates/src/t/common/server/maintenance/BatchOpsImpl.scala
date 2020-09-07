@@ -144,13 +144,14 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   def getBatches(@Nullable datasetIds: Array[String]): Array[Batch] = {
     val useDatasets = Option(datasetIds).toSet.flatten
     val batchStore = new BatchStore(baseConfig.triplestore)
+
+    val keyParams = Map.empty ++ batchStore.keyAttributes("").map(x => (x.id -> x))
     val numSamples = batchStore.numSamples
-    val comments = batchStore.comments
-    val dates = batchStore.timestamps
+
     val datasets = batchStore.datasets
     val r = batchStore.list.map(batchId => {
-      new Batch(batchId, numSamples.getOrElse(batchId, 0), comments.getOrElse(batchId, ""),
-        dates.getOrElse(batchId, null),
+      new Batch(batchId, numSamples.getOrElse(batchId, 0), keyParams(batchId).comment,
+        keyParams(batchId).timestamp,
         new HashSet(setAsJavaSet(batchStore.listAccess(batchId).toSet)),
         datasets.getOrElse(batchId, ""))
     }).toArray
@@ -207,7 +208,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
     }
 
-    if (dm.list.contains(id)) {
+    if (dm.list().contains(id)) {
       if (mustNotExist) {
         throw BatchUploadException.badID(s"The dataset $id already exists, please choose a different name")
       }

@@ -37,6 +37,7 @@ import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
 import t.viewer.server.{rpc, _}
 import t.viewer.shared.{Pathology, _}
+import t.common.shared.Dataset
 
 import scala.collection.JavaConverters._
 
