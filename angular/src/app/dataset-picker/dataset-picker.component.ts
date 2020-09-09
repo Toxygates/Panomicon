@@ -4,7 +4,7 @@ import { BackendService } from '../backend.service'
 @Component({
   selector: 'app-dataset-picker',
   templateUrl: './dataset-picker.component.html',
-  styleUrls: ['./dataset-picker.component.css']
+  styleUrls: ['./dataset-picker.component.scss']
 })
 export class DatasetPickerComponent implements OnInit {
   

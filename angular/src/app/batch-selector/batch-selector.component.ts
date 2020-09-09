@@ -4,7 +4,7 @@ import { BatchPickerComponent } from '../batch-picker/batch-picker.component';
 @Component({
   selector: 'app-batch-selector',
   templateUrl: './batch-selector.component.html',
-  styleUrls: ['./batch-selector.component.css']
+  styleUrls: ['./batch-selector.component.scss']
 })
 export class BatchSelectorComponent implements OnInit {
 

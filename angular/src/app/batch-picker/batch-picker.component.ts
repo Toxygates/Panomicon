@@ -4,7 +4,7 @@ import { BackendService } from '../backend.service'
 @Component({
   selector: 'app-batch-picker',
   templateUrl: './batch-picker.component.html',
-  styleUrls: ['./batch-picker.component.css']
+  styleUrls: ['./batch-picker.component.scss']
 })
 export class BatchPickerComponent implements OnInit {
 
