@@ -181,7 +181,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val params = overviewParameters
     val batchURI = BatchStore.packURI(batch.getId)
     val sf = SampleFilter(None, Some(batchURI))
-    val data = samples.sampleAttributeValueQuery(params)(sf)()
+    val data = samples.sampleAttributeValueQuery(params.map(_.id))(sf)()
     val titles = params.map(_.title).toArray
     val adata = data.map(row => params.map(c => row(c.id)).toArray).toArray
     Array(titles) ++ adata

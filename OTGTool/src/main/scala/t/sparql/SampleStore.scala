@@ -321,16 +321,16 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Get all distinct values for a set of attributes inside specified SampleFilter
    */
-  def sampleAttributeValueQuery(attributes: Seq[Attribute])
+  def sampleAttributeValueQuery(attributes: Seq[String])
                                (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
-    val pattr = attributes.filter(isPredicateAttribute)
+    //val pattr = attributes.filter(isPredicateAttribute)
 
     Query(tPrefixes,
-      s"""|SELECT DISTINCT *
+      s"""|SELECT ${attributes.map(x => s"?$x").mkString(" ")}
           |  WHERE {
           |    ${sf.standardSampleFilters}
           |    GRAPH ?batchGraph {
-          |      ?x ${pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; ")}""".stripMargin,
+          |      ?x ${attributes.map(x => s"t:$x ?$x").mkString("; ")}""".stripMargin,
       s"} }",
       triplestore.mapQuery(_, 10000))
   }
