@@ -1,4 +1,10 @@
-<app-dataset-picker (datasetSelectedEvent)="showBatchesForDataset($event)"></app-dataset-picker>
+<div class="row">
+    <div class="col-lg-4 padded_ui_panel">
+        <app-dataset-picker (datasetSelectedEvent)="showBatchesForDataset($event)"></app-dataset-picker>
+    </div>
 
-<div *ngIf="!datasetChosen">Select a dataset to show batches</div>
-<app-batch-picker [hidden]="!datasetChosen" (batchSelectedEvent)="selectBatch($event)"></app-batch-picker>
+    <div class="col-lg-8 padded_ui_panel">
+        <div *ngIf="!datasetChosen">Select a dataset to show batches</div>
+        <app-batch-picker [hidden]="!datasetChosen" (batchSelectedEvent)="selectBatch($event)"></app-batch-picker>
+    </div>
+</div>
