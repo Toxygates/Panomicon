@@ -1,10 +1,6 @@
 <div *ngIf="!batches">Loading batches...</div>
 <div *ngIf="batches">Batches:</div>
 
-<ul>
-    <li *ngFor="let batch of batches"
-        (click)="selectBatch(batch.id)">
-        <!-- the anchor is a temporary hack to style the text as a link-->
-        <a href="#" onclick="return false;">{{batch.id}}</a>
-    </li>
-</ul>
+<ng-container *ngFor="let batch of batches">
+    <button (click)="selectBatch(batch.id)" type="button" class="btn btn-secondary">{{batch.id}}</button>
+</ng-container>

@@ -1,9 +1,6 @@
 <div *ngIf="!datasets">Loading datasets...</div>
 <div *ngIf="datasets">Datasets:</div>
 
-<ul>
-    <li *ngFor="let dataset of datasets" (click)="selectDataset(dataset.id)">
-        <!-- the anchor is a temporary hack to style the text as a link-->
-        <a href="#" onclick="return false;">{{dataset.title}} ({{dataset.id}})</a>
-    </li>
-</ul>
+<ng-container *ngFor="let dataset of datasets">
+<button (click)="selectDataset(dataset.id)" type="button" class="btn btn-secondary">{{dataset.description}} ({{dataset.id}})</button>
+</ng-container>
