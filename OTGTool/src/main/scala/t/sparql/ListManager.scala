@@ -118,10 +118,9 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
     val query = s"""|$tPrefixes
     |SELECT * WHERE {
     | ?item a $itemClass; rdfs:label ?label.
-    | OPTIONAL {
-    |    ?item $timestampRel ?timestamp;
-    |     $commentRel ?comment; $publicCommentRel ?publicComment.
-    |   }
+    | OPTIONAL { ?item $timestampRel ?timestamp. }
+    | OPTIONAL { ?item $commentRel ?comment. }
+    | OPTIONAL { ?item $publicCommentRel ?publicComment. }
     | $additionalFilter
     |}
     |""".stripMargin

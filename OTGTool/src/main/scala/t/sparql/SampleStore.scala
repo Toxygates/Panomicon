@@ -23,7 +23,7 @@ import t.sparql.secondary.commonPrefixes
 import t.{BaseConfig, Pathology, TriplestoreConfig}
 import t.db.Sample
 import t.sparql.{Filter => TFilter}
-import t.model.sample.{Attribute, AttributeSet, OTGAttribute}
+import t.model.sample.{Attribute, AttributeSet, CoreParameter, OTGAttribute}
 
 import scala.collection.JavaConverters._
 import t.model.sample.CoreParameter._
@@ -154,7 +154,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
         s"?${attribute.id} = " + "\"" + value + "\"")).flatten.mkString(" && ")}
           |  )""".stripMargin
 
-    val batchFilter = filter.get(Batch)
+    val batchFilter = filter.get(CoreParameter.Batch)
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
 
     Query(prefixes,
