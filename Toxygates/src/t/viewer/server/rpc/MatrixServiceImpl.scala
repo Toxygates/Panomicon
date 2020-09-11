@@ -179,17 +179,16 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
   def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val groups = Vector() ++ gs.asScala
-    val controller = MatrixController(context,
-        groups, rprobes, typ, () => getOrthologs(context))
+    val controller = MatrixController(context, groups, rprobes, typ, () => getOrthologs(context))
     val mm = controller.managedMatrix
 
     val raw = if (groups.size == 1) {
-      //break out each individual sample if it's only one group
+      //Break out each individual sample if it's only one group.
+      //This case is currently only used for displaying charts.
       val samples = groups(0).getSamples().map(_.id)
       mm.rawUngrouped.selectNamedColumns(samples).asRows
     } else {
-      val cols = groups.map(_.getName)
-      mm.current.selectNamedColumns(cols).asRows
+      mm.current.asRows
     }
 
     val rows = controller.insertAnnotations(context, raw, withSymbols)

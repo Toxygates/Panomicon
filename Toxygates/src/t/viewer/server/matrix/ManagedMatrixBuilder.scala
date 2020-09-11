@@ -106,15 +106,15 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
     val sortedProbes = data.map(row => row(0).probe)
     val annotations = sortedProbes.map(x => RowAnnotation(x, List(x))).toVector
 
-    val cols = requestColumns.par.map(g => {
+    val columnsForGroups = requestColumns.map(g => {
         println(g.getUnits()(0).toString())
         columnsFor(g, sortedSamples, data)
-    }).seq
+    })
 
-    val (groupedData, info) = cols.par.reduceLeft((p1, p2) => {
-      val d = (p1._1 zip p2._1).map(r => r._1 ++ r._2)
-      val info = p1._2.addAllNonSynthetic(p2._2)
-      (d, info)
+    val (groupedData, info) = columnsForGroups.reduceLeft((g1Cols, g2Cols) => {
+      val rowData = (g1Cols._1 zip g2Cols._1).map(r => r._1 ++ r._2)
+      val jointInfo = g1Cols._2.addAllNonSynthetic(g2Cols._2)
+      (rowData, jointInfo)
     })
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
     val grouped = ExpressionMatrix.withRows(groupedData, sortedProbes, colNames)
