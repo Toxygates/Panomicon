@@ -65,7 +65,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     maintenance {
       setLastTask("Add batch")
 
-      val existingBatches = new BatchStore(context.config.triplestore).list
+      val existingBatches = new BatchStore(context.config.triplestore).list()
       if (existingBatches.contains(batch.getId) && !mayAppendBatch) {
         throw BatchUploadException.badID(
             s"The batch ${batch.getId} already exists and appending is not allowed. " +
@@ -149,7 +149,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     val numSamples = batchStore.numSamples
 
     val datasets = batchStore.datasets
-    val r = batchStore.list.map(batchId => {
+    val r = batchStore.list().map(batchId => {
       new Batch(batchId, numSamples.getOrElse(batchId, 0), keyParams(batchId).comment,
         keyParams(batchId).timestamp,
         new HashSet(setAsJavaSet(batchStore.listAccess(batchId).toSet)),

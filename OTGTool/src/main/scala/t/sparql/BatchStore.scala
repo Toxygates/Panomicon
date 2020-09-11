@@ -20,6 +20,7 @@
 package t.sparql
 
 import java.io._
+import java.util.Date
 
 import Triplestore.tPrefixes
 import t.TriplestoreConfig
@@ -81,12 +82,15 @@ trait BatchGrouping {
         |}""".stripMargin)
 }
 
+case class Batch(id: String, timestamp: Date, comment: String, publicComment: String,
+                 dataset: String, numSamples: Int)
+
 /*
  * Note: inheriting BatchGroups (to manage instance membership)
  * makes the public interface of this class large. We may want to use composition instead.
  */
 
-class BatchStore(config: TriplestoreConfig) extends ListManager(config) with BatchGrouping {
+class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) with BatchGrouping {
   import Triplestore._
   val memberRelation = BatchStore.memberRelation
 
@@ -142,5 +146,34 @@ class BatchStore(config: TriplestoreConfig) extends ListManager(config) with Bat
     triplestore.update(s"$tPrefixes\n " +
       s"DROP GRAPH <$defaultPrefix/$name>")
   }
+
+
+  private def additionalFilter(instanceUri: Option[String], dataset: Option[String] = None) = {
+    val r = (instanceUri match {
+      case Some(uri) => s"?item $memberRelation <$uri>."
+      case None => ""
+    })
+    dataset match {
+      case Some(ds) => s"$r ?item ${DatasetStore.memberRelation} <${DatasetStore.defaultPrefix}/$ds>."
+      case None => r
+    }
+  }
+
+  def items(instanceUri: Option[String], dataset: Option[String]): Iterable[Batch] = {
+    val instanceFilter = additionalFilter(instanceUri, dataset)
+    val keyAttribs = keyAttributes(instanceFilter)
+    val dss = datasets
+    val nss = numSamples
+
+    keyAttribs.map(x => {
+      Batch(x.id, x.timestamp, x.comment, x.publicComment, dss(x.id),
+        nss(x.id))
+    })
+  }
+
+  override def items(instanceUri: Option[String]) = items(instanceUri, None)
+
+  def list(instanceUri: Option[String]): Seq[String] =
+    super.list(additionalFilter(instanceUri))
 
 }

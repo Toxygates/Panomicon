@@ -30,7 +30,8 @@ import t.db.BasicExprValue
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Type}
 import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
-import t.sparql.{BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
+import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
+
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.Configuration
@@ -41,10 +42,7 @@ import scala.collection.JavaConverters._
 
 
 package json {
-  object Batch { implicit val rw: RW[Batch] = macroRW }
-  case class Batch(id: String, comment: Option[String] = None, dataset: Option[String] = None)
-  // date should be added, either ISO 8601 or millis since 1970
-  // https://stackoverflow.com/a/15952652/689356
+
   // also, was using Options with default = None to implement optional parameters;
   // this works correctly by not serializing a field when its value is None, but
   // unfortunately Some(foo) gets serialized as an array
@@ -59,10 +57,11 @@ package json {
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
   case class MatrixParams(groups: Seq[Group], valueType: String, offset: Int = 0, limit: Option[Int] = None,
                           initProbes: Seq[String] = Seq())
-
 }
 
 object Encoders {
+  // date should be added, either ISO 8601 or millis since 1970
+  // https://stackoverflow.com/a/15952652/689356
   //Work in progress - this supposedly conforms to ISO 8601
   val jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   implicit val dtRW = readwriter[String].bimap[Date](
@@ -78,6 +77,7 @@ object Encoders {
   implicit val bevRw: RW[BasicExprValue] = macroRW
   implicit val erRw: RW[ExpressionRow] = macroRW
   implicit val dsRW: RW[Dataset] = macroRW
+  implicit val batRW: RW[Batch] = macroRW
 }
 
 class JSONServlet extends HttpServlet with MinimalTServlet {
@@ -125,7 +125,6 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
       // should send an error status code, maybe 400?
       // also probably a JSON object with information on the error rather than this
       out.println("no id provided")
-
     } else {
 
       val exists = datasetStore.list(config.instanceURI).contains(requestedDatasetId.get)
@@ -133,24 +132,10 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
         // same as above, but status code would probably be 404 here
         out.println("dataset not found")
       } else {
-
-        // the following duplicates logic from BatchOpsImpl.getBatches
-        // it's also inefficent since it requires three sparql queries
         val batchStore = new BatchStore(baseConfig.triplestore)
-        val comments = batchStore.comments
-        val datasets = batchStore.datasets
-        val r = batchStore.list.flatMap(batchId => {
-          val datasetForBatch = datasets.get(batchId)
-          if (datasetForBatch == requestedDatasetId) {
-            Some(json.Batch(batchId, Some(comments(batchId)), None))
-          } else {
-            None
-          }
-        })
+        val r = batchStore.items(config.instanceURI, requestedDatasetId)
         out.println(write(r))
-
       }
-
     }
   }
 

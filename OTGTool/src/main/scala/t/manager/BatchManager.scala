@@ -131,7 +131,7 @@ object BatchManager extends ManagerTool {
           startTaskRunner(bm.delete(title, rdfOnly))
         case "list" =>
           println("Batch list")
-          for (b <- batches.list) {
+          for (b <- batches.list()) {
             println(b)
           }
         case "list-access" =>
@@ -397,7 +397,7 @@ class BatchManager(context: Context) {
         checkValidIdentifier(title, "batch ID")
 
         val batches = new BatchStore(baseConfig.triplestore)
-        val batchExists = batches.list.contains(title)
+        val batchExists = batches.list().contains(title)
         if (append && !batchExists) {
           throw new Exception(s"Cannot append to nonexsistent batch $title")
         } else if (!append && batchExists) {
@@ -432,7 +432,7 @@ class BatchManager(context: Context) {
       checkValidIdentifier(title, "batch ID")
 
       val batches = new BatchStore(baseConfig.triplestore)
-      val batchExists = batches.list.contains(title)
+      val batchExists = batches.list().contains(title)
       if (!batchExists && !force) {
         throw new Exception(s"Cannot update metadata for nonexistent batch $title")
       }
