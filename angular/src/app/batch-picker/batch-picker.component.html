@@ -2,5 +2,7 @@
 <div *ngIf="batches">Batches:</div>
 
 <ng-container *ngFor="let batch of batches">
-    <button (click)="selectBatch(batch.id)" type="button" class="btn btn-secondary">{{batch.id}}</button>
+    <button (click)="selectBatch(batch.id)" type="button" 
+        [ngClass]="{'btn': true, 'btn-dark': batch.id == selectedBatch,
+                    'btn-secondary': batch.id != selectedBatch }">{{batch.id}}</button>
 </ng-container>
