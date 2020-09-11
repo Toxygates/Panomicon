@@ -1,4 +1,14 @@
-<h1>{{title}}</h1>
+<div class="container">
+<h3>{{title}}</h3>
+<div class="row">
+<div class="col-md-6">
+<app-batch-selector (batchSelectedEvent)="selectBatch($event)"></app-batch-selector>
+</div>
 
-<app-batch-selector></app-batch-selector>
+<div class="col-md-6">{{batchText}}
+    <app-batch-samples></app-batch-samples>
+</div>
 <!-- <router-outlet></router-outlet> -->
+
+</div>
+</div>

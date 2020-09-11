@@ -13,6 +13,7 @@ export class BackendService {
   serviceUrl = 'toxygates/json/';
   datasetsPath = 'datasets';
   batchesPath = 'batches';
+  samplesPath = 'samples';
 
   getDatasets() {
     return this.http.get(this.serviceUrl + this.datasetsPath)
@@ -31,7 +32,19 @@ export class BackendService {
       .pipe(
         tap(_ => console.log('fetched batches')),
         catchError(error => {
-          console.error('Error fetching datasets: ' + error);
+          console.error('Error fetching batches: ' + error);
+          throw error;
+        })
+      )
+  }
+
+  getSamplesForBatch(batchId: string) {
+    return this.http.get(this.serviceUrl + this.samplesPath 
+      + '?id=' +  batchId)
+      .pipe(
+        tap(_ => console.log('fetched samples')),
+        catchError(error => {
+          console.error('Error fetching samples: ' + error);
           throw error;
         })
       )

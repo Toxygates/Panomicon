@@ -9,6 +9,7 @@ import { DatasetPickerComponent } from './dataset-picker/dataset-picker.componen
 import { BatchSelectorComponent } from './batch-selector/batch-selector.component';
 import { BatchPickerComponent } from './batch-picker/batch-picker.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BatchSamplesComponent } from './batch-samples/batch-samples.component';
 
 
 
@@ -17,7 +18,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     AppComponent,
     DatasetPickerComponent,
     BatchSelectorComponent,
-    BatchPickerComponent
+    BatchPickerComponent,
+    BatchSamplesComponent
   ],
   imports: [
     BrowserModule,

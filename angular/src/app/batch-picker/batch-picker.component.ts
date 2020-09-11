@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BackendService } from '../backend.service'
 
 @Component({
@@ -9,6 +9,8 @@ import { BackendService } from '../backend.service'
 export class BatchPickerComponent implements OnInit {
 
   constructor(private backend: BackendService) { }
+
+  @Output() batchSelectedEvent = new EventEmitter<string>();
 
   batches: any;
 
@@ -25,4 +27,7 @@ export class BatchPickerComponent implements OnInit {
       )
   }
 
+  selectBatch(batchId: string) {
+    this.batchSelectedEvent.emit(batchId);
+  }
 }

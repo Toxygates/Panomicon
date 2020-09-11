@@ -2,7 +2,9 @@
 <div *ngIf="batches">Batches:</div>
 
 <ul>
-    <li *ngFor="let batch of batches">
-        {{batch.id}}
+    <li *ngFor="let batch of batches"
+        (click)="selectBatch(batch.id)">
+        <!-- the anchor is a temporary hack to style the text as a link-->
+        <a href="#" onclick="return false;">{{batch.id}}</a>
     </li>
 </ul>

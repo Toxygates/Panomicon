@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
 import { BatchPickerComponent } from '../batch-picker/batch-picker.component';
 
 @Component({
@@ -9,6 +9,8 @@ import { BatchPickerComponent } from '../batch-picker/batch-picker.component';
 export class BatchSelectorComponent implements OnInit {
 
   constructor() { }
+
+  @Output() batchSelectedEvent = new EventEmitter<string>();
 
   datasetChosen: boolean = false;
   @ViewChild(BatchPickerComponent) child: BatchPickerComponent;
@@ -21,4 +23,7 @@ export class BatchSelectorComponent implements OnInit {
     this.child.loadBatchesForDataset(datasetId);
   }
 
+  selectBatch(batchId: string) {
+    this.batchSelectedEvent.emit(batchId);
+  }
 }
