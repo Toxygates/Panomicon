@@ -1,5 +1,10 @@
-<div *ngIf="!datasets">Loading datasets...</div>
 <div *ngIf="datasets">Datasets:</div>
+<div *ngIf="!datasets">Loading datasets...</div>
+<div *ngIf="!datasets" class="d-flex justify-content-center">
+    <div class="spinner-border text-secondary" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
 
 <ng-container *ngFor="let dataset of datasets">
 <button (click)="selectDataset(dataset.id)" type="button" 

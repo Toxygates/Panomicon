@@ -11,10 +11,7 @@ export class AppComponent {
 
   @ViewChild(BatchSamplesComponent) batchSamples: BatchSamplesComponent;
 
-  batchText = ''
-
   selectBatch(batchId:string) {
-    this.batchText = "Selected batch " + batchId
     this.batchSamples.loadSamplesForBatch(batchId);
   }
   
