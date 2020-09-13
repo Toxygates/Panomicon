@@ -1,13 +1,20 @@
-<div *ngIf="!batches">Loading batches...</div>
-<div *ngIf="!batches" class="d-flex justify-content-center">
-    <div class="spinner-border text-secondary" role="status">
-        <span class="sr-only">Loading...</span>
+<div *ngIf="!datasetId">Select a dataset to show batches</div>
+
+<ng-container *ngIf="datasetId && !batches">
+    <div>Loading batches...</div>
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-secondary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
     </div>
-</div>
-<div *ngIf="batches">Batches for dataset {{selectedDataset}}:</div>
+</ng-container>
+
+<div *ngIf="batches">Batches for dataset {{datasetId}}:</div>
 
 <ng-container *ngFor="let batch of batches">
     <button (click)="selectBatch(batch.id)" type="button" 
         [ngClass]="{'btn': true, 'btn-dark': batch.id == selectedBatch,
-                    'btn-secondary': batch.id != selectedBatch }">{{batch.id}}</button>
+                    'btn-secondary': batch.id != selectedBatch }">
+        {{batch.id}}
+    </button>
 </ng-container>

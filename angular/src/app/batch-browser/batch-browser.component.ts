@@ -11,7 +11,6 @@ export class BatchBrowserComponent implements OnInit {
 
   constructor() { }
 
-  datasetChosen: boolean = false;
   @ViewChild(BatchPickerComponent) batchPicker: BatchPickerComponent;
   @ViewChild(BatchSamplesComponent) batchSamples: BatchSamplesComponent;
 
@@ -19,7 +18,6 @@ export class BatchBrowserComponent implements OnInit {
   }
 
   showBatchesForDataset(datasetId: string) {
-    this.datasetChosen = true;
     this.batchPicker.loadBatchesForDataset(datasetId);
   }
 

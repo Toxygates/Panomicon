@@ -13,6 +13,7 @@ export class BatchPickerComponent implements OnInit {
   @Output() batchSelectedEvent = new EventEmitter<string>();
 
   batches: any;
+  datasetId: string;
   selectedBatch: String;
 
   ngOnInit(): void {
@@ -21,6 +22,7 @@ export class BatchPickerComponent implements OnInit {
   loadBatchesForDataset(datasetId: string) {
     delete this.batches;
     delete this.selectedBatch;
+    this.datasetId = datasetId;
     this.backend.getBatchesForDataset(datasetId)
       .subscribe(
         result => {

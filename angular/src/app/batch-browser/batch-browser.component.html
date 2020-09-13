@@ -4,8 +4,7 @@
     </div>
 
     <div class="col-lg-8 padded_ui_panel">
-        <div *ngIf="!datasetChosen">Select a dataset to show batches</div>
-        <app-batch-picker [hidden]="!datasetChosen" (batchSelectedEvent)="selectBatch($event)"></app-batch-picker>
+        <app-batch-picker (batchSelectedEvent)="selectBatch($event)"></app-batch-picker>
     </div>
 </div>
 
