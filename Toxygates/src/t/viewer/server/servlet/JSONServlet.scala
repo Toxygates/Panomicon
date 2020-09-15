@@ -27,7 +27,11 @@ import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import t.common.shared.ValueType
 import t.db.BasicExprValue
+import t.model.sample.Attribute
+import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Type}
+import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
+
 import t.viewer.server.Conversions._
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.Configuration
@@ -91,6 +95,8 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
   private lazy val datasetStore = new DatasetStore(baseConfig.triplestore)
   private def datasets = datasetStore.items(config.instanceURI)
 
+  private lazy val batchStore = new BatchStore(baseConfig.triplestore)
+
   lazy val sampleStore = context.sampleStore
 
   def isDataVisible(data: Dataset, userKey: String) = {
@@ -129,6 +135,39 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
         val batchStore = new BatchStore(baseConfig.triplestore)
         val r = batchStore.items(config.instanceURI, requestedDatasetId)
         out.println(write(r))
+      }
+    }
+  }
+
+  protected def overviewParameters: Seq[Attribute] =
+    Seq(SampleId, Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
+      ExposureTime, Platform, ControlGroup)
+
+  def getSamplesForBatch(req: HttpServletRequest, out: PrintWriter): Unit = {
+    val requestedBatchId = Option(req.getParameter("id"))
+    if (requestedBatchId.isEmpty) {
+
+      // should send an error status code, maybe 400?
+      // also probably a JSON object with information on the error rather than this
+      out.println("no id provided")
+
+    } else {
+      // this currently does no checking based on the instance to see if a batch
+      // should be accessible. So if someone guesses the id for a batch they shouldn't
+      // have access to, they'll be able to access its samples
+      val exists = batchStore.list().contains(requestedBatchId.get)
+      println("Here are the batch ids")
+      println(batchStore.list())
+
+      if (!exists) {
+        // same as above, but status code would probably be 404 here
+        out.println("batch not found")
+
+      } else {
+        val batchURI = BatchStore.packURI(requestedBatchId.get)
+        val sf = SampleFilter(None, Some(batchURI))
+        val data = sampleStore.sampleAttributeValueQuery(overviewParameters.map(_.id))(sf)()
+        out.println(write(data))
       }
     }
   }
@@ -236,6 +275,7 @@ class JSONServlet extends HttpServlet with MinimalTServlet {
     Option(req.getPathInfo) match {
       case Some("/datasets") => serveGet(req, resp, getDatasets)
       case Some("/batches") => serveGet(req, resp, getBatchesForDataset)
+      case Some("/samples") => serveGet(req, resp, getSamplesForBatch)
       case Some("/parameter") => serveGet(req, resp, getParameterValues)
       case _ => getTime(req, resp)
     }

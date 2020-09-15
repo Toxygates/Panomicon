@@ -1,1 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+
+.padded_ui_panel {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    background-color: rgba(86, 61, 124, .15);
+    border: 1px solid rgba(86, 61, 124, .2);
+}

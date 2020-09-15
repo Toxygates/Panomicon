@@ -13,6 +13,7 @@ export class DatasetPickerComponent implements OnInit {
   @Output() datasetSelectedEvent = new EventEmitter<string>();
 
   datasets: any;
+  selectedDataset: String;
 
   ngOnInit(): void {
     this.backend.getDatasets()
@@ -23,6 +24,7 @@ export class DatasetPickerComponent implements OnInit {
   }
 
   selectDataset(datasetId: string) {
+    this.selectedDataset = datasetId;
     this.datasetSelectedEvent.emit(datasetId);
   }
 

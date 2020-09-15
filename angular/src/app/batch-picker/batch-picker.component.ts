@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BackendService } from '../backend.service'
 
 @Component({
@@ -10,13 +10,19 @@ export class BatchPickerComponent implements OnInit {
 
   constructor(private backend: BackendService) { }
 
+  @Output() batchSelectedEvent = new EventEmitter<string>();
+
   batches: any;
+  datasetId: string;
+  selectedBatch: String;
 
   ngOnInit(): void {
   }
 
   loadBatchesForDataset(datasetId: string) {
     delete this.batches;
+    delete this.selectedBatch;
+    this.datasetId = datasetId;
     this.backend.getBatchesForDataset(datasetId)
       .subscribe(
         result => {
@@ -25,4 +31,8 @@ export class BatchPickerComponent implements OnInit {
       )
   }
 
+  selectBatch(batchId: string) {
+    this.selectedBatch = batchId;
+    this.batchSelectedEvent.emit(batchId);
+  }
 }

@@ -1,0 +1,15 @@
+<div class="row">
+    <div class="col-lg-4 padded_ui_panel">
+        <app-dataset-picker (datasetSelectedEvent)="showBatchesForDataset($event)"></app-dataset-picker>
+    </div>
+
+    <div class="col-lg-8 padded_ui_panel">
+        <app-batch-picker (batchSelectedEvent)="selectBatch($event)"></app-batch-picker>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12 padded_ui_panel">
+        <app-batch-samples></app-batch-samples>
+    </div>
+</div>
