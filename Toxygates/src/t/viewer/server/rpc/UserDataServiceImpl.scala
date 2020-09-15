@@ -37,10 +37,12 @@ import t.viewer.server.Configuration
  */
 class UserDataServiceImpl extends TServiceServlet with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
+  private var instanceUri: String = _
 
   override def localInit(config: Configuration) {
     super.localInit(config)
     populateAttributes(baseConfig)
+    instanceUri = config.instanceURI.get
     homeDir = config.webappHomeDir
   }
 
@@ -93,13 +95,13 @@ class UserDataServiceImpl extends TServiceServlet with BatchOpsImpl with UserDat
   }
 
   //Public entry point
-  override def getBatches(datasets: Array[String]): Array[Batch] = {
+  def getBatches(datasets: Array[String]): Array[Batch] = {
     if (datasets == null || datasets.isEmpty) {
       //Security check - don't list batches unless they have the keys
       throw new MaintenanceException(
           "In the user data service, datasets must be specified explicitly.")
     }
-    super.getBatches(datasets)
+    super.getBatches(datasets, Some(instanceUri))
   }
 
   //Indirectly called by update(ManagedItem) which is public

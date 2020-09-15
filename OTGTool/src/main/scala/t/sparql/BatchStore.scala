@@ -166,8 +166,8 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
     val nss = numSamples
 
     keyAttribs.map(x => {
-      Batch(x.id, x.timestamp, x.comment, x.publicComment, dss(x.id),
-        nss(x.id))
+      Batch(x.id, x.timestamp, x.comment, x.publicComment, dss.getOrElse(x.id, ""),
+        nss.getOrElse(x.id, 0))
     })
   }
 

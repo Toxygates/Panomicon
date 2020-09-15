@@ -130,6 +130,8 @@ class MaintenanceServiceImpl extends TServiceServlet
     }
   }
 
+  def getBatches(batchIds: Array[String]) = super.getBatches(batchIds, None)
+
   def deletePlatformAsync(id: String): Unit = {
     ensureNotMaintenance()
     grabRunner()

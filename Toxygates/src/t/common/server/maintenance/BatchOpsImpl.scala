@@ -141,21 +141,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   import java.util.HashSet
 
-  def getBatches(@Nullable datasetIds: Array[String]): Array[Batch] = {
+  def getBatches(@Nullable datasetIds: Array[String],
+                 instanceUriFilter: Option[String]): Array[Batch] = {
     val useDatasets = Option(datasetIds).toSet.flatten
     val batchStore = new BatchStore(baseConfig.triplestore)
+    val r = batchStore.items(instanceUriFilter).map(b => {
+      new Batch(b.id, b.numSamples, b.comment, b.timestamp,
+        new HashSet(setAsJavaSet(batchStore.listAccess(b.id).toSet)),
+        b.dataset)
+    })
 
-    val keyParams = Map.empty ++ batchStore.keyAttributes("").map(x => (x.id -> x))
-    val numSamples = batchStore.numSamples
-
-    val datasets = batchStore.datasets
-    val r = batchStore.list().map(batchId => {
-      new Batch(batchId, numSamples.getOrElse(batchId, 0), keyParams(batchId).comment,
-        keyParams(batchId).timestamp,
-        new HashSet(setAsJavaSet(batchStore.listAccess(batchId).toSet)),
-        datasets.getOrElse(batchId, ""))
-    }).toArray
-    r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
+    r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset)).toArray
   }
 
   def deleteBatchAsync(batch: Batch): Unit = {
