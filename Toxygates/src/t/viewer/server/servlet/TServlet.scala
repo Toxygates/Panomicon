@@ -37,7 +37,7 @@ trait MinimalTServlet {
   protected var _context: Context = _
   protected var _factory: Factory = _
 
-  //Subclasses should override init() and call this method
+  //Subclasses should call this method or the one below
   @throws(classOf[ServletException])
   def tServletInit(config: ServletConfig): Configuration = {
     try {
@@ -51,7 +51,6 @@ trait MinimalTServlet {
     }
   }
 
-  //Exposed for testing purposes
   def tServletInit(config: Configuration): Unit = {
     _factory = new Factory
     _context = _factory.context(config.tsConfig, config.dataConfig(_factory))

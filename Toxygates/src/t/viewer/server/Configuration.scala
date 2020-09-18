@@ -19,7 +19,7 @@
 
 package t.viewer.server
 
-import javax.servlet.ServletConfig
+import javax.servlet.{ServletConfig, ServletContext}
 import t.Context
 import t.Factory
 import t.TriplestoreConfig
@@ -27,18 +27,21 @@ import t.sparql.InstanceStore
 import t.viewer.shared.intermine.IntermineInstance
 
 object Configuration {
+
   /**
    * Create a new Configuration from the ServletConfig.
    */
-  def fromServletConfig(config: ServletConfig) = {
-    val servletContext = config.getServletContext()
+  def fromServletConfig(config: ServletConfig): Configuration = {
+    fromServletContext(config.getServletContext)
+  }
 
+  def fromServletContext(servletContext: ServletContext): Configuration = {
     def p(x: String) = servletContext.getInitParameter(x)
 
     def readIntermineInstance(id: String) =
       new IntermineInstance(p(s"intermine.$id.title"),
-          p(s"intermine.$id.appname"),
-          p(s"intermine.$id.userurl"))
+        p(s"intermine.$id.appname"),
+        p(s"intermine.$id.userurl"))
 
     def readIntermineInstances() = {
       Option(p("intermine.instances")) match {

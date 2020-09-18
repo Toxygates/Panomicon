@@ -49,5 +49,9 @@
 
     <!-- required for upickle -->
   <dependency org="org.scala-lang.modules" name="scala-collection-compat_2.12" rev="2.1.6" />
+
+    <!-- Dependencies from Scalatra project template -->
+  <dependency org="org.scalatra" name="scalatra_2.12" rev="2.7.0" />
+  <dependency org="ch.qos.logback" name="logback-classic" rev="1.2.3" />
 </dependencies>
 </ivy-module>
