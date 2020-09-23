@@ -98,7 +98,11 @@
 		<param-value>268435456</param-value>
 	</context-param>
 
-	
+    <!-- Enable Scalatra servlets -->
+	<listener>
+		<listener-class>org.scalatra.servlet.ScalatraListener</listener-class>
+	</listener>
+
   <!-- GWT servlets -->
   
 	<servlet>
