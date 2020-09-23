@@ -8,6 +8,6 @@ import org.scalatra._
  */
 class ScalatraBootstrap extends LifeCycle {
   override def init(context: ServletContext) {
-    context.mount(new ScalatraJSONServlet(context), "/*")
+    context.mount(new ScalatraJSONServlet(context), "/json/*")
   }
 }
