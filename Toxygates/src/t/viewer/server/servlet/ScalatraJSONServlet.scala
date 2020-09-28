@@ -14,14 +14,13 @@ import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, Sa
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
-import t.viewer.shared.OTGSchema
+import t.viewer.shared.{ColumnFilter, FilterType, OTGSchema}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
 
 package json {
-
-  // also, was using Options with default = None to implement optional parameters;
+  // was using Options with default = None to implement optional parameters;
   // this works correctly by not serializing a field when its value is None, but
   // unfortunately Some(foo) gets serialized as an array
   // cf. https://github.com/lihaoyi/upickle/issues/75
@@ -30,11 +29,10 @@ package json {
   case class Sample(id: String, `type`: String, platform: String)
 
   object Group { implicit val rw: RW[Group] = macroRW }
-  case class Group(name: String, samples: Seq[Sample])
+  case class Group(name: String, samples: Seq[Sample], params: Map[String, String])
 
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
-  case class MatrixParams(groups: Seq[Group], valueType: String, offset: Int = 0, limit: Option[Int] = None,
-                          initProbes: Seq[String] = Seq())
+  case class MatrixParams(groups: Seq[Group], initProbes: Seq[String] = Seq())
 }
 
 object Encoders {
@@ -109,9 +107,11 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
   get("/samples/batch/:batch") {
     val requestedBatchId = params("batch")
-    val exists = batchStore.list().contains(requestedBatchId)
+
+    val fullList = batchStore.list()
+    val exists = fullList.contains(requestedBatchId)
     println("Here are the batch ids")
-    println(batchStore.list())
+    println(fullList)
     if (!exists) halt(400)
 
     val batchURI = BatchStore.packURI(requestedBatchId)
@@ -154,11 +154,23 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(values)
   }
 
+  //URL parameters: valueType, offset, limit
+  //other parameters in MatrixParams
+  //Example request:
+  //curl -H "Content-Type:application/json" -X POST  http://127.0.0.1:8888/json/matrix\?limit\=5  \
+  //   --data '{"groups": [ { "name": "a", "samples":
+  //[
+  //  {
+  //    "id": "003017645021",
+  //    "type": "mRNA",
+  //    "platform": "Rat230_2"
+  //  }, ... (etc) ] } ] }'
+
   post("/matrix") {
-    //TODO: URL design for this request as a GET
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
     println(s"Load request: $matParams")
-    val valueType = ValueType.valueOf(matParams.valueType)
+    val valueType = ValueType.valueOf(
+      params.getOrElse("valueType", "Folds"))
 
     val samples = matParams.groups.flatMap(_.samples.map(_.id))
     val fullSamples = Map.empty ++
@@ -166,16 +178,37 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         s => (s.sampleId -> asJavaSample(s)))
 
     val schema = new OTGSchema()
-    val groups = matParams.groups.map(g =>
-      new t.common.shared.sample.Group(schema, g.name, g.samples.map(s => fullSamples(s.id)).toArray)
-    )
-    val controller = MatrixController(context, groups, matParams.initProbes, valueType)
+
+    val groups = matParams.groups.map(g => {
+      val gr = new t.common.shared.sample.Group(schema, g.name, g.samples.map(s => fullSamples(s.id)).toArray)
+      val filter = g.params.get("filterType") match {
+        case Some(f) =>
+          val threshold = g.params("threshold")
+          //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
+          new ColumnFilter(threshold.toDouble, FilterType.parse(f))
+        case _ =>
+          new ColumnFilter(null, FilterType.GT) //no filtering effect
+      }
+      (gr, filter)
+    })
+    val controller = MatrixController(context, groups.map(_._1), matParams.initProbes, valueType)
+    controller.managedMatrix.setFilters(groups.map(_._2))
+
+    matParams.groups.zipWithIndex.find(_._1.params.contains("sort")) match {
+      case Some(g) =>
+        val idx = g._2
+        val asc = (g._1.params("sort") == "asc")
+        controller.managedMatrix.sort(idx, asc)
+      case _ =>
+    }
 
     val pages = new PageDecorator(context, controller)
     val defaultLimit = 100
-    val page = matParams.limit match {
-      case Some(l) => pages.getPageView(matParams.offset, l, true)
-      case None => pages.getPageView(matParams.offset, defaultLimit, true)
+
+    val offset = params.getOrElse("offset", "0").toInt
+    val page = params.get("limit") match {
+      case Some(l) => pages.getPageView(offset, l.toInt, true)
+      case None => pages.getPageView(offset, defaultLimit, true)
     }
     write(page)
   }
