@@ -204,17 +204,7 @@
 		<servlet-name>geneSetServlet</servlet-name>
 		<url-pattern>/geneSet/*</url-pattern>
 	</servlet-mapping>
-
-	<servlet>
-    	<servlet-name>jsonServlet</servlet-name>
-    	<servlet-class>t.viewer.server.servlet.JSONServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-   		<servlet-name>jsonServlet</servlet-name>
-   		<url-pattern>/toxygates/json/*</url-pattern>
-   	</servlet-mapping>
    	<!-- End non-GWT servlets -->
-
 
   	<!-- Identifies available intermine instances by ID strings. Each one has its own configuration parameters below. -->
   	<context-param>
