@@ -91,7 +91,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(data)
   }
 
-  get("/batches/dataset/:dataset") {
+  get("/batch/dataset/:dataset") {
     val requestedDatasetId = params("dataset")
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
@@ -105,7 +105,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     Seq(SampleId, Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
       ExposureTime, Platform, ControlGroup)
 
-  get("/samples/batch/:batch") {
+  get("/sample/batch/:batch") {
     val requestedBatchId = params("batch")
 
     val fullList = batchStore.list()
@@ -120,7 +120,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(data)
   }
 
-  get("/samples") {
+  get("/sample") {
     val scf = SampleClassFilter(
       Map.empty ++ params.iterator.flatMap(x => {
         val attrib = Option(baseConfig.attributes.byId(x._1))

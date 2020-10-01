@@ -12,8 +12,8 @@ export class BackendService {
 
   serviceUrl = 'json/';
   datasetsPath = 'dataset';
-  batchesByDatasetPath = 'batches/dataset/';
-  samplesByBatchPath = 'samples/batch/';
+  batchesByDatasetPath = 'batch/dataset/';
+  samplesByBatchPath = 'sample/batch/';
 
   getDatasets() {
     return this.http.get(this.serviceUrl + this.datasetsPath)
