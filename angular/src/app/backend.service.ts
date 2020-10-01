@@ -10,10 +10,10 @@ export class BackendService {
 
   constructor(private http: HttpClient) { }
 
-  serviceUrl = 'toxygates/json/';
-  datasetsPath = 'datasets';
-  batchesPath = 'batches';
-  samplesPath = 'samples';
+  serviceUrl = 'json/';
+  datasetsPath = 'dataset';
+  batchesByDatasetPath = 'batches/dataset/';
+  samplesByBatchPath = 'samples/batch/';
 
   getDatasets() {
     return this.http.get(this.serviceUrl + this.datasetsPath)
@@ -27,8 +27,8 @@ export class BackendService {
   }
 
   getBatchesForDataset(datasetId: string) {
-    return this.http.get(this.serviceUrl + this.batchesPath 
-      + '?id=' +  datasetId)
+    return this.http.get(this.serviceUrl + this.batchesByDatasetPath 
+      + datasetId)
       .pipe(
         tap(_ => console.log('fetched batches')),
         catchError(error => {
@@ -39,8 +39,8 @@ export class BackendService {
   }
 
   getSamplesForBatch(batchId: string) {
-    return this.http.get(this.serviceUrl + this.samplesPath 
-      + '?id=' +  batchId)
+    return this.http.get(this.serviceUrl + this.samplesByBatchPath 
+      + batchId)
       .pipe(
         tap(_ => console.log('fetched samples')),
         catchError(error => {
