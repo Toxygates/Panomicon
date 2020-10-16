@@ -38,8 +38,13 @@ public class ManagedMatrixInfo implements Serializable {
   private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 
   // Per-column information
+
+  //Short name of a column or subcolumn. For a subcolumn this will also identify its type.
   private List<String> shortColumnNames = mkList();
   private List<String> columnNames = mkList();
+
+  //For subcolumns, identify their parent column name. Top columns are their own parent.
+  private List<String> parentColumns = mkList();
   private List<String> columnHints = mkList();
   private List<Group> columnGroups = mkList();
   private List<ColumnFilter> columnFilters = mkList();
@@ -70,8 +75,8 @@ public class ManagedMatrixInfo implements Serializable {
    * @param samples The samples actually displayed in this column (may be a subset of the ones in
    *        the base group)
    */
-  public void addColumn(boolean synthetic, String shortName, String name, String hint,
-      ColumnFilter defaultFilter,
+  public void addColumn(boolean synthetic, String shortName, String name, String parentName,
+                        String hint, ColumnFilter defaultFilter,
       Group baseGroup, boolean isPValue, Sample[] samples) {
     if (synthetic) {
       numSynthetics++;
@@ -80,6 +85,7 @@ public class ManagedMatrixInfo implements Serializable {
     }
 
     shortColumnNames.add(shortName);
+    parentColumns.add(parentName);
     columnNames.add(name);
     columnHints.add(hint);
     columnGroups.add(baseGroup);
@@ -88,10 +94,10 @@ public class ManagedMatrixInfo implements Serializable {
     this.samples.add(samples);
   }
 
-  public void addColumn(boolean synthetic, String name, String hint,
+  public void addColumn(boolean synthetic, String name, String parent, String hint,
       ColumnFilter defaultFilter,
       Group baseGroup, boolean isPValue, Sample[] samples) {
-    addColumn(synthetic, name, name, hint, defaultFilter, baseGroup, isPValue, samples);
+    addColumn(synthetic, name, name, parent, hint, defaultFilter, baseGroup, isPValue, samples);
   }
   
   public void removeSynthetics() {
@@ -100,6 +106,7 @@ public class ManagedMatrixInfo implements Serializable {
     // subList returns a type that can't be serialised by GWT
     shortColumnNames = mkList(shortColumnNames.subList(0, n));
     columnNames = mkList(columnNames.subList(0, n));
+    parentColumns = mkList(parentColumns.subList(0, n));
     columnHints = mkList(columnHints.subList(0, n));
     columnGroups = mkList(columnGroups.subList(0, n));
     columnFilters = mkList(columnFilters.subList(0, n));
@@ -278,7 +285,7 @@ public class ManagedMatrixInfo implements Serializable {
   }
 
   /**
-   * Searches for a column based on a long name and a short name.
+   * Searches for a column based on a parent name and a short name.
    * Because short names identify column types by convention, this can also be used to
    * used to search for a sub-column by its type (e.g. P-value).
    * See constants such as ManagedMatrix.log2FoldColumnShortName for details.
@@ -287,9 +294,9 @@ public class ManagedMatrixInfo implements Serializable {
    * @param shortName
    * @return The index of the column
    */
-  public int findColumn(String name, @Nullable String shortName) {
-    for (int i = 0; i < columnNames.size(); i++) {
-      if (columnNames.get(i).equals(name) &&
+  public int findColumn(String parentColumn, @Nullable String shortName) {
+    for (int i = 0; i < parentColumns.size(); i++) {
+      if (parentColumns.get(i).equals(parentColumn) &&
               (shortName == null || shortColumnNames.get(i).equals(shortName))) {
         return i;
       }

@@ -84,7 +84,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
     val info = new ManagedMatrixInfo()
 
-    info.addColumn(false, shortName(g), g.toString,
+    info.addColumn(false, shortName(g), g.toString, g.toString,
         s"$g$tooltipSuffix",
         ColumnFilter.emptyAbsGT, g, false, samples)
     val d = data.map(vs => Seq(buildValue(selectIdx(vs, treatedIdx))))
@@ -172,10 +172,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
   protected def columnInfo(g: Group) = {
     val (tus, cus) = treatedAndControl(g)
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, shortName(g), colNames(g)(0),
+    info.addColumn(false, shortName(g), colNames(g)(0), colNames(g)(0),
         colNames(g)(0) + ": average of treated samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectSamples(tus))
-    info.addColumn(false, controlColumnShortName, colNames(g)(1),
+    info.addColumn(false, controlColumnShortName, colNames(g)(1), colNames(g)(0),
         colNames(g)(1) + ": average of control samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectSamples(cus))
     info
@@ -228,10 +228,10 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     val tus = treatedAndControl(g)._1
     val samples = TUnit.collectSamples(tus)
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, shortName(g), colNames(g)(0),
+    info.addColumn(false, shortName(g), colNames(g)(0), colNames(g)(0),
         colNames(g)(0) + tooltipSuffix,
         ColumnFilter.emptyAbsGT, g, false, samples)
-    info.addColumn(false, pValueColumnShortName, colNames(g)(1),
+    info.addColumn(false, pValueColumnShortName, colNames(g)(1), colNames(g)(0),
         colNames(g)(1) + ": p-values of treated against control",
         ColumnFilter.emptyLT, g, true,
         Array[SSample]())

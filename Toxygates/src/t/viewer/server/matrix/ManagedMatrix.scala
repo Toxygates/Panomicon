@@ -308,14 +308,14 @@ trait Synthetics extends CoreMatrix {
         }
         val name = test.getName
         if (!currentInfo.hasColumn(name)) {
-          currentInfo.addColumn(true, name, test.getTooltip,
+          currentInfo.addColumn(true, name, name, test.getTooltip,
             ColumnFilter.emptyLT, null, false,
             Array[SSample]())
         }
       case precomp: Synthetic.Precomputed =>
         val name = precomp.getName
         if (!currentInfo.hasColumn(name)) {
-          currentInfo.addColumn(true, name, precomp.getTooltip,
+          currentInfo.addColumn(true, name, name, precomp.getTooltip,
             ColumnFilter.emptyGT, null, false,
             Array[SSample]())
         }

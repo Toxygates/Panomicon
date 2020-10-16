@@ -54,6 +54,7 @@ package json {
         if (idx != -1) {
           //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
           val filt = new ColumnFilter(f.threshold, FilterType.parse(f.`type`))
+          println(s"Filter for column $idx: $filt")
           mat.setFilter(idx, filt)
         } else {
           Console.err.println(s"Unable to find column $col. Filtering will not apply to this column.")
