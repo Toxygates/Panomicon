@@ -276,4 +276,24 @@ public class ManagedMatrixInfo implements Serializable {
     }
     return -1;
   }
+
+  /**
+   * Searches for a column based on a long name and a short name.
+   * Because short names identify column types by convention, this can also be used to
+   * used to search for a sub-column by its type (e.g. P-value).
+   * See constants such as ManagedMatrix.log2FoldColumnShortName for details.
+   *
+   * @param name
+   * @param shortName
+   * @return The index of the column
+   */
+  public int findColumn(String name, @Nullable String shortName) {
+    for (int i = 0; i < columnNames.size(); i++) {
+      if (columnNames.get(i).equals(name) &&
+              (shortName == null || shortColumnNames.get(i).equals(shortName))) {
+        return i;
+      }
+    }
+    return -1;
+  }
 }

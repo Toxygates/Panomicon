@@ -18,8 +18,10 @@ import t.viewer.shared.{ColumnFilter, FilterType, OTGSchema}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
-
 package json {
+
+  import t.viewer.server.matrix.ManagedMatrix
+  import t.viewer.shared.ManagedMatrixInfo
   // was using Options with default = None to implement optional parameters;
   // this works correctly by not serializing a field when its value is None, but
   // unfortunately Some(foo) gets serialized as an array
@@ -29,10 +31,51 @@ package json {
   case class Sample(id: String, `type`: String, platform: String)
 
   object Group { implicit val rw: RW[Group] = macroRW }
-  case class Group(name: String, samples: Seq[Sample], params: Map[String, String])
+  case class Group(name: String, samples: Seq[Sample])
+
+  object ColSpec { implicit val rw: RW[ColSpec] = macroRW }
+  case class ColSpec(id: String, `type`: String = null)
+
+  object FilterSpec { implicit val rw: RW[FilterSpec] = macroRW }
+  case class FilterSpec(column: ColSpec, `type`: String, threshold: Double)
+
+  object SortSpec { implicit val rw: RW[SortSpec] = macroRW }
+  case class SortSpec(column: ColSpec, order: String)
 
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
-  case class MatrixParams(groups: Seq[Group], initProbes: Seq[String] = Seq())
+  case class MatrixParams(groups: Seq[Group], initProbes: Seq[String] = Seq(),
+                          filtering: Seq[FilterSpec] = Seq(),
+                          sorting: SortSpec = null) {
+
+    def applyFilters(mat: ManagedMatrix): Unit = {
+      for (f <- filtering) {
+        val col = f.column
+        val idx = mat.info.findColumn(col.id, col.`type`)
+        if (idx != -1) {
+          //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
+          val filt = new ColumnFilter(f.threshold, FilterType.parse(f.`type`))
+          mat.setFilter(idx, filt)
+        } else {
+          Console.err.println(s"Unable to find column $col. Filtering will not apply to this column.")
+        }
+      }
+    }
+
+    def applySorting(mat: ManagedMatrix): Unit = {
+      val info =
+      Option(sorting) match {
+        case Some(sort) =>
+          val idx = mat.info.findColumn(sort.column.id, sort.column.`type`)
+          if (idx != -1) {
+            val asc = sort.order == "ascending"
+            mat.sort(idx, asc)
+          } else {
+            Console.err.println(s"Unable to find column ${sort.column}. Sorting will not apply to this column.")
+          }
+        case None =>
+      }
+    }
+  }
 }
 
 object Encoders {
@@ -178,29 +221,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         s => (s.sampleId -> asJavaSample(s)))
 
     val schema = new OTGSchema()
+    val groups = matParams.groups.map(g =>
+      new t.common.shared.sample.Group(schema, g.name, g.samples.map(s => fullSamples(s.id)).toArray)
+    )
 
-    val groups = matParams.groups.map(g => {
-      val gr = new t.common.shared.sample.Group(schema, g.name, g.samples.map(s => fullSamples(s.id)).toArray)
-      val filter = g.params.get("filterType") match {
-        case Some(f) =>
-          val threshold = g.params("threshold")
-          //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
-          new ColumnFilter(threshold.toDouble, FilterType.parse(f))
-        case _ =>
-          new ColumnFilter(null, FilterType.GT) //no filtering effect
-      }
-      (gr, filter)
-    })
-    val controller = MatrixController(context, groups.map(_._1), matParams.initProbes, valueType)
-    controller.managedMatrix.setFilters(groups.map(_._2))
-
-    matParams.groups.zipWithIndex.find(_._1.params.contains("sort")) match {
-      case Some(g) =>
-        val idx = g._2
-        val asc = (g._1.params("sort") == "asc")
-        controller.managedMatrix.sort(idx, asc)
-      case _ =>
-    }
+    val controller = MatrixController(context, groups, matParams.initProbes, valueType)
+    matParams.applyFilters(controller.managedMatrix)
+    matParams.applySorting(controller.managedMatrix)
 
     val pages = new PageDecorator(context, controller)
     val defaultLimit = 100

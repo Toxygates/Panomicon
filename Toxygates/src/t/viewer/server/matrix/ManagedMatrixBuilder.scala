@@ -163,7 +163,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
 
   protected def buildValue(raw: Seq[ExprValue]): BasicExprValue = ExprValue.presentMean(raw)
 
-  override protected def shortName(g: Group): String = "Treated"
+  override protected def shortName(g: Group): String = treatedColumnShortName
 
   protected def buildRow(treated: Seq[PExprValue],
                          control: Seq[PExprValue]): RowData =
@@ -175,7 +175,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
     info.addColumn(false, shortName(g), colNames(g)(0),
         colNames(g)(0) + ": average of treated samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectSamples(tus))
-    info.addColumn(false, "Control", colNames(g)(1),
+    info.addColumn(false, controlColumnShortName, colNames(g)(1),
         colNames(g)(1) + ": average of control samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectSamples(cus))
     info
@@ -220,7 +220,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   override protected def finaliseUngrouped(ungr: ExpressionMatrix) =
     ungr.map(e => ExprValue.log2(e))
 
-  override protected def shortName(g: Group) = "Log2-fold"
+  override protected def shortName(g: Group) = log2FoldColumnShortName
 
   override protected def tooltipSuffix = ": log2-fold change of treated versus control"
 
@@ -231,7 +231,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     info.addColumn(false, shortName(g), colNames(g)(0),
         colNames(g)(0) + tooltipSuffix,
         ColumnFilter.emptyAbsGT, g, false, samples)
-    info.addColumn(false, "P-value", colNames(g)(1),
+    info.addColumn(false, pValueColumnShortName, colNames(g)(1),
         colNames(g)(1) + ": p-values of treated against control",
         ColumnFilter.emptyLT, g, true,
         Array[SSample]())

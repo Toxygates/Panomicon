@@ -36,6 +36,11 @@ object ManagedMatrix {
     data.toSeq.filter(v => !JDouble.isNaN(v.value)).
       sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
   }
+
+  val pValueColumnShortName = "P-value"
+  val log2FoldColumnShortName = "Log2-fold"
+  val controlColumnShortName = "Control"
+  val treatedColumnShortName = "Treated"
 }
 
 /**
