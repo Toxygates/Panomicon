@@ -175,6 +175,12 @@ public class ManagedMatrixInfo implements Serializable {
   }
 
   /**
+   * @param column Column index. Must be 0 <= i < numColumns.
+   * @return The name of the parent column.
+   */
+  public String parentColumnName(int column) { return parentColumns.get(column); }
+
+  /**
    * A human-readable description of the meaning of this column. (For tooltips)
    * 
    * @param column Column index. Must be 0 <= i < numColumns.
@@ -290,8 +296,8 @@ public class ManagedMatrixInfo implements Serializable {
    * used to search for a sub-column by its type (e.g. P-value).
    * See constants such as ManagedMatrix.log2FoldColumnShortName for details.
    *
-   * @param name
-   * @param shortName
+   * @param parentColumn Name of the parent column
+   * @param shortName Short name/type of the column
    * @return The index of the column
    */
   public int findColumn(String parentColumn, @Nullable String shortName) {

@@ -14,9 +14,11 @@ import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, Sa
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
-import t.viewer.shared.{ColumnFilter, FilterType, OTGSchema}
+import t.viewer.shared.{ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
+
+import scala.collection.immutable
 
 package json {
 
@@ -198,6 +200,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(values)
   }
 
+  def columnInfo(info: ManagedMatrixInfo): immutable.Seq[Map[String, String]] = {
+      (0 until info.numColumns()).map(i => {
+        Map("name" -> info.columnName(i),
+          "parent" -> info.parentColumnName(i),
+          "shortName" -> info.shortColumnName(i),
+          "hint" -> info.columnHint(i)
+        )
+    })
+  }
+
   //URL parameters: valueType, offset, limit
   //other parameters in MatrixParams
   //Example request:
@@ -238,6 +250,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       case Some(l) => pages.getPageView(offset, l.toInt, true)
       case None => pages.getPageView(offset, defaultLimit, true)
     }
-    write(page)
+    val ci = columnInfo(controller.managedMatrix.info)
+    val r = Map("columns" -> writeJs(ci), "rows" -> writeJs(page))
+    write(r)
   }
 }
