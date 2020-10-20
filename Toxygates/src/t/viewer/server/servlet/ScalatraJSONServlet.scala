@@ -18,22 +18,13 @@ import t.viewer.shared.{ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
-import scala.collection.immutable
 
 package json {
 
   import t.viewer.server.matrix.ManagedMatrix
-  import t.viewer.shared.ManagedMatrixInfo
-  // was using Options with default = None to implement optional parameters;
-  // this works correctly by not serializing a field when its value is None, but
-  // unfortunately Some(foo) gets serialized as an array
-  // cf. https://github.com/lihaoyi/upickle/issues/75
-
-  object Sample { implicit val rw: RW[Sample] = macroRW }
-  case class Sample(id: String, `type`: String, platform: String)
 
   object Group { implicit val rw: RW[Group] = macroRW }
-  case class Group(name: String, samples: Seq[Sample])
+  case class Group(name: String, sampleIds: Seq[String])
 
   object ColSpec { implicit val rw: RW[ColSpec] = macroRW }
   case class ColSpec(id: String, `type`: String = null)
@@ -200,7 +191,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(values)
   }
 
-  def columnInfo(info: ManagedMatrixInfo): immutable.Seq[Map[String, String]] = {
+  def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, String]] = {
       (0 until info.numColumns()).map(i => {
         Map("name" -> info.columnName(i),
           "parent" -> info.parentColumnName(i),
@@ -210,17 +201,19 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     })
   }
 
-  //URL parameters: valueType, offset, limit
-  //other parameters in MatrixParams
-  //Example request:
-  //curl -H "Content-Type:application/json" -X POST  http://127.0.0.1:8888/json/matrix\?limit\=5  \
-  //   --data '{"groups": [ { "name": "a", "samples":
-  //[
-  //  {
-  //    "id": "003017645021",
-  //    "type": "mRNA",
-  //    "platform": "Rat230_2"
-  //  }, ... (etc) ] } ] }'
+  /*
+  URL parameters: valueType, offset, limit
+  other parameters in MatrixParams
+  Example request:
+  curl -H "Content-Type:application/json" -X POST  http://127.0.0.1:8888/json/matrix\?limit\=5 \
+   --data '{"filtering": [{ "column": {"id": "a", "type": "P-value"}, "type": "x <", "threshold": "0.05" } ],
+      "sorting": { "column": { "id": "a" }, "order": "descending" },
+      "groups": [ { "name": "a", "sampleIds":
+        [ "003017689013", "003017689014",  "003017689015",
+        "003017688002", "003017688003", "003017688004"
+      ] }
+    ] }'
+   */
 
   post("/matrix") {
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
@@ -228,14 +221,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
 
-    val samples = matParams.groups.flatMap(_.samples.map(_.id))
+    val sampleIds = matParams.groups.flatMap(_.sampleIds)
     val fullSamples = Map.empty ++
-      context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, samples)().map(
+      context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
         s => (s.sampleId -> asJavaSample(s)))
 
     val schema = new OTGSchema()
     val groups = matParams.groups.map(g =>
-      new t.common.shared.sample.Group(schema, g.name, g.samples.map(s => fullSamples(s.id)).toArray)
+      new t.common.shared.sample.Group(schema, g.name, g.sampleIds.map(s => fullSamples(s)).toArray)
     )
 
     val controller = MatrixController(context, groups, matParams.initProbes, valueType)
