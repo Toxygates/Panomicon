@@ -1,56 +1,42 @@
-<div [ngClass]="{'container': !samples, 'container-fluid': samples}">
-    <div class="row">
-        <div class="col-lg-12 padded_ui_panel">
-            <div *ngIf="!batchId">Select a batch to show samples</div>
+<p-card header="Samples">
+    <div *ngIf="!batchId">Select a batch to show samples</div>
 
-            <ng-container *ngIf="batchId && !samples">
-                <div>Loading samples...</div>
-                <div  class="d-flex justify-content-center">
-                    <div class="spinner-border text-secondary" role="status">
-                        <span class="sr-only">Loading...</span>
-                    </div>
-                </div>
-            </ng-container>
+    <ng-container *ngIf="batchId && !samples">
+        <div>Loading samples...</div>
+        <p-progressSpinner></p-progressSpinner>
+    </ng-container>
 
-            <div *ngIf="samples">{{samples.length}} samples for batch {{batchId}}:</div>
+    <div *ngIf="samples">{{samples.length}} samples for batch {{batchId}}:</div>
 
-            <ng-container *ngIf="samples">
-                <div class="table-responsive screen-size-table">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col">Sample ID</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Organism</th>
-                            <th scope="col">Test type</th>
-                            <th scope="col">Organ</th>
-                            <th scope="col">Compound</th>
-                            <th scope="col">Repeat?</th>
-                            <th scope="col">Dose level</th>
-                            <th scope="col">Exposure time</th>
-                            <th scope="col">Platform ID</th>
-                            <th scope="col">Control group</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr *ngFor="let sample of samples">
-                            <th scope="row">{{sample.sample_id}}</th>
-                            <td>{{sample.type}}</td>
-                            <td>{{sample.organism}}</td>
-                            <td>{{sample.test_type}}</td>
-                            <td>{{sample.organ_id}}</td>
-                            <td>{{sample.compound_name}}</td>
-                            <td>{{sample.sin_rep_type}}</td>
-                            <td>{{sample.dose_level}}</td>
-                            <td>{{sample.exposure_time}}</td>
-                            <td>{{sample.platform_id}}</td>
-                            <td>{{sample.control_group}}</td>
+    <ng-container *ngIf="samples">
+        <p-table [columns]="cols" [value]="samples" [scrollable]="true"
+            scrollHeight="75vh" table-layout="fixed"
+            [style.max-width.px]="tableWidth"
+            [virtualScroll]="virtualScroll" 
+            [virtualRowHeight]="34" [rows]="100"
+            styleClass="p-datatable-striped">
 
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </ng-container>
-        </div>
-    </div>
-</div>
+            <ng-template pTemplate="colgroup" let-columns>
+                <colgroup>
+                    <col *ngFor="let col of columns" [style.width.px]="col.width">
+                </colgroup>
+            </ng-template>
+
+            <ng-template pTemplate="header" let-columns>
+                <tr>
+                    <th *ngFor="let col of columns" scope="col">
+                        {{col.header}}
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-rowData let-columns="columns">
+                <tr style="height:34px">
+                    <td *ngFor="let col of columns">
+                        {{rowData[col.field]}}
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </ng-container>
+</p-card>

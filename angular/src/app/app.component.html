@@ -1,11 +1,17 @@
-<div class="container">
-    <div class="row">
-        <div class="col-lg-12 padded_ui_panel">
-            <h3>{{title}}</h3>
-        </div>
+<div class="p-grid">
+    <div class="p-col-12 p-md-12">
+        <p-menubar [model]="items">
+            <ng-template pTemplate="start">
+                <h2>{{title}}</h2>
+            </ng-template>
+            <!--<ng-template pTemplate="end">
+                <input type="text" pInputText placeholder="Search">
+            </ng-template>-->
+        </p-menubar>
     </div>
+
+    <div class="p-col-12 p-md-12">
+        <app-batch-browser display="flex"></app-batch-browser>
+    </div>
+
 </div>
-
-<app-batch-browser></app-batch-browser>
-
-

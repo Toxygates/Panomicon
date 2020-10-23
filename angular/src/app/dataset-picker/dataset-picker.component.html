@@ -1,15 +1,12 @@
-<div *ngIf="!datasets">Loading datasets...</div>
-<div *ngIf="!datasets" class="d-flex justify-content-center">
-    <div class="spinner-border text-secondary" role="status">
-        <span class="sr-only">Loading...</span>
-    </div>
-</div>
+<p-card header="Datasets">
+    <div *ngIf="!datasets">Loading datasets...</div>
 
-<div *ngIf="datasets">Datasets:</div>
+    <p-progressSpinner *ngIf="!datasets"></p-progressSpinner>
 
-<button *ngFor="let dataset of datasets" 
-    (click)="selectDataset(dataset.id)" type="button" 
-    [ngClass]="{'btn': true, 'btn-dark': dataset.id == selectedDataset,
-                'btn-secondary': dataset.id != selectedDataset }">
-    {{dataset.description}} ({{dataset.id}})
-</button>
+    <button *ngFor="let dataset of datasets" pButton type="button"
+        label="{{dataset.description}} ({{dataset.id}})"
+        [ngClass]="{'p-button-success': dataset.id == selectedDataset,
+                    'p-button-secondary': dataset.id != selectedDataset }"
+        (click)="selectDataset(dataset.id)">
+    </button>
+</p-card>

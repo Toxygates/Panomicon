@@ -1,8 +1,47 @@
-/* You can add global styles to this file, and also import other style files */
+html {
+    font-size:14px;
+    background: #f2f3f5;
+    padding: 0.5rem;
+}
 
-.padded_ui_panel {
-    padding-top: 15px;
-    padding-bottom: 15px;
-    background-color: rgba(86, 61, 124, .15);
-    border: 1px solid rgba(86, 61, 124, .2);
+.p-button { 
+    margin: .25rem .5rem .25rem 0;
+}
+
+// Style menubar to look the same as p-cards
+.p-menubar {
+    background: #ffffff;
+    color: #495057;
+    border: none;
+    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.p-card .p-card-content {
+    padding: 0.5rem 0;
+}
+
+.p-card .p-card-title {
+    margin-bottom: 0;
+}
+
+.p-datatable-auto-layout > .p-datatable-wrapper {
+    max-height: 75vh;
+}
+
+p-table {
+    display: block; // prevent table from getting wider than necessary
+    margin-top: .25rem;
+}
+
+// Unfortunately this causes the table headers and content to be slightly
+// misaligned when the scrollbar isn't shown.
+// .p-datatable-scrollable-body {
+//     // prevent vertical scrollbar from showing when not necessary
+//     // overflow-y: auto !important;
+// }
+
+.p-progress-spinner {
+    display: block !important;
+    height: 4rem !important;
+    width: 4rem !important;
 }
