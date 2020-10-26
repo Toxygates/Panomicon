@@ -28,6 +28,7 @@ import t.platform.mirna.TargetTable
 import t.sparql.secondary._
 import t.sparql.{toBioMap, _}
 import t.viewer.server.Conversions._
+import t.viewer.server.network.NetworkController
 import t.viewer.shared.Association
 
 import scala.collection.{Set => CSet}
@@ -173,5 +174,44 @@ class AssociationResolver(probeStore: ProbeStore,
       }
     } yield association
     allAssociations.seq.toArray
+  }
+}
+
+/**
+ * Holds references to the various association sources and marshals lookup requests.
+ */
+class AssociationMasterLookup(probeStore: ProbeStore, sampleStore: SampleStore,
+                              sampleFilter: SampleFilter) {
+  val chembl = new ChEMBL()
+  val drugBank = new DrugBank()
+
+  val triplestore = sampleStore.triplestore
+  lazy val drugTargetResolver = new DrugTargetResolver(sampleStore, chembl, drugBank).lookup
+  lazy val b2rKegg: B2RKegg = new B2RKegg(triplestore.conn)
+  lazy val associationResolver =  new AssociationResolver(probeStore, sampleStore, b2rKegg)
+  lazy val platformsCache = new PlatformRegistry(probeStore)
+
+  /**
+   * Basic association lookup
+   */
+  def doLookup(sc: SampleClass, types: Array[AType], probes: Array[String],
+               sizeLimit: Int): Array[Association] = {
+    val customResolvers = Seq(drugTargetResolver)
+    associationResolver.resolve(types, sc, sampleFilter, probes, customResolvers, sizeLimit)
+  }
+
+  /**
+   * Association lookup for networks
+   *
+   * Note: might reconsider the correct location for this variant, since it contains logic
+   * that relates only to networks/target tables
+   */
+  def doLookupForNetwork(sc: SampleClass, types: Array[AType], probes: Array[String],
+                         sizeLimit: Int,
+                       network: Option[NetworkController], targetTable: TargetTable): Array[Association] = {
+    val sidePlatform = network.map(_.sideMatrix.params.platform)
+    val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
+    val customResolvers = Seq(drugTargetResolver, mirnaRes.lookup)
+    associationResolver.resolve(types, sc, sampleFilter, probes, customResolvers, sizeLimit)
   }
 }

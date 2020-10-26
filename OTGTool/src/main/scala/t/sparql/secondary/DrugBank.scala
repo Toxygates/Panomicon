@@ -22,7 +22,7 @@ import t.sparql._
 
 class DrugBank extends Triplestore with CompoundTargets {
 
-  val con = Triplestore.connectSPARQLRepository("http://drugbank.bio2rdf.org/sparql")
+  val conn = Triplestore.connectSPARQLRepository("http://drugbank.bio2rdf.org/sparql")
 
   val prefixes = """
     PREFIX drugbank:<http://bio2rdf.org/drugbank_vocabulary:>

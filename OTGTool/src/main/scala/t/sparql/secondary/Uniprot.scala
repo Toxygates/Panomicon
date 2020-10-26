@@ -96,12 +96,12 @@ trait Uniprot extends Triplestore {
  * The official Uniprot endpoint. Ortholog queries are slow.
  */
 class OfficialUniprot extends Triplestore with Uniprot {
-  val con = Triplestore.connectSPARQLRepository("http://beta.sparql.uniprot.org/sparql", null)
+  val conn = Triplestore.connectSPARQLRepository("http://beta.sparql.uniprot.org/sparql", null)
 }
 /**
  * A filtered local subset of the uniprot data. Ortholog queries are faster.
  */
-class LocalUniprot(val con: RepositoryConnection) extends Triplestore with Uniprot {
+class LocalUniprot(val conn: RepositoryConnection) extends Triplestore with Uniprot {
   override def keggOrthologs(protein: Protein): Vector[Protein] = {
     throw new Exception("Unsupported operation")
   }

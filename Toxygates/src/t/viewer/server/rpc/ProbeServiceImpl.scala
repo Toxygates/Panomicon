@@ -57,15 +57,12 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
 
   protected var uniprot: Uniprot = _
   protected lazy val b2rKegg: B2RKegg = new B2RKegg(baseConfig.triplestore.triplestore)
-  
-  lazy val associationResolver =  new AssociationResolver(probeStore, sampleStore, b2rKegg)
+  protected lazy val associationLookup = new AssociationMasterLookup(probeStore, sampleStore, defaultSampleFilter)
 
   protected var configuration: Configuration = _
 
-  var chembl: ChEMBL = _
-  var drugBank: DrugBank = _
-
-  private lazy val drugTargetResolver = new DrugTargetResolver(sampleStore, chembl, drugBank).lookup
+  lazy val chembl: ChEMBL = new ChEMBL
+  lazy val drugBank: DrugBank = new DrugBank
 
   //AppInfo refreshes at most once per day in a given instance of the ProbeServiceImpl.
   //This is to allow updates such as clusterings, annotation info etc to feed through.
@@ -86,8 +83,6 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
     //Preload
     appInfoLoader.latest
 
-    chembl = new ChEMBL()
-    drugBank = new DrugBank()
     platformsCache //force preloading all platforms
   }
 
@@ -267,22 +262,17 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
 
   override def associations(sc: SampleClass, types: Array[AType],
                             probes: Array[String], sizeLimit: Int): Array[Association] = {
-    implicit val sf = defaultSampleFilter
 
     // If resolving mRNA-miRNA associations, obtain target table and side platform
     // in order to create a MirnaResolver
-    val customResolvers = if (types.contains(AType.MiRNA) || types.contains(AType.MRNA)) {
+    if (types.contains(AType.MiRNA) || types.contains(AType.MRNA)) {
       val netState = getOtherServiceState[NetworkState](NetworkState.stateKey)
       val targetTable = netState.map(_.targetTable).getOrElse(TargetTable.empty)
 
-      val sidePlatform = netState.flatMap(_.networks.headOption.map(_._2.sideMatrix.params.platform))
-      val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
-
-      Seq(drugTargetResolver, mirnaRes.lookup)
+      associationLookup.doLookupForNetwork(sc, types, probes, sizeLimit,
+        netState.flatMap(_.networks.headOption.map(_._2)), targetTable)
     } else {
-      Seq(drugTargetResolver)
+      associationLookup.doLookup(sc, types, probes, sizeLimit)
     }
-
-    associationResolver.resolve(types, sc, sf, probes, customResolvers, sizeLimit)
   }
 }

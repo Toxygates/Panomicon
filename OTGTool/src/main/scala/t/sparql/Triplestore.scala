@@ -72,10 +72,10 @@ abstract class Triplestore extends Closeable {
 
   def isReadonly: Boolean = true
 
-  protected def con: RepositoryConnection
+  protected def conn: RepositoryConnection
 
   def close() {
-    con.close()
+    conn.close()
   }
 
   // Necessary for futures
@@ -95,8 +95,8 @@ abstract class Triplestore extends Closeable {
     if (PRINT_QUERIES) println
     printHash("printing query:", query)
     if (PRINT_QUERIES) println(query)
-    
-    val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
+
+    val pq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query)
     pq.setMaxExecutionTime(timeoutMillis / 1000)
     pq.evaluate()
   }
@@ -112,7 +112,7 @@ abstract class Triplestore extends Closeable {
       println("Triplestore is read-only, ignoring update query")
     } else {
       try {
-        val pq = con.prepareUpdate(QueryLanguage.SPARQL, query)
+        val pq = conn.prepareUpdate(QueryLanguage.SPARQL, query)
         pq.setMaxExecutionTime(0)
         pq.execute()
       } catch {
@@ -131,7 +131,7 @@ abstract class Triplestore extends Closeable {
       println(s"Triplestore is read-only, ignoring data insertion of $file into $context")
     } else {
       println(s"Insert file $file into $context")
-      con.add(file, null, RDFFormat.TURTLE, SimpleValueFactory.getInstance.createIRI(context))
+      conn.add(file, null, RDFFormat.TURTLE, SimpleValueFactory.getInstance.createIRI(context))
     }
   }
 
@@ -193,7 +193,7 @@ abstract class Triplestore extends Closeable {
     logQueryStats(recs, start, query)
     recs
   }
-  
+
   def logQueryStats[T](recs: Vector[T], start: Long, query: String) {
     printHash("printing query result:", query)
     if (PRINT_RESULTS) {
@@ -212,7 +212,7 @@ abstract class Triplestore extends Closeable {
   }
 }
 
-class SimpleTriplestore(val con: RepositoryConnection, override val isReadonly: Boolean) extends Triplestore {
+class SimpleTriplestore(val conn: RepositoryConnection, override val isReadonly: Boolean) extends Triplestore {
   if (isReadonly) {
     println("SPARQL READ ONLY MODE - no RDF data will be inserted or updated")
   }

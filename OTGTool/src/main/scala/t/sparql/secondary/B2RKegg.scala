@@ -47,7 +47,7 @@ object B2RKegg {
 
 }
 
-class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Pathway] { //RemoteRDF
+class B2RKegg(val conn: RepositoryConnection) extends Triplestore with Store[Pathway] { //RemoteRDF
 
   //  val URL = "http://kegg.bio2rdf.org/sparql" //for remote use
 

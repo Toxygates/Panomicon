@@ -31,7 +31,7 @@ trait CompoundTargets {
 
 class ChEMBL extends Triplestore with CompoundTargets {
 
-  val con = Triplestore.connectSPARQLRepository("https://www.ebi.ac.uk/rdf/services/sparql")
+  val conn = Triplestore.connectSPARQLRepository("https://www.ebi.ac.uk/rdf/services/sparql")
 
   val prefixes = commonPrefixes + """
   	PREFIX skos: <http://www.w3.org/2004/02/skos/core#>

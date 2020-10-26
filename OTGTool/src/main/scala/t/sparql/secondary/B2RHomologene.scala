@@ -22,7 +22,7 @@ package t.sparql.secondary
 import t.sparql._
 
 class B2RHomologene extends Triplestore {
-  val con = Triplestore.connectSPARQLRepository("http://homologene.bio2rdf.org/sparql")
+  val conn = Triplestore.connectSPARQLRepository("http://homologene.bio2rdf.org/sparql")
 
   val prefixes = """
     PREFIX hg:<http://bio2rdf.org/homologene_vocabulary:>

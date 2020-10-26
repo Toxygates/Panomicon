@@ -1,20 +1,22 @@
 package t.viewer.server.servlet
 
+import scala.collection.JavaConverters._
+
 import java.text.SimpleDateFormat
 import java.util.Date
 
 import javax.servlet.ServletContext
 import org.scalatra._
-import t.common.shared.ValueType
+import t.common.shared.{AType, ValueType}
 import t.db.BasicExprValue
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Type}
 import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
-import t.viewer.server.Configuration
+import t.viewer.server.{AssociationMasterLookup, Configuration}
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
-import t.viewer.shared.{ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
+import t.viewer.shared.{Association, ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
@@ -98,13 +100,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
   val tconfig = Configuration.fromServletContext(scontext)
   var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
+  lazy val associationLookup = new AssociationMasterLookup(probeStore, sampleStore, sampleFilter)
 
   tServletInit(tconfig)
 
-  private lazy val datasetStore = new DatasetStore(baseConfig.triplestore)
-  private def datasets = datasetStore.items(tconfig.instanceURI)
-  private lazy val batchStore = new BatchStore(baseConfig.triplestore)
+  lazy val datasetStore = new DatasetStore(baseConfig.triplestore)
+  def datasets = datasetStore.items(tconfig.instanceURI)
+  lazy val batchStore = new BatchStore(baseConfig.triplestore)
   lazy val sampleStore = context.sampleStore
+  lazy val probeStore =  context.probeStore
 
   get("instance") {
     <p>My instance is {tconfig.instanceName}</p>
@@ -244,7 +248,47 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       case None => pages.getPageView(offset, defaultLimit, true)
     }
     val ci = columnInfo(controller.managedMatrix.info)
+
+    //writeJs avoids the problem of Map[String, Any] not having an encoder
     val r = Map("columns" -> writeJs(ci), "rows" -> writeJs(page))
     write(r)
+  }
+
+  def associationToJSON(a: Association): Seq[(String, Seq[(String, String)])] = {
+    a.data.asScala.toSeq.map(x => {
+      (x._1, //probe
+        x._2.asScala.toSeq.map(v => {
+          (v.formalIdentifier(), v.title())
+        }))
+    })
+  }
+
+  /**
+   * Obtain association data for one association and a list of probes.
+   * A representative sample must be included, from which the sample class is deduced when necessary.
+   * Examle request: curl http://127.0.0.1:8888/json/association/GOBP/003017689013\?probes\=213646_x_at,213060_s_at
+   */
+  get("/association/:assoc/:sample") {
+    val probes = params.getOrElse("probes", halt(400))
+    try {
+      val requestedType = AType.valueOf(params("assoc"))
+      val reprSample = params("sample")
+      println(s"Get AType $requestedType for $probes and representative sample $reprSample")
+      val sampleData = context.sampleStore.withRequiredAttributes(SampleClassFilter(),
+        sampleFilter, Seq(reprSample))().
+        headOption.getOrElse(halt(400))
+      println(sampleData.sampleClass)
+      val limit = params.getOrElse("limit", "100").toInt
+
+      val assoc = associationLookup.doLookup(sampleData.sampleClass, Array(requestedType),
+        probes.split(","), limit).
+        headOption.getOrElse(halt(400))
+
+      write(associationToJSON(assoc))
+    } catch {
+      case iae: IllegalArgumentException =>
+        System.err.println(s"Unknown association ${params("assoc")}")
+        halt(400)
+    }
   }
 }
