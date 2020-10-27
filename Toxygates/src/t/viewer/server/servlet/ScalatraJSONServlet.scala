@@ -58,7 +58,8 @@ package json {
     }
 
     def applySorting(mat: ManagedMatrix): Unit = {
-      val info =
+      val defaultSortCol = 0
+      val defaultSortAsc = false
       Option(sorting) match {
         case Some(sort) =>
           val idx = mat.info.findColumn(sort.column.id, sort.column.`type`)
@@ -67,8 +68,10 @@ package json {
             mat.sort(idx, asc)
           } else {
             Console.err.println(s"Unable to find column ${sort.column}. Sorting will not apply to this column.")
+            mat.sort(defaultSortCol, defaultSortAsc)
           }
         case None =>
+          mat.sort(defaultSortCol, defaultSortAsc)
       }
     }
   }
@@ -236,8 +239,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     )
 
     val controller = MatrixController(context, groups, matParams.initProbes, valueType)
-    matParams.applyFilters(controller.managedMatrix)
-    matParams.applySorting(controller.managedMatrix)
+    val matrix = controller.managedMatrix
+    matParams.applyFilters(matrix)
+    matParams.applySorting(matrix)
 
     val pages = new PageDecorator(context, controller)
     val defaultLimit = 100
@@ -247,11 +251,17 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       case Some(l) => pages.getPageView(offset, l.toInt, true)
       case None => pages.getPageView(offset, defaultLimit, true)
     }
-    val ci = columnInfo(controller.managedMatrix.info)
+    val ci = columnInfo(matrix.info)
 
     //writeJs avoids the problem of Map[String, Any] not having an encoder
-    val r = Map("columns" -> writeJs(ci), "rows" -> writeJs(page))
-    write(r)
+    write(Map(
+      "columns" -> writeJs(ci),
+      "sorting" -> writeJs(Map(
+        "column" -> writeJs(matrix.sortColumn.getOrElse(-1)),
+        "ascending" -> writeJs(matrix.sortAscending))
+      ),
+      "rows" -> writeJs(page)
+    ))
   }
 
   def associationToJSON(a: Association): Seq[(String, Seq[(String, String)])] = {
