@@ -30,6 +30,7 @@
             "styles": [
               "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/tabulator-tables/dist/css//bootstrap/tabulator_bootstrap4.min.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -96,6 +97,7 @@
             "styles": [
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
               "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "./node_modules/tabulator-tables/dist/css//bootstrap/tabulator_bootstrap4.min.css",
               "src/styles.scss"
             ],
             "scripts": []

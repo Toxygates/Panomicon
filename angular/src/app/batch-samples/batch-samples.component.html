@@ -14,43 +14,7 @@
 
             <div *ngIf="samples">{{samples.length}} samples for batch {{batchId}}:</div>
 
-            <ng-container *ngIf="samples">
-                <div class="table-responsive screen-size-table">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col">Sample ID</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Organism</th>
-                            <th scope="col">Test type</th>
-                            <th scope="col">Organ</th>
-                            <th scope="col">Compound</th>
-                            <th scope="col">Repeat?</th>
-                            <th scope="col">Dose level</th>
-                            <th scope="col">Exposure time</th>
-                            <th scope="col">Platform ID</th>
-                            <th scope="col">Control group</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr *ngFor="let sample of samples">
-                            <th scope="row">{{sample.sample_id}}</th>
-                            <td>{{sample.type}}</td>
-                            <td>{{sample.organism}}</td>
-                            <td>{{sample.test_type}}</td>
-                            <td>{{sample.organ_id}}</td>
-                            <td>{{sample.compound_name}}</td>
-                            <td>{{sample.sin_rep_type}}</td>
-                            <td>{{sample.dose_level}}</td>
-                            <td>{{sample.exposure_time}}</td>
-                            <td>{{sample.platform_id}}</td>
-                            <td>{{sample.control_group}}</td>
-
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </ng-container>
+            <div id="my-tabular-table"></div>
         </div>
     </div>
 </div>
