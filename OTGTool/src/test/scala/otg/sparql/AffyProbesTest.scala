@@ -30,7 +30,7 @@ import t.{OTGMatrixContext, TTestSuite}
 class AffyProbesTest extends TTestSuite {
 
   val config = TestConfig.config
-  val affyProbes = new ProbeStore(config.triplestore)
+  val affyProbes = new ProbeStore(config.triplestoreConfig)
 
   after {
     affyProbes.close

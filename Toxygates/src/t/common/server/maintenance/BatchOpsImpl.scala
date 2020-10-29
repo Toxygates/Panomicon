@@ -65,7 +65,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     maintenance {
       setLastTask("Add batch")
 
-      val existingBatches = new BatchStore(context.config.triplestore).list()
+      val existingBatches = new BatchStore(context.config.triplestoreConfig).getList()
       if (existingBatches.contains(batch.getId) && !mayAppendBatch) {
         throw BatchUploadException.badID(
             s"The batch ${batch.getId} already exists and appending is not allowed. " +
@@ -144,8 +144,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   def getBatches(@Nullable datasetIds: Array[String],
                  instanceUriFilter: Option[String]): Array[Batch] = {
     val useDatasets = Option(datasetIds).toSet.flatten
-    val batchStore = new BatchStore(baseConfig.triplestore)
-    val r = batchStore.items(instanceUriFilter).map(b => {
+    val batchStore = new BatchStore(baseConfig.triplestoreConfig)
+    val r = batchStore.getItems(instanceUriFilter).map(b => {
       new Batch(b.id, b.numSamples, b.comment, b.timestamp,
         new HashSet(setAsJavaSet(batchStore.listAccess(b.id).toSet)),
         b.dataset)
@@ -196,7 +196,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
    * @param mustNotExist if true, we throw an exception if the dataset already exists.
    */
   protected def addDataset(dataset: Dataset, mustNotExist: Boolean): Unit = {
-    val dm = new DatasetStore(baseConfig.triplestore)
+    val dm = new DatasetStore(baseConfig.triplestoreConfig)
 
     val id = dataset.getId()
     if (!TRDF.isValidIdentifier(id)) {
@@ -204,7 +204,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
     }
 
-    if (dm.list().contains(id)) {
+    if (dm.getList().contains(id)) {
       if (mustNotExist) {
         throw BatchUploadException.badID(s"The dataset $id already exists, please choose a different name")
       }
@@ -222,7 +222,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
      * Public user-facing methods that can reach this are responsible for
      * security checking.
      */
-    val ds = new DatasetStore(baseConfig.triplestore)
+    val ds = new DatasetStore(baseConfig.triplestoreConfig)
     ds.setComment(dataset.getId, TRDF.escape(dataset.getComment))
     ds.setDescription(dataset.getId, TRDF.escape(dataset.getDescription))
     ds.setPublicComment(dataset.getId, TRDF.escape(dataset.getPublicComment))

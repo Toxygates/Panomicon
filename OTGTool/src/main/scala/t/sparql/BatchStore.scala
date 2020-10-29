@@ -110,7 +110,7 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
 
   def listAccess(name: String): Seq[String] = listGroups(name)
 
-  def numSamples: Map[String, Int] = {
+  def getSampleCounts(): Map[String, Int] = {
     val r = triplestore.mapQuery(s"""$tPrefixes
       |SELECT (count(distinct ?s) as ?n) ?l WHERE {
       |  GRAPH ?x {
@@ -125,7 +125,7 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
     }
   }
 
-  def datasets: Map[String, String] = {
+  def getDatasets(): Map[String, String] = {
     Map() ++ triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?l ?dataset WHERE {
         |  ?item a $itemClass; rdfs:label ?l ;
@@ -135,7 +135,7 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
     })
   }
 
-  def samples(batch: String): Iterable[SampleId] = {
+  def getSamples(batch: String): Iterable[SampleId] = {
     val prefix = SampleStore.defaultPrefix
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
       s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
@@ -161,19 +161,19 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
 
   def items(instanceUri: Option[String], dataset: Option[String]): Iterable[Batch] = {
     val instanceFilter = additionalFilter(instanceUri, dataset)
-    val keyAttribs = keyAttributes(instanceFilter)
-    val dss = datasets
-    val nss = numSamples
+    val keyAttributes = getKeyAttributes(instanceFilter)
+    val datasets = getDatasets()
+    val sampleCounts = getSampleCounts()
 
-    keyAttribs.map(x => {
-      Batch(x.id, x.timestamp, x.comment, x.publicComment, dss.getOrElse(x.id, ""),
-        nss.getOrElse(x.id, 0))
+    keyAttributes.map(x => {
+      Batch(x.id, x.timestamp, x.comment, x.publicComment, datasets.getOrElse(x.id, ""),
+        sampleCounts.getOrElse(x.id, 0))
     })
   }
 
-  override def items(instanceUri: Option[String]) = items(instanceUri, None)
+  override def getItems(instanceUri: Option[String]) = items(instanceUri, None)
 
   def list(instanceUri: Option[String]): Seq[String] =
-    super.list(additionalFilter(instanceUri))
+    super.getList(additionalFilter(instanceUri))
 
 }

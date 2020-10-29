@@ -107,9 +107,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
   tServletInit(tconfig)
 
-  lazy val datasetStore = new DatasetStore(baseConfig.triplestore)
-  def datasets = datasetStore.items(tconfig.instanceURI)
-  lazy val batchStore = new BatchStore(baseConfig.triplestore)
+  lazy val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
+  def datasets = datasetStore.getItems(tconfig.instanceURI)
+  lazy val batchStore = new BatchStore(baseConfig.triplestoreConfig)
   lazy val sampleStore = context.sampleStore
   lazy val probeStore =  context.probeStore
 
@@ -140,7 +140,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
 
-    val batchStore = new BatchStore(baseConfig.triplestore)
+    val batchStore = new BatchStore(baseConfig.triplestoreConfig)
     val r = batchStore.items(tconfig.instanceURI, Some(requestedDatasetId))
     write(r)
   }
@@ -152,7 +152,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
   get("/sample/batch/:batch") {
     val requestedBatchId = params("batch")
 
-    val fullList = batchStore.list()
+    val fullList = batchStore.getList()
     val exists = fullList.contains(requestedBatchId)
     println("Here are the batch ids")
     println(fullList)

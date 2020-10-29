@@ -56,7 +56,7 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
   protected var instanceURI: Option[String] = None
 
   protected var uniprot: Uniprot = _
-  protected lazy val b2rKegg: B2RKegg = new B2RKegg(baseConfig.triplestore.triplestore)
+  protected lazy val b2rKegg: B2RKegg = new B2RKegg(baseConfig.triplestoreConfig.triplestore)
   protected lazy val associationLookup = new AssociationMasterLookup(probeStore, sampleStore, defaultSampleFilter)
 
   protected var configuration: Configuration = _
@@ -78,7 +78,7 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
     this.configuration = conf
     this.instanceURI = conf.instanceURI
 
-    val triplestore = baseConfig.triplestore.triplestore
+    val triplestore = baseConfig.triplestoreConfig.triplestore
     uniprot = new LocalUniprot(triplestore)
     //Preload
     appInfoLoader.latest

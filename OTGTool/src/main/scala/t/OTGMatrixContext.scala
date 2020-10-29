@@ -9,7 +9,7 @@ class OTGMatrixContext(baseConfig: BaseConfig) extends MatrixContext {
   private val data = baseConfig.data
   private val maps = new TRefresher(baseConfig)
 
-  def triplestoreConfig: TriplestoreConfig = baseConfig.triplestore
+  def triplestoreConfig: TriplestoreConfig = baseConfig.triplestoreConfig
 
   def probeMap = maps.latest.unifiedProbes
 

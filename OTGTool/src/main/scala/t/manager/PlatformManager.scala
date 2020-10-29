@@ -114,7 +114,7 @@ class PlatformManager(context: Context) {
     new AtomicTask[Unit]("Add probe IDs") {
       override def run(): Unit = {
         var newProbes, existingProbes: Int = 0
-        val probes = new ProbeStore(config.triplestore).forPlatform(title)
+        val probes = new ProbeStore(config.triplestoreConfig).forPlatform(title)
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         doThenClose(db)(db => {
@@ -152,7 +152,7 @@ class PlatformManager(context: Context) {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         doThenClose(db)(db => {
-          val probes = new ProbeStore(config.triplestore).forPlatform(title)
+          val probes = new ProbeStore(config.triplestoreConfig).forPlatform(title)
           log(s"Opened $dbfile for writing")
           db.remove(probes)
         })
@@ -194,7 +194,7 @@ object PlatformManager extends ManagerTool {
               "Please specify a title with -title")
             startTaskRunner(manager.delete(title))
           case "list" =>
-            for (p <- platforms.list) {
+            for (p <- platforms.getList()) {
               println(p)
             }
           case _ => showHelp()

@@ -28,12 +28,12 @@ trait SharedPlatforms {
   this: t.sparql.PlatformStore =>
 
   def sharedList: Iterable[Platform] =
-    list.map(asShared)
+    getList().map(asShared)
 
   private def asShared(d: String): Platform = {
-    val com = comments
-    val pcom = publicComments
-    val ts = timestamps
+    val com = getComments()
+    val pcom = getPublicComments()
+    val ts = getTimestamps()
     new Platform(d, 0,
       com.getOrElse(d, ""), ts.getOrElse(d, null),
       pcom.getOrElse(d, ""))

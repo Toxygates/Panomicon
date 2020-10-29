@@ -46,14 +46,14 @@ class DatasetStore(config: TriplestoreConfig) extends ListManager[Dataset](confi
   def groupPrefix = DatasetStore.defaultPrefix
   def defaultPrefix = DatasetStore.defaultPrefix
 
-  def descriptions: Map[String, String] = {
+  def getDescriptions(): Map[String, String] = {
     Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?desc WHERE { ?item a $itemClass; rdfs:label ?l ; " +
       "t:description ?desc } ").map(x => {
       x("l") -> x("desc")
     })
   }
 
-  def numBatches: Map[String, Int] = {
+  def getBatchCounts(): Map[String, Int] = {
     Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l (COUNT(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
         " ?d a t:dataset; rdfs:label ?l } GROUP BY ?l").flatMap(x => {
         x.get("l") match {
@@ -89,18 +89,18 @@ class DatasetStore(config: TriplestoreConfig) extends ListManager[Dataset](confi
       case None => ""
     }
 
-  override def items(instanceUri: Option[String]): Iterable[Dataset] = {
+  override def getItems(instanceUri: Option[String]): Iterable[Dataset] = {
 
     val instanceFilter = additionalFilter(instanceUri)
-    val descriptions = this.descriptions
-    val keyAttribs = keyAttributes(instanceFilter)
-    val nb = numBatches
-    keyAttribs.map(x => {
-      Dataset(x.id, x.timestamp, x.comment, x.publicComment, descriptions.getOrElse(x.id, ""), nb.getOrElse(x.id, 0))
+    val descriptions = this.getDescriptions()
+    val keyAttributes = getKeyAttributes(instanceFilter)
+    val numBatches = getBatchCounts()
+    keyAttributes.map(x => {
+      Dataset(x.id, x.timestamp, x.comment, x.publicComment, descriptions.getOrElse(x.id, ""), numBatches.getOrElse(x.id, 0))
     })
   }
 
   def list(instanceUri: Option[String]): Seq[String] =
-    super.list(additionalFilter(instanceUri))
+    super.getList(additionalFilter(instanceUri))
 
 }

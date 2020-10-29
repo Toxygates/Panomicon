@@ -12,12 +12,12 @@ object InstanceManager extends ManagerTool {
     if (args.size < 1) {
       showHelp()
     } else {
-      val instances = new InstanceStore(context.config.triplestore)
+      val instances = new InstanceStore(context.config.triplestoreConfig)
       args(0) match {
         case "add" =>
           expectArgs(args, 2)
           //Note: might want to move verification into the instances API
-          if (!instances.list.contains(args(1))) {
+          if (!instances.getList().contains(args(1))) {
             instances.add(args(1))
           } else {
             val msg = s"Instance ${args(1)} already exists"
@@ -26,12 +26,12 @@ object InstanceManager extends ManagerTool {
 
         case "list" =>
           println("Instance list")
-          for (i <- instances.list) println(i)
+          for (i <- instances.getList()) println(i)
           println("(end of list)")
 
         case "delete" =>
           expectArgs(args, 2)
-          if (instances.list.contains(args(1))) {
+          if (instances.getList().contains(args(1))) {
             instances.delete(args(1))
           } else {
             val msg = s"Instance ${args(1)} does not exist"

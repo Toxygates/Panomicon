@@ -27,7 +27,7 @@ object Context {
 
   def apply(bc: BaseConfig) =
     new Context(bc, factory,
-      factory.probes(bc.triplestore), factory.samples(bc),
+      factory.probes(bc.triplestoreConfig), factory.samples(bc),
       new OTGMatrixContext(bc))
 }
 

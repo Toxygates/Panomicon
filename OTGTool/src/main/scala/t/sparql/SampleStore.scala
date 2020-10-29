@@ -68,7 +68,7 @@ case class SampleFilter(instanceURI: Option[String] = None,
     s"$datasetFilter $batchFilter"
 }
 
-class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
+class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
   with t.sample.SampleSet {
   import Triplestore._
   import QueryUtils._
@@ -80,13 +80,13 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   val standardAttributes = bc.attributes.getRequired.asScala.toSeq
   val hlAttributes = bc.attributes.getHighLevel.asScala.toSeq
-  val tsCon: TriplestoreConfig = bc.triplestore
+  val tsCon: TriplestoreConfig = bc.triplestoreConfig
 
   val hasRelation = "t:hasSample"
   def hasRelation(batch: String, sample: String): String =
     s"<${BatchStore.defaultPrefix}/$batch> $hasRelation <$defaultPrefix/$sample>"
 
-  override def list(): Seq[String] = {
+  override def getList(): Seq[String] = {
     triplestore.simpleQuery(
       s"""$commonPrefixes
          |SELECT ?l WHERE {

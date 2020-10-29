@@ -40,7 +40,7 @@ object BatchManager extends ManagerTool {
     def config = context.config
     def factory = context.factory
 
-    val batches = new BatchStore(config.triplestore)
+    val batches = new BatchStore(config.triplestoreConfig)
     if (args.size < 1) {
       showHelp()
     } else {
@@ -131,7 +131,7 @@ object BatchManager extends ManagerTool {
           startTaskRunner(bm.delete(title, rdfOnly))
         case "list" =>
           println("Batch list")
-          for (b <- batches.list()) {
+          for (b <- batches.getList()) {
             println(b)
           }
         case "list-access" =>
@@ -231,7 +231,7 @@ class BatchManager(context: Context) {
         SampleIndex.fromRaw(KCIndexDB.readOnce(config.data.sampleIndex))
 
       override lazy val probeSets =
-        new ProbeStore(config.triplestore).platformsAndProbes.
+        new ProbeStore(config.triplestoreConfig).platformsAndProbes.
           mapValues(_.toSeq.map(p => probeMap.pack(p.identifier)))
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
@@ -283,7 +283,7 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
-    val probeMap = new ProbeStore(config.triplestore).platformsAndProbes
+    val probeMap = new ProbeStore(config.triplestoreConfig).platformsAndProbes
     val probes = platforms.flatMap(probeMap(_)).toSeq
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
 
@@ -328,11 +328,11 @@ class BatchManager(context: Context) {
 
   def addMetadata(batch: Batch, metadata: Metadata,
       append: Boolean, update: Boolean = false): Task[Unit] = {
-    val ts = config.triplestore.get
+    val ts = config.triplestoreConfig.getTriplestore()
 
     val addRecordIfNecessary =
       if (!append) {
-        addRecord(batch.title, batch.comment, config.triplestore) andThen
+        addRecord(batch.title, batch.comment, config.triplestoreConfig) andThen
           updateBatch(batch)
       } else {
         Task.success
@@ -345,7 +345,7 @@ class BatchManager(context: Context) {
 
   def updateBatch(batch: Batch) = new AtomicTask[Unit]("Update batch record") {
     override def run(): Unit = {
-      val bs = new BatchStore(config.triplestore)
+      val bs = new BatchStore(config.triplestoreConfig)
       // Update instances and dataset if specified in batch
       batch.instances.foreach(instances => {
         val existingInstances = bs.listAccess(batch.title)
@@ -359,9 +359,9 @@ class BatchManager(context: Context) {
         }
       })
       batch.dataset.foreach(dataset => {
-        val oldDataset = bs.datasets.getOrElse(batch.title, null)
+        val oldDataset = bs.getDatasets().getOrElse(batch.title, null)
         if (dataset != oldDataset) {
-          val ds = new DatasetStore(config.triplestore)
+          val ds = new DatasetStore(config.triplestoreConfig)
           if (oldDataset != null) {
             log(s"Removing association with dataset $oldDataset")
             ds.removeMember(batch.title, oldDataset)
@@ -396,15 +396,15 @@ class BatchManager(context: Context) {
     override def run(): Unit = {
         checkValidIdentifier(title, "batch ID")
 
-        val batches = new BatchStore(baseConfig.triplestore)
-        val batchExists = batches.list().contains(title)
+        val batches = new BatchStore(baseConfig.triplestoreConfig)
+        val batchExists = batches.getList().contains(title)
         if (append && !batchExists) {
           throw new Exception(s"Cannot append to nonexsistent batch $title")
         } else if (!append && batchExists) {
           throw new Exception(s"Cannot create new batch $title: batch already exists")
         }
 
-        val batchSampleIds = batches.samples(title).toSet
+        val batchSampleIds = batches.getSamples(title).toSet
         platformsCheck(metadata)
         val metadataIds = metadata.samples.map(_.identifier)
         metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
@@ -414,7 +414,7 @@ class BatchManager(context: Context) {
           log(s"Will replace samples ${foundInBatch mkString ", "}")
         }
 
-        val existingSamples = samples.list.toSet
+        val existingSamples = samples.getList().toSet
         val (idCollisions, newSamples) = notInBatch.partition(existingSamples contains _)
         if (idCollisions.size > 0) {
           throw new Exception(s"The samples ${idCollisions mkString ", "} have already been " +
@@ -431,13 +431,13 @@ class BatchManager(context: Context) {
     override def run(): Unit = {
       checkValidIdentifier(title, "batch ID")
 
-      val batches = new BatchStore(baseConfig.triplestore)
-      val batchExists = batches.list().contains(title)
+      val batches = new BatchStore(baseConfig.triplestoreConfig)
+      val batchExists = batches.getList().contains(title)
       if (!batchExists && !force) {
         throw new Exception(s"Cannot update metadata for nonexistent batch $title")
       }
 
-      val batchSampleIds = batches.samples(title).toSet
+      val batchSampleIds = batches.getSamples(title).toSet
       platformsCheck(metadata)
       val metadataIds = metadata.samples.map(_.identifier)
       metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
@@ -460,7 +460,7 @@ class BatchManager(context: Context) {
   }
 
   private def platformsCheck(metadata: Metadata) {
-    val platforms = new PlatformStore(config).list.toSet
+    val platforms = new PlatformStore(config).getList().toSet
     for (s <- metadata.samples; p = metadata.platform(s)) {
       if (!platforms.contains(p)) {
         throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
@@ -503,8 +503,8 @@ class BatchManager(context: Context) {
       val db = KCIndexDB(dbfile, true)
       doThenClose(db)(db => {
         log(s"Opened $dbfile for writing")
-        val bs = new BatchStore(config.triplestore)
-        db.remove(bs.samples(title))
+        val bs = new BatchStore(config.triplestoreConfig)
+        db.remove(bs.getSamples(title))
       })
     }
   }
@@ -543,7 +543,7 @@ class BatchManager(context: Context) {
 
   def deleteRDF(title: String) = new AtomicTask[Unit]("Delete RDF data") {
     override def run(): Unit = {
-      val bs = new BatchStore(config.triplestore)
+      val bs = new BatchStore(config.triplestoreConfig)
       bs.delete(title)
     }
   }
@@ -609,8 +609,8 @@ class BatchManager(context: Context) {
     (implicit mc: MatrixContext) =
     new AtomicTask[Unit](taskName) {
       override def run(): Unit = {
-        val bs = new BatchStore(config.triplestore)
-        val ss = bs.samples(title).map(Sample(_))
+        val bs = new BatchStore(config.triplestoreConfig)
+        val ss = bs.getSamples(title).map(Sample(_))
         if (ss.isEmpty) {
           log("Nothing to do, batch has no samples")
           return

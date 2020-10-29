@@ -20,12 +20,10 @@
 package t.sparql
 
 import java.io.Closeable
-
-import Triplestore.tPrefixes
-import t.TriplestoreConfig
-import java.util.Date
-import java.util.Calendar
 import java.text.SimpleDateFormat
+import java.util.Date
+
+import t.TriplestoreConfig
 
 
 /**
@@ -50,7 +48,7 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
   //URI prefix
   def defaultPrefix: String
 
-  lazy val triplestore = config.get
+  lazy val triplestore = config.getTriplestore()
 
   def close() {
     triplestore.close()
@@ -60,9 +58,9 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
    * Obtain the IDs of items in this list manager.
    * @return
    */
-  def list(): Seq[String] = list("")
+  def getList(): Seq[String] = getList("")
 
-  def list(additionalFilter: String): Seq[String] = {
+  def getList(additionalFilter: String): Seq[String] = {
     triplestore.simpleQuery(s"""|
                             |$tPrefixes
                             | SELECT ?l {
@@ -72,7 +70,7 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
   }
 
   def verifyExists(item: String): Unit = {
-    if (!list.contains(item)) {
+    if (!getList().contains(item)) {
       val msg = s"$item of class $itemClass does not exist"
       throw new Exception(msg)
     }
@@ -114,7 +112,7 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
   /**
    * Obtain core attributes that managed items can reasonably be expected to have.
    */
-  def keyAttributes(additionalFilter: String = ""): Iterable[KeyItemAttributes] = {
+  def getKeyAttributes(additionalFilter: String = ""): Iterable[KeyItemAttributes] = {
     val query = s"""|$tPrefixes
     |SELECT * WHERE {
     | ?item a $itemClass; rdfs:label ?label.
@@ -140,17 +138,17 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
    * @param instanceUri The instance to filter items for, if any
    * @return
    */
-  def items(instanceUri: Option[String] = None): Iterable[T] = {
+  def getItems(instanceUri: Option[String] = None): Iterable[T] = {
     ???
   }
 
-  def timestamps: Map[String, Date] =
+  def getTimestamps(): Map[String, Date] =
     attributeQuery(timestampRel, dateFormat.parse)
 
-  def comments: Map[String, String] =
+  def getComments(): Map[String, String] =
     attributeQuery(commentRel, x => x)
 
-  def publicComments: Map[String, String] =
+  def getPublicComments(): Map[String, String] =
     attributeQuery(publicCommentRel, x => x)
 
   def delete(name: String): Unit = {

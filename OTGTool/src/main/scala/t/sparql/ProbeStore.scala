@@ -67,7 +67,7 @@ object ProbeStore extends RDFClass {
   def platformsAndProbes(pfs: PlatformStore, prs: ProbeStore): Map[String, Iterable[Probe]] = synchronized {
     if (!ppCacheFullyLoaded) {
       for {
-        pf <- pfs.list;
+        pf <- pfs.getList();
         if !platformProbeCache.contains(pf)
       } {
         platformProbeCache += (pf -> prs.annotatedProbesForPlatform(pf))

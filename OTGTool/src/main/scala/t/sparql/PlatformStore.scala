@@ -38,7 +38,7 @@ class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
   import PlatformStore._
   import Triplestore._
 
-  def this(config: BaseConfig) = this(config.triplestore)
+  def this(config: BaseConfig) = this(config.triplestoreConfig)
 
   def itemClass = PlatformStore.itemClass
   def defaultPrefix = PlatformStore.defaultPrefix

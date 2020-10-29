@@ -25,7 +25,7 @@ import t.sparql.Triplestore
 
 import scala.language.existentials
 
-case class BaseConfig(triplestore: TriplestoreConfig, data: DataConfig) {
+case class BaseConfig(triplestoreConfig: TriplestoreConfig, data: DataConfig) {
 
   type DataSeries = OTGSeries
 
@@ -47,6 +47,6 @@ case class TriplestoreConfig(url: String, updateUrl: String,
     Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
   }
 
-  def get = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)
+  def getTriplestore() = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)
 }
 

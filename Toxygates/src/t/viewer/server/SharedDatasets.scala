@@ -31,7 +31,7 @@ trait SharedDatasets {
 
   def sharedList(instanceUri: Option[String]): Iterable[Dataset] = {
     //TODO add description
-    items(instanceUri).map(x => {
+    getItems(instanceUri).map(x => {
       new Dataset(x.id, x.description, x.comment, x.timestamp, x.publicComment, x.numBatches)
     })
   }

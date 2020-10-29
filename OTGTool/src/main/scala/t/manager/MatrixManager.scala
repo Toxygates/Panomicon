@@ -55,7 +55,7 @@ object MatrixManager extends ManagerTool {
         case "copy" =>
           val todir = require(stringOption(args, "-toDir"),
             "Please specify a destination directory with -toDir")
-          val tsconfig = config.triplestore
+          val tsconfig = config.triplestoreConfig
           val dataParams = System.getenv().asScala + ("T_DATA_DIR" -> todir)
           val toDConfig = Manager.getDataConfig(dataParams)
           val toBConfig = Manager.makeBaseConfig(tsconfig, toDConfig)
