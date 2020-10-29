@@ -25,6 +25,9 @@ package json {
 
   import t.viewer.server.matrix.ManagedMatrix
 
+  object Sample { implicit val rw: RW[Sample] = macroRW }
+  case class Sample(id: String, `type`: String, platform: String)
+
   object Group { implicit val rw: RW[Group] = macroRW }
   case class Group(name: String, sampleIds: Seq[String])
 
