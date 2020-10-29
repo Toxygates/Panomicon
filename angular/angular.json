@@ -28,11 +28,10 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/primeicons/primeicons.css",
-              "./node_modules/primeng/resources/themes/saga-blue/theme.css",
-              "./node_modules/primeng/resources/primeng.min.css",
-              "src/styles.scss",
-              "./node_modules/primeflex/primeflex.scss"
+              "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/tabulator-tables/dist/css//bootstrap/tabulator_bootstrap4.min.css",
+              "src/styles.scss"
             ],
             "scripts": []
           },
@@ -96,11 +95,10 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/primeicons/primeicons.css",
-              "./node_modules/primeng/resources/themes/saga-blue/theme.css",
-              "./node_modules/primeng/resources/primeng.min.css",
-              "src/styles.scss",
-              "./node_modules/primeflex/primeflex.scss"
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "./node_modules/tabulator-tables/dist/css//bootstrap/tabulator_bootstrap4.min.css",
+              "src/styles.scss"
             ],
             "scripts": []
           }

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BackendService } from '../backend.service';
+import Tabulator from 'tabulator-tables';
 
 @Component({
   selector: 'app-batch-samples',
@@ -12,26 +13,24 @@ export class BatchSamplesComponent implements OnInit {
 
   samples: any;
   batchId: string;
-  virtualScroll: boolean;
 
-  cols: any[];
-  tableWidth: Number;
+  columns = [
+    {title: 'Sample ID', field: 'sample_id'},
+    {title: 'Type', field: 'type'},
+    {title: 'Organism', field: 'organism'},
+    {title: 'Test type', field: 'test_type'},
+    {title: 'Organ', field: 'organ_id'},
+    {title: 'Compound', field: 'compound_name'},
+    {title: 'Repeat?', field: 'sin_rep_type'},
+    {title: 'Dose level', field: 'dose_level'},
+    {title: 'Exposure time', field: 'exposure_time'},
+    {title: 'Platform ID', field: 'platform_id'},
+    {title: 'Control group', field: 'control_group'}
+  ]
+
+  tab = document.createElement('div');
 
   ngOnInit(): void {
-    this.cols = [
-      {field: 'sample_id', header: 'Sample ID', width: "300"},
-      {field: 'type', header: 'Type', width: "75"},
-      {field: 'organism', header: 'Organism', width: "75"},
-      {field: 'test_type', header: 'Test type', width: "75"},
-      {field: 'organ_id', header: 'Organ', width: "75"},
-      {field: 'compound_name', header: 'Compound', width: "125"},
-      {field: 'sin_rep_type', header: 'Repeat?', width: "75"},
-      {field: 'dose_level', header: 'Dose level', width: "75"},
-      {field: 'exposure_time', header: 'Exposure time', width: "75"},
-      {field: 'platform_id', header: 'Platform ID', width: "85"},
-      {field: 'control_group', header: 'Control group', width: "85"}
-    ];
-    this.tableWidth = this.cols.reduce((sum, v) => sum + +v.width, 0) + 100;
   }
 
   loadSamplesForBatch(batchId: string) {
@@ -41,9 +40,19 @@ export class BatchSamplesComponent implements OnInit {
       .subscribe(
         result => {
           this.samples = result;
-          this.virtualScroll = this.samples.length > 50;
+          this.drawTable();
         }
       )
   }
 
+  private drawTable(): void {
+    new Tabulator("#my-tabular-table", {
+      data: this.samples,
+      //reactiveData:true, //enable data reactivity
+      columns: this.columns,
+      layout:"fitDataTable",
+      //layout: 'fitData',
+      maxHeight: "75vh"
+    });
+  }
 }
