@@ -11,10 +11,15 @@ export class BatchSamplesComponent implements OnInit {
 
   constructor(private backend: BackendService) { }
 
+  tabulator: Tabulator;
+
   samples: any;
   batchId: string;
 
+  readyToCreateGroup: boolean = true;
+
   columns = [
+    {formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
     {title: 'Sample ID', field: 'sample_id'},
     {title: 'Type', field: 'type'},
     {title: 'Organism', field: 'organism'},
@@ -45,14 +50,22 @@ export class BatchSamplesComponent implements OnInit {
       )
   }
 
+  createSampleGroup() {
+    var sampleIds = this.tabulator.getSelectedData().map(x => x.sample_id);
+    console.log(sampleIds);
+  }
+
   private drawTable(): void {
-    new Tabulator("#my-tabular-table", {
+    var _this = this;
+    this.tabulator = new Tabulator("#my-tabular-table", {
       data: this.samples,
-      //reactiveData:true, //enable data reactivity
+      selectable: true,
       columns: this.columns,
       layout:"fitDataTable",
-      //layout: 'fitData',
-      maxHeight: "75vh"
+      maxHeight: "75vh",
+      rowSelectionChanged: function(data, _rows) {
+        _this.readyToCreateGroup = (data.length > 0);
+      }
     });
   }
 }

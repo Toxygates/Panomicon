@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 html { 
-    font-size: 11pt;
+    font-size: 10pt;
 }
 
 .padded_ui_panel {
@@ -9,4 +9,8 @@ html {
     padding-bottom: 15px;
     background-color: rgba(67, 67, 67, 0.15);
     border: 1px solid rgba(99, 99, 99, 0.2);
+}
+
+.btn {
+    margin: .25rem .5rem .25rem 0;
 }

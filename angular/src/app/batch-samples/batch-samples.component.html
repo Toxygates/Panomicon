@@ -12,7 +12,17 @@
                 </div>
             </ng-container>
 
-            <div *ngIf="samples">{{samples.length}} samples for batch {{batchId}}:</div>
+            <div *ngIf="samples">
+                {{samples.length}} samples for batch {{batchId}}:
+
+                <div style="float:right">
+                    <button type="button" class="btn btn-primary"
+                        (click)="createSampleGroup()"
+                        [disabled]="readyToCreateGroup ? false : true">
+                        Create sample group
+                    </button>
+                </div>
+            </div>
 
             <div id="my-tabular-table"></div>
         </div>
