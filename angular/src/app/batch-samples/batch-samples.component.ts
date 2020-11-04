@@ -16,6 +16,8 @@ export class BatchSamplesComponent implements OnInit {
   samples: any;
   batchId: string;
 
+  selectedSamples: String[];
+
   readyToCreateGroup: boolean = true;
 
   columns = [
@@ -50,9 +52,8 @@ export class BatchSamplesComponent implements OnInit {
       )
   }
 
-  createSampleGroup() {
-    var sampleIds = this.tabulator.getSelectedData().map(x => x.sample_id);
-    console.log(sampleIds);
+  getSelectedSamples() {
+    return this.tabulator.getSelectedData().map(x => x.sample_id);
   }
 
   private drawTable(): void {
