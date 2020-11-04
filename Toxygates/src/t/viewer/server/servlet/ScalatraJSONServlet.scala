@@ -1,16 +1,15 @@
 package t.viewer.server.servlet
 
 import scala.collection.JavaConverters._
-
 import java.text.SimpleDateFormat
 import java.util.Date
 
 import javax.servlet.ServletContext
 import org.scalatra._
 import t.common.shared.{AType, ValueType}
-import t.db.BasicExprValue
+import t.db.{BasicExprValue, Sample}
 import t.model.sample.Attribute
-import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Type}
+import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Treatment, Type}
 import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.{AssociationMasterLookup, Configuration}
@@ -25,8 +24,8 @@ package json {
 
   import t.viewer.server.matrix.ManagedMatrix
 
-  object Sample { implicit val rw: RW[Sample] = macroRW }
-  case class Sample(id: String, `type`: String, platform: String)
+//  object Sample { implicit val rw: RW[Sample] = macroRW }
+//  case class Sample(id: String, treatment: String)
 
   object Group { implicit val rw: RW[Group] = macroRW }
   case class Group(name: String, sampleIds: Seq[String])
@@ -167,6 +166,19 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(data)
   }
 
+  def sampleToMap(s: Sample): collection.Map[String, String] = {
+    s.sampleClass.getMap.asScala.map(x => (x._1.id -> x._2))
+  }
+
+  get("/sample/treatment/:treatment") {
+    val sf = SampleFilter(tconfig.instanceURI, None)
+    val data = sampleStore.samplesForTreatment(SampleClassFilter(), sf, params("treatment"))()
+    write(data.map(sampleToMap))
+  }
+
+  /**
+   * This request allows arbitrary GET parameter attribute filters, e.g. ?doseLevel=High
+   */
   get("/sample") {
     val scf = SampleClassFilter(
       Map.empty ++ params.iterator.flatMap(x => {
@@ -181,8 +193,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     )
     println(s"Decoded: ${scf.constraints}")
 
-    val samples = sampleStore.sampleQuery(scf, sampleFilter)().map(s =>
-      json.Sample(s.sampleId, s.sampleClass(Type), s.sampleClass(Platform)))
+    val samples = sampleStore.sampleQuery(scf, sampleFilter)().map(sampleToMap)
 
     params.get("limit") match {
       case Some(l) =>

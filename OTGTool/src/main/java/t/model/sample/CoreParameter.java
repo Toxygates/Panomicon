@@ -31,8 +31,9 @@ public class CoreParameter {
   public static final Attribute Platform = new Attribute("platform_id", "Platform ID", false, "Sample details");
   public static final Attribute Type = new Attribute("type", "Type", false, "Sample details");
   public static final Attribute ControlSampleId = new Attribute("control_sample_id", "Control Sample ID", false, "Sample details");
+  public static final Attribute Treatment = new Attribute("treatment", "Treatment ID", false, "Sample details");
 
-  private static final Attribute[] _all = { SampleId, Batch, ControlGroup, Platform, Type, ControlSampleId };
+  private static final Attribute[] _all = { SampleId, Batch, ControlGroup, Platform, Type, ControlSampleId, Treatment };
 
   public static Attribute[] all() {
     return Arrays.copyOf(_all, _all.length);
