@@ -16,6 +16,7 @@ import t.viewer.server.{AssociationMasterLookup, Configuration}
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.shared.{Association, ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
+import ujson.Value
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
@@ -209,12 +210,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(values)
   }
 
-  def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, String]] = {
+  def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, Value]] = {
       (0 until info.numColumns()).map(i => {
-        Map("name" -> info.columnName(i),
-          "parent" -> info.parentColumnName(i),
-          "shortName" -> info.shortColumnName(i),
-          "hint" -> info.columnHint(i)
+        Map("name" -> writeJs(info.columnName(i)),
+          "parent" -> writeJs(info.parentColumnName(i)),
+          "shortName" -> writeJs(info.shortColumnName(i)),
+          "hint" -> writeJs(info.columnHint(i)),
+          "samples" -> writeJs(info.samples(i).map(s => s.id()))
         )
     })
   }
