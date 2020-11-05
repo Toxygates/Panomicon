@@ -14,6 +14,7 @@ export class BackendService {
   datasetsPath = 'dataset';
   batchesByDatasetPath = 'batch/dataset/';
   samplesByBatchPath = 'sample/batch/';
+  matrixPath = 'matrix';
 
   getDatasets() {
     return this.http.get(this.serviceUrl + this.datasetsPath)
@@ -45,6 +46,20 @@ export class BackendService {
         tap(_ => console.log('fetched samples')),
         catchError(error => {
           console.error('Error fetching samples: ' + error);
+          throw error;
+        })
+      )
+  }
+
+  getMatrix(samples: string[]) {
+    return this.http.post(this.serviceUrl + this.matrixPath,
+      {
+        "groups": [ { "name": "Group 1", "sampleIds": samples }]
+      })
+      .pipe(
+        tap(_ => console.log('fetched matrix')),
+        catchError(error => {
+          console.error('Error fetching matrix: ' + error);
           throw error;
         })
       )
