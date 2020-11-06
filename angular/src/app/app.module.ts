@@ -11,8 +11,8 @@ import { BatchBrowserComponent } from './batch-browser/batch-browser.component';
 import { BatchPickerComponent } from './batch-picker/batch-picker.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BatchSamplesComponent } from './batch-samples/batch-samples.component';
-
-
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { ExpressionTableComponent } from './expression-table/expression-table.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +20,9 @@ import { BatchSamplesComponent } from './batch-samples/batch-samples.component';
     DatasetPickerComponent,
     BatchBrowserComponent,
     BatchPickerComponent,
-    BatchSamplesComponent
+    BatchSamplesComponent,
+    PageNotFoundComponent,
+    ExpressionTableComponent
   ],
   imports: [
     BrowserModule,
