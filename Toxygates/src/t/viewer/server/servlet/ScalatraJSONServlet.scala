@@ -234,6 +234,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
   }
 
+  def flattenRows(rows: Seq[ExpressionRow]): Seq[Map[String, Value]] = {
+    rows.map(r => Map(
+      "probe" -> writeJs(r.probe),
+      "probeTitles" -> writeJs(r.probeTitles),
+      "geneIds" -> writeJs(r.geneIds.map(_.toInt)),
+      "geneSymbols" -> writeJs(r.geneSymbols),
+      "values" -> writeJs(r.values.map(_.value))
+    ))
+  }
+
   /*
   URL parameters: valueType, offset, limit
   other parameters in MatrixParams
@@ -287,7 +297,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         "column" -> writeJs(matrix.sortColumn.getOrElse(-1)),
         "ascending" -> writeJs(matrix.sortAscending))
       ),
-      "rows" -> writeJs(page)
+      "rows" -> writeJs(flattenRows(page))
     ))
   }
 
