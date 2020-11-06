@@ -221,6 +221,19 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     })
   }
 
+  /**
+   * By using the sample treatment ID, ensure that the group contains
+   * all the available samples for a given treatment.
+   * This is the default behaviour for /matrix requests for now; in the future, we may want to
+   * make it optional, since the system in principle supports sub-treatment level sample groups.
+   */
+  def fillGroup(group: Seq[Sample]): Seq[Sample] = {
+    val sf = SampleFilter(tconfig.instanceURI, None)
+    val distinctTreatments = group.map(_.sampleClass(Treatment)).distinct
+    distinctTreatments.flatMap(t =>
+      sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
+  }
+
   /*
   URL parameters: valueType, offset, limit
   other parameters in MatrixParams
@@ -244,12 +257,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val sampleIds = matParams.groups.flatMap(_.sampleIds)
     val fullSamples = Map.empty ++
       context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
-        s => (s.sampleId -> asJavaSample(s)))
+        s => (s.sampleId -> s))
 
     val schema = new OTGSchema()
-    val groups = matParams.groups.map(g =>
-      new t.common.shared.sample.Group(schema, g.name, g.sampleIds.map(s => fullSamples(s)).toArray)
-    )
+    val groups = matParams.groups.map(g => {
+      val filledGroup = fillGroup(g.sampleIds.map(s => fullSamples(s)))
+      new t.common.shared.sample.Group(schema, g.name, filledGroup.map(asJavaSample).toArray)
+    })
 
     val controller = MatrixController(context, groups, matParams.initProbes, valueType)
     val matrix = controller.managedMatrix
