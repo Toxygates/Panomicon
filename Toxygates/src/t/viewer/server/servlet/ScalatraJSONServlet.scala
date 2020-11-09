@@ -221,6 +221,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     })
   }
 
+  def complementaryTreatment(treatment: String) = {
+    val treatmentUnpacked = treatment.split("\\|")
+    val doseLevel = treatmentUnpacked(1)
+    if (doseLevel != "Control") {
+      List(treatmentUnpacked(0), "Control", treatmentUnpacked(2), treatmentUnpacked(3)).mkString("|")
+    } else {
+      treatment
+    }
+  }
+
   /**
    * By using the sample treatment ID, ensure that the group contains
    * all the available samples for a given treatment.
@@ -229,7 +239,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
    */
   def fillGroup(group: Seq[Sample]): Seq[Sample] = {
     val sf = SampleFilter(tconfig.instanceURI, None)
-    val distinctTreatments = group.map(_.sampleClass(Treatment)).distinct
+    val distinctTreatments = group.flatMap(s => {
+      List(
+        complementaryTreatment(s.sampleClass(Treatment)),
+        s.sampleClass(Treatment)
+      )
+    }).distinct
     distinctTreatments.flatMap(t =>
       sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
   }
