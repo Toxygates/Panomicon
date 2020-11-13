@@ -1,8 +1,8 @@
 ## Overview
 
-Panomicon (formerly Toxygates) is a web application for user-friendly analysis of multi-omics data (presently focusing on mRNA and mRNA-miRNA interaction data). It was originally developed for Open TG-GATEs dataset but is now being used for more general purposes.
+Panomicon (formerly Toxygates) is a web application for user-friendly analysis of multi-omics data (presently focusing on mRNA and mRNA-miRNA interaction data). It was originally developed for the Open TG-GATEs dataset but is now being used for more general purposes.
 
-The public version of Panomicon is available at http://toxygates.nibiohn.go.jp/panomicon. The latest public version of Toxygates is available at http://toxygates.nibiohn.go.jp.
+The public version of Panomicon is available at http://toxygates.nibiohn.go.jp/panomicon.
 
 The main technologies used in this project are Java (frontend and backend), Scala (backend) and GWT (Google Web Toolkit). Numerical data is stored in Kyoto Cabinet; other kinds of data are stored as RDF (we currently use Fuseki).
 
@@ -16,7 +16,7 @@ GWT-based web frontend
 
 ## Compiling
 
-In order to compile Panomicon, currently the following dependencies are required:
+In order to compile Panomicon, the following dependencies are required:
 
 * Java version 8 (compiling on higher versions is not recommended).
 
@@ -46,22 +46,29 @@ After the back-end has been built, the front-end can be compiled in the Toxygate
 `
 ant compile
 `
-The development mode (for testing) may be run using
+
+## Configuration
+
+In order to run Panomicon, it is necessary to create the configuration file Toxygates/war/WEB-INF/web.xml. This can be done by copying web.xml.template and making changes as necessary.
+In particular, the following must be configured:
+* URLs for an RDF triplestore (SPARQL 1.1) providing query and update access
+* A location where Kyoto Cabinet database files can be created and stored
+
+To run the admin interface, which is necessary to create and manage platforms, instances and datasets (and non-user data),
+it is also necessary to configure the servlets for the admin UI. See web.xml.admin and copy any missing configuration into your web.xml.
+
+## Testing
+
+Once configuration and compilation are complete, Panomicon can be run in development mode for local testing by running
 `
 ant devmode
 `
-## Configuration
+in the Toxygates direcotry. 
 
-Before running, it is necessary to configure Toxygates/war/WEB-INF/web.xml. The file web.xml.template may be used as a guide.
-The main interface can be accessed through toxygates.html once devmode is running.
+This will start a web server on port 8888 where the main Panomicon interface can be accessed through /toxygates.html. The admin interface can be accessed through /admin.html.
 
-To run the admin interface, which is necessary to create and manage platforms, instances and datasets (and non-user data),
-it is also necessary to configure the servlets for the admin UI. See web.xml.admin and copy the necessary configuration into your web.xml.
-The admin interface can be accessed through admin.html.
+## Deployment
 
-## Releasing
+To deploy Panomicon for networked use, a servlet application container such as Tomcat is required. 
 
-In the Toxygates directory, deploy.sh (or deploy.ps1 on Windows) may be run to produce toxygates-template.war, which can be deployed in a servlet application container such as Tomcat. For the admin interface, admin.war can be deployed in a similar fashion. After deploying these, either the `new_instance*sh` scripts should be used to create instances, or web.xml files should be created manually based on web.xml.template and web.xml.admin.
-
-
-
+To produce a WAR file that can be deployed in such a container, first compile and configure Panomicon as described above, then run deploy.sh (or deploy.ps1 on Windows) in the Toxygates directory to  produce toxygates-template.war. The script will also produce admin.war, which can be used to deploy the admin UI in a similar fashion.
