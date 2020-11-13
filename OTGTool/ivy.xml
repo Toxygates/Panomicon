@@ -26,7 +26,7 @@
     <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="2.5.4"/>
     <dependency org="org.eclipse.rdf4j" name="rdf4j-rio-turtle" rev="2.5.4"/>
 
-    <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
+    <dependency org="com.fizzed" name="jne" rev="latest.integration"/>
 
     <!-- for javax.annotation.Nullable -->
     <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
