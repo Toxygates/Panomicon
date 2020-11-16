@@ -26,12 +26,26 @@ export class ExpressionTableComponent implements OnInit {
     return data.geneSymbols.join(" / ");
   }
 
-  log2foldMutator(_value, data, _type, _params, _component): number {
-    return data.values[0];
+  log2foldMutator(_value, data, _type, _params, _component): string {
+    var value = data.values[0];
+    if (typeof(value) != "number") {
+      console.log("Non-numerical value: in log2fold column: " + value);
+      return "NaN";
+    }
+    return value.toFixed(3);
   }
 
-  pValueMutator(_value, data, _type, _params, _component): number {
-    return data.values[1];
+  pValueMutator(_value, data, _type, _params, _component): string {
+    var value = data.values[1];
+    if (typeof(value) != "number") {
+      console.log("Non-numerical value: in p-value column: " + value);
+      return "NaN";
+    }
+    if (value > .00005) {
+      return value.toFixed(4);
+    } else {
+      return value.toExponential(3);
+    }
   }
 
   columns = [
