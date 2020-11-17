@@ -62,14 +62,7 @@ export class ExpressionTableComponent implements OnInit {
           this.router.navigate(['']);
         } else {
           this.samples = paramMap.getAll("samples");
-          this.backend.getMatrix(this.samples)
-          .subscribe(
-            result => {
-              console.log(JSON.stringify(result));
-              this.data = result["rows"];
-              this.drawTable();
-            }
-          )
+          this.drawTable();
         }
     });
   }
@@ -77,7 +70,23 @@ export class ExpressionTableComponent implements OnInit {
   private drawTable(): void {
     var _this = this;
     new Tabulator("#my-tabular-table", {
-      data: this.data,
+      ajaxURL: "json/matrix",
+      ajaxConfig:"POST",
+      ajaxContentType: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body:function(_url, _config, _params) {
+          var requestBodyObject = {
+            "groups": [{ "name": "Group 1", "sampleIds": _this.samples }]
+          };
+          console.log(requestBodyObject);
+          return(JSON.stringify(requestBodyObject));
+        },
+      },
+      ajaxResponse: function(_url, _params, response) {
+        return response.rows;
+      },
       columns: this.columns,
       layout:"fitDataTable",
       maxHeight: "75vh",
