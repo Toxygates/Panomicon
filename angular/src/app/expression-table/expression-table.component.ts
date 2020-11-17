@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BackendService } from '../backend.service';
 import Tabulator from 'tabulator-tables';
 
@@ -13,7 +13,7 @@ import { filter } from 'rxjs/operators';
 export class ExpressionTableComponent implements OnInit {
 
   constructor(private activatedRoute: ActivatedRoute,
-    private backend: BackendService) { }
+    private backend: BackendService, private router: Router) { }
 
   samples: string[] = [];
   data: any;
@@ -57,18 +57,20 @@ export class ExpressionTableComponent implements OnInit {
   ]
 
   ngOnInit(): void {
-    this.activatedRoute.queryParamMap.pipe(
-        filter(paramMap => paramMap.has("samples"))
-      ).subscribe(params => {
-        this.samples = params.getAll("samples");
-        this.backend.getMatrix(this.samples)
-        .subscribe(
-          result => {
-            console.log(JSON.stringify(result));
-            this.data = result["rows"];
-            this.drawTable();
-          }
-        )
+    this.activatedRoute.queryParamMap.subscribe(paramMap => {
+        if (!paramMap.has("samples")) {
+          this.router.navigate(['']);
+        } else {
+          this.samples = paramMap.getAll("samples");
+          this.backend.getMatrix(this.samples)
+          .subscribe(
+            result => {
+              console.log(JSON.stringify(result));
+              this.data = result["rows"];
+              this.drawTable();
+            }
+          )
+        }
     });
   }
 

@@ -4,13 +4,6 @@
             <ng-container *ngIf="samples.length == 0">
                 No samples selected
             </ng-container>
-            
-            <ng-container *ngIf="samples.length > 0">
-                Selected samples:
-                <ul>
-                    <li *ngFor="let sample of samples">{{sample}}</li>
-                </ul>
-            </ng-container>
 
             <div id="my-tabular-table"></div>
         </div>
