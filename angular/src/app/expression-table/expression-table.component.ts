@@ -3,8 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BackendService } from '../backend.service';
 import Tabulator from 'tabulator-tables';
 
-import { filter } from 'rxjs/operators';
-
 @Component({
   selector: 'app-expression-table',
   templateUrl: './expression-table.component.html',
@@ -76,7 +74,7 @@ export class ExpressionTableComponent implements OnInit {
         headers: {
           'Content-Type': 'application/json',
         },
-        body:function(_url, _config, _params) {
+        body: function(_url, _config, _params) {
           var requestBodyObject = {
             "groups": [{ "name": "Group 1", "sampleIds": _this.samples }]
           };
@@ -84,9 +82,14 @@ export class ExpressionTableComponent implements OnInit {
           return(JSON.stringify(requestBodyObject));
         },
       },
-      ajaxResponse: function(_url, _params, response) {
-        return response.rows;
+      ajaxURLGenerator: function(url, _config, params){
+        var page = params.page;
+        return url + "?offset=" + ((page - 1) * 100);
       },
+      paginationDataReceived: {
+        "data": "rows",
+      },
+      pagination:"remote",
       columns: this.columns,
       layout:"fitDataTable",
       maxHeight: "75vh",
