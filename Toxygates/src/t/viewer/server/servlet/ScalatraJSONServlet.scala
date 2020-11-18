@@ -312,7 +312,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         "column" -> writeJs(matrix.sortColumn.getOrElse(-1)),
         "ascending" -> writeJs(matrix.sortAscending))
       ),
-      "rows" -> writeJs(flattenRows(page))
+      "rows" -> writeJs(flattenRows(page)),
+      "last_page" -> writeJs(300), //TODO: replace this with the correct page count
     ))
   }
 

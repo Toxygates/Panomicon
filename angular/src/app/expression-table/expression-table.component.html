@@ -1,23 +1,11 @@
-<div class="container">
+<div [ngClass]="{'container': !data, 'container-fluid': data}">
     <div class="row">
         <div class="col-12 padded_ui_panel">
-            <h4>Placeholder for expression table</h4>
-            
             <ng-container *ngIf="samples.length == 0">
                 No samples selected
             </ng-container>
-            
-            <ng-container *ngIf="samples.length > 0">
-                Selected samples:
-            </ng-container>
 
-            <ul>
-                <li *ngFor="let sample of samples">{{sample}}</li>
-            </ul>
-
-            <ng-container *ngIf="matrix">
-                {{matrix}}
-            </ng-container>
+            <div id="my-tabular-table"></div>
         </div>
     </div>
 </div>
