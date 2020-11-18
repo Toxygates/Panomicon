@@ -26,13 +26,9 @@
 		<param-value>secret</param-value>
 	</context-param>
 
-	<!-- ID string of the instance. Mainly used for access control and data visibility.
-	To enable data access in the instance, create an instance
-	with this ID string from the admin GUI to insert a corresponding record in the triplestore.
-	-->
 	<context-param>		
 		<param-name>instanceName</param-name>
-		<param-value>dev</param-value>
+		<param-value>##instanceName##</param-value>
 	</context-param>
 
     <context-param>
@@ -284,5 +280,11 @@
   	<!--  24h session timeout (minutes) -->
   	<session-timeout>1440</session-timeout>
   </session-config>
-</web-app>
+
+<!-- The closing </web-app> will be filled in by scripts like 
+  new_instance.public.sh. 
+  If you will not be using that script, please uncomment the line below to close this file.
+-->
+
+<!-- </web-app> -->
 

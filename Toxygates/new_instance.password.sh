@@ -31,7 +31,7 @@ mkdir -p $THOME/shared/$INSTANCE
 
 SDIR=$THOME/t_viewer_template
 cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/WEB-INF/web.xml
-cat $THOME/t_viewer_template/toxygates.html.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/toxygates.html
+cat $THOME/t_viewer_template/toxygates.html.template_nibiohn | sed "s/##instanceName##/$INSTANCE/" > $TDIR/toxygates.html
 
 cat >> $TDIR/WEB-INF/web.xml <<EOF
 
