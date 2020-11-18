@@ -188,6 +188,18 @@
     	<servlet-name>remoteLogging</servlet-name>
     	<url-pattern>/toxygates/remote_logging</url-pattern>
 	</servlet-mapping>
+
+	<!-- The maintenanceServlet is for the Admin GUI. If you are releasing a public version,
+	    be sure to comment this servlet out, or anybody will be able to see and edit/delete all the data. -->
+    <servlet>
+        <servlet-name>maintenanceServlet</servlet-name>
+        <servlet-class>t.admin.server.MaintenanceServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>maintenanceServlet</servlet-name>
+        <url-pattern>/AdminConsole/maintenance</url-pattern>
+    </servlet-mapping>
+
 	<!-- End GWT servlets -->
 
 

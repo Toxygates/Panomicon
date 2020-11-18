@@ -88,3 +88,5 @@ This will start a web server on port 8888 where the main Panomicon interface can
 To deploy Panomicon for networked use, a servlet application container such as Tomcat is required. 
 
 To produce a WAR file that can be deployed in such a container, first compile and configure Panomicon as described above, then run deploy.sh (or deploy.ps1 on Windows) in the Toxygates directory to  produce toxygates-template.war. The script will also produce admin.war, which can be used to deploy the admin UI in a similar fashion.
+
+Be sure to comment out or remove maintenanceServlet (used by the admin UI) from web.xml if you are releasing to the public, since it allows anybody to edit or delete data.
