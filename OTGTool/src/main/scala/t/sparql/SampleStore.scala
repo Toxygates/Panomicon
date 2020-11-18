@@ -164,7 +164,10 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
          |    ${standardPred.map(a => s"t:${a.id} ?${a.id}").mkString("; ")} .""".stripMargin,
 
       s"""|} ?batchGraph rdfs:label ?batchLabel.
-          |  BIND(CONCAT(STR(?batchLabel), "|", STR(?dose_level), "|", STR(?exposure_time), "|", STR(?control_group)) AS ?treatment)
+          |  BIND(CONCAT(STR(?batchLabel), "|", STR(?dose_level), "|", STR(?exposure_time),
+          |    "|", STR(?control_group), "|", STR(?compound_name)) AS ?treatment)
+          |  BIND(CONCAT(STR(?batchLabel), "|Control|", STR(?exposure_time),
+          |    "|", STR(?control_group), "|", STR(?compound_name)) AS ?control_treatment)
           |  ${sf.standardSampleFilters} $filterString
           |}""".stripMargin,
 
@@ -193,6 +196,8 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
         useSF = sf.copy(batchURI = Some(treatmentBatch))
     }
 
+    //control group implicitly constrains compound, repeat type and other parameters;
+    //no need to additionally constrain them here
     val constraints = Map(
       OTGAttribute.DoseLevel -> treatmentUnpacked(1),
       OTGAttribute.ExposureTime -> treatmentUnpacked(2),
@@ -259,7 +264,9 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
    * Can the given predicate ID be queried as a predicate of a sample?
    */
   protected def isPredicateAttribute(attribute: Attribute): Boolean =
-    (attribute != CoreParameter.Batch && attribute != CoreParameter.Treatment)
+    (attribute != CoreParameter.Batch &&
+      attribute != CoreParameter.Treatment &&
+      attribute != CoreParameter.ControlTreatment)
 
   /**
    * Get parameter values for a set of samples. Values will only be returned

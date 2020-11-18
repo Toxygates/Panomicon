@@ -221,11 +221,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     })
   }
 
-  def complementaryTreatment(treatment: String) = {
+  def controlTreatment(treatment: String) = {
     val treatmentUnpacked = treatment.split("\\|")
     val doseLevel = treatmentUnpacked(1)
     if (doseLevel != "Control") {
-      List(treatmentUnpacked(0), "Control", treatmentUnpacked(2), treatmentUnpacked(3)).mkString("|")
+      List(treatmentUnpacked(0), "Control", treatmentUnpacked(2),
+        treatmentUnpacked(3), treatmentUnpacked(4)).mkString("|")
     } else {
       treatment
     }
@@ -241,7 +242,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val sf = SampleFilter(tconfig.instanceURI, None)
     val distinctTreatments = group.flatMap(s => {
       List(
-        complementaryTreatment(s.sampleClass(Treatment)),
+        controlTreatment(s.sampleClass(Treatment)),
         s.sampleClass(Treatment)
       )
     }).distinct
