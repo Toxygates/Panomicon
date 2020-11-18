@@ -57,13 +57,29 @@ In particular, the following must be configured:
 To run the admin interface, which is necessary to create and manage platforms, instances and datasets (and non-user data),
 it is also necessary to configure the servlets for the admin UI. See web.xml.admin and copy any missing configuration into your web.xml.
 
+## Populating the database
+
+Scripts for populating and maintaining the database are located in the folder OTGTool/scripts.
+First, edit the file config.sh and set variables appropriately. This script will be sourced by other scripts as a configuration.
+In particular, the data directory and triplestore access must be configured in the same way as in web.xml.
+Kyoto cabinet command line tools, such as kctreemgr and kchashmgr, as well as scala, must be present in the PATH.
+OTGTool must also have been successfully compiled as above.
+
+Then, from the scripts directory, please run: `buildData/newDB.sh`
+This will initialise omics expression value databases.
+After this has been done, please run: `buildData/populate.sh`
+This will download, filter and populate the following data: 
+Ensembl platforms for Human, Rat and Mouse, miRBase miRNA sets, miRDB mRNA-miRNA interactions, and Gene Ontology (GO) terms. 
+After this has been done, the system is ready for data insertion through either the admin console or the My Data interface.
+
+
 ## Testing
 
 Once configuration and compilation are complete, Panomicon can be run in development mode for local testing by running
 `
 ant devmode
 `
-in the Toxygates direcotry. 
+in the Toxygates directory.
 
 This will start a web server on port 8888 where the main Panomicon interface can be accessed through /toxygates.html. The admin interface can be accessed through /admin.html.
 

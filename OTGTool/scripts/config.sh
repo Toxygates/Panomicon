@@ -5,7 +5,9 @@
 export MAIN_ROOT=/path/to/Toxygates
 export OTGTOOL_ROOT=$MAIN_ROOT/OTGTool
 export TOXY_ROOT=$MAIN_ROOT/Toxygates
-export TOXY_SCRATCH=/shiba/scratch/toxygates
+
+#Scratch directory for temporary files
+export TOXY_SCRATCH=/path/to/Toxygates/tmp
 
 #This directory needs to contain libkyotocabinet and libjkyotocabinet
 #for any work with KC databases
