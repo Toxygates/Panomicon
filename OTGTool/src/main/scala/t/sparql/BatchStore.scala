@@ -117,10 +117,11 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
       |    ?s a t:sample .
       |  } ?x rdfs:label ?l ; a $itemClass.
       |} GROUP BY ?l""".stripMargin)
-    if (r(0).keySet.contains("l")) {
+    if (r.isEmpty) {
+      Map()
+    } else if (r(0).keySet.contains("l")) {
       Map() ++ r.map(x => x("l") -> x("n").toInt)
     } else {
-      // no records
       Map()
     }
   }
