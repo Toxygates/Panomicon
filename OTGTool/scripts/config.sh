@@ -9,11 +9,6 @@ export TOXY_ROOT=$MAIN_ROOT/Toxygates
 #Scratch directory for temporary files
 export TOXY_SCRATCH=/path/to/Toxygates/tmp
 
-#This directory needs to contain libkyotocabinet and libjkyotocabinet
-#for any work with KC databases
-KC_LIBDIR=/usr/local/lib
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$KC_LIBDIR"
-
 export OTGTOOL_CLASSPATH="${OTGTOOL_ROOT}/lib/jar/*:${OTGTOOL_ROOT}/lib/bundle/*:${OTGTOOL_ROOT}/mlib/*:${OTGTOOL_ROOT}/classes"
 
 #Directory where databases are stored
@@ -35,5 +30,5 @@ export T_TS_USER=x
 export T_TS_PASS=y
 
 function runfull { 
-	scala -Djava.library.path=$KC_LIBDIR -J-Xmx4g -classpath $OTGTOOL_CLASSPATH "$@"
+  scala -J-Xmx4g -classpath $OTGTOOL_CLASSPATH "$@"
 }

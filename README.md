@@ -26,13 +26,9 @@ In order to compile Panomicon, the following dependencies are required:
 
 * The ant build tool.
 
-* The kyoto cabinet native libraries as well as JNI libraries for Java interop, available from https://fallabs.com/kyotocabinet/
-
 In order to run Panomicon, it is also necessary to run a RDF triplestore supporting SPARQL 1.1. We use Apache Jena Fuseki.
 
 First, export the following environment libraries:
-
-* KC_LIB_DIR - path to Kyoto Cabinet libraries
 
 * SCALA_HOME - path to Scala SDK
 

@@ -15,7 +15,6 @@ $ant -lib antlib build
 To generate scaladoc documentation in docs/ :
 $ant -lib antlib docs
 
-To run unit tests, the location of kyoto cabinet libraries (native and Java bindings) must be supplied:
-$export KC_LIB_DIR=/usr/local/lib
+To run unit tests:
 $ant -lib antlib test
 

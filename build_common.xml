@@ -4,9 +4,6 @@
   <!-- set scala.home -->
   <property name="scala.home" value="${env.SCALA_HOME}" />
 
-  <!-- needed for tests -->
-  <property name="kyotocabinet_lib.dir" value="${env.KC_LIB_DIR}" />
-
   <property name="sources.dir" value="src" />
   <property name="lib.dir" value="lib" />
   <property name="build.dir" value="classes" />
@@ -35,7 +32,6 @@
       <runpath>
         <pathelement location="${testbuild.dir}" />
       </runpath>
-      <jvmarg value="-Djava.library.path=${kyotocabinet_lib.dir}"/>
     </scalatest>
   </target>
 
