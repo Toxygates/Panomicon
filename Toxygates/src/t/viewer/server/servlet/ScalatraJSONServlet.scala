@@ -160,8 +160,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
     val batchURI = BatchStore.packURI(requestedBatchId)
     val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
-    val data = sampleStore.sampleAttributeValueQuery(overviewParameters.map(_.id))(sf)()
-    write(data)
+    val scf = SampleClassFilter()
+    val samples = sampleStore.sampleQuery(scf, sf)().map(sampleToMap)
+    write(samples)
   }
 
   def sampleToMap(s: Sample): collection.Map[String, String] = {
