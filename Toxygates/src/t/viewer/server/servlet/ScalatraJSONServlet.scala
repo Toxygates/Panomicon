@@ -248,13 +248,17 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val matrix = controller.managedMatrix
 
     val pages = new PageDecorator(context, controller)
-    val defaultLimit = 100
+    val defaultPageSize = 100
 
     val offset = params.getOrElse("offset", "0").toInt
-    val page = params.get("limit") match {
-      case Some(l) => pages.getPageView(offset, l.toInt, true)
-      case None => pages.getPageView(offset, defaultLimit, true)
+    val pageSize = params.get("limit") match {
+      case Some(l) => l.toInt
+      case None => defaultPageSize
     }
+
+    val numPages = (matrix.info.numRows.toFloat / pageSize).ceil.toInt
+
+    val page = pages.getPageView(offset, pageSize, true)
     val ci = columnInfo(matrix.info)
 
     //writeJs avoids the problem of Map[String, Any] not having an encoder
@@ -265,7 +269,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         "ascending" -> writeJs(matrix.sortAscending))
       ),
       "rows" -> writeJs(flattenRows(page)),
-      "last_page" -> writeJs(300), //TODO: replace this with the correct page count
+      "last_page" -> writeJs(numPages),
     ))
   }
 
