@@ -35,8 +35,20 @@ class PlatformRegistry(probeStore: ProbeStore) {
   private lazy val identifierLookup =
     Map() ++ allPlatforms.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
 
+  private var platformIdentifierLookup = Map.empty[String, Map[String, Probe]]
+  private def ensurePlatformLoaded(platform: String): Unit = {
+    if (!platformIdentifierLookup.contains(platform)) {
+      platformIdentifierLookup += (platform ->
+        ProbeStore.loadOrFetchFromCache(probeStore, platform).iterator.map(p => p.identifier -> p).toMap)
+    }
+  }
+
   def allProbes: Iterable[Probe] = allPlatforms.values.toSeq.flatten
-  def getProbe(id: String): Option[Probe] = identifierLookup.get(id)
+  def getProbe(platform: String, id: String): Option[Probe] = {
+    ensurePlatformLoaded(platform)
+    platformIdentifierLookup(platform).get(id)
+  }
+
   def probeIdentifiers(platform: String): Set[String] =
     probeStore.probesForPlatform(platform).map(_.identifier).toSet
   def platformProbes(platform: String): Iterable[Probe] =
@@ -51,8 +63,27 @@ class PlatformRegistry(probeStore: ProbeStore) {
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
 
+  /**
+   * Probe resolution by going through all known platforms. Slow, forces
+   * loading of all platforms (the first time the method is called).
+   */
   def resolve(identifiers: Seq[String]): Seq[Probe] =
     identifiers.flatMap(identifierLookup.get(_))
+
+  def resolve(platform: Option[String], identifiers: Seq[String]): Seq[Probe] =
+    platform match {
+      case Some(pf) => resolve(pf, identifiers)
+      case _ => resolve(identifiers)
+    }
+
+  /**
+   * Probe resolution by going through a single known platform.
+   */
+  def resolve(platform: String, identifiers: Seq[String]): Seq[Probe] = {
+    ensurePlatformLoaded(platform)
+    val registry = platformIdentifierLookup(platform)
+    identifiers.flatMap(registry.get(_))
+  }
 
   /**
    * Filter probes for a number of platforms.

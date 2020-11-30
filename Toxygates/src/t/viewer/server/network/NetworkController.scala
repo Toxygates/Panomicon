@@ -28,7 +28,7 @@ import t.viewer.server.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable
 import t.viewer.server.PlatformRegistry
 import t.viewer.server.matrix.ControllerParams
-import t.viewer.shared.network.Network
+import t.viewer.shared.network.{Network, NetworkInfo}
 
 /**
  * A MatrixController that turns the main matrix into a ManagedNetwork
@@ -40,9 +40,10 @@ import t.viewer.shared.network.Network
  */
 class NetworkController(context: Context, platforms: PlatformRegistry,
                         params: ControllerParams,
-                        val sideMatrix: ManagedMatrix, targets: TargetTable,
+                        val sideController: MatrixController, targets: TargetTable,
                         initMainPageSize: Int,
                         sideIsMRNA: Boolean) extends MatrixController(context, platforms, params) {
+  def sideMatrix = sideController.managedMatrix
 
   type Mat = ManagedNetwork
 
@@ -56,4 +57,5 @@ class NetworkController(context: Context, platforms: PlatformRegistry,
   def makeNetwork: Network =
     new NetworkBuilder(managedMatrix.targets, platforms, managedMatrix, sideMatrix).build
 
+  def makeNetworkWithInfo = new NetworkInfo(managedMatrix.info, sideMatrix.info, makeNetwork)
 }

@@ -6,15 +6,20 @@ import java.util.Date
 
 import javax.servlet.ServletContext
 import org.scalatra._
-import t.common.shared.{AType, ValueType}
+import t.common.shared.{AType, GroupUtils, ValueType}
 import t.db.{BasicExprValue, Sample}
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Treatment, Type}
 import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
+import t.platform.mirna.TargetTableBuilder
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
-import t.viewer.server.{AssociationMasterLookup, Configuration}
+import t.viewer.server.{AssociationMasterLookup, Configuration, MirnaSources, PlatformRegistry}
 import t.viewer.server.Conversions.asJavaSample
-import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
+import t.viewer.server.matrix.{ControllerParams, ExpressionRow, MatrixController, PageDecorator}
+import t.viewer.server.network.NetworkController
+import t.viewer.server.rpc.NetworkLoader
+import t.viewer.shared.mirna.MirnaSource
+import t.viewer.shared.network.{Interaction, Network}
 import t.viewer.shared.{Association, ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
 import ujson.Value
 import upickle.default._
@@ -75,6 +80,10 @@ package json {
       }
     }
   }
+
+  object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
+  case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
+                           associationSource: String, associationLimit: String = null)
 }
 
 object Encoders {
@@ -112,6 +121,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
   lazy val batchStore = new BatchStore(baseConfig.triplestoreConfig)
   lazy val sampleStore = context.sampleStore
   lazy val probeStore =  context.probeStore
+
+  lazy val platformRegistry = new PlatformRegistry(probeStore)
+  lazy val netLoader = new NetworkLoader(context, platformRegistry, baseConfig.data.mirnaDir)
 
   get("instance") {
     <p>My instance is {tconfig.instanceName}</p>
@@ -211,56 +223,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(values)
   }
 
-  def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, Value]] = {
-      (0 until info.numColumns()).map(i => {
-        Map("name" -> writeJs(info.columnName(i)),
-          "parent" -> writeJs(info.parentColumnName(i)),
-          "shortName" -> writeJs(info.shortColumnName(i)),
-          "hint" -> writeJs(info.columnHint(i)),
-          "samples" -> writeJs(info.samples(i).map(s => s.id()))
-        )
-    })
-  }
-
-  def controlTreatment(treatment: String) = {
-    val treatmentUnpacked = treatment.split("\\|")
-    val doseLevel = treatmentUnpacked(1)
-    if (doseLevel != "Control") {
-      List(treatmentUnpacked(0), "Control", treatmentUnpacked(2),
-        treatmentUnpacked(3), treatmentUnpacked(4)).mkString("|")
-    } else {
-      treatment
-    }
-  }
-
-  /**
-   * By using the sample treatment ID, ensure that the group contains
-   * all the available samples for a given treatment.
-   * This is the default behaviour for /matrix requests for now; in the future, we may want to
-   * make it optional, since the system in principle supports sub-treatment level sample groups.
-   */
-  def fillGroup(group: Seq[Sample]): Seq[Sample] = {
-    val sf = SampleFilter(tconfig.instanceURI, None)
-    val distinctTreatments = group.flatMap(s => {
-      List(
-        controlTreatment(s.sampleClass(Treatment)),
-        s.sampleClass(Treatment)
-      )
-    }).distinct
-    distinctTreatments.flatMap(t =>
-      sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
-  }
-
-  def flattenRows(rows: Seq[ExpressionRow]): Seq[Map[String, Value]] = {
-    rows.map(r => Map(
-      "probe" -> writeJs(r.probe),
-      "probeTitles" -> writeJs(r.probeTitles),
-      "geneIds" -> writeJs(r.geneIds.map(_.toInt)),
-      "geneSymbols" -> writeJs(r.geneSymbols),
-      "values" -> writeJs(r.values.map(_.value))
-    ))
-  }
-
   /*
   URL parameters: valueType, offset, limit
   other parameters in MatrixParams
@@ -276,26 +238,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
    */
 
   post("/matrix") {
+    import MatrixHandling._
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
     println(s"Load request: $matParams")
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
 
-    val sampleIds = matParams.groups.flatMap(_.sampleIds)
-    val fullSamples = Map.empty ++
-      context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
-        s => (s.sampleId -> s))
-
-    val schema = new OTGSchema()
-    val groups = matParams.groups.map(g => {
-      val filledGroup = fillGroup(g.sampleIds.map(s => fullSamples(s)))
-      new t.common.shared.sample.Group(schema, g.name, filledGroup.map(asJavaSample).toArray)
-    })
-
-    val controller = MatrixController(context, groups, matParams.initProbes, valueType)
+    val controller = loadMatrix(matParams, valueType)
     val matrix = controller.managedMatrix
-    matParams.applyFilters(matrix)
-    matParams.applySorting(matrix)
 
     val pages = new PageDecorator(context, controller)
     val defaultLimit = 100
@@ -316,6 +266,55 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       ),
       "rows" -> writeJs(flattenRows(page)),
       "last_page" -> writeJs(300), //TODO: replace this with the correct page count
+    ))
+  }
+
+  def interactionsToJson(ints: Iterable[Interaction]): Seq[Value] = {
+    ints.toSeq.map(i => {
+      writeJs(Map(
+        "from" -> writeJs(i.from().id()),
+        "to" -> writeJs(i.to().id()),
+        "label" -> writeJs(i.label()),
+        "weight" -> writeJs(i.weight().doubleValue())
+      ))
+    })
+  }
+
+  post("/network") {
+    import MatrixHandling._
+    import java.lang.{Double => JDouble}
+    val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
+    println(s"Load request: $netParams")
+    val valueType = ValueType.valueOf(
+      params.getOrElse("valueType", "Folds"))
+    val defaultLimit = 100
+    val pageSize = params.get("limit") match {
+      case Some(l) => l.toInt
+      case None => defaultLimit
+    }
+
+    var r = new TargetTableBuilder
+    val mirnaSource = new MirnaSource(netParams.associationSource, "", false,
+      Option(netParams.associationLimit).map(x => JDouble.parseDouble(x): JDouble).getOrElse(null: JDouble),
+      0, null, null, null)
+    for (t <- netLoader.mirnaTargetTable(mirnaSource)) {
+      r.addAll(t)
+    }
+    val targetTable = r.build
+
+    println(s"Constructed target table of size ${targetTable.size}")
+    if (targetTable.isEmpty) {
+      println("Warning: the target table is empty, no networks can be constructed.")
+    }
+
+    val mainGroups = filledGroups(netParams.matrix1)
+    val mainInitProbes = netParams.matrix1.initProbes
+    val sideGroups = filledGroups(netParams.matrix2)
+    val netController = netLoader.load(targetTable, mainGroups, mainInitProbes.toArray,
+      sideGroups, valueType, pageSize)
+    val network = netController.makeNetwork
+    write(Map(
+      "interactions" -> interactionsToJson(network.interactions().asScala)
     ))
   }
 
@@ -356,4 +355,83 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         halt(400)
     }
   }
+
+  /**
+   * Routines that support matrix loading requests
+   */
+  object MatrixHandling {
+    def filledGroups(matParams: json.MatrixParams) = {
+      val sampleIds = matParams.groups.flatMap(_.sampleIds)
+      val fullSamples = Map.empty ++
+        context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
+          s => (s.sampleId -> s))
+
+      val schema = new OTGSchema()
+      matParams.groups.map(g => {
+        val filledGroup = fillGroup(g.sampleIds.map(s => fullSamples(s)))
+        new t.common.shared.sample.Group(schema, g.name, filledGroup.map(asJavaSample).toArray)
+      })
+    }
+
+    def loadMatrix(matParams: json.MatrixParams, valueType: ValueType): MatrixController = {
+      val groups = filledGroups(matParams)
+
+      val controller = MatrixController(context, groups, matParams.initProbes, valueType)
+      val matrix = controller.managedMatrix
+      matParams.applyFilters(matrix)
+      matParams.applySorting(matrix)
+      controller
+    }
+
+    def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, Value]] = {
+      (0 until info.numColumns()).map(i => {
+        Map("name" -> writeJs(info.columnName(i)),
+          "parent" -> writeJs(info.parentColumnName(i)),
+          "shortName" -> writeJs(info.shortColumnName(i)),
+          "hint" -> writeJs(info.columnHint(i)),
+          "samples" -> writeJs(info.samples(i).map(s => s.id()))
+        )
+      })
+    }
+
+    def controlTreatment(treatment: String) = {
+      val treatmentUnpacked = treatment.split("\\|")
+      val doseLevel = treatmentUnpacked(1)
+      if (doseLevel != "Control") {
+        List(treatmentUnpacked(0), "Control", treatmentUnpacked(2),
+          treatmentUnpacked(3), treatmentUnpacked(4)).mkString("|")
+      } else {
+        treatment
+      }
+    }
+
+    /**
+     * By using the sample treatment ID, ensure that the group contains
+     * all the available samples for a given treatment.
+     * This is the default behaviour for /matrix requests for now; in the future, we may want to
+     * make it optional, since the system in principle supports sub-treatment level sample groups.
+     */
+    def fillGroup(group: Seq[Sample]): Seq[Sample] = {
+      val sf = SampleFilter(tconfig.instanceURI, None)
+      val distinctTreatments = group.flatMap(s => {
+        List(
+          controlTreatment(s.sampleClass(Treatment)),
+          s.sampleClass(Treatment)
+        )
+      }).distinct
+      distinctTreatments.flatMap(t =>
+        sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
+    }
+
+    def flattenRows(rows: Seq[ExpressionRow]): Seq[Map[String, Value]] = {
+      rows.map(r => Map(
+        "probe" -> writeJs(r.probe),
+        "probeTitles" -> writeJs(r.probeTitles),
+        "geneIds" -> writeJs(r.geneIds.map(_.toInt)),
+        "geneSymbols" -> writeJs(r.geneSymbols),
+        "values" -> writeJs(r.values.map(_.value))
+      ))
+    }
+  }
+
 }

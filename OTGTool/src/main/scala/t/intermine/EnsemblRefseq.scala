@@ -93,6 +93,8 @@ object MiRawImporter {
     for (l <- lines) {
       val spl = l.split("\\t")
       val refSeq = RefSeq(spl(2))
+      //TODO consider not filtering knownTranscripts - removes the need to preload the whole known
+      //transcript set (and thus all platforms)
       if (knownTranscripts.contains(refSeq))
       builder.add(MiRNA(spl(1)), refSeq, 100.0,
           info)

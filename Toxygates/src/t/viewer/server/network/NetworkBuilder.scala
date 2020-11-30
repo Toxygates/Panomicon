@@ -44,16 +44,17 @@ object NetworkBuilder {
                         side: ManagedMatrix,
                         mainOffset: Int, mainSize: Int): Seq[String] = {
     val mainType = main.params.typ
-    val expPlatform = side.params.platform
+    val mainPlatform = main.params.platform
+    val sidePlatform = side.params.platform
 
     mainType match {
       case Network.mrnaType =>
         val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
-        val range = targets.reverseTargets(platforms.resolve(domain))
+        val range = targets.reverseTargets(platforms.resolve(mainPlatform, domain))
         range.map(_._2.id).toSeq.distinct
       case Network.mirnaType =>
         val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
-        val allProbes = platforms.platformProbes(expPlatform).toSeq
+        val allProbes = platforms.platformProbes(sidePlatform).toSeq
         val range = targets.targetsForPlatform(domain.map(new MiRNA(_)), allProbes)
         range.map(_._2.identifier).toSeq.distinct
       case _ => throw new Exception(s"Unable to extract side probes: unexpected column type $mainType for main table")
@@ -82,7 +83,7 @@ class NetworkBuilder(targets: TargetTable,
     }
     useRows.map(r => {
       val probe = r.getProbe
-      val symbols = platforms.getProbe(probe).toList.flatMap(_.symbols).asGWT
+      val symbols = platforms.getProbe(main.params.platform, probe).toList.flatMap(_.symbols).asGWT
       Node.fromRow(r, symbols, mtype, info)
     })
   }
@@ -176,14 +177,15 @@ class NetworkBuilder(targets: TargetTable,
       return new Network("Network", mkList(), mkList(), false, 0)
     }
 
-    val probes = platforms.resolve(main.current.orderedRowKeys)
+    val mainPlatform = main.params.platform
+    val probes = platforms.resolve(mainPlatform, main.current.orderedRowKeys)
     val sidePlatform = side.params.platform
     val sidePlatformProbes = platforms.platformProbes(sidePlatform).toSeq
     val allTargets = probeTargets(probes, sidePlatformProbes)
 
     val keepNodes = topProbesWithInteractions(allTargets.map(x => (x._1, x._2)))
     val mainSel = main.current.selectNamedRows(keepNodes)
-    val mainTargets = probeTargets(platforms.resolve(mainSel.orderedRowKeys), sidePlatformProbes)
+    val mainTargets = probeTargets(platforms.resolve(mainPlatform, mainSel.orderedRowKeys), sidePlatformProbes)
     val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
       filter(sideTableProbeSet.contains)
