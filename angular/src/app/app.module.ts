@@ -13,6 +13,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BatchSamplesComponent } from './batch-samples/batch-samples.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { ExpressionTableComponent } from './expression-table/expression-table.component';
+import { NetworkVizComponent } from './network-viz/network-viz.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { ExpressionTableComponent } from './expression-table/expression-table.co
     BatchPickerComponent,
     BatchSamplesComponent,
     PageNotFoundComponent,
-    ExpressionTableComponent
+    ExpressionTableComponent,
+    NetworkVizComponent
   ],
   imports: [
     BrowserModule,
