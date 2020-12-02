@@ -23,16 +23,16 @@ export class ExpressionTableComponent implements OnInit {
     return data.geneSymbols.join(" / ");
   }
 
-  log2foldMutator(_value, data, _type, _params, _component): string {
-    return Number(data.values[0]).toFixed(3);
+  log2foldMutator(value, _data, _type, _params, _component): string {
+    return Number(value).toFixed(3);
   }
 
-  pValueMutator(_value, data, _type, _params, _component): string {
-    var value = Number(data.values[1]);
-    if (value > .00005) {
-      return value.toFixed(4);
+  pValueMutator(value, data, _type, _params, _component): string {
+    var numericalValue = Number(value)
+    if (numericalValue > .00005) {
+      return numericalValue.toFixed(4);
     } else {
-      return value.toExponential(3);
+      return numericalValue.toExponential(3);
     }
   }
 
@@ -42,8 +42,8 @@ export class ExpressionTableComponent implements OnInit {
     {title: 'Probe Titles', field: 'organism',
       mutator: this.probeTitlesMutator, headerSort:false},
     {title: 'Probe', field: 'probe', headerSort:false},
-    {title: 'Log2-fold', field: 'Group 1'},
-    {title: 'P-Value', field: 'Group 1(p)'},
+    {title: 'Log2-fold', field: 'Group 1', mutator: this.log2foldMutator},
+    {title: 'P-Value', field: 'Group 1(p)', mutator: this.pValueMutator},
   ]
 
   ngOnInit(): void {
