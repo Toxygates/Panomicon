@@ -1,29 +1,27 @@
 package t.viewer.server.servlet
 
-import scala.collection.JavaConverters._
-import java.text.SimpleDateFormat
-import java.util.Date
-
-import javax.servlet.ServletContext
 import org.scalatra._
-import t.common.shared.{AType, GroupUtils, ValueType}
+import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
 import t.model.sample.Attribute
-import t.model.sample.CoreParameter.{ControlGroup, Platform, SampleId, Treatment, Type}
-import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
+import t.model.sample.CoreParameter._
+import t.model.sample.OTGAttribute._
 import t.platform.mirna.TargetTableBuilder
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
-import t.viewer.server.{AssociationMasterLookup, Configuration, MirnaSources, PlatformRegistry}
 import t.viewer.server.Conversions.asJavaSample
-import t.viewer.server.matrix.{ControllerParams, ExpressionRow, MatrixController, PageDecorator}
-import t.viewer.server.network.NetworkController
+import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.rpc.NetworkLoader
+import t.viewer.server.{AssociationMasterLookup, Configuration, PlatformRegistry}
 import t.viewer.shared.mirna.MirnaSource
-import t.viewer.shared.network.{Interaction, Network}
-import t.viewer.shared.{Association, ColumnFilter, FilterType, ManagedMatrixInfo, OTGSchema}
+import t.viewer.shared.network.Interaction
+import t.viewer.shared._
 import ujson.Value
-import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW, _}
+
+import java.text.SimpleDateFormat
+import java.util.Date
+import javax.servlet.ServletContext
+import scala.collection.JavaConverters._
 
 
 package json {
@@ -268,7 +266,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         "column" -> writeJs(matrix.sortColumn.getOrElse(-1)),
         "ascending" -> writeJs(matrix.sortAscending))
       ),
-      "rows" -> writeJs(flattenRows(page)),
+      "rows" -> writeJs(flattenRows(page, matrix.info)),
       "last_page" -> writeJs(numPages),
     ))
   }
@@ -286,6 +284,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
   post("/network") {
     import MatrixHandling._
+
     import java.lang.{Double => JDouble}
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
     println(s"Load request: $netParams")
@@ -427,14 +426,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
     }
 
-    def flattenRows(rows: Seq[ExpressionRow]): Seq[Map[String, Value]] = {
+    def flattenRows(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {
       rows.map(r => Map(
         "probe" -> writeJs(r.probe),
         "probeTitles" -> writeJs(r.probeTitles),
         "geneIds" -> writeJs(r.geneIds.map(_.toInt)),
         "geneSymbols" -> writeJs(r.geneSymbols),
-        "values" -> writeJs(r.values.map(_.value))
-      ))
+      ) ++ ((0 until matrixInfo.numColumns)
+          .map(matrixInfo.columnName(_)) zip r
+          .values.map(v => writeJs(v.value))))
     }
   }
 

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BackendService } from '../backend.service';
 import Tabulator from 'tabulator-tables';
 
 @Component({
@@ -11,7 +10,7 @@ import Tabulator from 'tabulator-tables';
 export class ExpressionTableComponent implements OnInit {
 
   constructor(private activatedRoute: ActivatedRoute,
-    private backend: BackendService, private router: Router) { }
+    private router: Router) { }
 
   samples: string[] = [];
   data: any;
@@ -38,11 +37,13 @@ export class ExpressionTableComponent implements OnInit {
   }
 
   columns = [
-    {title: 'Gene Symbol', field: 'type', mutator: this.geneSymbolsMutator},
-    {title: 'Probe Titles', field: 'organism', mutator: this.probeTitlesMutator},
-    {title: 'Probe', field: 'probe'},
-    {title: 'Log2-fold', field: 'log2fold', mutator: this.log2foldMutator},
-    {title: 'P-Value', field: 'pValue', mutator: this.pValueMutator},
+    {title: 'Gene Symbol', field: 'type',
+      mutator: this.geneSymbolsMutator, headerSort:false},
+    {title: 'Probe Titles', field: 'organism',
+      mutator: this.probeTitlesMutator, headerSort:false},
+    {title: 'Probe', field: 'probe', headerSort:false},
+    {title: 'Log2-fold', field: 'Group 1'},
+    {title: 'P-Value', field: 'Group 1(p)'},
   ]
 
   ngOnInit(): void {
