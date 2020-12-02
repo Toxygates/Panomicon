@@ -32,6 +32,7 @@ import t.viewer.server.Conversions._
 import t.viewer.server.PlatformRegistry
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.ExtFoldBuilder
+import t.viewer.server.matrix.MatrixController
 import t.viewer.shared.network.Network
 import t.viewer.shared.ColumnFilter
 import t.viewer.server.matrix.ManagedMatrix
@@ -106,23 +107,32 @@ class ManagedNetworkTest extends TTestSuite {
 
   test("forward network") {
     val side = mirnaBuilder.build(Seq(mirnaGroup), false)
-    networkTest(side, mrnaGroups, t.db.testing.DBTestData.mrnaPlatformId, true)
+    networkTest(side, mrnaGroups, Seq(mirnaGroup), t.db.testing.DBTestData.mrnaPlatformId, true)
   }
 
   test("reverse network") {
     val side = mrnaBuilder.build(mrnaGroups, false)
-    networkTest(side, Seq(mirnaGroup), mirnaPlatformId, false)
+    networkTest(side, Seq(mirnaGroup), mrnaGroups, mirnaPlatformId, false)
   }
 
   def networkTest(side: ManagedMatrix, mainGroups: Seq[Group],
+                  sideGroups: Seq[Group],
       mainPlatform: String, reverseLookup: Boolean) {
 
     val testContext = new Context(null, null, null, null, context)
 
     val params = ControllerParams(mainGroups, Seq(), ValueType.Folds)
     val mainPageSize = 100
-    val netCon = new NetworkController(testContext, platforms, params, side, targets, mainPageSize,
-      false)
+
+    //Partial MatrixController. Note: should find a more permanent solution and structure the code better
+    val sideControllerParams = ControllerParams(sideGroups, Seq(), ValueType.Folds)
+    val sideController = new MatrixController(null, null, sideControllerParams) {
+      override lazy val managedMatrix = side.asInstanceOf[this.Mat]
+      override def finish(mm: ManagedMatrix): this.Mat = ???
+    }
+
+    val netCon = new NetworkController(testContext, platforms, params, sideController,
+      targets, mainPageSize, false)
     val main = netCon.managedMatrix
 
     //Check that the side table - main table correspondence agrees with what the target table says
