@@ -38,12 +38,12 @@ package json {
   case class FilterSpec(column: ColSpec, `type`: String, threshold: Double)
 
   object SortSpec { implicit val rw: RW[SortSpec] = macroRW }
-  case class SortSpec(column: ColSpec, order: String)
+  case class SortSpec(field: String, dir: String)
 
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
   case class MatrixParams(groups: Seq[Group], initProbes: Seq[String] = Seq(),
                           filtering: Seq[FilterSpec] = Seq(),
-                          sorting: SortSpec = null) {
+                          sorter: SortSpec = null) {
 
     def applyFilters(mat: ManagedMatrix): Unit = {
       for (f <- filtering) {
@@ -60,17 +60,26 @@ package json {
       }
     }
 
+    def getColumnIndex(matrixInfo: ManagedMatrixInfo, columnName: String): Int = {
+      for (i <- 0 until matrixInfo.numColumns) {
+        if (matrixInfo.columnName(i) == columnName) {
+          return i
+        }
+      }
+      -1
+    }
+
     def applySorting(mat: ManagedMatrix): Unit = {
       val defaultSortCol = 0
       val defaultSortAsc = false
-      Option(sorting) match {
+      Option(sorter) match {
         case Some(sort) =>
-          val idx = mat.info.findColumn(sort.column.id, sort.column.`type`)
+          val idx = getColumnIndex(mat.info, sort.field)
           if (idx != -1) {
-            val asc = sort.order == "ascending"
+            val asc = sort.dir == "asc"
             mat.sort(idx, asc)
           } else {
-            Console.err.println(s"Unable to find column ${sort.column}. Sorting will not apply to this column.")
+            Console.err.println(s"Unable to find column ${sort.field}. Sorting will not apply to this column.")
             mat.sort(defaultSortCol, defaultSortAsc)
           }
         case None =>

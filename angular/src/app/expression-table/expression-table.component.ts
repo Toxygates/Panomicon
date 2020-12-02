@@ -60,17 +60,22 @@ export class ExpressionTableComponent implements OnInit {
   private drawTable(): void {
     var _this = this;
     new Tabulator("#my-tabular-table", {
+      pagination:"remote",
       ajaxURL: "json/matrix",
       ajaxConfig:"POST",
       ajaxContentType: {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: function(_url, _config, _params) {
-          var requestBodyObject = {
-            "groups": [{ "name": "Group 1", "sampleIds": _this.samples }]
-          };
-          console.log(requestBodyObject);
+        body: function(_url, _config, params) {
+          console.log("here are the params");
+          console.log(JSON.stringify(params));
+          var requestBodyObject: any  = {
+            "groups": [{ "name": "Group 1", "sampleIds": _this.samples }],
+          }
+          requestBodyObject.page = params.page;
+          requestBodyObject.sorter = params.sorters[0];
+          console.log(JSON.stringify(requestBodyObject));
           return(JSON.stringify(requestBodyObject));
         },
       },
@@ -81,10 +86,15 @@ export class ExpressionTableComponent implements OnInit {
       paginationDataReceived: {
         "data": "rows",
       },
-      pagination:"remote",
       columns: this.columns,
       layout:"fitDataTable",
       maxHeight: "75vh",
+      columnHeaderSortMulti:false,
+      ajaxSorting:true,
+      initialSort:[
+        {column:"Group 1", dir:"desc"}
+      ]
+      //paginationInitialPage:2
     });
   }
 
