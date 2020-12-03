@@ -93,7 +93,8 @@ export class ExpressionTableComponent implements OnInit {
       ajaxSorting:true,
       initialSort:[
         {column:"Group 1", dir:"desc"}
-      ]
+      ],
+      tooltips:true,
       //paginationInitialPage:2
     });
   }
