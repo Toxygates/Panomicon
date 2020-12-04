@@ -476,9 +476,9 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
     val query = s"""$tPrefixes
                    |SELECT DISTINCT ?probe WHERE {
                    |  GRAPH ?g {
-                   |    ?got rdfs:label ?label.
+                   |    ?got rdfs:label "${term.name}".
                    |  }
-                   |  FILTER(STR(?label) = "${term.name}"^^xsd:string).
+                   |  ?g2 a t:platform.
                    |  GRAPH ?g2 {
                    |    ?probe a t:probe .
                    |    { ?probe t:gomf ?got . }
@@ -487,7 +487,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
                    |      UNION { ?probe t:go ?got . }
                    |  }
                    |}""".stripMargin
-    triplestore.simpleQuery(query).map(Probe.unpack)
+    triplestore.simpleQuery(query, false, 30000).map(Probe.unpack)
   }
 
   protected def unpackGoterm(term: String) = term.split(".org/obo/")(1).replace("_", ":")
