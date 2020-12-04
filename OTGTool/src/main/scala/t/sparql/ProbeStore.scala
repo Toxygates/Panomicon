@@ -85,7 +85,19 @@ object ProbeStore extends RDFClass {
   }
 }
 
-class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
+trait PlatformLoader {
+  /**
+   * Load probes for one platform.
+   */
+  def probesForPlatform(platform: String): Iterable[Probe]
+
+  /**
+   * Eagerly load all platforms and probes. Expensive.
+   */
+  def allPlatforms: Map[String, Iterable[Probe]]
+}
+
+class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with PlatformLoader
   with Store[Probe]{
   import QueryUtils._
   import Triplestore._
@@ -114,6 +126,11 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
                                |    ?p a ${ProbeStore.itemClass}; rdfs:label ?l .
                                |  }
                                |}""".stripMargin)
+  }
+
+  def allPlatforms = {
+    val platformStore = new PlatformStore(config)
+    ProbeStore.platformsAndProbes(platformStore, this)
   }
 
   /**

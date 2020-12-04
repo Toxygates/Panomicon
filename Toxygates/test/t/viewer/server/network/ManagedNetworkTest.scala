@@ -30,6 +30,7 @@ import t.db.testing.NetworkTestData
 import t.platform.mirna._
 import t.viewer.server.Conversions._
 import t.viewer.server.PlatformRegistry
+import t.viewer.server.MemoryPlatforms
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.ExtFoldBuilder
 import t.viewer.server.matrix.MatrixController
@@ -51,10 +52,12 @@ class ManagedNetworkTest extends TTestSuite {
     mirnaIds)
 
   val mirnaGroup = new Group(dataSchema, "mirnaGroup", mirnaSamples.map(s => asJavaSample(s)).toArray)
-  val platforms: PlatformRegistry = ???  //TODO
-//  new PlatformRegistry(Map(
-//    t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
-//    mirnaPlatformId -> mirnaProbes.toSet))
+  val platformLoader = new MemoryPlatforms(
+    Map(
+      t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
+      mirnaPlatformId -> mirnaProbes.toSet))
+
+  val platforms: PlatformRegistry = new PlatformRegistry(platformLoader)
 
   val mrnaGroups = t.common.testing.TestData.groups take 5
 

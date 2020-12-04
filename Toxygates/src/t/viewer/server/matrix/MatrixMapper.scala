@@ -121,7 +121,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
   private def convert(from: ManagedMatrixInfo, newRows: Seq[String]): ManagedMatrixInfo = {
     val r = new ManagedMatrixInfo()
     for (i <- 0 until from.numDataColumns()) {
-      r.addColumn(false, from.columnName(i), from.columnName(i), from.columnHint(i),
+      r.addColumn(false, from.columnName(i), from.parentColumnName(i), from.columnHint(i),
         from.columnFilter(i), from.columnGroup(i), from.isPValueColumn(i),
         from.samples(i))
     }
