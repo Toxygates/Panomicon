@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import Tabulator from 'tabulator-tables';
 
@@ -7,13 +7,15 @@ import Tabulator from 'tabulator-tables';
   templateUrl: './expression-table.component.html',
   styleUrls: ['./expression-table.component.scss']
 })
-export class ExpressionTableComponent implements OnInit {
+export class ExpressionTableComponent implements AfterViewInit {
 
   constructor(private activatedRoute: ActivatedRoute,
     private router: Router) { }
 
   samples: string[] = [];
   data: any;
+
+  @ViewChild('tabulatorContainer') tabulatorContainer;
 
   geneSymbolsMutator(_value, data, _type, _params, _component): string {
     return data.probeTitles.join(" / ");
@@ -46,7 +48,7 @@ export class ExpressionTableComponent implements OnInit {
     {title: 'P-Value', field: 'Group 1(p)', mutator: this.pValueMutator},
   ]
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.activatedRoute.queryParamMap.subscribe(paramMap => {
         if (!paramMap.has("samples")) {
           this.router.navigate(['']);
@@ -59,7 +61,8 @@ export class ExpressionTableComponent implements OnInit {
 
   private drawTable(): void {
     var _this = this;
-    new Tabulator("#my-tabular-table", {
+    var tabulatorElement = document.createElement('div');
+    new Tabulator(tabulatorElement, {
       pagination:"remote",
       ajaxURL: "json/matrix",
       ajaxConfig:"POST",
@@ -97,6 +100,7 @@ export class ExpressionTableComponent implements OnInit {
       tooltips:true,
       //paginationInitialPage:2
     });
+    this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
   }
 
 }
