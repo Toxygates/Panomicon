@@ -1,10 +1,6 @@
-<div [ngClass]="{'container': !data, 'container-fluid': data}">
+<div [ngClass]="{'container': !dataFetched, 'container-fluid': dataFetched}">
     <div class="row">
-        <div class="col-12 padded_ui_panel">
-            <ng-container *ngIf="samples.length == 0">
-                No samples selected
-            </ng-container>
-
+        <div class="col-lg-12 padded_ui_panel">
             <div #tabulatorContainer></div>
         </div>
     </div>

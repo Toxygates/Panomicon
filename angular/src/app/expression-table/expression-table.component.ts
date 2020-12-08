@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import Tabulator from 'tabulator-tables';
 
@@ -10,10 +10,10 @@ import Tabulator from 'tabulator-tables';
 export class ExpressionTableComponent implements AfterViewInit {
 
   constructor(private activatedRoute: ActivatedRoute,
-    private router: Router) { }
+    private router: Router, private changeDetector: ChangeDetectorRef) { }
 
-  samples: string[] = [];
-  data: any;
+  samples: string[];
+  dataFetched = false;
 
   @ViewChild('tabulatorContainer') tabulatorContainer;
 
@@ -50,12 +50,12 @@ export class ExpressionTableComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.activatedRoute.queryParamMap.subscribe(paramMap => {
-        if (!paramMap.has("samples")) {
-          this.router.navigate(['']);
-        } else {
-          this.samples = paramMap.getAll("samples");
-          this.drawTable();
-        }
+      if (!paramMap.has("samples")) {
+        this.router.navigate(['']);
+      } else {
+        this.samples = paramMap.getAll("samples");
+        this.drawTable();
+      }
     });
   }
 
@@ -87,6 +87,10 @@ export class ExpressionTableComponent implements AfterViewInit {
       },
       paginationDataReceived: {
         "data": "rows",
+      },
+      dataLoaded:function(_data){
+        _this.dataFetched = true;
+        _this.changeDetector.detectChanges();
       },
       columns: this.columns,
       layout:"fitDataTable",
