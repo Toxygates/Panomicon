@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BackendService } from '../backend.service';
 import Tabulator from 'tabulator-tables';
 
@@ -19,6 +19,8 @@ export class BatchSamplesComponent implements OnInit {
   selectedSamples: String[];
 
   readyToCreateGroup: boolean = true;
+
+  @ViewChild('tabulatorContainer') tabulatorContainer;
 
   columns = [
     {formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
@@ -58,7 +60,10 @@ export class BatchSamplesComponent implements OnInit {
 
   private drawTable(): void {
     var _this = this;
-    this.tabulator = new Tabulator("#my-tabular-table", {
+    var tabulatorElement = document.createElement('div');
+    tabulatorElement.style.width = "auto";
+    this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
+    this.tabulator = new Tabulator(tabulatorElement, {
       data: this.samples,
       selectable: true,
       columns: this.columns,

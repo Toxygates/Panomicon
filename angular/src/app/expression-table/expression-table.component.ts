@@ -62,6 +62,8 @@ export class ExpressionTableComponent implements AfterViewInit {
   private drawTable(): void {
     var _this = this;
     var tabulatorElement = document.createElement('div');
+    tabulatorElement.style.width = "auto";
+    this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
     new Tabulator(tabulatorElement, {
       pagination:"remote",
       ajaxURL: "json/matrix",
@@ -71,14 +73,11 @@ export class ExpressionTableComponent implements AfterViewInit {
           'Content-Type': 'application/json',
         },
         body: function(_url, _config, params) {
-          console.log("here are the params");
-          console.log(JSON.stringify(params));
           var requestBodyObject: any  = {
             "groups": [{ "name": "Group 1", "sampleIds": _this.samples }],
           }
           requestBodyObject.page = params.page;
           requestBodyObject.sorter = params.sorters[0];
-          console.log(JSON.stringify(requestBodyObject));
           return(JSON.stringify(requestBodyObject));
         },
       },
@@ -98,9 +97,9 @@ export class ExpressionTableComponent implements AfterViewInit {
         {column:"Group 1", dir:"desc"}
       ],
       tooltips:true,
+      ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
       //paginationInitialPage:2
     });
-    this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
   }
 
 }
