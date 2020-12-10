@@ -71,7 +71,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
       }
     })
 
-    val cols = from.sortedColumnMap.map(_._1)
+    val cols = from.columnKeys
 
     val annots = nrows.map(_._2)
     val groupedVals = nrows.map(_._1.map(_.post))
@@ -105,7 +105,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
   def convert(from: ManagedMatrix): ManagedMatrix = {
     val (gr, ungr, bm) = convert(from.rawGrouped)
-    val rks = (0 until ungr.rows).map(ungr.rowAt)
+    val rks = ungr.rowKeys
 
     //Note, we re-fix initProbes for the new matrix
     new ManagedMatrix(

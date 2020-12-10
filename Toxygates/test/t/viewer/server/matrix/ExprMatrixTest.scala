@@ -51,8 +51,8 @@ class ExprMatrixTest extends TTestSuite {
       Vector(4, 4, 4, 2, 1, 2),
       Vector(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
     new ExpressionMatrix(data, data.size, data(0).size,
-    		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
-    		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
+    		Array("a", "b", "c", "d", "e"),
+    		Array("a", "b", "c", "d", "e", "f"),
     		(1 to 5).map(x => RowAnnotation("p" + x, List("p" + x))))
   }
 

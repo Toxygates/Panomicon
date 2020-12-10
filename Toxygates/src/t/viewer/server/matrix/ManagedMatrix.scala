@@ -292,7 +292,7 @@ trait Synthetics extends CoreMatrix {
         val g1s = test.getGroup1.getSamples.filter(!sc.isControl(_)).map(_.id)
         val g2s = test.getGroup2.getSamples.filter(!sc.isControl(_)).map(_.id)
 
-        val currentRows = (0 until current.rows).map(i => current.rowAt(i))
+        val currentRows = (0 until current.rows).map(i => current.rowKeys(i))
         //Need this to take into account sorting and filtering of currentMat
         val rawData = rawUngrouped.selectNamedRows(currentRows)
 
@@ -321,7 +321,7 @@ trait Synthetics extends CoreMatrix {
         }
         val data = precomp.getData
         val inOrder = (0 until current.rows).map(i =>
-          Option(data.get(current.rowAt(i))).map(_.toDouble).getOrElse(0d))
+          Option(data.get(current.rowKeys(i))).map(_.toDouble).getOrElse(0d))
 
         current = current.appendStatic(inOrder, precomp.getName)
       case _ => throw new Exception("Unexpected test type")

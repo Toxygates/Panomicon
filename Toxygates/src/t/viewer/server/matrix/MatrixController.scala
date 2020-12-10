@@ -140,7 +140,7 @@ abstract class MatrixController(context: Context,
     val mm = if (filteredProbes.nonEmpty) {
       finish(makeMatrix(filteredProbes.toSeq, typ))
     } else {
-      val emptyMatrix = new ExpressionMatrix(Vector(), 0, 0, Map(), Map(), List())
+      val emptyMatrix = new ExpressionMatrix(Vector(), 0, 0, Array(), Array(), List())
       finish(new ManagedMatrix(
         LoadParams(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
         ))

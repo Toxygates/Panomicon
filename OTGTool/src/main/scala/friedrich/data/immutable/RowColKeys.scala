@@ -6,6 +6,8 @@
 
 package friedrich.data.immutable
 
+import scala.reflect.ClassTag
+
 /**
  * An immutable row/col map that can be manipulated
  * by creating new copies with changes.
@@ -13,37 +15,29 @@ package friedrich.data.immutable
 trait RowColKeys[V <: Seq[_], Row, Column] {
   this: AbstractMatrix[_, V] =>
 
-  val columnMap: Map[Column, Int]
-  val rowMap: Map[Row, Int]
+  /**
+   * Sorted column keys corresponding to each column
+   */
+  val columnKeys: Array[Column]
 
-  private val _invColumnMap = Map() ++ columnMap.map(x => x._2 -> x._1)
-  private val _invRowMap = Map() ++ rowMap.map(x => x._2 -> x._1)
+  /**
+   * Sorted row keys corresponding to each row
+   */
+  val rowKeys: Array[Row]
 
-  def columnAt(idx: Int): Column = _invColumnMap(idx)
-  def rowAt(idx: Int): Row = _invRowMap(idx)
+  lazy val columnMap: Map[Column, Int] = Map.empty ++ columnKeys.iterator.zipWithIndex.map(x => x._1 -> x._2)
+  lazy val rowMap: Map[Row, Int] = Map.empty ++ rowKeys.iterator.zipWithIndex.map(x => x._1 -> x._2)
 
-  def rowKeys: Iterable[Row] = rowMap.keys
-  def columnKeys: Iterable[Column] = columnMap.keys
-
-  def orderedRowKeys: Seq[Row] = (0 until rows).map(rowAt(_))
-  def orderedColKeys: Seq[Column] = (0 until columns).map(columnAt(_))
-
-  def rightAdjoinedColKeys(other: RowColKeys[_, Row, Column]): Map[Column, Int] = {
-    assert((columnMap.keySet intersect other.columnMap.keySet).isEmpty)
-    columnMap ++ other.columnMap.map(x => (x._1, x._2 + columns))
+  def rightAdjoinedColKeys(other: RowColKeys[_, Row, Column])(implicit tag1: ClassTag[Row], tag2: ClassTag[Column]): Array[Column] = {
+    assert((columnKeys.toSet intersect other.columnKeys.toSet).isEmpty)
+    (columnKeys ++ other.columnKeys).toArray
   }
 
-  def selectedRowKeys(rows: Seq[Int]): Map[Row, Int] = Map() ++ rows.map(rowAt(_)).zipWithIndex
-  def selectedColumnKeys(columns: Seq[Int]): Map[Column, Int] = Map() ++ columns.map(columnAt(_)).zipWithIndex
-
-  def splitColumnKeys(at: Int): (Map[Column, Int], Map[Column, Int]) = {
-    val r1 = columnMap.filter(_._2 < at)
-    val r2 = columnMap.filter(_._2 >= at).map(x => (x._1, x._2 - at))
-    (r1, r2)
-  }
+  def selectedRowKeys(rows: Seq[Int])(implicit tag: ClassTag[Row]): Array[Row] =
+    rows.map(rowKeys(_)).toArray
+  def selectedColumnKeys(columns: Seq[Int])(implicit tag: ClassTag[Column]): Array[Column] =
+    columns.map(columnKeys(_)).toArray
 
   def row(r: Row): V = row(rowMap(r))
-
   def column(c: Column): V = column(columnMap(c))
-
 }

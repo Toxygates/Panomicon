@@ -6,8 +6,11 @@
 
 package friedrich.data.immutable
 
+import scala.reflect.ClassTag
+
 /**
  * A matrix of data that can be represented and modified as row or column vectors.
+ *
  * @tparam Self
  * @tparam T Cell type
  * @tparam V Vector type
@@ -127,8 +130,8 @@ abstract class DataMatrix[T, V <: IndexedSeq[T]](val rowData: IndexedSeq[V], val
  * Row: row keys,
  * Column: column keys
  */
-abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
-(rowData: IndexedSeq[V], rows: Int, columns: Int, val rowMap: Map[Row, Int], val columnMap: Map[Column, Int])
+abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row : ClassTag, Column : ClassTag]
+(rowData: IndexedSeq[V], rows: Int, columns: Int, val rowKeys: Array[Row], val columnKeys: Array[Column])
   extends DataMatrix[T, V](rowData, rows, columns)
   with RowColKeys[V, Row, Column] {
 
@@ -136,24 +139,24 @@ abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
 
   def apply(row: Row, col: Column): T = apply(rowMap(row), columnMap(col))
 
-  def copyWith(rows: Seq[Seq[T]]): Self = copyWith(rows, rowMap, columnMap)
-  def copyWith(rows: Seq[Seq[T]], rowMap: Map[Row, Int], columnMap: Map[Column, Int]): Self
+  def copyWith(rows: Seq[Seq[T]]): Self = copyWith(rows, rowKeys, columnKeys)
+  def copyWith(rows: Seq[Seq[T]], rowKeys: Array[Row], columnKeys: Array[Column]): Self
 
-  def copyWithRowKeys(keys: Map[Row, Int]): Self = copyWith(rowData, keys, columnMap)
-  def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(rowData, rowMap, keys)
+//  def copyWithRowKeys(keys: Map[Row, Int]): Self = copyWith(rowData, keys, columnMap)
+//  def copyWithColKeys(keys: Map[Column, Int]): Self = copyWith(rowData, rowMap, keys)
 
   override def adjoinRight(other: Self): Self = {
     val rows = super.adjoinRight(other).toRowVectors
     other match {
       case ra: RowColKeys[V, Row, Column] => {
-        copyWith(rows, rowMap, rightAdjoinedColKeys(ra))
+        copyWith(rows, rowKeys, rightAdjoinedColKeys(ra))
       }
       case _ => ???
     }
   }
 
   override def selectRows(rows: Seq[Int]): Self =
-    copyWith(super.selectRows(rows).toRowVectors, selectedRowKeys(rows), columnMap)
+    copyWith(super.selectRows(rows).toRowVectors, selectedRowKeys(rows), columnKeys)
 
   /**
    * NB this allows for permutation as well as selection. Columns are returned
@@ -163,7 +166,7 @@ abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
     selectRows(rows.flatMap(rowMap.get(_)))
 
   override def selectColumns(columns: Seq[Int]): Self =
-    copyWith(super.selectColumns(columns).toRowVectors, rowMap, selectedColumnKeys(columns))
+    copyWith(super.selectColumns(columns).toRowVectors, rowKeys, selectedColumnKeys(columns))
 
   /**
    * NB this allows for permutation as well as selection. Columns are returned
@@ -176,8 +179,8 @@ abstract class KeyedDataMatrix[T, V <: IndexedSeq[T], Row, Column]
    * Append a column, also registering it by its key
    */
   def appendColumn(col: Iterable[T], key: Column): Self = {
-    copyWith(appendColumn(col).toRowVectors, rowMap,
-      columnMap + (key -> columns))
+    copyWith(appendColumn(col).toRowVectors, rowKeys,
+      columnKeys :+ key)
   }
 
   override def filterRows(f: V => Boolean): Self = {

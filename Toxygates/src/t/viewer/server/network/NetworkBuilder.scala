@@ -49,11 +49,11 @@ object NetworkBuilder {
 
     mainType match {
       case Network.mrnaType =>
-        val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
+        val domain = main.current.rowKeys.slice(mainOffset, mainOffset + mainSize)
         val range = targets.reverseTargets(platforms.resolve(mainPlatform, domain))
         range.map(_._2.id).toSeq.distinct
       case Network.mirnaType =>
-        val domain = main.current.orderedRowKeys.slice(mainOffset, mainOffset + mainSize)
+        val domain = main.current.rowKeys.slice(mainOffset, mainOffset + mainSize)
         val allProbes = platforms.platformProbes(sidePlatform).toSeq
         val range = targets.targetsForPlatform(domain.map(new MiRNA(_)), allProbes)
         range.map(_._2.identifier).toSeq.distinct
@@ -156,7 +156,7 @@ class NetworkBuilder(targets: TargetTable,
     //Preserve the sort order while taking at most MAX_NODES nodes with interactions
     var keepMainNodes = Set[String]()
     for {
-      n <- main.current.orderedRowKeys
+      n <- main.current.rowKeys
       if (count < max)
       if (haveInteractions.contains(n))
     } {
@@ -167,7 +167,7 @@ class NetworkBuilder(targets: TargetTable,
     //Extend the main node set if too few nodes had interactions
     if (keepMainNodes.size < max) {
       val need = max - keepMainNodes.size
-      keepMainNodes ++= main.current.orderedRowKeys.filter(!keepMainNodes.contains(_)).take(need)
+      keepMainNodes ++= main.current.rowKeys.filter(!keepMainNodes.contains(_)).take(need)
     }
     keepMainNodes.toSeq
   }
@@ -178,14 +178,14 @@ class NetworkBuilder(targets: TargetTable,
     }
 
     val mainPlatform = main.params.platform
-    val probes = platforms.resolve(mainPlatform, main.current.orderedRowKeys)
+    val probes = platforms.resolve(mainPlatform, main.current.rowKeys)
     val sidePlatform = side.params.platform
     val sidePlatformProbes = platforms.platformProbes(sidePlatform).toSeq
     val allTargets = probeTargets(probes, sidePlatformProbes)
 
     val keepNodes = topProbesWithInteractions(allTargets.map(x => (x._1, x._2)))
     val mainSel = main.current.selectNamedRows(keepNodes)
-    val mainTargets = probeTargets(platforms.resolve(mainPlatform, mainSel.orderedRowKeys), sidePlatformProbes)
+    val mainTargets = probeTargets(platforms.resolve(mainPlatform, mainSel.rowKeys), sidePlatformProbes)
     val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
       filter(sideTableProbeSet.contains)
