@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, HostListener, ViewChild } from '@angular/core';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import Tabulator from 'tabulator-tables';
 
@@ -10,12 +11,19 @@ import Tabulator from 'tabulator-tables';
 export class ExpressionTableComponent implements AfterViewInit {
 
   constructor(private activatedRoute: ActivatedRoute,
-    private router: Router, private changeDetector: ChangeDetectorRef) { }
+    private router: Router, private modalService: BsModalService,
+    private changeDetector: ChangeDetectorRef) { }
+
+  tabulator: Tabulator;
+  modalRef: BsModalRef;
+  @ViewChild('tabulatorContainer') tabulatorContainer;
+  @ViewChild('modalTemplate') modalTemplate;
 
   samples: string[];
   dataFetched = false;
-
-  @ViewChild('tabulatorContainer') tabulatorContainer;
+  lastPage = 0;
+  tablePageNumber = 0;
+  goToPageSubmitEnabled = false;
 
   geneSymbolsMutator(_value, data, _type, _params, _component): string {
     return data.probeTitles.join(" / ");
@@ -64,7 +72,7 @@ export class ExpressionTableComponent implements AfterViewInit {
     var tabulatorElement = document.createElement('div');
     tabulatorElement.style.width = "auto";
     this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
-    new Tabulator(tabulatorElement, {
+    this.tabulator = new Tabulator(tabulatorElement, {
       pagination:"remote",
       ajaxURL: "json/matrix",
       ajaxConfig:"POST",
@@ -90,7 +98,9 @@ export class ExpressionTableComponent implements AfterViewInit {
       },
       dataLoaded:function(_data){
         _this.dataFetched = true;
+        _this.lastPage = this.getPageMax();
         _this.changeDetector.detectChanges();
+        _this.tablePageNumber = this.getPage();
       },
       columns: this.columns,
       layout:"fitDataTable",
@@ -102,8 +112,18 @@ export class ExpressionTableComponent implements AfterViewInit {
       ],
       tooltips:true,
       ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
-      //paginationInitialPage:2
+      footerElement:"<div style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent(\'OpenModal\'));\">Go to page...</button></div>",
     });
   }
 
+  @HostListener("window:OpenModal")
+  onOpenModal() {
+    this.modalRef = this.modalService.show(this.modalTemplate,
+      Object.assign({}, { class: 'modal-dialog-centered' }));
+  }
+
+  onSubmitModal() {
+    this.tabulator.setPage(this.tablePageNumber);
+    this.modalRef.hide();
+  }
 }

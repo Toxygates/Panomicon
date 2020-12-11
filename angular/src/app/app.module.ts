@@ -5,6 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
+import { ModalModule } from 'ngx-bootstrap/modal';
+
 import { AppComponent } from './app.component';
 import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
 import { BatchBrowserComponent } from './batch-browser/batch-browser.component';
@@ -29,7 +31,8 @@ import { ExpressionTableComponent } from './expression-table/expression-table.co
     AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    FormsModule
+    FormsModule,
+    ModalModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent]
