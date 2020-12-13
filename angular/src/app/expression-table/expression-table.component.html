@@ -5,3 +5,19 @@
         </div>
     </div>
 </div>
+
+<ng-template #modalTemplate>
+    <div class="modal-header">
+      <h4 class="modal-title pull-left">Go to page</h4>
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <label for="pageNumber">Enter page (1-{{lastPage}}):</label>
+        <input type="text" class="form-control" id="pageNumber"
+            [(ngModel)]="tablePageNumber">
+        <button type="submit" class="btn btn-primary" (click)="onSubmitModal()"
+            [disabled]="tablePageNumber <= 0 || tablePageNumber > lastPage">Go to page</button>
+    </div>
+</ng-template>
