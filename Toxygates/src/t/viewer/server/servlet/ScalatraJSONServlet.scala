@@ -132,8 +132,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
   lazy val platformRegistry = new PlatformRegistry(probeStore)
   lazy val netLoader = new NetworkLoader(context, platformRegistry, baseConfig.data.mirnaDir)
 
-  get("instance") {
-    <p>My instance is {tconfig.instanceName}</p>
+  error {
+    //Catches exceptions during request processing.
+    //In the future, we may add more specific error messages and responses here
+    case e: Exception =>
+      e.printStackTrace()
+      halt(500)
   }
 
   def isDataVisible(data: Dataset, userKey: String) = {
