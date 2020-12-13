@@ -117,4 +117,12 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
     }
     return allUnits.toArray(new Unit[0]);
   }
+
+  public Unit[] correspondingControlUnits(Collection<Unit> units) {
+    List<Unit> allUnits = new ArrayList<Unit>();
+    for (Unit unit : units) {
+      allUnits.add(controlUnitsMap.get(unit.get(CoreParameter.SampleId)));
+    }
+    return allUnits.toArray(new Unit[0]);
+  }
 }

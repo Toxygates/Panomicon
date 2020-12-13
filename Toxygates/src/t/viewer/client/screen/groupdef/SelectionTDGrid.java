@@ -294,9 +294,10 @@ abstract public class SelectionTDGrid extends TimeDoseGrid implements SampleDeta
     Unit finalUnit = getFinalUnit(unit);
     if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
       Unit controlUnit = controlUnits.get(finalUnit);
-      Unit[] units =
-          (controlUnit != null ? new Unit[] {finalUnit, controlUnit} : new Unit[] {finalUnit});
-      Group g = new Group(schema, "data", units);
+      Group g = (controlUnit != null ?
+              new Group("data", new Unit[] { finalUnit }, new Unit[] { controlUnit }) :
+              new Group("data", new Unit[] { finalUnit }, new Unit[0])
+      );
       sampleDetailTable.loadFrom(g, true);
       sampleDetailTableDialog = Utils.displayInPopup("Unit details", sampleDetailTable, 
           DialogPosition.Center);

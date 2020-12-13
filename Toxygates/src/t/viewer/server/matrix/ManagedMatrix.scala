@@ -287,10 +287,9 @@ trait Synthetics extends CoreMatrix {
   protected def addSyntheticInner(s: Synthetic): Unit = {
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
-        val sc = test.getGroup1.getSchema
 
-        val g1s = test.getGroup1.getSamples.filter(!sc.isControl(_)).map(_.id)
-        val g2s = test.getGroup2.getSamples.filter(!sc.isControl(_)).map(_.id)
+        val g1s = test.getGroup1.getTreatedSamples.map(_.id)
+        val g2s = test.getGroup2.getTreatedSamples.map(_.id)
 
         val currentRows = (0 until current.rows).map(i => current.rowKeys(i))
         //Need this to take into account sorting and filtering of currentMat

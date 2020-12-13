@@ -14,17 +14,15 @@ import t.common.shared.sample.*;
 public class ClientGroup extends Group {
   public boolean active;
   
-  public ClientGroup(DataSchema schema, String name, Sample[] barcodes, String color,
+  public ClientGroup(DataSchema schema, String name, Sample[] samples, String color,
       boolean active) {
-    super(schema, name, barcodes, color);
+    super(schema, name, samples, color);
     this.active = active;
-    _units = Unit.formUnits(schema, barcodes);
   }
   
   public ClientGroup(DataSchema schema, String name, Unit[] units, boolean active, String color) {
     super(schema, name, Unit.collectSamples(units), color);
     this.active = active;
-    _units = units;
   }
   
   /**
@@ -34,11 +32,11 @@ public class ClientGroup extends Group {
    */
   public ClientGroup(Group group, boolean active) {
     super();
-    _units = group.getUnits();
+    treatedUnits = group.getTreatedUnits();
+    controlUnits = group.getControlUnits();
     name = group.getName();
     color = group.getColor();
-    _samples = group.getSamples();
-    schema = group.getSchema();
+    samples = group.getSamples();
     this.active = active;
   }
   
@@ -54,7 +52,7 @@ public class ClientGroup extends Group {
   }
   
   public Group convertToGroup() {
-    return new Group(schema, name, _samples, color);
+    return new Group(name, treatedUnits, controlUnits, color);
   }
   
   public static List<Group> convertToGroups(Collection<ClientGroup> clientGroups) {

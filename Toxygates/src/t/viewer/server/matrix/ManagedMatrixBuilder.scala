@@ -149,8 +149,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
   }
 
   protected def treatedAndControl(g: Group) = {
-    val sc = g.getSchema
-    g.getUnits().partition(u => !sc.isControl(u))
+    (g.getTreatedUnits, g.getControlUnits)
   }
 }
 /**

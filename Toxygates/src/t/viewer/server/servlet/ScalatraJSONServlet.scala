@@ -17,10 +17,12 @@ import t.viewer.shared.network.Interaction
 import t.viewer.shared._
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
-
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import javax.servlet.ServletContext
+import t.common.shared.sample.{Group}
+
 import scala.collection.JavaConverters._
 
 
@@ -381,12 +383,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       val fullSamples = Map.empty ++
         context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
           s => (s.sampleId -> s))
-
-      val schema = new OTGSchema()
-      matParams.groups.map(g => {
-        val filledGroup = fillGroup(g.sampleIds.map(s => fullSamples(s)))
-        new t.common.shared.sample.Group(schema, g.name, filledGroup.map(asJavaSample).toArray)
-      })
+      matParams.groups.map(g => fillGroup(g.name, g.sampleIds.map(s => fullSamples(s))))
     }
 
     def loadMatrix(matParams: json.MatrixParams, valueType: ValueType): MatrixController = {
@@ -421,22 +418,34 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       }
     }
 
+    import t.common.shared.sample.{Unit => TUnit}
+    def unitForTreatment(sf: SampleFilter, treatment: String): Option[TUnit] = {
+      val samples = sampleStore.samplesForTreatment(SampleClassFilter(), sf, treatment)()
+      if (samples.nonEmpty) {
+        Some(new TUnit(samples.head.sampleClass, samples.map(asJavaSample).toArray))
+      } else {
+        None
+      }
+    }
+
     /**
      * By using the sample treatment ID, ensure that the group contains
      * all the available samples for a given treatment.
      * This is the default behaviour for /matrix requests for now; in the future, we may want to
      * make it optional, since the system in principle supports sub-treatment level sample groups.
      */
-    def fillGroup(group: Seq[Sample]): Seq[Sample] = {
+    def fillGroup(name: String, group: Seq[Sample]): Group = {
       val sf = SampleFilter(tconfig.instanceURI, None)
-      val distinctTreatments = group.flatMap(s => {
-        List(
-          controlTreatment(s.sampleClass(Treatment)),
-          s.sampleClass(Treatment)
-        )
-      }).distinct
-      distinctTreatments.flatMap(t =>
-        sampleStore.samplesForTreatment(SampleClassFilter(), sf, t)())
+
+      val treatedTreatments = group.map(s => s.sampleClass(Treatment)).distinct
+      val controlTreatments = group.map(s => controlTreatment(s.sampleClass(Treatment))).distinct
+
+      //Note: querying treated/control separately leads to one extra sparql query - can
+      //probably be optimised away
+      val treatedUnits = treatedTreatments.flatMap(t => unitForTreatment(sf, t))
+      val controlUnits = controlTreatments.flatMap(t => unitForTreatment(sf, t))
+
+      new Group(name, treatedUnits.toArray, controlUnits.toArray)
     }
 
     def flattenRows(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {
