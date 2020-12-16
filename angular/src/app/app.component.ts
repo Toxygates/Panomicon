@@ -6,5 +6,4 @@ import { Component, ViewChild } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'Panomicon Angular test';
 }
