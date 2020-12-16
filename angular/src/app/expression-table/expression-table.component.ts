@@ -47,7 +47,7 @@ export class ExpressionTableComponent implements AfterViewInit {
   }
 
   columns = [
-    {title: 'Gene Symbol', field: 'type',
+    {title: 'Gene Symbol', field: 'probeTitles',
       mutator: this.geneSymbolsMutator, headerSort:false},
     {title: 'Probe Titles', field: 'organism',
       mutator: this.probeTitlesMutator, headerSort:false},
@@ -103,6 +103,7 @@ export class ExpressionTableComponent implements AfterViewInit {
         _this.tablePageNumber = this.getPage();
       },
       columns: this.columns,
+      index: "probe",
       layout:"fitDataTable",
       maxHeight: "75vh",
       columnHeaderSortMulti:false,
