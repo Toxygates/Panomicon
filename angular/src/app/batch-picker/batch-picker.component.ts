@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { BackendService } from '../backend.service'
 
 @Component({
@@ -6,7 +6,7 @@ import { BackendService } from '../backend.service'
   templateUrl: './batch-picker.component.html',
   styleUrls: ['./batch-picker.component.scss']
 })
-export class BatchPickerComponent implements OnInit {
+export class BatchPickerComponent {
 
   constructor(private backend: BackendService) { }
 
@@ -15,9 +15,6 @@ export class BatchPickerComponent implements OnInit {
   batches: any;
   datasetId: string;
   selectedBatch: String;
-
-  ngOnInit(): void {
-  }
 
   loadBatchesForDataset(datasetId: string) {
     delete this.batches;

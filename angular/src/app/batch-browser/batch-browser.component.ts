@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { BatchPickerComponent } from '../batch-picker/batch-picker.component';
 import { BatchSamplesComponent } from '../batch-samples/batch-samples.component';
 
@@ -7,15 +7,10 @@ import { BatchSamplesComponent } from '../batch-samples/batch-samples.component'
   templateUrl: './batch-browser.component.html',
   styleUrls: ['./batch-browser.component.scss']
 })
-export class BatchBrowserComponent implements OnInit {
-
-  constructor() { }
+export class BatchBrowserComponent {
 
   @ViewChild(BatchPickerComponent) batchPicker: BatchPickerComponent;
   @ViewChild(BatchSamplesComponent) batchSamples: BatchSamplesComponent;
-
-  ngOnInit(): void {
-  }
 
   showBatchesForDataset(datasetId: string) {
     this.batchPicker.loadBatchesForDataset(datasetId);
