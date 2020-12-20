@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { CollapseModule } from 'ngx-bootstrap/collapse';
 
 import { AppComponent } from './app.component';
 import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
@@ -33,6 +34,7 @@ import { ExpressionTableComponent } from './expression-table/expression-table.co
     BrowserAnimationsModule,
     FormsModule,
     ModalModule.forRoot(),
+    CollapseModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent]
