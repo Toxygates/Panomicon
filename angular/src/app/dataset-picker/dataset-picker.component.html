@@ -8,8 +8,9 @@
 <div *ngIf="datasets">Datasets:</div>
 
 <button *ngFor="let dataset of datasets" 
-    (click)="selectDataset(dataset.id)" type="button" 
-    [ngClass]="{'btn': true, 'btn-dark': dataset.id == selectedDataset,
+    (click)="selectDataset(dataset.id)" type="button"
+    class="btn mr-2 my-1"
+    [ngClass]="{'btn-dark': dataset.id == selectedDataset,
                 'btn-secondary': dataset.id != selectedDataset }">
     {{dataset.description}} ({{dataset.id}})
 </button>
