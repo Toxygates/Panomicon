@@ -21,6 +21,7 @@
     "@angular/router": "^11.0.4",
     "bootstrap": "^4.5.2",
     "ngx-bootstrap": "^6.2.0",
+    "ngx-toastr": "^13.2.0",
     "rxjs": "~6.6.3",
     "tabulator-tables": "^4.9.1",
     "tslib": "^2.0.0",

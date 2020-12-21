@@ -12,20 +12,47 @@
                 </div>
             </ng-container>
 
-            <div *ngIf="samples">
-                {{samples.length}} samples for batch {{batchId}}:
-
-                <div style="float:right">
-                    <button type="button" class="btn btn-primary"
-                        [routerLink]="'/expression-table'"
-                        [queryParams]="{samples: getSelectedSamples()}"
-                        [disabled]="readyToCreateGroup ? false : true">
-                        Create sample group
-                    </button>
-                </div>
+            <div *ngIf="samples" class="mb-1">
+              <button type="button" class="btn btn-primary my-1 mr-2"
+                  (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
+                  [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseBasic">
+                  Create sample group...
+              </button>
+              <button type="button" class="btn btn-primary my-1 mr-2"
+                  [routerLink]="'/expression-table'"
+                  [queryParams]="{samples: selectedSamples}"
+                  [disabled]="readyToCreateGroup ? false : true">
+                  View expression data
+              </button>
+            </div>
+            <div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
+                [isAnimated]="true">
+                {{selectedSamples.length > 0 ?
+                    selectedSamples.length + " samples selected." :
+                    "Select some samples to create a sample group:"
+                }}
+                <form>
+                    <div class="form-row align-items-center mt-1">
+                        <div class="col-auto">
+                            <label class="sr-only" for="sampleGroupNameInput">Sample group name</label>
+                            <input type="text" name="sampleGroupNameInput" [(ngModel)]="sampleGroupName" class="form-control mb-2" placeholder="Enter a name">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-primary mb-2"
+                                (click)="saveSampleGroup()"
+                                [disabled]="!sampleGroupName || selectedSamples.length == 0">
+                                Save sample group
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
 
             <div #tabulatorContainer></div>
+
+            <div *ngIf="samples">
+                {{samples.length}} samples in batch {{batchId}}
+            </div>
         </div>
     </div>
 </div>

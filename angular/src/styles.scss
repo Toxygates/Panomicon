@@ -17,6 +17,7 @@
   'modal',
   'spinners',
   'close',
+  'card',
   'utilities/screenreaders',
   'utilities/spacing',
   'utilities/visibility',
@@ -28,7 +29,9 @@
   'utilities/overflow',
   'utilities/position';
 
-html { 
+@import '~ngx-toastr/toastr-bs4-alert';
+
+html {
     font-size: 10pt;
 }
 

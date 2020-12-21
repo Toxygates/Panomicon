@@ -1,0 +1,31 @@
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <div *ngFor="let name of groupNames" class="card" >
+                <div class="card-body">
+                  <h5 class="card-title">{{name}}</h5>
+                  Samples:
+                    <ul>
+                        <li *ngFor="let sample of sampleGroups.get(name)">
+                            {{sample}}
+                        </li>
+                    </ul>
+                    <button type="button" class="btn btn-primary mr-2"
+                        [routerLink]="'/expression-table'"
+                        [queryParams]="{samples: sampleGroups.get(name)}">
+                        View expression data
+                    </button>
+                    <button type="button" class="btn btn-secondary mr-2"
+                        (click)="renameGroup(name)"
+                        [disabled]="true">
+                        Rename
+                    </button>
+                    <button type="button" class="btn btn-danger mr-2"
+                        (click)="deleteGroup(name)">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

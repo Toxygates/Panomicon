@@ -1,6 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
-import { BackendService } from '../backend.service';
 import Tabulator from 'tabulator-tables';
+import { ToastrService } from 'ngx-toastr';
+import { BackendService } from '../backend.service';
+import { UserDataService } from '../user-data.service';
 
 @Component({
   selector: 'app-batch-samples',
@@ -9,15 +11,18 @@ import Tabulator from 'tabulator-tables';
 })
 export class BatchSamplesComponent {
 
-  constructor(private backend: BackendService) { }
+  constructor(private backend: BackendService,
+    private userData: UserDataService, private toastr: ToastrService) { }
 
   tabulator: Tabulator;
 
   samples: any;
   batchId: string;
 
-  selectedSamples: String[];
+  selectedSamples: string[] = [];
 
+  sampleGroupName: string;
+  sampleCreationIsCollapsed = true;
   readyToCreateGroup: boolean = true;
 
   @ViewChild('tabulatorContainer') tabulatorContainer;
@@ -51,8 +56,12 @@ export class BatchSamplesComponent {
       )
   }
 
-  getSelectedSamples() {
-    return this.tabulator.getSelectedData().map(x => x.sample_id);
+  saveSampleGroup() {
+    this.userData.saveSampleGroup(this.sampleGroupName, this.selectedSamples);
+    this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
+    this.sampleCreationIsCollapsed = true;
+    this.sampleGroupName = undefined;
+    this.tabulator.deselectRow();
   }
 
   private drawTable(): void {
@@ -68,6 +77,7 @@ export class BatchSamplesComponent {
       maxHeight: "75vh",
       rowSelectionChanged: function(data, _rows) {
         _this.readyToCreateGroup = (data.length > 0);
+        _this.selectedSamples = data.map(x => x.sample_id);
       }
     });
   }
