@@ -1,9 +1,20 @@
-<div class="container">
-    <div class="row">
-        <div class="col-lg-12 padded_ui_panel">
-            <h3>{{title}}</h3>
-        </div>
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
+    <a class="navbar-brand">Panomicon</a>
+    <button class="navbar-toggler" type="button" (click)="navbarIsCollapsed = !navbarIsCollapsed"
+        aria-controls="navbarSupportedContent" [attr.aria-expanded]="!navbarIsCollapsed" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse" [collapse]="navbarIsCollapsed" [isAnimated]="true">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="batch-browser">Batch Browser</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="expression-table">Expression Table</a>
+        </li>
+        </ul>
     </div>
-</div>
+</nav>
 
 <router-outlet></router-outlet>

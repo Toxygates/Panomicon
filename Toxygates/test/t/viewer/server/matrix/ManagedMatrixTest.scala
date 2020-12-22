@@ -51,7 +51,7 @@ class ManagedMatrixTest extends TTestSuite {
     val usedSet = context.sparseTestData.probes.toSet
     val sortedProbes = probes.sorted.map(probeMap.unpack).filter(usedSet.contains)
 
-    cur.sortedRowMap.map(_._1) should equal(sortedProbes)
+    cur.rowKeys should equal(sortedProbes)
 
     val info = m.info
     val colNames = (0 until info.numColumns()).map(info.columnName)
@@ -60,11 +60,11 @@ class ManagedMatrixTest extends TTestSuite {
     val raw = m.rawUngrouped
     raw.columns should equal(10)
     raw.rows should equal(probes.size)
-    raw.sortedRowMap.map(_._1) should equal(sortedProbes)
+    raw.rowKeys should equal(sortedProbes)
 
     val gr = m.rawGrouped
     gr.rows should equal(probes.size)
-    gr.sortedRowMap.map(_._1) should equal(sortedProbes)
+    gr.rowKeys should equal(sortedProbes)
   }
 
   test("sort and select") {
@@ -78,7 +78,6 @@ class ManagedMatrixTest extends TTestSuite {
 
     var mat = m.current
     mat.rows should equal(ps.size)
-    val srm = mat.sortedRowMap
 
     val usedSet = context.sparseTestData.probes
 

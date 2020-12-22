@@ -13,7 +13,8 @@
 
 <ng-container *ngFor="let batch of batches">
     <button (click)="selectBatch(batch.id)" type="button" 
-        [ngClass]="{'btn': true, 'btn-dark': batch.id == selectedBatch,
+        class="btn mr-2 my-1"
+        [ngClass]="{'btn-dark': batch.id == selectedBatch,
                     'btn-secondary': batch.id != selectedBatch }">
         {{batch.id}}
     </button>

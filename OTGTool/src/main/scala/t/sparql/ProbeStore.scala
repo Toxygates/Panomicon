@@ -85,7 +85,19 @@ object ProbeStore extends RDFClass {
   }
 }
 
-class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
+trait PlatformLoader {
+  /**
+   * Load probes for one platform.
+   */
+  def probesForPlatform(platform: String): Iterable[Probe]
+
+  /**
+   * Eagerly load all platforms and probes. Expensive.
+   */
+  def allPlatforms: Map[String, Iterable[Probe]]
+}
+
+class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with PlatformLoader
   with Store[Probe]{
   import QueryUtils._
   import Triplestore._
@@ -114,6 +126,11 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
                                |    ?p a ${ProbeStore.itemClass}; rdfs:label ?l .
                                |  }
                                |}""".stripMargin)
+  }
+
+  def allPlatforms = {
+    val platformStore = new PlatformStore(config)
+    ProbeStore.platformsAndProbes(platformStore, this)
   }
 
   /**
@@ -459,9 +476,9 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
     val query = s"""$tPrefixes
                    |SELECT DISTINCT ?probe WHERE {
                    |  GRAPH ?g {
-                   |    ?got rdfs:label ?label.
+                   |    ?got rdfs:label "${term.name}".
                    |  }
-                   |  FILTER(STR(?label) = "${term.name}"^^xsd:string).
+                   |  ?g2 a t:platform.
                    |  GRAPH ?g2 {
                    |    ?probe a t:probe .
                    |    { ?probe t:gomf ?got . }
@@ -470,7 +487,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config)
                    |      UNION { ?probe t:go ?got . }
                    |  }
                    |}""".stripMargin
-    triplestore.simpleQuery(query).map(Probe.unpack)
+    triplestore.simpleQuery(query, false, 30000).map(Probe.unpack)
   }
 
   protected def unpackGoterm(term: String) = term.split(".org/obo/")(1).replace("_", ":")

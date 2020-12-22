@@ -51,18 +51,16 @@ abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Se
 
   protected String name;
   protected String color;
-  protected S[] _samples;
-  protected DataSchema schema;
+  protected S[] samples;
 
-  public SampleGroup(DataSchema schema, String name, S[] samples, String color) {
+  public SampleGroup(String name, S[] samples, String color) {
     this.name = name;
-    this._samples = samples;
+    this.samples = samples;
     this.color = color;
-    this.schema = schema;
   }
 
-  public SampleGroup(DataSchema schema, String name, S[] samples) {
-    this(schema, name, samples, pickColor());
+  public SampleGroup(String name, S[] samples) {
+    this(name, samples, pickColor());
   }
 
   public static synchronized String pickColor() {
@@ -74,20 +72,16 @@ abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Se
   }
 
   public S[] samples() {
-    return _samples;
+    return samples;
   }
 
   @Override
   public S[] getSamples() {
-    return _samples;
+    return samples;
   }
   
   public boolean containsSample(String sampleId) {
-    return Arrays.stream(_samples).anyMatch(s -> s.id().equals(sampleId));
-  }
-
-  public DataSchema getSchema() {
-    return schema;
+    return Arrays.stream(samples).anyMatch(s -> s.id().equals(sampleId));
   }
 
   public String getName() {
@@ -127,14 +121,14 @@ abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Se
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(_samples) * 41 + name.hashCode();
+    return Arrays.hashCode(samples) * 41 + name.hashCode();
   }
 
   @Override
   public boolean equals(Object other) {
     if (other instanceof SampleGroup) {
       SampleGroup<?> that = (SampleGroup<?>) other;
-      return that.canEqual(this) && Arrays.deepEquals(this._samples, that.samples())
+      return that.canEqual(this) && Arrays.deepEquals(this.samples, that.samples())
           && name.equals(that.getName()) && color.equals(that.getColor());
     }
     return false;
@@ -145,7 +139,7 @@ abstract public class SampleGroup<S extends Sample> implements DataColumn<S>, Se
   }
 
   public Stream<String> collect(Attribute parameter) {
-    return SampleClassUtils.collectInner(Arrays.asList(_samples), parameter);
+    return SampleClassUtils.collectInner(Arrays.asList(samples), parameter);
   }
 
   public static <S extends Sample, G extends SampleGroup<S>> 

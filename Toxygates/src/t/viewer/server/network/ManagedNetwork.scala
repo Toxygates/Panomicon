@@ -112,7 +112,7 @@ class ManagedNetwork(mainParams: LoadParams,
         (x._1.identifier, new JDouble(n))
       })
     } else {
-      val resolved = platforms.resolve(lookup)
+      val resolved = platforms.resolve(params.platform, lookup)
       val rowTargets = targets.reverseTargets(resolved)
       rowTargets.groupBy(_._2).map(x => {
         //as above

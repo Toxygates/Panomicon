@@ -20,6 +20,7 @@
 package t.common.shared.sample;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
@@ -31,23 +32,41 @@ import t.model.SampleClass;
 @SuppressWarnings("serial")
 public class Group extends SampleGroup<Sample> implements SampleColumn {
 
-  protected Unit[] _units;
+  protected Unit[] treatedUnits;
+  protected Unit[] controlUnits;
 
+  //GWT constructor
   public Group() {}
 
   public Group(DataSchema schema, String name, Sample[] sampleIds, String color) {
-    super(schema, name, sampleIds, color);
-    _units = Unit.formUnits(schema, sampleIds);
+    super(name, sampleIds, color);
+
+    Unit[] all = Unit.formUnits(schema, sampleIds);
+    controlUnits = Arrays.stream(all).filter(u -> schema.isControl(u)).toArray(Unit[]::new);
+    treatedUnits = Arrays.stream(all).filter(u -> !schema.isControl(u)).toArray(Unit[]::new);
+  }
+
+  public Group(String name, Unit[] treatedUnits, Unit[] controlUnits, String color) {
+    super(name, Unit.collectSamples(treatedUnits, controlUnits), color);
+    this.treatedUnits = treatedUnits;
+    this.controlUnits = controlUnits;
   }
 
   public Group(DataSchema schema, String name, Sample[] sampleIds) {
-    super(schema, name, sampleIds);
-    _units = Unit.formUnits(schema, sampleIds);
+    this(schema, name, Unit.formUnits(schema, sampleIds));
   }
 
   public Group(DataSchema schema, String name, Unit[] units) {
-    super(schema, name, Unit.collectSamples(units));
-    _units = units;
+    super(name, Unit.collectSamples(units));
+
+    controlUnits = Arrays.stream(units).filter(u -> schema.isControl(u)).toArray(Unit[]::new);
+    treatedUnits = Arrays.stream(units).filter(u -> !schema.isControl(u)).toArray(Unit[]::new);
+  }
+
+  public Group(String name, Unit[] treatedUnits, Unit[] controlUnits) {
+    super(name, Unit.collectSamples(treatedUnits, controlUnits));
+    this.treatedUnits = treatedUnits;
+    this.controlUnits = controlUnits;
   }
 
   @Override
@@ -57,32 +76,32 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   @Override
   public Sample[] getSamples() {
-    return _samples;
+    return samples;
   }
 
   public Sample[] getTreatedSamples() {
-    return Arrays.stream(_units).
-      filter(u -> !schema.isSelectionControl(u)).
+    return Arrays.stream(treatedUnits).
       flatMap(u -> Arrays.stream(u.getSamples())).toArray(Sample[]::new);    
   }
 
   public Sample[] getControlSamples() {
-    return Arrays.stream(_units).
-        filter(u -> schema.isSelectionControl(u)).
-        flatMap(u -> Arrays.stream(u.getSamples())).toArray(Sample[]::new);    
+    return Arrays.stream(controlUnits).
+      flatMap(u -> Arrays.stream(u.getSamples())).toArray(Sample[]::new);
   }
 
   public Unit[] getUnits() {
-    return _units;
+    return Stream.concat(Arrays.stream(treatedUnits),
+      Arrays.stream(controlUnits)).
+      toArray(Unit[]::new);
   }
+
+  public Unit[] getTreatedUnits() { return treatedUnits; }
+  public Unit[] getControlUnits() { return controlUnits; }
 
   public String getTriples(DataSchema schema, int limit, String separator) {
     Set<String> triples = new HashSet<String>();
     boolean stopped = false;
-    for (Unit u : _units) {
-      if (schema.isControlValue(u.get(schema.mediumParameter()))) {
-        continue;
-      }
+    for (Unit u : treatedUnits) {
       if (triples.size() < limit || limit == -1) {
         triples.add(SampleClassUtils.tripleString(u, schema));
       } else {
@@ -104,9 +123,11 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
   }
 
   public boolean hasSameUnits(Group otherGroup) {
-    if (_units.length == otherGroup._units.length) {
-      Set<Unit> units = new HashSet<Unit>(Arrays.asList(_units));
-      for (Unit unit : otherGroup._units) {
+    Unit[] thisUnits = getUnits();
+    Unit[] otherUnits = otherGroup.getUnits();
+    if (thisUnits.length == otherUnits.length) {
+      Set<Unit> units = new HashSet<Unit>(Arrays.asList(thisUnits));
+      for (Unit unit : otherUnits) {
         if (!units.contains(unit)) {
           return false;
         }

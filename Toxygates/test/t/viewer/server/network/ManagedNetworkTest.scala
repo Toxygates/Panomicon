@@ -30,8 +30,10 @@ import t.db.testing.NetworkTestData
 import t.platform.mirna._
 import t.viewer.server.Conversions._
 import t.viewer.server.PlatformRegistry
+import t.viewer.server.MemoryPlatforms
 import t.viewer.server.matrix.ControllerParams
 import t.viewer.server.matrix.ExtFoldBuilder
+import t.viewer.server.matrix.MatrixController
 import t.viewer.shared.network.Network
 import t.viewer.shared.ColumnFilter
 import t.viewer.server.matrix.ManagedMatrix
@@ -50,10 +52,12 @@ class ManagedNetworkTest extends TTestSuite {
     mirnaIds)
 
   val mirnaGroup = new Group(dataSchema, "mirnaGroup", mirnaSamples.map(s => asJavaSample(s)).toArray)
-  val platforms: PlatformRegistry = ???  //TODO
-//  new PlatformRegistry(Map(
-//    t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
-//    mirnaPlatformId -> mirnaProbes.toSet))
+  val platformLoader = new MemoryPlatforms(
+    Map(
+      t.db.testing.DBTestData.mrnaPlatformId -> mrnaProbes.toSet,
+      mirnaPlatformId -> mirnaProbes.toSet))
+
+  val platforms: PlatformRegistry = new PlatformRegistry(platformLoader)
 
   val mrnaGroups = t.common.testing.TestData.groups take 5
 
@@ -106,23 +110,32 @@ class ManagedNetworkTest extends TTestSuite {
 
   test("forward network") {
     val side = mirnaBuilder.build(Seq(mirnaGroup), false)
-    networkTest(side, mrnaGroups, t.db.testing.DBTestData.mrnaPlatformId, true)
+    networkTest(side, mrnaGroups, Seq(mirnaGroup), t.db.testing.DBTestData.mrnaPlatformId, true)
   }
 
   test("reverse network") {
     val side = mrnaBuilder.build(mrnaGroups, false)
-    networkTest(side, Seq(mirnaGroup), mirnaPlatformId, false)
+    networkTest(side, Seq(mirnaGroup), mrnaGroups, mirnaPlatformId, false)
   }
 
   def networkTest(side: ManagedMatrix, mainGroups: Seq[Group],
+                  sideGroups: Seq[Group],
       mainPlatform: String, reverseLookup: Boolean) {
 
     val testContext = new Context(null, null, null, null, context)
 
     val params = ControllerParams(mainGroups, Seq(), ValueType.Folds)
     val mainPageSize = 100
-    val netCon = new NetworkController(testContext, platforms, params, side, targets, mainPageSize,
-      false)
+
+    //Partial MatrixController. Note: should find a more permanent solution and structure the code better
+    val sideControllerParams = ControllerParams(sideGroups, Seq(), ValueType.Folds)
+    val sideController = new MatrixController(null, null, sideControllerParams) {
+      override lazy val managedMatrix = side.asInstanceOf[this.Mat]
+      override def finish(mm: ManagedMatrix): this.Mat = ???
+    }
+
+    val netCon = new NetworkController(testContext, platforms, params, sideController,
+      targets, mainPageSize, false)
     val main = netCon.managedMatrix
 
     //Check that the side table - main table correspondence agrees with what the target table says

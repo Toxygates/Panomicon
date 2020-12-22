@@ -420,8 +420,8 @@ public class SampleSearchScreen extends FilterScreen
     
     List<Unit> singleUnitList = new ArrayList<Unit>();
     singleUnitList.add(unit);
-    Unit[] unitsWithControl = unitSearch.sampleGroupFromEntities(singleUnitList);
-    Group g = new Group(schema(), "data", unitsWithControl);
+    Unit[] controls = unitSearch.correspondingControlUnits(singleUnitList);
+    Group g = new Group("data", singleUnitList.toArray(new Unit[0]), controls);
 
     table.loadFrom(g, false);
     Utils.displayInPopup("Unit details", table, DialogPosition.Top);

@@ -50,9 +50,8 @@ object CSVDownload {
 
           val ids = info.samples(g).map(_.id)
           val ungroupedSel = ungrouped.selectNamedColumns(ids)
-          val newNames = Map() ++ ungroupedSel.columnMap.map(x =>
-            (info.columnName(g) + ":" + x._1 -> x._2))
-          ungroupedSel.copyWith(ungroupedSel.rowData, ungroupedSel.rowMap, newNames)
+          val newColNames = ungroupedSel.columnKeys.map(x => info.columnName(g) + ":" + x)
+          ungroupedSel.copyWith(ungroupedSel.rowData, ungroupedSel.rowKeys, newColNames)
         } else {
           //p-value column, present as it is
           managedMat.current.selectColumns(List(g))
@@ -65,7 +64,7 @@ object CSVDownload {
       managedMat.current
     }
 
-    val colNames = mat.sortedColumnMap.map(_._1)
+    val colNames = mat.columnKeys
     val rows = mat.asRows
     //Task: move into RowLabels if possible
     val rowNames = rows.map(_.atomicProbes.mkString("/"))

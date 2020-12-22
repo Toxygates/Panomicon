@@ -21,6 +21,7 @@ package t.common.shared.sample;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
@@ -129,6 +130,14 @@ public class Unit extends SampleClass {
     return Arrays.stream(units).flatMap(u -> 
       Arrays.stream(u.getSamples())).
       toArray(Sample[]::new);
+  }
+
+  //Convenience method
+  public static Sample[] collectSamples(Unit[] treated, Unit[] control) {
+    Stream<Unit> all = Stream.concat(Arrays.stream(treated), Arrays.stream(control));
+    return all.flatMap(u ->
+            Arrays.stream(u.getSamples())).
+            toArray(Sample[]::new);
   }
 
   public static boolean contains(Unit[] units, Attribute param, String value) {

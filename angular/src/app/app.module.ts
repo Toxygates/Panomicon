@@ -5,6 +5,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
+import { ModalModule } from 'ngx-bootstrap/modal';
+import { CollapseModule } from 'ngx-bootstrap/collapse';
+
 import { AppComponent } from './app.component';
 import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
 import { BatchBrowserComponent } from './batch-browser/batch-browser.component';
@@ -31,7 +34,9 @@ import { NetworkVizComponent } from './network-viz/network-viz.component';
     AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    FormsModule
+    FormsModule,
+    ModalModule.forRoot(),
+    CollapseModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -46,7 +46,7 @@ class ClusteringData(val controller: MatrixController,
 
   val allRows = mat.asRows
 
-  val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
+  val columns = mat.columnKeys.zipWithIndex.filter(x => !info.isPValueColumn(x._2))
 
   private def joinedAbbreviated(items: Iterable[String], n: Int): String =
     StringUtils.abbreviate(items.toSeq.distinct.mkString("/"), 30)

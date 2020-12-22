@@ -54,7 +54,7 @@ class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
 }
 
 class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformRegistry, mirnaTable: TargetTable,
-                    sidePlatform: Option[String]) {
+                    mainPlatform: Option[String], sidePlatform: Option[String]) {
 
   def lookup: AssociationLookup = {
       case (MiRNA, sc, _, probes)      => resolveMiRNA(sc, probes, false)
@@ -68,21 +68,21 @@ class MirnaResolver(probeStore: ProbeStore, platforms: t.viewer.server.PlatformR
     fromMirna: Boolean): MMap[Probe, DefaultBio] = {
     val species = asSpecies(sc)
 
-    if (mirnaTable.size == 0) {
+    if (mirnaTable.isEmpty) {
       Console.err.println("Target table is empty; no mRNA-miRNA associations will be found")
     }
     //Note: we might perform this filtering once and store it in the matrix state
     val filtTable = species.map(mirnaTable.speciesFilter(_)).getOrElse(mirnaTable)
     println(s"Lookup from miRNA table of size ${filtTable.size}, species: $species")
 
-    //Note: we might unify this lookup with the "aprobes" mechanism
-    val lookedUp = platforms.resolve(probes.map(_.identifier).toSeq)
+    //Note: we might unify this resolution with the "aprobes" mechanism
+    val resolved = platforms.resolve(mainPlatform, probes.map(_.identifier).toSeq)
 
     val platform = sidePlatform.map(probeStore.platformsAndProbes)
     // Note: we pass None for the sizeLimit argument here because we have no way of
     // getting the sizeLimit argument from AssociationResolver. In the future it may
     // make sense to add a sizeLimit argument to AssociationLookup
-    val data = filtTable.associationLookup(lookedUp, fromMirna,
+    val data = filtTable.associationLookup(resolved, fromMirna,
       platform, None)
 
     val total = data.values.map(_.size).sum
@@ -209,8 +209,9 @@ class AssociationMasterLookup(probeStore: ProbeStore, sampleStore: SampleStore,
   def doLookupForNetwork(sc: SampleClass, types: Array[AType], probes: Array[String],
                          sizeLimit: Int,
                        network: Option[NetworkController], targetTable: TargetTable): Array[Association] = {
+    val mainPlatform = network.map(_.managedMatrix.params.platform)
     val sidePlatform = network.map(_.sideMatrix.params.platform)
-    val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, sidePlatform)
+    val mirnaRes = new MirnaResolver(probeStore, platformsCache, targetTable, mainPlatform, sidePlatform)
     val customResolvers = Seq(drugTargetResolver, mirnaRes.lookup)
     associationResolver.resolve(types, sc, sampleFilter, probes, customResolvers, sizeLimit)
   }

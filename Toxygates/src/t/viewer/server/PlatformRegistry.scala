@@ -20,39 +20,77 @@
 package t.viewer.server
 
 import t.platform.Probe
-
-import t.sparql.ProbeStore
+import t.sparql.{PlatformLoader, ProbeStore}
 import t.platform.Species.Species
 
-class PlatformRegistry(probeStore: ProbeStore) {
-  private val platformStore = new t.sparql.PlatformStore(probeStore.config)
-  private def allPlatforms = ProbeStore.platformsAndProbes(platformStore, probeStore)
+/**
+ * A loader that contains in-memory probes.
+ * @param platforms
+ */
+class MemoryPlatforms(platforms: Map[String, Iterable[Probe]]) extends PlatformLoader {
+  def probesForPlatform(platform: String): Iterable[Probe] =
+    platforms.getOrElse(platform, Seq())
 
+  def allPlatforms: Map[String, Iterable[Probe]] = platforms
+}
+
+class PlatformRegistry(loader: PlatformLoader) {
   //map platform to probe sets
-  private lazy val platformSets = allPlatforms.mapValues(_.map(_.identifier).toSet)
+  private lazy val platformSets = loader.allPlatforms.mapValues(_.map(_.identifier).toSet)
 
   //map ID to probe
   private lazy val identifierLookup =
-    Map() ++ allPlatforms.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
+    Map() ++ loader.allPlatforms.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
 
-  def allProbes: Iterable[Probe] = allPlatforms.values.toSeq.flatten
-  def getProbe(id: String): Option[Probe] = identifierLookup.get(id)
+  private var platformIdentifierLookup = Map.empty[String, Map[String, Probe]]
+  private def ensurePlatformLoaded(platform: String): Unit = {
+    if (!platformIdentifierLookup.contains(platform)) {
+      platformIdentifierLookup += (platform ->
+        loader.probesForPlatform(platform).iterator.map(p => p.identifier -> p).toMap)
+    }
+  }
+
+  def allProbes: Iterable[Probe] = loader.allPlatforms.values.toSeq.flatten
+  def getProbe(platform: String, id: String): Option[Probe] = {
+    ensurePlatformLoaded(platform)
+    platformIdentifierLookup(platform).get(id)
+  }
+
   def probeIdentifiers(platform: String): Set[String] =
-    probeStore.probesForPlatform(platform).map(_.identifier).toSet
+    loader.probesForPlatform(platform).map(_.identifier).toSet
   def platformProbes(platform: String): Iterable[Probe] =
-    probeStore.probesForPlatform(platform)
+    loader.probesForPlatform(platform)
 
   lazy val geneLookup = {
     val raw = (for (
-      (pf, probes) <- allPlatforms.toSeq;
+      (pf, probes) <- loader.allPlatforms.toSeq;
       pr <- probes;
       gene <- pr.genes
       ) yield (gene, pr))
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
 
+  /**
+   * Probe resolution by going through all known platforms. Slow, forces
+   * loading of all platforms (the first time the method is called).
+   */
   def resolve(identifiers: Seq[String]): Seq[Probe] =
     identifiers.flatMap(identifierLookup.get(_))
+
+  def resolve(platform: Option[String], identifiers: Seq[String]): Seq[Probe] =
+    platform match {
+      case Some(pf) => resolve(pf, identifiers)
+      case _ => resolve(identifiers)
+    }
+
+  /**
+   * Probe resolution by going through a single known platform.
+   */
+  def resolve(platform: String, identifiers: Seq[String]): Seq[Probe] = {
+    ensurePlatformLoaded(platform)
+    val registry = platformIdentifierLookup(platform)
+    identifiers.flatMap(registry.get(_))
+  }
 
   /**
    * Filter probes for a number of platforms.

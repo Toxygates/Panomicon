@@ -220,7 +220,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
   def getGenes(id: String, limit: Int): Array[String] = {
     val mm = stateFor(id).matrix(id)
 
-    var rowNames = mm.current.sortedRowMap.map(_._1)
+    var rowNames = mm.current.rowKeys
     println(rowNames.take(10))
     if (limit != -1) {
       rowNames = rowNames.take(limit)
@@ -236,7 +236,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     var state = "(No user state available)"
     if (mm != None && mm.get.current != null) {
       val cmat = mm.get.current
-      state = "Matrix: " + cmat.rowKeys.size + " x " + cmat.columnKeys.size
+      state = "Matrix: " + cmat.rows + " x " + cmat.columns
       state += "\nColumns: " + cmat.columnKeys.mkString(", ")
     }
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,

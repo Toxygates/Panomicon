@@ -58,13 +58,13 @@ object ExpressionMatrix {
       val rows = data.size
       val columns = safeCountColumns(data)
       new ExpressionMatrix(data.map(fromSeq).toIndexedSeq,
-          rows, columns, Map(), Map(), emptyAnnotations(rows))
+          rows, columns, Array(), Array(), emptyAnnotations(rows))
     }
   }
 
   def withRows(data: Seq[Seq[BasicExprValue]], rowNames: Seq[String], colNames: Seq[String]) =
     new ExpressionMatrix(fromSeqSeq(data), data.size, safeCountColumns(data),
-        Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex,
+        rowNames.toArray, colNames.toArray,
         emptyAnnotations(data.size))
 
   val emptyAnnotation = RowAnnotation(null, List())
@@ -78,9 +78,9 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  * This class is immutable. The various operations produce modified copies.
  */
 class ExpressionMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: Int, columns: Int,
-                       rowMap: Map[String, Int], columnMap: Map[String, Int],
+                       rowKeys: Array[String], columnKeys: Array[String],
                        val annotations: Seq[RowAnnotation])
-    extends KeyedDataMatrix[BasicExprValue, IndexedSeq[BasicExprValue], String, String](rowData, rows, columns, rowMap, columnMap) {
+    extends KeyedDataMatrix[BasicExprValue, IndexedSeq[BasicExprValue], String, String](rowData, rows, columns, rowKeys, columnKeys) {
 
   import ExpressionMatrix._
   import t.util.SafeMath._
@@ -96,26 +96,24 @@ class ExpressionMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: In
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
-  def copyWith(rowData: Seq[Seq[BasicExprValue]], rowMap: Map[String, Int],
-      columnMap: Map[String, Int],
-      annotations: Seq[RowAnnotation]): ExpressionMatrix =  {
-
+  def copyWith(rowData: Seq[Seq[BasicExprValue]], rowKeys: Array[String],
+               columnKeys: Array[String], annotations: Seq[RowAnnotation]): ExpressionMatrix =  {
         new ExpressionMatrix(fromSeqSeq(rowData), rowData.size,
             safeCountColumns(rowData),
-            rowMap, columnMap, annotations)
+            rowKeys, columnKeys, annotations)
   }
 
-  def copyWith(rowData: Seq[Seq[BasicExprValue]], rowMap: Map[String, Int],
-      columnMap: Map[String, Int]): ExpressionMatrix = {
-    copyWith(fromSeqSeq(rowData), rowMap, columnMap, annotations)
+  def copyWith(rowData: Seq[Seq[BasicExprValue]], rowKeys: Array[String],
+               columnKeys: Array[String]): ExpressionMatrix = {
+    copyWith(fromSeqSeq(rowData), rowKeys, columnKeys, annotations)
   }
 
   def copyWithAnnotations(annots: Seq[RowAnnotation]): ExpressionMatrix = {
-    copyWith(rowData, rowMap, columnMap, annots)
+    copyWith(rowData, rowKeys, columnKeys, annots)
   }
-
-  lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
-  lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
+//
+//  lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
+//  lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
 
   lazy val asRows: Seq[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
     val ann = x._2
@@ -146,7 +144,7 @@ class ExpressionMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: In
 
     val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors).zipWithIndex
     val pvals = ps.map(r => {
-      val probe = sourceData.rowAt(r._2)
+      val probe = sourceData.rowKeys(r._2)
       val vs1 = r._1._1.filter(_.present).map(_.value)
       val vs2 = r._1._2.filter(_.present).map(_.value)
 

@@ -20,6 +20,8 @@
 package t.viewer.server.rpc
 import java.util.{List => JList}
 
+import t.Context
+
 import scala.collection.JavaConverters._
 import t.common.shared.{GroupUtils, ValueType}
 import t.common.shared.sample.Group
@@ -79,6 +81,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   var config: Configuration = _
 
   def mirnaDir = context.config.data.mirnaDir
+  lazy val netLoader = new NetworkLoader(context, platforms, mirnaDir)
 
   private def probeStore: ProbeStore = context.probeStore
   lazy val platforms = new PlatformRegistry(probeStore)
@@ -91,7 +94,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     var r = new TargetTableBuilder
-    for (s <- sources; t <- mirnaTargetTable(s)) {
+    for (s <- sources; t <- netLoader.mirnaTargetTable(s)) {
       r.addAll(t)
     }
 
@@ -110,40 +113,15 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
                   mainPageSize: Int): NetworkInfo = {
 
     val scSideColumns = sideColumns.asScala
-
-    getState.controllers += (sideId ->
-      MatrixController(context, scSideColumns, Seq(), typ))
-    val sideMat = getState.matrix(sideId)
-
-    val sidetype = GroupUtils.groupType(scSideColumns(0))
     val species = groupSpecies(scSideColumns(0))
-    val sideIsMRNA = sidetype == Network.mrnaType;
+    val netController = netLoader.load(getState.targetTable.speciesFilter(species),
+      mainColumns.asScala, mainProbes,
+      sideColumns.asScala, typ, mainPageSize)
 
-    var targets = getState.targetTable
-    targets = targets.speciesFilter(species)
-
-    val scMainColumns = mainColumns.asScala
-    //Always load the empty probe set(all probes), to be able to revert to this view.
-    //We optionally filter probes below.
-    val params = ControllerParams(scMainColumns, Seq(), typ)
-
-    //The network controller (actually the managed network) will ensure that
-    //the side matrix stays updated when the main matrix changes
-    val net = new NetworkController(context, platforms, params, sideMat, targets, mainPageSize,
-      sideIsMRNA)
-    getState.controllers += mainId -> net
-    getState.networks += mainId -> net
-
-    val mainMat = net.managedMatrix
-    if (!mainProbes.isEmpty) {
-      mainMat.selectProbes(mainProbes)
-    }
-
-    sideMat.addSynthetic(
-      new Synthetic.Precomputed("Count", s"Number of times each $sidetype appeared in the set",
-        mainMat.currentViewCountMap, null))
-
-    new NetworkInfo(mainMat.info, sideMat.info, net.makeNetwork)
+    getState.controllers += (sideId -> netController.sideController)
+    getState.controllers += mainId -> netController
+    getState.networks += mainId -> netController
+    netController.makeNetworkWithInfo
   }
 
   def currentView(mainTableId: String): Network =
@@ -168,6 +146,37 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
     val file = CSVHelper.filename("toxygates", format.suffix)
     s.writeTo(s"${config.csvDirectory}/$file", format)
     s"${config.csvUrlBase}/$file"
+  }
+}
+
+class NetworkLoader(context: Context, platforms: PlatformRegistry, mirnaDir: String) {
+  def load(targetTable: TargetTable,
+           mainColumns: Seq[Group], mainInitProbes: Array[String],
+           sideColumns: Seq[Group], valueType: ValueType,
+           mainPageSize: Int): NetworkController = {
+
+    val sideMatrix = MatrixController(context, sideColumns, Seq(), valueType)
+
+    val sideType = GroupUtils.groupType(sideMatrix.groups.head)
+    val sideIsMRNA = sideType == Network.mrnaType;
+    //Always load the empty probe set(all probes), to be able to revert to this view.
+    //We optionally filter probes below.
+    val netControllerParams = ControllerParams(mainColumns, Seq(), valueType)
+
+    //The network controller (actually the managed network) will ensure that
+    //the side matrix stays updated when the main matrix changes
+    val net = new NetworkController(context, platforms, netControllerParams,
+      sideMatrix, targetTable, mainPageSize, sideIsMRNA)
+
+    val mainMatrix = net.managedMatrix
+    if (mainInitProbes.nonEmpty) {
+      mainMatrix.selectProbes(mainInitProbes)
+    }
+
+    sideMatrix.managedMatrix.addSynthetic(
+      new Synthetic.Precomputed("Count", s"Number of times each $sideType appeared in the set",
+        mainMatrix.currentViewCountMap, null))
+    net
   }
 
   protected def tryReadTargetTable(file: String, doRead: String => TargetTable) =
@@ -201,7 +210,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   }
 
   import MirnaSources._
-  protected def mirnaTargetTable(source: MirnaSource) = {
+  def mirnaTargetTable(source: MirnaSource): Option[TargetTable] = {
     val table = source.id match {
       case MIRDB_SOURCE => mirdbTable
       case TARGETMINE_SOURCE => mirtarbaseTable

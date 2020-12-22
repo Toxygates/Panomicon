@@ -120,7 +120,7 @@ public class ManagedMatrixInfo implements Serializable {
    */
   public ManagedMatrixInfo addAllNonSynthetic(ManagedMatrixInfo other) {
     for (int c = 0; c < other.numDataColumns(); c++) {
-      addColumn(false, other.shortColumnName(c), other.columnName(c),
+      addColumn(false, other.columnName(c), other.parentColumnName(c),
           other.columnHint(c), other.columnFilter(c), other.columnGroup(c),
           other.isPValueColumn(c), other.samples(c));
     }
