@@ -1,5 +1,33 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import
+  'functions',
+  'variables',
+  'mixins',
+  'root',
+  'print',
+  'reboot',
+  'type',
+  'grid',
+  'forms',
+  'buttons',
+  'transitions',
+  'nav',
+  'navbar',
+  'modal',
+  'spinners',
+  'close',
+  'utilities/screenreaders',
+  'utilities/spacing',
+  'utilities/visibility',
+  'utilities/align',
+  'utilities/borders',
+  'utilities/display',
+  'utilities/flex',
+  'utilities/float',
+  'utilities/overflow',
+  'utilities/position';
+
 html { 
     font-size: 10pt;
 }
