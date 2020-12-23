@@ -1,6 +1,6 @@
-import * as cy from 'cytoscape';
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { WebGLEngineService } from './webGLEngine.service';
+import { CyEngineService } from './cyEngine.service';
 
 /**
  * Component description
@@ -21,10 +21,14 @@ export class NetworkVizComponent implements OnInit {
   /** The current height, in pixels, of the canvas element used for display */
   protected _canvasHeight: number;
 
+  @ViewChild('rendererCanvas', {static: true})
+  public rendererCanvas: ElementRef<HTMLCanvasElement>;
+
   /**
    * Constructor
    */
-  constructor() { }
+  constructor(private engServ: WebGLEngineService) {
+  }
 
   /**
    * Init basic properties of the component
@@ -32,6 +36,9 @@ export class NetworkVizComponent implements OnInit {
   ngOnInit(): void {
     /* set the canvas height */
     this._canvasHeight = 500;
+
+    this.engServ.createScene(this.rendererCanvas);
+    this.engServ.animate();
   }
 
   get canvasHeight(): number{

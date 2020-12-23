@@ -27,7 +27,7 @@ import { NetworkVizComponent } from './network-viz/network-viz.component';
     BatchSamplesComponent,
     PageNotFoundComponent,
     ExpressionTableComponent,
-    NetworkVizComponent
+    NetworkVizComponent,
   ],
   imports: [
     BrowserModule,
