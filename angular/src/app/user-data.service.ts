@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
+import { ISampleGroup } from './models/sample-group.model'
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserDataService {
 
-  sampleGroups: Map<string, string[]>;
+  sampleGroups: Map<string, ISampleGroup>;
 
-  static readonly SAMPLE_GROUPS_KEY: string = "sampleGroups_v1";
+  static readonly SAMPLE_GROUPS_KEY: string = "sampleGroups_v2";
 
   constructor() {
     let sampleGroupsJson = window.localStorage.getItem(UserDataService.SAMPLE_GROUPS_KEY);
@@ -24,7 +25,11 @@ export class UserDataService {
   }
 
   saveSampleGroup(name: string, samples: string[]) {
-    this.sampleGroups.set(name, samples);
+    this.sampleGroups.set(name, <ISampleGroup>{
+      name: name,
+      samples: samples,
+      enabled: true,
+    });
     this.serializeSampleGroups();
   }
 

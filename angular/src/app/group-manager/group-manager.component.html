@@ -6,13 +6,13 @@
                   <h5 class="card-title">{{name}}</h5>
                   Samples:
                     <ul>
-                        <li *ngFor="let sample of sampleGroups.get(name)">
+                        <li *ngFor="let sample of sampleGroups.get(name).samples">
                             {{sample}}
                         </li>
                     </ul>
                     <button type="button" class="btn btn-primary mr-2"
                         [routerLink]="'/expression-table'"
-                        [queryParams]="{samples: sampleGroups.get(name)}">
+                        [queryParams]="{samples: sampleGroups.get(name).samples}">
                         View expression data
                     </button>
                     <button type="button" class="btn btn-secondary mr-2"

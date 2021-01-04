@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../user-data.service';
+import { ISampleGroup } from '../models/sample-group.model'
 
 @Component({
   selector: 'app-group-manager',
@@ -13,7 +14,7 @@ export class GroupManagerComponent implements OnInit {
     private toastr: ToastrService) { }
 
   groupNames: string[];
-  sampleGroups: Map<string, string[]>;
+  sampleGroups: Map<string, ISampleGroup>;
 
   deleteGroup(groupName: string) {
     this.sampleGroups.delete(groupName);
