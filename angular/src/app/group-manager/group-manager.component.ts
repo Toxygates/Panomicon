@@ -23,6 +23,10 @@ export class GroupManagerComponent implements OnInit {
     this.toastr.success('Group name: ' + groupName, 'Sample group deleted');
   }
 
+  saveSampleGroups() {
+    this.userData.saveSampleGroups(this.sampleGroups);
+  }
+
   ngOnInit(): void {
     this.sampleGroups = this.userData.getSampleGroups();
     this.groupNames = Array.from(this.sampleGroups.keys()).sort();

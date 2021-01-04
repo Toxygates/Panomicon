@@ -24,6 +24,11 @@ export class UserDataService {
     window.localStorage.setItem(UserDataService.SAMPLE_GROUPS_KEY, sampleGroupsJson);
   }
 
+  saveSampleGroups(sampleGroups: Map<string, ISampleGroup>) {
+    this.sampleGroups = sampleGroups;
+    this.serializeSampleGroups();
+  }
+
   saveSampleGroup(name: string, samples: string[]) {
     this.sampleGroups.set(name, <ISampleGroup>{
       name: name,

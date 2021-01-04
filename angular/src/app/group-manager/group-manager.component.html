@@ -10,6 +10,12 @@
                             {{sample}}
                         </li>
                     </ul>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="enabledCheck"
+                            [(ngModel)]="sampleGroups.get(name).enabled"
+                            (ngModelChange)="saveSampleGroups()">
+                        <label class="form-check-label" for="enabledCheck">Enabled</label>
+                      </div>
                     <button type="button" class="btn btn-primary mr-2"
                         [routerLink]="'/expression-table'"
                         [queryParams]="{samples: sampleGroups.get(name).samples}">
