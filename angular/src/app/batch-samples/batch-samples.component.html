@@ -18,12 +18,6 @@
                   [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseBasic">
                   Create sample group...
               </button>
-              <button type="button" class="btn btn-primary mb-1 mr-2"
-                  [routerLink]="'/expression-table'"
-                  [queryParams]="{samples: selectedSamples}"
-                  [disabled]="readyToCreateGroup ? false : true">
-                  View expression data
-              </button>
             </div>
             <div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
                 [isAnimated]="true">

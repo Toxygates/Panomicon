@@ -1,6 +1,7 @@
-import { AfterViewInit, ChangeDetectorRef, Component, HostListener, ViewChild } from '@angular/core';
+import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
+import { UserDataService } from '../user-data.service';
 import Tabulator from 'tabulator-tables';
 
 @Component({
@@ -8,9 +9,10 @@ import Tabulator from 'tabulator-tables';
   templateUrl: './expression-table.component.html',
   styleUrls: ['./expression-table.component.scss']
 })
-export class ExpressionTableComponent implements AfterViewInit {
+export class ExpressionTableComponent implements OnInit, AfterViewInit {
 
-  constructor(private activatedRoute: ActivatedRoute,
+  constructor(private userData: UserDataService,
+    private activatedRoute: ActivatedRoute,
     private router: Router, private modalService: BsModalService,
     private changeDetector: ChangeDetectorRef) { }
 
@@ -19,7 +21,6 @@ export class ExpressionTableComponent implements AfterViewInit {
   @ViewChild('tabulatorContainer') tabulatorContainer;
   @ViewChild('modalTemplate') modalTemplate;
 
-  samples: string[];
   dataFetched = false;
   lastPage = 0;
   tablePageNumber = 0;
@@ -52,19 +53,24 @@ export class ExpressionTableComponent implements AfterViewInit {
     {title: 'Probe Titles', field: 'organism',
       mutator: this.probeTitlesMutator, headerSort:false},
     {title: 'Probe', field: 'probe', headerSort:false},
-    {title: 'Log2-fold', field: 'Group 1', mutator: this.log2foldMutator},
-    {title: 'P-Value', field: 'Group 1(p)', mutator: this.pValueMutator},
   ]
 
-  ngAfterViewInit(): void {
-    this.activatedRoute.queryParamMap.subscribe(paramMap => {
-      if (!paramMap.has("samples")) {
-        this.router.navigate(['']);
-      } else {
-        this.samples = paramMap.getAll("samples");
-        this.drawTable();
+  ngOnInit(): void {
+    let enabledGroups = this.userData.getEnabledSampleGroups();
+    if (enabledGroups.length == 0) {
+      this.router.navigate(['']);
+    } else {
+      for (let group of this.userData.getEnabledSampleGroups()) {
+        this.columns.push({title: group.name, field: group.name,
+          headerSort: true, mutator: this.log2foldMutator});
+        this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
+          headerSort: true, mutator: this.log2foldMutator});
       }
-    });
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.drawTable();
   }
 
   private drawTable(): void {
@@ -81,8 +87,12 @@ export class ExpressionTableComponent implements AfterViewInit {
           'Content-Type': 'application/json',
         },
         body: function(_url, _config, params) {
+          let groupInfoArray = [];
+          for (let group of _this.userData.getEnabledSampleGroups()) {
+            groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
+          }
           var requestBodyObject: any  = {
-            "groups": [{ "name": "Group 1", "sampleIds": _this.samples }],
+            "groups": groupInfoArray,
           }
           requestBodyObject.page = params.page;
           requestBodyObject.sorter = params.sorters[0];

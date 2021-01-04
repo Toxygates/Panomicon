@@ -46,4 +46,14 @@ export class UserDataService {
   getSampleGroups() {
     return this.sampleGroups;
   }
+
+  getEnabledSampleGroups() {
+    let enabledGroups = [];
+    for (let groupName of Array.from(this.sampleGroups.keys()).sort()) {
+      if (this.sampleGroups.get(groupName).enabled) {
+        enabledGroups.push(this.sampleGroups.get(groupName));
+      }
+    }
+    return enabledGroups;
+  }
 }
