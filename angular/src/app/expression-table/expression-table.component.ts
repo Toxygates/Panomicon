@@ -49,7 +49,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
     }
   }
 
-  columns = [
+  columns: any[] = [
     {title: 'Gene Symbol', field: 'probeTitles',
       mutator: this.geneSymbolsMutator, headerSort:false},
     {title: 'Probe Titles', field: 'organism',
@@ -65,9 +65,11 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
       } else {
         for (let group of enabledGroups) {
           this.columns.push({title: group.name, field: group.name,
-            headerSort: true, mutator: this.log2foldMutator});
+            headerSort: true, mutator: this.log2foldMutator,
+            headerSortStartingDir:"desc"});
           this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
-            headerSort: true, mutator: this.log2foldMutator});
+            headerSort: true, mutator: this.log2foldMutator,
+            headerSortStartingDir:"desc"});
         }
       }
     });
@@ -78,8 +80,8 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   }
 
   private drawTable(): void {
-    var _this = this;
-    var tabulatorElement = document.createElement('div');
+    let _this = this;
+    let tabulatorElement = document.createElement('div');
     tabulatorElement.style.width = "auto";
     this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
     this.tabulator = new Tabulator(tabulatorElement, {
@@ -95,7 +97,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
           for (let group of _this.enabledSampleGroups) {
             groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
           }
-          var requestBodyObject: any  = {
+          let requestBodyObject: any  = {
             "groups": groupInfoArray,
           }
           requestBodyObject.page = params.page;
@@ -123,7 +125,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
       columnHeaderSortMulti:false,
       ajaxSorting:true,
       initialSort:[
-        {column:"Group 1", dir:"desc"}
+        {column:_this.enabledSampleGroups[0].name, dir:"desc"}
       ],
       tooltips:true,
       ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
