@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { ISampleGroup } from './models/sample-group.model'
 
 @Injectable({
@@ -6,7 +7,9 @@ import { ISampleGroup } from './models/sample-group.model'
 })
 export class UserDataService {
 
-  sampleGroups: Map<string, ISampleGroup>;
+  sampleGroupsBehaviorSubject: BehaviorSubject<Map<string, ISampleGroup>>;
+  enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
+  private sampleGroups: Map<string, ISampleGroup>;
 
   static readonly SAMPLE_GROUPS_KEY: string = "sampleGroups_v2";
 
@@ -17,16 +20,20 @@ export class UserDataService {
     } else {
       this.sampleGroups = new Map();
     }
+    this.sampleGroupsBehaviorSubject = new BehaviorSubject(this.sampleGroups);
+    this.enabledGroupsBehaviorSubject = new BehaviorSubject(this.getEnabledSampleGroups());
   }
 
-  serializeSampleGroups() {
+  private updateSampleGroups() {
     let sampleGroupsJson = JSON.stringify(Array.from(this.sampleGroups.entries()));
     window.localStorage.setItem(UserDataService.SAMPLE_GROUPS_KEY, sampleGroupsJson);
+    this.sampleGroupsBehaviorSubject.next(this.sampleGroups);
+    this.enabledGroupsBehaviorSubject.next(this.getEnabledSampleGroups());
   }
 
   saveSampleGroups(sampleGroups: Map<string, ISampleGroup>) {
     this.sampleGroups = sampleGroups;
-    this.serializeSampleGroups();
+    this.updateSampleGroups();
   }
 
   saveSampleGroup(name: string, samples: string[]) {
@@ -35,19 +42,15 @@ export class UserDataService {
       samples: samples,
       enabled: true,
     });
-    this.serializeSampleGroups();
+    this.updateSampleGroups();
   }
 
   deleteSampleGroup(name: string) {
     this.sampleGroups.delete(name);
-    this.serializeSampleGroups();
+    this.updateSampleGroups();
   }
 
-  getSampleGroups() {
-    return this.sampleGroups;
-  }
-
-  getEnabledSampleGroups() {
+  private getEnabledSampleGroups() {
     let enabledGroups = [];
     for (let groupName of Array.from(this.sampleGroups.keys()).sort()) {
       if (this.sampleGroups.get(groupName).enabled) {

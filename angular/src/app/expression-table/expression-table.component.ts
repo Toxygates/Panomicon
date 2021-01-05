@@ -2,6 +2,7 @@ import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, View
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../user-data.service';
+import { ISampleGroup } from '../models/sample-group.model'
 import Tabulator from 'tabulator-tables';
 
 @Component({
@@ -21,6 +22,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   @ViewChild('tabulatorContainer') tabulatorContainer;
   @ViewChild('modalTemplate') modalTemplate;
 
+  enabledSampleGroups: ISampleGroup[];
   dataFetched = false;
   lastPage = 0;
   tablePageNumber = 0;
@@ -56,17 +58,19 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   ]
 
   ngOnInit(): void {
-    let enabledGroups = this.userData.getEnabledSampleGroups();
-    if (enabledGroups.length == 0) {
-      this.router.navigate(['']);
-    } else {
-      for (let group of this.userData.getEnabledSampleGroups()) {
-        this.columns.push({title: group.name, field: group.name,
-          headerSort: true, mutator: this.log2foldMutator});
-        this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
-          headerSort: true, mutator: this.log2foldMutator});
+    this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
+      this.enabledSampleGroups = enabledGroups;
+      if (enabledGroups.length == 0) {
+        this.router.navigate(['']);
+      } else {
+        for (let group of enabledGroups) {
+          this.columns.push({title: group.name, field: group.name,
+            headerSort: true, mutator: this.log2foldMutator});
+          this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
+            headerSort: true, mutator: this.log2foldMutator});
+        }
       }
-    }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -88,7 +92,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
         },
         body: function(_url, _config, params) {
           let groupInfoArray = [];
-          for (let group of _this.userData.getEnabledSampleGroups()) {
+          for (let group of _this.enabledSampleGroups) {
             groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
           }
           var requestBodyObject: any  = {
