@@ -47,6 +47,7 @@ export class BatchSamplesComponent {
   loadSamplesForBatch(batchId: string) {
     delete this.samples;
     this.batchId = batchId;
+    this.tabulatorContainer.nativeElement.innerHTML = '';
     this.backend.getSamplesForBatch(batchId)
       .subscribe(
         result => {
@@ -65,8 +66,8 @@ export class BatchSamplesComponent {
   }
 
   private drawTable(): void {
-    var _this = this;
-    var tabulatorElement = document.createElement('div');
+    let _this = this;
+    let tabulatorElement = document.createElement('div');
     tabulatorElement.style.width = "auto";
     this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
     this.tabulator = new Tabulator(tabulatorElement, {
