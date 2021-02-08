@@ -28,7 +28,9 @@ export class GroupManagerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.sampleGroups = this.userData.getSampleGroups();
-    this.groupNames = Array.from(this.sampleGroups.keys()).sort();
+    this.userData.sampleGroupsBehaviorSubject.subscribe(groups => {
+      this.sampleGroups = groups;
+      this.groupNames = Array.from(this.sampleGroups.keys()).sort();
+    });
   }
 }

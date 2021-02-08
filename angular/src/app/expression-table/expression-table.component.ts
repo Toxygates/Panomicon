@@ -2,6 +2,7 @@ import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, View
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../user-data.service';
+import { ISampleGroup } from '../models/sample-group.model'
 import Tabulator from 'tabulator-tables';
 
 @Component({
@@ -21,6 +22,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   @ViewChild('tabulatorContainer') tabulatorContainer;
   @ViewChild('modalTemplate') modalTemplate;
 
+  enabledSampleGroups: ISampleGroup[];
   dataFetched = false;
   lastPage = 0;
   tablePageNumber = 0;
@@ -47,7 +49,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
     }
   }
 
-  columns = [
+  columns: any[] = [
     {title: 'Gene Symbol', field: 'probeTitles',
       mutator: this.geneSymbolsMutator, headerSort:false},
     {title: 'Probe Titles', field: 'organism',
@@ -56,17 +58,21 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   ]
 
   ngOnInit(): void {
-    let enabledGroups = this.userData.getEnabledSampleGroups();
-    if (enabledGroups.length == 0) {
-      this.router.navigate(['']);
-    } else {
-      for (let group of this.userData.getEnabledSampleGroups()) {
-        this.columns.push({title: group.name, field: group.name,
-          headerSort: true, mutator: this.log2foldMutator});
-        this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
-          headerSort: true, mutator: this.log2foldMutator});
+    this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
+      this.enabledSampleGroups = enabledGroups;
+      if (enabledGroups.length == 0) {
+        this.router.navigate(['']);
+      } else {
+        for (let group of enabledGroups) {
+          this.columns.push({title: group.name, field: group.name,
+            headerSort: true, mutator: this.log2foldMutator,
+            headerSortStartingDir:"desc"});
+          this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
+            headerSort: true, mutator: this.log2foldMutator,
+            headerSortStartingDir:"desc"});
+        }
       }
-    }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -74,8 +80,8 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   }
 
   private drawTable(): void {
-    var _this = this;
-    var tabulatorElement = document.createElement('div');
+    let _this = this;
+    let tabulatorElement = document.createElement('div');
     tabulatorElement.style.width = "auto";
     this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
     this.tabulator = new Tabulator(tabulatorElement, {
@@ -88,10 +94,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
         },
         body: function(_url, _config, params) {
           let groupInfoArray = [];
-          for (let group of _this.userData.getEnabledSampleGroups()) {
+          for (let group of _this.enabledSampleGroups) {
             groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
           }
-          var requestBodyObject: any  = {
+          let requestBodyObject: any  = {
             "groups": groupInfoArray,
           }
           requestBodyObject.page = params.page;
@@ -119,7 +125,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
       columnHeaderSortMulti:false,
       ajaxSorting:true,
       initialSort:[
-        {column:"Group 1", dir:"desc"}
+        {column:_this.enabledSampleGroups[0].name, dir:"desc"}
       ],
       tooltips:true,
       ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
