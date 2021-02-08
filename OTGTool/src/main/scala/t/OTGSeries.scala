@@ -210,7 +210,7 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
         r :+= series.copy(probe = pr, points = points.map(_._2))
       }
     }
-    println(s"Constructed ${r.size} series including: ${r.head}")
+    println(s"Constructed ${r.size} series including: ${r.headOption.getOrElse("(null)")}")
     r
   }
 
