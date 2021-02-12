@@ -58,11 +58,13 @@ export class BatchSamplesComponent {
   }
 
   saveSampleGroup() {
-    this.userData.saveSampleGroup(this.sampleGroupName, this.selectedSamples);
-    this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
-    this.sampleCreationIsCollapsed = true;
-    this.sampleGroupName = undefined;
-    this.tabulator.deselectRow();
+    if (this.sampleGroupName) {
+      this.userData.saveSampleGroup(this.sampleGroupName, this.selectedSamples);
+      this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
+      this.sampleCreationIsCollapsed = true;
+      this.sampleGroupName = undefined;
+      this.tabulator.deselectRow();
+    }
   }
 
   private drawTable(): void {
