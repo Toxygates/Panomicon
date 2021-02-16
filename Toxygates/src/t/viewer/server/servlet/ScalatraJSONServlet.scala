@@ -374,6 +374,19 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     }
   }
 
+  get("/attribute/batch/:batch") {
+    // we ignore this parameter for now because per-batch attributes
+    // aren't implemented yet
+    val batch = params("batch")
+
+    val attributes = baseConfig.attributes.getAll()
+    val values = attributes.asScala.map(attrib => writeJs(Map(
+      "id" -> writeJs(attrib.id()),
+      "title" -> writeJs(attrib.title()),
+      "isNumerical" -> writeJs(attrib.isNumerical))))
+    write(values)
+  }
+
   /**
    * Routines that support matrix loading requests
    */
