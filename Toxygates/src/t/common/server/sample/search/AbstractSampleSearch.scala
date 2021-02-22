@@ -46,7 +46,7 @@ import t.viewer.shared.OTGSchema
 trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
 
   protected def rawSamples(condition: MatchCondition, sampleClass: SampleClass,
-                           sampleFilter: SampleFilter, sampleStore: SampleStore, schema: DataSchema,
+                           sampleFilter: SampleFilter, sampleStore: SampleStore,
                            attributes: AttributeSet): Seq[Sample] = {
 
     val queryAttributes = condition.neededParameters().asScala ++
@@ -58,7 +58,7 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
             sampleStore: SampleStore, schema: DataSchema,
             attributes: AttributeSet, sampleFilter: SampleFilter): SS = {
     val samples = rawSamples(condition, sampleClass, sampleFilter,
-        sampleStore, schema, attributes)
+        sampleStore, attributes)
     val unitHelper = new UnitsHelper(schema)
     apply(samples, condition, unitHelper, attributes)
   }
