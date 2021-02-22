@@ -18,7 +18,6 @@ export class BatchPickerComponent {
 
   loadBatchesForDataset(datasetId: string) {
     delete this.batches;
-    delete this.selectedBatch;
     this.datasetId = datasetId;
     this.backend.getBatchesForDataset(datasetId)
       .subscribe(
