@@ -20,11 +20,9 @@
 package t.clustering.server
 
 import java.util.logging.Level
-
 import java.util.logging.Logger
 
 import scala.collection.immutable.Queue
-import scala.sys.process._
 
 import org.rosuda.REngine.REXP
 import org.rosuda.REngine.Rserve.RConnection
@@ -60,7 +58,10 @@ class R() {
   }
 
   private def eval(cmd: String) = {
-    logger.info(cmd)
+    val logCmd = if (cmd.length > 500)
+      { cmd.substring(0, 500) + " ... (long command truncated)" }
+      else cmd
+    logger.info(logCmd)
     val r = conn.parseAndEval(s"try($cmd)")
     if (r.inherits("try-error")) {
       throw new RserveException(conn, r.asString())
