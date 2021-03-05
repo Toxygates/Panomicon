@@ -59,10 +59,35 @@ class ClusteringData(val controller: MatrixController,
   def codeDir: String = ???
 
   /**
-   * Obtain column-major data for the specified rows and columns
+   * Obtain row-major data for the specified rows and columns
    */
   def data: Array[Array[Double]] = mat.selectColumns(columns.map(_._2)).rowData.
     map(_.map(_.value).toArray).toArray
+
+  def ungroupedNames: Array[String] = {
+    val baseColumns = columns.flatMap(c => mm.baseColumns(c._2))
+    baseColumns.map(c => mm.rawUngrouped.columnKeys(c))
+  }
+
+  def ungroupedSamples = {
+    val baseColumns = columns.flatMap(c => mm.baseColumns(c._2))
+    baseColumns.map(mm.rawUngrouped.columnKeys)
+  }
+
+  /**
+   * Obtain column-major data for individual (ungrouped) samples underlying the columns
+   * Ignores "rows" parameter
+   */
+  def ungroupedData: Array[Array[Double]] = {
+    val baseColumns = columns.flatMap(c => mm.baseColumns(c._2))
+    val useMat = mm.rawUngrouped.selectColumns(baseColumns)
+    val useRows = if (rows == null || rows.length == 0) {
+      useMat.rowData
+    } else {
+      useMat.selectNamedRows(rows).rowData
+    }
+    useRows.map(_.map(_.value).toArray).toArray
+  }
 
   /**
    * Gene symbols for the specified rows

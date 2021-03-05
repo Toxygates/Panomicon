@@ -19,12 +19,8 @@
 package t.clustering.server
 
 import java.util.logging.Logger
-
-
-
 import org.rosuda.REngine.Rserve.RserveException
-
-import t.clustering.shared.Algorithm
+import t.clustering.shared.{Algorithm, WGCNAParams, WGCNAResults}
 
 /**
  * Connects to Rserve to perform a clustering.
@@ -73,5 +69,57 @@ class RClustering(codeDir: String) {
       case Some(x) => x.asString()
       case None => ""
     }
+  }
+
+  private def simpleStringColumn(xs: Seq[String]): String =
+    s"c(${xs.map { "\"" + _ + "\"" }.mkString(", ")})"
+
+  private def simpleColumn(xs: Seq[String]): String =
+    s"c(${xs.mkString(", ")})"
+
+  /*
+    TODO: check for at least two columns (true minimum: 4?)
+    TODO: individual samples
+
+    TODO: pass bio parameters
+   */
+
+  def doWGCNAClustering(params: WGCNAParams,
+                        sampleData: Array[Array[Double]], probeNames: Array[String],
+                        sampleNames: Array[String],
+                        traitNames: Seq[String],
+                        traitAttributes: Seq[Seq[String]],
+                        imageDir: String, imageURLBase: String): WGCNAResults = {
+    val r = new R
+    r.addCommand("library(WGCNA)")
+    r.addCommand("options(stringsAsFactors = FALSE)")
+    r.addCommand("imageDir <- \"" + imageDir + "\"")
+    r.addCommand(s"cutHeight <- ${params.getCutHeight}")
+    r.addCommand(s"softPower <- ${params.getSoftPower}")
+
+    r.addCommand("datExpr0 <- data.frame(" +
+      sampleData.map(s => "c(" + safeData(s).mkString(", ") + ")").mkString(",") +
+      ")")
+    r.addCommand(s"names(datExpr0) <- ${simpleStringColumn(probeNames)}")
+    r.addCommand(s"rownames(datExpr0) <- ${simpleStringColumn(sampleNames)}")
+
+    r.addCommand("traitData <- data.frame(" +
+      simpleStringColumn(traitAttributes.head) + "," +
+      traitAttributes.tail.map(simpleColumn).mkString(",") +
+      ")")
+    r.addCommand(s"names(traitData) <- ${simpleStringColumn(traitNames)}")
+
+    r.addCommand(s"source('$codeDir/R/PanomiconWGCNA.R')")
+    r.exec() match {
+      case Some(x) =>
+        println(s"WGCNA result: $x")
+        x
+      case None => println("No result from WGCNA")
+    }
+
+    //TODO: take file name directly from R script output
+    val dendrogramImage = s"$imageURLBase/sampleClustering.png"
+    val modulesImage = s"$imageURLBase/modules.png"
+    new WGCNAResults(dendrogramImage, modulesImage, null)
   }
 }

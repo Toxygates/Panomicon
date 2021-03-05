@@ -29,6 +29,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import t.clustering.client.ClusteringService;
 import t.clustering.shared.Algorithm;
+import t.clustering.shared.WGCNAParams;
+import t.clustering.shared.WGCNAResults;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
@@ -149,5 +151,8 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
   String prepareHeatmap(@Nullable String id, List<Group> chosenColumns, 
       @Nullable List<String> chosenProbes,
       ValueType valueType, Algorithm algorithm, int featureDecimalDigits) throws ServerError;
-  
+
+  WGCNAResults prepareWGCNAClustering(WGCNAParams params, @Nullable String id, List<Group> chosenColumns,
+                                      @Nullable List<String> chosenProbes,
+                                      ValueType valueType) throws ServerError;
 }

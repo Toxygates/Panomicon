@@ -25,6 +25,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.clustering.client.ClusteringServiceAsync;
 import t.clustering.shared.Algorithm;
+import t.clustering.shared.WGCNAParams;
+import t.clustering.shared.WGCNAResults;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
@@ -58,4 +60,8 @@ public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String>
 
   void prepareHeatmap(String id, List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
       Algorithm algorithm, int featureDecimalDigits, AsyncCallback<String> callback);
+
+  void prepareWGCNAClustering(WGCNAParams params, String id,
+                              List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
+                              AsyncCallback<WGCNAResults> callback);
 }

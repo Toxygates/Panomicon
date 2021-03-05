@@ -21,11 +21,10 @@ package t.viewer.server.rpc
 
 import java.util.logging.Logger
 import java.util.{List => JList}
-
 import javax.annotation.Nullable
 import t.Context
 import t.clustering.server.RClustering
-import t.clustering.shared.Algorithm
+import t.clustering.shared.{Algorithm, WGCNAParams, WGCNAResults}
 import t.common.shared.ValueType
 import t.common.shared.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
@@ -271,11 +270,35 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     // R can't deal with backslashes in a file path so we need to replace them
     // with slashes
     val clust = new RClustering(codeDir.replace("\\", "/"))
-    clust.clustering(data.data.flatten, rowNamesForHeatmap(data.rowNames),
+    clust.clustering(data.data.flatten, data.rowNames,
         data.colNames, data.geneSymbols, algorithm, featureDecimalDigits)
   }
 
-  protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
-    names
+  def prepareWGCNAClustering(params: WGCNAParams, id: String, groups: JList[Group], chosenProbes: JList[String],
+                             valueType: ValueType): WGCNAResults = {
 
+    //Reload data in a temporary controller if groups do not correspond to
+    //the ones in the current session
+    val cont = if (getState.needsReload(id, groups.asScala, valueType)) {
+      throw new Exception("WGCNA clustering is only supported for the current matrix")
+    } else {
+      getState.controller(id)
+    }
+    val rowNames = cont.managedMatrix.current.rowKeys
+    val clust = new RClustering(codeDir.replace("\\", "/"))
+    val data = new ClusteringData(cont, probes, rowNames, valueType)
+
+    val attrSet = baseConfig.attributes
+    val bioParamIds = Seq("sample_id", "kidney_total_wt", "liver_wt", "Hb", "MCH", "MCV",
+      "K", "Cl", "Ca")
+    val bioParams = bioParamIds.flatMap(a => Option(attrSet.byId(a)))
+    val sampleAttrs = context.sampleStore.sampleAttributeValues(data.ungroupedSamples, bioParams)
+    val traits = bioParams.map(bp => sampleAttrs.map(s => s(bp)))
+
+    println(traits)
+    clust.doWGCNAClustering(params, data.ungroupedData, rowNames, data.ungroupedNames,
+      bioParamIds,
+      traits,
+      config.csvDirectory, config.csvUrlBase)
+  }
 }

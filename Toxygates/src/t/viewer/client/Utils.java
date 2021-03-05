@@ -288,7 +288,7 @@ public class Utils {
     verticalPanel.add(simplePanel);
     simplePanel.addStyleName("helpPanelInner");
     verticalPanel.addStyleName("helpPanelOuter");    
-    Utils.displayInPopup("Help", verticalPanel, DialogPosition.Center);
+    displayInPopup("Help", verticalPanel, DialogPosition.Center);
   }
 
   public static void loadHTML(String url, RequestCallback callback) {
@@ -313,6 +313,12 @@ public class Utils {
     public void onError(Request request, Throwable exception) {
       Window.alert("Server communication error.");
     }
+  }
+
+  public static void loadImageInPopup(String caption, String url) {
+    HTML contentHTML = new HTML();
+    contentHTML.setHTML("<img width=1024 height=768 src=\"" + url + "\">");
+    displayInPopup(caption, makeScrolled(contentHTML), DialogPosition.Center);
   }
 
   public static void ensureVisualisationAndThen(final Runnable r) {

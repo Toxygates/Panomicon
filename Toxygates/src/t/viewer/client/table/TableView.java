@@ -158,6 +158,9 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
 
     MenuItem heatMapMenu = new MenuItem("Show heat map", () -> makeHeatMap());
     addAnalysisMenuItem(heatMapMenu);
+
+    MenuItem wgcnaMenu = new MenuItem("WGCNA clustering", () -> wgcnaClustering());
+    addAnalysisMenuItem(wgcnaMenu);
   }
   
   protected void showMirnaSourceDialog() {
@@ -169,6 +172,12 @@ public class TableView extends DataView implements ExpressionTable.Delegate,
 
   protected void makeHeatMap() {
     HeatmapViewer.show(screen, this, expressionTable.getValueType());
+  }
+
+  protected void wgcnaClustering() {
+    WGCNADialog ui = new WGCNADialog(screen, mainMatrixId(),
+            ClientGroup.convertToGroups(chosenColumns), chosenValueType());
+    ui.display("WGCNA clustering", DialogPosition.Center);
   }
   
   protected static final String defaultMatrix = "DEFAULT";
