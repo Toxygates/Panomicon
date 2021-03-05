@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-sm navbar-light bg-light">
+<nav class="navbar navbar-expand-sm navbar-light ui_panel">
     <a class="navbar-brand">Panomicon</a>
     <button class="navbar-toggler" type="button" (click)="navbarIsCollapsed = !navbarIsCollapsed"
         aria-controls="navbarSupportedContent" [attr.aria-expanded]="!navbarIsCollapsed" aria-label="Toggle navigation">
@@ -21,4 +21,6 @@
     </div>
 </nav>
 
-<router-outlet></router-outlet>
+<div class="main_content">
+    <router-outlet></router-outlet>
+</div>

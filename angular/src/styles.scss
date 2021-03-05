@@ -32,12 +32,31 @@
 @import '~ngx-toastr/toastr-bs4-alert';
 
 html {
-    font-size: 10pt;
+  font-size: 10pt;
 }
 
-.padded_ui_panel {
-    padding-top: 15px;
-    padding-bottom: 15px;
-    background-color: rgba(67, 67, 67, 0.15);
-    border: 1px solid rgba(99, 99, 99, 0.2);
+body {
+  background-color: #f1f1f1;
+  padding-bottom: .5rem;
+}
+
+.navbar {
+  box-shadow: 0 .125rem .25rem rgba($black, .075);
+}
+
+.main_content {
+  padding: .5rem;
+}
+
+.ui_panel {
+  background-color: #ffffff;
+}
+
+.pcard_container {
+  padding: .5rem;
+}
+
+.pcard {
+  box-shadow: 0 .125rem .25rem rgba($black, .075);
+  padding: 1rem;
 }
