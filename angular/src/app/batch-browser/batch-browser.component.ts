@@ -1,5 +1,10 @@
 import { Component } from '@angular/core';
 
+enum BatchViewMode {
+  SampleList = 'Sample list',
+  SampleSearch = 'Sample search',
+}
+
 @Component({
   selector: 'app-batch-browser',
   templateUrl: './batch-browser.component.html',
@@ -7,6 +12,13 @@ import { Component } from '@angular/core';
 })
 export class BatchBrowserComponent {
 
-  dataseId: string;
+  datasetId: string;
   batchId: string;
+
+  currentBatchViewMode = BatchViewMode.SampleList;
+  batchViewModes = BatchViewMode;
+
+  setViewMode(viewMode: BatchViewMode) {
+    this.currentBatchViewMode = viewMode;
+  }
 }
