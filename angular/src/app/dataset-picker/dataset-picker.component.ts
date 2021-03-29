@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { BackendService } from '../backend.service'
 
 @Component({
@@ -10,10 +10,10 @@ export class DatasetPickerComponent implements OnInit {
   
   constructor(private backend: BackendService) { }
 
-  @Output() datasetSelectedEvent = new EventEmitter<string>();
+  @Input() selectedDataset: string;
+  @Output() selectedDatasetChange = new EventEmitter<string>();
 
   datasets: any;
-  selectedDataset: String;
 
   ngOnInit(): void {
     this.backend.getDatasets()
@@ -25,7 +25,6 @@ export class DatasetPickerComponent implements OnInit {
 
   selectDataset(datasetId: string) {
     this.selectedDataset = datasetId;
-    this.datasetSelectedEvent.emit(datasetId);
+    this.selectedDatasetChange.emit(datasetId);
   }
-
 }

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, Input } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
@@ -17,7 +17,17 @@ export class BatchSamplesComponent {
   tabulator: Tabulator;
 
   samples: any;
-  batchId: string;
+  
+  private _batchId: string;
+  public get batchId() {
+    return this._batchId;
+  }
+  @Input() public set batchId(theBatchId: string) {
+    this._batchId = theBatchId;
+    if (theBatchId) {
+      this.loadSamplesForBatch(theBatchId);
+    }
+  }
 
   selectedSamples: string[] = [];
 
@@ -46,7 +56,6 @@ export class BatchSamplesComponent {
 
   loadSamplesForBatch(batchId: string) {
     delete this.samples;
-    this.batchId = batchId;
     this.tabulatorContainer.nativeElement.innerHTML = '';
     this.backend.getSamplesForBatch(batchId)
       .subscribe(

@@ -2,16 +2,16 @@
     <div class="row">
         <div class="col-lg-4 pcard_container">
             <div class="pcard ui_panel">
-                <app-dataset-picker (datasetSelectedEvent)="showBatchesForDataset($event)"></app-dataset-picker>
+                <app-dataset-picker [(selectedDataset)]="datasetId"></app-dataset-picker>
             </div>
         </div>
 
         <div class="col-lg-8 pcard_container">
             <div class="pcard ui_panel">
-                <app-batch-picker (batchSelectedEvent)="selectBatch($event)"></app-batch-picker>
+                <app-batch-picker [datasetId]="datasetId" [(selectedBatch)]="batchId"></app-batch-picker>
             </div>
         </div>
     </div>
 </div>
 
-<app-batch-samples></app-batch-samples>
+<app-batch-samples [batchId]=batchId></app-batch-samples>
