@@ -115,6 +115,8 @@ public class SampleDetailTable extends Composite {
           }
         } catch (NumberFormatException e) {
           sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
+        } catch (NullPointerException npe) {
+          sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
         }
       }
     }
