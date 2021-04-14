@@ -1,6 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
-import { BatchPickerComponent } from '../batch-picker/batch-picker.component';
-import { BatchSamplesComponent } from '../batch-samples/batch-samples.component';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-batch-browser',
@@ -9,14 +7,6 @@ import { BatchSamplesComponent } from '../batch-samples/batch-samples.component'
 })
 export class BatchBrowserComponent {
 
-  @ViewChild(BatchPickerComponent) batchPicker: BatchPickerComponent;
-  @ViewChild(BatchSamplesComponent) batchSamples: BatchSamplesComponent;
-
-  showBatchesForDataset(datasetId: string) {
-    this.batchPicker.loadBatchesForDataset(datasetId);
-  }
-
-  selectBatch(batchId: string) {
-    this.batchSamples.loadSamplesForBatch(batchId);
-  }
+  dataseId: string;
+  batchId: string;
 }

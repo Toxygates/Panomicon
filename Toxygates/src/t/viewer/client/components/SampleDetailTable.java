@@ -106,14 +106,22 @@ public class SampleDetailTable extends Composite {
         try {
           Double value = Double.parseDouble(sample.get(attribute));
           VarianceSet varianceSet = varianceMap.get(sample.id());
-          if (value < varianceSet.lowerBound(attribute, 1)) {
+          Double lower = varianceSet.lowerBound(attribute, 1);
+          Double upper = varianceSet.upperBound(attribute, 1);
+          if (value == null || lower == null || upper == null) {
+            sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
+            return;
+          }
+          if (value < lower) {
             sb.append(TEMPLATES.startStyled("numericalParameterBelow"));
-          } else if (value > varianceSet.upperBound(attribute, 1)) {
+          } else if (value > upper) {
             sb.append(TEMPLATES.startStyled("numericalParameterAbove"));
           } else {
             sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
           }
         } catch (NumberFormatException e) {
+          sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
+        } catch (NullPointerException npe) {
           sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
         }
       }
