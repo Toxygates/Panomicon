@@ -7,6 +7,6 @@ import { Component } from '@angular/core';
 })
 export class BatchBrowserComponent {
 
-  dataseId: string;
+  datasetId: string;
   batchId: string;
 }
