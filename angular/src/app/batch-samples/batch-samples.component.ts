@@ -1,4 +1,4 @@
-import { Component, ViewChild, Input } from '@angular/core';
+import { Component, ViewChild, OnChanges, SimpleChanges, Input, AfterViewInit } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
@@ -9,26 +9,18 @@ import { UserDataService } from '../user-data.service';
   templateUrl: './batch-samples.component.html',
   styleUrls: ['./batch-samples.component.scss']
 })
-export class BatchSamplesComponent {
+export class BatchSamplesComponent implements OnChanges, AfterViewInit {
 
   constructor(private backend: BackendService,
     private userData: UserDataService, private toastr: ToastrService) { }
 
   tabulator: Tabulator;
+  tabulatorReady = false;
 
-  samples: any;
+  @Input() samples: any;
   
-  private _batchId: string;
-  public get batchId() {
-    return this._batchId;
-  }
-  @Input() public set batchId(theBatchId: string) {
-    this._batchId = theBatchId;
-    if (theBatchId) {
-      this.loadSamplesForBatch(theBatchId);
-    }
-  }
-
+  @Input() batchId: string;
+  
   selectedSamples: string[] = [];
 
   sampleGroupName: string;
@@ -36,6 +28,21 @@ export class BatchSamplesComponent {
   readyToCreateGroup: boolean = true;
 
   @ViewChild('tabulatorContainer') tabulatorContainer;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.samples != null) {
+      if (changes.samples.currentValue == null && this.tabulatorContainer != null) {
+        this.tabulatorContainer.nativeElement.innerHTML = '';
+      } else {
+        this.tryDrawTable();
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    this.tabulatorReady = true;
+    this.tryDrawTable();
+  }
 
   columns = [
     {formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
@@ -54,18 +61,6 @@ export class BatchSamplesComponent {
 
   tab = document.createElement('div');
 
-  loadSamplesForBatch(batchId: string) {
-    delete this.samples;
-    this.tabulatorContainer.nativeElement.innerHTML = '';
-    this.backend.getSamplesForBatch(batchId)
-      .subscribe(
-        result => {
-          this.samples = result;
-          this.drawTable();
-        }
-      )
-  }
-
   saveSampleGroup() {
     if (this.sampleGroupName) {
       this.userData.saveSampleGroup(this.sampleGroupName, this.selectedSamples);
@@ -76,21 +71,23 @@ export class BatchSamplesComponent {
     }
   }
 
-  private drawTable(): void {
-    let _this = this;
-    let tabulatorElement = document.createElement('div');
-    tabulatorElement.style.width = "auto";
-    this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
-    this.tabulator = new Tabulator(tabulatorElement, {
-      data: this.samples,
-      selectable: true,
-      columns: this.columns,
-      layout:"fitDataTable",
-      maxHeight: "75vh",
-      rowSelectionChanged: function(data, _rows) {
-        _this.readyToCreateGroup = (data.length > 0);
-        _this.selectedSamples = data.map(x => x.sample_id);
-      }
-    });
+  private tryDrawTable(): void {
+    if (this.tabulatorReady && this.samples != null) {
+      let _this = this;
+      let tabulatorElement = document.createElement('div');
+      tabulatorElement.style.width = "auto";
+      this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
+      this.tabulator = new Tabulator(tabulatorElement, {
+        data: this.samples,
+        selectable: true,
+        columns: this.columns,
+        layout:"fitDataTable",
+        maxHeight: "75vh",
+        rowSelectionChanged: function(data, _rows) {
+          _this.readyToCreateGroup = (data.length > 0);
+          _this.selectedSamples = data.map(x => x.sample_id);
+        }
+      });
+    }
   }
 }

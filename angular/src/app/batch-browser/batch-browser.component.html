@@ -8,7 +8,7 @@
 
         <div class="col-lg-8 pcard_container">
             <div class="pcard ui_panel">
-                <app-batch-picker [datasetId]="datasetId" [(selectedBatch)]="batchId"></app-batch-picker>
+                <app-batch-picker [datasetId]="datasetId" (selectedBatchChange)="batchChanged($event)"></app-batch-picker>
             </div>
         </div>
     </div>
@@ -27,10 +27,11 @@
                             {{mode.value}}</a>
                     </li>
                 </ul>
-                <app-batch-samples [hidden]="currentBatchViewMode != batchViewModes.SampleList"
-                                   [batchId]=batchId>
+                <app-batch-samples *ngIf="currentBatchViewMode == batchViewModes.SampleList"
+                    [samples]=samples [batchId]=batchId>
                 </app-batch-samples>
-                <app-sample-search [hidden]="currentBatchViewMode != batchViewModes.SampleSearch">
+                <app-sample-search *ngIf="currentBatchViewMode == batchViewModes.SampleSearch"
+                    [samples]=samples [batchId]=batchId>
                 </app-sample-search>
             </div>
         </div>
