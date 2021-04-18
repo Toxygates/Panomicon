@@ -1,16 +1,27 @@
-<div *ngIf="!datasets">Loading datasets...</div>
-<div *ngIf="!datasets" class="d-flex justify-content-center">
-    <div class="spinner-border text-secondary" role="status">
-        <span class="sr-only">Loading...</span>
-    </div>
+<div class="btn-group" dropdown [isDisabled]="!datasets">
+    <button id="button-basic" dropdownToggle type="button"
+            class="btn btn-primary dropdown-toggle mr-2 my-1"
+            [ngClass]="{'btn-primary': datasets,
+                        'btn-secondary': !datasets }"
+            aria-controls="dropdown-basic">
+        <span *ngIf="!datasets" class="spinner-border spinner-border-sm"
+            role="status" aria-hidden="true"></span>
+        {{  datasets ?
+                selectedDataset ?
+                    selectedDataset
+                    : "No dataset selected"
+                : "Loading..."
+        }}
+         <span class="caret"></span>
+    </button>
+    <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"
+        role="menu" aria-labelledby="button-basic">
+        <h6 class="dropdown-header">Select dataset:</h6>
+        <li *ngFor="let dataset of datasets" role="menuitem">
+            <a class="dropdown-item" (click)="selectDataset(dataset.id)"
+            [routerLink]=""queryParamsHandling="preserve">
+            {{dataset.description}} ({{dataset.id}})
+            </a>
+        </li>
+    </ul>
 </div>
-
-<div *ngIf="datasets">Datasets:</div>
-
-<button *ngFor="let dataset of datasets" 
-    (click)="selectDataset(dataset.id)" type="button"
-    class="btn mr-2 my-1"
-    [ngClass]="{'btn-dark': dataset.id == selectedDataset,
-                'btn-secondary': dataset.id != selectedDataset }">
-    {{dataset.description}} ({{dataset.id}})
-</button>
