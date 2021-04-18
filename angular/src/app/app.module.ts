@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ToastrModule } from 'ngx-toastr';
 
 import { AppComponent } from './app.component';
@@ -42,6 +43,7 @@ import { SampleSearchComponent } from './sample-search/sample-search.component';
     ModalModule.forRoot(),
     CollapseModule.forRoot(),
     AccordionModule.forRoot(),
+    BsDropdownModule.forRoot(),
     ToastrModule.forRoot({
       timeOut: 4000,
     }),

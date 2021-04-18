@@ -1,13 +1,8 @@
 <div class="container">
     <div class="row">
-        <div class="col-lg-4 pcard_container">
+        <div class="col-12 pcard_container">
             <div class="pcard ui_panel">
                 <app-dataset-picker [(selectedDataset)]="datasetId"></app-dataset-picker>
-            </div>
-        </div>
-
-        <div class="col-lg-8 pcard_container">
-            <div class="pcard ui_panel">
                 <app-batch-picker [datasetId]="datasetId" (selectedBatchChange)="batchChanged($event)"></app-batch-picker>
             </div>
         </div>
