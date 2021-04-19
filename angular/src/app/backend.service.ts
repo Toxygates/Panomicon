@@ -27,8 +27,8 @@ export class BackendService {
       );
   }
 
-  getBatchesForDataset(datasetId: string) {
-    return this.http.get(this.serviceUrl + this.batchesByDatasetPath 
+  getBatchesForDataset(datasetId: string): Observable<any[]> {
+    return this.http.get<any[]>(this.serviceUrl + this.batchesByDatasetPath 
       + datasetId)
       .pipe(
         tap(_ => console.log('fetched batches')),
