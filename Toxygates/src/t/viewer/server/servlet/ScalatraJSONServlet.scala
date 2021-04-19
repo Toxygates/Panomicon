@@ -7,7 +7,7 @@ import t.model.sample.Attribute
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.platform.mirna.TargetTableBuilder
-import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, SampleClassFilter, SampleFilter}
+import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.rpc.NetworkLoader
@@ -17,11 +17,11 @@ import t.viewer.shared.network.Interaction
 import t.viewer.shared._
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
+
 import java.text.SimpleDateFormat
 import java.util.Date
-
 import javax.servlet.ServletContext
-import t.common.shared.sample.{Group}
+import t.common.shared.sample.Group
 
 import scala.collection.JavaConverters._
 
@@ -124,6 +124,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
   lazy val associationLookup = new AssociationMasterLookup(probeStore, sampleStore, sampleFilter)
 
   tServletInit(tconfig)
+  new PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
 
   lazy val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
   def datasets = datasetStore.getItems(tconfig.instanceURI)
