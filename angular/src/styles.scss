@@ -1,5 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
+// @import 'bootstrap';
+
 @import
   'functions',
   'variables',
@@ -18,6 +20,8 @@
   'spinners',
   'close',
   'card',
+  'dropdown',
+  'button-group',
   'utilities/screenreaders',
   'utilities/spacing',
   'utilities/visibility',
@@ -27,6 +31,7 @@
   'utilities/flex',
   'utilities/float',
   'utilities/overflow',
+  'utilities/spacing',
   'utilities/position';
 
 @import '~ngx-toastr/toastr-bs4-alert';
