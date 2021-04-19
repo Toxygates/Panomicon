@@ -39,6 +39,19 @@ class R() {
     cmds = cmds.enqueue(cmd)
   }
 
+  /**
+   * Exec or throw an exception if exec fails
+   * @return
+   */
+  def execOrThrow(): REXP = {
+    try {
+      conn = new RConnection
+      if (cmds.nonEmpty) exec(cmds) else throw new Exception("No commands for Rserve to run")
+    } finally {
+      if (conn != null) conn.close()
+    }
+  }
+
   def exec(): Option[REXP] = {
     try {
       conn = new RConnection

@@ -69,7 +69,7 @@ class ClusteringData(val controller: MatrixController,
     baseColumns.map(c => mm.rawUngrouped.columnKeys(c))
   }
 
-  def ungroupedSamples = {
+  def ungroupedSamples: Array[String] = {
     val baseColumns = columns.flatMap(c => mm.baseColumns(c._2))
     baseColumns.map(mm.rawUngrouped.columnKeys)
   }

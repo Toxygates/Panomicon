@@ -289,9 +289,18 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
     val data = new ClusteringData(cont, probes, rowNames, valueType)
 
     val attrSet = baseConfig.attributes
-    val bioParamIds = Seq("sample_id", "kidney_total_wt", "liver_wt", "Hb", "MCH", "MCV",
-      "K", "Cl", "Ca")
+//    val bioParamIds = Seq("sample_id", "kidney_total_wt", "liver_wt", "Hb", "MCH", "MCV",
+//      "K", "Cl", "Ca")
+
+    val bioParamIds: Seq[String] = Seq("sample_id") ++ (for {
+      s <- data.ungroupedSamples.headOption.toSeq
+      paramValues = context.sampleStore.parameterQuery(s, Seq())
+      param <- paramValues.collect { case (p, Some(v)) => p }
+      if param.isNumerical
+      id = param.id
+    } yield id)
     val bioParams = bioParamIds.flatMap(a => Option(attrSet.byId(a)))
+
     val sampleAttrs = context.sampleStore.sampleAttributeValues(data.ungroupedSamples, bioParams)
     val traits = bioParams.map(bp => sampleAttrs.map(s => s(bp)))
 

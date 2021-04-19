@@ -113,7 +113,7 @@ public class PendingAsyncCallback<T> implements AsyncCallback<T> {
   }
 
   public void handleFailure(Throwable caught) {
-    Window.alert(onErrorMessage + ":" + caught);
+    Window.alert(onErrorMessage + ": " + caught);
     manager.getLogger().log(Level.SEVERE, onErrorMessage, caught);
   }
 

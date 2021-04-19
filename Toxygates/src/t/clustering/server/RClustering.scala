@@ -21,6 +21,7 @@ package t.clustering.server
 import java.util.logging.Logger
 import org.rosuda.REngine.Rserve.RserveException
 import t.clustering.shared.{Algorithm, WGCNAParams, WGCNAResults}
+import t.viewer.shared.ServerError
 
 /**
  * Connects to Rserve to perform a clustering.
@@ -80,10 +81,20 @@ class RClustering(codeDir: String) {
   /*
     TODO: check for at least two columns (true minimum: 4?)
     TODO: individual samples
-
-    TODO: pass bio parameters
    */
 
+  /**
+   * Execute a WGCNA clustering.
+   * @param params Clustering parameters
+   * @param sampleData
+   * @param probeNames
+   * @param sampleNames
+   * @param traitNames IDs of traits. The first trait must be sample_id.
+   * @param traitAttributes Values of traits in order. The first trait must be sample_id.
+   * @param imageDir Directory to write images
+   * @param imageURLBase User-accessible URL base for images written to directory
+   * @return
+   */
   def doWGCNAClustering(params: WGCNAParams,
                         sampleData: Array[Array[Double]], probeNames: Array[String],
                         sampleNames: Array[String],
@@ -110,16 +121,17 @@ class RClustering(codeDir: String) {
     r.addCommand(s"names(traitData) <- ${simpleStringColumn(traitNames)}")
 
     r.addCommand(s"source('$codeDir/R/PanomiconWGCNA.R')")
-    r.exec() match {
-      case Some(x) =>
-        println(s"WGCNA result: $x")
-        x
-      case None => println("No result from WGCNA")
-    }
 
-    //TODO: take file name directly from R script output
-    val dendrogramImage = s"$imageURLBase/sampleClustering.png"
-    val modulesImage = s"$imageURLBase/modules.png"
-    new WGCNAResults(dendrogramImage, modulesImage, null)
+    try {
+      val result = r.execOrThrow()
+      println(s"WGCNA result: $result")
+
+      //TODO: take file name directly from R script output
+      val dendrogramImage = s"$imageURLBase/sampleClustering.png"
+      val modulesImage = s"$imageURLBase/modules.png"
+      new WGCNAResults(dendrogramImage, modulesImage, null)
+    } catch {
+      case e: Exception => throw new ServerError(e.getMessage, e);
+    }
   }
 }
