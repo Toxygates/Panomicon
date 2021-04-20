@@ -1,4 +1,5 @@
-import { Component, ViewChild, OnChanges, SimpleChanges, Input, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
+         AfterViewInit, NgZone } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
@@ -11,7 +12,7 @@ import { UserDataService } from '../user-data.service';
 })
 export class BatchSamplesComponent implements OnChanges, AfterViewInit {
 
-  constructor(private backend: BackendService,
+  constructor(private backend: BackendService, private ngZone: NgZone,
     private userData: UserDataService, private toastr: ToastrService) { }
 
   tabulator: Tabulator;
@@ -77,16 +78,18 @@ export class BatchSamplesComponent implements OnChanges, AfterViewInit {
       let tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
       this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
-      this.tabulator = new Tabulator(tabulatorElement, {
-        data: this.samples,
-        selectable: true,
-        columns: this.columns,
-        layout:"fitDataTable",
-        maxHeight: "75vh",
-        rowSelectionChanged: function(data, _rows) {
-          _this.readyToCreateGroup = (data.length > 0);
-          _this.selectedSamples = data.map(x => x.sample_id);
-        }
+      this.ngZone.runOutsideAngular(() => {
+        this.tabulator = new Tabulator(tabulatorElement, {
+          data: this.samples,
+          selectable: true,
+          columns: this.columns,
+          layout:"fitDataTable",
+          maxHeight: "75vh",
+          rowSelectionChanged: function(data, _rows) {
+            _this.readyToCreateGroup = (data.length > 0);
+            _this.selectedSamples = data.map(x => x.sample_id);
+          }
+        });
       });
     }
   }

@@ -28,14 +28,12 @@ export class BatchBrowserComponent {
   }
 
   batchChanged(batchId: string) {
-    console.log("batchId = " + batchId);
     this.batchId = batchId;
     delete this.samples;
     this.backend.getSamplesForBatch(batchId)
       .subscribe(
         result => {
           this.samples = result;
-          this.changeDetector.detectChanges();
         }
       )
   }
