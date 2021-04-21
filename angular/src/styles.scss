@@ -72,3 +72,10 @@ body {
     padding-right: 20px;
     overflow-y: auto;
 }
+
+// Hack to avoid issue (possibly a Tabulator bug) where .tabulator-table
+// gets an element style overriding min-width when all table rows are
+// collapsed into groups.
+.tabulator[tabulator-layout="fitDataFill"] .tabulator-tableHolder .tabulator-table {
+  min-width: 100% !important;
+}
