@@ -52,9 +52,9 @@
 </div>
 <div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
     [isAnimated]="true">
-    {{selectedSamples.length > 0 ?
-        selectedSamples.length + " samples selected." :
-        "Select some samples to create a sample group:"
+    {{selectedGroups.size > 0 ?
+        selectedGroups.size + " groups selected." :
+        "Select some treatment groups to create a sample group:"
     }}
     <form>
         <div class="form-row align-items-center mt-1">
@@ -67,7 +67,7 @@
             <div class="col-auto">
                 <button type="button" class="btn btn-primary mb-2"
                     (click)="saveSampleGroup()"
-                    [disabled]="!sampleGroupName || selectedSamples.length == 0">
+                    [disabled]="!sampleGroupName || selectedGroups.size == 0">
                     Save sample group
                 </button>
             </div>

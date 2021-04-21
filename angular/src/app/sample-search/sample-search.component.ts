@@ -1,5 +1,5 @@
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
-         AfterViewInit, NgZone } from '@angular/core';
+         AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
@@ -13,17 +13,16 @@ import { UserDataService } from '../user-data.service';
 export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
   constructor(private backend: BackendService, private ngZone: NgZone,
+    private changeDetector: ChangeDetectorRef,
     private userData: UserDataService, private toastr: ToastrService) { }
 
   tabulator: Tabulator;
   tabulatorReady = false;
 
-  @Input() samples: any;
+  @Input() samples: any[];
   @Input() batchId: string;
 
   attributes: any;
-
-  selectedSamples: string[] = [];
 
   sampleGroupName: string;
   sampleCreationIsCollapsed = true;
@@ -33,9 +32,6 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   treatmentGroupsExpanded = true;
 
   selectedGroups = new Set<string>();
-
-  static readonly controlGroupText = "Control group - ";
-  static readonly treatmentGroupText = "Treatment group - ";
 
   @ViewChild('tabulatorContainer') tabulatorContainer;
 
@@ -72,37 +68,43 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   tab = document.createElement('div');
 
   saveSampleGroup() {
-    if (this.sampleGroupName) {
-      this.userData.saveSampleGroup(this.sampleGroupName, this.selectedSamples);
+    if (this.sampleGroupName && this.selectedGroups.size > 0) {
+      let samplesInGroup = [];
+      let _this = this;
+      this.selectedGroups.forEach(function(group) {
+        console.log("group name " + group);
+      })
+      this.samples.forEach(function(sample) {
+        console.log("trying " + sample.treatment);
+        if (_this.selectedGroups.has(sample.treatment)) {
+          samplesInGroup.push(sample.sample_id);
+        }
+      });
+
+      this.userData.saveSampleGroup(this.sampleGroupName, samplesInGroup);
       this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
       this.sampleCreationIsCollapsed = true;
       this.sampleGroupName = undefined;
-      this.tabulator.deselectRow();
+      this.selectedGroups.clear();
+
+      this.tabulator.redraw();
     }
   }
 
   toggleControlGroups() {
-    let newState = this.controlGroupsExpanded = !this.controlGroupsExpanded;
+    this.controlGroupsExpanded = !this.controlGroupsExpanded;
     let groups = this.tabulator.getGroups();
     groups.forEach(function(group) {
-      if (newState) {
-        group.show();
-      } else {
-        group.hide();
-      }
+      group.toggle();
     });
   }
 
   toggleTreatmentGroups() {
-    let newState = this.treatmentGroupsExpanded = !this.treatmentGroupsExpanded;
+    this.treatmentGroupsExpanded = !this.treatmentGroupsExpanded;
     let groups = this.tabulator.getGroups();
     groups.forEach(function(group) {
       group.getSubGroups().forEach(function(subGroup) {
-        if (newState) {
-          subGroup.show();
-        } else {
-          subGroup.hide();
-        }
+        group.toggle();
       });
     });
   }
@@ -140,19 +142,26 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
         //data - an array of all the row data objects in this group
         //group - the group component for the group
 
-        let itemCount, itemWord, button;
+        let prefix, itemCount, itemWord, button;
 
         if (group.getParentGroup()) {
           itemCount = count;
           itemWord = " sample";
-          if (_this.selectedGroups.has(value)) {
-            button = "<button type='button' class='btn btn-success'>"
-              + "Group selected<i class='bi bi-check'></i></button>"
+          if (value != group.getParentGroup().getKey()) {
+            prefix = "Treatment group - ";
+            if (_this.selectedGroups.has(value)) {
+              button = "<button type='button' class='btn btn-success'>"
+                + "Group selected <i class='bi bi-check'></i></button>"
+            } else {
+              button = "<button type='button' class='btn btn-secondary'>"
+              + "Select group</button>"
+            }
           } else {
-            button = "<button type='button' class='btn btn-secondary'>"
-            + "Select group</button>"
+            prefix = "Control group - ";
+            button = "";
           }
         } else {
+          prefix = "Control group - ";
           itemCount = group.getSubGroups().length;
           itemWord = " group";
           button = "";
@@ -160,7 +169,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
         itemWord += itemCount != 1 ? "s" : "";
 
-        return value + "<span>(" + itemCount + itemWord + ")</span> " +
+        return prefix + value + "<span>(" + itemCount + itemWord + ")</span> " +
            button;
       }
 
@@ -172,30 +181,32 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
           layout:"fitDataFill",
           maxHeight: "75vh",
           groupBy: [function(data) {
-              return SampleSearchComponent.controlGroupText + data.control_treatment;
+              return data.control_treatment;
             },
             function(data) {
-              return SampleSearchComponent.treatmentGroupText + data.treatment;
+              return data.treatment;
             }
           ],
           groupHeader: groupHeader,
           groupClick:function(e, group){
-            if (e.target == e.currentTarget) {
-              // regular group header click
+            if ((e.target == e.currentTarget) ||
+              (e.target.className == "tabulator-arrow")) {
+              // regular group header click, or click on header arrow
               if (group.getVisibility()) {
                 group.hide();
               } else {
                 group.show();
               }
             } else {
-              // click on group selection button
+              // click is not on header itself or on arrow icon, so
+              // it must be on the button
               if (_this.selectedGroups.has(group.getKey())) {
                 _this.selectedGroups.delete(group.getKey());
               } else {
                 _this.selectedGroups.add(group.getKey());
               }
-              // Hack to re-render group headers
-              _this.tabulator.setGroupHeader(groupHeader);
+              _this.changeDetector.detectChanges();
+              _this.tabulator.redraw();
             }
           },
           groupToggleElement: false,
