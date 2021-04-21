@@ -67,7 +67,7 @@ export class BatchSamplesComponent {
   }
 
   saveSampleGroup() {
-    if (this.sampleGroupName) {
+    if (this.sampleGroupName && this.selectedSamples.length > 0) {
       this.userData.saveSampleGroup(this.sampleGroupName, this.selectedSamples);
       this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
       this.sampleCreationIsCollapsed = true;
