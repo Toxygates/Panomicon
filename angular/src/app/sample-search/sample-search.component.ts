@@ -32,6 +32,8 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   controlGroupsExpanded = true;
   treatmentGroupsExpanded = true;
 
+  selectedGroups = new Set<string>();
+
   static readonly controlGroupText = "Control group - ";
   static readonly treatmentGroupText = "Treatment group - ";
 
@@ -131,6 +133,37 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
       let tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
       this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
+
+      let groupHeader = function(value, count, data, group) {
+        //value - the value all members of this group share
+        //count - the number of rows in this group
+        //data - an array of all the row data objects in this group
+        //group - the group component for the group
+
+        let itemCount, itemWord, button;
+
+        if (group.getParentGroup()) {
+          itemCount = count;
+          itemWord = " sample";
+          if (_this.selectedGroups.has(value)) {
+            button = "<button type='button' class='btn btn-success'>"
+              + "Group selected<i class='bi bi-check'></i></button>"
+          } else {
+            button = "<button type='button' class='btn btn-secondary'>"
+            + "Select group</button>"
+          }
+        } else {
+          itemCount = group.getSubGroups().length;
+          itemWord = " group";
+          button = "";
+        }
+
+        itemWord += itemCount != 1 ? "s" : "";
+
+        return value + "<span>(" + itemCount + itemWord + ")</span> " +
+           button;
+      }
+
       this.ngZone.runOutsideAngular(() => {
         this.tabulator = new Tabulator(tabulatorElement, {
           data: this.samples,
@@ -145,14 +178,31 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
               return SampleSearchComponent.treatmentGroupText + data.treatment;
             }
           ],
-          groupToggleElement: "header",
+          groupHeader: groupHeader,
+          groupClick:function(e, group){
+            if (e.target == e.currentTarget) {
+              // regular group header click
+              if (group.getVisibility()) {
+                group.hide();
+              } else {
+                group.show();
+              }
+            } else {
+              // click on group selection button
+              if (_this.selectedGroups.has(group.getKey())) {
+                _this.selectedGroups.delete(group.getKey());
+              } else {
+                _this.selectedGroups.add(group.getKey());
+              }
+              // Hack to re-render group headers
+              _this.tabulator.setGroupHeader(groupHeader);
+            }
+          },
+          groupToggleElement: false,
           // groupStartOpen: function(value, count, data, group){
           //   return true;
           //   return value.substring(0, 7) == "Control";
           // },
-          rowFormatter:function(row){
-            var data = row.getData(); //get data object for row
-          },
         });
       });
     }
