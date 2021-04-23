@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import javax.servlet.ServletContext
 import t.common.shared.sample.Group
+import ujson.Value.Selector
 
 import scala.collection.JavaConverters._
 
@@ -375,6 +376,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     }
   }
 
+  /**
+   * Obtain attributes for a batch
+   */
   get("/attribute/batch/:batch") {
     // we ignore this parameter for now because per-batch attributes
     // aren't implemented yet
@@ -386,6 +390,17 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       "title" -> writeJs(attrib.title()),
       "isNumerical" -> writeJs(attrib.isNumerical))))
     write(values)
+  }
+
+  /**
+   * Obtain attribute values for a set of samples
+   */
+  post("/attributeValues") {
+    val params = ujson.read(request.body)
+    val sampleIds: Seq[String] = params("samples").arr.map(v => v.str)
+    val attributes: Seq[Attribute] = params("attributes").arr.map(v => baseConfig.attributes.byId(v.str))
+    val samplesWithValues = sampleStore.sampleAttributeValues(sampleIds, attributes)
+    write(samplesWithValues.map(sampleToMap))
   }
 
   /**
