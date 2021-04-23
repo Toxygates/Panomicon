@@ -303,7 +303,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
       (idOption, stringMaps) <- groupedResult
       sampleId <- idOption
       stringMap = stringMaps.head
-      attributesSeq = withIndex.map(x => (x._1, stringMap.getOrElse("k" + x._2, null)))
+      attributesSeq = withIndex.map(x => (x._1, stringMap.getOrElse("k" + x._2, null))) :+ (SampleId, sampleId)
       attributesMap = (Map() ++ attributesSeq).asJava
     } yield new Sample(sampleId, new SampleClass(attributesMap))).toSeq
   }
