@@ -22,7 +22,10 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   @Input() samples: any[];
   @Input() batchId: string;
 
+  samplesMap: Map<string, any>;
+
   attributes: any;
+  fetchedAttributes: Set<string>;
 
   sampleGroupName: string;
   sampleCreationIsCollapsed = true;
@@ -37,9 +40,20 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.samples != null) {
-      if (changes.samples.currentValue == null && this.tabulatorContainer != null) {
-        this.tabulatorContainer.nativeElement.innerHTML = '';
+      if (changes.samples.currentValue == null) {
+        if (this.tabulatorContainer != null) {
+          this.tabulatorContainer.nativeElement.innerHTML = '';
+        }
       } else {
+        this.fetchedAttributes = new Set<string>();
+        this.samplesMap = new Map<string, any>();
+        let _this = this;
+        this.samples.forEach(function(sample) {
+          _this.samplesMap[sample.sample_id] = sample;
+          Object.keys(sample).forEach(function(attribute) {
+            _this.fetchedAttributes.add(attribute);
+          })
+        });
         this.tryDrawTable();
       }
     }
@@ -118,6 +132,19 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
         title: attribute.title,
         field: attribute.id,
       });
+      if (!this.fetchedAttributes.has(attribute.id)) {
+        let _this = this;
+        this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
+          [attribute.id]).subscribe(
+            result => {
+              this.fetchedAttributes.add(attribute.id);
+              result.forEach(function(element) {
+                _this.samplesMap[element.sample_id][attribute.id] = element[attribute.id]
+              });
+              _this.tabulator.replaceData(_this.samples);
+            }
+          );
+      }
     }
   }
 

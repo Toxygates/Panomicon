@@ -11,14 +11,9 @@ export class BackendService {
   constructor(private http: HttpClient) { }
 
   serviceUrl = 'json/';
-  datasetsPath = 'dataset';
-  batchesByDatasetPath = 'batch/dataset/';
-  samplesByBatchPath = 'sample/batch/';
-  attributesForBatchPath = 'attribute/batch/';
-  matrixPath = 'matrix';
 
   getDatasets() {
-    return this.http.get(this.serviceUrl + this.datasetsPath)
+    return this.http.get(this.serviceUrl + 'dataset')
       .pipe(
         tap(_ => console.log('fetched datasets')),
         catchError(error => {
@@ -29,7 +24,7 @@ export class BackendService {
   }
 
   getBatchesForDataset(datasetId: string): Observable<any[]> {
-    return this.http.get<any[]>(this.serviceUrl + this.batchesByDatasetPath 
+    return this.http.get<any[]>(this.serviceUrl + 'batch/dataset/'
       + datasetId)
       .pipe(
         tap(_ => console.log('fetched batches')),
@@ -41,7 +36,7 @@ export class BackendService {
   }
 
   getSamplesForBatch(batchId: string) {
-    return this.http.get(this.serviceUrl + this.samplesByBatchPath 
+    return this.http.get(this.serviceUrl + 'sample/batch/'
       + batchId)
       .pipe(
         tap(_ => console.log('fetched samples')),
@@ -53,7 +48,7 @@ export class BackendService {
   }
 
   getAttributesForBatch(batchId: string) {
-    return this.http.get(this.serviceUrl + this.attributesForBatchPath 
+    return this.http.get(this.serviceUrl + 'attribute/batch/'
       + batchId)
       .pipe(
         tap(_ => console.log('fetched attributes')),
@@ -64,15 +59,18 @@ export class BackendService {
       )
   }
 
-  getMatrix(samples: string[]) {
-    return this.http.post(this.serviceUrl + this.matrixPath,
+  getAttributeValues(samples: string[], attributes: string[]): any {
+    console.log("samples: " + samples);
+    console.log("attributes: " + attributes);
+    return this.http.post(this.serviceUrl + 'attributeValues',
       {
-        "groups": [ { "name": "Group 1", "sampleIds": samples }]
+        "samples": samples,
+        "attributes": attributes,
       })
       .pipe(
-        tap(_ => console.log('fetched matrix')),
+        tap(_ => console.log('fetched attributes values')),
         catchError(error => {
-          console.error('Error fetching matrix: ' + error);
+          console.error('Error fetching attributes values ' + error);
           throw error;
         })
       )
