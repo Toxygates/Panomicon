@@ -284,25 +284,21 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
     }).toSeq.filter(a => isPredicateAttribute(a))
     val withIndex = queryParams.zipWithIndex
     val vars = withIndex.map("?k" + _._2 + " ").mkString
-    val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
+    val triples = withIndex.map(x => "?x t:" + x._1.id + " ?k" + x._2 + ".").mkString(" ")
     val sampleIds = sampleIDs.map("\"" + _ + "\" ").mkString
 
     val queryResult: Seq[Map[String, String]] =
       triplestore.mapQuery(s"""$tPrefixes
-                              |SELECT ?label $vars WHERE {
+                              |SELECT ?sample_id $vars WHERE {
                               |  GRAPH ?g {
                               |    $triples
-                              |    ?x rdfs:label ?label. VALUES ?label {$sampleIds}
+                              |    ?x rdfs:label ?sample_id. VALUES ?sample_id {$sampleIds}
                               |  }
                               |}""".stripMargin)
 
-    val groupedResult: Map[Option[String], Seq[Map[String, String]]] =
-      queryResult.groupBy(_.get("label"))
-
     (for {
-      (idOption, stringMaps) <- groupedResult
-      sampleId <- idOption
-      stringMap = stringMaps.head
+      stringMap <- queryResult
+      sampleId <- stringMap.get("sample_id")
       attributesSeq = withIndex.map(x => (x._1, stringMap.getOrElse("k" + x._2, null))) :+ (SampleId, sampleId)
       attributesMap = (Map() ++ attributesSeq).asJava
     } yield new Sample(sampleId, new SampleClass(attributesMap))).toSeq
