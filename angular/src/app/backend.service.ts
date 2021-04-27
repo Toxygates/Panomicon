@@ -60,8 +60,6 @@ export class BackendService {
   }
 
   getAttributeValues(samples: string[], attributes: string[]): any {
-    console.log("samples: " + samples);
-    console.log("attributes: " + attributes);
     return this.http.post(this.serviceUrl + 'attributeValues',
       {
         "samples": samples,

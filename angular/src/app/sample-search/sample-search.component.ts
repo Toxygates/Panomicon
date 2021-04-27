@@ -134,14 +134,21 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
       });
       if (!this.fetchedAttributes.has(attribute.id)) {
         let _this = this;
+        this.samples.forEach(sample => sample[attribute.id] = "Loading...");
+        this.tabulator.replaceData(_this.samples);
         this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
           [attribute.id]).subscribe(
             result => {
-              this.fetchedAttributes.add(attribute.id);
-              result.forEach(function(element) {
-                _this.samplesMap[element.sample_id][attribute.id] = element[attribute.id]
-              });
-              _this.tabulator.replaceData(_this.samples);
+                this.fetchedAttributes.add(attribute.id);
+                result.forEach(function(element) {
+                  _this.samplesMap[element.sample_id][attribute.id] = element[attribute.id]
+                });
+                this.samples.forEach(function(sample) {
+                  if (sample[attribute.id] == "Loading...") {
+                    sample[attribute.id] = "n/a";
+                  }
+                })
+                this.tabulator.replaceData(_this.samples);
             }
           );
       }
