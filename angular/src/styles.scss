@@ -35,9 +35,10 @@
   'utilities/position';
 
 @import '~ngx-toastr/toastr-bs4-alert';
+@import "~bootstrap-icons/font/bootstrap-icons.css";
 
 html {
-  font-size: 10pt;
+  font-size: 9pt;
 }
 
 body {
@@ -64,4 +65,17 @@ body {
 .pcard {
   box-shadow: 0 .125rem .25rem rgba($black, .075);
   padding: 1rem;
+}
+
+.dropdown-scrollable {
+    max-height: 340px;
+    padding-right: 20px;
+    overflow-y: auto;
+}
+
+// Hack to avoid issue (possibly a Tabulator bug) where .tabulator-table
+// gets an element style overriding min-width when all table rows are
+// collapsed into groups.
+.tabulator[tabulator-layout="fitDataFill"] .tabulator-tableHolder .tabulator-table {
+  min-width: 100% !important;
 }

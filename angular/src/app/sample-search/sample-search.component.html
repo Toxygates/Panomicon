@@ -1,0 +1,82 @@
+<div *ngIf="!batchId">Select a batch to show samples</div>
+
+<ng-container *ngIf="batchId && !samples">
+    <div>Loading samples...</div>
+    <div  class="d-flex justify-content-center">
+        <div class="spinner-border text-secondary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+</ng-container>
+
+<div *ngIf="samples" class="mb-1">
+    <button type="button" class="btn btn-primary mb-1 mr-2"
+        (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
+        [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseBasic">
+        Create sample group...
+    </button>
+    <button type="button" class="btn btn-secondary mb-1 mr-2"
+        (click)="toggleControlGroups()">
+        {{ controlGroupsExpanded ? "Collapse" : "Expand" }}
+        control groups
+    </button>
+    <button type="button" class="btn btn-secondary mb-1 mr-2"
+        (click)="toggleTreatmentGroups()">
+        {{ treatmentGroupsExpanded ? "Collapse" : "Expand" }}
+        treatment groups
+    </button>
+    <div class="btn-group" dropdown [isDisabled]="!attributes"
+        style="vertical-align:top">
+        <button id="button-basic" dropdownToggle type="button"
+                class="btn btn-primary dropdown-toggle mr-2"
+                [ngClass]="{'btn-primary': attributes,
+                            'btn-secondary': !attributes}"
+                aria-controls="dropdown-basic">
+            <span *ngIf="!attributes" class="spinner-border spinner-border-sm"
+                role="status" aria-hidden="true"></span>
+            Attributes
+             <span class="caret"></span>
+        </button>
+        <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
+            role="menu" aria-labelledby="button-basic">
+            <!--<h6 class="dropdown-header">Select batch:</h6>-->
+            <li *ngFor="let attribute of attributes" role="menuitem">
+                <a class="dropdown-item" (click)="toggleColumn(attribute)"
+                [routerLink]=""queryParamsHandling="preserve">
+                <i *ngIf="columnForAttribute(attribute)" class="bi bi-check"></i>
+                {{attribute.title}}
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
+    [isAnimated]="true">
+    {{selectedGroups.size > 0 ?
+        selectedGroups.size + " groups selected." :
+        "Select some treatment groups to create a sample group:"
+    }}
+    <form>
+        <div class="form-row align-items-center mt-1">
+            <div class="col-auto">
+                <label class="sr-only" for="sampleGroupNameInput">Sample group name</label>
+                <input type="text" name="sampleGroupNameInput" [(ngModel)]="sampleGroupName" 
+                    class="form-control mb-2" placeholder="Enter a name"
+                    (keyup.enter)="saveSampleGroup()">
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary mb-2"
+                    (click)="saveSampleGroup()"
+                    [disabled]="!sampleGroupName || selectedGroups.size == 0">
+                    Save sample group
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div #tabulatorContainer></div>
+
+<div *ngIf="samples">
+    {{samples.length}} samples in batch {{batchId}}
+</div>
