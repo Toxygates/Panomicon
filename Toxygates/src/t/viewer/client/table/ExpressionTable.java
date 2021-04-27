@@ -393,7 +393,7 @@ public class ExpressionTable extends RichTable<ExpressionRow>
     }
 
     public void show(Widget widget) {
-      Utils.displayInPopup(this, "Charts", widget, true, DialogPosition.Side);
+      Utils.displayInPopup(this, "Charts", widget, true, DialogPosition.Side, null);
       if (lastChartDialog != null) {
         lastChartDialog.hide();
       }

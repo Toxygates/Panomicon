@@ -40,6 +40,8 @@ import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 
 import t.viewer.client.dialog.DialogPosition;
 
+import javax.annotation.Nullable;
+
 /**
  * GUI/GWT utility methods.
  * 
@@ -157,8 +159,17 @@ public class Utils {
   private static int lastX = -1, lastY = -1;
 
   public static DialogBox displayInPopup(String caption, Widget widget, DialogPosition pos) {
-    return displayInPopup(caption, widget, false, pos);
+    return displayInPopup(caption, widget, false, pos, null);
   }
+
+  public static DialogBox displayInPopupWithCloseButton(String caption, Widget widget, DialogPosition pos) {
+    Button close = new Button("Close");
+    Panel p = Utils.mkHorizontalPanel(true, close);
+    DialogBox db = displayInPopup(caption, widget, false, pos, p);
+    close.addClickHandler((ClickEvent ev) -> db.hide());
+    return db;
+  }
+
 
   /**
    * Display a popup dialog.
@@ -170,10 +181,10 @@ public class Utils {
    *        fix by having a DialogContext or similar)
    * @param pos The position to display the dialog at.
    */
-  public static DialogBox displayInPopup(String caption, final Widget widget,
-      final boolean trackLocation, final DialogPosition pos) {
+  public static DialogBox displayInPopup(String caption, Widget widget,
+     boolean trackLocation, DialogPosition pos, @Nullable Widget bottomWidget) {
     DialogBox dialogBox = trackLocation ? new LocationTrackedDialog() : new DialogBox(true, false);
-    return displayInPopup(dialogBox, caption, widget, trackLocation, pos);
+    return displayInPopup(dialogBox, caption, widget, trackLocation, pos, bottomWidget);
   }
 
   /**
@@ -184,12 +195,16 @@ public class Utils {
    * @param widget Widget to show in dialog
    * @param trackLocation Whether to remember the location of this dialog box.
    * @param pos The position to display the dialog at.
+   * @param bottomWidget Optional widget at the bottom of the dialog
    */
   public static DialogBox displayInPopup(DialogBox dialogBox, String caption, final Widget widget,
-      final boolean trackLocation, final DialogPosition pos) {
+      boolean trackLocation, DialogPosition pos, @Nullable Widget bottomWidget) {
     dialogBox.setText(caption);
     final DockPanel dockPanel = new DockPanel();
     dockPanel.add(widget, DockPanel.CENTER);
+    if (bottomWidget != null) {
+      dockPanel.add(bottomWidget, DockPanel.SOUTH);
+    }
     dialogBox.setWidget(dockPanel);
 
     if (trackLocation) {
@@ -318,7 +333,7 @@ public class Utils {
   public static void loadImageInPopup(String caption, String url) {
     HTML contentHTML = new HTML();
     contentHTML.setHTML("<img width=1024 height=768 src=\"" + url + "\">");
-    displayInPopup(caption, makeScrolled(contentHTML), DialogPosition.Center);
+    displayInPopupWithCloseButton(caption, makeScrolled(contentHTML), DialogPosition.Center);
   }
 
   public static void ensureVisualisationAndThen(final Runnable r) {
