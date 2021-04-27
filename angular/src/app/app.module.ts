@@ -16,7 +16,6 @@ import { DatasetPickerComponent } from './dataset-picker/dataset-picker.componen
 import { BatchBrowserComponent } from './batch-browser/batch-browser.component';
 import { BatchPickerComponent } from './batch-picker/batch-picker.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BatchSamplesComponent } from './batch-samples/batch-samples.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { ExpressionTableComponent } from './expression-table/expression-table.component';
 import { GroupManagerComponent } from './group-manager/group-manager.component';
@@ -28,7 +27,6 @@ import { SampleSearchComponent } from './sample-search/sample-search.component';
     DatasetPickerComponent,
     BatchBrowserComponent,
     BatchPickerComponent,
-    BatchSamplesComponent,
     PageNotFoundComponent,
     ExpressionTableComponent,
     GroupManagerComponent,

@@ -1,11 +1,6 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { BackendService } from '../backend.service';
 
-enum BatchViewMode {
-  SampleList = 'Sample list',
-  SampleSearch = 'Sample search',
-}
-
 @Component({
   selector: 'app-batch-browser',
   templateUrl: './batch-browser.component.html',
@@ -16,16 +11,9 @@ export class BatchBrowserComponent {
   constructor(private backend: BackendService, 
     private changeDetector: ChangeDetectorRef) { }
 
-  datasetId: string;
+  datasetId: string = "otg";
   batchId: string;
   samples: any;
-
-  currentBatchViewMode = BatchViewMode.SampleList;
-  batchViewModes = BatchViewMode;
-
-  setViewMode(viewMode: BatchViewMode) {
-    this.currentBatchViewMode = viewMode;
-  }
 
   batchChanged(batchId: string) {
     this.batchId = batchId;
