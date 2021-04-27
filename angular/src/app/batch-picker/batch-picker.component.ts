@@ -31,6 +31,9 @@ export class BatchPickerComponent {
     this.backend.getBatchesForDataset(datasetId)
       .subscribe(
         result => {
+          result.sort(function(a, b) {
+            return a.id.localeCompare(b.id);
+          });
           this.batches = result;
         }
       )

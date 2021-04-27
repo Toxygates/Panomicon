@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
+import { BackendService } from '../backend.service';
 
 @Component({
   selector: 'app-batch-browser',
@@ -7,6 +8,21 @@ import { Component } from '@angular/core';
 })
 export class BatchBrowserComponent {
 
-  datasetId: string;
+  constructor(private backend: BackendService, 
+    private changeDetector: ChangeDetectorRef) { }
+
+  datasetId: string = "otg";
   batchId: string;
+  samples: any;
+
+  batchChanged(batchId: string) {
+    this.batchId = batchId;
+    delete this.samples;
+    this.backend.getSamplesForBatch(batchId)
+      .subscribe(
+        result => {
+          this.samples = result;
+        }
+      )
+  }
 }
