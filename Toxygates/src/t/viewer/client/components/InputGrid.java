@@ -24,18 +24,23 @@ import com.google.gwt.user.client.ui.*;
 public class InputGrid extends Composite {
 
   private TextBox[] inputs;
+  private Grid g;
 
   public InputGrid(String... titles) {
+    this(2, "20em", titles);
+  }
+
+  public InputGrid(int columns, String inputWidth, String... titles) {
     inputs = new TextBox[titles.length];
 
     Panel p = new SimplePanel();
     initWidget(p);
-    Grid g = new Grid(titles.length, 2);
+    g = new Grid(titles.length, columns);
     p.add(g);
 
     for (int i = 0; i < titles.length; ++i) {
       inputs[i] = initTextBox(i);
-      inputs[i].setWidth("20em");
+      inputs[i].setWidth(inputWidth);
       g.setWidget(i, 0, new Label(titles[i]));
       g.setWidget(i, 1, inputs[i]);
     }
@@ -52,4 +57,6 @@ public class InputGrid extends Composite {
   public void setValue(int i, String v) {
     inputs[i].setValue(v);
   }
+
+  public Grid getGrid() { return g; }
 }

@@ -80,7 +80,6 @@ class RClustering(codeDir: String) {
 
   /*
     TODO: check for at least two columns (true minimum: 4?)
-    TODO: individual samples
    */
 
   /**
@@ -127,11 +126,37 @@ class RClustering(codeDir: String) {
       println(s"WGCNA result: $result")
 
       //TODO: take file name directly from R script output
-      val dendrogramImage = s"$imageURLBase/sampleClustering.png"
-      val modulesImage = s"$imageURLBase/modules.png"
-      new WGCNAResults(dendrogramImage, modulesImage, null)
+      val sampleClusteringImg = s"$imageURLBase/sampleClustering.png"
+      val modulesImg = s"$imageURLBase/modules.png"
+      val dendrogramTraitsImg = s"$imageURLBase/dendrogramTraits.png"
+      val softThresholdImg = s"$imageURLBase/softThreshold.png"
+
+      val clusters = clustersFromWGCNAModuleFile(s"$imageDir/modules.csv")
+
+      new WGCNAResults(sampleClusteringImg, modulesImg, dendrogramTraitsImg,
+        softThresholdImg,
+        clusters.map(_._1).toArray, clusters.map(_._2).toArray)
     } catch {
       case e: Exception => throw new ServerError(e.getMessage, e);
     }
+  }
+
+  def clustersFromWGCNAModuleFile(path: String): Iterable[(String, Array[String])] = {
+    /*
+      Example data lines:
+      "569","NM_145681","turquoise"
+      "570","NM_031769","turquoise"
+      "3","NM_053739","yellow"
+      "7","NM_024398","yellow"
+     */
+
+    val lines = scala.io.Source.fromFile(path).getLines.drop(1).toSeq
+    val rawData = lines.map(l => l.split(",").
+      map(x => x.replaceAll("\"", "")))
+
+    for {
+      (group, lines) <- rawData.groupBy(_(2))
+      probes = lines.map(_(1)).toArray
+    } yield (group, probes)
   }
 }

@@ -186,4 +186,4 @@ geneInfo0 = data.frame(substanceBXH = probes,
 geneOrder = order(geneInfo0$moduleColor);
 geneInfo = geneInfo0[geneOrder, ]
 
-write.csv(geneInfo, file = "geneInfo.csv")
+write.csv(geneInfo, file = paste(imageDir, "modules.csv", sep="/"))

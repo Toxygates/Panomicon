@@ -2,32 +2,35 @@ package t.viewer.client.components;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import t.clustering.shared.WGCNAParams;
 import t.clustering.shared.WGCNAResults;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
-import t.viewer.client.screen.Screen;
+import t.viewer.client.screen.ImportingScreen;
+import t.viewer.client.screen.data.ClusterSaveDialog;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class WGCNADialog extends InteractionDialog {
 
     InputGrid ig;
     WGCNAResults results;
-    Button dendrogram, modules;
+    Button dendrogram, modules, softThreshold, sampleClustering, saveClusters;
     String matrixId;
     List<Group> groups;
     ValueType valueType;
+    ImportingScreen screen;
 
-    public WGCNADialog(Screen parent, String matrixId, List<Group> groups,
+    public WGCNADialog(ImportingScreen parent, String matrixId, List<Group> groups,
                        ValueType valueType) {
         super(parent);
+        this.screen = parent;
         this.matrixId = matrixId;
         this.groups = groups;
         this.valueType = valueType;
@@ -36,42 +39,69 @@ public class WGCNADialog extends InteractionDialog {
     @Override
     protected Widget content() {
         VerticalPanel vp = new VerticalPanel();
-        vp.setWidth("200px");
 
-        ig = new InputGrid("Dendrogram cutoff", "Soft power");
+        ig = new InputGrid(3, "10em", "Dendrogram cutoff", "Soft power");
         ig.setValue(0, "50");
         ig.setValue(1, "10");
         vp.add(ig);
+        ig.setWidth("450px");
 
-        dendrogram = new Button("Show dendrogram...", (ClickEvent e) -> showDendrogram());
-        modules = new Button("Show modules...", (ClickEvent e) -> showModules());
-        dendrogram.setEnabled(false);
-        modules.setEnabled(false);
-        vp.add(Utils.wideCentered(Utils.mkHorizontalPanel(true, dendrogram, modules)));
+        dendrogram = new Button("Show trait dendrogram...", (ClickEvent e) -> showDendrogram());
+        modules = new Button("Show module dendrogram...", (ClickEvent e) -> showModules());
+        sampleClustering = new Button("Show clustering...", (ClickEvent e) -> showClustering());
+        softThreshold = new Button("Show soft threshold...", (ClickEvent e) -> showThreshold());
+        saveClusters = new Button("Save clusters...", (ClickEvent e) -> saveClusters());
 
-        SimplePanel sp = new SimplePanel();
-        sp.setHeight("50px");
-        vp.add(sp);
+        ig.getGrid().setWidget(0, 2, sampleClustering);
+        ig.getGrid().setWidget(1, 2, softThreshold);
+
+        setEnabled(false);
+        vp.add(Utils.wideCentered(Utils.mkHorizontalPanel(true, dendrogram, modules, saveClusters)));
 
         Button go = new Button("Run", (ClickEvent e) -> {
             userProceed();
         });
 
         Button close = new Button("Close", cancelHandler());
-        vp.add(Utils.mkHorizontalPanel(true, go, close));
+        Panel buttons = Utils.mkHorizontalPanel(true, go, close);
+        buttons.setHeight("50px");
+        vp.add(buttons);
         return vp;
     }
 
+    void setEnabled(boolean enabled) {
+        dendrogram.setEnabled(enabled);
+        modules.setEnabled(enabled);
+        sampleClustering.setEnabled(enabled);
+        softThreshold.setEnabled(enabled);
+        saveClusters.setEnabled(enabled);
+    }
+
     void showDendrogram() {
-        if (results != null) {
-            Utils.loadImageInPopup("Sample dendrogram...", results.getDendrogramImage());
-        }
+        Utils.loadImageInPopup("Sample dendrogram", results.getDendrogramTraitsImage());
     }
 
     void showModules() {
-        if (results != null) {
-            Utils.loadImageInPopup("Modules...", results.getModulesImage());
+        Utils.loadImageInPopup("Modules", results.getModulesImage());
+    }
+
+    void showClustering() {
+        Utils.loadImageInPopup("Sample clustering", results.getSampleClusteringImage());
+    }
+
+    void showThreshold() {
+        Utils.loadImageInPopup("Soft power threshold", results.getSoftThresholdImage());
+    }
+
+    void saveClusters() {
+        List<Collection<String>> clusters = new ArrayList<>();
+        List<String> suffixes = new ArrayList<>();
+        for (int i = 0; i < results.getClusters().length; i++) {
+            clusters.add(Arrays.asList(results.getClusters()[i]));
+            suffixes.add(results.getClusterTitles()[i]);
         }
+        ClusterSaveDialog.saveAction(screen, clusters, suffixes, null,
+                "Name entry", "Please enter a name for the clusters.");
     }
 
     @Override
@@ -86,10 +116,15 @@ public class WGCNADialog extends InteractionDialog {
                         "Unable to perform WGCNA clustering") {
                     @Override
                     public void handleSuccess(WGCNAResults results) {
-                        dendrogram.setEnabled(true);
-                        modules.setEnabled(true);
                         WGCNADialog.this.results = results;
                         Window.alert("OK");
+                        setEnabled(true);
+                    }
+
+                    @Override
+                    public void handleFailure(Throwable caught) {
+                        super.handleFailure(caught);
+                        setEnabled(false);
                     }
                 });
     }
