@@ -28,6 +28,7 @@ import t.clustering.shared.{Algorithm, WGCNAParams, WGCNAResults}
 import t.common.shared.ValueType
 import t.common.shared.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
+import t.model.sample.Attribute
 import t.platform.{OrthologMapping, Probe}
 import t.viewer.client.rpc.{MatrixService, NetworkService}
 import t.viewer.server._
@@ -285,29 +286,34 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
       getState.controller(id)
     }
     val rowNames = cont.managedMatrix.current.rowKeys
-    val clust = new RClustering(codeDir.replace("\\", "/"))
+    val clustering = new RClustering(codeDir.replace("\\", "/"))
     val data = new ClusteringData(cont, probes, rowNames, valueType)
-
     val attrSet = baseConfig.attributes
-//    val bioParamIds = Seq("sample_id", "kidney_total_wt", "liver_wt", "Hb", "MCH", "MCV",
-//      "K", "Cl", "Ca")
 
-    val bioParamIds: Seq[String] = Seq("sample_id") ++ (for {
+    //Use the first sample to get tentative parameters
+    val tentativeAttribParameters: Seq[Attribute] = Seq(attrSet.byId("sample_id")) ++ (for {
       s <- data.ungroupedSamples.headOption.toSeq
       paramValues = context.sampleStore.parameterQuery(s, Seq())
       param <- paramValues.collect { case (p, Some(v)) => p }
       if param.isNumerical
-      id = param.id
-    } yield id)
-    val bioParams = bioParamIds.flatMap(a => Option(attrSet.byId(a)))
+      param <- Option(attrSet.byId(param.id))
+    } yield param)
 
-    val sampleAttrs = context.sampleStore.sampleAttributeValues(data.ungroupedSamples, bioParams)
-    val traits = bioParams.map(bp => sampleAttrs.map(s => s(bp)))
+    /*
+      For simplicity, this approach filters out trait parameters that contain a NA (missing data) value.
+      Another approach would be to set them to 0, or to use the median value, etc.
+     */
+    val sampleAttrs = context.sampleStore.sampleAttributeValues(data.ungroupedSamples, tentativeAttribParameters)
+    val traitIdsValues = for {
+      param <- tentativeAttribParameters
+      paramData = sampleAttrs.map(s => s(param))
+      if (!paramData.contains("NA"))
+    } yield (param.id, paramData)
 
-    println(traits)
-    clust.doWGCNAClustering(params, data.ungroupedData, rowNames, data.ungroupedNames,
-      bioParamIds,
-      traits,
+    println(traitIdsValues)
+    clustering.doWGCNAClustering(params, data.ungroupedData, rowNames, data.ungroupedNames,
+      traitIdsValues.map(_._1),
+      traitIdsValues.map(_._2),
       config.csvDirectory, config.csvUrlBase)
   }
 }
