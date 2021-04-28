@@ -227,8 +227,10 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
           groupHeader: groupHeader,
           groupClick:function(e, group){
             if ((e.target == e.currentTarget) ||
+              (e.target.tagName == "SPAN") ||
               (e.target.className == "tabulator-arrow")) {
-              // regular group header click, or click on header arrow
+              // regular group header click, click on header arrow,
+              // or click on child count span
               if (group.getVisibility()) {
                 group.hide();
               } else {
