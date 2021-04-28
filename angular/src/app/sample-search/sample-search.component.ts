@@ -14,7 +14,9 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
   constructor(private backend: BackendService, private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef,
-    private userData: UserDataService, private toastr: ToastrService) { }
+    private userData: UserDataService, private toastr: ToastrService) {
+    this.requiredAttributes.add("sample_id");
+  }
 
   tabulator: Tabulator;
   tabulatorReady = false;
@@ -25,6 +27,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   samplesMap: Map<string, any>;
 
   attributes: any;
+  requiredAttributes = new Set<string>();
   fetchedAttributes: Set<string>;
 
   sampleGroupName: string;

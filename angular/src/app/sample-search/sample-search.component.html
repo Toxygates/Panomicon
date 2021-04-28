@@ -41,8 +41,8 @@
             role="menu" aria-labelledby="button-basic">
             <!--<h6 class="dropdown-header">Select batch:</h6>-->
             <li *ngFor="let attribute of attributes" role="menuitem">
-                <a class="dropdown-item" (click)="toggleColumn(attribute)"
-                [routerLink]=""queryParamsHandling="preserve">
+                <a class="dropdown-item" [ngClass]="{'disabled': requiredAttributes.has(attribute.id)}"
+                (click)="toggleColumn(attribute)" [routerLink]=""queryParamsHandling="preserve">
                 <i *ngIf="columnForAttribute(attribute)" class="bi bi-check"></i>
                 {{attribute.title}}
                 </a>
