@@ -34,11 +34,12 @@ public class ClusterSaveDialog {
                             String caption, String message) {
         final String type = ClusteringList.USER_CLUSTERING_TYPE;
 
+        final DialogBox db = new DialogBox(true, true);
         InputDialog entry = new InputDialog(message) {
             @Override
             protected void onChange(String name) {
                 if (name == null) { // on Cancel clicked
-                    this.setVisible(false);
+                    db.setVisible(false);
                     return;
                 }
 
@@ -58,13 +59,14 @@ public class ClusterSaveDialog {
 
                 screen.clusteringLists().put(name, cl);
                 screen.clusteringListsChanged();
-                this.setVisible(false);
+                db.setVisible(false);
 
                 Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SAVE_CLUSTERS);
                 Window.alert("Clusters are successfully saved.");
             }
         };
-        Utils.displayInPopup(caption, entry, DialogPosition.Center);
+
+        Utils.displayInPopup(db, caption, entry, false, DialogPosition.Center, null);
     }
 
     private static List<String> generateNameList(String base, int size, @Nullable List<String> nameSuffixes) {
