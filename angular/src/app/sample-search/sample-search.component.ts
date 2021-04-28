@@ -121,7 +121,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
     let groups = this.tabulator.getGroups();
     groups.forEach(function(group) {
       group.getSubGroups().forEach(function(subGroup) {
-        group.toggle();
+        subGroup.toggle();
       });
     });
   }
