@@ -59,10 +59,11 @@ export class BackendService {
       )
   }
 
-  getAttributeValues(samples: string[], attributes: string[]): any {
+  getAttributeValues(samples: string[], batches: string[], attributes: string[]): any {
     return this.http.post(this.serviceUrl + 'attributeValues',
       {
         "samples": samples,
+        "batches": batches,
         "attributes": attributes,
       })
       .pipe(

@@ -269,11 +269,18 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
       attribute != CoreParameter.ControlTreatment)
 
   /**
-   * Get parameter values for a set of samples. Values will only be returned
-   * for samples that have values for *all* of the parameters requested.
+   * Get parameter values for some samples, either by sample ID, batch, both,
+   * or neither. Values will only be returned for samples that have values for
+   * *all* of the parameters requested.
+   *
+   * @param sampleIDs the IDs of the samples for which to fetch attributes.
+   *                  If empty, all samples will be searched.
+   * @param batches the batches in which to search for samples. If empty,
+   *                all batches will be searched.
    * @param queryAttribs the parameters to fetch. Ordering is preserved in the result
    */
   def sampleAttributeValues(sampleIDs: Iterable[String],
+                            batches: Iterable[String],
                             queryAttribs: Iterable[Attribute] = Seq()
                            ): Seq[Sample] = {
 
@@ -287,13 +294,27 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
     val triples = withIndex.map(x => "?x t:" + x._1.id + " ?k" + x._2 + ".").mkString(" ")
     val sampleIds = sampleIDs.map("\"" + _ + "\" ").mkString
 
+    val sampleIdValues = if (sampleIds.isEmpty) {
+      ""
+    } else {
+      s"VALUES ?sample_id {$sampleIds}"
+    }
+
+    val batchFilter = if (batches.isEmpty) {
+      ""
+    } else {
+      val batchURIs = batches.map(b => "<" + BatchStore.packURI(b) + ">").mkString("||")
+      s"FILTER( ?g=$batchURIs )"
+    }
+
     val queryResult: Seq[Map[String, String]] =
       triplestore.mapQuery(s"""$tPrefixes
                               |SELECT ?sample_id $vars WHERE {
                               |  GRAPH ?g {
                               |    $triples
-                              |    ?x rdfs:label ?sample_id. VALUES ?sample_id {$sampleIds}
+                              |    ?x rdfs:label ?sample_id. $sampleIdValues
                               |  }
+                              |  $batchFilter
                               |}""".stripMargin)
 
     (for {

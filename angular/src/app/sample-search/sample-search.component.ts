@@ -140,7 +140,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
         this.samples.forEach(sample => sample[attribute.id] = "Loading...");
         this.tabulator.replaceData(_this.samples);
         this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
-          [attribute.id]).subscribe(
+          [this.batchId], [attribute.id]).subscribe(
             result => {
                 this.fetchedAttributes.add(attribute.id);
                 result.forEach(function(element) {

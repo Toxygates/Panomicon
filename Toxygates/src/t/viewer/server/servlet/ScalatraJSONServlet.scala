@@ -411,9 +411,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
    */
   post("/attributeValues") {
     val params = ujson.read(request.body)
-    val sampleIds: Seq[String] = params("samples").arr.map(v => v.str)
+    val sampleIds: Seq[String] = params.obj.get("samples").map(_.arr).getOrElse(List()).map(v => v.str)
+    val batches: Seq[String] = params.obj.get("batches").map(_.arr).getOrElse(List()).map(v => v.str)
     val attributes: Seq[Attribute] = params("attributes").arr.map(v => baseConfig.attributes.byId(v.str))
-    val samplesWithValues = sampleStore.sampleAttributeValues(sampleIds, attributes)
+    val samplesWithValues = sampleStore.sampleAttributeValues(sampleIds, batches, attributes)
     write(samplesWithValues.map(sampleToMap))
   }
 

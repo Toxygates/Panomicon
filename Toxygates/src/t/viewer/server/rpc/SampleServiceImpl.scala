@@ -173,7 +173,7 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
   def parameterValuesForSamples(samples: Array[Sample],
                                 attributes: Array[Attribute]
                                ): Array[Sample] = {
-    val queryResult: Seq[db.Sample] = sampleStore.sampleAttributeValues(samples.map(_.id), attributes)
+    val queryResult: Seq[db.Sample] = sampleStore.sampleAttributeValues(samples.map(_.id), List(), attributes)
     queryResult.map(asJavaSample(_)).toArray
   }
 
