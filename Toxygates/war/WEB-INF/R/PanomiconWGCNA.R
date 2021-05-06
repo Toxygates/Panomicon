@@ -3,7 +3,7 @@
 #https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/index.html
 
 #inputs that must be set by caller:
-#imageDir - directory where images are output
+#imageDir - directory and file prefix where images are output (ending with a '/' if necessary)
 #datExpr0 - gene expression data matrix (sample-major)
 #traitData - bio parameters (parameter-major)
 #cutHeight - cutoff height for clustering dendrogram
@@ -25,10 +25,8 @@ library(WGCNA);
 options(stringsAsFactors = FALSE);
 
 
-
 gsg = goodSamplesGenes(datExpr0, verbose = 3);
 gsg$allOK
-
 
 
 if (!gsg$allOK)
@@ -44,7 +42,7 @@ if (!gsg$allOK)
 
 
 sampleTree = hclust(dist(datExpr0), method = "average");
-png(file = paste(imageDir, "sampleClustering.png", sep="/"), 1600, 1200);
+png(file = paste(imageDir, "sampleClustering.png", sep=""), 1600, 1200);
 par(cex = 0.6);
 par(mar = c(0,4,2,0))
 plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5, 
@@ -81,7 +79,7 @@ sampleTree2 = hclust(dist(datExpr), method = "average")
 # Convert traits to a color representation: white means low, red means high, grey means missing entry
 traitColors = numbers2colors(datTraits, signed = FALSE);
 
-png(file = paste(imageDir, "dendrogramTraits.png", sep="/"), 1600, 1200);
+png(file = paste(imageDir, "dendrogramTraits.png", sep=""), 1600, 1200);
 # Plot the sample dendrogram and the colors underneath.
 plotDendroAndColors(sampleTree2, traitColors,
                     groupLabels = names(datTraits), 
@@ -100,7 +98,7 @@ powers = c(c(1:10), seq(from = 12, to=20, by=2))
 # Call the network topology analysis function
 sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
 
-png(file = paste(imageDir, "softThreshold.png", sep="/"), 1600, 1200);
+png(file = paste(imageDir, "softThreshold.png", sep=""), 1600, 1200);
 par(mfrow = c(1,2));
 cex1 = 0.9;
 
@@ -135,7 +133,7 @@ MEs = net$MEs;
 geneTree = net$dendrograms[[1]];
 
 
-png(file = paste(imageDir, "modules.png", sep="/"), 1600, 1200);
+png(file = paste(imageDir, "modules.png", sep=""), 1600, 1200);
 # Convert labels to colors for plotting
 mergedColors = labels2colors(net$colors)
 # Plot the dendrogram and the module colors underneath
@@ -186,4 +184,4 @@ geneInfo0 = data.frame(substanceBXH = probes,
 geneOrder = order(geneInfo0$moduleColor);
 geneInfo = geneInfo0[geneOrder, ]
 
-write.csv(geneInfo, file = paste(imageDir, "modules.csv", sep="/"))
+write.csv(geneInfo, file = paste(imageDir, "modules.csv", sep=""))

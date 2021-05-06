@@ -21,6 +21,7 @@ package t.clustering.server
 import java.util.logging.Logger
 import org.rosuda.REngine.Rserve.RserveException
 import t.clustering.shared.{Algorithm, WGCNAParams, WGCNAResults}
+import t.viewer.server.CSVHelper
 import t.viewer.shared.ServerError
 
 /**
@@ -100,10 +101,12 @@ class RClustering(codeDir: String) {
                         traitNames: Seq[String],
                         traitAttributes: Seq[Seq[String]],
                         imageDir: String, imageURLBase: String): WGCNAResults = {
+    val filePrefix = CSVHelper.quasiRandomPrefix("panomicon") + "-"
+
     val r = new R
     r.addCommand("library(WGCNA)")
     r.addCommand("options(stringsAsFactors = FALSE)")
-    r.addCommand("imageDir <- \"" + imageDir + "\"")
+    r.addCommand("imageDir <- \"" + imageDir + "/" + filePrefix + "\"")
     r.addCommand(s"cutHeight <- ${params.getCutHeight}")
     r.addCommand(s"softPower <- ${params.getSoftPower}")
 
@@ -126,12 +129,12 @@ class RClustering(codeDir: String) {
       println(s"WGCNA result: $result")
 
       //TODO: take file name directly from R script output
-      val sampleClusteringImg = s"$imageURLBase/sampleClustering.png"
-      val modulesImg = s"$imageURLBase/modules.png"
-      val dendrogramTraitsImg = s"$imageURLBase/dendrogramTraits.png"
-      val softThresholdImg = s"$imageURLBase/softThreshold.png"
+      val sampleClusteringImg = s"$imageURLBase/${filePrefix}sampleClustering.png"
+      val modulesImg = s"$imageURLBase/${filePrefix}modules.png"
+      val dendrogramTraitsImg = s"$imageURLBase/${filePrefix}dendrogramTraits.png"
+      val softThresholdImg = s"$imageURLBase/${filePrefix}softThreshold.png"
 
-      val clusters = clustersFromWGCNAModuleFile(s"$imageDir/modules.csv")
+      val clusters = clustersFromWGCNAModuleFile(s"$imageDir/${filePrefix}modules.csv")
 
       new WGCNAResults(sampleClusteringImg, modulesImg, dendrogramTraitsImg,
         softThresholdImg,

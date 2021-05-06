@@ -76,7 +76,7 @@ object CSVDownload {
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
 
     val aux = List(("Gene", geneIds))
-    CSVHelper.writeCSV("toxygates", directory,
+    CSVHelper.writeCSV("panomicon", directory,
       aux, rowNames, colNames,
       mat.rowData.map(_.map(_.value)))
   }
