@@ -103,10 +103,10 @@ trait MatrixDBReader[E <: ExprValue] {
    * database.
    */
   def valuesInSample(x: Sample, probes: Seq[Int],
-      padMissingValues: Boolean): Iterable[E]
+      padMissingValues: Boolean): Array[E]
 
   def valuesInSamples(xs: Iterable[Sample], probes: Seq[Int],
-      padMissingValues: Boolean) =
+      padMissingValues: Boolean): Iterable[Array[E]] =
     xs.map(valuesInSample(_, probes, padMissingValues))
 
   /**

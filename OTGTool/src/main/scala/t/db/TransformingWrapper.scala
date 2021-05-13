@@ -19,36 +19,38 @@
 
 package t.db
 
+import scala.reflect.ClassTag
+
 /**
  * Wraps a matrix DB to apply a transformation to each value read.
  * Task: remove this mechanism as it makes things more complicated
  */
-abstract class TransformingWrapper[E >: Null <: ExprValue](val
+abstract class TransformingWrapper[E>: Null <: ExprValue : ClassTag](val
     wrapped: MatrixDBReader[E]) extends MatrixDBReader[E] {
-  def allSamples: Iterable[Sample] =
+  override def allSamples: Iterable[Sample] =
     wrapped.allSamples
 
-  def emptyValue(probe: ProbeId): E =
+  override def emptyValue(probe: ProbeId): E =
     wrapped.emptyValue(probe)
 
-  def probeMap: ProbeMap =
+  override def probeMap: ProbeMap =
     wrapped.probeMap
 
-  def release(): Unit =
+  override def release(): Unit =
     wrapped.release
 
-  def sortSamples(xs: Iterable[Sample]): Seq[Sample] =
+  override def sortSamples(xs: Iterable[Sample]): Seq[Sample] =
     wrapped.sortSamples(xs)
 
   def tfmValue(x: E): E
 
-  def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)] = {
+  override  def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)] = {
     wrapped.valuesForProbe(probe, xs).map(x => (x._1, tfmValue(x._2)))
   }
 
-  def valuesInSample(x: Sample, probes: Seq[Int],
-      padMissingValues: Boolean): Iterable[E] = {
-    wrapped.valuesInSample(x, probes, padMissingValues).map(x => tfmValue(x))
+  override def valuesInSample(x: Sample, probes: Seq[Int],
+      padMissingValues: Boolean): Array[E] = {
+    wrapped.valuesInSample(x, probes, padMissingValues).map(x => tfmValue(x)).toArray
   }
 
 }

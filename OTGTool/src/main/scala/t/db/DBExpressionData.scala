@@ -27,7 +27,7 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
 
   val samples: Iterable[Sample] = reader.sortSamples(requestedSamples)
 
-  private lazy val exprValues: Iterable[Iterable[ExprValue]] = {
+  private lazy val exprValues: Iterable[Array[ExprValue]] = {
     val np = requestedProbes.size
     val ns = requestedSamples.size
     logEvent(s"Requesting $np probes for $ns samples")

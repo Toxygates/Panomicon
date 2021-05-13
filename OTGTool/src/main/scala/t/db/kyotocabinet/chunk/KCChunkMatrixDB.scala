@@ -21,7 +21,7 @@ package t.db.kyotocabinet.chunk
 
 import java.nio.ByteBuffer
 
-import scala.reflect._
+import scala.collection.mutable
 import kyotocabinet.DB
 import t.db._
 import t.db.ExtMatrixDB
@@ -271,7 +271,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
   //probes must be sorted in an order consistent with the chunkDB.
   def valuesInSample(x: Sample, probes: Seq[Int],
-      padMissingValues: Boolean): Iterable[PExprValue] = {
+      padMissingValues: Boolean): Array[PExprValue] = {
     //The chunk system guarantees that values will be read in order.
     //We exploit the ordering here when checking for missing values.
 
@@ -289,13 +289,13 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
     val pit = probes.iterator.buffered
     val vit = (chunks.flatMap(_.xs)).iterator.buffered
-    var r = Vector[PExprValue]()
+    var r = mutable.ArrayBuffer[PExprValue]()
 
     while (vit.hasNext && pit.hasNext) {
       if (vit.head._1 > pit.head) {
         //missing value - do not advance vit
         if (padMissingValues) {
-          r :+= emptyValue(probeMap.unpack(pit.next))
+          r += emptyValue(probeMap.unpack(pit.next))
         } else {
           pit.next
         }
@@ -303,13 +303,13 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
         //non-requested value
         vit.next
       } else {
-        r :+= vit.next._2.copy(probe = probeMap.unpack(pit.next))
+        r += vit.next._2.copy(probe = probeMap.unpack(pit.next))
       }
     }
     while (pit.hasNext && padMissingValues) {
-        r :+= emptyValue(probeMap.unpack(pit.next))
+        r += emptyValue(probeMap.unpack(pit.next))
     }
-    r
+    r.toArray
   }
 
   override def deleteSample(s: Sample): Unit = {

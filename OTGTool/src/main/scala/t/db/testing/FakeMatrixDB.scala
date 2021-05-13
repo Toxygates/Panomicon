@@ -22,7 +22,8 @@ package t.db.testing
 import t.db._
 import scala.reflect._
 
-abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample, Int, E)] = Vector())(implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
+abstract class AbsFakeMatrixDB[E >: Null <: ExprValue : ClassTag](var records: Seq[(Sample, Int, E)] = Vector())
+  (implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false
   var released = false
 
@@ -36,8 +37,8 @@ abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample,
     null
   }
 
-  def valuesInSample(x: Sample, probes: Seq[Int], padMissingValues: Boolean): Iterable[E] =
-    records.filter(_._1 == x).map(x => x._3)
+  def valuesInSample(x: Sample, probes: Seq[Int], padMissingValues: Boolean): Array[E] =
+    records.filter(_._1 == x).map(x => x._3).toArray
 
   def write(s: Sample, probe: Int, e: E) {
     records :+= (s, probe, e)
