@@ -19,8 +19,7 @@
 
 package t.db
 
-import t.db._
-import scala.collection.mutable.{Set => MSet}
+import scala.collection.mutable
 
 class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: Iterable[Sample],
     val requestedProbes: Iterable[Int]) {
@@ -56,7 +55,7 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
   }
 
   lazy val probes: Iterable[ProbeId] = {
-    var r = MSet[ProbeId]()
+    var r = mutable.Set[ProbeId]()
     for ((sample, lookup) <- _data) {
       r ++= lookup.keys
     }
@@ -70,12 +69,9 @@ class DBExpressionData(reader: MatrixDBReader[ExprValue], val requestedSamples: 
   def close() { reader.release() }
 }
 
-import scala.collection.{Map => CMap}
-
 /**
  * Preferred choice for sample-major access.
  * Inefficient for other use cases.
- *
  */
 class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
   requestedSamples: Iterable[Sample],
@@ -99,7 +95,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
    * Does nothing if the requested samples have already been cached.
    */
   override def loadData(ss: Iterable[Sample]) {
-    if (!((ss.toSet -- currentSamples.toSet).isEmpty)) {
+    if (((ss.toSet -- currentSamples.toSet).nonEmpty)) {
       val loadSamples = reader.sortSamples(ss)
       logEvent(s"DB read $loadSamples")
       val d = reader.valuesInSamples(loadSamples, codedProbes, true)
@@ -109,10 +105,10 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
     }
   }
 
-  def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
+  def data(s: Sample): collection.Map[ProbeId, FoldPExpr] = {
     loadData(Seq(s))
-    val pec = (probes zip (exprs(s) zip calls(s)))
-    Map() ++ pec.collect { case (p, (Some(exp), Some(call))) =>
+    val pec = (probes.iterator zip (exprs(s).iterator zip calls(s).iterator))
+    mutable.Map.empty ++ pec.collect { case (p, (Some(exp), Some(call))) =>
       p -> (exp, call, 0.0)
     }
   }

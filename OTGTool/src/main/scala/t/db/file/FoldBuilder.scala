@@ -50,7 +50,7 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
       if ts.toSet.contains(s)) {
       println("Control barcodes: " + cs)
       println("Treated: " + ts)
-      r = makeFolds(cs.toSeq, ts.toSeq, s, r)
+      r = makeFolds(cs, ts, s, r)
     }
     Map() ++ r
   }
@@ -58,8 +58,8 @@ abstract class FoldValueBuilder(md: Metadata, input: ColumnExpressionData)
   /**
    * Construct fold values for a sample group.
    */
-  protected def makeFolds(controlSamples: Seq[Sample],
-      treatedSamples: Seq[Sample], sample: Sample,
+  protected def makeFolds(controlSamples: List[Sample],
+      treatedSamples: List[Sample], sample: Sample,
       accumulator: List[Entry]): List[Entry]
 
   /**
@@ -108,8 +108,8 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
    * Note: this method should operate per control group rather than per sample,
    * ideally
    */
-  override protected def makeFolds(controlSamples: Seq[Sample],
-    treatedSamples: Seq[Sample],
+  override protected def makeFolds(controlSamples: List[Sample],
+    treatedSamples: List[Sample],
     sample: Sample,
     accumulator: List[Entry]): List[Entry] = {
 
@@ -131,7 +131,7 @@ class PFoldValueBuilder(md: Metadata, input: ColumnExpressionData)
 //    val treatedValues = treatedData.values.toArray
     val controlMean = controlMeanSample(controlValues)
 
-    val probes = input.probes.toSeq
+    val probes = input.probes
 
     val controlExpr = controlSamples.map(input.exprs)
     val treatedExpr = treatedSamples.map(input.exprs)

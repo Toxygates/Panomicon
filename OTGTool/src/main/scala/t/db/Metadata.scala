@@ -66,14 +66,14 @@ trait Metadata extends SampleSet {
     samples.filter(controlGroupKey(_) == key).filter(isControl)
   }
 
-  def treatedControlGroups(ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
+  def treatedControlGroups(ss: Iterable[Sample]): List[(List[Sample], List[Sample])] = {
     // gs was the return value for the old t (non-otg) implementation
-    val gs = ss.groupBy(controlSamples(_)).toSeq.map(sg => {
-      sg._2.partition(!isControl(_))
+    val gs = ss.groupBy(controlSamples(_)).toList.map(sg => {
+      sg._2.toList.partition(!isControl(_))
     })
     gs.flatMap({
       case (treated, control) => {
-        treated.groupBy(sampleAttribute(_, DoseLevel)).values.toSeq.map(ts => (ts, control))
+        treated.groupBy(sampleAttribute(_, DoseLevel)).values.toList.map(ts => (ts, control))
       }
     })
   }

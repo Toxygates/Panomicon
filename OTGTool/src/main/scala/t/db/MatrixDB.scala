@@ -158,7 +158,7 @@ trait MatrixDBReader[E <: ExprValue] {
       //not sparse read, go sample-wise
       val rs = xs.par.map(x => {
         valuesInSample(x, ps, true).toSeq
-      }).seq.toSeq
+      }).seq
       Array.tabulate(ps.size, xs.size)((p, x) =>
         rs(x)(p))
     }
