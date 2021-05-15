@@ -66,17 +66,17 @@ class CachingTriplestoreMetadata(os: SampleStore,
 
   override lazy val sampleIds: Set[DSampleId] = rawData.keySet
 
-  override lazy val samples = os.sampleAttributeQuery(useQuerySet, sf)()
+  override lazy val samples: Iterable[Sample] = os.sampleAttributeQuery(useQuerySet, sf)()
 
-  lazy val rawData = {
-    Map() ++ samples.map(r => new DSampleId(r(SampleId)) -> r)
-  }
+  lazy val rawData: Map[DSampleId, Sample] =
+    Map.empty ++ samples.iterator.map(r => new DSampleId(r(SampleId)) -> r)
 
-  lazy val data =
-    rawData.mapValues(sample => {
-      Map() ++ sample.sampleClass.getKeys().asScala.toSeq.
-          map(key => key ->  sample.get(key).get)
+  lazy val data: Map[DSampleId, Map[Attribute, String]] = {
+    Map.empty ++ rawData.iterator.map(sample => {
+      val attribs = sample._2.sampleClass.getKeys().asScala.toSeq
+      (sample._1 -> attribs.map(a => a -> sample._2.get(a).get).toMap)
     })
+  }
 
   // all attributes for a sample
   override def sampleAttributes(s: Sample) =

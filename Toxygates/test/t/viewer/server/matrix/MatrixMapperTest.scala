@@ -47,6 +47,7 @@ class MatrixMapperTest extends TTestSuite {
 
   private def medianCompatible(x: ExprValue, test: Iterable[ExprValue]) {
     assert(test.exists(_.value == x.value) ||
+      x.value.isNaN && test.exists(_.value.isNaN) ||
         (test.size == 2 && test.map(_.value).sum / 2 == x.value))
   }
 

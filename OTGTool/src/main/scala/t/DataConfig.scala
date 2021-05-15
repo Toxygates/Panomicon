@@ -47,21 +47,9 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
 
   def mirnaDir = s"$dir/mirna"
 
-  //Task: remove the fold wrap when possible
-  def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
-    new TransformingWrapper(db) {
-      def tfmValue(x: PExprValue) = {
-        val r = x.copy(value = Math.pow(2, x.value))
-        r.isPadding = x.isPadding
-        r
-      }
-    }
-
   def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
     MatrixDB.get(exprDb, false)
   def foldsDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
-    foldWrap(foldsDBReaderNowrap)
-  def foldsDBReaderNowrap(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
     MatrixDB.get(foldDb, false)
 
   def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =

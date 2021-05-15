@@ -24,22 +24,22 @@ import t.platform._
 object ExprValue {
   import t.util.SafeMath._
 
-  def mean(data: Iterable[ExprValue], presentOnly: Boolean) =
+  def mean(data: Iterable[ExprValue], presentOnly: Boolean, pow2: Boolean) =
     if (presentOnly) {
-      presentMean(data)
+      presentMean(data, pow2)
     } else {
-      allMean(data)
+      allMean(data, pow2)
     }
 
-  def presentMean(vs: Iterable[ExprValue], probe: ProbeId = ""): BasicExprValue = {
+  def presentMean(vs: Iterable[ExprValue], pow2: Boolean, probe: ProbeId = ""): BasicExprValue = {
     val present = vs.filter(_.call != 'A')
     val call = if (present.size > 0) 'P' else 'A'
-    apply(safeMean(present.map(_.value)), call, probe)
+    apply(safeMean(present.map(_.value), pow2), call, probe)
   }
 
-  def allMean(vs: Iterable[ExprValue], probe: ProbeId = ""): BasicExprValue = {
+  def allMean(vs: Iterable[ExprValue], pow2: Boolean, probe: ProbeId = ""): BasicExprValue = {
     val value = if (vs.size > 0) {
-      safeMean(vs.map(_.value))
+      safeMean(vs.map(_.value), pow2)
     } else {
       0
     }
@@ -59,6 +59,7 @@ object ExprValue {
   def log2[E <: ExprValue](value: E): BasicExprValue = {
     ExprValue.apply(log2(value.value), value.call, value.probe)
   }
+
 
   def apply(v: RawExprValue, call: PACall = 'P', probe: ProbeId = null): BasicExprValue =
     BasicExprValue(v, call, probe)

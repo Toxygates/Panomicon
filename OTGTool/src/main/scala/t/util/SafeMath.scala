@@ -48,8 +48,22 @@ object SafeMath {
   def safeMin(vs: Iterable[Double]) =
     safely(vs, _.min)
 
-  def safeMean(vs: Iterable[Double]) =
-    safely(vs, fs => fs.sum / fs.size)
+  val l2 = Math.log(2)
+  /**
+   * Safely compute the mean of the values
+   * @param vs
+   * @param pow2 Whether to transform each value x into 2^x before computing the mean, and then take the log2 again
+   * @return
+   */
+  def safeMean(vs: Iterable[Double], pow2: Boolean = false) = {
+    if (pow2) {
+      Math.log(
+        safely(vs.map(x => Math.pow(2, x)), fs => fs.sum / fs.size)
+      ) / l2
+    } else {
+      safely(vs, fs => fs.sum / fs.size)
+    }
+  }
 
   def safeSum(vs: Iterable[Double]) =
     safely(vs, _.sum)

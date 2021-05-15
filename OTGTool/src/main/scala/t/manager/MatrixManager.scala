@@ -65,8 +65,7 @@ object MatrixManager extends ManagerTool {
 
           implicit val mat = context.matrix
 
-          //No log-2 wrap
-          matcopy[PExprValue](config.data.foldsDBReaderNowrap(mat),
+          matcopy[PExprValue](config.data.foldsDBReader(mat),
               batch,
             () => toDConfig.extWriter(toDConfig.foldDb),
             v => (v.value, v.call, v.p),

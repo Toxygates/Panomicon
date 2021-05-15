@@ -160,7 +160,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PEx
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) {
   import ManagedMatrix._
 
-  protected def buildValue(raw: Seq[ExprValue]): BasicExprValue = ExprValue.presentMean(raw)
+  protected def buildValue(raw: Seq[ExprValue]): BasicExprValue = ExprValue.presentMean(raw, false)
 
   override protected def shortName(g: Group): String = treatedColumnShortName
 
@@ -206,7 +206,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   import ManagedMatrix._
 
   protected def buildValue(raw: Seq[ExprValue]): BasicExprValue =
-    ExprValue.log2(ExprValue.mean(raw, true))
+    ExprValue.mean(raw, true, true)
 
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): RowData = {
@@ -215,9 +215,6 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     val fold = buildValue(treatedVs)
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
-
-  override protected def finaliseUngrouped(ungr: ExpressionMatrix) =
-    ungr.map(e => ExprValue.log2(e))
 
   override protected def shortName(g: Group) = log2FoldColumnShortName
 

@@ -141,12 +141,12 @@ trait SeriesBuilder[S <: Series[S]] {
   }
 
   def meanPoint(ds: Iterable[ExprValue]): ExprValue = {
-    ExprValue.log2(ExprValue.allMean(ds, ds.head.probe))
+    ExprValue.allMean(ds, true, ds.head.probe)
   }
 
   def meanPointByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
     val byProbe = ds.groupBy(_.probe)
-    byProbe.map(x => ExprValue.log2(ExprValue.allMean(x._2, x._1)))
+    byProbe.map(x => ExprValue.allMean(x._2, true, x._1))
   }
 
   /**
