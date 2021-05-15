@@ -128,8 +128,6 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
       (i -> sampleIdxs)
     })
 
-    ungrouped = finaliseUngrouped(ungrouped)
-
     new ManagedMatrix(
       LoadParams(sortedProbes, info,
         ungrouped.copyWithAnnotations(annotations),
@@ -137,8 +135,6 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
         baseColumns)
       )
   }
-
-  protected def finaliseUngrouped(ungr: ExpressionMatrix): ExpressionMatrix = ungr
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
 
