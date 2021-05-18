@@ -29,6 +29,7 @@ abstract class Refreshable[T](title: String) {
    * Time of last refresh (ms)
    */
   protected var lastTimestamp: Long = 0
+  protected var lastCheckTimestamp: Long = 0
 
   /**
    * Current timestamp of asset (ms)
@@ -36,14 +37,24 @@ abstract class Refreshable[T](title: String) {
   def currentTimestamp: Long
   protected var latestVal: Option[T] = None
 
+  /**
+   * Maximum interval to check the timestamp (ms)
+   * (Since even checking the timestamp may require I/O)
+   */
+  protected val timestampMaxCheckInterval = 1000
+
   protected def shouldRefresh: Boolean = currentTimestamp > lastTimestamp
 
   def latest: T = {
-    if (shouldRefresh || latestVal == None) {
-      println(s"Refreshable $title: reloading data")
-      latestVal = Some(reload())
-      lastTimestamp = currentTimestamp
+    val checkInterval = System.currentTimeMillis() - lastCheckTimestamp
+    if ((checkInterval > timestampMaxCheckInterval && shouldRefresh) || latestVal == None) {
+      synchronized {
+        println(s"Refreshable $title: reloading data")
+        latestVal = Some(reload())
+        lastTimestamp = currentTimestamp
+      }
     }
+    lastCheckTimestamp = System.currentTimeMillis()
     latestVal.get
   }
 

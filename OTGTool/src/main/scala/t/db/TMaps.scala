@@ -48,7 +48,7 @@ class TMaps(config: BaseConfig) {
 class TRefresher(config: BaseConfig) extends Refreshable[TMaps]("Lookup maps") {
 
   def currentTimestamp: Long = {
-    //If this file has been updated, we reload all the maps
+    //If any of these files has been updated, we reload all the maps
     val files = List(config.data.sampleDb, config.data.probeDb, config.data.enumDb)
     files.map(new java.io.File(_).lastModified()).max
   }
