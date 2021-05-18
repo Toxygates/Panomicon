@@ -9,7 +9,7 @@ import t.model.sample.OTGAttribute._
 import t.platform.mirna.TargetTableBuilder
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
 import t.viewer.server.Conversions.asJavaSample
-import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
+import t.viewer.server.matrix.{ControllerParams, ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.rpc.NetworkLoader
 import t.viewer.server.{AssociationMasterLookup, Configuration, PlatformRegistry}
 import t.viewer.shared.mirna.MirnaSource
@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import javax.servlet.ServletContext
 import t.common.shared.sample.Group
+import t.util.LRUCache
 import ujson.Value.Selector
 
 import scala.collection.JavaConverters._
@@ -252,6 +253,11 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     ] }'
    */
 
+  /**
+   * Cache the most recently used matrices in memory
+   */
+  private val matrixCache = new LRUCache[(json.MatrixParams, ValueType), MatrixController](10)
+
   post("/matrix") {
     import MatrixHandling._
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
@@ -259,7 +265,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
 
-    val controller = loadMatrix(matParams, valueType)
+    val key = (matParams, valueType)
+    val controller = matrixCache.get(key) match {
+      case Some(mat) => mat
+      case _ =>
+        val c = loadMatrix(matParams, valueType)
+        matrixCache.insert(key, c)
+        c
+    }
+
     val matrix = controller.managedMatrix
 
     val pages = new PageDecorator(context, controller)
@@ -417,7 +431,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
     def loadMatrix(matParams: json.MatrixParams, valueType: ValueType): MatrixController = {
       val groups = filledGroups(matParams)
-
       val controller = MatrixController(context, groups, matParams.initProbes, valueType)
       val matrix = controller.managedMatrix
       matParams.applyFilters(matrix)
