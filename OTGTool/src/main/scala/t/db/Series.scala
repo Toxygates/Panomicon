@@ -44,9 +44,10 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
     builder.rebuild(this, keep)
   }
 
-  def values = points.map(_.value)
+  def values = points.iterator.map(_.value).toList
 
-  def presentValues = points.map(_.value).filter(_.call != 'A').map(_.value)
+  def presentValues = points.iterator.
+    map(_.value).filter(_.call != 'A').map(_.value).toList
 
   def probeStr(implicit mc: MatrixContext) = mc.probeMap.unpack(probe)
 
@@ -140,11 +141,11 @@ trait SeriesBuilder[S <: Series[S]] {
     }
   }
 
-  def meanPoint(ds: Iterable[ExprValue]): ExprValue = {
+  def meanPoint(ds: List[ExprValue]): ExprValue = {
     ExprValue.allMean(ds, true, ds.head.probe)
   }
 
-  def meanPointByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
+  def meanPointByProbe(ds: List[ExprValue]): Iterable[ExprValue] = {
     val byProbe = ds.groupBy(_.probe)
     byProbe.map(x => ExprValue.allMean(x._2, true, x._1))
   }

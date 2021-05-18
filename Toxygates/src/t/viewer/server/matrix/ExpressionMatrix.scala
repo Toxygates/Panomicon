@@ -171,7 +171,7 @@ class ExpressionMatrix(rowData: IndexedSeq[IndexedSeq[BasicExprValue]], rows: In
 
   def appendDiffTest(sourceData: ExpressionMatrix, group1: Seq[String], group2: Seq[String],
                      colName: String): ExpressionMatrix = {
-    def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
+    def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1.toList) - safeMean(a2.toList)
 
     appendTwoColTest(sourceData, group1, group2, diffTest, 1, colName)
   }

@@ -47,7 +47,7 @@ class SeriesMatchingTest extends TTestSuite {
     val d2 = OTGSeries(TimeSeries, null, null, null, 0, null, null, null,
       mkSeries(Seq(ExprValue(3.0), ExprValue(4.0), ExprValue(5.0))))
 
-    safePCorrelation(d1, d2) should equal(pearsonCorrelation(Seq(0.0, 1.0, 3.0), Seq(0.0, 3.0, 5.0)))
+    safePCorrelation(d1, d2) should equal(pearsonCorrelation(List(0.0, 1.0, 3.0), List(0.0, 3.0, 5.0)))
   }
 
   test("Pearson correlation with insufficient values") {

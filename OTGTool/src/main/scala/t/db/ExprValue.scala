@@ -24,20 +24,20 @@ import t.platform._
 object ExprValue {
   import t.util.SafeMath._
 
-  def mean(data: Iterable[ExprValue], presentOnly: Boolean, pow2: Boolean) =
+  def mean(data: List[ExprValue], presentOnly: Boolean, pow2: Boolean) =
     if (presentOnly) {
       presentMean(data, pow2)
     } else {
       allMean(data, pow2)
     }
 
-  def presentMean(vs: Iterable[ExprValue], pow2: Boolean, probe: ProbeId = ""): BasicExprValue = {
+  def presentMean(vs: List[ExprValue], pow2: Boolean, probe: ProbeId = ""): BasicExprValue = {
     val present = vs.filter(_.call != 'A')
     val call = if (present.size > 0) 'P' else 'A'
     apply(safeMean(present.map(_.value), pow2), call, probe)
   }
 
-  def allMean(vs: Iterable[ExprValue], pow2: Boolean, probe: ProbeId = ""): BasicExprValue = {
+  def allMean(vs: List[ExprValue], pow2: Boolean, probe: ProbeId = ""): BasicExprValue = {
     val value = if (vs.size > 0) {
       safeMean(vs.map(_.value), pow2)
     } else {

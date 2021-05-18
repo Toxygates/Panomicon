@@ -35,7 +35,7 @@ class SeriesRanking(val db: SeriesDB[OTGSeries], val key: OTGSeries)
   def loadRefCurves(key: OTGSeries) = {
     val refCurves = db.read(key)
     println("Initialised " + refCurves.size + " reference curves")
-    refCurves
+    refCurves.toList
   }
 
   protected def getScores(mt: RankType): Iterable[(OTGSeries, Double)] = {
@@ -69,7 +69,7 @@ class SeriesRanking(val db: SeriesDB[OTGSeries], val key: OTGSeries)
       allCorresponding = allScores.map(_.find(series =>
         series._1.doseOrTime == dt && series._1.compound == c));
       scores = allCorresponding.map(_.map(_._2).getOrElse(Double.NaN));
-      product = safeProduct(scores);
+      product = safeProduct(scores.toList);
       result = (c, dt, product)
     ) yield result)
 
@@ -116,7 +116,7 @@ object SeriesRanking {
 
   case class MultiSynthetic(pattern: Vector[Double]) extends RankType {
     def scoreSeries(s: OTGSeries): Double =
-      safePCorrelation(pattern, s.values.toVector.map(_.value)) + 1
+      safePCorrelation(pattern.toList, s.values.map(_.value)) + 1
   }
 
   object Sum extends RankType {
@@ -203,7 +203,7 @@ object SeriesRanking {
   }
 
   class ReferenceCompound(val compound: String, val doseOrTime: String,
-      var refCurves: Iterable[Series[_]] = Seq()) extends RankType {
+      var refCurves: List[Series[_]] = List()) extends RankType {
 
     def scoreSeries(s: OTGSeries): Double = {
       if (refCurves.isEmpty) {
@@ -213,7 +213,7 @@ object SeriesRanking {
     }
   }
 
-  def safePCorrelation(s1: Vector[Double], s2: Vector[Double]): Double = {
+  def safePCorrelation(s1: List[Double], s2: List[Double]): Double = {
     if (s1.size == s2.size) {
       if (s1.size < 2) {
         // Don't even try in this case.
@@ -232,16 +232,16 @@ object SeriesRanking {
 
   def safePCorrelation(s1: Series[_], s2: Series[_]): Double = {
     val (mut1, mut2) = mutualPoints(s1, s2)
-    safePCorrelation(mut1.map(_.value).toVector, mut2.map(_.value).toVector)
+    safePCorrelation(mut1.map(_.value), mut2.map(_.value))
   }
 
-  def mutualPoints(s1: Series[_], s2: Series[_]): (Seq[ExprValue], Seq[ExprValue]) = {
-    val (d1, d2) = (s1.values, s2.values)
+  def mutualPoints(s1: Series[_], s2: Series[_]): (List[ExprValue], List[ExprValue]) = {
+    val (d1, d2) = (s1.values.toList, s2.values.toList)
     // pick the matching points to perform ranking
     if (d1.size != d2.size) {
       println("WARNING: unable to prepare for compound ranking: series size mismatch: " +
         s"$s1 and $s2")
-      (Seq.empty, Seq.empty)
+      (Nil, Nil)
     } else {
       d1.zip(d2).filter(x => x._1.present && x._2.present).unzip
     }

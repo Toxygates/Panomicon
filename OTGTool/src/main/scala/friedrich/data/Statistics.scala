@@ -15,19 +15,19 @@ object Statistics {
   /**
    * Compute the arithmetic mean.
    */
-  def mean(data: Iterable[Double]): Double =
+  def mean(data: List[Double]): Double =
     if (data.isEmpty) { 0 } else { data.sum / data.size }
 
   /**
    * Compute the geometric mean.
    */
-  def geomean(data: Iterable[Double]): Double =
+  def geomean(data: List[Double]): Double =
     if (data.isEmpty) { 1 } else { Math.pow(data.product, 1.0 / data.size) }
 
   /**
    * Compute sample standard deviation.
    */
-  def sigma(data: Iterable[Double]): Double = {
+  def sigma(data: List[Double]): Double = {
     val mn = mean(data)
     val terms = data.map(x => (x - mn) * (x - mn))
     Math.sqrt(1.0 / (data.size - 1) * terms.sum)
@@ -36,7 +36,7 @@ object Statistics {
   /**
    * Squares of all samples
    */
-  def square(data: Iterable[Double]): Iterable[Double] = data.map(x => x * x)
+  def square(data: List[Double]): List[Double] = data.map(x => x * x)
 
   /**
    * Square root
@@ -46,14 +46,14 @@ object Statistics {
   /**
    * Square roots of all samples
    */
-  def sqrt(data: Iterable[Double]): Iterable[Double] = data.map(sqrt)
+  def sqrt(data: List[Double]): List[Double] = data.map(sqrt)
 
   def abs(v: Double): Double = Math.abs(v)
 
   /**
    * Compute the Pearson correlation coefficient.
    */
-  def pearsonCorrelation(d1: Seq[Double], d2: Seq[Double]): Double = {
+  def pearsonCorrelation(d1: List[Double], d2: List[Double]): Double = {
     assert(d1.size == d2.size)
     val n = d1.size
     val m1 = mean(d1)

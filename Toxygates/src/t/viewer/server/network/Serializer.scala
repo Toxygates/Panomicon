@@ -123,8 +123,8 @@ class Serializer(network: Network, messengerWeightColumn: String, microWeightCol
         n.id
   }
 
-  val maxWeight = SafeMath.safeMax(network.nodes.asScala.map(nodeWeight(_)))
-  val minWeight = SafeMath.safeMin(network.nodes.asScala.map(nodeWeight(_)))
+  val maxWeight = SafeMath.safeMax(network.nodes.asScala.map(nodeWeight(_)).toList)
+  val minWeight = SafeMath.safeMin(network.nodes.asScala.map(nodeWeight(_)).toList)
 
   def DOTcolor(n: Node) = {
     if (java.lang.Double.isNaN(nodeWeight(n)) ||

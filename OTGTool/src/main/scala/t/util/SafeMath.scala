@@ -21,32 +21,35 @@ package t.util
 
 import friedrich.data.Statistics
 
+import scala.collection.TraversableLike
+
 /**
  * Statistics functions that are safe to use when there may be missing data.
  */
 object SafeMath {
 
-  private def filtered(vs: Iterable[Double]) =
-    vs.filter(x => !java.lang.Double.isNaN(x) &&
-            java.lang.Double.isFinite(x))
+  private def valueFilter(x: Double) = !java.lang.Double.isNaN(x) &&
+      java.lang.Double.isFinite(x)
 
-//  def removeNaNValues(vs: Iterable[Double]) =
-//    vs.filter(!java.lang.Double.isNaN(_))
+  private def filtered(vs: List[Double]): List[Double] = vs.filter(valueFilter)
 
-  private def safely[T](vs: Iterable[Double],
-    f: Iterable[Double] => Double): Double = {
+  private def filtered(vs: TraversableOnce[Double]): TraversableOnce[Double] = vs.filter(valueFilter)
+
+  private def safely(vs: List[Double], f: List[Double] => Double): Double = {
     val fvs = filtered(vs)
     if (fvs.isEmpty) Double.NaN else f(fvs)
   }
 
-  def safeProduct(vs: Iterable[Double]) =
-    safely(vs, _.product)
+  private def safely(vs: TraversableOnce[Double], f: TraversableOnce[Double] => Double): Double = {
+    val fvs = filtered(vs)
+    if (fvs.isEmpty) Double.NaN else f(fvs)
+  }
 
-  def safeMax(vs: Iterable[Double]) =
-    safely(vs, _.max)
+  def safeProduct(vs: TraversableOnce[Double]): Double = safely(vs, _.product)
 
-  def safeMin(vs: Iterable[Double]) =
-    safely(vs, _.min)
+  def safeMax(vs: TraversableOnce[Double]): Double = safely(vs, _.max)
+
+  def safeMin(vs: TraversableOnce[Double]): Double = safely(vs, _.min)
 
   val l2 = Math.log(2)
   /**
@@ -55,23 +58,34 @@ object SafeMath {
    * @param pow2 Whether to transform each value x into 2^x before computing the mean, and then take the log2 again
    * @return
    */
-  def safeMean(vs: Iterable[Double], pow2: Boolean = false) = {
+  def safeMean(vs: TraversableOnce[Double], pow2: Boolean = false): Double = {
+    val valid = vs.filter(valueFilter)
+    var sum = 0.0
+    var size = 0
+    if (valid.isEmpty) {
+      return Double.NaN
+    }
+
     if (pow2) {
-      Math.log(
-        safely(vs.map(x => Math.pow(2, x)), fs => fs.sum / fs.size)
-      ) / l2
+      for { x <- valid } {
+        sum += Math.pow(2, x)
+        size += 1
+      }
+      Math.log(sum / size) / l2
     } else {
-      safely(vs, fs => fs.sum / fs.size)
+      for { x <- valid } {
+        sum += x
+        size += 1
+      }
+      sum/size
     }
   }
 
-  def safeSum(vs: Iterable[Double]) =
-    safely(vs, _.sum)
+  def safeSum(vs: TraversableOnce[Double]): Double = safely(vs, _.sum)
 
-  def safeSigma(vs: Iterable[Double]) =
-    safely(vs, Statistics.sigma(_))
+  def safeSigma(vs: List[Double]): Double = safely(vs, Statistics.sigma(_: List[Double]))
 
-  def safeIsGreater(x: Double, y: Double) = {
+  def safeIsGreater(x: Double, y: Double): Boolean = {
     if (java.lang.Double.isNaN(x)) false
     else if (java.lang.Double.isNaN(y)) true
     else (x > y)

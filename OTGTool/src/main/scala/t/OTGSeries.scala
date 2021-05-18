@@ -228,7 +228,7 @@ class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGS
       (pr, data) <- (sprobes zip exprs);
       nonPadded = data.filter(!_.isPadding);
       if (!nonPadded.isEmpty);
-      mean = meanPoint(nonPadded);
+      mean = meanPoint(nonPadded.toList);
       spoint = SeriesPoint(timeOrDoseMap(point), mean)
     } yield (pr, spoint)
   }
