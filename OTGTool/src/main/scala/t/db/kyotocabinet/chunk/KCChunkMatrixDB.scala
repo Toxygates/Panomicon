@@ -160,6 +160,13 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     val b = ByteBuffer.wrap(data)
     var r = Vector[(Int, PExprValue)]()
 
+    /*
+      Note: The use of Vector above slows down reads and some transformations due to slow vector construction.
+      However, it is beneficial during writes/updates. Replacing with List as-is
+      would probably slow down writes (e.g. VectorChunk.insert).
+      These data structures may be reconsidered at some point.
+     */
+
     while(b.hasRemaining()) {
       val pr = b.getInt
       val x = b.getDouble

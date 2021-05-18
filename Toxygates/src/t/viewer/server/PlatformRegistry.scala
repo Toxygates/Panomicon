@@ -50,7 +50,7 @@ class PlatformRegistry(loader: PlatformLoader) {
     }
   }
 
-  def allProbes: Iterable[Probe] = loader.allPlatforms.values.toSeq.flatten
+  lazy val allProbes: Iterable[Probe] = loader.allPlatforms.values.toSeq.flatten
   def getProbe(platform: String, id: String): Option[Probe] = {
     ensurePlatformLoaded(platform)
     platformIdentifierLookup(platform).get(id)
