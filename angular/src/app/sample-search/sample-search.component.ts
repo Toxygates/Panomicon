@@ -226,19 +226,9 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
           ],
           groupHeader: groupHeader,
           groupClick:function(e, group){
-            if ((e.target == e.currentTarget) ||
-              (e.target.tagName == "SPAN") ||
-              (e.target.className == "tabulator-arrow")) {
-              // regular group header click, click on header arrow,
-              // or click on child count span
-              if (group.getVisibility()) {
-                group.hide();
-              } else {
-                group.show();
-              }
-            } else {
-              // click is not on header itself or on arrow icon, so
-              // it must be on the button
+            if (e.target.tagName=="BUTTON" || 
+                e.target.parentNode.tagName=="BUTTON") {
+              // click is on the button
               if (_this.selectedGroups.has(group.getKey())) {
                 _this.selectedGroups.delete(group.getKey());
               } else {
@@ -246,6 +236,13 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
               }
               _this.changeDetector.detectChanges();
               _this.tabulator.redraw();
+            } else {
+              // click is elsewhere on the header
+              if (group.getVisibility()) {
+                group.hide();
+              } else {
+                group.show();
+              }
             }
           },
           groupToggleElement: false,
