@@ -216,7 +216,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
           selectable: true,
           columns: this.columns,
           layout:"fitDataFill",
-          maxHeight: "75vh",
+          height: "calc(100vh - 18.3rem)",
           groupBy: [function(data) {
               return data.control_treatment;
             },
