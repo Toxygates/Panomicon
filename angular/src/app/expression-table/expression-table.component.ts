@@ -28,11 +28,11 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   tablePageNumber = 0;
   goToPageSubmitEnabled = false;
 
-  geneSymbolsMutator(_value, data, _type, _params, _component): string {
+  probeTitlesMutator(_value, data, _type, _params, _component): string {
     return data.probeTitles.join(" / ");
   }
 
-  probeTitlesMutator(_value, data, _type, _params, _component): string {
+  geneSymbolsMutator(_value, data, _type, _params, _component): string {
     return data.geneSymbols.join(" / ");
   }
 
@@ -50,10 +50,12 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   }
 
   columns: any[] = [
-    {title: 'Gene Symbol', field: 'probeTitles',
-      mutator: this.geneSymbolsMutator, headerSort:false},
-    {title: 'Probe Titles', field: 'organism',
-      mutator: this.probeTitlesMutator, headerSort:false},
+    {title: 'Gene symbols', field: 'geneSymbols',
+      mutator: this.geneSymbolsMutator, headerSort:false,
+      width:"15rem"},
+    {title: 'Probe titles', field: 'probeTitles',
+      mutator: this.probeTitlesMutator, headerSort:false,
+      width:"50rem"},
     {title: 'Probe', field: 'probe', headerSort:false},
   ]
 
@@ -66,10 +68,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
         for (let group of enabledGroups) {
           this.columns.push({title: group.name, field: group.name,
             headerSort: true, mutator: this.log2foldMutator,
-            headerSortStartingDir:"desc"});
-          this.columns.push({title: group.name + '(p)', field: group.name + '(p)',
+            headerSortStartingDir:"desc", width:"15rem"});
+          this.columns.push({title: group.name + ' (p)', field: group.name + '(p)',
             headerSort: true, mutator: this.log2foldMutator,
-            headerSortStartingDir:"desc"});
+            headerSortStartingDir:"desc", width:"15rem"});
         }
       }
     });
@@ -128,6 +130,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
         {column:_this.enabledSampleGroups[0].name, dir:"desc"}
       ],
       tooltips:true,
+      tooltipsHeader:true,
       ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
       footerElement:"<div class=\"d-none d-lg-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent(\'OpenModal\'));\">Go to page...</button></div>",
     });
