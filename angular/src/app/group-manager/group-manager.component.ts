@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../user-data.service';
 import { ISampleGroup } from '../models/sample-group.model'
@@ -15,13 +15,9 @@ export class GroupManagerComponent implements OnInit {
 
   groupNames: string[];
   sampleGroups: Map<string, ISampleGroup>;
-
-  deleteGroup(groupName: string) {
-    this.sampleGroups.delete(groupName);
-    this.groupNames = Array.from(this.sampleGroups.keys()).sort();
-    this.userData.deleteSampleGroup(groupName);
-    this.toastr.success('Group name: ' + groupName, 'Sample group deleted');
-  }
+  currentRenamingGroup: string;
+  currentDeletingGroup: string;
+  newGroupName: string;
 
   saveSampleGroups() {
     this.userData.saveSampleGroups(this.sampleGroups);
@@ -32,5 +28,39 @@ export class GroupManagerComponent implements OnInit {
       this.sampleGroups = groups;
       this.groupNames = Array.from(this.sampleGroups.keys()).sort();
     });
+  }
+
+  isAcceptableGroupName(name: string) {
+    return this.userData.isAcceptableGroupName(name);
+  }
+
+  toggleRenamingGroup(name: string) {
+    if (this.currentRenamingGroup == name) {
+      this.currentRenamingGroup = undefined;
+    } else {
+      this.currentDeletingGroup = undefined;
+      this.currentRenamingGroup = name;
+    }
+  }
+
+  toggleDeletingGroup(name: string) {
+    if (this.currentDeletingGroup == name) {
+      this.currentDeletingGroup= undefined;
+    } else {
+      this.currentRenamingGroup = undefined;
+      this.currentDeletingGroup = name;
+    }
+  }
+
+  submitRenamingGroup() {
+    this.userData.renameSampleGroup(this.currentRenamingGroup, this.newGroupName);
+    this.currentRenamingGroup = undefined;
+    this.newGroupName = undefined;
+  }
+
+  submitDeleteGroup() {
+    this.userData.deleteSampleGroup(this.currentDeletingGroup);
+    this.toastr.success('Group name: ' + this.currentDeletingGroup, 'Sample group deleted');
+    this.currentDeletingGroup = undefined;
   }
 }

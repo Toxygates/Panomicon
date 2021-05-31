@@ -45,9 +45,21 @@ export class UserDataService {
     this.updateSampleGroups();
   }
 
+  renameSampleGroup(oldName: string, newName: string) {
+    let group = this.sampleGroups.get(oldName);
+    group.name = newName;
+    this.sampleGroups.set(newName, group);
+    this.sampleGroups.delete(oldName);
+    this.updateSampleGroups();
+  }
+
   deleteSampleGroup(name: string) {
     this.sampleGroups.delete(name);
     this.updateSampleGroups();
+  }
+
+  isAcceptableGroupName(name: string) {
+    return !this.sampleGroups.has(name);
   }
 
   private getEnabledSampleGroups() {

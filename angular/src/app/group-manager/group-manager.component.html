@@ -15,21 +15,41 @@
                             [(ngModel)]="sampleGroups.get(name).enabled"
                             (ngModelChange)="saveSampleGroups()">
                         <label class="form-check-label" for="enabledCheck">Enabled</label>
-                      </div>
-                    <button type="button" class="btn btn-primary mr-2"
+                    </div>
+                    <!--<button type="button" class="btn btn-primary mr-2"
                         [routerLink]="'/expression-table'"
                         [queryParams]="{samples: sampleGroups.get(name).samples}">
                         View expression data
-                    </button>
-                    <button type="button" class="btn btn-secondary mr-2"
-                        (click)="renameGroup(name)"
-                        [disabled]="true">
-                        Rename
+                    </button>-->
+                    <button type="button" class="btn btn-primary mb-1 mr-2"
+                        (click)="toggleRenamingGroup(name)"
+                        [attr.aria-expanded]="currentRenamingGroup == name" aria-controls="collapseBasic">
+                        Rename...
                     </button>
                     <button type="button" class="btn btn-danger mr-2"
-                        (click)="deleteGroup(name)">
-                        Delete
+                        (click)="toggleDeletingGroup(name)"
+                        [attr.aria-expanded]="currentDeletingGroup == name" aria-controls="collapseBasic">
+                        Delete...
                     </button>
+                    <div id="collapseBasic" class="mt-2" [collapse]="currentRenamingGroup != name"
+                        [isAnimated]="true">
+                        <div class="mb-1">Enter new name for group:</div>
+                        <input type="text" name="sampleGroupNameInput" [(ngModel)]="newGroupName" 
+                            class="form-control mb-2" [placeholder]="name"
+                            (keyup.enter)="submitRenamingGroup()">
+                        <button type="button" class="btn btn-primary mb-2"
+                            (click)="submitRenamingGroup()"
+                            [disabled]="!isAcceptableGroupName(newGroupName)">
+                            Rename group
+                        </button>
+                    </div>
+                    <div id="collapseBasic" class="mt-2" [collapse]="currentDeletingGroup != name"
+                        [isAnimated]="true">
+                        <button type="button" class="btn btn-danger mb-2"
+                            (click)="submitDeleteGroup()">
+                            Confirm group deletion
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
