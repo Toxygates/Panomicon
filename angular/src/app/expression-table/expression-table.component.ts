@@ -132,7 +132,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
       tooltips:true,
       tooltipsHeader:true,
       ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
-      footerElement:"<div class=\"d-none d-lg-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent(\'OpenGotoPageModal\'));\">Go to page...</button></div>",
+      footerElement:"<div class=\"d-none d-sm-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent(\'OpenGotoPageModal\'));\">Go to page...</button></div>",
     });
   }
 
