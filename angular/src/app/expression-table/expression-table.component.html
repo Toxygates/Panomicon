@@ -8,7 +8,7 @@
     </div>
 </div>
 
-<ng-template #modalTemplate>
+<ng-template #gotoPageModal>
     <div class="modal-header">
       <h4 class="modal-title pull-left">Go to page</h4>
       <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
@@ -19,7 +19,7 @@
         <label for="pageNumber">Enter page (1-{{lastPage}}):</label>
         <input type="text" class="form-control" id="pageNumber"
             [(ngModel)]="tablePageNumber">
-        <button type="submit" class="btn btn-primary" (click)="onSubmitModal()"
+        <button type="submit" class="btn btn-primary" (click)="onSubmitGotoPageModal()"
             [disabled]="tablePageNumber <= 0 || tablePageNumber > lastPage">Go to page</button>
     </div>
 </ng-template>
