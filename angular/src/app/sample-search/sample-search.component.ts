@@ -4,6 +4,8 @@ import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
 import { UserDataService } from '../user-data.service';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { SampleFilter } from '../models/sample-filter.model';
 
 @Component({
   selector: 'app-sample-search',
@@ -14,12 +16,15 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
   constructor(private backend: BackendService, private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef,
-    private userData: UserDataService, private toastr: ToastrService) {
+    private userData: UserDataService, private toastr: ToastrService,
+    private modalService: BsModalService) {
     this.requiredAttributes.add("sample_id");
   }
 
   tabulator: Tabulator;
+  modalRef: BsModalRef;
   tabulatorReady = false;
+  @ViewChild('sampleFilteringModal') sampleFilteringTemplate;
 
   @Input() samples: any[];
   @Input() batchId: string;
@@ -29,6 +34,8 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   attributes: any;
   requiredAttributes = new Set<string>();
   fetchedAttributes: Set<string>;
+
+  sampleFilters: SampleFilter[] = [];
 
   sampleGroupName: string;
   sampleCreationIsCollapsed = true;
@@ -50,6 +57,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
       } else {
         this.fetchedAttributes = new Set<string>();
         this.samplesMap = new Map<string, any>();
+        this.sampleFilters = [];
         let _this = this;
         this.samples.forEach(function(sample) {
           _this.samplesMap[sample.sample_id] = sample;
@@ -156,6 +164,11 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
           );
       }
     }
+  }
+
+  openSampleFilteringModal() {
+    this.modalRef = this.modalService.show(this.sampleFilteringTemplate,
+      { class: 'modal-dialog-centered ' });
   }
 
   columnForAttribute(attribute: any) {

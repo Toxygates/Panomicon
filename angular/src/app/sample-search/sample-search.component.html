@@ -15,7 +15,7 @@
         [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseBasic">
         Create sample group...
     </button>
-    <button type="button" class="btn btn-secondary mb-1 mr-2"
+    <!-- <button type="button" class="btn btn-secondary mb-1 mr-2"
         (click)="toggleControlGroups()">
         {{ controlGroupsExpanded ? "Collapse" : "Expand" }}
         control groups
@@ -24,7 +24,7 @@
         (click)="toggleTreatmentGroups()">
         {{ treatmentGroupsExpanded ? "Collapse" : "Expand" }}
         treatment groups
-    </button>
+    </button> -->
     <div class="btn-group" dropdown [isDisabled]="!attributes"
         style="vertical-align:top">
         <button id="button-basic" dropdownToggle type="button"
@@ -49,6 +49,11 @@
             </li>
         </ul>
     </div>
+    <button type="button" class="btn btn-primary mb-1 mr-2"
+        style="display:none"
+        (click)="openSampleFilteringModal()">
+        Filter samples
+    </button>
 </div>
 <div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
     [isAnimated]="true">
@@ -80,3 +85,16 @@
 <div *ngIf="samples">
     {{samples.length}} samples in batch {{batchId}}
 </div>
+
+<ng-template #sampleFilteringModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Filter samples</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+    <app-sample-filtering [attributes]="fetchedAttributes"
+        [filters]="sampleFilters"></app-sample-filtering>
+    </div>
+</ng-template>

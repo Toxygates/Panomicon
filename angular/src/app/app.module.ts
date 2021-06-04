@@ -20,6 +20,7 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { ExpressionTableComponent } from './expression-table/expression-table.component';
 import { GroupManagerComponent } from './group-manager/group-manager.component';
 import { SampleSearchComponent } from './sample-search/sample-search.component';
+import { SampleFilteringComponent } from './sample-filtering/sample-filtering.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { SampleSearchComponent } from './sample-search/sample-search.component';
     PageNotFoundComponent,
     ExpressionTableComponent,
     GroupManagerComponent,
-    SampleSearchComponent
+    SampleSearchComponent,
+    SampleFilteringComponent
   ],
   imports: [
     BrowserModule,

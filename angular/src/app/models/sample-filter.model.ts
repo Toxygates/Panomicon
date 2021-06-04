@@ -61,6 +61,6 @@ export enum SampleFilterType {
     NotEqualTo = "!=",
     Contains = "contains",
     DoesNotContain = "does not contain",
-    AlphabeticallyBefore = "is alphabetically before (including)",
-    AlphabeticallyAfter = "is alphabetically after (including)",
+    AlphabeticallyBefore = "is alphabetically before (inclusive)",
+    AlphabeticallyAfter = "is alphabetically after (inclusive)",
 }

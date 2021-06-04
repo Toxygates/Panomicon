@@ -1,0 +1,57 @@
+<form *ngFor="let filter of filters">
+    <div class="form-row">
+        <div class="col-auto">
+            <div class="btn-group" dropdown style="vertical-align:top">
+                <button id="button-basic" dropdownToggle type="button"
+                        class="btn btn-primary dropdown-toggl"
+                        aria-controls="dropdown-basic">
+                    {{filter.attribute ? filter.attribute: "Select attribute"}}
+                    <span class="caret"></span>
+                </button>
+                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
+                    role="menu" aria-labelledby="button-basic">
+                    <li *ngFor="let attribute of attributes" role="menuitem">
+                        <a class="dropdown-item" (click)="filter.attribute = attribute"
+                        [routerLink]=""queryParamsHandling="preserve">
+                        {{attribute}}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" dropdown style="vertical-align:top">
+                <button id="button-basic" dropdownToggle type="button"
+                        class="btn btn-primary dropdown-toggle"
+                        aria-controls="dropdown-basic">
+                    {{filter.type ? filter.type: "Select filter type"}}
+                    <span class="caret"></span>
+                </button>
+                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
+                    role="menu" aria-labelledby="button-basic">
+                    <li *ngFor="let type of sampleFilterTypes" role="menuitem">
+                        <a class="dropdown-item" (click)="assignFilterType(filter, type)"
+                        [routerLink]=""queryParamsHandling="preserve">
+                        {{type}}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-auto">
+            <input type="text" name="filterAttributeInput" [(ngModel)]="filter.argument" 
+                            class="form-control" placeholder="Enter a value">
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-danger"
+                (click)="removeFilter(filter)">
+                Delete
+            </button>
+        </div>
+    </div>
+    <hr>
+</form>
+<button type="button" class="btn btn-primary mr-2"
+    (click)="appendNewFilter()">
+    Add filter
+</button>
