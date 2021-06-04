@@ -37,7 +37,7 @@ export class SampleFilter {
         switch(this.type) {
             case(SampleFilterType.LessThan):
             case(SampleFilterType.GreaterThan):
-                return !isNaN(Number(this.argument));
+                return !isNaN(Number(this.argument)) && this.argument != "";
             case(SampleFilterType.LessThanOrEqualTo):
             case(SampleFilterType.GreaterThanOrEqualTo):
             case(SampleFilterType.EqualTo):
@@ -47,7 +47,7 @@ export class SampleFilter {
             case(SampleFilterType.DoesNotContain):
             case(SampleFilterType.AlphabeticallyBefore):
             case(SampleFilterType.AlphabeticallyAfter):
-                return true;
+                return this.argument != undefined && this.argument != "";
         }
     }
 }

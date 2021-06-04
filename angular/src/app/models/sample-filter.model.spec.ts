@@ -84,6 +84,10 @@ describe('SampleFilter', () => {
   it('should only validate numbers for < and >', () => {
     [SampleFilterType.LessThan, SampleFilterType.GreaterThan].forEach(type => {
       filter.type = type;
+      filter.argument = undefined;
+      expect(filter.validate()).toBeFalse();
+      filter.argument = "";
+      expect(filter.validate()).toBeFalse();
       filter.argument = "blah";
       expect(filter.validate()).toBeFalse();
       filter.argument = "23";
@@ -95,6 +99,10 @@ describe('SampleFilter', () => {
     [SampleFilterType.LessThanOrEqualTo, SampleFilterType.GreaterThanOrEqualTo,
      SampleFilterType.EqualTo, SampleFilterType.NotEqualTo].forEach(type => {
       filter.type = type;
+      filter.argument = undefined;
+      expect(filter.validate()).toBeFalse();
+      filter.argument = "";
+      expect(filter.validate()).toBeFalse();
       filter.argument = "blah";
       expect(filter.validate()).toBeFalse();
       filter.argument = "23";
@@ -108,6 +116,10 @@ describe('SampleFilter', () => {
     [SampleFilterType.Contains, SampleFilterType.DoesNotContain,
      SampleFilterType.AlphabeticallyBefore, SampleFilterType.AlphabeticallyAfter].forEach(type => {
       filter.type = type;
+      filter.argument = undefined;
+      expect(filter.validate()).toBeFalse();
+      filter.argument = "";
+      expect(filter.validate()).toBeFalse();
       filter.argument = "blah";
       expect(filter.validate()).toBeTrue();
       filter.argument = "23.5";
