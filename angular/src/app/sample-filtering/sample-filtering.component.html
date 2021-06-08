@@ -1,51 +1,43 @@
-<form *ngFor="let filter of filters">
+<form *ngFor="let filter of filters; index as i">
     <div class="form-row">
-        <div class="col-auto">
-            <div class="btn-group" dropdown style="vertical-align:top">
-                <button id="button-basic" dropdownToggle type="button"
-                        class="btn btn-primary dropdown-toggl"
-                        aria-controls="dropdown-basic">
-                    {{filter.attribute ? filter.attribute: "Select attribute"}}
-                    <span class="caret"></span>
-                </button>
-                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-                    role="menu" aria-labelledby="button-basic">
-                    <li *ngFor="let attribute of attributes" role="menuitem">
-                        <a class="dropdown-item" (click)="filter.attribute = attribute"
-                        [routerLink]=""queryParamsHandling="preserve">
-                        {{attribute}}
-                        </a>
-                    </li>
-                </ul>
+        <div class="form-group col-auto">
+            <label [for]="'attribute' + i">Attribute</label>
+            <select [id]="'attribute' + i" [(ngModel)]="filter.attribute"
+                    [name]="'attribute' + i" class="custom-select"
+                    [ngClass]="{'is-invalid': !filter.validateAttribute() && haveTriedToSubmit}">
+                <option selected disabled [ngValue]="undefined">Choose...</option>
+                <option *ngFor="let a of attributes" [ngValue]="a">{{a}}</option>
+            </select>
+            <div *ngIf="true" class="invalid-feedback">
+                Please select an attribute
             </div>
         </div>
-        <div class="col-auto">
-            <div class="btn-group" dropdown style="vertical-align:top">
-                <button id="button-basic" dropdownToggle type="button"
-                        class="btn btn-primary dropdown-toggle"
-                        aria-controls="dropdown-basic">
-                    {{filter.type ? filter.type: "Select filter type"}}
-                    <span class="caret"></span>
-                </button>
-                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-                    role="menu" aria-labelledby="button-basic">
-                    <li *ngFor="let type of sampleFilterTypes" role="menuitem">
-                        <a class="dropdown-item" (click)="assignFilterType(filter, type)"
-                        [routerLink]=""queryParamsHandling="preserve">
-                        {{type}}
-                        </a>
-                    </li>
-                </ul>
+        <div class="form-group col-auto">
+            <label [for]="'type' + i">Filter type</label>
+            <select [id]="'type' + i" [(ngModel)]="filter.type"
+                    [name]="'type' + i" class="custom-select"
+                    [ngClass]="{'is-invalid': !filter.validateType() && (filter.type || haveTriedToSubmit)}">
+                <option selected disabled [ngValue]="undefined">Choose...</option>
+                <option *ngFor="let t of sampleFilterTypes" [ngValue]="t">{{t}}</option>
+            </select>
+            <div *ngIf="true" class="invalid-feedback">
+                Please select a filter type
             </div>
         </div>
-        <div class="col-auto">
-            <input type="text" name="filterAttributeInput" [(ngModel)]="filter.argument" 
-                            class="form-control" placeholder="Enter a value">
+        <div class="form-group col-auto">
+            <label [for]="'parameter' + i">Parameter</label>
+            <input type="text" [id]="'parameter' + i" [(ngModel)]="filter.parameter"
+                   [name]="'parameter' + i" class="form-control"
+                   [placeholder]="'Enter ' + filter.correctParameterInfo()"
+                   [ngClass]="{'is-invalid': !filter.validateParameter() && (filter.parameter || haveTriedToSubmit)}">
+            <div class="invalid-feedback">
+                {{ "Please enter " + filter.correctParameterInfo()}}
+            </div>
         </div>
-        <div class="col-auto">
+        <div class="form-group col-auto filter-submit-div">
             <button type="button" class="btn btn-danger"
                 (click)="removeFilter(filter)">
-                Delete
+                Remove filter
             </button>
         </div>
     </div>
@@ -54,4 +46,8 @@
 <button type="button" class="btn btn-primary mr-2"
     (click)="appendNewFilter()">
     Add filter
+</button>
+<button type="button" class="btn btn-success float-sm-right"
+    (click)="applyFilters()">
+    Apply filters
 </button>

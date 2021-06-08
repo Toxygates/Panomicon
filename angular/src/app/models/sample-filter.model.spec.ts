@@ -6,7 +6,7 @@ describe('SampleFilter', () => {
   beforeEach(() => {
     filter = new SampleFilter();
     filter.attribute = "some-attribute";
-    filter.argument = "23";
+    filter.parameter = "23";
   });
 
   it('should correctly test value < argument', () => {
@@ -67,7 +67,7 @@ describe('SampleFilter', () => {
 
   it('should correctly test value alphabetically before argument', () => {
     filter.type = SampleFilterType.AlphabeticallyBefore
-    filter.argument = "blah";
+    filter.parameter = "blah";
     expect(filter.passesFilter("abracadabra")).toBeTrue();
     expect(filter.passesFilter("blahg")).toBeFalse();
     expect(filter.passesFilter("blah")).toBeTrue();
@@ -75,7 +75,7 @@ describe('SampleFilter', () => {
 
   it('should correctly test value alphabetically after argument', () => {
     filter.type = SampleFilterType.AlphabeticallyAfter
-    filter.argument = "blah";
+    filter.parameter = "blah";
     expect(filter.passesFilter("abracadabra")).toBeFalse();
     expect(filter.passesFilter("blahg")).toBeTrue();
     expect(filter.passesFilter("blah")).toBeTrue();
@@ -84,14 +84,14 @@ describe('SampleFilter', () => {
   it('should only validate numbers for < and >', () => {
     [SampleFilterType.LessThan, SampleFilterType.GreaterThan].forEach(type => {
       filter.type = type;
-      filter.argument = undefined;
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "";
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "blah";
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "23";
-      expect(filter.validate()).toBeTrue();
+      filter.parameter = undefined;
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "";
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "blah";
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "23";
+      expect(filter.validateParameter()).toBeTrue();
     })
   });
 
@@ -99,16 +99,16 @@ describe('SampleFilter', () => {
     [SampleFilterType.LessThanOrEqualTo, SampleFilterType.GreaterThanOrEqualTo,
      SampleFilterType.EqualTo, SampleFilterType.NotEqualTo].forEach(type => {
       filter.type = type;
-      filter.argument = undefined;
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "";
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "blah";
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "23";
-      expect(filter.validate()).toBeTrue();
-      filter.argument = "23.2";
-      expect(filter.validate()).toBeFalse();
+      filter.parameter = undefined;
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "";
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "blah";
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "23";
+      expect(filter.validateParameter()).toBeTrue();
+      filter.parameter = "23.2";
+      expect(filter.validateParameter()).toBeFalse();
     })
   });
 
@@ -116,14 +116,24 @@ describe('SampleFilter', () => {
     [SampleFilterType.Contains, SampleFilterType.DoesNotContain,
      SampleFilterType.AlphabeticallyBefore, SampleFilterType.AlphabeticallyAfter].forEach(type => {
       filter.type = type;
-      filter.argument = undefined;
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "";
-      expect(filter.validate()).toBeFalse();
-      filter.argument = "blah";
-      expect(filter.validate()).toBeTrue();
-      filter.argument = "23.5";
-      expect(filter.validate()).toBeTrue();
+      filter.parameter = undefined;
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "";
+      expect(filter.validateParameter()).toBeFalse();
+      filter.parameter = "blah";
+      expect(filter.validateParameter()).toBeTrue();
+      filter.parameter = "23.5";
+      expect(filter.validateParameter()).toBeTrue();
     })
+  });
+
+  it('should validate filter type iff it is non-null', () => {
+    filter.type = undefined;
+    expect(filter.validateType()).toBeFalse();
+    [SampleFilterType.Contains, SampleFilterType.DoesNotContain,
+      SampleFilterType.AlphabeticallyBefore, SampleFilterType.AlphabeticallyAfter].forEach(type => {
+        filter.type = type;
+        expect(filter.validateType()).toBeTrue();
+    });
   });
 });

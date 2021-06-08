@@ -1,5 +1,5 @@
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
-         AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
+         AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
@@ -22,9 +22,8 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
   }
 
   tabulator: Tabulator;
-  modalRef: BsModalRef;
+  sampleFilteringModalRef: BsModalRef;
   tabulatorReady = false;
-  @ViewChild('sampleFilteringModal') sampleFilteringTemplate;
 
   @Input() samples: any[];
   @Input() batchId: string;
@@ -76,7 +75,6 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
             this.attributes = result;
           }
         )
-
     }
   }
 
@@ -166,9 +164,14 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  openSampleFilteringModal() {
-    this.modalRef = this.modalService.show(this.sampleFilteringTemplate,
-      { class: 'modal-dialog-centered ' });
+  openSampleFilteringModal(template: TemplateRef<any>) {
+    this.sampleFilteringModalRef = this.modalService.show(template,
+      { class: 'modal-dialog-centered modal-lg',
+        ignoreBackdropClick: true });
+  }
+
+  filtersSubmitted(event: Event) {
+    this.sampleFilteringModalRef.hide();
   }
 
   columnForAttribute(attribute: any) {

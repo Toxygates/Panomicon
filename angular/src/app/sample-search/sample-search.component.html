@@ -51,7 +51,7 @@
     </div>
     <button type="button" class="btn btn-primary mb-1 mr-2"
         style="display:none"
-        (click)="openSampleFilteringModal()">
+        (click)="openSampleFilteringModal(sampleFilteringModal)">
         Filter samples
     </button>
 </div>
@@ -89,12 +89,10 @@
 <ng-template #sampleFilteringModal>
     <div class="modal-header">
         <h4 class="modal-title pull-left">Filter samples</h4>
-        <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
-          <span aria-hidden="true">&times;</span>
-        </button>
     </div>
     <div class="modal-body">
     <app-sample-filtering [attributes]="fetchedAttributes"
-        [filters]="sampleFilters"></app-sample-filtering>
+        [filters]="sampleFilters" (submitFilters)="filtersSubmitted($event)">
+    </app-sample-filtering>
     </div>
 </ng-template>

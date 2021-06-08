@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { SampleFilter, SampleFilterType } from '../models/sample-filter.model';
 
 @Component({
@@ -8,11 +8,13 @@ import { SampleFilter, SampleFilterType } from '../models/sample-filter.model';
 })
 export class SampleFilteringComponent implements OnInit {
 
+  @Input() attributes: Set<string>;
   @Input() filters: SampleFilter[];
+  @Output() submitFilters = new EventEmitter();
 
   sampleFilterTypes: string[] = Object.values(SampleFilterType);
 
-  @Input() attributes: Set<string>;
+  haveTriedToSubmit = false;
 
   ngOnInit(): void {}
 
@@ -21,10 +23,19 @@ export class SampleFilteringComponent implements OnInit {
   }
 
   appendNewFilter() {
+    this.haveTriedToSubmit = false;
     this.filters.push(new SampleFilter());
   }
 
   removeFilter(filter: SampleFilter) {
-    this.filters = this.filters.filter(item => item !== filter);
+    this.filters.splice(this.filters.indexOf(filter), 1);
+  }
+
+  applyFilters() {
+    if (this.filters.every(f => f.validate())) {
+      this.submitFilters.emit();
+    } else {
+      this.haveTriedToSubmit = true;
+    }
   }
 }
