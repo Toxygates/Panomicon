@@ -18,10 +18,6 @@ export class SampleFilteringComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  assignFilterType(filter: SampleFilter, typeString: string) {
-    filter.type = typeString as SampleFilterType;
-  }
-
   appendNewFilter() {
     this.haveTriedToSubmit = false;
     this.filters.push(new SampleFilter());

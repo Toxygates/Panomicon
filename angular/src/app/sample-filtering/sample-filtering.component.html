@@ -1,37 +1,37 @@
 <form *ngFor="let filter of filters; index as i">
     <div class="form-row">
         <div class="form-group col-auto">
-            <label [for]="'attribute' + i">Attribute</label>
-            <select [id]="'attribute' + i" [(ngModel)]="filter.attribute"
-                    [name]="'attribute' + i" class="custom-select"
-                    [ngClass]="{'is-invalid': !filter.validateAttribute() && haveTriedToSubmit}">
+            <label for="attribute-{{i}}">Attribute</label>
+            <select id="attribute-{{i}}" [(ngModel)]="filter.attribute"
+                    name="attribute-{{i}}" class="custom-select"
+                    [ngClass]="{'is-invalid': !filter.validateAttribute() && (filter.attribute || haveTriedToSubmit)}">
                 <option selected disabled [ngValue]="undefined">Choose...</option>
                 <option *ngFor="let a of attributes" [ngValue]="a">{{a}}</option>
             </select>
-            <div *ngIf="true" class="invalid-feedback">
+            <div class="invalid-feedback">
                 Please select an attribute
             </div>
         </div>
         <div class="form-group col-auto">
-            <label [for]="'type' + i">Filter type</label>
-            <select [id]="'type' + i" [(ngModel)]="filter.type"
-                    [name]="'type' + i" class="custom-select"
+            <label for="type-{{i}}">Filter type</label>
+            <select id="type-{{i}}" [(ngModel)]="filter.type"
+                    name="type-{{i}}" class="custom-select"
                     [ngClass]="{'is-invalid': !filter.validateType() && (filter.type || haveTriedToSubmit)}">
                 <option selected disabled [ngValue]="undefined">Choose...</option>
                 <option *ngFor="let t of sampleFilterTypes" [ngValue]="t">{{t}}</option>
             </select>
-            <div *ngIf="true" class="invalid-feedback">
+            <div class="invalid-feedback">
                 Please select a filter type
             </div>
         </div>
         <div class="form-group col-auto">
-            <label [for]="'parameter' + i">Parameter</label>
-            <input type="text" [id]="'parameter' + i" [(ngModel)]="filter.parameter"
-                   [name]="'parameter' + i" class="form-control"
-                   [placeholder]="'Enter ' + filter.correctParameterInfo()"
+            <label for="parameter-{{i}}">Parameter</label>
+            <input type="text" id="parameter-{{i}}" [(ngModel)]="filter.parameter"
+                   name="parameter-{{i}}" class="form-control"
+                   placeholder="Enter {{filter.correctParameterInfo()}}"
                    [ngClass]="{'is-invalid': !filter.validateParameter() && (filter.parameter || haveTriedToSubmit)}">
             <div class="invalid-feedback">
-                {{ "Please enter " + filter.correctParameterInfo()}}
+                Please enter {{filter.correctParameterInfo()}}
             </div>
         </div>
         <div class="form-group col-auto filter-submit-div">
