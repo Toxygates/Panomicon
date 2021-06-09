@@ -2,9 +2,6 @@ export class SampleFilter {
     attribute: string;
     type: SampleFilterType;
     parameter: string;
-    //numericalArgument: number = undefined;
-
-    constructor() {}
 
     passesFilter(testValue: string): boolean {
         switch(this.type) {
