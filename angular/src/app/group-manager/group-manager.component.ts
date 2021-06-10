@@ -1,20 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../user-data.service';
 import { ISampleGroup } from '../models/sample-group.model'
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-group-manager',
   templateUrl: './group-manager.component.html',
   styleUrls: ['./group-manager.component.scss']
 })
-export class GroupManagerComponent implements OnInit {
+export class GroupManagerComponent implements OnInit, OnDestroy {
 
   constructor(private userData: UserDataService,
     private toastr: ToastrService) { }
 
   groupNames: string[];
   sampleGroups: Map<string, ISampleGroup>;
+  sampleGroupsSubscription: Subscription;
   currentRenamingGroup: string;
   currentDeletingGroup: string;
   newGroupName: string;
@@ -24,10 +26,14 @@ export class GroupManagerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userData.sampleGroupsBehaviorSubject.subscribe(groups => {
+    this. sampleGroupsSubscription = this.userData.sampleGroupsBehaviorSubject.subscribe(groups => {
       this.sampleGroups = groups;
       this.groupNames = Array.from(this.sampleGroups.keys()).sort();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.sampleGroupsSubscription.unsubscribe();
   }
 
   isAcceptableGroupName(name: string) {

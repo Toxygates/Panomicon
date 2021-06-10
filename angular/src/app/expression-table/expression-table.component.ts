@@ -1,16 +1,18 @@
-import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild } from '@angular/core';
+import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../user-data.service';
 import { ISampleGroup } from '../models/sample-group.model'
 import Tabulator from 'tabulator-tables';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-expression-table',
   templateUrl: './expression-table.component.html',
   styleUrls: ['./expression-table.component.scss']
 })
-export class ExpressionTableComponent implements OnInit, AfterViewInit {
+export class ExpressionTableComponent implements OnInit, AfterViewInit,
+  OnDestroy {
 
   constructor(private userData: UserDataService,
     private activatedRoute: ActivatedRoute,
@@ -23,6 +25,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   @ViewChild('gotoPageModal') gotoPageTemplate;
 
   enabledSampleGroups: ISampleGroup[];
+  enabledSampleGroupsSubscription: Subscription;
   dataFetched = false;
   lastPage = 0;
   tablePageNumber = 0;
@@ -60,7 +63,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
   ]
 
   ngOnInit(): void {
-    this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
+    this.enabledSampleGroupsSubscription = this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
       this.enabledSampleGroups = enabledGroups;
       if (enabledGroups.length == 0) {
         this.router.navigate(['']);
@@ -79,6 +82,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.drawTable();
+  }
+
+  ngOnDestroy(): void {
+    this.enabledSampleGroupsSubscription.unsubscribe();
   }
 
   private drawTable(): void {
