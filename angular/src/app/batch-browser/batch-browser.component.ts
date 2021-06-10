@@ -1,21 +1,31 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BackendService } from '../backend.service';
+import { UserDataService } from '../user-data.service';
 
 @Component({
   selector: 'app-batch-browser',
   templateUrl: './batch-browser.component.html',
   styleUrls: ['./batch-browser.component.scss']
 })
-export class BatchBrowserComponent {
+export class BatchBrowserComponent implements OnInit {
 
   constructor(private backend: BackendService, 
-    private changeDetector: ChangeDetectorRef) { }
+    private userData: UserDataService) {}
 
-  datasetId: string = "otg";
+  datasetId: string;
   batchId: string;
-  samples: any;
+  samples;
 
-  batchChanged(batchId: string) {
+  ngOnInit(): void {
+    this.datasetId = this.userData.getSelectedDataset();
+  }
+
+  onSelectedDatasetChange(datasetId: string): void {
+    this.datasetId = datasetId;
+    this.userData.setSelectedDataset(datasetId);
+  }
+
+  batchChanged(batchId: string): void {
     this.batchId = batchId;
     delete this.samples;
     this.backend.getSamplesForBatch(batchId)

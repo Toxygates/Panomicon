@@ -11,6 +11,7 @@ export class UserDataService {
   enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
   private sampleGroups: Map<string, ISampleGroup>;
 
+  static readonly SELECTED_DATASET_KEY: string ="selectedDataset_v1";
   static readonly SAMPLE_GROUPS_KEY: string = "sampleGroups_v2";
 
   constructor() {
@@ -22,6 +23,14 @@ export class UserDataService {
     }
     this.sampleGroupsBehaviorSubject = new BehaviorSubject(this.sampleGroups);
     this.enabledGroupsBehaviorSubject = new BehaviorSubject(this.getEnabledSampleGroups());
+  }
+
+  public getSelectedDataset(): string {
+    return window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY);
+  }
+
+  public setSelectedDataset(selectedDataset: string): void {
+    window.localStorage.setItem(UserDataService.SELECTED_DATASET_KEY, selectedDataset);
   }
 
   private updateSampleGroups() {
