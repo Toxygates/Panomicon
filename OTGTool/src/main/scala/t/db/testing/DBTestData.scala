@@ -55,12 +55,6 @@ object DBTestData {
 
   def calls = List('A', 'P', 'M')
 
-  def cgroup(time: String, compound: String) = {
-    val c = (enumMaps(ExposureTime.id)(time)) * 100 +
-      enumMaps("compound_name")(compound)
-    "" + c
-  }
-
   def randomNumber(mean: Double, range: Double) =
     Math.random * range + (mean - range/2)
 
@@ -109,7 +103,8 @@ object DBTestData {
           Platform -> mrnaPlatformId,
           LiverWeight -> liverWeight(dose, ind).toString,
           KidneyWeight -> kidneyWeight(dose, ind).toString,
-          ControlGroup -> cgroup(time, compound));
+          Treatment -> s"$compound|$time|$dose",
+          ControlTreatment -> s"$compound|$time|Control");
     s = Sample("s" + ids.next, values)
   ) yield s
 

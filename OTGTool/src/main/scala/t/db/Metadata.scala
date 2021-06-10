@@ -20,8 +20,7 @@
 package t.db
 
 import t.Factory
-import t.model.sample.CoreParameter.{Batch, ControlGroup}
-import t.model.sample.OTGAttribute.{DoseLevel, ExposureTime}
+import t.model.sample.CoreParameter._
 import t.sample.SampleSet
 import t.model.sample.{Attribute, AttributeSet, OTGAttribute}
 
@@ -49,7 +48,7 @@ trait Metadata extends SampleSet {
 
   def platform(s: Sample): String = parameter(s, "platform_id").get
 
-  def isControl(s: Sample): Boolean = sampleAttribute(s, OTGAttribute.DoseLevel).get == "Control"
+  def isControl(s: Sample): Boolean = sampleAttribute(s, Treatment) == sampleAttribute(s, ControlTreatment)
 
   /**
    * Obtain a new metadata set after applying a mapping function to one
@@ -57,25 +56,18 @@ trait Metadata extends SampleSet {
    */
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata
 
-
   private def controlGroupKey(s: Sample) =
-    (sampleAttribute(s, ControlGroup), sampleAttribute(s, ExposureTime), sampleAttribute(s, Batch))
+    sampleAttribute(s, Batch).get + "|" + sampleAttribute(s, ControlTreatment).get
 
   def controlSamples(s: Sample): Iterable[Sample] = {
     val key = controlGroupKey(s)
-    samples.filter(controlGroupKey(_) == key).filter(isControl)
+    samples.filter(controlGroupKey(_) == key)
   }
 
   def treatedControlGroups(ss: Iterable[Sample]): List[(List[Sample], List[Sample])] = {
-    // gs was the return value for the old t (non-otg) implementation
-    val gs = ss.groupBy(controlSamples(_)).toList.map(sg => {
-      sg._2.toList.partition(!isControl(_))
-    })
-    gs.flatMap({
-      case (treated, control) => {
-        treated.groupBy(sampleAttribute(_, DoseLevel)).values.toList.map(ts => (ts, control))
-      }
-    })
+    ss.groupBy(controlSamples(_)).toList.map { case (controls, allSamples) => {
+      allSamples.toList.partition(!isControl(_))
+    } }
   }
 }
 
@@ -84,6 +76,7 @@ trait Metadata extends SampleSet {
  * Note: the filtering is intended to keep control units intact, so filters should not
  * split such units in two. 
  */
+@deprecated("This class is scheduled for removal", "June 2021")
 class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends Metadata {
   val samples = visibleSamples.toSet
   

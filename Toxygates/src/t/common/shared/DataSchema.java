@@ -144,6 +144,7 @@ public abstract class DataSchema implements Serializable {
   }
 
   public boolean isControl(Sample s) {
+
     return isControlValue(s.get(mediumParameter()));
   }
 

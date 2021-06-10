@@ -175,7 +175,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
   protected def overviewParameters: Seq[Attribute] =
     Seq(SampleId, Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
-      ExposureTime, Platform, ControlGroup)
+      ExposureTime, Platform, Treatment)
 
   get("/sample/batch/:batch") {
     val requestedBatchId = params("batch")
@@ -199,7 +199,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
   get("/sample/treatment/:treatment") {
     val sf = SampleFilter(tconfig.instanceURI, None)
-    val data = sampleStore.samplesForTreatment(SampleClassFilter(), sf, params("treatment"))()
+    val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> params("treatment"))), sf)()
     write(data.map(sampleToMap))
   }
 
@@ -450,20 +450,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       })
     }
 
-    def controlTreatment(treatment: String) = {
-      val treatmentUnpacked = treatment.split("\\|")
-      val doseLevel = treatmentUnpacked(1)
-      if (doseLevel != "Control") {
-        List(treatmentUnpacked(0), "Control", treatmentUnpacked(2),
-          treatmentUnpacked(3), treatmentUnpacked(4)).mkString("|")
-      } else {
-        treatment
-      }
-    }
-
     import t.common.shared.sample.{Unit => TUnit}
     def unitForTreatment(sf: SampleFilter, treatment: String): Option[TUnit] = {
-      val samples = sampleStore.samplesForTreatment(SampleClassFilter(), sf, treatment)()
+      val samples = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> treatment)), sf)()
       if (samples.nonEmpty) {
         Some(new TUnit(samples.head.sampleClass, samples.map(asJavaSample).toArray))
       } else {
@@ -481,7 +470,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       val sf = SampleFilter(tconfig.instanceURI, None)
 
       val treatedTreatments = group.map(s => s.sampleClass(Treatment)).distinct
-      val controlTreatments = group.map(s => controlTreatment(s.sampleClass(Treatment))).distinct
+      val controlTreatments = group.map(s => s.sampleClass(ControlTreatment)).distinct
 
       //Note: querying treated/control separately leads to one extra sparql query - can
       //probably be optimised away

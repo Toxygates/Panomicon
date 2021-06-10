@@ -26,6 +26,7 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.collection.JavaConverters._
 import t.model.sample.OTGAttribute._
+import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
 import t.testing.TestData
 
@@ -41,7 +42,7 @@ class ControlGroupTest extends TTestSuite {
       val cg = TestData.controlGroups(s)
       cg.samples.size should equal(3)
 
-      val remove = Set[Attribute](DoseLevel, Individual, LiverWeight, KidneyWeight)
+      val remove = Set[Attribute](DoseLevel, Individual, LiverWeight, KidneyWeight, Treatment)
 
       //Except for the removed keys, the sample classes of each sample in the control
       //group should be equal to the sample class of s.

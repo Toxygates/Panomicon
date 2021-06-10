@@ -74,12 +74,13 @@ object NetworkTestData {
     dose <- Seq("Control", "Middle"); time = "24 hr";
     ind <- Set("1", "2", "3");
     values: Map[Attribute, String] = Map(DoseLevel -> dose, Individual -> ind,
-          ExposureTime -> time, OTGAttribute.Compound -> "acetaminophen",
-          Repeat -> "Single", Organ -> "Liver",
-          Type -> "miRNA",
-          Platform -> "mirnaTest",
-          TestType -> "Vivo", Organism -> "Rat",
-          ControlGroup -> DBTestData.cgroup(time, "acetaminophen"));
+      ExposureTime -> time, OTGAttribute.Compound -> "acetaminophen",
+      Repeat -> "Single", Organ -> "Liver",
+      Type -> "miRNA",
+      Platform -> "mirnaTest",
+      TestType -> "Vivo", Organism -> "Rat",
+      Treatment -> s"acetaminophen|$time|$dose",
+      ControlTreatment -> s"acetaminophen|$time|Control");
     s = Sample(ids.next, values)
   ) yield s
 

@@ -26,7 +26,7 @@ import t.common.shared.maintenance.MaintenanceConstants._
 import t.common.shared.maintenance.{Batch, BatchUploadException, MaintenanceException}
 import t.db.{IDConverter, Metadata}
 import t.manager.BatchManager
-import t.model.sample.CoreParameter.{ControlGroup, Platform, Type}
+import t.model.sample.CoreParameter.{Platform, Type, Treatment}
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
 import t.sparql.{BatchStore, DatasetStore, SampleFilter, TRDF}
@@ -170,7 +170,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def overviewParameters: Seq[Attribute] =
     //context.config.attributes.getRequired.asScala.toSeq
     Seq(Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
-      ExposureTime, Platform, ControlGroup)
+      ExposureTime, Platform, Treatment)
 
   def batchAttributeSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.sampleStore

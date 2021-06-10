@@ -124,22 +124,15 @@ class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
 
 class UnitsHelper(schema: DataSchema) {
 
-  import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
-  type ControlGroupKey = (String, String, String)
-
-  def byControlGroup(raw: Iterable[Unit]): Map[ControlGroupKey, Iterable[Unit]] =
+  def byControlGroup(raw: Iterable[Unit]): Map[String, Iterable[Unit]] =
     raw.groupBy(controlGroupKey)
 
-  private val minorParameter = schema.minorParameter()
+  def controlGroupKey(u: Unit): String = controlGroupKey(u.getSamples()(0))
 
-  def controlGroupKey(u: Unit): ControlGroupKey =
-      controlGroupKey(u.getSamples()(0))
-
-  def samplesByControlGroup(raw: Iterable[Sample]): Map[ControlGroupKey, Iterable[Sample]] =
+  def samplesByControlGroup(raw: Iterable[Sample]): Map[String, Iterable[Sample]] =
     raw.groupBy(controlGroupKey)
 
-  def controlGroupKey(s: Sample): ControlGroupKey =
-      (s.get(ControlGroupParam), s.get(minorParameter), s.get(Batch))
+  def controlGroupKey(s: Sample): String = s.get(ControlTreatment)
 
   def unitGroupKey(s: Sample) = s.get(schema.mediumParameter())
 

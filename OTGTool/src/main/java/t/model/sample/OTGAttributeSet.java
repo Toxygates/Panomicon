@@ -58,7 +58,8 @@ public class OTGAttributeSet extends t.model.sample.AttributeSet {
       Collections.addAll(attributes, OTGAttribute.all());
       List<Attribute> required = new ArrayList<Attribute>();
       
-      Collections.addAll(required, SampleId, ControlGroup, Platform, Type);
+      Collections.addAll(required, SampleId, Platform, Type,
+              Treatment, ControlTreatment);
       Collections.addAll(required, Organism, TestType, Repeat, Organ,
         Compound, DoseLevel, ExposureTime);
       
