@@ -54,12 +54,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   columns: any[] = [
     {title: 'Gene symbols', field: 'geneSymbols',
-      mutator: this.geneSymbolsMutator, headerSort:false,
-      width:"15rem"},
+      mutator: this.geneSymbolsMutator, headerSort:false, width:"15rem"},
     {title: 'Probe titles', field: 'probeTitles',
-      mutator: this.probeTitlesMutator, headerSort:false,
-      width:"50rem"},
-    {title: 'Probe', field: 'probe', headerSort:false},
+      mutator: this.probeTitlesMutator, headerSort:false, width:"50rem"},
+    {title: 'Probe', field: 'probe', headerSort:false, width:"15rem"},
   ]
 
   ngOnInit(): void {
