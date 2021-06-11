@@ -12,26 +12,26 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ToastrModule } from 'ngx-toastr';
 
 import { AppComponent } from './app.component';
-import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
-import { BatchBrowserComponent } from './batch-browser/batch-browser.component';
-import { BatchPickerComponent } from './batch-picker/batch-picker.component';
+import { DatasetPickerComponent } from './sample-browser/dataset-picker/dataset-picker.component';
+import { SampleBrowserComponent } from './sample-browser/sample-browser/sample-browser.component';
+import { BatchPickerComponent } from './sample-browser/batch-picker/batch-picker.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { ExpressionTableComponent } from './expression-table/expression-table.component';
 import { GroupManagerComponent } from './group-manager/group-manager.component';
-import { SampleSearchComponent } from './sample-search/sample-search.component';
-import { SampleFilteringComponent } from './sample-filtering/sample-filtering.component';
+import { SampleTableComponent } from './sample-browser/sample-table/sample-table.component';
+import { SampleFilteringComponent } from './sample-browser/sample-filtering/sample-filtering.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DatasetPickerComponent,
-    BatchBrowserComponent,
+    SampleBrowserComponent,
     BatchPickerComponent,
     PageNotFoundComponent,
     ExpressionTableComponent,
     GroupManagerComponent,
-    SampleSearchComponent,
+    SampleTableComponent,
     SampleFilteringComponent
   ],
   imports: [

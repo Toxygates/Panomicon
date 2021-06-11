@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
-import { BackendService } from '../backend.service'
+import { BackendService } from '../../backend.service'
 
 @Component({
   selector: 'app-dataset-picker',

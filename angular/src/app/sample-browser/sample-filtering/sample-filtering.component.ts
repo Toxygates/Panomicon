@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { SampleFilter, SampleFilterType } from '../models/sample-filter.model';
+import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model';
 
 @Component({
   selector: 'app-sample-filtering',

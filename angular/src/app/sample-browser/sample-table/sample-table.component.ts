@@ -3,17 +3,17 @@ import { Component, ViewChild, OnChanges, SimpleChanges, Input,
          AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
-import { BackendService } from '../backend.service';
-import { UserDataService } from '../user-data.service';
+import { BackendService } from '../../backend.service';
+import { UserDataService } from '../../user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { SampleFilter } from '../models/sample-filter.model';
+import { SampleFilter } from '../../models/sample-filter.model';
 
 @Component({
-  selector: 'app-sample-search',
-  templateUrl: './sample-search.component.html',
-  styleUrls: ['./sample-search.component.scss']
+  selector: 'app-sample-table',
+  templateUrl: './sample-table.component.html',
+  styleUrls: ['./sample-table.component.scss']
 })
-export class SampleSearchComponent implements OnChanges, AfterViewInit {
+export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   constructor(private backend: BackendService, private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef,

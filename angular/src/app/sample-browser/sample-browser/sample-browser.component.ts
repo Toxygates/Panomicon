@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { BackendService } from '../backend.service';
-import { UserDataService } from '../user-data.service';
+import { BackendService } from '../../backend.service';
+import { UserDataService } from '../../user-data.service';
 
 @Component({
-  selector: 'app-batch-browser',
-  templateUrl: './batch-browser.component.html',
-  styleUrls: ['./batch-browser.component.scss']
+  selector: 'app-sample-browser',
+  templateUrl: './sample-browser.component.html',
+  styleUrls: ['./sample-browser.component.scss']
 })
-export class BatchBrowserComponent implements OnInit {
+export class SampleBrowserComponent implements OnInit {
 
   constructor(private backend: BackendService, 
     private userData: UserDataService) {}
