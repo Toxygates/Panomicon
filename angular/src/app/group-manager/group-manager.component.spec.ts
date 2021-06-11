@@ -10,7 +10,7 @@ import { Component, Directive, NO_ERRORS_SCHEMA, Type } from '@angular/core';
 
 class MockUserDataService {
   sampleGroupsBehaviorSubject = new BehaviorSubject(new Map());
-  isAcceptableGroupName(name) {
+  isAcceptableGroupName() {
     return false;
   }
 }
@@ -28,7 +28,7 @@ export function MockDirective(options: Component): Type<Directive> {
 describe('GroupManagerComponent', () => {
   let component: GroupManagerComponent;
   let fixture: ComponentFixture<GroupManagerComponent>;
-  let mockUserData = new MockUserDataService();
+  const mockUserData = new MockUserDataService();
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -63,20 +63,20 @@ describe('GroupManagerComponent', () => {
   });
 
   it('should have headers for each group, in alphabetical order', () => {
-    const groupManagerElement: HTMLElement = fixture.nativeElement;
-    const nodes = groupManagerElement.querySelectorAll('.card-title')!;
+    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
+    const nodes = groupManagerElement.querySelectorAll('.card-title');
     const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
-    expect(innerHTMLs[0]).toEqual('florb');
-    expect(innerHTMLs[1]).toEqual('spabble');
+    void expect(innerHTMLs[0]).toEqual('florb');
+    void expect(innerHTMLs[1]).toEqual('spabble');
   });
 
   it('should list sample IDs', () => {
-    const groupManagerElement: HTMLElement = fixture.nativeElement;
-    const nodes = groupManagerElement.querySelectorAll('li')!;
+    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
+    const nodes = groupManagerElement.querySelectorAll('li');
     const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
-    expect(innerHTMLs[0]).toContain('444');
-    expect(innerHTMLs[2]).toContain('666');
-    expect(innerHTMLs[4]).toContain('222');
+    void expect(innerHTMLs[0]).toContain('444');
+    void expect(innerHTMLs[2]).toContain('666');
+    void expect(innerHTMLs[4]).toContain('222');
   });
 
   it('should update when sample groups change', () => {
@@ -87,15 +87,15 @@ describe('GroupManagerComponent', () => {
                 "enabled": true}],
       ]));
     fixture.detectChanges();
-    const groupManagerElement: HTMLElement = fixture.nativeElement;
-    const nodes = groupManagerElement.querySelectorAll('.card-title')!;
+    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
+    const nodes = groupManagerElement.querySelectorAll('.card-title');
     const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
-    expect(innerHTMLs[0]).toEqual('barg');
-    expect(innerHTMLs[1]).toEqual('slek');
+    void expect(innerHTMLs[0]).toEqual('barg');
+    void expect(innerHTMLs[1]).toEqual('slek');
   })
 
   it('should expand renaming or deleting for one group at a time', () => {
-    const groupManagerElement: HTMLElement = fixture.nativeElement;
+    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
     const renameDivs = Array.from(groupManagerElement.querySelectorAll('div.renameCollapse'));
     const deleteDivs = Array.from(groupManagerElement.querySelectorAll('div.deleteCollapse'));
     const uncollapseds = function() {
@@ -104,17 +104,17 @@ describe('GroupManagerComponent', () => {
       );
     };
 
-    expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(0);
+    void expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(0);
 
     component.toggleRenamingGroup("florb");
     fixture.detectChanges();
-    expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(1);
-    expect(uncollapseds()[0]).toEqual(1);
+    void expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(1);
+    void expect(uncollapseds()[0]).toEqual(1);
 
     component.toggleDeletingGroup("spabble");
     fixture.detectChanges();
-    expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(1);
-    expect(uncollapseds()[3]).toEqual(1);
+    void expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(1);
+    void expect(uncollapseds()[3]).toEqual(1);
   })
 
 });

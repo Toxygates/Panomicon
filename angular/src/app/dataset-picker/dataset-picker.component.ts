@@ -23,7 +23,7 @@ export class DatasetPickerComponent implements OnInit {
         })
   }
 
-  selectDataset(datasetId: string) {
+  selectDataset(datasetId: string): void {
     this.selectedDataset = datasetId;
     this.selectedDatasetChange.emit(datasetId);
   }

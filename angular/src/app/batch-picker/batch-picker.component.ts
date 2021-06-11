@@ -11,7 +11,7 @@ export class BatchPickerComponent {
   constructor(private backend: BackendService) { }
 
   private _datasetId: string;
-  public get datasetId() {
+  public get datasetId(): string {
     return this._datasetId;
   }
   @Input() public set datasetId(theDatasetId: string) {
@@ -26,7 +26,7 @@ export class BatchPickerComponent {
   @Input() selectedBatch: string;
   @Output() selectedBatchChange = new EventEmitter<string>();
 
-  loadBatchesForDataset(datasetId: string) {
+  loadBatchesForDataset(datasetId: string): void {
     delete this.batches;
     this.backend.getBatchesForDataset(datasetId)
       .subscribe(
@@ -39,7 +39,7 @@ export class BatchPickerComponent {
       )
   }
 
-  selectBatch(batchId: string) {
+  selectBatch(batchId: string): void {
     this.selectedBatch = batchId;
     this.selectedBatchChange.emit(batchId);
   }

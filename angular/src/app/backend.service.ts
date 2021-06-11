@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 @Injectable({
@@ -15,9 +15,9 @@ export class BackendService {
   getDatasets() {
     return this.http.get(this.serviceUrl + 'dataset')
       .pipe(
-        tap(_ => console.log('fetched datasets')),
-        catchError(error => {
-          console.error('Error fetching datasets: ' + error);
+        tap(() => console.log('fetched datasets')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching datasets: ${error.message}`);
           throw error;
         })
       );
@@ -27,9 +27,9 @@ export class BackendService {
     return this.http.get<any[]>(this.serviceUrl + 'batch/dataset/'
       + datasetId)
       .pipe(
-        tap(_ => console.log('fetched batches')),
-        catchError(error => {
-          console.error('Error fetching batches: ' + error);
+        tap(() => console.log('fetched batches')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching batches: ${error.message}`);
           throw error;
         })
       )
@@ -39,9 +39,9 @@ export class BackendService {
     return this.http.get(this.serviceUrl + 'sample/batch/'
       + batchId)
       .pipe(
-        tap(_ => console.log('fetched samples')),
-        catchError(error => {
-          console.error('Error fetching samples: ' + error);
+        tap(() => console.log('fetched samples')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching samples: ${error.message}`);
           throw error;
         })
       )
@@ -51,9 +51,9 @@ export class BackendService {
     return this.http.get(this.serviceUrl + 'attribute/batch/'
       + batchId)
       .pipe(
-        tap(_ => console.log('fetched attributes')),
-        catchError(error => {
-          console.error('Error fetching attributes: ' + error);
+        tap(() => console.log('fetched attributes')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching attributes: ${error.message}`);
           throw error;
         })
       )
@@ -67,9 +67,9 @@ export class BackendService {
         "attributes": attributes,
       })
       .pipe(
-        tap(_ => console.log('fetched attributes values')),
-        catchError(error => {
-          console.error('Error fetching attributes values ' + error);
+        tap(() => console.log('fetched attributes values')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching attributes values: ${error.message}`);
           throw error;
         })
       )

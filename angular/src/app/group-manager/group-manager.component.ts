@@ -21,7 +21,7 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
   currentDeletingGroup: string;
   newGroupName: string;
 
-  saveSampleGroups() {
+  saveSampleGroups(): void {
     this.userData.saveSampleGroups(this.sampleGroups);
   }
 
@@ -36,11 +36,11 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
     this.sampleGroupsSubscription.unsubscribe();
   }
 
-  isAcceptableGroupName(name: string) {
+  isAcceptableGroupName(name: string): boolean {
     return this.userData.isAcceptableGroupName(name);
   }
 
-  toggleRenamingGroup(name: string) {
+  toggleRenamingGroup(name: string): void {
     if (this.currentRenamingGroup == name) {
       this.currentRenamingGroup = undefined;
     } else {
@@ -49,7 +49,7 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleDeletingGroup(name: string) {
+  toggleDeletingGroup(name: string): void {
     if (this.currentDeletingGroup == name) {
       this.currentDeletingGroup= undefined;
     } else {
@@ -58,13 +58,13 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
     }
   }
 
-  submitRenamingGroup() {
+  submitRenamingGroup(): void {
     this.userData.renameSampleGroup(this.currentRenamingGroup, this.newGroupName);
     this.currentRenamingGroup = undefined;
     this.newGroupName = undefined;
   }
 
-  submitDeleteGroup() {
+  submitDeleteGroup(): void {
     this.userData.deleteSampleGroup(this.currentDeletingGroup);
     this.toastr.success('Group name: ' + this.currentDeletingGroup, 'Sample group deleted');
     this.currentDeletingGroup = undefined;

@@ -23,15 +23,15 @@
                     </button>-->
                     <button type="button" class="btn btn-primary mb-1 mr-2"
                         (click)="toggleRenamingGroup(name)"
-                        [attr.aria-expanded]="currentRenamingGroup == name" aria-controls="collapseBasic">
+                        [attr.aria-expanded]="currentRenamingGroup === name" aria-controls="collapseBasic">
                         Rename...
                     </button>
                     <button type="button" class="btn btn-danger mr-2"
                         (click)="toggleDeletingGroup(name)"
-                        [attr.aria-expanded]="currentDeletingGroup == name" aria-controls="collapseBasic">
+                        [attr.aria-expanded]="currentDeletingGroup === name" aria-controls="collapseBasic">
                         Delete...
                     </button>
-                    <div class="renameCollapse mt-2" [collapse]="currentRenamingGroup != name"
+                    <div class="renameCollapse mt-2" [collapse]="currentRenamingGroup !== name"
                         [isAnimated]="true">
                         <div class="mb-1">Enter new name for group:</div>
                         <input type="text" name="sampleGroupNameInput" [(ngModel)]="newGroupName" 
@@ -43,7 +43,7 @@
                             Rename group
                         </button>
                     </div>
-                    <div class="deleteCollapse mt-2" [collapse]="currentDeletingGroup != name"
+                    <div class="deleteCollapse mt-2" [collapse]="currentDeletingGroup !== name"
                         [isAnimated]="true">
                         <button type="button" class="btn btn-danger mb-2"
                             (click)="submitDeleteGroup()">
