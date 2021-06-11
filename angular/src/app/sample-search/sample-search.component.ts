@@ -1,5 +1,6 @@
+///// <reference types="tabulator-tables" />
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
-         AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef } from '@angular/core';
+         AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../backend.service';
@@ -38,16 +39,16 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
   sampleGroupName: string;
   sampleCreationIsCollapsed = true;
-  readyToCreateGroup: boolean = true;
+  readyToCreateGroup = true;
 
   controlGroupsExpanded = true;
   treatmentGroupsExpanded = true;
 
   selectedGroups = new Set<string>();
 
-  @ViewChild('tabulatorContainer') tabulatorContainer;
+  @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef;
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges):void {
     if (changes.samples != null) {
       if (changes.samples.currentValue == null) {
         if (this.tabulatorContainer != null) {
@@ -57,11 +58,10 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
         this.fetchedAttributes = new Set<string>();
         this.samplesMap = new Map<string, any>();
         this.sampleFilters = [];
-        let _this = this;
-        this.samples.forEach(function(sample) {
-          _this.samplesMap[sample.sample_id] = sample;
-          Object.keys(sample).forEach(function(attribute) {
-            _this.fetchedAttributes.add(attribute);
+        this.samples.forEach((sample) => {
+          this.samplesMap[sample.sample_id] = sample;
+          Object.keys(sample).forEach((attribute) => {
+            this.fetchedAttributes.add(attribute);
           })
         });
         this.tryDrawTable();
@@ -78,7 +78,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     this.tabulatorReady = true;
     this.tryDrawTable();
   }
@@ -90,16 +90,11 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
 
   tab = document.createElement('div');
 
-  saveSampleGroup() {
+  saveSampleGroup(): void {
     if (this.sampleGroupName && this.selectedGroups.size > 0) {
-      let samplesInGroup = [];
-      let _this = this;
-      this.selectedGroups.forEach(function(group) {
-        console.log("group name " + group);
-      })
-      this.samples.forEach(function(sample) {
-        console.log("trying " + sample.treatment);
-        if (_this.selectedGroups.has(sample.treatment)) {
+      const samplesInGroup = [];
+      this.samples.forEach((sample) => {
+        if (this.selectedGroups.has(sample.treatment)) {
           samplesInGroup.push(sample.sample_id);
         }
       });
@@ -114,17 +109,17 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  toggleControlGroups() {
+  toggleControlGroups(): void {
     this.controlGroupsExpanded = !this.controlGroupsExpanded;
-    let groups = this.tabulator.getGroups();
+    const groups = this.tabulator.getGroups();
     groups.forEach(function(group) {
       group.toggle();
     });
   }
 
-  toggleTreatmentGroups() {
+  toggleTreatmentGroups(): void {
     this.treatmentGroupsExpanded = !this.treatmentGroupsExpanded;
-    let groups = this.tabulator.getGroups();
+    const groups = this.tabulator.getGroups();
     groups.forEach(function(group) {
       group.getSubGroups().forEach(function(subGroup) {
         subGroup.toggle();
@@ -132,8 +127,8 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
     });
   }
 
-  toggleColumn(attribute: any) {
-    let columnDefinition = this.columnForAttribute(attribute);
+  toggleColumn(attribute: any): void {
+    const columnDefinition = this.columnForAttribute(attribute);
     if (columnDefinition != null) {
       this.tabulator.deleteColumn(columnDefinition.field);
     } else {
@@ -164,17 +159,17 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  openSampleFilteringModal(template: TemplateRef<any>) {
+  openSampleFilteringModal(template: TemplateRef<any>): void {
     this.sampleFilteringModalRef = this.modalService.show(template,
       { class: 'modal-dialog-centered modal-lg',
         ignoreBackdropClick: true });
   }
 
-  filtersSubmitted(event: Event) {
+  filtersSubmitted(event: Event): void {
     this.sampleFilteringModalRef.hide();
   }
 
-  columnForAttribute(attribute: any) {
+  columnForAttribute(attribute: any): Tabulator.ColumnDefinition {
     let columnDefinitions = this.tabulator.getColumnDefinitions();
     let column = columnDefinitions.find(function(column) {
       return column.field == attribute.id;
@@ -233,17 +228,19 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
           columns: this.columns,
           layout:"fitDataFill",
           height: "calc(100vh - 18.3rem)",
-          groupBy: [function(data) {
+          groupBy: ([function(data: { control_treatment: string }): string {
               return data.control_treatment;
             },
-            function(data) {
+            function(data: { treatment: string }): string {
               return data.treatment;
             }
-          ],
+          ]) as unknown as string,
           groupHeader: groupHeader,
           groupClick:function(e, group){
-            if (e.target.tagName=="BUTTON" || 
-                e.target.parentNode.tagName=="BUTTON") {
+            if (e.target instanceof Element &&
+                (e.target.tagName=="BUTTON" ||
+                 (e.target.parentNode instanceof Element) &&
+                  ((e.target.parentNode.tagName=="BUTTON")))) {
               // click is on the button
               if (_this.selectedGroups.has(group.getKey())) {
                 _this.selectedGroups.delete(group.getKey());
@@ -254,7 +251,7 @@ export class SampleSearchComponent implements OnChanges, AfterViewInit {
               _this.tabulator.redraw();
             } else {
               // click is elsewhere on the header
-              if (group.getVisibility()) {
+              if (group.isVisible()) {
                 group.hide();
               } else {
                 group.show();
