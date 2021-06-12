@@ -1,4 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { IDataset } from 'src/app/models/backend-types.model';
 import { BackendService } from '../../backend.service'
 
 @Component({
@@ -13,7 +14,7 @@ export class DatasetPickerComponent implements OnInit {
   @Input() selectedDataset: string;
   @Output() selectedDatasetChange = new EventEmitter<string>();
 
-  datasets: any;
+  datasets: IDataset[];
 
   ngOnInit(): void {
     this.backend.getDatasets()

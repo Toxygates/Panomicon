@@ -1,4 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { IBatch } from 'src/app/models/backend-types.model';
 import { BackendService } from '../../backend.service'
 
 @Component({
@@ -21,7 +22,7 @@ export class BatchPickerComponent {
     }
   }
 
-  batches: any;
+  batches: IBatch[];
 
   @Input() selectedBatch: string;
   @Output() selectedBatchChange = new EventEmitter<string>();

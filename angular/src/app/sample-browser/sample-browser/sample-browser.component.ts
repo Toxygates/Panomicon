@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Sample } from 'src/app/models/backend-types.model';
 import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
 
@@ -14,7 +15,7 @@ export class SampleBrowserComponent implements OnInit {
 
   datasetId: string;
   batchId: string;
-  samples;
+  samples: Sample[];
 
   ngOnInit(): void {
     this.datasetId = this.userData.getSelectedDataset();

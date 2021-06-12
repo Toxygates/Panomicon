@@ -1,4 +1,3 @@
-///// <reference types="tabulator-tables" />
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
          AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
@@ -7,6 +6,7 @@ import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../models/sample-filter.model';
+import { IAttribute, Sample } from 'src/app/models/backend-types.model';
 
 @Component({
   selector: 'app-sample-table',
@@ -26,12 +26,12 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   sampleFilteringModalRef: BsModalRef;
   tabulatorReady = false;
 
-  @Input() samples: any[];
+  @Input() samples: Sample[];
   @Input() batchId: string;
 
-  samplesMap: Map<string, any>;
+  samplesMap: Map<string, Sample>;
 
-  attributes: any;
+  attributes: IAttribute[];
   requiredAttributes = new Set<string>();
   fetchedAttributes: Set<string>;
 
@@ -127,7 +127,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     });
   }
 
-  toggleColumn(attribute: any): void {
+  toggleColumn(attribute: IAttribute): void {
     const columnDefinition = this.columnForAttribute(attribute);
     if (columnDefinition != null) {
       this.tabulator.deleteColumn(columnDefinition.field);

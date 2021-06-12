@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { IAttribute, IBatch, IDataset, Sample } from './models/backend-types.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +13,8 @@ export class BackendService {
 
   serviceUrl = 'json/';
 
-  getDatasets() {
-    return this.http.get(this.serviceUrl + 'dataset')
+  getDatasets(): Observable<IDataset[]> {
+    return this.http.get<IDataset[]>(this.serviceUrl + 'dataset')
       .pipe(
         tap(() => console.log('fetched datasets')),
         catchError((error: HttpErrorResponse) => {
@@ -23,8 +24,8 @@ export class BackendService {
       );
   }
 
-  getBatchesForDataset(datasetId: string): Observable<any[]> {
-    return this.http.get<any[]>(this.serviceUrl + 'batch/dataset/'
+  getBatchesForDataset(datasetId: string): Observable<IBatch[]> {
+    return this.http.get<IBatch[]>(this.serviceUrl + 'batch/dataset/'
       + datasetId)
       .pipe(
         tap(() => console.log('fetched batches')),
@@ -35,8 +36,8 @@ export class BackendService {
       )
   }
 
-  getSamplesForBatch(batchId: string) {
-    return this.http.get(this.serviceUrl + 'sample/batch/'
+  getSamplesForBatch(batchId: string): Observable<Sample[]> {
+    return this.http.get<Sample[]>(this.serviceUrl + 'sample/batch/'
       + batchId)
       .pipe(
         tap(() => console.log('fetched samples')),
@@ -47,8 +48,8 @@ export class BackendService {
       )
   }
 
-  getAttributesForBatch(batchId: string) {
-    return this.http.get(this.serviceUrl + 'attribute/batch/'
+  getAttributesForBatch(batchId: string): Observable<IAttribute[]> {
+    return this.http.get<IAttribute[]>(this.serviceUrl + 'attribute/batch/'
       + batchId)
       .pipe(
         tap(() => console.log('fetched attributes')),
@@ -59,8 +60,8 @@ export class BackendService {
       )
   }
 
-  getAttributeValues(samples: string[], batches: string[], attributes: string[]): any {
-    return this.http.post(this.serviceUrl + 'attributeValues',
+  getAttributeValues(samples: string[], batches: string[], attributes: string[]): Observable<Sample[]> {
+    return this.http.post<Sample[]>(this.serviceUrl + 'attributeValues',
       {
         "samples": samples,
         "batches": batches,
