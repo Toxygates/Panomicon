@@ -14,6 +14,18 @@ export interface IAttribute {
     title: string;
 }
 
+export interface IMatrix {
+    columns: {
+        name: string,
+    }[],
+    sorting: {
+        column: number,
+        ascending: boolean
+    },
+    rows: Record<string, string | string[]>
+}
+
+
 export interface ISampleGroup {
     name: string;
     samples: string[];
