@@ -59,7 +59,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         this.samplesMap = new Map<string, Sample>();
         this.sampleFilters = [];
         this.samples.forEach((sample) => {
-          this.samplesMap[sample.sample_id] = sample;
+          this.samplesMap.set(sample.sample_id, sample);
           Object.keys(sample).forEach((attribute) => {
             this.fetchedAttributes.add(attribute);
           })
