@@ -1,6 +1,6 @@
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
          AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
-import Tabulator from 'tabulator-tables';
+import Tabulator, { GroupComponent } from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
@@ -52,11 +52,11 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     if (changes.samples != null) {
       if (changes.samples.currentValue == null) {
         if (this.tabulatorContainer != null) {
-          this.tabulatorContainer.nativeElement.innerHTML = '';
+          (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
         }
       } else {
         this.fetchedAttributes = new Set<string>();
-        this.samplesMap = new Map<string, any>();
+        this.samplesMap = new Map<string, Sample>();
         this.sampleFilters = [];
         this.samples.forEach((sample) => {
           this.samplesMap[sample.sample_id] = sample;
@@ -130,48 +130,47 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   toggleColumn(attribute: IAttribute): void {
     const columnDefinition = this.columnForAttribute(attribute);
     if (columnDefinition != null) {
-      this.tabulator.deleteColumn(columnDefinition.field);
+      void this.tabulator.deleteColumn(columnDefinition.field);
     } else {
-      this.tabulator.addColumn({
+      void this.tabulator.addColumn({
         title: attribute.title,
         field: attribute.id,
       });
       if (!this.fetchedAttributes.has(attribute.id)) {
-        let _this = this;
         this.samples.forEach(sample => sample[attribute.id] = "Loading...");
-        this.tabulator.replaceData(_this.samples);
+        void this.tabulator.replaceData(this.samples);
         this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
           [this.batchId], [attribute.id]).subscribe(
             result => {
                 this.fetchedAttributes.add(attribute.id);
-                result.forEach(function(element) {
-                  _this.samplesMap[element.sample_id][attribute.id] = element[attribute.id]
+                result.forEach((element) => {
+                  this.samplesMap.get(element.sample_id)[attribute.id] = element[attribute.id]
                 });
                 this.samples.forEach(function(sample) {
                   if (sample[attribute.id] == "Loading...") {
                     sample[attribute.id] = "n/a";
                   }
                 })
-                this.tabulator.replaceData(_this.samples);
+                void this.tabulator.replaceData(this.samples);
             }
           );
       }
     }
   }
 
-  openSampleFilteringModal(template: TemplateRef<any>): void {
+  openSampleFilteringModal(template: TemplateRef<unknown>): void {
     this.sampleFilteringModalRef = this.modalService.show(template,
       { class: 'modal-dialog-centered modal-lg',
         ignoreBackdropClick: true });
   }
 
-  filtersSubmitted(event: Event): void {
+  filtersSubmitted(): void {
     this.sampleFilteringModalRef.hide();
   }
 
-  columnForAttribute(attribute: any): Tabulator.ColumnDefinition {
-    let columnDefinitions = this.tabulator.getColumnDefinitions();
-    let column = columnDefinitions.find(function(column) {
+  columnForAttribute(attribute: IAttribute): Tabulator.ColumnDefinition {
+    const columnDefinitions = this.tabulator.getColumnDefinitions();
+    const column = columnDefinitions.find(function(column) {
       return column.field == attribute.id;
     })
     return column;
@@ -179,25 +178,24 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   private tryDrawTable(): void {
     if (this.tabulatorReady && this.samples != null) {
-      let _this = this;
-      let tabulatorElement = document.createElement('div');
+      const tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
-      this.tabulatorContainer.nativeElement.appendChild(tabulatorElement);
+      (this.tabulatorContainer.nativeElement as HTMLElement).appendChild(tabulatorElement);
 
-      let groupHeader = function(value, count, data, group) {
+      const groupHeader = (value: string, count: number, data, group: GroupComponent) => {
         //value - the value all members of this group share
         //count - the number of rows in this group
         //data - an array of all the row data objects in this group
         //group - the group component for the group
 
-        let prefix, itemCount, itemWord, button;
+        let prefix: string, itemCount: number, itemWord: string, button: string;
 
         if (group.getParentGroup()) {
           itemCount = count;
           itemWord = " sample";
-          if (value != group.getParentGroup().getKey()) {
+          if (value != (group.getParentGroup() as GroupComponent).getKey()) {
             prefix = "Treatment group - ";
-            if (_this.selectedGroups.has(value)) {
+            if (this.selectedGroups.has(value)) {
               button = "<button type='button' class='btn btn-success'>"
                 + "Group selected <i class='bi bi-check'></i></button>"
             } else {
@@ -217,8 +215,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
         itemWord += itemCount != 1 ? "s" : "";
 
-        return prefix + value + "<span>(" + itemCount + itemWord + ")</span> " +
-           button;
+        return `${prefix}${value}<span>(${itemCount}${itemWord})</span> ${button}`;
       }
 
       this.ngZone.runOutsideAngular(() => {
@@ -228,27 +225,32 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
           columns: this.columns,
           layout:"fitDataFill",
           height: "calc(100vh - 18.3rem)",
+          /* eslint-disable @typescript-eslint/no-unsafe-assignment,
+                            @typescript-eslint/no-explicit-any */
           groupBy: ([function(data: { control_treatment: string }): string {
               return data.control_treatment;
             },
             function(data: { treatment: string }): string {
               return data.treatment;
             }
-          ]) as unknown as string,
+          // Workaround for GroupArg union type not including ((data: any) => any)[]
+          ]) as any,
+          /* eslint-enable @typescript-eslint/no-unsafe-assignment,
+                           @typescript-eslint/no-explicit-any */
           groupHeader: groupHeader,
-          groupClick:function(e, group){
+          groupClick: (e, group)=> {
             if (e.target instanceof Element &&
                 (e.target.tagName=="BUTTON" ||
                  (e.target.parentNode instanceof Element) &&
                   ((e.target.parentNode.tagName=="BUTTON")))) {
               // click is on the button
-              if (_this.selectedGroups.has(group.getKey())) {
-                _this.selectedGroups.delete(group.getKey());
+              if (this.selectedGroups.has(group.getKey())) {
+                this.selectedGroups.delete(group.getKey());
               } else {
-                _this.selectedGroups.add(group.getKey());
+                this.selectedGroups.add(group.getKey());
               }
-              _this.changeDetector.detectChanges();
-              _this.tabulator.redraw();
+              this.changeDetector.detectChanges();
+              this.tabulator.redraw();
             } else {
               // click is elsewhere on the header
               if (group.isVisible()) {
