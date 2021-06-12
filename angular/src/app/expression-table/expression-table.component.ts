@@ -31,19 +31,25 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   tablePageNumber = 0;
   goToPageSubmitEnabled = false;
 
-  probeTitlesMutator = (_1: unknown, data: Record<string, string | string[]>): string => {
+  probeTitlesMutator = (_value: unknown,
+      data: Record<string, string | string[]>, _type: unknown,
+      _params: unknown, _component: unknown): string => {
     return (data.probeTitles as string[]).join(" / ");
   }
 
-  geneSymbolsMutator = (_1: unknown, data: Record<string, string | string[]>): string => {
+  geneSymbolsMutator = (_value: unknown,
+      data: Record<string, string | string[]>, _type: unknown,
+      _params: unknown, _component: unknown): string => {
     return (data.geneSymbols as string[]).join(" / ");
   }
 
-  log2foldMutator = (value: string): string => {
+  log2foldMutator = (value: string, _data: unknown, _type: unknown,
+    _params: unknown, _component: unknown): string => {
     return Number(value).toFixed(3);
   }
 
-  pValueMutator(value: string): string {
+  pValueMutator = (value: string, _data: unknown, _type: unknown,
+    _params: unknown, _component: unknown): string => {
     const numericalValue = Number(value)
     if (numericalValue > .00005) {
       return numericalValue.toFixed(4);

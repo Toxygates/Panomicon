@@ -182,7 +182,8 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
       tabulatorElement.style.width = "auto";
       (this.tabulatorContainer.nativeElement as HTMLElement).appendChild(tabulatorElement);
 
-      const groupHeader = (value: string, count: number, data, group: GroupComponent) => {
+      const groupHeader = (value: string, count: number, _data: unknown,
+          group: GroupComponent) => {
         //value - the value all members of this group share
         //count - the number of rows in this group
         //data - an array of all the row data objects in this group
