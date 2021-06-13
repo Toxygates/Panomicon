@@ -9,7 +9,7 @@ const routes: Routes = [
   { path: 'sample-browser', component: SampleBrowserComponent },
   { path: 'expression-table', component: ExpressionTableComponent },
   { path: 'sample-groups', component: GroupManagerComponent },
-  { path: '',   redirectTo: '/batch-browser', pathMatch: 'full' },
+  { path: '',   redirectTo: '/sample-browser', pathMatch: 'full' },
   { path: '**', component: PageNotFoundComponent }
 ];
 
