@@ -4,7 +4,7 @@
             <label for="attribute-{{i}}">Attribute</label>
             <select id="attribute-{{i}}" [(ngModel)]="filter.attribute"
                     name="attribute-{{i}}" class="custom-select"
-                    [ngClass]="{'is-invalid': !filter.validateAttribute() && (filter.attribute || haveTriedToSubmit)}">
+                    [ngClass]="{'is-invalid': !filter.validateAttribute(attributeMap) && (filter.attribute || haveTriedToSubmit)}">
                 <option selected disabled [ngValue]="undefined">Choose...</option>
                 <option *ngFor="let a of attributes" [ngValue]="a.id">{{a.title}}</option>
             </select>
@@ -16,12 +16,12 @@
             <label for="type-{{i}}">Filter type</label>
             <select id="type-{{i}}" [(ngModel)]="filter.type"
                     name="type-{{i}}" class="custom-select"
-                    [ngClass]="{'is-invalid': !filter.validateType() && (filter.type || haveTriedToSubmit)}">
+                    [ngClass]="{'is-invalid': !filter.validateType(attributeMap) && (filter.type || haveTriedToSubmit)}">
                 <option selected disabled [ngValue]="undefined">Choose...</option>
                 <option *ngFor="let t of sampleFilterTypes" [ngValue]="t">{{t}}</option>
             </select>
             <div class="invalid-feedback">
-                Please select a filter type
+                Please select {{filter.correctTypeInfo(attributeMap)}}
             </div>
         </div>
         <div class="form-group col-auto">

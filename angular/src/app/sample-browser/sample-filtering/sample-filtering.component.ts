@@ -9,8 +9,9 @@ import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model
 })
 export class SampleFilteringComponent {
 
-  @Input() attributes:  Set<IAttribute> | undefined;
-  @Input() filters: SampleFilter[] = [];
+  @Input() attributes!:  Set<IAttribute>;
+  @Input() attributeMap!: Map<string, IAttribute>;
+  @Input() filters!: SampleFilter[];
   @Output() submitFilters = new EventEmitter();
 
   sampleFilterTypes: string[] = Object.values(SampleFilterType);
@@ -27,7 +28,7 @@ export class SampleFilteringComponent {
   }
 
   applyFilters(): void {
-    if (this.filters.every(f => f.validate())) {
+    if (this.filters.every(f => f.validate(this.attributeMap))) {
       this.submitFilters.emit();
     } else {
       this.haveTriedToSubmit = true;

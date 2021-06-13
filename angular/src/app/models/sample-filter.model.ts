@@ -1,3 +1,5 @@
+import { IAttribute } from "./backend-types.model";
+
 export class SampleFilter {
     attribute: string | undefined;
     type: SampleFilterType | undefined;
@@ -31,17 +33,39 @@ export class SampleFilter {
         }
     }
 
-    validate(): boolean {
-        return this.validateAttribute() && this.validateType() &&
+    validate(attributeMap: Map<string, IAttribute>): boolean {
+        return this.validateAttribute(attributeMap) && 
+            this.validateType(attributeMap) &&
             this.validateParameter();
     }
 
-    validateAttribute(): boolean {
-        return this.attribute != null;
+    validateAttribute(attributeMap: Map<string, IAttribute>): boolean {
+        return this.attribute != null && (attributeMap.has(this.attribute));
     }
 
-    validateType(): boolean {
-        return this.type != null;
+    validateType(attributeMap: Map<string, IAttribute>): boolean {
+        const foundAttribute  = 
+            this.attribute != null && attributeMap.get(this.attribute);
+        if (foundAttribute) {
+            switch(this.type) {
+                case(SampleFilterType.LessThan):
+                case(SampleFilterType.GreaterThan):
+                case(SampleFilterType.LessThanOrEqualTo):
+                case(SampleFilterType.GreaterThanOrEqualTo):
+                case(SampleFilterType.EqualTo):
+                case(SampleFilterType.NotEqualTo):
+                    return foundAttribute.isNumerical;
+                case(SampleFilterType.Contains):
+                case(SampleFilterType.DoesNotContain):
+                case(SampleFilterType.AlphabeticallyBefore):
+                case(SampleFilterType.AlphabeticallyAfter):
+                    return true;
+                default:
+                    return false;
+            }
+        } else {
+            return this.type != null;
+        }
     }
 
     validateParameter(): boolean {
@@ -61,6 +85,23 @@ export class SampleFilter {
             default:
                 return this.parameter != undefined && this.parameter != "";
         }
+    }
+
+    correctTypeInfo(attributeMap: Map<string, IAttribute>): string {
+        const foundAttribute  =
+            this.attribute != null && attributeMap.get(this.attribute);
+        if (foundAttribute && !foundAttribute.isNumerical) {
+            switch(this.type) {
+                case(SampleFilterType.LessThan):
+                case(SampleFilterType.GreaterThan):
+                case(SampleFilterType.LessThanOrEqualTo):
+                case(SampleFilterType.GreaterThanOrEqualTo):
+                case(SampleFilterType.EqualTo):
+                case(SampleFilterType.NotEqualTo):
+                    return "a non-numerical filter type"
+            }
+        }
+        return "a filter type";
     }
 
     correctParameterInfo(): string {

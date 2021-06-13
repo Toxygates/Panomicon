@@ -1,12 +1,25 @@
+import { IAttribute } from './backend-types.model';
 import { SampleFilter, SampleFilterType } from './sample-filter.model';
 
 describe('SampleFilter', () => {
   let filter: SampleFilter;
+  let attributeMap: Map<string, IAttribute>;
 
   beforeEach(() => {
     filter = new SampleFilter();
     filter.attribute = "some-attribute";
     filter.parameter = "23";
+
+    attributeMap = new Map([["numerical", {
+      id: "numerical",
+      title: "A numerical attribute",
+      isNumerical: true
+    } as IAttribute],
+    ["non-numerical", {
+      id: "non-numerical",
+      title: "A non-numerical attribute",
+      isNumerical: false
+    }]]);
   });
 
   it('should correctly test value < argument', () => {
@@ -127,13 +140,36 @@ describe('SampleFilter', () => {
     })
   });
 
-  it('should validate filter type iff it is non-null', () => {
+  it('should not validate filter type = undefined', () => {
     filter.type = undefined;
-    expect(filter.validateType()).toBeFalse();
+    expect(filter.validateType(attributeMap)).toBeFalse();
+});
+
+  it('should validate numerical filters as long as attribute is not non-numerical', () => {
+    [SampleFilterType.LessThanOrEqualTo, SampleFilterType.GreaterThanOrEqualTo,
+      SampleFilterType.EqualTo, SampleFilterType.NotEqualTo].forEach(type => {
+        filter.type = type;
+
+        filter.attribute = undefined;
+        expect(filter.validateType(attributeMap)).toBeTrue();
+        filter.attribute = "non-numerical";
+        expect(filter.validateType(attributeMap)).toBeFalse();
+        filter.attribute = "numerical";
+        expect(filter.validateType(attributeMap)).toBeTrue();
+    });
+  });
+
+  it('should validate non-numerical filters for any attribute (including undefined)', () => {
     [SampleFilterType.Contains, SampleFilterType.DoesNotContain,
       SampleFilterType.AlphabeticallyBefore, SampleFilterType.AlphabeticallyAfter].forEach(type => {
         filter.type = type;
-        expect(filter.validateType()).toBeTrue();
+
+        filter.attribute = undefined;
+        expect(filter.validateType(attributeMap)).toBeTrue();
+        filter.attribute = "numerical";
+        expect(filter.validateType(attributeMap)).toBeTrue();
+        filter.attribute = "non-numerical";
+        expect(filter.validateType(attributeMap)).toBeTrue();
     });
   });
 });

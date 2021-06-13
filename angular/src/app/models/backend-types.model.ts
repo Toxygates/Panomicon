@@ -12,6 +12,7 @@ export type Sample = Record<string, string>;
 export interface IAttribute {
     id: string;
     title: string;
+    isNumerical: boolean;
 }
 
 export interface IMatrix {
@@ -24,7 +25,6 @@ export interface IMatrix {
     },
     rows: Record<string, string | string[]>
 }
-
 
 export interface ISampleGroup {
     name: string;

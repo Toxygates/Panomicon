@@ -92,7 +92,8 @@
     </div>
     <div class="modal-body">
     <app-sample-filtering [attributes]="fetchedAttributes"
-        [filters]="sampleFilters" (submitFilters)="filtersSubmitted()">
+        [filters]="sampleFilters" [attributeMap]="attributeMap"
+        (submitFilters)="filtersSubmitted()">
     </app-sample-filtering>
     </div>
 </ng-template>
