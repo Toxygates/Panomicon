@@ -13,9 +13,9 @@ export class SampleBrowserComponent implements OnInit {
   constructor(private backend: BackendService, 
     private userData: UserDataService) {}
 
-  datasetId: string;
-  batchId: string;
-  samples: Sample[];
+  datasetId: string | undefined;
+  batchId: string | undefined;
+  samples: Sample[] | undefined;
 
   ngOnInit(): void {
     this.datasetId = this.userData.getSelectedDataset();

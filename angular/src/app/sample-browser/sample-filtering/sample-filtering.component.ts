@@ -8,8 +8,8 @@ import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model
 })
 export class SampleFilteringComponent {
 
-  @Input() attributes: Set<string>;
-  @Input() filters: SampleFilter[];
+  @Input() attributes:  Set<string> | undefined;
+  @Input() filters: SampleFilter[] = [];
   @Output() submitFilters = new EventEmitter();
 
   sampleFilterTypes: string[] = Object.values(SampleFilterType);

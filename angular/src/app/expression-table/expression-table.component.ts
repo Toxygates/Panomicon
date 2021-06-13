@@ -1,4 +1,4 @@
-import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef } from '@angular/core';
+import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../user-data.service';
@@ -19,13 +19,13 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
     private router: Router, private modalService: BsModalService,
     private changeDetector: ChangeDetectorRef) { }
 
-  tabulator: Tabulator;
-  modalRef: BsModalRef;
-  @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef;
-  @ViewChild('gotoPageModal') gotoPageTemplate;
+  tabulator: Tabulator | undefined;
+  modalRef: BsModalRef | undefined;
+  @ViewChild('tabulatorContainer') tabulatorContainer!: ElementRef;
+  @ViewChild('gotoPageModal') gotoPageTemplate!: TemplateRef<unknown>;
 
-  enabledSampleGroups: ISampleGroup[];
-  enabledSampleGroupsSubscription: Subscription;
+  enabledSampleGroups: ISampleGroup[] = [];
+  enabledSampleGroupsSubscription: Subscription | undefined;
   dataFetched = false;
   lastPage = 0;
   tablePageNumber = 0;
@@ -89,7 +89,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   }
 
   ngOnDestroy(): void {
-    this.enabledSampleGroupsSubscription.unsubscribe();
+    this.enabledSampleGroupsSubscription?.unsubscribe();
   }
 
   private drawTable(): void {
@@ -154,7 +154,8 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   }
 
   onSubmitGotoPageModal(): void {
-    void this.tabulator.setPage(this.tablePageNumber);
-    this.modalRef.hide();
+    if (!this.tabulator) throw new Error("tabulator is not defined");
+    void this.tabulator?.setPage(this.tablePageNumber);
+    this.modalRef?.hide();
   }
 }

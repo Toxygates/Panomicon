@@ -11,10 +11,10 @@ export class DatasetPickerComponent implements OnInit {
   
   constructor(private backend: BackendService) { }
 
-  @Input() selectedDataset: string;
+  @Input() selectedDataset: string | undefined;
   @Output() selectedDatasetChange = new EventEmitter<string>();
 
-  datasets: IDataset[];
+  datasets: IDataset[] | undefined;
 
   ngOnInit(): void {
     this.backend.getDatasets()

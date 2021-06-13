@@ -22,31 +22,31 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.requiredAttributes.add("sample_id");
   }
 
-  tabulator: Tabulator;
-  sampleFilteringModalRef: BsModalRef;
+  tabulator: Tabulator | undefined;
+  sampleFilteringModalRef: BsModalRef | undefined;
   tabulatorReady = false;
 
-  @Input() samples: Sample[];
-  @Input() batchId: string;
+  @Input() samples: Sample[] | undefined;
+  @Input() batchId: string | undefined;
 
-  samplesMap: Map<string, Sample>;
+  samplesMap = new Map<string, Sample>()
 
-  attributes: IAttribute[];
+  attributes: IAttribute[] | undefined;
   requiredAttributes = new Set<string>();
-  fetchedAttributes: Set<string>;
+  fetchedAttributes = new Set<string>();
 
   sampleFilters: SampleFilter[] = [];
 
-  sampleGroupName: string;
+  sampleGroupName: string | undefined;
   sampleCreationIsCollapsed = true;
   readyToCreateGroup = true;
 
   controlGroupsExpanded = true;
   treatmentGroupsExpanded = true;
 
-  selectedGroups = new Set<string>();
+  selectedTreatmentGroups = new Set<string>();
 
-  @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef;
+  @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef | undefined;
 
   ngOnChanges(changes: SimpleChanges):void {
     if (changes.samples != null) {
@@ -58,7 +58,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         this.fetchedAttributes = new Set<string>();
         this.samplesMap = new Map<string, Sample>();
         this.sampleFilters = [];
-        this.samples.forEach((sample) => {
+        this.samples?.forEach((sample) => {
           this.samplesMap.set(sample.sample_id, sample);
           Object.keys(sample).forEach((attribute) => {
             this.fetchedAttributes.add(attribute);
@@ -69,12 +69,14 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     }
     if (changes.batchId != null && 
         changes.batchId.currentValue != changes.batchId.previousValue) {
-      this.backend.getAttributesForBatch(this.batchId)
-        .subscribe(
-          result => {
-            this.attributes = result;
-          }
-        )
+      if (this.batchId) { // (always true)
+        this.backend.getAttributesForBatch(this.batchId)
+          .subscribe(
+            result => {
+              this.attributes = result;
+            }
+          )
+      }
     }
   }
 
@@ -91,10 +93,10 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   tab = document.createElement('div');
 
   saveSampleGroup(): void {
-    if (this.sampleGroupName && this.selectedGroups.size > 0) {
-      const samplesInGroup = [];
-      this.samples.forEach((sample) => {
-        if (this.selectedGroups.has(sample.treatment)) {
+    if (this.sampleGroupName && this.selectedTreatmentGroups.size > 0) {
+      const samplesInGroup: string[] = [];
+      this.samples?.forEach((sample) => {
+        if (this.selectedTreatmentGroups.has(sample.treatment)) {
           samplesInGroup.push(sample.sample_id);
         }
       });
@@ -103,15 +105,16 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
       this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
       this.sampleCreationIsCollapsed = true;
       this.sampleGroupName = undefined;
-      this.selectedGroups.clear();
+      this.selectedTreatmentGroups.clear();
 
-      this.tabulator.redraw();
+      this.tabulator?.redraw();
     }
   }
 
   toggleControlGroups(): void {
     this.controlGroupsExpanded = !this.controlGroupsExpanded;
-    const groups = this.tabulator.getGroups();
+    const groups = this.tabulator?.getGroups();
+    if (!groups) throw new Error("groups is not defined");
     groups.forEach(function(group) {
       group.toggle();
     });
@@ -119,7 +122,8 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   toggleTreatmentGroups(): void {
     this.treatmentGroupsExpanded = !this.treatmentGroupsExpanded;
-    const groups = this.tabulator.getGroups();
+    const groups = this.tabulator?.getGroups();
+    if (!groups) throw new Error("groups is not defined");
     groups.forEach(function(group) {
       group.getSubGroups().forEach(function(subGroup) {
         subGroup.toggle();
@@ -129,31 +133,36 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   toggleColumn(attribute: IAttribute): void {
     const columnDefinition = this.columnForAttribute(attribute);
-    if (columnDefinition != null) {
-      void this.tabulator.deleteColumn(columnDefinition.field);
+    if (columnDefinition?.field) {
+      void this.tabulator?.deleteColumn(columnDefinition.field);
     } else {
-      void this.tabulator.addColumn({
+      void this.tabulator?.addColumn({
         title: attribute.title,
         field: attribute.id,
       });
       if (!this.fetchedAttributes.has(attribute.id)) {
-        this.samples.forEach(sample => sample[attribute.id] = "Loading...");
-        void this.tabulator.replaceData(this.samples);
-        this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
-          [this.batchId], [attribute.id]).subscribe(
-            result => {
-                this.fetchedAttributes.add(attribute.id);
-                result.forEach((element) => {
-                  this.samplesMap.get(element.sample_id)[attribute.id] = element[attribute.id]
-                });
-                this.samples.forEach(function(sample) {
-                  if (sample[attribute.id] == "Loading...") {
-                    sample[attribute.id] = "n/a";
-                  }
-                })
-                void this.tabulator.replaceData(this.samples);
-            }
-          );
+        this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
+        void this.tabulator?.replaceData(this.samples);
+        if (this.batchId && this.samples) {
+          this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
+            [this.batchId], [attribute.id]).subscribe(
+              result => {
+                  this.fetchedAttributes.add(attribute.id);
+                  result.forEach((element) => {
+                    const sample = this.samplesMap.get(element.sample_id);
+                    if (sample) {
+                      sample[attribute.id] = element[attribute.id]
+                    }
+                  });
+                  this.samples?.forEach(function(sample) {
+                    if (sample[attribute.id] == "Loading...") {
+                      sample[attribute.id] = "n/a";
+                    }
+                  })
+                  void this.tabulator?.replaceData(this.samples);
+              }
+            );
+          }
       }
     }
   }
@@ -165,22 +174,23 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   }
 
   filtersSubmitted(): void {
-    this.sampleFilteringModalRef.hide();
+    this.sampleFilteringModalRef?.hide();
   }
 
-  columnForAttribute(attribute: IAttribute): Tabulator.ColumnDefinition {
-    const columnDefinitions = this.tabulator.getColumnDefinitions();
-    const column = columnDefinitions.find(function(column) {
+  columnForAttribute(attribute: IAttribute): 
+      Tabulator.ColumnDefinition | undefined {
+    const columnDefinitions = this.tabulator?.getColumnDefinitions();
+    if (!columnDefinitions) throw new Error("columnDefinitions not defiend");
+    return columnDefinitions.find(function(column) {
       return column.field == attribute.id;
     })
-    return column;
   }
 
   private tryDrawTable(): void {
     if (this.tabulatorReady && this.samples != null) {
       const tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
-      (this.tabulatorContainer.nativeElement as HTMLElement).appendChild(tabulatorElement);
+      (this.tabulatorContainer?.nativeElement as HTMLElement).appendChild(tabulatorElement);
 
       const groupHeader = (value: string, count: number, _data: unknown,
           group: GroupComponent) => {
@@ -196,7 +206,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
           itemWord = " sample";
           if (value != (group.getParentGroup() as GroupComponent).getKey()) {
             prefix = "Treatment group - ";
-            if (this.selectedGroups.has(value)) {
+            if (this.selectedTreatmentGroups.has(value)) {
               button = "<button type='button' class='btn btn-success'>"
                 + "Group selected <i class='bi bi-check'></i></button>"
             } else {
@@ -245,13 +255,13 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
                  (e.target.parentNode instanceof Element) &&
                   ((e.target.parentNode.tagName=="BUTTON")))) {
               // click is on the button
-              if (this.selectedGroups.has(group.getKey())) {
-                this.selectedGroups.delete(group.getKey());
+              if (this.selectedTreatmentGroups.has(group.getKey())) {
+                this.selectedTreatmentGroups.delete(group.getKey());
               } else {
-                this.selectedGroups.add(group.getKey());
+                this.selectedTreatmentGroups.add(group.getKey());
               }
               this.changeDetector.detectChanges();
-              this.tabulator.redraw();
+              this.tabulator?.redraw();
             } else {
               // click is elsewhere on the header
               if (group.isVisible()) {

@@ -22,11 +22,12 @@ export class UserDataService {
       this.sampleGroups = new Map<string, ISampleGroup>();
     }
     this.sampleGroupsBehaviorSubject = new BehaviorSubject(this.sampleGroups);
-    this.enabledGroupsBehaviorSubject = new BehaviorSubject(this.getEnabledSampleGroups());
+    this.enabledGroupsBehaviorSubject = new BehaviorSubject(this.enabledSampleGroups());
   }
 
-  public getSelectedDataset(): string {
-    return window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY);
+  public getSelectedDataset(): string | undefined {
+    const dataset = window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY);
+    return dataset ? dataset: undefined;
   }
 
   public setSelectedDataset(selectedDataset: string): void {
@@ -37,7 +38,7 @@ export class UserDataService {
     const sampleGroupsJson = JSON.stringify(Array.from(this.sampleGroups.entries()));
     window.localStorage.setItem(UserDataService.SAMPLE_GROUPS_KEY, sampleGroupsJson);
     this.sampleGroupsBehaviorSubject.next(this.sampleGroups);
-    this.enabledGroupsBehaviorSubject.next(this.getEnabledSampleGroups());
+    this.enabledGroupsBehaviorSubject.next(this.enabledSampleGroups());
   }
 
   saveSampleGroups(sampleGroups: Map<string, ISampleGroup>): void {
@@ -56,6 +57,7 @@ export class UserDataService {
 
   renameSampleGroup(oldName: string, newName: string): void {
     const group = this.sampleGroups.get(oldName);
+    if (!group) throw new Error(`Tried to rename nonexistent group ${oldName}`);
     group.name = newName;
     this.sampleGroups.set(newName, group);
     this.sampleGroups.delete(oldName);
@@ -71,13 +73,7 @@ export class UserDataService {
     return !this.sampleGroups.has(name);
   }
 
-  private getEnabledSampleGroups(): ISampleGroup[] {
-    const enabledGroups = new Array<ISampleGroup>();
-    for (const groupName of Array.from(this.sampleGroups.keys()).sort()) {
-      if (this.sampleGroups.get(groupName).enabled) {
-        enabledGroups.push(this.sampleGroups.get(groupName));
-      }
-    }
-    return enabledGroups;
+  private enabledSampleGroups(): ISampleGroup[] {
+    return Array.from(this.sampleGroups.values()).filter(group => group.enabled);
   }
 }

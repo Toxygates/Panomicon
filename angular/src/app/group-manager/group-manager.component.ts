@@ -14,19 +14,19 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
   constructor(private userData: UserDataService,
     private toastr: ToastrService) { }
 
-  groupNames: string[];
-  sampleGroups: Map<string, ISampleGroup>;
-  sampleGroupsSubscription: Subscription;
-  currentRenamingGroup: string;
-  currentDeletingGroup: string;
-  newGroupName: string;
+  groupNames!: string[];
+  sampleGroups!: Map<string, ISampleGroup>;
+  sampleGroupsSubscription!: Subscription;
+  currentRenamingGroup: string | undefined;
+  currentDeletingGroup: string | undefined;
+  newGroupName: string | undefined;
 
   saveSampleGroups(): void {
     this.userData.saveSampleGroups(this.sampleGroups);
   }
 
   ngOnInit(): void {
-    this. sampleGroupsSubscription = this.userData.sampleGroupsBehaviorSubject.subscribe(groups => {
+    this.sampleGroupsSubscription = this.userData.sampleGroupsBehaviorSubject.subscribe(groups => {
       this.sampleGroups = groups;
       this.groupNames = Array.from(this.sampleGroups.keys()).sort();
     });
@@ -36,8 +36,8 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
     this.sampleGroupsSubscription.unsubscribe();
   }
 
-  isAcceptableGroupName(name: string): boolean {
-    return this.userData.isAcceptableGroupName(name);
+  isAcceptableGroupName(name: string | undefined): boolean {
+    return name != null && this.userData.isAcceptableGroupName(name);
   }
 
   toggleRenamingGroup(name: string): void {
@@ -59,12 +59,15 @@ export class GroupManagerComponent implements OnInit, OnDestroy {
   }
 
   submitRenamingGroup(): void {
+    if (!this.currentRenamingGroup) throw new Error("currentRenamingGroup is not defined");
+    if (!this.newGroupName) throw new Error("newGroupName is not defined");
     this.userData.renameSampleGroup(this.currentRenamingGroup, this.newGroupName);
     this.currentRenamingGroup = undefined;
     this.newGroupName = undefined;
   }
 
   submitDeleteGroup(): void {
+    if (!this.currentDeletingGroup) throw new Error("currentDeletingGroup is not defined");
     this.userData.deleteSampleGroup(this.currentDeletingGroup);
     this.toastr.success('Group name: ' + this.currentDeletingGroup, 'Sample group deleted');
     this.currentDeletingGroup = undefined;

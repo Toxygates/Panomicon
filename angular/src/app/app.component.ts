@@ -12,9 +12,9 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(private userData: UserDataService) {}
 
   navbarIsCollapsed = true;
-  enabledSampleGroupsExist: boolean;
+  enabledSampleGroupsExist = false;
 
-  enabledGroupsSubscription: Subscription;
+  enabledGroupsSubscription: Subscription | undefined;
 
   ngOnInit(): void {
     this.enabledGroupsSubscription = this.userData.enabledGroupsBehaviorSubject.subscribe(groups => {
@@ -23,6 +23,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.enabledGroupsSubscription.unsubscribe();
+    this.enabledGroupsSubscription?.unsubscribe();
   }
 }

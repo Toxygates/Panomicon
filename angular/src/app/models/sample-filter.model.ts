@@ -1,9 +1,10 @@
 export class SampleFilter {
-    attribute: string;
-    type: SampleFilterType;
-    parameter: string;
+    attribute: string | undefined;
+    type: SampleFilterType | undefined;
+    parameter: string | undefined;
 
     passesFilter(testValue: string): boolean {
+        if (!this.parameter) throw new Error("filter parameter is not defined");
         switch(this.type) {
             case(SampleFilterType.LessThan):
                 return Number(testValue) < parseFloat(this.parameter);
@@ -52,7 +53,7 @@ export class SampleFilter {
             case(SampleFilterType.GreaterThanOrEqualTo):
             case(SampleFilterType.EqualTo):
             case(SampleFilterType.NotEqualTo):
-                return Number(this.parameter) == parseInt(this.parameter);
+                return (this.parameter != undefined) && Number(this.parameter) == parseInt(this.parameter);
             case(SampleFilterType.Contains):
             case(SampleFilterType.DoesNotContain):
             case(SampleFilterType.AlphabeticallyBefore):
