@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IAttribute } from 'src/app/models/backend-types.model';
 import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model';
 
 @Component({
@@ -8,7 +9,7 @@ import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model
 })
 export class SampleFilteringComponent {
 
-  @Input() attributes:  Set<string> | undefined;
+  @Input() attributes:  Set<IAttribute> | undefined;
   @Input() filters: SampleFilter[] = [];
   @Output() submitFilters = new EventEmitter();
 

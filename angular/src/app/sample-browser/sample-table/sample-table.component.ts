@@ -32,8 +32,9 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   samplesMap = new Map<string, Sample>()
 
   attributes: IAttribute[] | undefined;
+  attributeMap = new Map<string, IAttribute>();
   requiredAttributes = new Set<string>();
-  fetchedAttributes = new Set<string>();
+  fetchedAttributes = new Set<IAttribute>();
 
   sampleFilters: SampleFilter[] = [];
 
@@ -55,13 +56,15 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
           (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
         }
       } else {
-        this.fetchedAttributes = new Set<string>();
+        this.fetchedAttributes = new Set<IAttribute>();
         this.samplesMap = new Map<string, Sample>();
         this.sampleFilters = [];
         this.samples?.forEach((sample) => {
           this.samplesMap.set(sample.sample_id, sample);
-          Object.keys(sample).forEach((attribute) => {
-            this.fetchedAttributes.add(attribute);
+          Object.keys(sample).forEach((attributeId) => {
+            const found = this.attributeMap.get(attributeId);
+            if (!found) throw new Error(`Sample had unknown attribute ${attributeId}`);
+            this.fetchedAttributes.add(found);
           })
         });
         this.tryDrawTable();
@@ -74,6 +77,8 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
           .subscribe(
             result => {
               this.attributes = result;
+              this.attributeMap = new Map<string, IAttribute>();
+              this.attributes.forEach(a => this.attributeMap.set(a.id, a));
             }
           )
       }
@@ -140,14 +145,14 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         title: attribute.title,
         field: attribute.id,
       });
-      if (!this.fetchedAttributes.has(attribute.id)) {
+      if (!this.fetchedAttributes.has(attribute)) {
         this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
         void this.tabulator?.replaceData(this.samples);
         if (this.batchId && this.samples) {
           this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
             [this.batchId], [attribute.id]).subscribe(
               result => {
-                  this.fetchedAttributes.add(attribute.id);
+                  this.fetchedAttributes.add(attribute);
                   result.forEach((element) => {
                     const sample = this.samplesMap.get(element.sample_id);
                     if (sample) {

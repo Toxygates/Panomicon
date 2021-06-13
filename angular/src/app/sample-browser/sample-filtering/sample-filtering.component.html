@@ -6,7 +6,7 @@
                     name="attribute-{{i}}" class="custom-select"
                     [ngClass]="{'is-invalid': !filter.validateAttribute() && (filter.attribute || haveTriedToSubmit)}">
                 <option selected disabled [ngValue]="undefined">Choose...</option>
-                <option *ngFor="let a of attributes" [ngValue]="a">{{a}}</option>
+                <option *ngFor="let a of attributes" [ngValue]="a.id">{{a.title}}</option>
             </select>
             <div class="invalid-feedback">
                 Please select an attribute
