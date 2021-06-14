@@ -43,11 +43,12 @@ export class SampleFilter {
     return this.attribute != null && (attributeMap.has(this.attribute));
   }
 
-  validateType(attributeMap: Map<string, IAttribute>): boolean {
+  validateType(attributeMap: Map<string, IAttribute>,
+      type: SampleFilterType | undefined = this.type): boolean {
     const foundAttribute =
       this.attribute != null && attributeMap.get(this.attribute);
     if (foundAttribute) {
-      switch (this.type) {
+      switch (type) {
         case (SampleFilterType.LessThan):
         case (SampleFilterType.GreaterThan):
         case (SampleFilterType.LessThanOrEqualTo):
@@ -64,7 +65,7 @@ export class SampleFilter {
           return false;
       }
     } else {
-      return this.type != null;
+      return type != null;
     }
   }
 

@@ -18,7 +18,10 @@
                     name="type-{{i}}" class="custom-select"
                     [ngClass]="{'is-invalid': !filter.validateType(attributeMap) && (filter.type || haveTriedToSubmit)}">
                 <option selected disabled [ngValue]="undefined">Choose...</option>
-                <option *ngFor="let t of sampleFilterTypes" [ngValue]="t">{{t}}</option>
+                <option *ngFor="let t of sampleFilterTypes" [ngValue]="t"
+                        [disabled]="!filter.validateType(attributeMap, t)">
+                    {{t}}
+                </option>
             </select>
             <div class="invalid-feedback">
                 Please select {{filter.correctTypeInfo(attributeMap)}}

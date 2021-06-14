@@ -74,6 +74,10 @@ body {
     overflow-y: auto;
 }
 
+select option:disabled {
+  color: #888;
+}
+
 // Hack to avoid issue (possibly a Tabulator bug) where .tabulator-table
 // gets an element style overriding min-width when all table rows are
 // collapsed into groups.

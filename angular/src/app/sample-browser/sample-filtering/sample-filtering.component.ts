@@ -14,7 +14,7 @@ export class SampleFilteringComponent {
   @Input() filters!: SampleFilter[];
   @Output() submitFilters = new EventEmitter<SampleFilter[]>();
 
-  sampleFilterTypes: string[] = Object.values(SampleFilterType);
+  sampleFilterTypes = Object.values(SampleFilterType);
 
   haveTriedToSubmit = false;
 
