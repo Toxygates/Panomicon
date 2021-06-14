@@ -37,6 +37,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   fetchedAttributes = new Set<IAttribute>();
 
   sampleFilters: SampleFilter[] = [];
+  filteredSamples: Sample[] | undefined;
 
   sampleGroupName: string | undefined;
   sampleCreationIsCollapsed = true;
@@ -185,17 +186,18 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   clearFilters(): void {
     this.sampleFilters = [];
+    this.filteredSamples = undefined;
     this.tabulator?.setData(this.samples);
   }
 
   private filterSamples(grouped: boolean): void {
-    const filteredSamples = this.samples?.filter(sample => 
+    this.filteredSamples = this.samples?.filter(sample =>
       this.sampleFilters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
     if (!grouped) {
-      this.tabulator?.setData(filteredSamples);
+      this.tabulator?.setData(this.filteredSamples);
     } else {
       const includedTreatments = new Set<string>();
-      filteredSamples?.forEach(sample => {
+      this.filteredSamples?.forEach(sample => {
         includedTreatments.add(sample.treatment);
         includedTreatments.add(sample.control_treatment);
       });

@@ -53,7 +53,7 @@
         (click)="openSampleFilteringModal(sampleFilteringModal)">
         Filter samples
     </button>
-    <button *ngIf="sampleFilters && (sampleFilters.length > 0)"
+    <button *ngIf="sampleFilters.length > 0"
         type="button" class="btn btn-danger mb-1 mr-2"
         (click)="clearFilters()">
         Clear filters
@@ -87,6 +87,7 @@
 <div #tabulatorContainer></div>
 
 <div *ngIf="samples">
+    {{ filteredSamples !== undefined ? filteredSamples?.length + " matching samples out of" : "" }}
     {{samples.length}} samples in batch {{batchId}}
 </div>
 
