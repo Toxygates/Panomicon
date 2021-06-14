@@ -53,6 +53,11 @@
         (click)="openSampleFilteringModal(sampleFilteringModal)">
         Filter samples
     </button>
+    <button *ngIf="sampleFilters && (sampleFilters.length > 0)"
+        type="button" class="btn btn-danger mb-1 mr-2"
+        (click)="clearFilters()">
+        Clear filters
+    </button>
 </div>
 <div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
     [isAnimated]="true">

@@ -183,6 +183,11 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.filterSamples(true);
   }
 
+  clearFilters(): void {
+    this.sampleFilters = [];
+    this.tabulator?.setData(this.samples);
+  }
+
   private filterSamples(grouped: boolean): void {
     const filteredSamples = this.samples?.filter(sample => 
       this.sampleFilters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
