@@ -1,33 +1,33 @@
 export interface IDataset {
-    id: string;
-    description: string;
+  id: string;
+  description: string;
 }
 
 export interface IBatch {
-    id: string;
+  id: string;
 }
 
 export type Sample = Record<string, string>;
 
 export interface IAttribute {
-    id: string;
-    title: string;
-    isNumerical: boolean;
+  id: string;
+  title: string;
+  isNumerical: boolean;
 }
 
 export interface IMatrix {
-    columns: {
-        name: string,
-    }[],
-    sorting: {
-        column: number,
-        ascending: boolean
-    },
-    rows: Record<string, string | string[]>
+  columns: {
+    name: string,
+  }[],
+  sorting: {
+    column: number,
+    ascending: boolean
+  },
+  rows: Record<string, string | string[]>
 }
 
 export interface ISampleGroup {
-    name: string;
-    samples: string[];
-    enabled: boolean;
+  name: string;
+  samples: string[];
+  enabled: boolean;
 }
