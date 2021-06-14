@@ -179,9 +179,14 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         ignoreBackdropClick: true });
   }
 
-  onSubmitFilters(_filters: SampleFilter[]): void {
+  onSubmitFilters(filters: SampleFilter[]): void {
     this.sampleFilteringModalRef?.hide();
+    this.sampleFilters = filters;
     this.filterSamples(true);
+  }
+
+  onCancelEditFilters(): void {
+    this.sampleFilteringModalRef?.hide();
   }
 
   clearFilters(): void {

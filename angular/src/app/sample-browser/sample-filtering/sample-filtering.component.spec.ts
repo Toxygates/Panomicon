@@ -16,6 +16,7 @@ describe('SampleFilterComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SampleFilteringComponent);
     component = fixture.componentInstance;
+    component.filters = [];
     fixture.detectChanges();
   });
 

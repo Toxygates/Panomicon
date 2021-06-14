@@ -123,6 +123,14 @@ export class SampleFilter {
         return "a string";
     }
   }
+
+  clone(): SampleFilter {
+    const clone = new SampleFilter();
+    clone.attribute = this.attribute;
+    clone.type = this.type;
+    clone.parameter = this.parameter;
+    return clone;
+  }
 }
 
 export enum SampleFilterType {

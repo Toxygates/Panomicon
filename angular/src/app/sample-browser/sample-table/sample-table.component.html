@@ -98,7 +98,8 @@
     <div class="modal-body">
     <app-sample-filtering [attributes]="fetchedAttributes"
         [filters]="sampleFilters" [attributeMap]="attributeMap" 
-        (submitFilters)="onSubmitFilters($event)">
+        (submitFilters)="onSubmitFilters($event)"
+        (cancelEditFilters)="onCancelEditFilters()">
     </app-sample-filtering>
     </div>
 </ng-template>

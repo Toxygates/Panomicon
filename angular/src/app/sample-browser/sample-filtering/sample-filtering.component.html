@@ -50,7 +50,13 @@
     (click)="appendNewFilter()">
     Add filter
 </button>
-<button type="button" class="btn btn-success float-sm-right"
-    (click)="applyFilters()">
-    Apply filters
-</button>
+<span class="float-sm-right">
+    <button type="button" class="btn btn-danger mr-2"
+        (click)="cancelEditFilters.emit()">
+        Cancel
+    </button>
+    <button type="button" class="btn btn-success"
+        (click)="applyFilters()">
+        Apply filters
+    </button>
+</span>

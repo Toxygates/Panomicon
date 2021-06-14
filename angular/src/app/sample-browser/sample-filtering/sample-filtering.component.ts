@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { IAttribute } from 'src/app/models/backend-types.model';
 import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model';
 
@@ -7,16 +7,21 @@ import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model
   templateUrl: './sample-filtering.component.html',
   styleUrls: ['./sample-filtering.component.scss']
 })
-export class SampleFilteringComponent {
+export class SampleFilteringComponent implements OnInit {
 
   @Input() attributes!:  Set<IAttribute>;
   @Input() attributeMap!: Map<string, IAttribute>;
   @Input() filters!: SampleFilter[];
   @Output() submitFilters = new EventEmitter<SampleFilter[]>();
+  @Output() cancelEditFilters = new EventEmitter();
 
   sampleFilterTypes = Object.values(SampleFilterType);
 
   haveTriedToSubmit = false;
+
+  ngOnInit(): void {
+    this.filters = this.filters.map(f => f.clone());
+  }
 
   appendNewFilter(): void {
     this.haveTriedToSubmit = false;
