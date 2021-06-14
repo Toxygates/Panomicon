@@ -12,7 +12,7 @@ export class SampleFilteringComponent {
   @Input() attributes!:  Set<IAttribute>;
   @Input() attributeMap!: Map<string, IAttribute>;
   @Input() filters!: SampleFilter[];
-  @Output() submitFilters = new EventEmitter();
+  @Output() submitFilters = new EventEmitter<SampleFilter[]>();
 
   sampleFilterTypes: string[] = Object.values(SampleFilterType);
 
@@ -29,7 +29,7 @@ export class SampleFilteringComponent {
 
   applyFilters(): void {
     if (this.filters.every(f => f.validate(this.attributeMap))) {
-      this.submitFilters.emit();
+      this.submitFilters.emit(this.filters);
     } else {
       this.haveTriedToSubmit = true;
     }

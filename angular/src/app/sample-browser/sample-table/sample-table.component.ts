@@ -90,12 +90,12 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.tryDrawTable();
   }
 
-  columns = [
-    //{formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
-    {title: 'Sample ID', field: 'sample_id'},
-  ]
-
-  tab = document.createElement('div');
+  initialColumns(): Tabulator.ColumnDefinition[] {
+    return [
+      //{formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
+      {title: 'Sample ID', field: 'sample_id'},
+    ];
+  }
 
   saveSampleGroup(): void {
     if (this.sampleGroupName && this.selectedTreatmentGroups.size > 0) {
@@ -178,8 +178,27 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         ignoreBackdropClick: true });
   }
 
-  filtersSubmitted(): void {
+  onSubmitFilters(_filters: SampleFilter[]): void {
     this.sampleFilteringModalRef?.hide();
+    this.filterSamples(true);
+  }
+
+  private filterSamples(grouped: boolean): void {
+    const filteredSamples = this.samples?.filter(sample => 
+      this.sampleFilters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
+    if (!grouped) {
+      this.tabulator?.setData(filteredSamples);
+    } else {
+      const includedTreatments = new Set<string>();
+      filteredSamples?.forEach(sample => {
+        includedTreatments.add(sample.treatment);
+        includedTreatments.add(sample.control_treatment);
+      });
+      const groupedFilteredSamples = this.samples?.filter(sample =>
+        includedTreatments.has(sample.treatment)
+      );
+      this.tabulator?.setData(groupedFilteredSamples);
+    }
   }
 
   columnForAttribute(attribute: IAttribute): 
@@ -238,7 +257,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         this.tabulator = new Tabulator(tabulatorElement, {
           data: this.samples,
           selectable: true,
-          columns: this.columns,
+          columns: this.initialColumns(),
           layout:"fitDataFill",
           height: "calc(100vh - 18.3rem)",
           /* eslint-disable @typescript-eslint/no-unsafe-assignment,

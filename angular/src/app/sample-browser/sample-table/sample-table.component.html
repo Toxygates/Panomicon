@@ -50,7 +50,6 @@
         </ul>
     </div>
     <button type="button" class="btn btn-primary mb-1 mr-2"
-        style="display:none"
         (click)="openSampleFilteringModal(sampleFilteringModal)">
         Filter samples
     </button>
@@ -92,8 +91,8 @@
     </div>
     <div class="modal-body">
     <app-sample-filtering [attributes]="fetchedAttributes"
-        [filters]="sampleFilters" [attributeMap]="attributeMap"
-        (submitFilters)="filtersSubmitted()">
+        [filters]="sampleFilters" [attributeMap]="attributeMap" 
+        (submitFilters)="onSubmitFilters($event)">
     </app-sample-filtering>
     </div>
 </ng-template>
