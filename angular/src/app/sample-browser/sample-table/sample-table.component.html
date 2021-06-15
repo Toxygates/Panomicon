@@ -92,14 +92,9 @@
 </div>
 
 <ng-template #sampleFilteringModal>
-    <div class="modal-header">
-        <h4 class="modal-title pull-left">Filter samples</h4>
-    </div>
-    <div class="modal-body">
     <app-sample-filtering [attributes]="fetchedAttributes"
         [filters]="sampleFilters" [attributeMap]="attributeMap" 
         (submitFilters)="onSubmitFilters($event)"
         (cancelEditFilters)="onCancelEditFilters()">
     </app-sample-filtering>
-    </div>
 </ng-template>
