@@ -1,6 +1,6 @@
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
          AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
-import Tabulator, { GroupComponent } from 'tabulator-tables';
+import Tabulator, { ColumnDefinition, GroupComponent } from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
@@ -137,15 +137,47 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     });
   }
 
+  static formatterForFilters(filters: SampleFilter[]): Tabulator.Formatter {
+    return (cell: Tabulator.CellComponent, _formatterParams: unknown,
+        _onRendered: unknown) => {
+      const value = cell.getValue() as string;
+      const color = filters.every(filter =>
+        filter.passesFilter(value)) ?
+          "blue" : "red";
+      return `<span style="color:${color}">${value}</span>`;
+    }
+  }
+
+  createColumnForAttribute(attribute: IAttribute): Tabulator.ColumnDefinition {
+    const column: Tabulator.ColumnDefinition =  {
+      title: attribute.title,
+      field: attribute.id,
+    };
+    const filtersForColumn = this.sampleFilters.filter(filter => filter.attribute == attribute.id);
+    if (filtersForColumn.length > 0) {
+      column.formatter =  SampleTableComponent.formatterForFilters(filtersForColumn);
+    }
+    return column;
+  }
+
+  updateColumns(): void {
+    const columns = this.tabulator?.getColumns()
+    columns?.forEach(column => {
+      const definition = column.getDefinition();
+      const filtersForColumn = this.sampleFilters.filter(filter => filter.attribute == definition.field);
+      const formatter = filtersForColumn.length > 0 ?
+        SampleTableComponent.formatterForFilters(filtersForColumn) :
+        "plaintext";
+      void column.updateDefinition({ title: definition.title, formatter: formatter} as unknown as ColumnDefinition);
+    })
+  }
+
   toggleColumn(attribute: IAttribute): void {
-    const columnDefinition = this.columnForAttribute(attribute);
+    const columnDefinition = this.findColumnForAttribute(attribute);
     if (columnDefinition?.field) {
       void this.tabulator?.deleteColumn(columnDefinition.field);
     } else {
-      void this.tabulator?.addColumn({
-        title: attribute.title,
-        field: attribute.id,
-      });
+      void this.tabulator?.addColumn(this.createColumnForAttribute(attribute));
       if (!this.fetchedAttributes.has(attribute)) {
         this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
         void this.tabulator?.replaceData(this.samples);
@@ -183,6 +215,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.sampleFilteringModalRef?.hide();
     this.sampleFilters = filters;
     this.filterSamples(true);
+    this.updateColumns();
   }
 
   onCancelEditFilters(): void {
@@ -193,6 +226,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.sampleFilters = [];
     this.filteredSamples = undefined;
     this.tabulator?.setData(this.samples);
+    this.updateColumns();
   }
 
   private filterSamples(grouped: boolean): void {
@@ -213,7 +247,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  columnForAttribute(attribute: IAttribute): 
+  findColumnForAttribute(attribute: IAttribute):
       Tabulator.ColumnDefinition | undefined {
     const columnDefinitions = this.tabulator?.getColumnDefinitions();
     if (!columnDefinitions) throw new Error("columnDefinitions not defiend");
