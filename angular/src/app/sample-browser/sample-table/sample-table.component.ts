@@ -1,13 +1,13 @@
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
          AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
-import Tabulator, { ColumnDefinition, GroupComponent } from 'tabulator-tables';
+import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../models/sample-filter.model';
 import { IAttribute, Sample } from 'src/app/models/backend-types.model';
-
+import { SampleTableHelper } from './sample-table-helper'
 @Component({
   selector: 'app-sample-table',
   templateUrl: './sample-table.component.html',
@@ -25,6 +25,8 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   tabulator: Tabulator | undefined;
   sampleFilteringModalRef: BsModalRef | undefined;
   tabulatorReady = false;
+
+  helper = new SampleTableHelper();
 
   @Input() samples: Sample[] | undefined;
   @Input() batchId: string | undefined;
@@ -137,47 +139,12 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     });
   }
 
-  static formatterForFilters(filters: SampleFilter[]): Tabulator.Formatter {
-    return (cell: Tabulator.CellComponent, _formatterParams: unknown,
-        _onRendered: unknown) => {
-      const value = cell.getValue() as string;
-      const color = filters.every(filter =>
-        filter.passesFilter(value)) ?
-          "blue" : "red";
-      return `<span style="color:${color}">${value}</span>`;
-    }
-  }
-
-  createColumnForAttribute(attribute: IAttribute): Tabulator.ColumnDefinition {
-    const column: Tabulator.ColumnDefinition =  {
-      title: attribute.title,
-      field: attribute.id,
-    };
-    const filtersForColumn = this.sampleFilters.filter(filter => filter.attribute == attribute.id);
-    if (filtersForColumn.length > 0) {
-      column.formatter =  SampleTableComponent.formatterForFilters(filtersForColumn);
-    }
-    return column;
-  }
-
-  updateColumns(): void {
-    const columns = this.tabulator?.getColumns()
-    columns?.forEach(column => {
-      const definition = column.getDefinition();
-      const filtersForColumn = this.sampleFilters.filter(filter => filter.attribute == definition.field);
-      const formatter = filtersForColumn.length > 0 ?
-        SampleTableComponent.formatterForFilters(filtersForColumn) :
-        "plaintext";
-      void column.updateDefinition({ title: definition.title, formatter: formatter} as unknown as ColumnDefinition);
-    })
-  }
-
   toggleColumn(attribute: IAttribute): void {
     const columnDefinition = this.findColumnForAttribute(attribute);
     if (columnDefinition?.field) {
       void this.tabulator?.deleteColumn(columnDefinition.field);
     } else {
-      void this.tabulator?.addColumn(this.createColumnForAttribute(attribute));
+      void this.tabulator?.addColumn(SampleTableHelper.createColumnForAttribute(attribute, this.sampleFilters));
       if (!this.fetchedAttributes.has(attribute)) {
         this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
         void this.tabulator?.replaceData(this.samples);
@@ -215,7 +182,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.sampleFilteringModalRef?.hide();
     this.sampleFilters = filters;
     this.filterSamples(true);
-    this.updateColumns();
+    SampleTableHelper.updateColumns(this.tabulator, this.sampleFilters);
   }
 
   onCancelEditFilters(): void {
@@ -226,25 +193,15 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     this.sampleFilters = [];
     this.filteredSamples = undefined;
     this.tabulator?.setData(this.samples);
-    this.updateColumns();
+    SampleTableHelper.updateColumns(this.tabulator, this.sampleFilters);
   }
 
   private filterSamples(grouped: boolean): void {
-    this.filteredSamples = this.samples?.filter(sample =>
-      this.sampleFilters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
-    if (!grouped) {
-      this.tabulator?.setData(this.filteredSamples);
-    } else {
-      const includedTreatments = new Set<string>();
-      this.filteredSamples?.forEach(sample => {
-        includedTreatments.add(sample.treatment);
-        includedTreatments.add(sample.control_treatment);
-      });
-      const groupedFilteredSamples = this.samples?.filter(sample =>
-        includedTreatments.has(sample.treatment)
-      );
-      this.tabulator?.setData(groupedFilteredSamples);
-    }
+    if (this.samples == undefined) throw new Error("samples not defined");
+    const [filteredSamples, samplesForTabulator] =
+      SampleTableHelper.filterSamples(this.samples, this.sampleFilters, grouped);
+    this.filteredSamples = filteredSamples;
+    this.tabulator?.setData(samplesForTabulator);
   }
 
   findColumnForAttribute(attribute: IAttribute):
@@ -261,43 +218,6 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
       const tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
       (this.tabulatorContainer?.nativeElement as HTMLElement).appendChild(tabulatorElement);
-
-      const groupHeader = (value: string, count: number, _data: unknown,
-          group: GroupComponent) => {
-        //value - the value all members of this group share
-        //count - the number of rows in this group
-        //data - an array of all the row data objects in this group
-        //group - the group component for the group
-
-        let prefix: string, itemCount: number, itemWord: string, button: string;
-
-        if (group.getParentGroup()) {
-          itemCount = count;
-          itemWord = " sample";
-          if (value != (group.getParentGroup() as GroupComponent).getKey()) {
-            prefix = "Treatment group - ";
-            if (this.selectedTreatmentGroups.has(value)) {
-              button = "<button type='button' class='btn btn-success'>"
-                + "Group selected <i class='bi bi-check'></i></button>"
-            } else {
-              button = "<button type='button' class='btn btn-secondary'>"
-              + "Select group</button>"
-            }
-          } else {
-            prefix = "Control group - ";
-            button = "";
-          }
-        } else {
-          prefix = "Control group - ";
-          itemCount = group.getSubGroups().length;
-          itemWord = " group";
-          button = "";
-        }
-
-        itemWord += itemCount != 1 ? "s" : "";
-
-        return `${prefix}${value}<span>(${itemCount}${itemWord})</span> ${button}`;
-      }
 
       this.ngZone.runOutsideAngular(() => {
         this.tabulator = new Tabulator(tabulatorElement, {
@@ -318,7 +238,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
           ]) as any,
           /* eslint-enable @typescript-eslint/no-unsafe-assignment,
                            @typescript-eslint/no-explicit-any */
-          groupHeader: groupHeader,
+          groupHeader: SampleTableHelper.groupHeader(this.selectedTreatmentGroups),
           groupClick: (e, group)=> {
             if (e.target instanceof Element &&
                 (e.target.tagName=="BUTTON" ||
@@ -342,10 +262,6 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
             }
           },
           groupToggleElement: false,
-          // groupStartOpen: function(value, count, data, group){
-          //   return true;
-          //   return value.substring(0, 7) == "Control";
-          // },
         });
       });
     }
