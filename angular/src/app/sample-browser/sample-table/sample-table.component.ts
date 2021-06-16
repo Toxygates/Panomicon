@@ -1,13 +1,14 @@
 import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
-         AfterViewInit, NgZone, ChangeDetectorRef, ElementRef } from '@angular/core';
+         AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../models/sample-filter.model';
 import { IAttribute, Sample } from 'src/app/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
-import { forkJoin, Subject } from 'rxjs';
+import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-sample-table',
   templateUrl: './sample-table.component.html',
@@ -17,16 +18,16 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   constructor(private backend: BackendService, private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef,
-    private userData: UserDataService, private toastr: ToastrService) {
+    private userData: UserDataService, private toastr: ToastrService,
+    private modalService: BsModalService) {
     this.requiredAttributes.add("sample_id");
   }
 
   tabulator: Tabulator | undefined;
+  sampleFilteringModalRef: BsModalRef | undefined;
   tabulatorReady = false;
 
   helper = new SampleTableHelper();
-
-  openFilterEditorModalSubject = new Subject<void>();
 
   @Input() samples: Sample[] | undefined;
   @Input() batchId: string | undefined;
@@ -166,10 +167,21 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     }
   }
 
+  openSampleFilteringModal(template: TemplateRef<unknown>): void {
+    this.sampleFilteringModalRef = this.modalService.show(template,
+      { class: 'modal-dialog-centered modal-lg',
+        ignoreBackdropClick: true });
+  }
+
   onSubmitFilters(filters: SampleFilter[]): void {
+    this.sampleFilteringModalRef?.hide();
     this.helper.filters = filters;
     this.filterSamples(true);
     this.helper.updateColumnFormatters(this.tabulator);
+  }
+
+  onCancelEditFilters(): void {
+    this.sampleFilteringModalRef?.hide();
   }
 
   clearFilters(): void {

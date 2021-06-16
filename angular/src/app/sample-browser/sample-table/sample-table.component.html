@@ -50,7 +50,7 @@
         </ul>
     </div>
     <button type="button" class="btn btn-primary mb-1 mr-2"
-        (click)="openFilterEditorModalSubject.next()">
+        (click)="openSampleFilteringModal(sampleFilteringModal)">
         Filter samples
     </button>
     <button *ngIf="helper.filters.length > 0"
@@ -72,8 +72,10 @@
     {{samples.length}} samples in batch {{batchId}}
 </div>
 
-<app-sample-filtering [attributes]="fetchedAttributes"
-    [filters]="helper.filters" [attributeMap]="attributeMap"
-    [openModalObservable]="openFilterEditorModalSubject"
-    (submitFilters)="onSubmitFilters($event)">
-</app-sample-filtering>
+<ng-template #sampleFilteringModal>
+    <app-sample-filtering [attributes]="fetchedAttributes"
+        [filters]="helper.filters" [attributeMap]="attributeMap" 
+        (submitFilters)="onSubmitFilters($event)"
+        (cancelEditFilters)="onCancelEditFilters()">
+    </app-sample-filtering>
+</ng-template>
