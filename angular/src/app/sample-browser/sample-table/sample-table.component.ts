@@ -38,9 +38,6 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   requiredAttributes = new Set<string>();
   fetchedAttributes = new Set<IAttribute>();
 
-  sampleFilters: SampleFilter[] = [];
-  filteredSamples: Sample[] | undefined;
-
   sampleGroupName: string | undefined;
   sampleCreationIsCollapsed = true;
   readyToCreateGroup = true;
@@ -61,7 +58,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
       } else {
         this.fetchedAttributes = new Set<IAttribute>();
         this.samplesMap = new Map<string, Sample>();
-        this.sampleFilters = [];
+        this.helper.filters = [];
         this.samples?.forEach((sample) => {
           this.samplesMap.set(sample.sample_id, sample);
           Object.keys(sample).forEach((attributeId) => {
@@ -144,7 +141,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     if (columnDefinition?.field) {
       void this.tabulator?.deleteColumn(columnDefinition.field);
     } else {
-      void this.tabulator?.addColumn(SampleTableHelper.createColumnForAttribute(attribute, this.sampleFilters));
+      void this.tabulator?.addColumn(this.helper.createColumnForAttribute(attribute));
       if (!this.fetchedAttributes.has(attribute)) {
         this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
         void this.tabulator?.replaceData(this.samples);
@@ -180,9 +177,9 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   onSubmitFilters(filters: SampleFilter[]): void {
     this.sampleFilteringModalRef?.hide();
-    this.sampleFilters = filters;
+    this.helper.filters = filters;
     this.filterSamples(true);
-    SampleTableHelper.updateColumns(this.tabulator, this.sampleFilters);
+    this.helper.updateColumnFormatters(this.tabulator);
   }
 
   onCancelEditFilters(): void {
@@ -190,18 +187,14 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   }
 
   clearFilters(): void {
-    this.sampleFilters = [];
-    this.filteredSamples = undefined;
+    this.helper.clearFilters();
     this.tabulator?.setData(this.samples);
-    SampleTableHelper.updateColumns(this.tabulator, this.sampleFilters);
+    this.helper.updateColumnFormatters(this.tabulator);
   }
 
   private filterSamples(grouped: boolean): void {
     if (this.samples == undefined) throw new Error("samples not defined");
-    const [filteredSamples, samplesForTabulator] =
-      SampleTableHelper.filterSamples(this.samples, this.sampleFilters, grouped);
-    this.filteredSamples = filteredSamples;
-    this.tabulator?.setData(samplesForTabulator);
+    this.tabulator?.setData(this.helper.filterSamples(this.samples, grouped));
   }
 
   findColumnForAttribute(attribute: IAttribute):

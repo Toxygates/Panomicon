@@ -2,7 +2,15 @@ import { IAttribute, Sample } from "src/app/models/backend-types.model";
 import { SampleFilter } from "src/app/models/sample-filter.model";
 
 export class SampleTableHelper {
-  static formatterForFilters(filters: SampleFilter[]): Tabulator.Formatter {
+  filters: SampleFilter[] = [];
+  filteredSamples: Sample[] | undefined;
+
+  clearFilters(): void {
+    this.filters = [];
+    this.filteredSamples = undefined;
+  }
+
+  formatterForFilters(filters: SampleFilter[]): Tabulator.Formatter {
     return (cell: Tabulator.CellComponent, _formatterParams: unknown,
         _onRendered: unknown) => {
       const value = cell.getValue() as string;
@@ -13,23 +21,23 @@ export class SampleTableHelper {
     }
   }
 
-  static createColumnForAttribute(attribute: IAttribute, filters: SampleFilter[]): Tabulator.ColumnDefinition {
+  createColumnForAttribute(attribute: IAttribute): Tabulator.ColumnDefinition {
     const column: Tabulator.ColumnDefinition =  {
       title: attribute.title,
       field: attribute.id,
     };
-    const filtersForColumn = filters.filter(filter => filter.attribute == attribute.id);
+    const filtersForColumn = this.filters.filter(filter => filter.attribute == attribute.id);
     if (filtersForColumn.length > 0) {
       column.formatter =  this.formatterForFilters(filtersForColumn);
     }
     return column;
   }
 
-  static updateColumns(tabulator: Tabulator | undefined, filters: SampleFilter[]): void {
+  updateColumnFormatters(tabulator: Tabulator | undefined): void {
     const columns = tabulator?.getColumns()
     columns?.forEach(column => {
       const definition = column.getDefinition();
-      const filtersForColumn = filters.filter(filter => filter.attribute == definition.field);
+      const filtersForColumn = this.filters.filter(filter => filter.attribute == definition.field);
       const formatter = filtersForColumn.length > 0 ?
         this.formatterForFilters(filtersForColumn) :
         "plaintext";
@@ -73,22 +81,24 @@ export class SampleTableHelper {
     }
   }
 
-  static filterSamples(samples: Sample[], filters: SampleFilter[], 
-      grouped: boolean): [Sample[], Sample[]] {
-    const filteredSamples = samples.filter(sample =>
-    filters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
+  filterSamples(samples: Sample[], grouped: boolean): Sample[] {
+    this.filteredSamples = samples.filter(sample =>
+    this.filters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
+
+    let samplesToReturn: Sample[];
     if (!grouped) {
-      return [filteredSamples, filteredSamples];
+      samplesToReturn = this.filteredSamples;
     } else {
       const includedTreatments = new Set<string>();
-      filteredSamples.forEach(sample => {
+      this.filteredSamples.forEach(sample => {
         includedTreatments.add(sample.treatment);
         includedTreatments.add(sample.control_treatment);
       });
       const groupedFilteredSamples = samples.filter(sample =>
         includedTreatments.has(sample.treatment)
       );
-      return [filteredSamples, groupedFilteredSamples];
+      samplesToReturn = groupedFilteredSamples;
     }
+    return samplesToReturn;
   }
 }
