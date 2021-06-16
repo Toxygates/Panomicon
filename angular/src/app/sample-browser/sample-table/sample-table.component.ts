@@ -39,9 +39,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   requiredAttributes = new Set<string>();
   fetchedAttributes = new Set<IAttribute>();
 
-  sampleGroupName: string | undefined;
   sampleCreationIsCollapsed = true;
-  readyToCreateGroup = true;
 
   controlGroupsExpanded = true;
   treatmentGroupsExpanded = true;
@@ -101,19 +99,15 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
     ];
   }
 
-  saveSampleGroup(): void {
-    if (this.sampleGroupName && this.selectedTreatmentGroups.size > 0) {
-      const samplesInGroup: string[] = [];
-      this.samples?.forEach((sample) => {
-        if (this.selectedTreatmentGroups.has(sample.treatment)) {
-          samplesInGroup.push(sample.sample_id);
-        }
-      });
+  onSampleGroupSaved(sampleGroupName: string): void {
+    if (this.selectedTreatmentGroups.size > 0) {
+      if (this.samples == null) throw new Error("samples not defined");
+      const samplesInGroup = this.samples.filter(s =>
+        this.selectedTreatmentGroups.has(s.treatment)).map(s =>
+          s.sample_id);
 
-      this.userData.saveSampleGroup(this.sampleGroupName, samplesInGroup);
-      this.toastr.success('Group name: ' + this.sampleGroupName, 'Sample group saved');
-      this.sampleCreationIsCollapsed = true;
-      this.sampleGroupName = undefined;
+      this.userData.saveSampleGroup(sampleGroupName, samplesInGroup);
+      this.toastr.success('Group name: ' + sampleGroupName, 'Sample group saved');
       this.selectedTreatmentGroups.clear();
 
       this.tabulator?.redraw();

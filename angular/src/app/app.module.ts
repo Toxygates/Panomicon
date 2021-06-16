@@ -21,6 +21,7 @@ import { ExpressionTableComponent } from './expression-table/expression-table.co
 import { GroupManagerComponent } from './group-manager/group-manager.component';
 import { SampleTableComponent } from './sample-browser/sample-table/sample-table.component';
 import { SampleFilteringComponent } from './sample-browser/sample-filtering/sample-filtering.component';
+import { GroupCreationComponent } from './sample-browser/group-creation/group-creation.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { SampleFilteringComponent } from './sample-browser/sample-filtering/samp
     ExpressionTableComponent,
     GroupManagerComponent,
     SampleTableComponent,
-    SampleFilteringComponent
+    SampleFilteringComponent,
+    GroupCreationComponent
   ],
   imports: [
     BrowserModule,

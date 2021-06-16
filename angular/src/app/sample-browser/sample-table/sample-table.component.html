@@ -12,7 +12,7 @@
 <div *ngIf="samples" class="mb-1">
     <button type="button" class="btn btn-primary mb-1 mr-2"
         (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
-        [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseBasic">
+        [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseGroupCreation">
         Create sample group...
     </button>
     <!-- <button type="button" class="btn btn-secondary mb-1 mr-2"
@@ -59,30 +59,11 @@
         Clear filters
     </button>
 </div>
-<div id="collapseBasic" class="mb-1" [collapse]="sampleCreationIsCollapsed"
-    [isAnimated]="true">
-    {{selectedTreatmentGroups.size > 0 ?
-        selectedTreatmentGroups.size + " groups selected." :
-        "Select some treatment groups to create a sample group:"
-    }}
-    <form>
-        <div class="form-row align-items-center mt-1">
-            <div class="col-auto">
-                <label class="sr-only" for="sampleGroupNameInput">Sample group name</label>
-                <input type="text" name="sampleGroupNameInput" [(ngModel)]="sampleGroupName" 
-                    class="form-control mb-2" placeholder="Enter a name"
-                    (keyup.enter)="saveSampleGroup()">
-            </div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-primary mb-2"
-                    (click)="saveSampleGroup()"
-                    [disabled]="!sampleGroupName || selectedTreatmentGroups.size === 0">
-                    Save sample group
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
+
+<app-group-creation [collapsed]="sampleCreationIsCollapsed"
+    [selectedTreatmentGroups]="selectedTreatmentGroups"
+    (sampleGroupSaved)="onSampleGroupSaved($event)">
+</app-group-creation>
 
 <div #tabulatorContainer></div>
 
