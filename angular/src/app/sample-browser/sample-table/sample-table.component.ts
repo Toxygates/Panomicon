@@ -8,6 +8,7 @@ import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../models/sample-filter.model';
 import { IAttribute, Sample } from 'src/app/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
+import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-sample-table',
   templateUrl: './sample-table.component.html',
@@ -50,37 +51,40 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef | undefined;
 
   ngOnChanges(changes: SimpleChanges):void {
-    if (changes.samples != null) {
-      if (changes.samples.currentValue == null) {
-        if (this.tabulatorContainer != null) {
-          (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
-        }
-      } else {
-        this.fetchedAttributes = new Set<IAttribute>();
-        this.samplesMap = new Map<string, Sample>();
-        this.helper.filters = [];
-        this.samples?.forEach((sample) => {
-          this.samplesMap.set(sample.sample_id, sample);
-          Object.keys(sample).forEach((attributeId) => {
-            const found = this.attributeMap.get(attributeId);
-            if (!found) throw new Error(`Sample had unknown attribute ${attributeId}`);
-            this.fetchedAttributes.add(found);
-          })
-        });
-        this.tryDrawTable();
-      }
-    }
     if (changes.batchId != null && 
         changes.batchId.currentValue != changes.batchId.previousValue) {
+
+      this.samples = undefined;
+      this.samplesMap = new Map<string, Sample>();
+      this.fetchedAttributes = new Set<IAttribute>();
+      this.attributes = undefined;
+      this.helper.filters = [];
+
+      if (this.tabulatorContainer != null) {
+        (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
+      }
+
       if (this.batchId) { // (always true)
-        this.backend.getAttributesForBatch(this.batchId)
-          .subscribe(
-            result => {
-              this.attributes = result;
-              this.attributeMap = new Map<string, IAttribute>();
-              this.attributes.forEach(a => this.attributeMap.set(a.id, a));
-            }
-          )
+        forkJoin({
+          samples: this.backend.getSamplesForBatch(this.batchId),
+          attributes: this.backend.getAttributesForBatch(this.batchId)
+        }).subscribe(({samples, attributes}) => {
+          this.samples = samples;
+          this.samples?.forEach((s) => this.samplesMap.set(s.sample_id, s));
+
+          this.attributes = attributes;
+          this.attributeMap = new Map<string, IAttribute>();
+          this.attributes.forEach(a => this.attributeMap.set(a.id, a));
+
+          this.samples?.forEach((sample) => {
+            Object.keys(sample).forEach((attributeId) => {
+              const found = this.attributeMap.get(attributeId);
+              if (!found) throw new Error(`Sample had unknown attribute ${attributeId}`);
+              this.fetchedAttributes.add(found);
+            })
+          });
+          this.tryDrawTable();
+        });
       }
     }
   }

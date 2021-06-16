@@ -5,7 +5,7 @@
                 <app-dataset-picker [selectedDataset]="datasetId"
                     (selectedDatasetChange)="onSelectedDatasetChange($event)">
                 </app-dataset-picker>
-                <app-batch-picker [datasetId]="datasetId" (selectedBatchChange)="batchChanged($event)"></app-batch-picker>
+                <app-batch-picker [datasetId]="datasetId" (selectedBatchChange)="onSelectedBatchChange($event)"></app-batch-picker>
             </div>
         </div>
     </div>
@@ -15,7 +15,7 @@
     <div class="row">
         <div class="col-lg-12 pcard_container">
             <div class="pcard ui_panel">
-                <app-sample-table [samples]=samples [batchId]=batchId>
+                <app-sample-table [batchId]=batchId>
                 </app-sample-table>
             </div>
         </div>

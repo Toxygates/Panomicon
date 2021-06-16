@@ -15,7 +15,6 @@ export class SampleBrowserComponent implements OnInit {
 
   datasetId: string | undefined;
   batchId: string | undefined;
-  samples: Sample[] | undefined;
 
   ngOnInit(): void {
     this.datasetId = this.userData.getSelectedDataset();
@@ -26,14 +25,7 @@ export class SampleBrowserComponent implements OnInit {
     this.userData.setSelectedDataset(datasetId);
   }
 
-  batchChanged(batchId: string): void {
+  onSelectedBatchChange(batchId: string): void {
     this.batchId = batchId;
-    delete this.samples;
-    this.backend.getSamplesForBatch(batchId)
-      .subscribe(
-        result => {
-          this.samples = result;
-        }
-      )
   }
 }
