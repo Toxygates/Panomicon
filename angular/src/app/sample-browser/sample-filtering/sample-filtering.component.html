@@ -1,67 +1,69 @@
-<div class="modal-header">
-    <h4 class="modal-title pull-left">Filter samples</h4>
-</div>
-<div class="modal-body">
-    <form *ngFor="let filter of filters; index as i">
-        <div class="form-row">
-            <div class="form-group col-auto">
-                <label for="attribute-{{i}}">Attribute</label>
-                <select id="attribute-{{i}}" [(ngModel)]="filter.attribute"
-                        name="attribute-{{i}}" class="custom-select"
-                        [ngClass]="{'is-invalid': !filter.validateAttribute(attributeMap) && (filter.attribute || haveTriedToSubmit)}">
-                    <option selected disabled [ngValue]="undefined">Choose...</option>
-                    <option *ngFor="let a of attributes" [ngValue]="a.id">{{a.title}}</option>
-                </select>
-                <div class="invalid-feedback">
-                    Please select an attribute
+<ng-template #modal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Filter samples</h4>
+    </div>
+    <div class="modal-body">
+        <form *ngFor="let filter of filters; index as i">
+            <div class="form-row">
+                <div class="form-group col-auto">
+                    <label for="attribute-{{i}}">Attribute</label>
+                    <select id="attribute-{{i}}" [(ngModel)]="filter.attribute"
+                            name="attribute-{{i}}" class="custom-select"
+                            [ngClass]="{'is-invalid': !filter.validateAttribute(attributeMap) && (filter.attribute || haveTriedToSubmit)}">
+                        <option selected disabled [ngValue]="undefined">Choose...</option>
+                        <option *ngFor="let a of attributes" [ngValue]="a.id">{{a.title}}</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select an attribute
+                    </div>
+                </div>
+                <div class="form-group col-auto">
+                    <label for="type-{{i}}">Filter type</label>
+                    <select id="type-{{i}}" [(ngModel)]="filter.type"
+                            name="type-{{i}}" class="custom-select"
+                            [ngClass]="{'is-invalid': !filter.validateType(attributeMap) && (filter.type || haveTriedToSubmit)}">
+                        <option selected disabled [ngValue]="undefined">Choose...</option>
+                        <option *ngFor="let t of sampleFilterTypes" [ngValue]="t"
+                                [disabled]="!filter.validateType(attributeMap, t)">
+                            {{t}}
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select {{filter.correctTypeInfo(attributeMap)}}
+                    </div>
+                </div>
+                <div class="form-group col-auto">
+                    <label for="parameter-{{i}}">Parameter</label>
+                    <input type="text" id="parameter-{{i}}" [(ngModel)]="filter.parameter"
+                        name="parameter-{{i}}" class="form-control"
+                        placeholder="Enter {{filter.correctParameterInfo()}}"
+                        [ngClass]="{'is-invalid': !filter.validateParameter() && (filter.parameter || haveTriedToSubmit)}">
+                    <div class="invalid-feedback">
+                        Please enter {{filter.correctParameterInfo()}}
+                    </div>
+                </div>
+                <div class="form-group col-auto filter-submit-div">
+                    <button type="button" class="btn btn-danger"
+                        (click)="removeFilter(filter)">
+                        Remove filter
+                    </button>
                 </div>
             </div>
-            <div class="form-group col-auto">
-                <label for="type-{{i}}">Filter type</label>
-                <select id="type-{{i}}" [(ngModel)]="filter.type"
-                        name="type-{{i}}" class="custom-select"
-                        [ngClass]="{'is-invalid': !filter.validateType(attributeMap) && (filter.type || haveTriedToSubmit)}">
-                    <option selected disabled [ngValue]="undefined">Choose...</option>
-                    <option *ngFor="let t of sampleFilterTypes" [ngValue]="t"
-                            [disabled]="!filter.validateType(attributeMap, t)">
-                        {{t}}
-                    </option>
-                </select>
-                <div class="invalid-feedback">
-                    Please select {{filter.correctTypeInfo(attributeMap)}}
-                </div>
-            </div>
-            <div class="form-group col-auto">
-                <label for="parameter-{{i}}">Parameter</label>
-                <input type="text" id="parameter-{{i}}" [(ngModel)]="filter.parameter"
-                    name="parameter-{{i}}" class="form-control"
-                    placeholder="Enter {{filter.correctParameterInfo()}}"
-                    [ngClass]="{'is-invalid': !filter.validateParameter() && (filter.parameter || haveTriedToSubmit)}">
-                <div class="invalid-feedback">
-                    Please enter {{filter.correctParameterInfo()}}
-                </div>
-            </div>
-            <div class="form-group col-auto filter-submit-div">
-                <button type="button" class="btn btn-danger"
-                    (click)="removeFilter(filter)">
-                    Remove filter
-                </button>
-            </div>
-        </div>
-        <hr>
-    </form>
-    <button type="button" class="btn btn-primary mr-2"
-        (click)="appendNewFilter()">
-        Add filter
-    </button>
-    <span class="float-sm-right">
-        <button type="button" class="btn btn-danger mr-2"
-            (click)="cancelEditFilters.emit()">
-            Cancel
+            <hr>
+        </form>
+        <button type="button" class="btn btn-primary mr-2"
+            (click)="appendNewFilter()">
+            Add filter
         </button>
-        <button type="button" class="btn btn-success"
-            (click)="applyFilters()">
-            Apply filters
-        </button>
-    </span>
-</div>
+        <span class="float-sm-right">
+            <button type="button" class="btn btn-danger mr-2"
+                (click)="modalRef?.hide()">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-success"
+                (click)="applyFilters()">
+                Apply filters
+            </button>
+        </span>
+    </div>
+</ng-template>
