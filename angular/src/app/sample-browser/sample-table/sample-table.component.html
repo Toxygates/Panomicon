@@ -50,8 +50,10 @@
         </ul>
     </div>
     <button type="button" class="btn btn-primary mb-1 mr-2"
+        [ngClass]="{'btn-primary': helper.filters.length === 0,
+                    'btn-success': helper.filters.length > 0 }"
         (click)="openSampleFilteringModal(sampleFilteringModal)">
-        Filter samples
+        {{ helper.filters.length > 0 ? "Edit filters" : "Filter samples" }}
     </button>
     <button *ngIf="helper.filters.length > 0"
         type="button" class="btn btn-danger mb-1 mr-2"
