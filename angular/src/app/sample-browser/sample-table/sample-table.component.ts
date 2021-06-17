@@ -8,7 +8,7 @@ import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../models/sample-filter.model';
 import { IAttribute, Sample } from 'src/app/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 @Component({
   selector: 'app-sample-table',
   templateUrl: './sample-table.component.html',
@@ -39,6 +39,8 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   requiredAttributes = new Set<string>();
   fetchedAttributes = new Set<IAttribute>();
 
+  subscriptions: Subscription[] = [];
+
   sampleCreationIsCollapsed = true;
 
   controlGroupsExpanded = true;
@@ -58,12 +60,15 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
       this.attributes = undefined;
       this.helper.filters = [];
 
+      this.subscriptions.forEach(s => s.unsubscribe());
+      this.subscriptions = [];
+
       if (this.tabulatorContainer != null) {
         (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
       }
 
       if (this.batchId) { // (always true)
-        forkJoin({
+        this.subscriptions.push(forkJoin({
           samples: this.backend.getSamplesForBatch(this.batchId),
           attributes: this.backend.getAttributesForBatch(this.batchId)
         }).subscribe(({samples, attributes}) => {
@@ -82,7 +87,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
             })
           });
           this.tryDrawTable();
-        });
+        }));
       }
     }
   }
@@ -144,7 +149,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
         this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
         void this.tabulator?.replaceData(this.samples);
         if (this.batchId && this.samples) {
-          this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
+          this.subscriptions.push(this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
             [this.batchId], [attribute.id]).subscribe(
               result => {
                   this.fetchedAttributes.add(attribute);
@@ -161,7 +166,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
                   })
                   void this.tabulator?.replaceData(this.samples);
               }
-            );
+            ));
           }
       }
     }
