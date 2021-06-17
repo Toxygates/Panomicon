@@ -5,7 +5,7 @@ import { SampleFilteringComponent } from './sample-filtering.component';
 
 class MockToastrService {}
 
-describe('SampleFilterINGComponent', () => {
+describe('SampleFilteringComponent', () => {
   let component: SampleFilteringComponent;
   let fixture: ComponentFixture<SampleFilteringComponent>;
 
