@@ -10,7 +10,7 @@
 </ng-container>
 
 <div *ngIf="samples" class="mb-1">
-    <button type="button" class="btn btn-primary mb-1 mr-2"
+    <button type="button" class="btn btn-primary mb-2 mr-2"
         (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
         [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseGroupCreation">
         Create sample group...
@@ -28,7 +28,7 @@
     <div class="btn-group" dropdown [isDisabled]="!attributes"
         style="vertical-align:top">
         <button id="button-basic" dropdownToggle type="button"
-                class="btn btn-primary dropdown-toggle mr-2"
+                class="btn btn-primary dropdown-toggle mb-2 mr-2"
                 [ngClass]="{'btn-primary': attributes,
                             'btn-secondary': !attributes}"
                 aria-controls="dropdown-basic">
@@ -49,14 +49,14 @@
             </li>
         </ul>
     </div>
-    <button type="button" class="btn btn-primary mb-1 mr-2"
+    <button type="button" class="btn btn-primary mb-2 mr-2"
         [ngClass]="{'btn-primary': helper.filters.length === 0,
                     'btn-success': helper.filters.length > 0 }"
         (click)="openSampleFilteringModal(sampleFilteringModal)">
         {{ helper.filters.length > 0 ? "Edit filters" : "Filter samples" }}
     </button>
     <button *ngIf="helper.filters.length > 0"
-        type="button" class="btn btn-danger mb-1 mr-2"
+        type="button" class="btn btn-danger mb-2 mr-2"
         (click)="clearFilters()">
         Clear filters
     </button>

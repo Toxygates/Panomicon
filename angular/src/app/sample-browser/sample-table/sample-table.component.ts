@@ -223,7 +223,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
           selectable: true,
           columns: this.initialColumns(),
           layout:"fitDataFill",
-          height: "calc(100vh - 18.3rem)",
+          height: "calc(100vh - 18.55rem)",
           /* eslint-disable @typescript-eslint/no-unsafe-assignment,
                             @typescript-eslint/no-explicit-any */
           groupBy: ([function(data: { control_treatment: string }): string {
