@@ -1,14 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ToastrService } from 'ngx-toastr';
 
 import { SampleFilteringComponent } from './sample-filtering.component';
 
-describe('SampleFilterComponent', () => {
+class MockToastrService {}
+
+describe('SampleFilterINGComponent', () => {
   let component: SampleFilteringComponent;
   let fixture: ComponentFixture<SampleFilteringComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SampleFilteringComponent ]
+      declarations: [ SampleFilteringComponent ],
+      providers: [
+        { provide: ToastrService, useClass: MockToastrService }
+      ],
     })
     .compileComponents();
   });

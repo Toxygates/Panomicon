@@ -170,7 +170,9 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   openSampleFilteringModal(template: TemplateRef<unknown>): void {
     this.sampleFilteringModalRef = this.modalService.show(template,
       { class: 'modal-dialog-centered modal-lg',
-        ignoreBackdropClick: true });
+        ignoreBackdropClick: true,
+        keyboard: false
+      });
   }
 
   onSubmitFilters(filters: SampleFilter[]): void {
