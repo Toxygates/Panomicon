@@ -1,4 +1,4 @@
-import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef } from '@angular/core';
+import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef, NgZone } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../user-data.service';
@@ -17,7 +17,8 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   constructor(private userData: UserDataService,
     private activatedRoute: ActivatedRoute,
     private router: Router, private modalService: BsModalService,
-    private changeDetector: ChangeDetectorRef) { }
+    private changeDetector: ChangeDetectorRef,
+    private ngZone: NgZone) { }
 
   tabulator: Tabulator | undefined;
   modalRef: BsModalRef | undefined;
@@ -96,54 +97,56 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
     const tabulatorElement = document.createElement('div');
     tabulatorElement.style.width = "auto";
     (this.tabulatorContainer.nativeElement as HTMLElement).appendChild(tabulatorElement);
-    this.tabulator = new Tabulator(tabulatorElement, {
-      pagination:"remote",
-      ajaxURL: "json/matrix",
-      ajaxConfig:"POST",
-      ajaxContentType: {
-        headers: {
-          'Content-Type': 'application/json',
+    this.ngZone.runOutsideAngular(() => {
+      this.tabulator = new Tabulator(tabulatorElement, {
+        pagination:"remote",
+        ajaxURL: "json/matrix",
+        ajaxConfig:"POST",
+        ajaxContentType: {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: (_url, _config, params: { page: number, sorters: string[] }) => {
+            const groupInfoArray = [];
+            for (const group of this.enabledSampleGroups) {
+              groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
+            }
+            const requestBodyObject = {
+              groups: groupInfoArray,
+              page: params.page,
+              sorter: params.sorters[0]
+            }
+            return(JSON.stringify(requestBodyObject));
+          },
         },
-        body: (_url, _config, params: { page: number, sorters: string[] }) => {
-          const groupInfoArray = [];
-          for (const group of this.enabledSampleGroups) {
-            groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
-          }
-          const requestBodyObject = {
-            groups: groupInfoArray,
-            page: params.page,
-            sorter: params.sorters[0]
-          }
-          return(JSON.stringify(requestBodyObject));
+        ajaxURLGenerator: function(url, _config, params: {page: number}){
+          const page = params.page;
+          return `${url}?offset=${((page - 1) * 100)}`;
         },
-      },
-      ajaxURLGenerator: function(url, _config, params: {page: number}){
-        const page = params.page;
-        return `${url}?offset=${((page - 1) * 100)}`;
-      },
-      paginationDataReceived: {
-        "data": "rows",
-      },
-      dataLoaded: (function(sampleTableComponent) { return function(this: Tabulator) {
-        sampleTableComponent.dataFetched = true;
-        sampleTableComponent.lastPage = (this.getPageMax() as number);
-        sampleTableComponent.changeDetector.detectChanges();
-        sampleTableComponent.tablePageNumber = (this.getPage() as number);
-        };
-      })(this),
-      columns: this.columns,
-      index: "probe",
-      layout:"fitDataTable",
-      height: "calc(100vh - 8.375rem)",
-      columnHeaderSortMulti:false,
-      ajaxSorting:true,
-      initialSort:[
-        {column: this.enabledSampleGroups[0].name, dir:"desc"}
-      ],
-      tooltips:true,
-      tooltipsHeader:true,
-      ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
-      footerElement:"<div class=\"d-none d-sm-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent('OpenGotoPageModal'));\">Go to page...</button></div>",
+        paginationDataReceived: {
+          "data": "rows",
+        },
+        dataLoaded: (function(sampleTableComponent) { return function(this: Tabulator) {
+          sampleTableComponent.dataFetched = true;
+          sampleTableComponent.lastPage = (this.getPageMax() as number);
+          sampleTableComponent.changeDetector.detectChanges();
+          sampleTableComponent.tablePageNumber = (this.getPage() as number);
+          };
+        })(this),
+        columns: this.columns,
+        index: "probe",
+        layout:"fitDataTable",
+        height: "calc(100vh - 8.375rem)",
+        columnHeaderSortMulti:false,
+        ajaxSorting:true,
+        initialSort:[
+          {column: this.enabledSampleGroups[0].name, dir:"desc"}
+        ],
+        tooltips:true,
+        tooltipsHeader:true,
+        ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
+        footerElement:"<div class=\"d-none d-sm-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent('OpenGotoPageModal'));\">Go to page...</button></div>",
+      });
     });
   }
 
