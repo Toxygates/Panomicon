@@ -124,11 +124,11 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
       paginationDataReceived: {
         "data": "rows",
       },
-      dataLoaded: (function(expressionTableComponent) { return function(this: Tabulator) {
-        expressionTableComponent.dataFetched = true;
-        expressionTableComponent.lastPage = (this.getPageMax() as number);
-        expressionTableComponent.changeDetector.detectChanges();
-        expressionTableComponent.tablePageNumber = (this.getPage() as number);
+      dataLoaded: (function(sampleTableComponent) { return function(this: Tabulator) {
+        sampleTableComponent.dataFetched = true;
+        sampleTableComponent.lastPage = (this.getPageMax() as number);
+        sampleTableComponent.changeDetector.detectChanges();
+        sampleTableComponent.tablePageNumber = (this.getPage() as number);
         };
       })(this),
       columns: this.columns,
