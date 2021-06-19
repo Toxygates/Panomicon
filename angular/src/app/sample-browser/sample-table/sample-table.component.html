@@ -28,9 +28,8 @@
     <div class="btn-group" dropdown [isDisabled]="!attributes"
         style="vertical-align:top">
         <button id="button-basic" dropdownToggle type="button"
-                class="btn btn-primary dropdown-toggle mb-2 mr-2"
-                [ngClass]="{'btn-primary': attributes,
-                            'btn-secondary': !attributes}"
+                class="btn dropdown-toggle mb-2 mr-2"
+                [class]="attributes ? 'btn-primary' : 'btn-secondary'"
                 aria-controls="dropdown-basic">
             <span *ngIf="!attributes" class="spinner-border spinner-border-sm"
                 role="status" aria-hidden="true"></span>
@@ -41,7 +40,7 @@
             role="menu" aria-labelledby="button-basic">
             <!--<h6 class="dropdown-header">Select batch:</h6>-->
             <li *ngFor="let attribute of attributes" role="menuitem">
-                <a class="dropdown-item" [ngClass]="{'disabled': requiredAttributes.has(attribute.id)}"
+                <a class="dropdown-item" [class.disabled]="requiredAttributes.has(attribute.id)"
                 (click)="toggleColumn(attribute)" [routerLink]=""queryParamsHandling="preserve">
                 <i *ngIf="findColumnForAttribute(attribute)" class="bi bi-check"></i>
                 {{attribute.title}}
@@ -50,8 +49,7 @@
         </ul>
     </div>
     <button type="button" class="btn btn-primary mb-2 mr-2"
-        [ngClass]="{'btn-primary': helper.filters.length === 0,
-                    'btn-success': helper.filters.length > 0 }"
+        [class]="helper.filters.length > 0 ? 'btn-success' : 'btn-primary'"
         (click)="openSampleFilteringModal(sampleFilteringModal)">
         {{ helper.filters.length > 0 ? "Edit filters" : "Filter samples" }}
     </button>

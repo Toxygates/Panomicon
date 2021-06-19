@@ -1,8 +1,7 @@
 <div class="btn-group" dropdown [isDisabled]="!batches">
     <button id="button-basic" dropdownToggle type="button"
             class="btn btn-primary dropdown-toggle mr-2 my-1"
-            [ngClass]="{'btn-primary': batches,
-                        'btn-secondary': !batches }"
+            [class]="batches ? 'btn-primary' : 'btn-secondary'"
             aria-controls="dropdown-basic">
         <span *ngIf="datasetId && !batches" class="spinner-border spinner-border-sm"
             role="status" aria-hidden="true"></span>

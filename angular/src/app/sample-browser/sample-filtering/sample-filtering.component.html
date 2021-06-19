@@ -9,7 +9,7 @@
                     <label for="attribute-{{i}}">Attribute</label>
                     <select id="attribute-{{i}}" [(ngModel)]="filter.attribute"
                             name="attribute-{{i}}" class="custom-select"
-                            [ngClass]="{'is-invalid': !filter.validateAttribute(attributeMap) && (filter.attribute || haveTriedToSubmit)}">
+                            [class.is-invalid]="!filter.validateAttribute(attributeMap) && (filter.attribute || haveTriedToSubmit)">
                         <option selected disabled [ngValue]="undefined">Choose...</option>
                         <option *ngFor="let a of attributes" [ngValue]="a.id">{{a.title}}</option>
                     </select>
@@ -21,7 +21,7 @@
                     <label for="type-{{i}}">Filter type</label>
                     <select id="type-{{i}}" [(ngModel)]="filter.type"
                             name="type-{{i}}" class="custom-select"
-                            [ngClass]="{'is-invalid': !filter.validateType(attributeMap) && (filter.type || haveTriedToSubmit)}">
+                            [class.is-invalid]="!filter.validateType(attributeMap) && (filter.type || haveTriedToSubmit)">
                         <option selected disabled [ngValue]="undefined">Choose...</option>
                         <option *ngFor="let t of sampleFilterTypes" [ngValue]="t"
                                 [disabled]="!filter.validateType(attributeMap, t)">
@@ -37,7 +37,7 @@
                     <input type="text" id="parameter-{{i}}" [(ngModel)]="filter.parameter"
                         name="parameter-{{i}}" class="form-control"
                         placeholder="Enter {{filter.correctParameterInfo()}}"
-                        [ngClass]="{'is-invalid': !filter.validateParameter() && (filter.parameter || haveTriedToSubmit)}">
+                        [class.is-invalid]="!filter.validateParameter() && (filter.parameter || haveTriedToSubmit)">
                     <div class="invalid-feedback">
                         Please enter {{filter.correctParameterInfo()}}
                     </div>
