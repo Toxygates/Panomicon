@@ -103,8 +103,9 @@ object BatchManager extends ManagerTool {
             factory.cachingTriplestoreMetadata(context.sampleStore, config.attributes,
                 config.attributes.getHighLevel.asScala ++
                 config.attributes.getUnitLevel.asScala ++
-                List(CoreParameter.Platform, CoreParameter.ControlGroup,
-                  CoreParameter.Batch), sampleFilter)
+                List(CoreParameter.Platform, CoreParameter.Treatment,
+                  CoreParameter.ControlTreatment, CoreParameter.Batch),
+              sampleFilter)
           startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
             Batch(title, "", None, None), metadata))
 

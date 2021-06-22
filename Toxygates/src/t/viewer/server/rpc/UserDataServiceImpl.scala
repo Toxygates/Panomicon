@@ -25,7 +25,7 @@ import t.common.shared.Dataset
 import t.common.shared.maintenance.{Batch, MaintenanceException}
 import t.db.Metadata
 import t.model.sample.Attribute
-import t.model.sample.CoreParameter.{ControlGroup, Platform}
+import t.model.sample.CoreParameter.{Platform, Treatment}
 import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
 import t.viewer.client.rpc.UserDataService
 import t.viewer.server.Configuration
@@ -133,7 +133,7 @@ class UserDataServiceImpl extends TServiceServlet with BatchOpsImpl with UserDat
   //Note: might want to factor this out
   override protected def overviewParameters: Seq[Attribute] = {
     Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel, ExposureTime,
-      Platform, ControlGroup)
+      Platform, Treatment)
   }
 
   override protected def checkMetadata(md: Metadata): Unit = {

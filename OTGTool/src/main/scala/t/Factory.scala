@@ -55,8 +55,7 @@ class Factory {
                                  sf: SampleFilter): CachingTriplestoreMetadata =
     new CachingTriplestoreMetadata(sampleStore, attributeSet, querySet, sf)
 
-  def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) =
-    new FilteredMetadata(from, sampleView)
+  def filteredMetadata(from: Metadata, sampleView: Iterable[Sample]) = new FilteredMetadata(from, sampleView)
 
   def context(ts: TriplestoreConfig, data: DataConfig) = {
     val bc = new BaseConfig(ts, data)

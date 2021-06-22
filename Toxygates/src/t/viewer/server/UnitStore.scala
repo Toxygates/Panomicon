@@ -34,17 +34,29 @@ import t.sparql.SampleStore
 import t.viewer.server.Conversions._
 import t.viewer.shared.TimeoutException
 
+object UnitStore {
+  def asUnit(ss: Iterable[Sample], schema: DataSchema) = new Unit(
+    SampleClassUtils.asUnit(ss.head.sampleClass, schema), ss.toArray)
+
+  def isControl(s: t.db.Sample) =
+    s.get(ControlTreatment) == s.get(Treatment)
+}
+
 class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
   UnitsHelper(schema) {
+  import UnitStore._
+
   /**
-   * Generates units containing treated samples and their associated control samples.
-   * Task: sensitive algorithm, should simplify and possibly move to OTGTool.
+   * For a user-specified sample filter, searches for samples and
+   * generates units containing treated samples and their associated control samples.
    */
   @throws[TimeoutException]
   def units(sc: SampleClass, param: String, paramValues: Array[String],
             sf: SampleFilter) : Array[Pair[Unit, Unit]] = {
 
     //This will filter by the chosen parameter - usually compound name
+    //The result need not contain the corresponding control samples, so these must be fetched
+    //using a separate query.
     val rs = sampleStore.samples(SampleClassFilter(sc), param,
       paramValues.toSeq, sf)
     units(sc, rs, sf).map(x => new Pair(x._1, x._2.getOrElse(null))).toArray
@@ -52,70 +64,35 @@ class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
 
   def units(sc: SampleClass, samples: Iterable[t.db.Sample],
             sf: SampleFilter): Iterable[(Unit, Option[Unit])] = {
-    def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
 
-    def unit(s: Sample) = SampleClassUtils.asUnit(s.sampleClass, schema)
+    val groupedSamples = samples.groupBy(x => (x.sampleClass(Batch), x.sampleClass(ControlTreatment)))
 
-    //Note: the copying may be costly - consider optimising in the future
-    def unitWithoutMajorMedium(s: Sample) = unit(s).
-      copyWithout(schema.majorParameter).copyWithout(schema.mediumParameter)
-
-    def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
-
-    val groupedSamples = samples.groupBy(x =>(
-            x.sampleClass(Batch),
-            x.sampleClass(ControlGroup)))
-
-    val cgs = groupedSamples.keys.toSeq.map(_._2).distinct
+    val controlTreatments = groupedSamples.keys.toSeq.map(_._2).distinct
+    //Look for samples where Treatment is in the set of expected ControlTreatment values
     val potentialControls = sampleStore.samples(SampleClassFilter(sc),
-      ControlGroup.id, cgs, sf).filter(isControl).map(asJavaSample)
+      Treatment.id, controlTreatments, sf).map(asJavaSample)
 
-      /*
-       * For each unit of treated samples inside a control group, all
-       * control samples in that group are assigned as control,
-       * assuming that other parameters are also compatible.
-       */
+    var r = List[(Unit, Option[Unit])]()
+    for {
+      ((batch, controlTreatment), samples) <- groupedSamples;
+      treated = samples.filter(!isControl(_)).map(asJavaSample)
+      (treatment, treatedSamples) <- treated.groupBy(_.get(Treatment))
+    } {
 
-    var r = Vector[(Unit, Option[Unit])]()
-    for (((batch, cg), samples) <- groupedSamples;
-        treated = samples.filter(!isControl(_)).map(asJavaSample)) {
+      val filteredControls = potentialControls.filter(s =>
+        s.get(Treatment) == controlTreatment && s.get(Batch) == batch)
 
-      /*
-       * Remove major parameter (compound in OTG case) as we now allow treated-control samples
-       * to have different compound names.
-       */
+      val controlUnit = if (filteredControls.isEmpty) {
+        None
+      } else {
+        Some(asUnit(filteredControls, schema))
+      }
+      val treatedUnit = asUnit(treatedSamples, schema)
+      r ::= (treatedUnit, controlUnit)
 
-      val treatedByUnit = treated.groupBy(unit(_))
-
-      val treatedControl = treatedByUnit.toSeq.map(unitSamples => {
-        val repSample = unitSamples._2.head
-        val repUnit = unitWithoutMajorMedium(repSample)
-
-        val filteredControls = potentialControls.filter(s =>
-          unitWithoutMajorMedium(s) == repUnit
-          && s.get(ControlGroup) == repSample.get(ControlGroup)
-          && s.get(Batch) == repSample.get(Batch)
-          )
-
-        val controlUnit = if (filteredControls.isEmpty)
-          None
-        else
-          Some(asUnit(filteredControls))
-
-        val treatedUnit = asUnit(unitSamples._2)
-
-        treatedUnit -> controlUnit
-      })
-
-      r ++= treatedControl
-
-      for (
-        (treat, Some(control)) <- treatedControl;
-        samples = control.getSamples;
-        if (!samples.isEmpty); // this check shouldn't be necessary
-        pseudoUnit = (control, None)
-      ) {
-        r :+= pseudoUnit
+      for {cu <- controlUnit} {
+        //pseudo-unit
+        r ::= (cu, None)
       }
     }
     r
@@ -123,23 +100,12 @@ class UnitStore(schema: DataSchema, sampleStore: SampleStore) extends
 }
 
 class UnitsHelper(schema: DataSchema) {
+  import UnitStore._
 
-  import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
-  type ControlGroupKey = (String, String, String)
+  def samplesByControlGroup(raw: Iterable[Sample]): Map[String, Iterable[Sample]] =
+    raw.groupBy(_.get(ControlTreatment))
 
-  def byControlGroup(raw: Iterable[Unit]): Map[ControlGroupKey, Iterable[Unit]] =
-    raw.groupBy(controlGroupKey)
-
-  private val minorParameter = schema.minorParameter()
-
-  def controlGroupKey(u: Unit): ControlGroupKey =
-      controlGroupKey(u.getSamples()(0))
-
-  def samplesByControlGroup(raw: Iterable[Sample]): Map[ControlGroupKey, Iterable[Sample]] =
-    raw.groupBy(controlGroupKey)
-
-  def controlGroupKey(s: Sample): ControlGroupKey =
-      (s.get(ControlGroupParam), s.get(minorParameter), s.get(Batch))
+  def controlGroupKey(s: Sample): String = s.get(ControlTreatment)
 
   def unitGroupKey(s: Sample) = s.get(schema.mediumParameter())
 
@@ -150,20 +116,14 @@ class UnitsHelper(schema: DataSchema) {
    * set.
    * @param samples samples to partition
    */
-  def formControlUnitsAndVarianceSets(samples: Iterable[Sample]):
-      Seq[(Unit, (Unit, VarianceSet))] = {
-    formTreatedAndControlUnits(samples).flatMap {
-      case (treatedSamples, controlSamples) =>
-        if (treatedSamples.nonEmpty && controlSamples.nonEmpty) {
-          val units = treatedSamples.map(formUnit(_, schema))
-          val controlGroup = formUnit(controlSamples, schema)
-          val varianceSet = new SimpleVarianceSet(controlSamples)
-          units.map(_ -> (controlGroup, varianceSet))
-        } else {
-          Seq.empty
-        }
-    }
-  }
+  def formControlUnitsAndVarianceSets(samples: Iterable[Sample]): Seq[(Unit, (Unit, VarianceSet))] =
+    for {
+      (treatedSamples, controlSamples) <- formTreatedAndControlUnits(samples).toList
+      if treatedSamples.nonEmpty && controlSamples.nonEmpty
+      controlGroup = asUnit(controlSamples, schema)
+      varianceSet = new SimpleVarianceSet(controlSamples)
+      unit <- treatedSamples.map(asUnit(_, schema))
+    } yield (unit, (controlGroup, varianceSet))
 
   /**
    * Groups the samples provided into treated and control groups, returning
@@ -173,21 +133,13 @@ class UnitsHelper(schema: DataSchema) {
    */
   def formTreatedAndControlUnits(samples: Iterable[Sample]):
       Seq[(Iterable[Iterable[Sample]], Iterable[Sample])] = {
-    val controlGroups = samples.groupBy(controlGroupKey)
-    controlGroups.map { case (unitKey, samples) =>
-      samples.partition(!schema.isControl(_)) match {
-        case (treated, controls) =>
-          (treated.groupBy(unitGroupKey).values, controls)
-      }
-    }.toList
-  }
+    def isControl(s: Sample) = s.get(ControlTreatment) == s.get(Treatment)
+    val controlGroups = samples.groupBy(_.get(ControlTreatment))
 
-  /**
-   * Forms a unit from a set of samples.
-   * @param samples all of the samples from the desired unit
-   */
-  def formUnit(samples: Iterable[Sample], schema:DataSchema): Unit = {
-    new Unit(SampleClassUtils.asUnit(samples.head.sampleClass(), schema),
-        samples.toArray)
+    for {
+      (unitKey, samples) <- controlGroups.toList
+      (treated, controls) = samples.partition(!isControl(_))
+      grouped = treated.groupBy(_.get(Treatment)).values
+    } yield (grouped, controls)
   }
 }

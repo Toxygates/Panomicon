@@ -1,49 +1,49 @@
-sample_id	platform_id	organ_id	compound_name	organism	test_type	sin_rep_type	exposure_time	dose_level	control_group	type
-x003017062006	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Control	0281	mRNA
-x003017062007	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Control	0281	mRNA
-x003017062008	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Control	0281	mRNA
-x003017059008	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Control	0281	mRNA
-x003017059009	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Control	0281	mRNA
-x003017059010	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Control	0281	mRNA
-x003017056017	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Control	0281	mRNA
-x003017056018	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Control	0281	mRNA
-x003017056019	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Control	0281	mRNA
-x003017056030	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Control	0281	mRNA
-x003017057001	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Control	0281	mRNA
-x003017057002	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Control	0281	mRNA
-x003017062009	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Low	0281	mRNA
-x003017062010	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Low	0281	mRNA
-x003017062011	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Low	0281	mRNA
-x003017059011	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Low	0281	mRNA
-x003017059012	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Low	0281	mRNA
-x003017059013	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Low	0281	mRNA
-x003017056020	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Low	0281	mRNA
-x003017056021	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Low	0281	mRNA
-x003017056022	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Low	0281	mRNA
-x003017057003	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Low	0281	mRNA
-x003017057004	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Low	0281	mRNA
-x003017057005	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Low	0281	mRNA
-x003017062012	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Middle	0281	mRNA
-x003017062013	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Middle	0281	mRNA
-x003017062014	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	Middle	0281	mRNA
-x003017059014	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Middle	0281	mRNA
-x003017059015	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Middle	0281	mRNA
-x003017059016	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	Middle	0281	mRNA
-x003017056023	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Middle	0281	mRNA
-x003017056024	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Middle	0281	mRNA
-x003017056025	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	Middle	0281	mRNA
-x003017057006	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Middle	0281	mRNA
-x003017057007	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Middle	0281	mRNA
-x003017057008	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	Middle	0281	mRNA
-x003017062015	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	High	0281	mRNA
-x003017062016	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	High	0281	mRNA
-x003017062017	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	3 hr	High	0281	mRNA
-x003017059017	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	High	0281	mRNA
-x003017059018	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	High	0281	mRNA
-x003017059019	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	6 hr	High	0281	mRNA
-x003017056026	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	High	0281	mRNA
-x003017056027	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	High	0281	mRNA
-x003017058005	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	9 hr	High	0281	mRNA
-x003017057009	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	High	0281	mRNA
-x003017057010	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	High	0281	mRNA
-x003017058006	Rat230_2	Liver	vitamin A	Rat	in vivo	Single	24 hr	High	0281	mRNA
+sample_id	platform_id	organ_id	compound_name	organism	test_type	sin_rep_type	exposure_time	dose_level	control_group	type	treatment	control_treatment
+x003017062006	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Control	281	mRNA	vitamin A.Tr|Control|3 hr	vitamin A.Tr|Control|3 hr
+x003017062007	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Control	281	mRNA	vitamin A.Tr|Control|3 hr	vitamin A.Tr|Control|3 hr
+x003017062008	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Control	281	mRNA	vitamin A.Tr|Control|3 hr	vitamin A.Tr|Control|3 hr
+x003017059008	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Control	281	mRNA	vitamin A.Tr|Control|6 hr	vitamin A.Tr|Control|6 hr
+x003017059009	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Control	281	mRNA	vitamin A.Tr|Control|6 hr	vitamin A.Tr|Control|6 hr
+x003017059010	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Control	281	mRNA	vitamin A.Tr|Control|6 hr	vitamin A.Tr|Control|6 hr
+x003017056017	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Control	281	mRNA	vitamin A.Tr|Control|9 hr	vitamin A.Tr|Control|9 hr
+x003017056018	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Control	281	mRNA	vitamin A.Tr|Control|9 hr	vitamin A.Tr|Control|9 hr
+x003017056019	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Control	281	mRNA	vitamin A.Tr|Control|9 hr	vitamin A.Tr|Control|9 hr
+x003017056030	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Control	281	mRNA	vitamin A.Tr|Control|24 hr	vitamin A.Tr|Control|24 hr
+x003017057001	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Control	281	mRNA	vitamin A.Tr|Control|24 hr	vitamin A.Tr|Control|24 hr
+x003017057002	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Control	281	mRNA	vitamin A.Tr|Control|24 hr	vitamin A.Tr|Control|24 hr
+x003017062009	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Low	281	mRNA	vitamin A.Tr|Low|3 hr	vitamin A.Tr|Control|3 hr
+x003017062010	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Low	281	mRNA	vitamin A.Tr|Low|3 hr	vitamin A.Tr|Control|3 hr
+x003017062011	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Low	281	mRNA	vitamin A.Tr|Low|3 hr	vitamin A.Tr|Control|3 hr
+x003017059011	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Low	281	mRNA	vitamin A.Tr|Low|6 hr	vitamin A.Tr|Control|6 hr
+x003017059012	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Low	281	mRNA	vitamin A.Tr|Low|6 hr	vitamin A.Tr|Control|6 hr
+x003017059013	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Low	281	mRNA	vitamin A.Tr|Low|6 hr	vitamin A.Tr|Control|6 hr
+x003017056020	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Low	281	mRNA	vitamin A.Tr|Low|9 hr	vitamin A.Tr|Control|9 hr
+x003017056021	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Low	281	mRNA	vitamin A.Tr|Low|9 hr	vitamin A.Tr|Control|9 hr
+x003017056022	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Low	281	mRNA	vitamin A.Tr|Low|9 hr	vitamin A.Tr|Control|9 hr
+x003017057003	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Low	281	mRNA	vitamin A.Tr|Low|24 hr	vitamin A.Tr|Control|24 hr
+x003017057004	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Low	281	mRNA	vitamin A.Tr|Low|24 hr	vitamin A.Tr|Control|24 hr
+x003017057005	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Low	281	mRNA	vitamin A.Tr|Low|24 hr	vitamin A.Tr|Control|24 hr
+x003017062012	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Middle	281	mRNA	vitamin A.Tr|Middle|3 hr	vitamin A.Tr|Control|3 hr
+x003017062013	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Middle	281	mRNA	vitamin A.Tr|Middle|3 hr	vitamin A.Tr|Control|3 hr
+x003017062014	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	Middle	281	mRNA	vitamin A.Tr|Middle|3 hr	vitamin A.Tr|Control|3 hr
+x003017059014	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Middle	281	mRNA	vitamin A.Tr|Middle|6 hr	vitamin A.Tr|Control|6 hr
+x003017059015	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Middle	281	mRNA	vitamin A.Tr|Middle|6 hr	vitamin A.Tr|Control|6 hr
+x003017059016	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	Middle	281	mRNA	vitamin A.Tr|Middle|6 hr	vitamin A.Tr|Control|6 hr
+x003017056023	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Middle	281	mRNA	vitamin A.Tr|Middle|9 hr	vitamin A.Tr|Control|9 hr
+x003017056024	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Middle	281	mRNA	vitamin A.Tr|Middle|9 hr	vitamin A.Tr|Control|9 hr
+x003017056025	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	Middle	281	mRNA	vitamin A.Tr|Middle|9 hr	vitamin A.Tr|Control|9 hr
+x003017057006	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Middle	281	mRNA	vitamin A.Tr|Middle|24 hr	vitamin A.Tr|Control|24 hr
+x003017057007	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Middle	281	mRNA	vitamin A.Tr|Middle|24 hr	vitamin A.Tr|Control|24 hr
+x003017057008	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	Middle	281	mRNA	vitamin A.Tr|Middle|24 hr	vitamin A.Tr|Control|24 hr
+x003017062015	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	High	281	mRNA	vitamin A.Tr|High|3 hr	vitamin A.Tr|Control|3 hr
+x003017062016	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	High	281	mRNA	vitamin A.Tr|High|3 hr	vitamin A.Tr|Control|3 hr
+x003017062017	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	3 hr	High	281	mRNA	vitamin A.Tr|High|3 hr	vitamin A.Tr|Control|3 hr
+x003017059017	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	High	281	mRNA	vitamin A.Tr|High|6 hr	vitamin A.Tr|Control|6 hr
+x003017059018	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	High	281	mRNA	vitamin A.Tr|High|6 hr	vitamin A.Tr|Control|6 hr
+x003017059019	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	6 hr	High	281	mRNA	vitamin A.Tr|High|6 hr	vitamin A.Tr|Control|6 hr
+x003017056026	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	High	281	mRNA	vitamin A.Tr|High|9 hr	vitamin A.Tr|Control|9 hr
+x003017056027	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	High	281	mRNA	vitamin A.Tr|High|9 hr	vitamin A.Tr|Control|9 hr
+x003017058005	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	9 hr	High	281	mRNA	vitamin A.Tr|High|9 hr	vitamin A.Tr|Control|9 hr
+x003017057009	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	High	281	mRNA	vitamin A.Tr|High|24 hr	vitamin A.Tr|Control|24 hr
+x003017057010	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	High	281	mRNA	vitamin A.Tr|High|24 hr	vitamin A.Tr|Control|24 hr
+x003017058006	Rat230_2	Liver	vitamin A.Tr	Rat	in vivo	Single	24 hr	High	281	mRNA	vitamin A.Tr|High|24 hr	vitamin A.Tr|Control|24 hr

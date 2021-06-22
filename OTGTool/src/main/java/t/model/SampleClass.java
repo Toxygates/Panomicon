@@ -27,10 +27,6 @@ import t.model.sample.SampleLike;
 
 /**
  * A sample class identifies a group of samples.
- * 
- * Standard keys for OTG: time, dose, organism, organ_id, test_type, sin_rep_type 
- * Optional keys:
- * compound_name, exposure_time, dose_level 
  */
 @SuppressWarnings("serial")
 public class SampleClass implements Serializable, SampleLike {

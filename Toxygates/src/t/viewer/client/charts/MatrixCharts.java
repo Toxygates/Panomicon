@@ -97,7 +97,7 @@ public class MatrixCharts extends Charts {
    * Make charts based on expression rows.
    */
   public void make(final ChartParameters params, final String[] probes, final Acceptor acceptor) {
-    String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
+    String[] organisms = Group.collectAll(groups, OTGAttribute.Organism).toArray(String[]::new);
 
     String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
 

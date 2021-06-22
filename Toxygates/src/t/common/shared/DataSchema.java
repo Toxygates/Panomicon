@@ -143,10 +143,10 @@ public abstract class DataSchema implements Serializable {
     return isControlValue(s.get(mediumParameter()));
   }
 
-  public boolean isControl(Sample s) {
-    return isControlValue(s.get(mediumParameter()));
-  }
-
+  /**
+   * Whether the value is a "shared control" quasi-compound name
+   * that can be hidden from the user in some situations.
+   */
   public boolean isMajorParamSharedControl(String value) {
     String[] mpvs = majorParamSharedControl();
     if (mpvs == null) {
@@ -161,7 +161,7 @@ public abstract class DataSchema implements Serializable {
   }
 
   @Deprecated
-  public @Nullable String[] majorParamSharedControl() {
+  protected @Nullable String[] majorParamSharedControl() {
     return new String[] {};
   }
 

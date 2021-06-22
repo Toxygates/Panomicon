@@ -21,6 +21,7 @@ package t.testing
 
 import t.db.{Metadata, _}
 import t.model.sample
+import t.model.sample.CoreParameter.{ControlTreatment, Treatment}
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, OTGAttributeSet}
 import t.model.shared.SampleClassHelper._
@@ -72,18 +73,14 @@ object TestData {
     ) yield OTGSeries(DoseSeries, repeat, organ, organism, probe,
         compound, exposureTime, testType, points)
 
-  private def controlGroup(s: Sample) = ???
-
-  import t.model.sample.CoreParameter.{ControlGroup => CGParam}
-
   lazy val controlGroups: Map[Sample, SSVarianceSet] = {
-    val gr = samples.groupBy(_(CGParam))
-    val controls = gr.mapValues(vs =>
-      new SSVarianceSet(metadata,
-          vs.toSeq.filter(_(DoseLevel) == "Control"))
-      )
+    val gr = samples.groupBy(_(ControlTreatment))
+    val controls = gr.map { case (ct, samples)  =>
+      (ct -> new SSVarianceSet(metadata,
+          samples.toSeq.filter(s => s(ControlTreatment) == s(Treatment)))
+      ) }
 
-    Map() ++ samples.map(s => s -> controls(s(CGParam)))
+    Map() ++ samples.map(s => s -> controls(s(ControlTreatment)))
   }
 
   //temporary

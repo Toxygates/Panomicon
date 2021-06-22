@@ -43,7 +43,10 @@ public class OTGAttributeSet extends t.model.sample.AttributeSet {
     super(attributes, required);
     Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute, Type);
     Collections.addAll(highLevel, Type, Organism, Organ, TestType, Repeat);
-    Collections.addAll(unitLevel, Compound, DoseLevel, ExposureTime);
+
+    //Note: at some point, Treatment/ControlTreatment may be all that is required to form units.
+    //It may even be possible to retire the unitLevel attribute list
+    Collections.addAll(unitLevel, Compound, DoseLevel, ExposureTime, Treatment, ControlTreatment);
   }
     
   private static OTGAttributeSet defaultSet;
@@ -58,9 +61,8 @@ public class OTGAttributeSet extends t.model.sample.AttributeSet {
       Collections.addAll(attributes, OTGAttribute.all());
       List<Attribute> required = new ArrayList<Attribute>();
       
-      Collections.addAll(required, SampleId, ControlGroup, Platform, Type);
-      Collections.addAll(required, Organism, TestType, Repeat, Organ,
-        Compound, DoseLevel, ExposureTime);
+      Collections.addAll(required, SampleId, Platform, Type, Treatment, ControlTreatment);
+      Collections.addAll(required, Organism, TestType, Repeat, Organ, Compound, DoseLevel, ExposureTime);
       
       defaultSet = new OTGAttributeSet(attributes, required);
     }
