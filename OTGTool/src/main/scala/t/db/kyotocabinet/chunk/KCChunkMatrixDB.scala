@@ -268,16 +268,16 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   private def potentialChunks(x: Sample): Iterable[V] =
-    potentialChunks(x, mc.probeMap.keys.toSeq)
+    potentialChunks(x, mc.probeMap.keys.toArray)
 
-  private def potentialChunks(x: Sample, probes: Iterable[Int]): Iterable[V] = {
-    val keys = probes.map(p => chunkStartFor(p)).toSeq.distinct
+  private def potentialChunks(x: Sample, probes: Array[Int]): Iterable[V] = {
+    val keys = probes.map(p => chunkStartFor(p)).distinct
     for (k <- keys; dbcode <- x.getDbCode)
       yield findOrCreateChunk(dbcode, k)
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
-  def valuesInSample(x: Sample, probes: Seq[Int],
+  def valuesInSample(x: Sample, probes: Array[Int],
       padMissingValues: Boolean): Array[PExprValue] = {
     //The chunk system guarantees that values will be read in order.
     //We exploit the ordering here when checking for missing values.

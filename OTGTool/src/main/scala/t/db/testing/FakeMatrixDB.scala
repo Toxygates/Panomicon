@@ -37,7 +37,7 @@ abstract class AbsFakeMatrixDB[E >: Null <: ExprValue : ClassTag](var records: S
     null
   }
 
-  def valuesInSample(x: Sample, probes: Seq[Int], padMissingValues: Boolean): Array[E] =
+  def valuesInSample(x: Sample, probes: Array[Int], padMissingValues: Boolean): Array[E] =
     records.filter(_._1 == x).map(x => x._3).toArray
 
   def write(s: Sample, probe: Int, e: E) {

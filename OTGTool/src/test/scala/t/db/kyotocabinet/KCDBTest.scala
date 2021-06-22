@@ -41,7 +41,7 @@ object KCDBTest extends Matchers {
     //test valuesAndProbes
     mdb.allSamples.toSet should equal (samples)
     val sseq = samples.toSeq
-    val ppacked = d.probes.map(probeMap.pack).toSeq.sorted
+    val ppacked = d.probes.map(probeMap.pack).toArray.sorted
 
     for { s <- sseq.par; confirm = d.asExtValues(s) } {
       val vs = mdb.valuesForSamplesAndProbes(List(s), ppacked, false, false).flatten
@@ -93,7 +93,7 @@ object KCDBTest extends Matchers {
     }
     //non-contiguous read
     val ss = (0 until 50).map(i => pickOne(samples.toSeq)).distinct
-    val ps = (0 until 400).map(i => pickOne(probes)).distinct
+    val ps = (0 until 400).map(i => pickOne(probes)).distinct.toArray
     val pset = ps.toSet.map(probeMap.unpack)
     val vs = mdb.valuesForSamplesAndProbes(ss, ps, false, false)
 //

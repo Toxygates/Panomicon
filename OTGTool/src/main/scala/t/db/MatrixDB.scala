@@ -89,8 +89,8 @@ trait MatrixDBReader[E <: ExprValue] {
   /**
    * Sort probes in an order that is optimised for valuesInSample.
    */
-  def sortProbes(probes: Iterable[Int]): Seq[Int] =
-    probes.toSeq.sorted
+  def sortProbes(probes: Iterable[Int]): Array[Int] =
+    probes.toArray.sorted
 
   /**
    * Read all values for a given sample.
@@ -102,10 +102,10 @@ trait MatrixDBReader[E <: ExprValue] {
    * @param padMissingValues If true, empty values will be inserted where none was found in the
    * database.
    */
-  def valuesInSample(x: Sample, probes: Seq[Int],
+  def valuesInSample(x: Sample, probes: Array[Int],
       padMissingValues: Boolean): Array[E]
 
-  def valuesInSamples(xs: Iterable[Sample], probes: Seq[Int],
+  def valuesInSamples(xs: Iterable[Sample], probes: Array[Int],
       padMissingValues: Boolean): Iterable[Array[E]] =
     xs.map(valuesInSample(_, probes, padMissingValues))
 
@@ -144,7 +144,7 @@ trait MatrixDBReader[E <: ExprValue] {
    * @param presentOnly if set, in the sparse case, samples whose call is 'A' are replaced with the
    *  empty value.
    */
-  def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
+  def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Array[Int],
     sparseRead: Boolean = false, presentOnly: Boolean = false)(implicit tag: ClassTag[E]): Array[Array[E]] = {
 
     val ps = probes.filter(probeMap.keys.contains(_)).sorted

@@ -94,7 +94,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   def loadRawData(requestColumns: Seq[Group],
     reader: MatrixDBReader[E], sparseRead: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
-    val packedProbes = probes.map(context.probeMap.pack)
+    val packedProbes = probes.map(context.probeMap.pack).toArray
 
     val samples = requestColumns.flatMap(g => g.getSamples).distinct
 
