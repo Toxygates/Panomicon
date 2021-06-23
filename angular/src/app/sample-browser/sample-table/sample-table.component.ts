@@ -9,6 +9,7 @@ import { SampleFilter } from '../../models/sample-filter.model';
 import { IAttribute, Sample } from 'src/app/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
 import { forkJoin, Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-sample-table',
   templateUrl: './sample-table.component.html',
