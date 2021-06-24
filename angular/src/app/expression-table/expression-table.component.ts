@@ -44,20 +44,23 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
     return (data.geneSymbols as string[]).join(" / ");
   }
 
-  log2foldMutator = (value: string, _data: unknown, _type: unknown,
-    _params: unknown, _component: unknown): string => {
-    return Number(value).toFixed(3);
-  }
-
-  pValueMutator = (value: string, _data: unknown, _type: unknown,
-    _params: unknown, _component: unknown): string => {
-    const numericalValue = Number(value)
-    if (numericalValue > .00005) {
-      return numericalValue.toFixed(4);
-    } else {
-      return numericalValue.toExponential(3);
+  log2foldMutator = (field: string) =>
+    (_value: unknown, data: {expression: Record<string, string>},
+      _type: unknown, _params:unknown, _column:unknown): string => {
+      const numericalValue = Number(data["expression"][field]);
+      return Number(numericalValue).toFixed(3);
     }
-  }
+
+  pValueMutator = (field: string) =>
+    (_value: unknown, data: {expression: Record<string, string>},
+      _type: unknown, _params:unknown, _column:unknown): string => {
+      const numericalValue = Number(data["expression"][`${field}(p)`]);
+      if (numericalValue > .0001) {
+        return numericalValue.toFixed(4);
+      } else {
+        return numericalValue.toExponential(3);
+      }
+    }
 
   columns: Tabulator.ColumnDefinition[] = [
     {title: 'Gene symbols', field: 'geneSymbols',
@@ -67,6 +70,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
     {title: 'Probe', field: 'probe', headerSort:false, width:"15rem"},
   ]
 
+
   ngOnInit(): void {
     this.enabledSampleGroupsSubscription = this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
       this.enabledSampleGroups = enabledGroups;
@@ -75,10 +79,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
       } else {
         for (const group of enabledGroups) {
           this.columns.push({title: group.name, field: group.name,
-            headerSort: true, mutator: this.log2foldMutator,
+            mutator: this.log2foldMutator(group.name), headerSort: true,
             headerSortStartingDir:'desc', width:"15rem"});
           this.columns.push({title: group.name + ' (p)', field: group.name + '(p)',
-            headerSort: true, mutator: this.log2foldMutator,
+            mutator: this.pValueMutator(group.name), headerSort: true,
             headerSortStartingDir:'desc', width:"15rem"});
         }
       }
