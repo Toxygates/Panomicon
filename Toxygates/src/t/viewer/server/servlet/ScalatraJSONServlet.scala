@@ -486,9 +486,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
         "probeTitles" -> writeJs(r.probeTitles),
         "geneIds" -> writeJs(r.geneIds.map(_.toInt)),
         "geneSymbols" -> writeJs(r.geneSymbols),
-      ) ++ ((0 until matrixInfo.numColumns)
+        "expression" -> writeJs(Map() ++ ((0 until matrixInfo.numColumns)
           .map(matrixInfo.columnName(_)) zip r
           .values.map(v => writeJs(v.value))))
+      ))
     }
   }
 
