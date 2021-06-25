@@ -193,7 +193,7 @@ object BatchManager extends ManagerTool {
       println("Unknown set: " + unknowns)
       if (delete && !unknowns.isEmpty) {
         println("DELETING.")
-        kdb.deleteSamples(unknowns)
+        kdb.deleteSamples(unknowns, List())
       }
     } finally {
       kdb.release
@@ -589,9 +589,9 @@ class BatchManager(context: Context) {
     } yield ()
   }
 
-  private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
+  private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample], platforms: Iterable[String]) {
     try {
-      db.deleteSamples(samples)
+      db.deleteSamples(samples, platforms)
     } catch {
       case lf: LookupFailedException =>
         println("Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
@@ -612,6 +612,7 @@ class BatchManager(context: Context) {
       override def run(): Unit = {
         val bs = new BatchStore(config.triplestoreConfig)
         val ss = bs.getSamples(title).map(Sample(_))
+        val platforms = bs.getPlatforms(title)
         if (ss.isEmpty) {
           log("Nothing to do, batch has no samples")
           return
@@ -624,7 +625,7 @@ class BatchManager(context: Context) {
             chunk <- chunks;
             if shouldContinue(percentComplete)
           ) {
-            deleteFromDB(db, chunk)
+            deleteFromDB(db, chunk, platforms)
             percentComplete += 100 * 25.0 / ss.size
           }
         } finally {
@@ -729,7 +730,7 @@ class BatchManager(context: Context) {
           ++ config.attributes.getUnitLevel.asScala, sf)
 
       val controlGroups = md.treatedControlGroups(md.samples)
-      val treated = controlGroups.toSeq.flatMap(_._1)
+      val treated = controlGroups.flatMap(_._1)
 
       val data = builder.makeNewEmpty(md, treated)
       val total = data.size

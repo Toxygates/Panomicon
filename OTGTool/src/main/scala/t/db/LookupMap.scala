@@ -29,6 +29,9 @@ trait LookupMap[Code, Token] {
   lazy val keys: Set[Code] = revMap.keySet
   lazy val tokens: Set[Token] = data.keySet
 
+  def keysIterator: Iterator[Code] = revMap.keysIterator
+  def tokensIterator: Iterator[Token] = data.keysIterator
+
   def unpack(item: Code): Token = revMap(item)
   def tryUnpack(item: Code): Option[Token] = revMap.get(item)
 

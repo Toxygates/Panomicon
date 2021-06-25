@@ -181,11 +181,16 @@ trait MatrixDBWriter[E <: ExprValue] {
     }
   }
 
-  def deleteSample(s: Sample): Unit
+  /**
+   * Delete a sample from the specified probe sets.
+   * @param s
+   * @param probeSets Probe sets to delete from. If empty, the sample will be deleted from all probe sets.
+   */
+  def deleteSample(s: Sample, probeSets: Iterable[String]): Unit
 
-  def deleteSamples(ss: Iterable[Sample]): Unit = {
-    for (s <- ss) {
-      deleteSample(s)
+  def deleteSamples(ss: Iterable[Sample], probeSets: Iterable[String]): Unit = {
+    for { s <- ss } {
+      deleteSample(s, probeSets)
     }
   }
 

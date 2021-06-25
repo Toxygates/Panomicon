@@ -75,7 +75,6 @@ trait Metadata extends SampleSet {
  * Note: the filtering is intended to keep control units intact, so filters should not
  * split such units in two. 
  */
-@deprecated("This class is scheduled for removal", "June 2021")
 class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends Metadata {
   val samples = visibleSamples.toSet
   

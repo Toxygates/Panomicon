@@ -136,10 +136,17 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
     })
   }
 
+  def getPlatforms(batch: String): Iterable[String] = {
+    val prefix = SampleStore.defaultPrefix
+    triplestore.simpleQuery(s"$tPrefixes\nSELECT DISTINCT ?pl WHERE " +
+      s"{ GRAPH <$defaultPrefix/$batch> { ?x a t:sample; t:platform_id ?pl } }")
+
+  }
+
   def getSamples(batch: String): Iterable[SampleId] = {
     val prefix = SampleStore.defaultPrefix
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
-      s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
+      s"{ GRAPH <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
   }
 
   override def delete(name: String): Unit = {

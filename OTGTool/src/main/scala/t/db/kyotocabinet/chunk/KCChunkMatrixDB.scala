@@ -239,14 +239,6 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   /**
-   * Delete a chunk by key.
-   */
-  private def deleteChunk(sample: Int, probe: Int): Unit = {
-    val key = new VectorChunk[PExprValue](sample, probe, Seq())
-    updateChunk(key)
-  }
-
-  /**
    * Obtain all samples.
    * This operation is slow for the chunk database (all current expression
    * databases).
@@ -267,13 +259,26 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
       yield (Sample(c.sample), x._2.copy(probe = probeName))
   }
 
-  private def potentialChunks(x: Sample): Iterable[V] =
-    potentialChunks(x, mc.probeMap.keys.toArray)
+  /**
+   * Construct potential chunks for a sample (empty, not populated).
+   * @param x
+   * @return
+   */
+  private def potentialChunks(x: Sample, probeSets: Iterable[String]): Iterable[V] = {
+    if (probeSets.isEmpty) {
+      potentialChunks(x, mc.probeMap.keysIterator.toArray)
+    } else {
+      for {
+        ps <- probeSets.toArray
+        chunk <- potentialChunks(x, mc.probeSets(ps).toArray)
+      } yield chunk
+    }
+  }
 
   private def potentialChunks(x: Sample, probes: Array[Int]): Iterable[V] = {
     val keys = probes.map(p => chunkStartFor(p)).distinct
     for (k <- keys; dbcode <- x.getDbCode)
-      yield findOrCreateChunk(dbcode, k)
+      yield new VectorChunk[PExprValue](dbcode, k, Seq())
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
@@ -319,19 +324,21 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     r.toArray
   }
 
-  override def deleteSample(s: Sample): Unit = {
-    deleteSamples(List(s))
+  override def deleteSample(s: Sample, probeSets: Iterable[String]): Unit = {
+    deleteSamples(List(s), probeSets)
   }
 
-  override def deleteSamples(ss: Iterable[Sample]): Unit = {
+  override def deleteSamples(ss: Iterable[Sample], probeSets: Iterable[String]): Unit = {
     println(s"Delete samples $ss")
 
     //NB this will not delete chunks if probes/platforms are deleted prior to
     //deleting them, as we only delete probes that are present in the probe map
 
-    for (s <- ss; d <- potentialChunks(s)) {
-      deleteChunk(d.sample, d.start)
-    }
+    val keys = for {
+      s <- ss.toArray; c <- potentialChunks(s, probeSets)
+      key = formKey(c)
+    } yield key
+    db.remove_bulk(keys, false)
   }
 
   override def writeMany(s: Sample, vs: Iterable[(Int, PExprValue)]): Unit = {

@@ -60,5 +60,5 @@ extends AbsFakeMatrixDB[BasicExprValue](initRecords) {
 
   def emptyValue(probe: String) = ExprValue(Double.NaN, 'A', probe)
 
-  def deleteSample(x: Sample): Unit = {}
+  def deleteSample(x: Sample, probeSets: Iterable[String]): Unit = {}
 }
