@@ -28,6 +28,9 @@ export interface IMatrix {
 
 export interface ISampleGroup {
   name: string;
+  organism: string;
+  type: string;
+  platform: string;
   samples: string[];
   enabled: boolean;
 }

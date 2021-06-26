@@ -3,7 +3,7 @@
         <div class="col-lg-12">
             <div *ngFor="let name of groupNames" class="card" >
                 <div  *ngIf="sampleGroups.get(name) as group" class="card-body">
-                  <h5 class="card-title">{{name}}</h5>
+                  <h5 class="card-title">{{name}} / {{group.organism}} / {{group.type}} / {{group.platform}}</h5>
                   Samples:
                     <ul>
                         <li *ngFor="let sample of group.samples">

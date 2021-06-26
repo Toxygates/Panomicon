@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ISampleGroup } from './models/backend-types.model'
+import { ISampleGroup, Sample } from './models/backend-types.model'
 
 @Injectable({
   providedIn: 'root'
@@ -46,10 +46,19 @@ export class UserDataService {
     this.updateSampleGroups();
   }
 
-  saveSampleGroup(name: string, samples: string[]): void {
+  saveSampleGroup(name: string, samples: Sample[]): void {
+    const type = samples[0]["type"]
+    const organism = samples[0]["organism"]
+    const platform = samples[0]["platform_id"];
+
+    const sampleIds = samples.map(s => s.sample_id);
+
     this.sampleGroups.set(name, <ISampleGroup>{
       name: name,
-      samples: samples,
+      organism: organism,
+      type: type,
+      platform: platform,
+      samples: sampleIds,
       enabled: true,
     });
     this.updateSampleGroups();

@@ -108,9 +108,9 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   onSampleGroupSaved(sampleGroupName: string): void {
     if (this.selectedTreatmentGroups.size > 0) {
       if (this.samples == null) throw new Error("samples not defined");
+
       const samplesInGroup = this.samples.filter(s =>
-        this.selectedTreatmentGroups.has(s.treatment)).map(s =>
-          s.sample_id);
+        this.selectedTreatmentGroups.has(s.treatment));
 
       this.userData.saveSampleGroup(sampleGroupName, samplesInGroup);
       this.toastr.success('Group name: ' + sampleGroupName, 'Sample group saved');
