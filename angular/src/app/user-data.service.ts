@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ISampleGroup, Sample } from './models/backend-types.model'
+import { Sample } from './models/backend-types.model'
+import { ISampleGroup } from './models/frontend-types.model'
 
 @Injectable({
   providedIn: 'root'

@@ -25,12 +25,3 @@ export interface IMatrix {
   },
   rows: Record<string, string | string[]>
 }
-
-export interface ISampleGroup {
-  name: string;
-  organism: string;
-  type: string;
-  platform: string;
-  samples: string[];
-  enabled: boolean;
-}

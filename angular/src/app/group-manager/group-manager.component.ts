@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../user-data.service';
-import { ISampleGroup } from '../models/backend-types.model'
+import { ISampleGroup } from '../models/frontend-types.model'
 import { Subscription } from 'rxjs';
 
 @Component({

@@ -2,7 +2,7 @@ import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, View
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../user-data.service';
-import { ISampleGroup } from '../models/backend-types.model'
+import { ISampleGroup } from '../models/frontend-types.model'
 import Tabulator from 'tabulator-tables';
 import { Subscription } from 'rxjs';
 
