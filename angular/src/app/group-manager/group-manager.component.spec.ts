@@ -66,8 +66,8 @@ describe('GroupManagerComponent', () => {
     const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
     const nodes = groupManagerElement.querySelectorAll('.card-title');
     const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
-    void expect(innerHTMLs[0]).toEqual('florb');
-    void expect(innerHTMLs[1]).toEqual('spabble');
+    void expect(innerHTMLs[0]).toContain('florb');
+    void expect(innerHTMLs[1]).toContain('spabble');
   });
 
   it('should list sample IDs', () => {
@@ -90,8 +90,8 @@ describe('GroupManagerComponent', () => {
     const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
     const nodes = groupManagerElement.querySelectorAll('.card-title');
     const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
-    void expect(innerHTMLs[0]).toEqual('barg');
-    void expect(innerHTMLs[1]).toEqual('slek');
+    void expect(innerHTMLs[0]).toContain('barg');
+    void expect(innerHTMLs[1]).toContain('slek');
   })
 
   it('should expand renaming or deleting for one group at a time', () => {
