@@ -35,11 +35,8 @@ package json {
   object Group { implicit val rw: RW[Group] = macroRW }
   case class Group(name: String, sampleIds: Seq[String])
 
-  object ColSpec { implicit val rw: RW[ColSpec] = macroRW }
-  case class ColSpec(id: String, `type`: String = null)
-
   object FilterSpec { implicit val rw: RW[FilterSpec] = macroRW }
-  case class FilterSpec(column: ColSpec, `type`: String, threshold: Double)
+  case class FilterSpec(column: String, `type`: String, threshold: Double)
 
   object SortSpec { implicit val rw: RW[SortSpec] = macroRW }
   case class SortSpec(field: String, dir: String)
@@ -52,7 +49,7 @@ package json {
     def applyFilters(mat: ManagedMatrix): Unit = {
       for (f <- filtering) {
         val col = f.column
-        val idx = mat.info.findColumn(col.id, col.`type`)
+        val idx = mat.info.findColumnByName(col)
         if (idx != -1) {
           //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
           val filt = new ColumnFilter(f.threshold, FilterType.parse(f.`type`))
@@ -64,21 +61,12 @@ package json {
       }
     }
 
-    def getColumnIndex(matrixInfo: ManagedMatrixInfo, columnName: String): Int = {
-      for (i <- 0 until matrixInfo.numColumns) {
-        if (matrixInfo.columnName(i) == columnName) {
-          return i
-        }
-      }
-      -1
-    }
-
     def applySorting(mat: ManagedMatrix): Unit = {
       val defaultSortCol = 0
       val defaultSortAsc = false
       Option(sorter) match {
         case Some(sort) =>
-          val idx = getColumnIndex(mat.info, sort.field)
+          val idx = mat.info.findColumnByName(sort.field)
           if (idx != -1) {
             val asc = sort.dir == "asc"
             mat.sort(idx, asc)

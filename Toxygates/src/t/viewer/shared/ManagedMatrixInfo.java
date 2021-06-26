@@ -19,14 +19,15 @@
 
 package t.viewer.shared;
 
-import java.io.Serializable;
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
-import static t.common.shared.GWTTypes.*;
+
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+
+import static t.common.shared.GWTTypes.mkList;
 
 /**
  * Information about a ManagedMatrix that the server maintains on behalf of the client. The main
@@ -309,4 +310,14 @@ public class ManagedMatrixInfo implements Serializable {
     }
     return -1;
   }
+
+  public int findColumnByName(String columnName) {
+    for (int i = 0; i < columnNames.size(); i++) {
+      if (columnNames.get(i).equals(columnName)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
 }
