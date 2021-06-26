@@ -13,6 +13,7 @@
                     <div class="form-group form-check">
                         <input type="checkbox" class="form-check-input" id="enabledCheck"
                             [(ngModel)]="group.enabled"
+                            [disabled]="!group.enabled && !userData.canSelectGroup(group)"
                             (ngModelChange)="saveSampleGroups()">
                         <label class="form-check-label" for="enabledCheck">Enabled</label>
                     </div>

@@ -13,6 +13,9 @@ class MockUserDataService {
   isAcceptableGroupName() {
     return false;
   }
+  canSelectGroup() {
+    return true;
+  }
 }
 class MockToastrService {}
 

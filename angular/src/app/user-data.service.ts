@@ -41,6 +41,13 @@ export class UserDataService {
     this.enabledGroupsBehaviorSubject.next(this.enabledSampleGroups());
   }
 
+  canSelectGroup(group: ISampleGroup): boolean {
+    const currentSelectedGroups = this.enabledGroupsBehaviorSubject.value;
+    return (currentSelectedGroups.length == 0) ||
+      ((currentSelectedGroups[0].organism == group.organism) &&
+       (currentSelectedGroups[0].platform == group.platform))
+  }
+
   saveSampleGroups(sampleGroups: Map<string, ISampleGroup>): void {
     this.sampleGroups = sampleGroups;
     this.updateSampleGroups();
@@ -53,14 +60,17 @@ export class UserDataService {
 
     const sampleIds = samples.map(s => s.sample_id);
 
-    this.sampleGroups.set(name, <ISampleGroup>{
+    const newGroup = <ISampleGroup>{
       name: name,
       organism: organism,
       type: type,
       platform: platform,
       samples: sampleIds,
-      enabled: true,
-    });
+    };
+
+    newGroup.enabled = this.canSelectGroup(newGroup);
+
+    this.sampleGroups.set(name, newGroup);
     this.updateSampleGroups();
   }
 

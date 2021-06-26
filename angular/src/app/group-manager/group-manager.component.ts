@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 })
 export class GroupManagerComponent implements OnInit, OnDestroy {
 
-  constructor(private userData: UserDataService,
+  constructor(public userData: UserDataService,
     private toastr: ToastrService) { }
 
   groupNames!: string[];
