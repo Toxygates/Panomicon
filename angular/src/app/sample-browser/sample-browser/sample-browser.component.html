@@ -2,10 +2,13 @@
     <div class="row">
         <div class="col-12 pcard_container">
             <div class="pcard ui_panel">
-                <app-dataset-picker [selectedDataset]="datasetId"
+                <app-dataset-picker [datasets]="datasets$ | async"
+                    [selectedDataset]="datasetId"
                     (selectedDatasetChange)="onSelectedDatasetChange($event)">
                 </app-dataset-picker>
-                <app-batch-picker [datasetId]="datasetId" (selectedBatchChange)="onSelectedBatchChange($event)"></app-batch-picker>
+                <app-batch-picker [batches]="batches$ | async"
+                    (selectedBatchChange)="onSelectedBatchChange($event)">
+                </app-batch-picker>
             </div>
         </div>
     </div>

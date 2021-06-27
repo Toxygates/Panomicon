@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { IBatch, IDataset } from 'src/app/models/backend-types.model';
 import { BackendService } from '../../backend.service';
 import { UserDataService } from '../../user-data.service';
 
@@ -9,19 +12,28 @@ import { UserDataService } from '../../user-data.service';
 })
 export class SampleBrowserComponent implements OnInit {
 
-  constructor(private backend: BackendService, 
+  constructor(private backend: BackendService,
     private userData: UserDataService) {}
+
+  datasets$!: Observable<IDataset[]>;
+  batches$!: Observable<IBatch[]> | undefined;
 
   datasetId: string | undefined;
   batchId: string | undefined;
 
   ngOnInit(): void {
     this.datasetId = this.userData.getSelectedDataset();
+    this.datasets$ = this.backend.getDatasets();
   }
 
   onSelectedDatasetChange(datasetId: string): void {
     this.datasetId = datasetId;
     this.userData.setSelectedDataset(datasetId);
+    this.batches$ = this.backend.getBatchesForDataset(datasetId).pipe(
+      map(result =>
+        result.sort(function(a, b) {
+          return a.id.localeCompare(b.id);
+        })));
   }
 
   onSelectedBatchChange(batchId: string): void {

@@ -1,5 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ISampleGroup } from './models/frontend-types.model';
 import { UserDataService } from './user-data.service';
 
 @Component({
@@ -7,22 +8,16 @@ import { UserDataService } from './user-data.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
 
   constructor(private userData: UserDataService) {}
 
   navbarIsCollapsed = true;
   enabledSampleGroupsExist = false;
 
-  enabledGroupsSubscription: Subscription | undefined;
+  enabledGroups$!: Observable<ISampleGroup[]>;
 
   ngOnInit(): void {
-    this.enabledGroupsSubscription = this.userData.enabledGroupsBehaviorSubject.subscribe(groups => {
-      this.enabledSampleGroupsExist = groups.length > 0;
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.enabledGroupsSubscription?.unsubscribe();
+    this.enabledGroups$ = this.userData.enabledGroupsBehaviorSubject;
   }
 }

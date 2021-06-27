@@ -1,39 +1,37 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../user-data.service';
 import { ISampleGroup } from '../models/frontend-types.model'
-import { Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-group-manager',
   templateUrl: './group-manager.component.html',
   styleUrls: ['./group-manager.component.scss']
 })
-export class GroupManagerComponent implements OnInit, OnDestroy {
+export class GroupManagerComponent implements OnInit {
 
   constructor(public userData: UserDataService,
     private toastr: ToastrService) { }
 
-  groupNames!: string[];
-  sampleGroups!: Map<string, ISampleGroup>;
-  sampleGroupsSubscription!: Subscription;
+  groupNames$!: Observable<string[]>;
+  sampleGroups$!: Observable<Map<string, ISampleGroup>>;
   currentRenamingGroup: string | undefined;
   currentDeletingGroup: string | undefined;
   newGroupName: string | undefined;
 
-  saveSampleGroups(): void {
-    this.userData.saveSampleGroups(this.sampleGroups);
+  saveSampleGroups(groups: Map<string, ISampleGroup>): void {
+    this.userData.saveSampleGroups(groups);
   }
 
   ngOnInit(): void {
-    this.sampleGroupsSubscription = this.userData.sampleGroupsBehaviorSubject.subscribe(groups => {
-      this.sampleGroups = groups;
-      this.groupNames = Array.from(this.sampleGroups.keys()).sort();
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.sampleGroupsSubscription.unsubscribe();
+    this.sampleGroups$ = this.userData.sampleGroupsBehaviorSubject;
+    this.groupNames$ = this.sampleGroups$.pipe(
+      map(groups => {
+        return Array.from(groups.keys()).sort();
+      })
+    )
   }
 
   isAcceptableGroupName(name: string | undefined): boolean {
