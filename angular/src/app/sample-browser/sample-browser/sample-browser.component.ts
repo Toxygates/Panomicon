@@ -24,16 +24,21 @@ export class SampleBrowserComponent implements OnInit {
   ngOnInit(): void {
     this.datasetId = this.userData.getSelectedDataset();
     this.datasets$ = this.backend.getDatasets();
+    if (this.datasetId !== undefined) this.fetchBatches(this.datasetId);
+  }
+
+  fetchBatches(dataset: string): void {
+    this.batches$ = this.backend.getBatchesForDataset(dataset).pipe(
+      map(result =>
+        result.sort(function(a, b) {
+          return a.id.localeCompare(b.id);
+        })));
   }
 
   onSelectedDatasetChange(datasetId: string): void {
     this.datasetId = datasetId;
     this.userData.setSelectedDataset(datasetId);
-    this.batches$ = this.backend.getBatchesForDataset(datasetId).pipe(
-      map(result =>
-        result.sort(function(a, b) {
-          return a.id.localeCompare(b.id);
-        })));
+    this.fetchBatches(datasetId);
   }
 
   onSelectedBatchChange(batchId: string): void {
