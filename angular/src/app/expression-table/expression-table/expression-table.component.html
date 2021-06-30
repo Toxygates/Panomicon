@@ -1,21 +1,15 @@
-<div class="container">
-    <div class="row">
-        <div class="col-12 pcard_container">
-            <div class="pcard ui_panel">
-                <app-geneset-menu [geneSetNames]="sortedGeneSetNames$ | async"
-                    [currentGeneSet]="currentGeneSet"
-                    (selectGeneSet)="onSelectGeneSet($event)"
-                    (createGeneSet)="onCreateGeneSet($event)"
-                    (showAllGenes)="onShowAllGenes()"></app-geneset-menu>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="container-fluid">
     <div class="row">
         <div class="col-12 pcard_container">
             <div class="pcard ui_panel">
+                <div class = "mb-3">
+                    <app-geneset-menu [geneSetNames]="sortedGeneSetNames$ | async"
+                        [currentGeneSet]="currentGeneSet"
+                        (selectGeneSet)="onSelectGeneSet($event)"
+                        (createGeneSet)="onCreateGeneSet($event)"
+                        (showAllGenes)="onShowAllGenes()">
+                    </app-geneset-menu>
+                </div>
                 <div #tabulatorContainer></div>
             </div>
         </div>

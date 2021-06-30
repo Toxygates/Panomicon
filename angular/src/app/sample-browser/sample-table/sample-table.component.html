@@ -9,7 +9,7 @@
     </div>
 </ng-container>
 
-<div *ngIf="samples" class="mb-1">
+<div *ngIf="samples" class="mb-2">
     <button type="button" class="btn btn-primary mb-2 mr-2"
         (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
         [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseGroupCreation">
@@ -65,7 +65,7 @@
     (sampleGroupSaved)="onSampleGroupSaved($event)">
 </app-group-creation>
 
-<div #tabulatorContainer></div>
+<div #tabulatorContainer class="mt-2"></div>
 
 <div *ngIf="samples">
     {{ helper.filteredSamples !== undefined ? helper.filteredSamples?.length + " matching samples out of" : "" }}
@@ -74,7 +74,7 @@
 
 <ng-template #sampleFilteringModal>
     <app-sample-filtering [attributes]="fetchedAttributes"
-        [filters]="helper.filters" [attributeMap]="attributeMap" 
+        [filters]="helper.filters" [attributeMap]="attributeMap"
         (submitFilters)="onSubmitFilters($event)"
         (cancelEditFilters)="onCancelEditFilters()">
     </app-sample-filtering>

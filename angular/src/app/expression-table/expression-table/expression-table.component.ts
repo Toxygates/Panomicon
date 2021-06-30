@@ -154,7 +154,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         columns: this.columns,
         index: "probe",
         layout:"fitDataTable",
-        height: "calc(100vh - 13.725rem)",
+        height: "calc(100vh - 11.725rem)",
         columnHeaderSortMulti:false,
         ajaxSorting:true,
         initialSort:[
