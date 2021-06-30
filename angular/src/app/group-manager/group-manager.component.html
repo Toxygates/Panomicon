@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container mt-2">
     <div class="row">
         <div *ngIf="sampleGroups$ | async as sampleGroups" class="col-lg-12">
             <div *ngFor="let name of (groupNames$ | async);" class="card" >
@@ -30,7 +30,7 @@
                     <div class="renameCollapse mt-2" [collapse]="currentRenamingGroup !== name"
                         [isAnimated]="true">
                         <div class="mb-1">Enter new name for group:</div>
-                        <input type="text" name="sampleGroupNameInput" [(ngModel)]="newGroupName" 
+                        <input type="text" name="sampleGroupNameInput" [(ngModel)]="newGroupName"
                             class="form-control mb-2" [placeholder]="name"
                             (keyup.enter)="submitRenamingGroup()">
                         <button type="button" class="btn btn-primary mb-2"

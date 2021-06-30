@@ -144,7 +144,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         paginationDataReceived: {
           "data": "rows",
         },
-        dataLoaded: (function(sampleTableComponent) { return function(this: Tabulator, data: unknown) {
+        dataLoaded: (sampleTableComponent => { return function(this: Tabulator, _data: unknown) {
           sampleTableComponent.dataFetched = true;
           sampleTableComponent.lastPage = (this.getPageMax() as number);
           sampleTableComponent.changeDetector.detectChanges();
@@ -199,7 +199,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   }
 
   onShowAllGenes(): void {
-    if (this.probes != []) {
+    if (this.probes.length > 0) {
       this.probes = [];
       this.tabulator?.setData(undefined);
       this.currentGeneSet = undefined;
