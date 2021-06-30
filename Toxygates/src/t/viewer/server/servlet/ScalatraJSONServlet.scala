@@ -42,7 +42,7 @@ package json {
   case class SortSpec(field: String, dir: String)
 
   object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
-  case class MatrixParams(groups: Seq[Group], initProbes: Seq[String] = Seq(),
+  case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
                           filtering: Seq[FilterSpec] = Seq(),
                           sorter: SortSpec = null) {
 
@@ -330,7 +330,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     }
 
     val mainGroups = filledGroups(netParams.matrix1)
-    val mainInitProbes = netParams.matrix1.initProbes
+    val mainInitProbes = netParams.matrix1.probes
     val sideGroups = filledGroups(netParams.matrix2)
     val netController = netLoader.load(targetTable, mainGroups, mainInitProbes.toArray,
       sideGroups, valueType, pageSize)
@@ -420,7 +420,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
 
     def loadMatrix(matParams: json.MatrixParams, valueType: ValueType): MatrixController = {
       val groups = filledGroups(matParams)
-      val controller = MatrixController(context, groups, matParams.initProbes, valueType)
+      val controller = MatrixController(context, groups, matParams.probes, valueType)
       val matrix = controller.managedMatrix
       matParams.applyFilters(matrix)
       matParams.applySorting(matrix)
