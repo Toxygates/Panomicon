@@ -19,6 +19,10 @@ export class NamedItemStorage<T extends {name: string}> {
     return this.behaviorSubject.value;
   }
 
+  getItem(key: string): T | undefined {
+    return this.behaviorSubject.value.get(key);
+  }
+
   updateItems(): void {
     const json = JSON.stringify(Array.from(this.behaviorSubject.value));
     window.localStorage.setItem(this.key, json);
@@ -44,7 +48,7 @@ export class NamedItemStorage<T extends {name: string}> {
   }
 
   renameItem(oldName: string, newName: string): void {
-    const item = this.currentValue().get(oldName);
+    const item = this.getItem(oldName);
     if (!item) throw new Error(`Tried to rename nonexistent item ${oldName}`);
     item.name = newName;
     this.saveItem(item);
