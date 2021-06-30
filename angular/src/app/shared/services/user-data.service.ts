@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Sample } from '../models/backend-types.model'
 import { IGeneSet, ISampleGroup } from '../models/frontend-types.model'
+import { SampleGroupLogic } from '../models/sample-group-logic.class';
 import { NamedItemStorage } from './named-item-storage.class';
 
 @Injectable({
@@ -37,30 +38,12 @@ export class UserDataService {
   }
 
   canSelectGroup(group: ISampleGroup): boolean {
-    const currentSelectedGroups = this.enabledGroupsBehaviorSubject.value;
-    return (currentSelectedGroups.length == 0) ||
-      ((currentSelectedGroups[0].organism == group.organism) &&
-       (currentSelectedGroups[0].platform == group.platform))
+    return SampleGroupLogic.canSelectGroup(group, this.enabledGroupsBehaviorSubject.value);
   }
 
   saveSampleGroup(name: string, samples: Sample[]): void {
-    const type = samples[0]["type"]
-    const organism = samples[0]["organism"]
-    const platform = samples[0]["platform_id"];
-
-    const sampleIds = samples.map(s => s.sample_id);
-
-    const newGroup = <ISampleGroup>{
-      name: name,
-      organism: organism,
-      type: type,
-      platform: platform,
-      samples: sampleIds,
-    };
-
-    newGroup.enabled = this.canSelectGroup(newGroup);
-
+    const newGroup = SampleGroupLogic.createSampleGroup(name, samples,
+      this.enabledGroupsBehaviorSubject.value);
     this.sampleGroups.setItem(name, newGroup);
-    this.sampleGroups.updateItems();
   }
 }
