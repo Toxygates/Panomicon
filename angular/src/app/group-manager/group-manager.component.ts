@@ -22,11 +22,11 @@ export class GroupManagerComponent implements OnInit {
   newGroupName: string | undefined;
 
   saveSampleGroups(groups: Map<string, ISampleGroup>): void {
-    this.userData.saveSampleGroups(groups);
+    this.userData.sampleGroups.setItems(groups);
   }
 
   ngOnInit(): void {
-    this.sampleGroups$ = this.userData.sampleGroupsBehaviorSubject;
+    this.sampleGroups$ = this.userData.sampleGroups.observable;
     this.groupNames$ = this.sampleGroups$.pipe(
       map(groups => {
         return Array.from(groups.keys()).sort();
@@ -35,7 +35,7 @@ export class GroupManagerComponent implements OnInit {
   }
 
   isAcceptableGroupName(name: string | undefined): boolean {
-    return name != null && this.userData.isAcceptableGroupName(name);
+    return name != null && !this.userData.sampleGroups.hasItem(name);
   }
 
   toggleRenamingGroup(name: string): void {
@@ -59,14 +59,14 @@ export class GroupManagerComponent implements OnInit {
   submitRenamingGroup(): void {
     if (!this.currentRenamingGroup) throw new Error("currentRenamingGroup is not defined");
     if (!this.newGroupName) throw new Error("newGroupName is not defined");
-    this.userData.renameSampleGroup(this.currentRenamingGroup, this.newGroupName);
+    this.userData.sampleGroups.renameItem(this.currentRenamingGroup, this.newGroupName);
     this.currentRenamingGroup = undefined;
     this.newGroupName = undefined;
   }
 
   submitDeleteGroup(): void {
     if (!this.currentDeletingGroup) throw new Error("currentDeletingGroup is not defined");
-    this.userData.deleteSampleGroup(this.currentDeletingGroup);
+    this.userData.sampleGroups.deleteItem(this.currentDeletingGroup);
     this.toastr.success('Group name: ' + this.currentDeletingGroup, 'Sample group deleted');
     this.currentDeletingGroup = undefined;
   }

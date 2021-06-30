@@ -18,6 +18,6 @@ export class AppComponent implements OnInit {
   enabledGroups$!: Observable<ISampleGroup[]>;
 
   ngOnInit(): void {
-    this.enabledGroups$ = this.userData.enabledGroupsBehaviorSubject;
+    this.enabledGroups$ = this.userData.enabledGroups$;
   }
 }

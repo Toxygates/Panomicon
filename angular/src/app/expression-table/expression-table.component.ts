@@ -72,7 +72,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
 
   ngOnInit(): void {
-    this.enabledSampleGroupsSubscription = this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
+    this.enabledSampleGroupsSubscription = this.userData.enabledGroups$.subscribe(enabledGroups => {
       this.enabledSampleGroups = enabledGroups;
       if (enabledGroups.length == 0) {
         void this.router.navigate(['']);
