@@ -1,5 +1,5 @@
-import { IAttribute, Sample } from "src/app/models/backend-types.model";
-import { SampleFilter } from "src/app/models/sample-filter.model";
+import { IAttribute, Sample } from "src/app/shared/models/backend-types.model";
+import { SampleFilter } from "src/app/shared/models/sample-filter.model";
 
 export class SampleTableHelper {
   filters: SampleFilter[] = [];

@@ -1,12 +1,12 @@
-import { Component, ViewChild, OnChanges, SimpleChanges, Input, 
+import { Component, ViewChild, OnChanges, SimpleChanges, Input,
          AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
-import { BackendService } from '../../backend.service';
-import { UserDataService } from '../../user-data.service';
+import { BackendService } from '../../shared/services/backend.service';
+import { UserDataService } from '../../shared/services/user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { SampleFilter } from '../../models/sample-filter.model';
-import { IAttribute, Sample } from 'src/app/models/backend-types.model';
+import { SampleFilter } from '../../shared/models/sample-filter.model';
+import { IAttribute, Sample } from '../../shared/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
 import { forkJoin, Subscription } from 'rxjs';
 
@@ -52,7 +52,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef | undefined;
 
   ngOnChanges(changes: SimpleChanges):void {
-    if (changes.batchId != null && 
+    if (changes.batchId != null &&
         changes.batchId.currentValue != changes.batchId.previousValue) {
 
       this.samples = undefined;

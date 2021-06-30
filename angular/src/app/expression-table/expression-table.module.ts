@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SharedModule } from '../shared.module';
+import { SharedModule } from '../shared/shared.module';
 import { ExpressionTableComponent } from './expression-table.component';
 import { RouterModule } from '@angular/router';
 

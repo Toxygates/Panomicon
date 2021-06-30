@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { UserDataService } from '../user-data.service';
+import { UserDataService } from '../shared/services/user-data.service';
 
 import { GroupManagerComponent } from './group-manager.component';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Component, Directive, NO_ERRORS_SCHEMA, Type } from '@angular/core';
 
 class MockUserDataService {
-  sampleGroupsBehaviorSubject = new BehaviorSubject(new Map());
+  sampleGroups = {
+    observable: new BehaviorSubject(new Map())
+  }
   isAcceptableGroupName() {
     return false;
   }
@@ -36,10 +38,10 @@ describe('GroupManagerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ FormsModule, BrowserAnimationsModule ],
-      declarations: [ 
+      declarations: [
         GroupManagerComponent,
-        MockDirective({ 
-          selector: '[collapse]', 
+        MockDirective({
+          selector: '[collapse]',
           inputs: ['collapse']
         })
       ],
@@ -55,7 +57,7 @@ describe('GroupManagerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(GroupManagerComponent);
     component = fixture.componentInstance;
-    mockUserData.sampleGroupsBehaviorSubject.next(
+    mockUserData.sampleGroups.observable.next(
       new Map([["florb", {"name": "florb", "samples": [444, 555, 666],
                         "enabled": false}],
              ["spabble", {"name": "spabble", "samples": [111, 222, 333],
@@ -83,7 +85,7 @@ describe('GroupManagerComponent', () => {
   });
 
   it('should update when sample groups change', () => {
-    mockUserData.sampleGroupsBehaviorSubject.next(
+    mockUserData.sampleGroups.observable.next(
       new Map([["barg", {"name": "barg", "samples": [444, 555, 666],
                 "enabled": false}],
                ["slek", {"name": "slek", "samples": [111, 222, 333],

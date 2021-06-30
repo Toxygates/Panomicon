@@ -1,8 +1,8 @@
 import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef, NgZone } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserDataService } from '../user-data.service';
-import { ISampleGroup } from '../models/frontend-types.model'
+import { UserDataService } from '../shared/services/user-data.service';
+import { ISampleGroup } from '../shared/models/frontend-types.model'
 import Tabulator from 'tabulator-tables';
 import { Subscription } from 'rxjs';
 
@@ -72,7 +72,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
 
   ngOnInit(): void {
-    this.enabledSampleGroupsSubscription = this.userData.enabledGroupsBehaviorSubject.subscribe(enabledGroups => {
+    this.enabledSampleGroupsSubscription = this.userData.enabledGroups$.subscribe(enabledGroups => {
       this.enabledSampleGroups = enabledGroups;
       if (enabledGroups.length == 0) {
         void this.router.navigate(['']);
