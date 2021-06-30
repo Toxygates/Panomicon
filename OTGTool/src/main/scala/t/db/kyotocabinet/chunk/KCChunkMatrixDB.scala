@@ -264,7 +264,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
    * @param x
    * @return
    */
-  private def potentialChunks(x: Sample, probeSets: Iterable[String]): Iterable[V] = {
+  private def potentialChunks(x: Sample, probeSets: Iterable[String]): Array[VectorChunk[PExprValue]] = {
     if (probeSets.isEmpty) {
       potentialChunks(x, mc.probeMap.keysIterator.toArray)
     } else {
@@ -275,10 +275,16 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     }
   }
 
-  private def potentialChunks(x: Sample, probes: Array[Int]): Iterable[V] = {
+  private def potentialChunks(x: Sample, probes: Array[Int]): Array[VectorChunk[PExprValue]] = {
     val keys = probes.map(p => chunkStartFor(p)).distinct
     for (k <- keys; dbcode <- x.getDbCode)
       yield new VectorChunk[PExprValue](dbcode, k, Seq())
+  }
+
+  private def findOrCreateChunks(x: Sample, probes: Array[Int]) = {
+    val keys = probes.map(p => chunkStartFor(p)).distinct
+    for (k <- keys; dbcode <- x.getDbCode)
+      yield findOrCreateChunk(dbcode, k)
   }
 
   //probes must be sorted in an order consistent with the chunkDB.
@@ -289,7 +295,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
 //    assert(probes.toSeq.sorted == probes.toSeq)
 
-    val chunks = potentialChunks(x, probes)
+    val chunks = findOrCreateChunks(x, probes)
 
 //    assert(chunks.sortBy(_.start) == chunks)
 //    for (c <- chunks) {
