@@ -1,10 +1,11 @@
 import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef, NgZone } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserDataService } from '../shared/services/user-data.service';
-import { ISampleGroup } from '../shared/models/frontend-types.model'
+import { UserDataService } from '../../shared/services/user-data.service';
+import { IGeneSet, ISampleGroup } from '../../shared/models/frontend-types.model'
 import Tabulator from 'tabulator-tables';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-expression-table',
@@ -27,6 +28,12 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   enabledSampleGroups: ISampleGroup[] = [];
   enabledSampleGroupsSubscription: Subscription | undefined;
+  geneSets$!: Observable<Map<string, IGeneSet>>;
+  sortedGeneSetNames$!: Observable<string[]>;
+
+  currentGeneSet: string | undefined;
+  // filters!: { column: string, type: string, threshold: number }[]
+  probes: string[] = [];
   dataFetched = false;
   lastPage = 0;
   tablePageNumber = 0;
@@ -86,7 +93,11 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
             headerSortStartingDir:'desc', width:"15rem"});
         }
       }
+      // this.filters = []
     });
+    this.geneSets$ = this.userData.geneSets.observable;
+    this.sortedGeneSetNames$ = this.geneSets$.pipe(map(dict =>
+      Array.from(dict.keys()).sort()));
   }
 
   ngAfterViewInit(): void {
@@ -118,7 +129,9 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
             const requestBodyObject = {
               groups: groupInfoArray,
               page: params.page,
-              sorter: params.sorters[0]
+              sorter: params.sorters[0],
+              // filtering: this.filters,
+              probes: this.probes
             }
             return(JSON.stringify(requestBodyObject));
           },
@@ -127,10 +140,11 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
           const page = params.page;
           return `${url}?offset=${((page - 1) * 100)}`;
         },
+        ajaxFiltering: true,
         paginationDataReceived: {
           "data": "rows",
         },
-        dataLoaded: (function(sampleTableComponent) { return function(this: Tabulator) {
+        dataLoaded: (function(sampleTableComponent) { return function(this: Tabulator, data: unknown) {
           sampleTableComponent.dataFetched = true;
           sampleTableComponent.lastPage = (this.getPageMax() as number);
           sampleTableComponent.changeDetector.detectChanges();
@@ -140,7 +154,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         columns: this.columns,
         index: "probe",
         layout:"fitDataTable",
-        height: "calc(100vh - 8.375rem)",
+        height: "calc(100vh - 13.725rem)",
         columnHeaderSortMulti:false,
         ajaxSorting:true,
         initialSort:[
@@ -152,6 +166,44 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         footerElement:"<div class=\"d-none d-sm-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent('OpenGotoPageModal'));\">Go to page...</button></div>",
       });
     });
+  }
+
+  onCreateGeneSet(name: string): void {
+    const platform = this.enabledSampleGroups[0].platform;
+    const data: {probe: string}[] | undefined = this.tabulator?.getData();
+    const probes = data?.map(row => row.probe);
+
+    if (probes == undefined) throw new Error("No probes available for gene set");
+
+    const geneSet = {
+      name: name,
+      platform: platform,
+      probes: probes
+    } as IGeneSet;
+
+    this.userData.geneSets.saveItem(geneSet);
+
+    this.onSelectGeneSet(name);
+  }
+
+  onSelectGeneSet(name: string): void {
+    if (this.currentGeneSet != name) {
+      const geneSet = this.userData.geneSets.getItem(name);
+      const probes = geneSet?.probes;
+      if (probes) {
+        this.probes = probes;
+        this.tabulator?.setData(undefined);
+        this.currentGeneSet = name;
+      }
+    }
+  }
+
+  onShowAllGenes(): void {
+    if (this.probes != []) {
+      this.probes = [];
+      this.tabulator?.setData(undefined);
+      this.currentGeneSet = undefined;
+    }
   }
 
   @HostListener("window:OpenGotoPageModal")

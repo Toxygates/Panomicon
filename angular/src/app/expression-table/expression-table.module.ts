@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../shared/shared.module';
-import { ExpressionTableComponent } from './expression-table.component';
+import { ExpressionTableComponent } from './expression-table/expression-table.component';
 import { RouterModule } from '@angular/router';
+import { GenesetMenuComponent } from './geneset-menu/geneset-menu.component';
 
 @NgModule({
   imports: [
@@ -13,7 +14,8 @@ import { RouterModule } from '@angular/router';
     ]),
   ],
   declarations: [
-    ExpressionTableComponent
+    ExpressionTableComponent,
+    GenesetMenuComponent
   ]
 })
 export class ExpressionTableModule { }
