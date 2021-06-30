@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ISampleGroup } from './models/frontend-types.model';
-import { UserDataService } from './user-data.service';
+import { ISampleGroup } from './shared/models/frontend-types.model';
+import { UserDataService } from './shared/services/user-data.service';
 
 @Component({
   selector: 'app-root',

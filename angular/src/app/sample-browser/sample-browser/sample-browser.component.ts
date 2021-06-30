@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { IBatch, IDataset } from 'src/app/models/backend-types.model';
-import { BackendService } from '../../backend.service';
-import { UserDataService } from '../../user-data.service';
+import { IBatch, IDataset } from '../../shared/models/backend-types.model';
+import { BackendService } from '../../shared/services/backend.service';
+import { UserDataService } from '../../shared/services/user-data.service';
 
 @Component({
   selector: 'app-sample-browser',

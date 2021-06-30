@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { IAttribute } from 'src/app/models/backend-types.model';
-import { SampleFilter, SampleFilterType } from '../../models/sample-filter.model';
+import { IAttribute } from '../../shared/models/backend-types.model';
+import { SampleFilter, SampleFilterType } from '../../shared/models/sample-filter.model';
 
 @Component({
   selector: 'app-sample-filtering',

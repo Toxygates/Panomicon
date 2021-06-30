@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Sample } from './models/backend-types.model'
-import { IGeneSet, ISampleGroup } from './models/frontend-types.model'
+import { Sample } from '../models/backend-types.model'
+import { IGeneSet, ISampleGroup } from '../models/frontend-types.model'
 
 class NamedItemStorage<T extends {name: string}> {
 

@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { IDataset } from 'src/app/models/backend-types.model';
-import { BackendService } from '../../backend.service'
+import { IDataset } from 'src/app/shared/models/backend-types.model';
+import { BackendService } from '../../shared/services/backend.service'
 
 @Component({
   selector: 'app-dataset-picker',

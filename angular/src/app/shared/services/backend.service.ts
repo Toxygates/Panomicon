@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { IAttribute, IBatch, IDataset, Sample } from './models/backend-types.model';
+import { IAttribute, IBatch, IDataset, Sample } from '../models/backend-types.model';
 
 @Injectable({
   providedIn: 'root'

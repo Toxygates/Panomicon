@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { UserDataService } from '../user-data.service';
-import { ISampleGroup } from '../models/frontend-types.model'
+import { UserDataService } from '../shared/services/user-data.service';
+import { ISampleGroup } from '../shared/models/frontend-types.model'
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
