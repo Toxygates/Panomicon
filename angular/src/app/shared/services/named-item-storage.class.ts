@@ -29,9 +29,9 @@ export class NamedItemStorage<T extends {name: string}> {
     this.updateItems();
   }
 
-  setItem(key: string, item: T): void {
+  saveItem(item: T): void {
     const itemMap = this.behaviorSubject.value;
-    itemMap.set(key, item);
+    itemMap.set(item.name, item);
     this.behaviorSubject.next(itemMap)
     this.updateItems();
   }
@@ -47,7 +47,7 @@ export class NamedItemStorage<T extends {name: string}> {
     const item = this.currentValue().get(oldName);
     if (!item) throw new Error(`Tried to rename nonexistent item ${oldName}`);
     item.name = newName;
-    this.setItem(newName, item);
+    this.saveItem(item);
     this.deleteItem(oldName);
     this.updateItems();
   }

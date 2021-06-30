@@ -44,6 +44,6 @@ export class UserDataService {
   saveSampleGroup(name: string, samples: Sample[]): void {
     const newGroup = SampleGroupLogic.createSampleGroup(name, samples,
       this.enabledGroupsBehaviorSubject.value);
-    this.sampleGroups.setItem(name, newGroup);
+    this.sampleGroups.saveItem(newGroup);
   }
 }
