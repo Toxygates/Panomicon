@@ -20,7 +20,7 @@
 package t.manager
 import t._
 import t.db._
-import t.db.file.{CSVRawExpressionData, CachedCSVRawExpressionData, PFoldValueBuilder}
+import t.db.file.{CSVRawExpressionData, PFoldValueBuilder}
 import t.db.kyotocabinet._
 import t.global.KCDBRegistry
 import t.model.sample.CoreParameter
@@ -257,7 +257,7 @@ class BatchManager(context: Context) {
           mc <- Task.simple("Create matrix context") {
             matrixContext()
           }
-          _ <- addExprData(metadata, dataFile, callFile, true, conversion)(mc) andThen
+          _ <- addExprData(metadata, dataFile, callFile, conversion)(mc) andThen
                 recalculateFoldsAndSeries(batch, metadata, simpleLog2)
         } yield ())
     } yield ()
@@ -546,26 +546,21 @@ class BatchManager(context: Context) {
   }
 
   def readCSVExpressionData(md: Metadata, niFile: String,
-      callFile: Option[String], cached: Boolean,
+      callFile: Option[String],
       conversion: ExpressionConverter): Task[ColumnExpressionData] =
     new AtomicTask[ColumnExpressionData]("Read raw expression data") {
       override def run() = {
-        if (cached) {
-          conversion(new CachedCSVRawExpressionData(niFile, callFile,
-            Some(md.samples.size), m => log(s"Warning: $m")))
-        } else {
-          conversion(new CSVRawExpressionData(niFile, callFile,
-            Some(md.samples.size), m => log(s"Warning: $m")))
-        }
-    }
+        conversion(new CSVRawExpressionData(niFile, callFile,
+          Some(md.samples.size), m => log(s"Warning: $m")))
+      }
   }
 
-  def addExprData(md: Metadata, niFile: String, callFile: Option[String], cached: Boolean,
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String],
       conversion: ExpressionConverter)
       (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.exprDb)
     for {
-      data <- readCSVExpressionData(md, niFile, callFile, cached, conversion)
+      data <- readCSVExpressionData(md, niFile, callFile, conversion)
       _ <- new SimpleValueInsert(db, data).insert("Insert expression value data")
     } yield ()
   }

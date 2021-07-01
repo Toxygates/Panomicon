@@ -29,8 +29,7 @@ import scala.reflect.ClassTag
 class ParseException(msg: String) extends Exception
 
 /**
- * Raw data in CSV files.
- * Will be read a few samples at a time, saving memory, possibly sacrificing speed.
+ * Raw data from CSV files, cached in memory.
  * Call files may be absent, in which case all values are treated as present call (P).
  */
 class CSVRawExpressionData(exprFile: String,
@@ -38,6 +37,16 @@ class CSVRawExpressionData(exprFile: String,
     parseWarningHandler: (String) => Unit) extends ColumnExpressionData {
 
   import t.util.DoThenClose._
+
+  protected val expectedColumns = expectedSamples.map(_ + 1)
+
+  lazy val defaultCalls = probes.map(_ => 'P')
+
+  val exprCache: CMap[Sample, Array[Double]] = readValuesFromTable(exprFile, _.toDouble)
+  val callsCache: CMap[Sample, Array[Char]] = callFile match {
+    case Some(f) => readValuesFromTable(f, x => unquote(x)(0))
+    case _ => Map()
+  }
 
   private def samplesInFile(file: String) = {
     val firstLine = doThenClose(Source.fromFile(file))(_.getLines.next)
@@ -60,8 +69,6 @@ class CSVRawExpressionData(exprFile: String,
       } yield probe).toList //force evaluation
     })
   }
-
-  protected val expectedColumns = expectedSamples.map(_ + 1)
 
   protected def traverseFile[T](file: String,
     lineHandler: (Array[String], String) => Unit): Array[String] = {
@@ -89,80 +96,16 @@ class CSVRawExpressionData(exprFile: String,
     r
   }
 
-  protected def readValuesFromTable[T : ClassTag](file: String, ss: Iterable[Sample],
-                                                  extract: String => T): CMap[Sample, Array[T]] = {
-    val samples = ss.map(_.sampleId).toSet
-
-    val raw = probeBuffer[IndexedSeq[String]]
-    var keptColumns: Option[IndexedSeq[String]] = None
-    var keptIndices: Option[IndexedSeq[Int]] = None
-
-    traverseFile(file, (columns, l) => {
-      if(keptColumns == None) {
-        keptColumns = Some(ArrayBuffer(columns.head) ++
-           columns.filter(x => samples.contains(x)))
-        keptIndices = Some(ArrayBuffer(0) ++
-           columns.indices.filter(i => samples.contains(columns(i))))
-      }
-
-      val spl = l.split(",", -1).map(x => x.trim)
-      if (expectedColumns != None && spl.size < expectedColumns.get) {
-        val wmsg =
-            s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
-        parseWarningHandler(wmsg)
-      } else {
-        raw += keptIndices.get.map(spl)
-      }
-    })
-
-    val rawAndProbes = raw zip probes
-
-    var r = mutable.Map[Sample, Array[T]]()
-    for (c <- 1 until keptColumns.get.size;
-      sampleId = keptColumns.get(c); sample = Sample(sampleId)) {
-
-      val col = rawAndProbes.map {case (row, probe) =>
-        try {
-          extract(row(c))
-        } catch {
-          case nfe: NumberFormatException =>
-            val wmsg = s"Number format error: unable to parse string '${row(c)}' for probe $probe" +
-              s" and sample $sampleId"
-            parseWarningHandler(wmsg)
-            throw nfe
-        }
-      }
-      r += sample -> col.toArray
-    }
-
-    r
-  }
-
   private[this] def unquote(x: String) = x.replace("\"", "")
-
-  protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Char]] = {
-    //get the second char in a string like "A" or "P"
-    readValuesFromTable(file, ss, x => unquote(x)(0))
-  }
-
-  lazy val defaultCalls = probes.map(_ => 'P')
-
-  /**
-   * Read expression values from a file.
-   * The result is a map that maps samples to probe IDs and values.
-   */
-  protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Double]] = {
-    readValuesFromTable(file, ss, _.toDouble)
-  }
 
   import java.lang.{Double => JDouble}
   override def data(ss: Iterable[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
-    val exprs = readExprValues(exprFile, ss.toSeq.distinct)
-    val calls = callFile.map(readCalls(_, ss.toSeq.distinct)).getOrElse(Map())
+    val exprs = filterExprValues(ss.toSeq.distinct)
+    val calls = filterCalls(ss.toSeq.distinct)
 
     exprs.map { case (s, col) => {
         val sampleCalls = calls.getOrElse(s, defaultCalls)
-        s -> (Map() ++ (probes.iterator zip (col.iterator zip sampleCalls.iterator)).map {
+        s -> (mutable.Map() ++ (probes.iterator zip (col.iterator zip sampleCalls.iterator)).map {
           case (p, (v, c)) => {
             (p -> (v, c, Double.NaN))
           }
@@ -174,30 +117,27 @@ class CSVRawExpressionData(exprFile: String,
   def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
     data(Set(s)).headOption.map(_._2).getOrElse(Map())
   }
-}
 
-/**
- * Immediately caches all samples in memory to gain more speed.
- */
-class CachedCSVRawExpressionData(exprFile: String,
-    callFile: Option[String], expectedSamples: Option[Int],
-    parseWarningHandler: (String) => Unit)
-    extends CSVRawExpressionData(exprFile, callFile, expectedSamples, parseWarningHandler) {
+  override def calls(x: Sample): Array[Option[Char]] =
+    callsCache.getOrElse(x, defaultCalls).map(Some(_))
 
-  var exprCache: CMap[Sample, Array[Double]] = Map()
-  var callsCache: CMap[Sample, Array[Char]] = Map()
+  override def exprs(x: Sample): Array[Option[Double]] =
+    exprCache(x).map(Some(_))
 
-  exprCache = readExprValues(exprFile, samples)
-  callsCache = callFile match {
-    case Some(f) => readCalls(f, samples)
-    case _ => Map()
+  protected def filterCalls(ss: Iterable[Sample]): CMap[Sample, Array[Char]] = {
+    val sampleSet = ss.toSet
+    callsCache.filter(x => sampleSet.contains(x._1))
+  }
+
+  protected def filterExprValues(ss: Iterable[Sample]): CMap[Sample, Array[Double]] = {
+    val sampleSet = ss.toSet
+    exprCache.filter(x => sampleSet.contains(x._1))
   }
 
   /*
-   * Read all data at once, ignoring the ss parameter.
+   * Read the entire table, converting it into type T.
    */
-   override protected def readValuesFromTable[T : ClassTag](file: String, ss: Iterable[Sample],
-    extract: String => T): CMap[Sample, Array[T]] = {
+  protected def readValuesFromTable[T: ClassTag](file: String, extract: String => T): CMap[Sample, Array[T]] = {
 
     val raw = probeBuffer[IndexedSeq[T]]
 
@@ -206,7 +146,7 @@ class CachedCSVRawExpressionData(exprFile: String,
       val spl = l.split(",", -1).map(x => x.trim)
       if (expectedColumns != None && spl.size < expectedColumns.get) {
         val wmsg =
-            s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
+          s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
         parseWarningHandler(wmsg)
       } else {
         try {
@@ -224,34 +164,9 @@ class CachedCSVRawExpressionData(exprFile: String,
     var r = mutable.Map[Sample, Array[T]]()
 
     for (c <- 0 until samples.size;
-      sample = samples(c)) {
-      r += (sample -> raw.map(_(c)).toArray)
+         sample = samples(c)) {
+      r += (sample -> raw.map(_ (c)).toArray)
     }
     r
   }
-
-  override def calls(x: Sample): Array[Option[Char]] =
-    callsCache.getOrElse(x, defaultCalls).map(Some(_))
-
-  override def exprs(x: Sample): Array[Option[Double]] =
-    exprCache(x).map(Some(_))
-
-  override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Char]] = {
-    val (preExisting, notYetRead) = ss.partition(callsCache.contains(_))
-    if (notYetRead.nonEmpty) {
-      callsCache ++= super.readCalls(file, notYetRead)
-    }
-    val sampleSet = ss.toSet
-    callsCache.filter(x => sampleSet.contains(x._1))
-  }
-
-  override protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Double]] = {
-    val (preExisting, notYetRead) = ss.partition(exprCache.contains(_))
-    if (notYetRead.nonEmpty) {
-      exprCache ++= super.readExprValues(file, notYetRead)
-    }
-    val sampleSet = ss.toSet
-    exprCache.filter(x => sampleSet.contains(x._1))
-  }
-
 }
