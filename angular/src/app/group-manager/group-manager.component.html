@@ -1,7 +1,7 @@
 <div class="container mt-2">
     <div class="row">
         <div *ngIf="sampleGroups$ | async as sampleGroups" class="col-lg-12">
-            <div *ngFor="let name of (groupNames$ | async);" class="card" >
+            <div *ngFor="let name of (groupNames$ | async); index as i" class="card" >
                 <div *ngIf="sampleGroups.get(name) as group" class="card-body">
                     <h5 class="card-title">{{name}} / {{group.organism}} / {{group.type}} / {{group.platform}}</h5>
                     Samples:
@@ -11,11 +11,11 @@
                         </li>
                     </ul>
                     <div class="form-group form-check">
-                        <input type="checkbox" class="form-check-input" id="enabledCheck"
+                        <input type="checkbox" class="form-check-input" id="enabledCheck-{{i}}"
                             [(ngModel)]="group.enabled"
                             [disabled]="!group.enabled && !userData.canSelectGroup(group)"
                             (ngModelChange)="saveSampleGroups(sampleGroups)">
-                        <label class="form-check-label" for="enabledCheck">Enabled</label>
+                        <label class="form-check-label" for="enabledCheck-{{i}}">Enabled</label>
                     </div>
                     <button type="button" class="btn btn-primary mb-1 mr-2"
                         (click)="toggleRenamingGroup(name)"
