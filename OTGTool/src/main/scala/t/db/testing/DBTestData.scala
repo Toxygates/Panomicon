@@ -163,8 +163,8 @@ object DBTestData {
     }
     new ColumnExpressionData {
       val d = testData
-      def samples = d.keys.toSeq
-      def probes = usedProbes.toSeq
+      def samples = d.keys.toArray
+      def probes = usedProbes.toArray
       def data(s: Sample) = d(s)
     }
   }

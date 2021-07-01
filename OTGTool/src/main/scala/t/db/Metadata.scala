@@ -58,13 +58,8 @@ trait Metadata extends SampleSet {
 
   private def controlGroupKey(s: Sample) = sampleAttribute(s, ControlTreatment).get
 
-  def controlSamples(s: Sample): Iterable[Sample] = {
-    val key = controlGroupKey(s)
-    samples.filter(controlGroupKey(_) == key)
-  }
-
   def treatedControlGroups(ss: Iterable[Sample]): List[(List[Sample], List[Sample])] = {
-    ss.groupBy(controlSamples(_)).toList.map { case (controls, allSamples) => {
+    ss.groupBy(controlGroupKey(_)).toList.map { case (key, allSamples) => {
       allSamples.toList.partition(!isControl(_))
     } }
   }
@@ -90,6 +85,4 @@ class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends
     if (samples.contains(sample)) from.sampleAttributes(sample) else Seq()
     
   override def contains(s: Sample) = samples.contains(s)
-    
-  override def controlSamples(s: Sample): Iterable[Sample] = from.controlSamples(s)
 }

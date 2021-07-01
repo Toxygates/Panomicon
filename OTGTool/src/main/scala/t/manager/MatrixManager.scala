@@ -36,7 +36,7 @@ object MatrixManager extends ManagerTool {
         val vs = from.valuesInSamples(ss, allProbes, true)
         val svs = Map() ++ (ss zip vs)
         val raw = new ColumnExpressionData {
-          val samples = ss
+          val samples = ss.toArray
           def probes = allProbes.map(mat.probeMap.unpack)
           def data(s: Sample) = Map() ++
             svs(s).filter(!_.isPadding).map(v => v.probe -> formVal(v))

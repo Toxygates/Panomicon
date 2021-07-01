@@ -28,8 +28,8 @@ import scala.collection.{Map => CMap}
  * For some methods, values are returned in the order specified by the probes sequence.
  */
 trait ColumnExpressionData extends Closeable {
-  def probes: Seq[ProbeId]
-  def samples: Iterable[Sample]
+  def probes: Array[ProbeId]
+  def samples: Array[Sample]
 
   /**
    * Pre-cache data for efficiency, if the implementation supports it.
@@ -37,23 +37,23 @@ trait ColumnExpressionData extends Closeable {
    */
   def loadData(ss: Iterable[Sample]) {}
 
-  protected val sampleChunkSize = 50
+  protected val sampleChunkSize = 100
 
   /**
    * Iterate through the data in this source in the most efficient way for the chosen samples.
    */
-  def samplesAndData(forSamples: Iterable[Sample]): Iterator[(Sample, Seq[(ProbeId, FoldPExpr)])] = {
+  def samplesAndData(forSamples: Array[Sample]): Iterator[(Sample, Array[(ProbeId, FoldPExpr)])] = {
     forSamples.grouped(sampleChunkSize).flatMap(ss => {
       loadData(ss)
-      ss.map(s => (s, data(s).toSeq))
+      ss.iterator.map(s => (s, data(s).toArray))
     })
   }
 
   /**
    * Iterate through the data in this source in the most efficient way.
    */
-  def samplesAndData: Iterator[(Sample, Seq[(ProbeId, FoldPExpr)])] =
-    samplesAndData(samples)
+  def samplesAndData: Iterator[(Sample, Array[(ProbeId, FoldPExpr)])] =
+    samplesAndData(samples.toArray)
 
   def data(s: Sample): CMap[ProbeId, FoldPExpr]
 
@@ -66,7 +66,7 @@ trait ColumnExpressionData extends Closeable {
    * Obtain calls for all probes.
    * Default implementation for convenience, may be overridden
    */
-  def calls(x: Sample): Seq[Option[Char]] = {
+  def calls(x: Sample): Array[Option[Char]] = {
     val d = data(x)
     probes.map(p => d.get(p).map(_._2))
   }
@@ -75,7 +75,7 @@ trait ColumnExpressionData extends Closeable {
    * Obtain expression values for all probes.
    * Default implementation for convenience, may be overridden
    */
-  def exprs(x: Sample): Seq[Option[Double]] = {
+  def exprs(x: Sample): Array[Option[Double]] = {
     val d = data(x)
     probes.map(p => d.get(p).map(_._1))
   }

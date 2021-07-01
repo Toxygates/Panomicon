@@ -49,7 +49,6 @@ object BatchManager extends ManagerTool {
           val title = require(stringOption(args, "-title"),
             "Please specify a title with -title")
           val append = booleanOption(args, "-append")
-          val cached = booleanOption(args, "-cached")
           val comment = stringOption(args, "-comment").getOrElse("")
           val idConversion = t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"), context)
 
@@ -73,8 +72,7 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 val task = bm.add(Batch(title, comment, None, None),
                   metadata, dataFile, callFile,
-                  if (first) append else true, cached = cached,
-                  conversion = idConversion)
+                  if (first) append else true, conversion = idConversion)
 
                 first = false
                 task
@@ -90,8 +88,7 @@ object BatchManager extends ManagerTool {
               new PlatformStore(config).populateAttributes(config.attributes)
               //val md = factory.tsvMetadata(metaFile, config.attributes)
               startTaskRunner(bm.add(Batch(title, comment, None, None),
-                metaFile, dataFile, callFile, append, cached = cached,
-                conversion = idConversion))
+                metaFile, dataFile, callFile, append, conversion = idConversion))
           }
 
         case "recalculate" =>
@@ -246,7 +243,6 @@ class BatchManager(context: Context) {
   def add(batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
     append: Boolean, simpleLog2: Boolean = false,
-    cached: Boolean = false,
     conversion: ExpressionConverter = identityConverter): Task[Unit] = {
 
     for {
@@ -261,7 +257,7 @@ class BatchManager(context: Context) {
           mc <- Task.simple("Create matrix context") {
             matrixContext()
           }
-          _ <- addExprData(metadata, dataFile, callFile, cached, conversion)(mc) andThen
+          _ <- addExprData(metadata, dataFile, callFile, true, conversion)(mc) andThen
                 recalculateFoldsAndSeries(batch, metadata, simpleLog2)
         } yield ())
     } yield ()
@@ -732,6 +728,10 @@ class BatchManager(context: Context) {
       val controlGroups = md.treatedControlGroups(md.samples)
       val treated = controlGroups.flatMap(_._1)
 
+      /*
+        Constructs series with empty (zero) data points
+        for those independent parameter values that are defined in the metadata
+       */
       val data = builder.makeNewEmpty(md, treated)
       val total = data.size
 

@@ -77,7 +77,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
   requestedSamples: Iterable[Sample],
    requestedProbes: Iterable[Int]) extends ColumnExpressionData {
 
-  override val samples: Iterable[Sample] = reader.sortSamples(requestedSamples)
+  override val samples: Array[Sample] = reader.sortSamples(requestedSamples).toArray
 
   val codedProbes = reader.sortProbes(requestedProbes)
   override val probes =
@@ -116,17 +116,17 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
   /**
    * Obtain calls for all probes.
    */
-  override def calls(x: Sample): Seq[Option[Char]] = {
+  override def calls(x: Sample): Array[Option[Char]] = {
     loadData(Seq(x))
-    currentCalls(currentSamples indexOf x)
+    currentCalls(currentSamples indexOf x).toArray
   }
 
   /**
    * Obtain expression values for all probes.
    */
-  override def exprs(x: Sample): Seq[Option[Double]] = {
+  override def exprs(x: Sample): Array[Option[Double]] = {
     loadData(Seq(x))
-    currentExprs(currentSamples indexOf x)
+    currentExprs(currentSamples indexOf x).toArray
   }
 
   override def release() { reader.release() }

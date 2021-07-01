@@ -20,9 +20,11 @@
 package t.db.file
 
 import scala.io.Source
-import scala.collection.{ Map => CMap }
+import scala.collection.{mutable, Map => CMap}
 import t.db._
+
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 class ParseException(msg: String) extends Exception
 
@@ -40,14 +42,14 @@ class CSVRawExpressionData(exprFile: String,
   private def samplesInFile(file: String) = {
     val firstLine = doThenClose(Source.fromFile(file))(_.getLines.next)
     val columns = firstLine.split(",", -1).map(_.trim)
-    columns.drop(1).toVector.map(s => Sample(unquote(s)))
+    columns.drop(1).toArray.map(s => Sample(unquote(s)))
   }
 
-  override lazy val samples: Vector[Sample] =
-    samplesInFile(exprFile).distinct
+  override lazy val samples: Array[Sample] =
+    samplesInFile(exprFile).distinct.toArray
 
-  override lazy val probes: Vector[String] =
-    probesInFile(exprFile).toVector
+  override lazy val probes: Array[String] =
+    probesInFile(exprFile).toArray
 
   private def probesInFile(file: String): Seq[ProbeId] = {
     doThenClose(Source.fromFile(file))(ls => {
@@ -87,8 +89,8 @@ class CSVRawExpressionData(exprFile: String,
     r
   }
 
-  protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
-    extract: String => T): CMap[Sample, Seq[T]] = {
+  protected def readValuesFromTable[T : ClassTag](file: String, ss: Iterable[Sample],
+                                                  extract: String => T): CMap[Sample, Array[T]] = {
     val samples = ss.map(_.sampleId).toSet
 
     val raw = probeBuffer[IndexedSeq[String]]
@@ -115,7 +117,7 @@ class CSVRawExpressionData(exprFile: String,
 
     val rawAndProbes = raw zip probes
 
-    var r = Map[Sample, Seq[T]]()
+    var r = mutable.Map[Sample, Array[T]]()
     for (c <- 1 until keptColumns.get.size;
       sampleId = keptColumns.get(c); sample = Sample(sampleId)) {
 
@@ -130,7 +132,7 @@ class CSVRawExpressionData(exprFile: String,
             throw nfe
         }
       }
-      r += sample -> col.toVector
+      r += sample -> col.toArray
     }
 
     r
@@ -138,7 +140,7 @@ class CSVRawExpressionData(exprFile: String,
 
   private[this] def unquote(x: String) = x.replace("\"", "")
 
-  protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
+  protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Char]] = {
     //get the second char in a string like "A" or "P"
     readValuesFromTable(file, ss, x => unquote(x)(0))
   }
@@ -149,8 +151,7 @@ class CSVRawExpressionData(exprFile: String,
    * Read expression values from a file.
    * The result is a map that maps samples to probe IDs and values.
    */
-  protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Double]] = {
-    import java.lang.{Double => JDouble}
+  protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Double]] = {
     readValuesFromTable(file, ss, _.toDouble)
   }
 
@@ -183,8 +184,8 @@ class CachedCSVRawExpressionData(exprFile: String,
     parseWarningHandler: (String) => Unit)
     extends CSVRawExpressionData(exprFile, callFile, expectedSamples, parseWarningHandler) {
 
-  var exprCache: CMap[Sample, Seq[Double]] = Map()
-  var callsCache: CMap[Sample, Seq[Char]] = Map()
+  var exprCache: CMap[Sample, Array[Double]] = Map()
+  var callsCache: CMap[Sample, Array[Char]] = Map()
 
   exprCache = readExprValues(exprFile, samples)
   callsCache = callFile match {
@@ -195,8 +196,8 @@ class CachedCSVRawExpressionData(exprFile: String,
   /*
    * Read all data at once, ignoring the ss parameter.
    */
-   override protected def readValuesFromTable[T](file: String, ss: Iterable[Sample],
-    extract: String => T): CMap[Sample, Seq[T]] = {
+   override protected def readValuesFromTable[T : ClassTag](file: String, ss: Iterable[Sample],
+    extract: String => T): CMap[Sample, Array[T]] = {
 
     val raw = probeBuffer[IndexedSeq[T]]
 
@@ -220,22 +221,22 @@ class CachedCSVRawExpressionData(exprFile: String,
       }
     })
 
-    var r = Map[Sample, Seq[T]]()
+    var r = mutable.Map[Sample, Array[T]]()
 
     for (c <- 0 until samples.size;
       sample = samples(c)) {
-      r += sample -> raw.map(_(c))
+      r += (sample -> raw.map(_(c)).toArray)
     }
     r
   }
 
-  override def calls(x: Sample): Seq[Option[Char]] =
+  override def calls(x: Sample): Array[Option[Char]] =
     callsCache.getOrElse(x, defaultCalls).map(Some(_))
 
-  override def exprs(x: Sample): Seq[Option[Double]] =
+  override def exprs(x: Sample): Array[Option[Double]] =
     exprCache(x).map(Some(_))
 
-  override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Char]] = {
+  override protected def readCalls(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Char]] = {
     val (preExisting, notYetRead) = ss.partition(callsCache.contains(_))
     if (notYetRead.nonEmpty) {
       callsCache ++= super.readCalls(file, notYetRead)
@@ -244,7 +245,7 @@ class CachedCSVRawExpressionData(exprFile: String,
     callsCache.filter(x => sampleSet.contains(x._1))
   }
 
-  override protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Seq[Double]] = {
+  override protected def readExprValues(file: String, ss: Iterable[Sample]): CMap[Sample, Array[Double]] = {
     val (preExisting, notYetRead) = ss.partition(exprCache.contains(_))
     if (notYetRead.nonEmpty) {
       exprCache ++= super.readExprValues(file, notYetRead)
