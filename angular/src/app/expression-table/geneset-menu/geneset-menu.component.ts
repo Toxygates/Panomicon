@@ -13,7 +13,7 @@ export class GenesetMenuComponent {
   modalRef: BsModalRef | undefined;
   @ViewChild('nameGeneSetModal') nameGeneSetTemplate!: TemplateRef<unknown>;
 
-  @Input() geneSetNames!: string[] | null;
+  @Input() geneSetNames!: string[];
   @Input() currentGeneSet: string | undefined;
   @Output() createGeneSet = new EventEmitter<string>();
   @Output() selectGeneSet = new EventEmitter<string>();

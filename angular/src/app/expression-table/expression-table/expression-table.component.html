@@ -3,7 +3,7 @@
         <div class="col-12 pcard_container">
             <div class="pcard ui_panel">
                 <div class = "mb-3">
-                    <app-geneset-menu [geneSetNames]="sortedGeneSetNames$ | async"
+                    <app-geneset-menu [geneSetNames]="(sortedGeneSetNames$ | async) || []"
                         [currentGeneSet]="currentGeneSet"
                         (selectGeneSet)="onSelectGeneSet($event)"
                         (createGeneSet)="onCreateGeneSet($event)"

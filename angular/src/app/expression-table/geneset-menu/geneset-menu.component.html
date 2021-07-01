@@ -39,9 +39,17 @@
   </div>
   <div class="modal-body">
       <label for="geneSetName">Enter name for gene set:</label>
-      <input type="text" class="form-control mb-2" id="geneSetName"
-          [(ngModel)]="newGeneSetName">
-      <button type="submit" class="btn btn-primary" (click)="submitModal()"
-          [disabled]="false">Save</button>
+      <input type="text" class="form-control" id="geneSetName"
+        [(ngModel)]="newGeneSetName" #name="ngModel"
+        [class.is-invalid]="name.invalid && (name.dirty || name.touched)"
+        [appForbiddenList]="geneSetNames" required>
+        <div *ngIf="name.errors?.forbiddenValue" class="invalid-feedback">
+          Gene set already exists
+        </div>
+        <div *ngIf="name.errors?.required" class="invalid-feedback">
+          Enter a gene set name
+        </div>
+      <button type="submit" class="btn btn-primary mt-2" (click)="submitModal()"
+        [disabled]="name.invalid">Save</button>
   </div>
 </ng-template>
