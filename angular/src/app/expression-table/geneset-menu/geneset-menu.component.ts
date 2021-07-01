@@ -24,6 +24,9 @@ export class GenesetMenuComponent {
   openGeneSetNameModal() : void {
     this.modalRef = this.modalService.show(this.nameGeneSetTemplate,
       { class: 'modal-dialog-centered' });
+    this.modalRef.onHidden.subscribe(() => {
+      this.newGeneSetName = undefined;
+    })
   }
 
   submitModal() : void {
