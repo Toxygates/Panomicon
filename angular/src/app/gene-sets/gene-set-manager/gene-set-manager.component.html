@@ -1,0 +1,10 @@
+<div *ngFor="let platform of (platforms$ | async); index as i">
+  <h3>{{platform}}</h3>
+  <ul class="list-unstyled">
+    <li *ngFor="let geneSet of (geneSetsForPlatform$(platform) | async); index as j">
+      <a routerLink="{{geneSet.name}}">{{geneSet.name}} ({{geneSet.probes.length}} probes)</a>
+    </li>
+  </ul>
+</div>
+
+<router-outlet></router-outlet>

@@ -9,6 +9,8 @@ const routes: Routes = [
     import('./expression-table/expression-table.module').then(m => m.ExpressionTableModule) },
   { path: 'sample-groups', loadChildren: () =>
     import('./group-manager/group-manager.module').then(m => m.GroupManagerModule) },
+  { path: 'gene-sets', loadChildren: () =>
+    import('./gene-sets/gene-sets.module').then(m => m.GeneSetsModule) },
   { path: '',   redirectTo: '/sample-browser', pathMatch: 'full' },
   { path: '**', component: PageNotFoundComponent }
 ];
