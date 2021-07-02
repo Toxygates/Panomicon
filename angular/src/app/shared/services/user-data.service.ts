@@ -16,6 +16,7 @@ export class UserDataService {
 
   private enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
   enabledGroups$: Observable<ISampleGroup[]>
+  platform$: Observable<string | undefined>;
 
   static readonly SELECTED_DATASET_KEY: string ="selectedDataset_v1";
   static readonly SAMPLE_GROUPS_KEY: string = "sampleGroups_v2";
@@ -26,6 +27,9 @@ export class UserDataService {
     this.sampleGroups.observable.pipe(
       map(itemMap => Array.from(itemMap.values()).filter(group => group.enabled))
     ).subscribe(this.enabledGroupsBehaviorSubject);
+    this.platform$ = this.enabledGroups$.pipe(
+      map(groups => groups.length > 0 ? groups[0].platform : undefined)
+    );
   }
 
   public getSelectedDataset(): string | undefined {

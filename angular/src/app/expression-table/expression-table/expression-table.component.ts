@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../../shared/services/user-data.service';
 import { IGeneSet, ISampleGroup } from '../../shared/models/frontend-types.model'
 import Tabulator from 'tabulator-tables';
-import { Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -26,10 +26,12 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   @ViewChild('tabulatorContainer') tabulatorContainer!: ElementRef;
   @ViewChild('gotoPageModal') gotoPageTemplate!: TemplateRef<unknown>;
 
+  tableData$ = new BehaviorSubject<Record<string, string>[]>([]);
+
   enabledSampleGroups: ISampleGroup[] = [];
   enabledSampleGroupsSubscription: Subscription | undefined;
   geneSets$!: Observable<Map<string, IGeneSet>>;
-  sortedGeneSetNames$!: Observable<string[]>;
+  geneSetNames$!: Observable<string[]>;
 
   currentGeneSet: string | undefined;
   // filters!: { column: string, type: string, threshold: number }[]
@@ -77,7 +79,6 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
     {title: 'Probe', field: 'probe', headerSort:false, width:"15rem"},
   ]
 
-
   ngOnInit(): void {
     this.enabledSampleGroupsSubscription = this.userData.enabledGroups$.subscribe(enabledGroups => {
       this.enabledSampleGroups = enabledGroups;
@@ -96,8 +97,18 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
       // this.filters = []
     });
     this.geneSets$ = this.userData.geneSets.observable;
-    this.sortedGeneSetNames$ = this.geneSets$.pipe(map(dict =>
-      Array.from(dict.keys()).sort()));
+    this.geneSetNames$ = combineLatest([this.geneSets$, this.userData.platform$]).pipe(
+      map(([geneSets, platform]) => {
+        if (platform == undefined) {
+          return [];
+        } else {
+          return Array.from(geneSets.values())
+            .filter(g => g.platform === platform)
+            .map(g => g.name)
+            .sort();
+        }
+      })
+    );
   }
 
   ngAfterViewInit(): void {
@@ -144,11 +155,13 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         paginationDataReceived: {
           "data": "rows",
         },
-        dataLoaded: (sampleTableComponent => { return function(this: Tabulator, _data: unknown) {
-          sampleTableComponent.dataFetched = true;
-          sampleTableComponent.lastPage = (this.getPageMax() as number);
-          sampleTableComponent.changeDetector.detectChanges();
-          sampleTableComponent.tablePageNumber = (this.getPage() as number);
+        dataLoaded: (sampleTableComponent => {
+          return function(this: Tabulator, data: Record<string, string>[]) {
+            sampleTableComponent.tableData$.next(data);
+            sampleTableComponent.dataFetched = true;
+            sampleTableComponent.lastPage = (this.getPageMax() as number);
+            sampleTableComponent.changeDetector.detectChanges();
+            sampleTableComponent.tablePageNumber = (this.getPage() as number);
           };
         })(this),
         columns: this.columns,
