@@ -3,7 +3,7 @@ package t.viewer.server.servlet
 import org.scalatra._
 import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
-import t.model.sample.Attribute
+import t.model.sample.{Attribute, CoreParameter}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.platform.mirna.TargetTableBuilder
@@ -455,7 +455,11 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
      * make it optional, since the system in principle supports sub-treatment level sample groups.
      */
     def fillGroup(name: String, group: Seq[Sample]): Group = {
-      val sf = SampleFilter(tconfig.instanceURI, None)
+      if (group.isEmpty) {
+        return new Group(name, Array[TUnit](), Array[TUnit]())
+      }
+      val batchURI = group.head.apply(CoreParameter.Batch)
+      val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
 
       val treatedTreatments = group.map(s => s.sampleClass(Treatment)).distinct
       val controlTreatments = group.map(s => s.sampleClass(ControlTreatment)).distinct
