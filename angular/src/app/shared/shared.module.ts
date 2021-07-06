@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
-import { ForbiddenValueListValidatorDirective } from './forbidden-value-list-validator.directive';
+import { ForbiddenValueListValidatorDirective } from './directives/forbidden-value-list-validator.directive';
 
 @NgModule({
   declarations: [
-    ForbiddenValueListValidatorDirective
+    ForbiddenValueListValidatorDirective,
   ],
   imports: [
     CommonModule,
