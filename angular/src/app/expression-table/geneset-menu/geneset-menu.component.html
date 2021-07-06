@@ -42,6 +42,7 @@
       <input type="text" class="form-control" id="geneSetName"
         [(ngModel)]="newGeneSetName" #name="ngModel"
         [class.is-invalid]="name.invalid && (name.dirty || name.touched)"
+        [appFocusInput]="true"
         [appForbiddenList]="geneSetNames" required>
         <div *ngIf="name.errors?.forbiddenValue" class="invalid-feedback">
           Gene set already exists

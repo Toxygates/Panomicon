@@ -32,7 +32,8 @@
                         <div class="mb-1">Enter new name for group:</div>
                         <input type="text" name="sampleGroupNameInput" [(ngModel)]="newGroupName"
                             class="form-control mb-2" [placeholder]="name"
-                            (keyup.enter)="submitRenamingGroup()">
+                            (keyup.enter)="submitRenamingGroup()"
+                            [appFocusInput]="currentRenamingGroup === name">
                         <button type="button" class="btn btn-primary mb-2"
                             (click)="submitRenamingGroup()"
                             [disabled]="!isAcceptableGroupName(newGroupName)">

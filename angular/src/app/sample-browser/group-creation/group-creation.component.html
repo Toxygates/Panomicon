@@ -11,6 +11,7 @@
                 <label class="sr-only" for="sampleGroupNameInput">Sample group name</label>
                 <input type="text" name="sampleGroupNameInput" [(ngModel)]="sampleGroupName" 
                     class="form-control mb-2" placeholder="Enter a name"
+                    [appFocusInput]="!collapsed"
                     (keyup.enter)="saveSampleGroup()">
             </div>
             <div class="col-auto">
