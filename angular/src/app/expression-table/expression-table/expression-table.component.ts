@@ -73,10 +73,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   columns: Tabulator.ColumnDefinition[] = [
     {title: 'Gene symbols', field: 'geneSymbols',
-      mutator: this.geneSymbolsMutator, headerSort:false, width:"15rem"},
+      mutator: this.geneSymbolsMutator, headerSort:false, width:"10rem"},
     {title: 'Probe titles', field: 'probeTitles',
-      mutator: this.probeTitlesMutator, headerSort:false, width:"50rem"},
-    {title: 'Probe', field: 'probe', headerSort:false, width:"15rem"},
+      mutator: this.probeTitlesMutator, headerSort:false, width:"30rem"},
+    {title: 'Probe', field: 'probe', headerSort:false, width:"10rem"},
   ]
 
   ngOnInit(): void {
@@ -88,10 +88,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         for (const group of enabledGroups) {
           this.columns.push({title: group.name, field: group.name,
             mutator: this.log2foldMutator(group.name), headerSort: true,
-            headerSortStartingDir:'desc', width:"15rem"});
+            headerSortStartingDir:'desc', width:"13rem"});
           this.columns.push({title: group.name + ' (p)', field: group.name + '(p)',
             mutator: this.pValueMutator(group.name), headerSort: true,
-            headerSortStartingDir:'desc', width:"15rem"});
+            headerSortStartingDir:'desc', width:"13rem"});
         }
       }
       // this.filters = []
@@ -166,7 +166,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
         })(this),
         columns: this.columns,
         index: "probe",
-        layout:"fitDataTable",
+        layout:"fitDataFill",
         height: "calc(100vh - 11.725rem)",
         columnHeaderSortMulti:false,
         ajaxSorting:true,
