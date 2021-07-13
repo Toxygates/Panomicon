@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { IAttribute, IBatch, IDataset, Sample } from '../models/backend-types.model';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class BackendService {
 
   constructor(private http: HttpClient) { }
 
-  serviceUrl = 'json/';
+  serviceUrl = environment.apiUrl;
 
   getDatasets(): Observable<IDataset[]> {
     return this.http.get<IDataset[]>(this.serviceUrl + 'dataset')
