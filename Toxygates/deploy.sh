@@ -6,7 +6,6 @@ TOOLCP=../OTGTool/classes
 function makeWar {
     OUTPUT=toxygates-template.war
     cp -r $TOOLCP/friedrich $TGCP
-    cp -r $TOOLCP/otg $TGCP
     cp -r $TOOLCP/t $TGCP
     cd war
     rm $OUTPUT
@@ -23,7 +22,6 @@ function makeWar {
 
 function makeAdminWar {
     cp -r $TOOLCP/friedrich $TGCP
-    cp -r $TOOLCP/otg $TGCP
     cp -r $TOOLCP/t $TGCP
     cd war
     cp WEB-INF/web.xml.admin WEB-INF/web.xml

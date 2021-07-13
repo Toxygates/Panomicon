@@ -54,7 +54,6 @@ function Chunk-Array ($Array, $BoxSize = 100) {
 # makeWar
 Set-Variable -Name "OUTPUT" -Value "toxygates-template.war"
 Copy-Item -Recurse -Force ($TOOLCP + "/friedrich") $TGCP
-Copy-Item -Recurse -Force ($TOOLCP + "/otg") $TGCP
 Copy-Item -Recurse -Force ($TOOLCP + "/t") $TGCP 
 Set-Location war
 Remove-Item $OUTPUT
@@ -76,7 +75,6 @@ Set-Location ..
 
 #makeAdminWar
 Copy-Item -Recurse -Force ($TOOLCP + "/friedrich") war/WEB-INF/classes
-Copy-Item -Recurse -Force ($TOOLCP + "/otg") war/WEB-INF/classes
 Copy-Item -Recurse -Force ($TOOLCP + "/t") war/WEB-INF/classes
 Set-Location war
 Copy-Item WEB-INF/web.xml.admin WEB-INF/web.xml
