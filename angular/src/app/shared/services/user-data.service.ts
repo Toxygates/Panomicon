@@ -11,8 +11,8 @@ import { NamedItemStorage } from './named-item-storage.class';
 })
 export class UserDataService {
 
-  sampleGroups = new NamedItemStorage<ISampleGroup>(UserDataService.SAMPLE_GROUPS_KEY);
-  geneSets = new NamedItemStorage<IGeneSet>(UserDataService.GENE_SETS_KEY);
+  sampleGroups!: NamedItemStorage<ISampleGroup>;
+  geneSets!: NamedItemStorage<IGeneSet>;
 
   private enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
   enabledGroups$: Observable<ISampleGroup[]>
@@ -23,6 +23,18 @@ export class UserDataService {
   static readonly GENE_SETS_KEY: string = "geneSets_v1";
 
   constructor() {
+    this.sampleGroups = new NamedItemStorage(this.deserializeArray(UserDataService.SAMPLE_GROUPS_KEY));
+    this.sampleGroups.observable.subscribe(newValue => {
+      const json = JSON.stringify(Array.from(newValue));
+      window.localStorage.setItem(UserDataService.SAMPLE_GROUPS_KEY, json);
+    });
+
+    this.geneSets = new NamedItemStorage(this.deserializeArray(UserDataService.GENE_SETS_KEY));
+    this.geneSets.observable.subscribe(newValue => {
+      const json = JSON.stringify(Array.from(newValue));
+      window.localStorage.setItem(UserDataService.GENE_SETS_KEY, json);
+    });
+
     this.enabledGroupsBehaviorSubject = this.enabledGroups$ = new BehaviorSubject([] as ISampleGroup[]);
     this.sampleGroups.observable.pipe(
       map(itemMap => Array.from(itemMap.values()).filter(group => group.enabled))
@@ -30,6 +42,14 @@ export class UserDataService {
     this.platform$ = this.enabledGroups$.pipe(
       map(groups => groups.length > 0 ? groups[0].platform : undefined)
     );
+  }
+
+  // TODO move this elsewhere
+  private deserializeArray<T>(key: string): Map<string, T> {
+    const json = window.localStorage.getItem(key);
+    const parsed = json ? JSON.parse(json) as unknown : [];
+    const array = Array.isArray(parsed) ? parsed : [];
+    return new Map<string, T>(array)
   }
 
   public getSelectedDataset(): string | undefined {
