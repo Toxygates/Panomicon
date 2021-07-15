@@ -10,20 +10,20 @@ import { UserDataService } from './user-data.service';
 })
 export class FetchedDataService {
 
-  datasets$: BehaviorSubject<IDataset[] | undefined>;
-  batches$: BehaviorSubject<IBatch[] | undefined>;
+  datasets$: BehaviorSubject<IDataset[] | null>;
+  batches$: BehaviorSubject<IBatch[] | null>;
 
   constructor(private backend: BackendService,
     private userData: UserDataService) {
 
-    this.datasets$ = new BehaviorSubject<IDataset[] | undefined>(undefined);
+    this.datasets$ = new BehaviorSubject<IDataset[] | null>(null);
     this.backend.getDatasets().subscribe(this.datasets$);
 
-    this.batches$ = new BehaviorSubject<IBatch[] | undefined>(undefined);
+    this.batches$ = new BehaviorSubject<IBatch[] | null>(null);
     this.userData.selectedDataset$.pipe(
       filter(dataset => dataset != null),
       switchMap(datasetId => {
-        return concat(of(undefined),
+        return concat(of(null),
           this.backend.getBatchesForDataset(datasetId as string).pipe(
             map(result =>
               result.sort(function(a, b) {

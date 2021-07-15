@@ -8,10 +8,10 @@ import { IDataset } from 'src/app/shared/models/backend-types.model';
 })
 export class DatasetPickerComponent {
 
-  @Input() selectedDataset: string | undefined | null;
+  @Input() selectedDataset!: string | null;
   @Output() selectedDatasetChange = new EventEmitter<string>();
 
-  @Input() datasets!: IDataset[] | null | undefined;
+  @Input() datasets!: IDataset[] | null;
 
   selectDataset(datasetId: string): void {
     this.selectedDataset = datasetId;

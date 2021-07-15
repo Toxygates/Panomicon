@@ -8,10 +8,10 @@ import { IBatch } from 'src/app/shared/models/backend-types.model';
 })
 export class BatchPickerComponent {
 
-  @Input() datasetId: string | undefined | null;
-  @Input() batches: IBatch[] | null | undefined;
+  @Input() datasetId!: string | null;
+  @Input() batches!: IBatch[] | null;
 
-  @Input() selectedBatch: string | undefined | null;
+  @Input() selectedBatch!: string | null;
   @Output() selectedBatchChange = new EventEmitter<string>();
 
   selectBatch(batchId: string): void {

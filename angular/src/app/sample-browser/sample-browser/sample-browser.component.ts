@@ -14,11 +14,11 @@ export class SampleBrowserComponent implements OnInit {
   constructor(private userData: UserDataService,
     private fetchedData: FetchedDataService) {}
 
-  datasets$!: Observable<IDataset[] | undefined>;
-  batches$!: Observable<IBatch[] | undefined>;
+  datasets$!: Observable<IDataset[] | null>;
+  batches$!: Observable<IBatch[] | null>;
 
-  datasetId$!: BehaviorSubject<string | undefined>;
-  batchId$!: BehaviorSubject<string | undefined>;
+  datasetId$!: BehaviorSubject<string | null>;
+  batchId$!: BehaviorSubject<string | null>;
 
   ngOnInit(): void {
     this.datasetId$ = this.userData.selectedDataset$;

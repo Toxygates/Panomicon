@@ -13,8 +13,8 @@ export class UserDataService {
   sampleGroups$: BehaviorSubject<Map<string, ISampleGroup>>;
   geneSets$: BehaviorSubject<Map<string, IGeneSet>>;
 
-  selectedDataset$: BehaviorSubject<string | undefined>;
-  selectedBatch$: BehaviorSubject<string | undefined>;
+  selectedDataset$: BehaviorSubject<string | null>;
+  selectedBatch$: BehaviorSubject<string | null>;
 
   private enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
   enabledGroups$: Observable<ISampleGroup[]>;
@@ -38,14 +38,14 @@ export class UserDataService {
       window.localStorage.setItem(UserDataService.GENE_SETS_KEY, json);
     });
 
-    this.selectedDataset$ = new BehaviorSubject(window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY) || undefined);
+    this.selectedDataset$ = new BehaviorSubject(window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY));
     this.selectedDataset$.subscribe(newValue => {
       if (newValue) {
         window.localStorage.setItem(UserDataService.SELECTED_DATASET_KEY, newValue);
       }
     });
 
-    this.selectedBatch$ = new BehaviorSubject(window.localStorage.getItem(UserDataService.SELECTED_BATCH_KEY) || undefined);
+    this.selectedBatch$ = new BehaviorSubject(window.localStorage.getItem(UserDataService.SELECTED_BATCH_KEY));
     this.selectedBatch$.subscribe(newValue => {
       if (newValue) {
         window.localStorage.setItem(UserDataService.SELECTED_BATCH_KEY, newValue);
