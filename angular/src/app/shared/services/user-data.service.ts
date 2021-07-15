@@ -43,21 +43,6 @@ export class UserDataService {
     );
   }
 
-  // TODO move these elsewhere
-  static renameItem(itemMap: Map<string, {name: string}>, oldName: string, newName: string): void {
-    const item = itemMap.get(oldName);
-    if (!item) throw new Error(`Tried to rename nonexistent item ${oldName}`);
-    item.name = newName;
-    itemMap.set(item.name, item);
-    itemMap.delete(oldName);
-  }
-  private deserializeArray<T>(key: string): Map<string, T> {
-    const json = window.localStorage.getItem(key);
-    const parsed = json ? JSON.parse(json) as unknown : [];
-    const array = Array.isArray(parsed) ? parsed : [];
-    return new Map<string, T>(array)
-  }
-
   public getSelectedDataset(): string | undefined {
     const dataset = window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY);
     return dataset ? dataset: undefined;
@@ -77,4 +62,19 @@ export class UserDataService {
     this.sampleGroups$.value.set(name, newGroup);
     this.sampleGroups$.next(this.sampleGroups$.value);
   }
+}
+
+function deserializeArray<T>(key: string): Map<string, T> {
+  const json = window.localStorage.getItem(key);
+  const parsed = json ? JSON.parse(json) as unknown : [];
+  const array = Array.isArray(parsed) ? parsed : [];
+  return new Map<string, T>(array)
+}
+
+export function renameItem(itemMap: Map<string, {name: string}>, oldName: string, newName: string): void {
+  const item = itemMap.get(oldName);
+  if (!item) throw new Error(`Tried to rename nonexistent item ${oldName}`);
+  item.name = newName;
+  itemMap.set(item.name, item);
+  itemMap.delete(oldName);
 }
