@@ -9,9 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Component, Directive, NO_ERRORS_SCHEMA, Type } from '@angular/core';
 
 class MockUserDataService {
-  sampleGroups = {
-    observable: new BehaviorSubject(new Map())
-  }
+  sampleGroups$ =  new BehaviorSubject(new Map());
   isAcceptableGroupName() {
     return false;
   }
@@ -57,7 +55,7 @@ describe('GroupManagerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(GroupManagerComponent);
     component = fixture.componentInstance;
-    mockUserData.sampleGroups.observable.next(
+    mockUserData.sampleGroups$.next(
       new Map([["florb", {"name": "florb", "samples": [444, 555, 666],
                         "enabled": false}],
              ["spabble", {"name": "spabble", "samples": [111, 222, 333],
@@ -85,7 +83,7 @@ describe('GroupManagerComponent', () => {
   });
 
   it('should update when sample groups change', () => {
-    mockUserData.sampleGroups.observable.next(
+    mockUserData.sampleGroups$.next(
       new Map([["barg", {"name": "barg", "samples": [444, 555, 666],
                 "enabled": false}],
                ["slek", {"name": "slek", "samples": [111, 222, 333],
