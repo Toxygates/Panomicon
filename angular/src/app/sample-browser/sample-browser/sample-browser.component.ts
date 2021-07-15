@@ -19,10 +19,11 @@ export class SampleBrowserComponent implements OnInit {
   batches$!: Observable<IBatch[] | undefined>;
 
   datasetId$!: BehaviorSubject<string | undefined>;
-  batchId: string | undefined;
+  batchId$!: BehaviorSubject<string | undefined>;
 
   ngOnInit(): void {
     this.datasetId$ = this.userData.selectedDataset$;
+    this.batchId$ = this.userData.selectedBatch$;
     this.batches$ = this.datasetId$.pipe(
       filter(dataset => dataset != null),
       switchMap(datasetId => {
@@ -36,9 +37,5 @@ export class SampleBrowserComponent implements OnInit {
     );
 
     this.datasets$ = this.backend.getDatasets();
-  }
-
-  onSelectedBatchChange(batchId: string): void {
-    this.batchId = batchId;
   }
 }

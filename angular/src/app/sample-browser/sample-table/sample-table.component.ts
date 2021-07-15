@@ -31,7 +31,7 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   helper = new SampleTableHelper();
 
   @Input() samples: Sample[] | undefined;
-  @Input() batchId: string | undefined;
+  @Input() batchId: string | undefined | null;
 
   samplesMap = new Map<string, Sample>()
 

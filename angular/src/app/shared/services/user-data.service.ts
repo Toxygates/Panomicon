@@ -14,12 +14,14 @@ export class UserDataService {
   geneSets$: BehaviorSubject<Map<string, IGeneSet>>;
 
   selectedDataset$: BehaviorSubject<string | undefined>;
+  selectedBatch$: BehaviorSubject<string | undefined>;
 
   private enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
   enabledGroups$: Observable<ISampleGroup[]>;
   platform$: Observable<string | undefined>;
 
   static readonly SELECTED_DATASET_KEY: string ="selectedDataset_v1";
+  static readonly SELECTED_BATCH_KEY: string ="selectedBatch_v1";
   static readonly SAMPLE_GROUPS_KEY: string = "sampleGroups_v2";
   static readonly GENE_SETS_KEY: string = "geneSets_v1";
 
@@ -40,6 +42,13 @@ export class UserDataService {
     this.selectedDataset$.subscribe(newValue => {
       if (newValue) {
         window.localStorage.setItem(UserDataService.SELECTED_DATASET_KEY, newValue);
+      }
+    });
+
+    this.selectedBatch$ = new BehaviorSubject(window.localStorage.getItem(UserDataService.SELECTED_BATCH_KEY) || undefined);
+    this.selectedBatch$.subscribe(newValue => {
+      if (newValue) {
+        window.localStorage.setItem(UserDataService.SELECTED_BATCH_KEY, newValue);
       }
     });
 

@@ -14,7 +14,7 @@ export class BatchPickerComponent {
   @Input() datasetId: string | undefined | null;
   @Input() batches: IBatch[] | null | undefined;
 
-  @Input() selectedBatch: string | undefined;
+  @Input() selectedBatch: string | undefined | null;
   @Output() selectedBatchChange = new EventEmitter<string>();
 
   selectBatch(batchId: string): void {
