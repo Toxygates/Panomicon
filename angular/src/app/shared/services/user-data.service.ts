@@ -13,6 +13,8 @@ export class UserDataService {
   sampleGroups$: BehaviorSubject<Map<string, ISampleGroup>>;
   geneSets$: BehaviorSubject<Map<string, IGeneSet>>;
 
+  selectedDataset$: BehaviorSubject<string | undefined>;
+
   private enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
   enabledGroups$: Observable<ISampleGroup[]>;
   platform$: Observable<string | undefined>;
@@ -34,6 +36,13 @@ export class UserDataService {
       window.localStorage.setItem(UserDataService.GENE_SETS_KEY, json);
     });
 
+    this.selectedDataset$ = new BehaviorSubject(window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY) || undefined);
+    this.selectedDataset$.subscribe(newValue => {
+      if (newValue) {
+        window.localStorage.setItem(UserDataService.SELECTED_DATASET_KEY, newValue);
+      }
+    });
+
     this.enabledGroupsBehaviorSubject = this.enabledGroups$ = new BehaviorSubject([] as ISampleGroup[]);
     this.sampleGroups$.pipe(
       map(value => Array.from(value.values()).filter(group => group.enabled))
@@ -41,15 +50,6 @@ export class UserDataService {
     this.platform$ = this.enabledGroups$.pipe(
       map(groups => groups.length > 0 ? groups[0].platform : undefined)
     );
-  }
-
-  public getSelectedDataset(): string | undefined {
-    const dataset = window.localStorage.getItem(UserDataService.SELECTED_DATASET_KEY);
-    return dataset ? dataset: undefined;
-  }
-
-  public setSelectedDataset(selectedDataset: string): void {
-    window.localStorage.setItem(UserDataService.SELECTED_DATASET_KEY, selectedDataset);
   }
 
   canSelectGroup(group: ISampleGroup): boolean {

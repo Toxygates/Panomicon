@@ -11,7 +11,7 @@ export class DatasetPickerComponent {
 
   constructor(private backend: BackendService) { }
 
-  @Input() selectedDataset: string | undefined;
+  @Input() selectedDataset: string | undefined | null;
   @Output() selectedDatasetChange = new EventEmitter<string>();
 
   @Input() datasets!: IDataset[] | null;

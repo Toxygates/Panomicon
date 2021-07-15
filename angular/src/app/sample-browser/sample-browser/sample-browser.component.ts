@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, concat, Observable, of } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs/operators';
 import { IBatch, IDataset } from '../../shared/models/backend-types.model';
 import { BackendService } from '../../shared/services/backend.service';
 import { UserDataService } from '../../shared/services/user-data.service';
@@ -16,29 +16,26 @@ export class SampleBrowserComponent implements OnInit {
     private userData: UserDataService) {}
 
   datasets$!: Observable<IDataset[]>;
-  batches$!: Observable<IBatch[]> | undefined;
+  batches$!: Observable<IBatch[] | undefined>;
 
-  datasetId: string | undefined;
+  datasetId$!: BehaviorSubject<string | undefined>;
   batchId: string | undefined;
 
   ngOnInit(): void {
-    this.datasetId = this.userData.getSelectedDataset();
+    this.datasetId$ = this.userData.selectedDataset$;
+    this.batches$ = this.datasetId$.pipe(
+      filter(dataset => dataset != null),
+      switchMap(datasetId => {
+        return concat(of(undefined),
+          this.backend.getBatchesForDataset(datasetId as string).pipe(
+            map(result =>
+              result.sort(function(a, b) {
+                return a.id.localeCompare(b.id);
+              }))));
+      })
+    );
+
     this.datasets$ = this.backend.getDatasets();
-    if (this.datasetId !== undefined) this.fetchBatches(this.datasetId);
-  }
-
-  fetchBatches(dataset: string): void {
-    this.batches$ = this.backend.getBatchesForDataset(dataset).pipe(
-      map(result =>
-        result.sort(function(a, b) {
-          return a.id.localeCompare(b.id);
-        })));
-  }
-
-  onSelectedDatasetChange(datasetId: string): void {
-    this.datasetId = datasetId;
-    this.userData.setSelectedDataset(datasetId);
-    this.fetchBatches(datasetId);
   }
 
   onSelectedBatchChange(batchId: string): void {

@@ -11,7 +11,7 @@ export class BatchPickerComponent {
 
   constructor(private backend: BackendService) { }
 
-  @Input() datasetId: string | undefined;
+  @Input() datasetId: string | undefined | null;
   @Input() batches: IBatch[] | null | undefined;
 
   @Input() selectedBatch: string | undefined;
