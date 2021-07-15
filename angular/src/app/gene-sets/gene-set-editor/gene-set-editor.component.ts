@@ -29,7 +29,7 @@ export class GeneSetEditorComponent implements OnInit {
       map(params => params.get("geneSetName") as string | undefined));
 
     this.geneSet$ = combineLatest([
-      this.userData.geneSets.observable,
+      this.userData.geneSets$,
       this.geneSetName$]).pipe(
         map(([geneSets, geneSetName]) => {
           return geneSetName ? geneSets.get(geneSetName) : undefined;
@@ -39,7 +39,8 @@ export class GeneSetEditorComponent implements OnInit {
 
   deleteProbes(geneSet: IGeneSet, probes: string[]): void {
     geneSet.probes = geneSet.probes.filter(probe => !probes.includes(probe));
-    this.userData.geneSets.saveItem(geneSet);
+    this.userData.geneSets$.value.set(geneSet.name, geneSet);
+    this.userData.geneSets$.next(this.userData.geneSets$.value);
     this.toastr.success(`Deleted ${probes.join(", ")}`,
       `Deleted ${probes.length} probes`,);
   }
@@ -52,7 +53,8 @@ export class GeneSetEditorComponent implements OnInit {
       geneSet.probes = geneSet.probes.concat(toAdd);
       this.toastr.success(`Added ${toAdd.join(", ")}`,
         `Added ${toAdd.length} probes`,);
-      this.userData.geneSets.saveItem(geneSet);
+      this.userData.geneSets$.value.set(geneSet.name, geneSet);
+      this.userData.geneSets$.next(this.userData.geneSets$.value);
       this.newProbesText = "";
     } else {
       this.toastr.error("No new probes to add", "Error");
@@ -60,7 +62,8 @@ export class GeneSetEditorComponent implements OnInit {
   }
 
   deleteGeneSet(name: string): void {
-    this.userData.geneSets.deleteItem(name);
+    this.userData.geneSets$.value.delete(name);
+    this.userData.geneSets$.next(this.userData.geneSets$.value);
     void this.router.navigate(['..'], { relativeTo: this.route });
   }
 }

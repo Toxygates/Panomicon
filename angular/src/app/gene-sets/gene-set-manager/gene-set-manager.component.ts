@@ -17,7 +17,7 @@ export class GeneSetManagerComponent implements OnInit {
   platforms$!: Observable<Set<string>>;
 
   ngOnInit(): void {
-    this.geneSets$ = this.userData.geneSets.observable;
+    this.geneSets$ = this.userData.geneSets$;
     this.platforms$ = this.geneSets$.pipe(
       map(geneSetMap => {
         const platforms = new Set<string>();

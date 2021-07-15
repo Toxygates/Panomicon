@@ -96,7 +96,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
       }
       // this.filters = []
     });
-    this.geneSets$ = this.userData.geneSets.observable;
+    this.geneSets$ = this.userData.geneSets$;
     this.geneSetNames$ = combineLatest([this.geneSets$, this.userData.platform$]).pipe(
       map(([geneSets, platform]) => {
         if (platform == undefined) {
@@ -194,14 +194,15 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
       probes: probes
     } as IGeneSet;
 
-    this.userData.geneSets.saveItem(geneSet);
+    this.userData.geneSets$.value.set(name, geneSet);
+    this.userData.geneSets$.next(this.userData.geneSets$.value);
 
     this.onSelectGeneSet(name);
   }
 
   onSelectGeneSet(name: string): void {
     if (this.currentGeneSet != name) {
-      const geneSet = this.userData.geneSets.getItem(name);
+      const geneSet = this.userData.geneSets$.value.get(name);
       const probes = geneSet?.probes;
       if (probes) {
         this.probes = probes;
