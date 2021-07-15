@@ -1,6 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { IDataset } from 'src/app/shared/models/backend-types.model';
-import { BackendService } from '../../shared/services/backend.service'
 
 @Component({
   selector: 'app-dataset-picker',
@@ -9,12 +8,10 @@ import { BackendService } from '../../shared/services/backend.service'
 })
 export class DatasetPickerComponent {
 
-  constructor(private backend: BackendService) { }
-
   @Input() selectedDataset: string | undefined | null;
   @Output() selectedDatasetChange = new EventEmitter<string>();
 
-  @Input() datasets!: IDataset[] | null;
+  @Input() datasets!: IDataset[] | null | undefined;
 
   selectDataset(datasetId: string): void {
     this.selectedDataset = datasetId;

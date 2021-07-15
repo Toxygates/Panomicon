@@ -1,6 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { IBatch } from 'src/app/shared/models/backend-types.model';
-import { BackendService } from '../../shared/services/backend.service'
 
 @Component({
   selector: 'app-batch-picker',
@@ -8,8 +7,6 @@ import { BackendService } from '../../shared/services/backend.service'
   styleUrls: ['./batch-picker.component.scss']
 })
 export class BatchPickerComponent {
-
-  constructor(private backend: BackendService) { }
 
   @Input() datasetId: string | undefined | null;
   @Input() batches: IBatch[] | null | undefined;
