@@ -12,8 +12,8 @@ export class SampleFilteringComponent implements OnInit {
 
   constructor(private toastr: ToastrService) {}
 
-  @Input() attributes!:  Set<IAttribute>;
-  @Input() attributeMap!: Map<string, IAttribute>;
+  @Input() attributes!:  Set<string> | null;
+  @Input() attributeMap!: Map<string, IAttribute> | null;
   @Input() filters!: SampleFilter[];
   @Output() submitFilters = new EventEmitter<SampleFilter[]>();
   @Output() cancelEditFilters = new EventEmitter();
@@ -47,10 +47,12 @@ export class SampleFilteringComponent implements OnInit {
   }
 
   applyFilters(): void {
-    if (this.filters.every(f => f.validate(this.attributeMap))) {
-      this.submitFilters.emit(this.filters);
-    } else {
-      this.haveTriedToSubmit = true;
+    if (this.attributeMap) {
+      if (this.filters.every(f => f.validate(this.attributeMap as Map<string, IAttribute>))) {
+        this.submitFilters.emit(this.filters);
+      } else {
+        this.haveTriedToSubmit = true;
+      }
     }
   }
 

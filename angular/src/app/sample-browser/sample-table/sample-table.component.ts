@@ -1,27 +1,34 @@
-import { Component, ViewChild, OnChanges, SimpleChanges, Input,
-         AfterViewInit, NgZone, ChangeDetectorRef, TemplateRef, ElementRef } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, NgZone, ChangeDetectorRef,
+  TemplateRef, ElementRef, OnInit } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
-import { BackendService } from '../../shared/services/backend.service';
 import { UserDataService } from '../../shared/services/user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../shared/models/sample-filter.model';
 import { IAttribute, Sample } from '../../shared/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
-import { forkJoin, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
 
 @Component({
   selector: 'app-sample-table',
   templateUrl: './sample-table.component.html',
   styleUrls: ['./sample-table.component.scss']
 })
-export class SampleTableComponent implements OnChanges, AfterViewInit {
+export class SampleTableComponent implements OnInit, AfterViewInit {
 
-  constructor(private backend: BackendService, private ngZone: NgZone,
+  constructor(public fetchedData: FetchedDataService, private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef,
     private userData: UserDataService, private toastr: ToastrService,
     private modalService: BsModalService) {
-    this.requiredAttributes.add("sample_id");
+
+    this.samples$ = this.fetchedData.samples$;
+    this.selectedBatch$ = this.userData.selectedBatch$;
+    this.samplesMap$ = this.fetchedData.samplesMap$;
+    this.attributes$ = this.fetchedData.attributes$;
+    this.attributeMap$ = this.fetchedData.attributeMap$;
+    this.fetchedAttributes$ = this.fetchedData.fetchedAttributes$;
+
   }
 
   tabulator: Tabulator | undefined;
@@ -30,15 +37,14 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   helper = new SampleTableHelper();
 
-  @Input() samples: Sample[] | undefined;
-  @Input() batchId: string | undefined | null;
+  samples$: BehaviorSubject<Sample[] | null>;
+  selectedBatch$: Observable<string | null>;
 
-  samplesMap = new Map<string, Sample>()
+  samplesMap$: Observable<Map<string, Sample>>;
 
-  attributes: IAttribute[] | undefined;
-  attributeMap = new Map<string, IAttribute>();
-  requiredAttributes = new Set<string>();
-  fetchedAttributes = new Set<IAttribute>();
+  attributes$: Observable<IAttribute[] | null>;
+  attributeMap$: Observable<Map<string, IAttribute>>;
+  fetchedAttributes$: BehaviorSubject<Set<string>>;
 
   subscriptions: Subscription[] = [];
 
@@ -51,46 +57,23 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef | undefined;
 
-  ngOnChanges(changes: SimpleChanges):void {
-    if (changes.batchId != null &&
-        changes.batchId.currentValue != changes.batchId.previousValue) {
-
-      this.samples = undefined;
-      this.samplesMap = new Map<string, Sample>();
-      this.fetchedAttributes = new Set<IAttribute>();
-      this.attributes = undefined;
-      this.helper.filters = [];
-
-      this.subscriptions.forEach(s => s.unsubscribe());
-      this.subscriptions = [];
-
+  ngOnInit(): void {
+    this.subscriptions.push(this.selectedBatch$.subscribe(_batch => {
       if (this.tabulatorContainer != null) {
         (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
       }
+      this.helper.filters = [];
+    }));
 
-      if (this.batchId) { // (always true)
-        this.subscriptions.push(forkJoin({
-          samples: this.backend.getSamplesForBatch(this.batchId),
-          attributes: this.backend.getAttributesForBatch(this.batchId)
-        }).subscribe(({samples, attributes}) => {
-          this.samples = samples;
-          this.samples?.forEach((s) => this.samplesMap.set(s.sample_id, s));
+    this.subscriptions.push(this.samples$.subscribe(_samples => {
+      this.tryDrawTable();
+    }));
 
-          this.attributes = attributes;
-          this.attributeMap = new Map<string, IAttribute>();
-          this.attributes.forEach(a => this.attributeMap.set(a.id, a));
-
-          this.samples?.forEach((sample) => {
-            Object.keys(sample).forEach((attributeId) => {
-              const found = this.attributeMap.get(attributeId);
-              if (!found) throw new Error(`Sample had unknown attribute ${attributeId}`);
-              this.fetchedAttributes.add(found);
-            })
-          });
-          this.tryDrawTable();
-        }));
+    this.subscriptions.push(this.fetchedAttributes$.subscribe(_attributes => {
+      if (this.samples$.value) {
+        void this.tabulator?.replaceData(this.samples$.value);
       }
-    }
+    }));
   }
 
   ngAfterViewInit(): void {
@@ -107,9 +90,9 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   onSampleGroupSaved(sampleGroupName: string): void {
     if (this.selectedTreatmentGroups.size > 0) {
-      if (this.samples == null) throw new Error("samples not defined");
+      if (this.samples$.value == null) throw new Error("samples not defined");
 
-      const samplesInGroup = this.samples.filter(s =>
+      const samplesInGroup = this.samples$.value.filter(s =>
         this.selectedTreatmentGroups.has(s.treatment));
 
       this.userData.saveSampleGroup(sampleGroupName, samplesInGroup);
@@ -146,29 +129,11 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
       void this.tabulator?.deleteColumn(columnDefinition.field);
     } else {
       void this.tabulator?.addColumn(this.helper.createColumnForAttribute(attribute));
-      if (!this.fetchedAttributes.has(attribute)) {
-        this.samples?.forEach(sample => sample[attribute.id] = "Loading...");
-        void this.tabulator?.replaceData(this.samples);
-        if (this.batchId && this.samples) {
-          this.subscriptions.push(this.backend.getAttributeValues(this.samples.map(sample => sample.sample_id),
-            [this.batchId], [attribute.id]).subscribe(
-              result => {
-                  this.fetchedAttributes.add(attribute);
-                  result.forEach((element) => {
-                    const sample = this.samplesMap.get(element.sample_id);
-                    if (sample) {
-                      sample[attribute.id] = element[attribute.id]
-                    }
-                  });
-                  this.samples?.forEach(function(sample) {
-                    if (sample[attribute.id] == "Loading...") {
-                      sample[attribute.id] = "n/a";
-                    }
-                  })
-                  void this.tabulator?.replaceData(this.samples);
-              }
-            ));
-          }
+      if (!this.fetchedAttributes$.value.has(attribute.id)) {
+        this.fetchedData.fetchAttribute(attribute);
+      }
+      if (this.samples$.value) {
+        void this.tabulator?.replaceData(this.samples$.value);
       }
     }
   }
@@ -194,13 +159,13 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
 
   clearFilters(): void {
     this.helper.clearFilters();
-    this.tabulator?.setData(this.samples);
+    this.tabulator?.setData(this.samples$.value);
     this.helper.updateColumnFormatters(this.tabulator);
   }
 
   private filterSamples(grouped: boolean): void {
-    if (this.samples == undefined) throw new Error("samples not defined");
-    this.tabulator?.setData(this.helper.filterSamples(this.samples, grouped));
+    if (this.samples$.value == undefined) throw new Error("samples not defined");
+    this.tabulator?.setData(this.helper.filterSamples(this.samples$.value, grouped));
   }
 
   findColumnForAttribute(attribute: IAttribute):
@@ -213,14 +178,14 @@ export class SampleTableComponent implements OnChanges, AfterViewInit {
   }
 
   private tryDrawTable(): void {
-    if (this.tabulatorReady && this.samples != null) {
+    if (this.tabulatorReady && this.samples$.value != null) {
       const tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
       (this.tabulatorContainer?.nativeElement as HTMLElement).appendChild(tabulatorElement);
 
       this.ngZone.runOutsideAngular(() => {
         this.tabulator = new Tabulator(tabulatorElement, {
-          data: this.samples,
+          data: this.samples$.value || undefined,
           selectable: true,
           columns: this.initialColumns(),
           layout:"fitDataFill",

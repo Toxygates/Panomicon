@@ -3,7 +3,7 @@
         <h4 class="modal-title pull-left">Filter samples</h4>
     </div>
     <div class="modal-body">
-        <form #theForm>
+        <form #theForm *ngIf="attributeMap">
             <div *ngFor="let filter of filters; index as i" class="form-row">
                 <div class="form-group col-auto">
                     <label for="attribute-{{i}}">Attribute</label>
@@ -11,7 +11,7 @@
                             name="attribute-{{i}}" class="custom-select"
                             [class.is-invalid]="!filter.validateAttribute(attributeMap) && (filter.attribute || haveTriedToSubmit)">
                         <option selected disabled [ngValue]="undefined">Choose...</option>
-                        <option *ngFor="let a of attributes" [ngValue]="a.id">{{a.title}}</option>
+                        <option *ngFor="let a of attributes" [ngValue]="a">{{attributeMap.get(a)?.title}}</option>
                     </select>
                     <div class="invalid-feedback">
                         Please select an attribute

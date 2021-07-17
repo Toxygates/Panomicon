@@ -1,6 +1,6 @@
-<div *ngIf="!batchId">Select a batch to show samples</div>
+<div *ngIf="(selectedBatch$ | async) === null">Select a batch to show samples</div>
 
-<ng-container *ngIf="batchId && !samples">
+<ng-container *ngIf="(selectedBatch$ | async) !== null && (samples$ | async) === null">
     <div>Loading samples...</div>
     <div  class="d-flex justify-content-center">
         <div class="spinner-border text-secondary" role="status">
@@ -9,7 +9,7 @@
     </div>
 </ng-container>
 
-<div *ngIf="samples" class="mb-2">
+<div *ngIf="samples$ | async" class="mb-2">
     <button type="button" class="btn btn-primary mb-2 mr-2"
         (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
         [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseGroupCreation">
@@ -25,13 +25,13 @@
         {{ treatmentGroupsExpanded ? "Collapse" : "Expand" }}
         treatment groups
     </button> -->
-    <div class="btn-group" dropdown [isDisabled]="!attributes"
+    <div class="btn-group" dropdown [isDisabled]="(attributes$ | async) === null"
         style="vertical-align:top">
         <button id="button-basic" dropdownToggle type="button"
                 class="btn dropdown-toggle mb-2 mr-2"
-                [class]="attributes ? 'btn-primary' : 'btn-secondary'"
+                [class]="(attributes$ | async) ? 'btn-primary' : 'btn-secondary'"
                 aria-controls="dropdown-basic">
-            <span *ngIf="!attributes" class="spinner-border spinner-border-sm"
+            <span *ngIf="(attributes$ | async) === null" class="spinner-border spinner-border-sm"
                 role="status" aria-hidden="true"></span>
             Attributes
              <span class="caret"></span>
@@ -39,8 +39,8 @@
         <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
             role="menu" aria-labelledby="button-basic">
             <!--<h6 class="dropdown-header">Select batch:</h6>-->
-            <li *ngFor="let attribute of attributes" role="menuitem">
-                <a class="dropdown-item" [class.disabled]="requiredAttributes.has(attribute.id)"
+            <li *ngFor="let attribute of attributes$ | async" role="menuitem">
+                <a class="dropdown-item" [class.disabled]="fetchedData.requiredAttributes.has(attribute.id)"
                 (click)="toggleColumn(attribute)" [routerLink]=""queryParamsHandling="preserve">
                 <i *ngIf="findColumnForAttribute(attribute)" class="bi bi-check"></i>
                 {{attribute.title}}
@@ -67,14 +67,14 @@
 
 <div #tabulatorContainer class="mt-2"></div>
 
-<div *ngIf="samples">
+<div *ngIf="samples$ | async">
     {{ helper.filteredSamples !== undefined ? helper.filteredSamples?.length + " matching samples out of" : "" }}
-    {{samples.length}} samples in batch {{batchId}}
+    {{(samples$ | async)?.length}} samples in batch {{selectedBatch$ | async}}
 </div>
 
 <ng-template #sampleFilteringModal>
-    <app-sample-filtering [attributes]="fetchedAttributes"
-        [filters]="helper.filters" [attributeMap]="attributeMap"
+    <app-sample-filtering [attributes]="fetchedAttributes$ | async"
+        [filters]="helper.filters" [attributeMap]="attributeMap$ | async"
         (submitFilters)="onSubmitFilters($event)"
         (cancelEditFilters)="onCancelEditFilters()">
     </app-sample-filtering>
