@@ -258,7 +258,8 @@
 		
 	
   <!-- Default page to serve -->
-  <welcome-file-list>
+    <welcome-file-list>
+    <!-- Note: for Angular, set this to index.html instead -->
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
   
@@ -279,7 +280,16 @@
   <session-config>
   	<!--  24h session timeout (minutes) -->
   	<session-timeout>1440</session-timeout>
-  </session-config>
+   </session-config>
+
+   <!-- Necessary setting when deploying Angular -->
+  <!--
+  <error-page>
+        <error-code>404</error-code>
+        <location>/index.html</location>
+  </error-page>
+  -->
+
 
 <!-- The closing </web-app> will be filled in by scripts like 
   new_instance.public.sh. 
