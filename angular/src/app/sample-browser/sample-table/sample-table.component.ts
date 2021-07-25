@@ -1,5 +1,5 @@
 import { Component, ViewChild, AfterViewInit, NgZone, ChangeDetectorRef,
-  TemplateRef, ElementRef, OnInit } from '@angular/core';
+  TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../../shared/services/user-data.service';
@@ -15,7 +15,7 @@ import { FetchedDataService } from 'src/app/shared/services/fetched-data.service
   templateUrl: './sample-table.component.html',
   styleUrls: ['./sample-table.component.scss']
 })
-export class SampleTableComponent implements OnInit, AfterViewInit {
+export class SampleTableComponent implements AfterViewInit {
 
   constructor(public fetchedData: FetchedDataService, private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef,
@@ -33,7 +33,6 @@ export class SampleTableComponent implements OnInit, AfterViewInit {
 
   tabulator: Tabulator | undefined;
   sampleFilteringModalRef: BsModalRef | undefined;
-  tabulatorReady = false;
 
   helper = new SampleTableHelper();
 
@@ -57,7 +56,7 @@ export class SampleTableComponent implements OnInit, AfterViewInit {
 
   @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef | undefined;
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.subscriptions.push(this.selectedBatch$.subscribe(_batch => {
       if (this.tabulatorContainer != null) {
         (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
@@ -74,11 +73,6 @@ export class SampleTableComponent implements OnInit, AfterViewInit {
         void this.tabulator?.replaceData(this.samples$.value);
       }
     }));
-  }
-
-  ngAfterViewInit(): void {
-    this.tabulatorReady = true;
-    this.tryDrawTable();
   }
 
   initialColumns(): Tabulator.ColumnDefinition[] {
@@ -178,7 +172,7 @@ export class SampleTableComponent implements OnInit, AfterViewInit {
   }
 
   private tryDrawTable(): void {
-    if (this.tabulatorReady && this.samples$.value != null) {
+    if (this.samples$.value != null) {
       const tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
       (this.tabulatorContainer?.nativeElement as HTMLElement).appendChild(tabulatorElement);
