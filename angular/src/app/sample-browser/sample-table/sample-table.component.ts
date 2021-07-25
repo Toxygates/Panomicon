@@ -24,7 +24,6 @@ export class SampleTableComponent implements AfterViewInit {
 
     this.samples$ = this.fetchedData.samples$;
     this.selectedBatch$ = this.userData.selectedBatch$;
-    this.samplesMap$ = this.fetchedData.samplesMap$;
     this.attributes$ = this.fetchedData.attributes$;
     this.attributeMap$ = this.fetchedData.attributeMap$;
     this.fetchedAttributes$ = this.fetchedData.fetchedAttributes$;
@@ -38,8 +37,6 @@ export class SampleTableComponent implements AfterViewInit {
 
   samples$: BehaviorSubject<Sample[] | null>;
   selectedBatch$: Observable<string | null>;
-
-  samplesMap$: Observable<Map<string, Sample>>;
 
   attributes$: Observable<IAttribute[] | null>;
   attributeMap$: Observable<Map<string, IAttribute>>;
