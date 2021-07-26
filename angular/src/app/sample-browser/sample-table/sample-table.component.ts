@@ -7,8 +7,9 @@ import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../shared/models/sample-filter.model';
 import { IAttribute, Sample } from '../../shared/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, concat, Observable, of, Subscription } from 'rxjs';
 import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
+import { pairwise } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sample-table',
@@ -23,19 +24,24 @@ export class SampleTableComponent implements AfterViewInit {
     private modalService: BsModalService) {
 
     this.samples$ = this.fetchedData.samples$;
+    this.filteredSamples$ = this.fetchedData.filteredSamples$;
+    this.sampleFilters$ = this.fetchedData.sampleFilters$;
     this.selectedBatch$ = this.userData.selectedBatch$;
     this.attributes$ = this.fetchedData.attributes$;
     this.attributeMap$ = this.fetchedData.attributeMap$;
     this.fetchedAttributes$ = this.fetchedData.fetchedAttributes$;
 
+    this.helper = new SampleTableHelper(this.sampleFilters$);
   }
 
   tabulator: Tabulator | undefined;
   sampleFilteringModalRef: BsModalRef | undefined;
 
-  helper = new SampleTableHelper();
+  helper: SampleTableHelper;
 
   samples$: BehaviorSubject<Sample[] | null>;
+  filteredSamples$: BehaviorSubject<Sample[] | null>;
+  sampleFilters$: BehaviorSubject<SampleFilter[]>;
   selectedBatch$: Observable<string | null>;
 
   attributes$: Observable<IAttribute[] | null>;
@@ -54,21 +60,29 @@ export class SampleTableComponent implements AfterViewInit {
   @ViewChild('tabulatorContainer') tabulatorContainer: ElementRef | undefined;
 
   ngAfterViewInit(): void {
-    this.subscriptions.push(this.selectedBatch$.subscribe(_batch => {
-      if (this.tabulatorContainer != null) {
-        (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
+    const pairwiseSamples = concat(of(null), this.filteredSamples$).pipe(pairwise());
+    this.subscriptions.push(pairwiseSamples.subscribe(([previous, latest]) => {
+      if (latest == null) {
+        if (this.tabulatorContainer != null) {
+          (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
+        }
+      } else {
+        if (previous == null) {
+          this.tryDrawTable();
+        } else {
+          void this.tabulator?.setData(latest);
+        }
       }
-      this.helper.filters = [];
-    }));
-
-    this.subscriptions.push(this.samples$.subscribe(_samples => {
-      this.tryDrawTable();
     }));
 
     this.subscriptions.push(this.fetchedAttributes$.subscribe(_attributes => {
-      if (this.samples$.value) {
-        void this.tabulator?.replaceData(this.samples$.value);
+      if (this.filteredSamples$.value) {
+        void this.tabulator?.replaceData(this.filteredSamples$.value);
       }
+    }));
+
+    this.subscriptions.push(this.sampleFilters$.subscribe(_filters => {
+      this.helper.updateColumnFormatters(this.tabulator);
     }));
   }
 
@@ -123,8 +137,8 @@ export class SampleTableComponent implements AfterViewInit {
       if (!this.fetchedAttributes$.value.has(attribute.id)) {
         this.fetchedData.fetchAttribute(attribute);
       }
-      if (this.samples$.value) {
-        void this.tabulator?.replaceData(this.samples$.value);
+      if (this.filteredSamples$.value) {
+        void this.tabulator?.replaceData(this.filteredSamples$.value);
       }
     }
   }
@@ -139,9 +153,7 @@ export class SampleTableComponent implements AfterViewInit {
 
   onSubmitFilters(filters: SampleFilter[]): void {
     this.sampleFilteringModalRef?.hide();
-    this.helper.filters = filters;
-    this.filterSamples(true);
-    this.helper.updateColumnFormatters(this.tabulator);
+    this.fetchedData.sampleFilters$.next(filters);
   }
 
   onCancelEditFilters(): void {
@@ -149,14 +161,7 @@ export class SampleTableComponent implements AfterViewInit {
   }
 
   clearFilters(): void {
-    this.helper.clearFilters();
-    this.tabulator?.setData(this.samples$.value);
-    this.helper.updateColumnFormatters(this.tabulator);
-  }
-
-  private filterSamples(grouped: boolean): void {
-    if (this.samples$.value == undefined) throw new Error("samples not defined");
-    this.tabulator?.setData(this.helper.filterSamples(this.samples$.value, grouped));
+    this.fetchedData.sampleFilters$.next([]);
   }
 
   findColumnForAttribute(attribute: IAttribute):
@@ -169,14 +174,14 @@ export class SampleTableComponent implements AfterViewInit {
   }
 
   private tryDrawTable(): void {
-    if (this.samples$.value != null) {
+    if (this.filteredSamples$.value != null) {
       const tabulatorElement = document.createElement('div');
       tabulatorElement.style.width = "auto";
       (this.tabulatorContainer?.nativeElement as HTMLElement).appendChild(tabulatorElement);
 
       this.ngZone.runOutsideAngular(() => {
         this.tabulator = new Tabulator(tabulatorElement, {
-          data: this.samples$.value || undefined,
+          data: this.filteredSamples$.value as Sample[],
           selectable: true,
           columns: this.initialColumns(),
           layout:"fitDataFill",

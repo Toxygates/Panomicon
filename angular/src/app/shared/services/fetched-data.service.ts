@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, concat, of } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { IAttribute, IBatch, IDataset, Sample } from '../models/backend-types.model';
+import { SampleFilter } from '../models/sample-filter.model';
 import { BackendService } from './backend.service';
 import { UserDataService } from './user-data.service';
 
@@ -15,6 +16,8 @@ export class FetchedDataService {
 
   samples$: BehaviorSubject<Sample[] | null>;
   samplesMap$: BehaviorSubject<Map<string, Sample>>;
+  sampleFilters$: BehaviorSubject<SampleFilter[]>
+  filteredSamples$: BehaviorSubject<Sample[] | null>;
   attributes$: BehaviorSubject<IAttribute[] | null>;
   attributeMap$: BehaviorSubject<Map<string, IAttribute>>;
   requiredAttributes = new Set<string>();
@@ -55,6 +58,35 @@ export class FetchedDataService {
         samples?.forEach((s) => samplesMap.set(s.sample_id, s));
         return samplesMap;
       })).subscribe(this.samplesMap$);
+
+    this.sampleFilters$ = new BehaviorSubject<SampleFilter[]>([]);
+    this.samples$.pipe(
+      switchMap(_samples => {
+        return of<SampleFilter[]>([]);
+      })
+    ).subscribe(this.sampleFilters$);
+
+    this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
+    combineLatest([this.samples$, this.sampleFilters$]).pipe(
+      map(([samples, sampleFilters]) => {
+        if (samples == null || sampleFilters.length == 0) {
+          return samples;
+        } else {
+          const filteredSamples = samples.filter(sample =>
+            sampleFilters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
+
+          const includedTreatments = new Set<string>();
+          filteredSamples.forEach(sample => {
+            includedTreatments.add(sample.treatment);
+            includedTreatments.add(sample.control_treatment);
+          });
+          const groupedFilteredSamples = samples.filter(sample =>
+            includedTreatments.has(sample.treatment)
+          );
+          return groupedFilteredSamples;
+        }
+      })
+    ).subscribe(this.filteredSamples$);
 
     this.attributes$ = new BehaviorSubject<IAttribute[] | null>(null);
     this.userData.selectedBatch$.pipe(

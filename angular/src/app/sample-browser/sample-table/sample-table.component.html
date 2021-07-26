@@ -49,11 +49,11 @@
         </ul>
     </div>
     <button type="button" class="btn btn-primary mb-2 mr-2"
-        [class]="helper.filters.length > 0 ? 'btn-success' : 'btn-primary'"
+        [class]="sampleFilters$.value.length > 0 ? 'btn-success' : 'btn-primary'"
         (click)="openSampleFilteringModal(sampleFilteringModal)">
-        {{ helper.filters.length > 0 ? "Edit filters" : "Filter samples" }}
+        {{ sampleFilters$.value.length > 0 ? "Edit filters" : "Filter samples" }}
     </button>
-    <button *ngIf="helper.filters.length > 0"
+    <button *ngIf="sampleFilters$.value.length > 0"
         type="button" class="btn btn-danger mb-2 mr-2"
         (click)="clearFilters()">
         Clear filters
@@ -68,13 +68,13 @@
 <div #tabulatorContainer class="mt-2"></div>
 
 <div *ngIf="samples$ | async">
-    {{ helper.filteredSamples !== undefined ? helper.filteredSamples?.length + " matching samples out of" : "" }}
+    {{ sampleFilters$.value !== null ? filteredSamples$.value?.length + " matching samples out of" : "" }}
     {{(samples$ | async)?.length}} samples in batch {{selectedBatch$ | async}}
 </div>
 
 <ng-template #sampleFilteringModal>
     <app-sample-filtering [attributes]="fetchedAttributes$ | async"
-        [filters]="helper.filters" [attributeMap]="attributeMap$ | async"
+        [filters]="sampleFilters$.value" [attributeMap]="attributeMap$ | async"
         (submitFilters)="onSubmitFilters($event)"
         (cancelEditFilters)="onCancelEditFilters()">
     </app-sample-filtering>

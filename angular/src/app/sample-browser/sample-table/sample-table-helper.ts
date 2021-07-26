@@ -1,14 +1,10 @@
-import { IAttribute, Sample } from "src/app/shared/models/backend-types.model";
+import { BehaviorSubject } from "rxjs";
+import { IAttribute } from "src/app/shared/models/backend-types.model";
 import { SampleFilter } from "src/app/shared/models/sample-filter.model";
 
 export class SampleTableHelper {
-  filters: SampleFilter[] = [];
-  filteredSamples: Sample[] | undefined;
 
-  clearFilters(): void {
-    this.filters = [];
-    this.filteredSamples = undefined;
-  }
+  constructor(private filters$: BehaviorSubject<SampleFilter[]>) {}
 
   formatterForFilters(filters: SampleFilter[]): Tabulator.Formatter {
     return (cell: Tabulator.CellComponent, _formatterParams: unknown,
@@ -26,7 +22,7 @@ export class SampleTableHelper {
       title: attribute.title,
       field: attribute.id,
     };
-    const filtersForColumn = this.filters.filter(filter => filter.attribute == attribute.id);
+    const filtersForColumn = this.filters$.value.filter(filter => filter.attribute == attribute.id);
     if (filtersForColumn.length > 0) {
       column.formatter =  this.formatterForFilters(filtersForColumn);
     }
@@ -37,11 +33,11 @@ export class SampleTableHelper {
     const columns = tabulator?.getColumns()
     columns?.forEach(column => {
       const definition = column.getDefinition();
-      const filtersForColumn = this.filters.filter(filter => filter.attribute == definition.field);
+      const filtersForColumn = this.filters$.value.filter(filter => filter.attribute == definition.field);
       const formatter = filtersForColumn.length > 0 ?
         this.formatterForFilters(filtersForColumn) :
         "plaintext";
-      void column.updateDefinition({ title: definition.title, formatter: formatter} as unknown as Tabulator.ColumnDefinition);
+      void column.updateDefinition({ title: definition.title, formatter: formatter} as Tabulator.ColumnDefinition);
     })
   }
 
@@ -79,26 +75,5 @@ export class SampleTableHelper {
 
       return `${prefix}${value}<span>(${itemCount}${itemWord})</span> ${button}`;
     }
-  }
-
-  filterSamples(samples: Sample[], grouped: boolean): Sample[] {
-    this.filteredSamples = samples.filter(sample =>
-    this.filters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
-
-    let samplesToReturn: Sample[];
-    if (!grouped) {
-      samplesToReturn = this.filteredSamples;
-    } else {
-      const includedTreatments = new Set<string>();
-      this.filteredSamples.forEach(sample => {
-        includedTreatments.add(sample.treatment);
-        includedTreatments.add(sample.control_treatment);
-      });
-      const groupedFilteredSamples = samples.filter(sample =>
-        includedTreatments.has(sample.treatment)
-      );
-      samplesToReturn = groupedFilteredSamples;
-    }
-    return samplesToReturn;
   }
 }
