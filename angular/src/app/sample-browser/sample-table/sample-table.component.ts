@@ -31,6 +31,8 @@ export class SampleTableComponent implements AfterViewInit {
     this.attributeMap$ = this.fetchedData.attributeMap$;
     this.fetchedAttributes$ = this.fetchedData.fetchedAttributes$;
 
+    this.columnDefinitions$ = this.fetchedData.columnDefinitions$;
+
     this.helper = new SampleTableHelper(this.sampleFilters$);
   }
 
@@ -47,6 +49,8 @@ export class SampleTableComponent implements AfterViewInit {
   attributes$: Observable<IAttribute[] | null>;
   attributeMap$: Observable<Map<string, IAttribute>>;
   fetchedAttributes$: BehaviorSubject<Set<string>>;
+
+  columnDefinitions$: BehaviorSubject<Tabulator.ColumnDefinition[]>;
 
   subscriptions: Subscription[] = [];
 
@@ -84,13 +88,6 @@ export class SampleTableComponent implements AfterViewInit {
     this.subscriptions.push(this.sampleFilters$.subscribe(_filters => {
       this.helper.updateColumnFormatters(this.tabulator);
     }));
-  }
-
-  initialColumns(): Tabulator.ColumnDefinition[] {
-    return [
-      //{formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
-      {title: 'Sample ID', field: 'sample_id'},
-    ];
   }
 
   onSampleGroupSaved(sampleGroupName: string): void {
@@ -141,6 +138,7 @@ export class SampleTableComponent implements AfterViewInit {
         void this.tabulator?.replaceData(this.filteredSamples$.value);
       }
     }
+    this.columnDefinitions$.next(this.tabulator?.getColumnDefinitions() || []);
   }
 
   openSampleFilteringModal(template: TemplateRef<unknown>): void {
@@ -183,7 +181,7 @@ export class SampleTableComponent implements AfterViewInit {
         this.tabulator = new Tabulator(tabulatorElement, {
           data: this.filteredSamples$.value as Sample[],
           selectable: true,
-          columns: this.initialColumns(),
+          columns: this.columnDefinitions$.value,
           layout:"fitDataFill",
           height: "calc(100vh - 18.8rem)",
           /* eslint-disable @typescript-eslint/no-unsafe-assignment,

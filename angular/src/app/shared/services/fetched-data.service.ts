@@ -22,6 +22,7 @@ export class FetchedDataService {
   attributeMap$: BehaviorSubject<Map<string, IAttribute>>;
   requiredAttributes = new Set<string>();
   fetchedAttributes$: BehaviorSubject<Set<string>>;
+  columnDefinitions$: BehaviorSubject<Tabulator.ColumnDefinition[]>;
 
   constructor(private backend: BackendService,
     private userData: UserDataService) {
@@ -122,6 +123,20 @@ export class FetchedDataService {
         }
         return fetchedAttributes;
       })).subscribe(this.fetchedAttributes$);
+
+    this.columnDefinitions$ = new BehaviorSubject<Tabulator.ColumnDefinition[]>([]);
+    this.samples$.pipe(
+      switchMap(_samples => {
+        return of(this.initialColumns());
+      })
+    ).subscribe(this.columnDefinitions$);
+  }
+
+  initialColumns(): Tabulator.ColumnDefinition[] {
+    return [
+      //{formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
+      {title: 'Sample ID', field: 'sample_id'},
+    ];
   }
 
   fetchAttribute(attribute: IAttribute): void {
