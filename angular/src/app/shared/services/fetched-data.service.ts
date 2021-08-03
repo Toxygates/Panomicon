@@ -61,11 +61,6 @@ export class FetchedDataService {
       })).subscribe(this.samplesMap$);
 
     this.sampleFilters$ = new BehaviorSubject<SampleFilter[]>([]);
-    this.samples$.pipe(
-      switchMap(_samples => {
-        return of<SampleFilter[]>([]);
-      })
-    ).subscribe(this.sampleFilters$);
 
     this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
     combineLatest([this.samples$, this.sampleFilters$]).pipe(
@@ -88,6 +83,12 @@ export class FetchedDataService {
         }
       })
     ).subscribe(this.filteredSamples$);
+
+    this.samples$.pipe(
+      switchMap(_samples => {
+        return of<SampleFilter[]>([]);
+      })
+    ).subscribe(this.sampleFilters$);
 
     this.attributes$ = new BehaviorSubject<Attribute[] | null>(null);
     this.userData.selectedBatch$.pipe(
