@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { UserDataService } from '../../shared/services/user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { SampleFilter } from '../../shared/models/sample-filter.model';
-import { IAttribute, Sample } from '../../shared/models/backend-types.model';
+import { Attribute, Sample } from '../../shared/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
 import { BehaviorSubject, concat, Observable, of, Subscription } from 'rxjs';
 import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
@@ -46,8 +46,8 @@ export class SampleTableComponent implements AfterViewInit {
   sampleFilters$: BehaviorSubject<SampleFilter[]>;
   selectedBatch$: Observable<string | null>;
 
-  attributes$: Observable<IAttribute[] | null>;
-  attributeMap$: Observable<Map<string, IAttribute>>;
+  attributes$: Observable<Attribute[] | null>;
+  attributeMap$: Observable<Map<string, Attribute>>;
   fetchedAttributes$: BehaviorSubject<Set<string>>;
 
   columnDefinitions$: BehaviorSubject<Tabulator.ColumnDefinition[]>;
@@ -125,7 +125,7 @@ export class SampleTableComponent implements AfterViewInit {
     });
   }
 
-  toggleColumn(attribute: IAttribute): void {
+  toggleColumn(attribute: Attribute): void {
     const columnDefinition = this.findColumnForAttribute(attribute);
     if (columnDefinition?.field) {
       void this.tabulator?.deleteColumn(columnDefinition.field);
@@ -162,7 +162,7 @@ export class SampleTableComponent implements AfterViewInit {
     this.fetchedData.sampleFilters$.next([]);
   }
 
-  findColumnForAttribute(attribute: IAttribute):
+  findColumnForAttribute(attribute: Attribute):
       Tabulator.ColumnDefinition | undefined {
     const columnDefinitions = this.tabulator?.getColumnDefinitions();
     if (!columnDefinitions) throw new Error("columnDefinitions not defiend");

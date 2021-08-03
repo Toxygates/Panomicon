@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { renameItem, UserDataService } from '../shared/services/user-data.service';
-import { ISampleGroup } from '../shared/models/frontend-types.model'
+import { SampleGroup } from '../shared/models/frontend-types.model'
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -16,12 +16,12 @@ export class GroupManagerComponent implements OnInit {
     private toastr: ToastrService) { }
 
   groupNames$!: Observable<string[]>;
-  sampleGroups$!: Observable<Map<string, ISampleGroup>>;
+  sampleGroups$!: Observable<Map<string, SampleGroup>>;
   currentRenamingGroup: string | undefined;
   currentDeletingGroup: string | undefined;
   newGroupName: string | undefined;
 
-  saveSampleGroups(groups: Map<string, ISampleGroup>): void {
+  saveSampleGroups(groups: Map<string, SampleGroup>): void {
     this.userData.sampleGroups$.next(groups);
   }
 

@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { IAttribute } from '../../shared/models/backend-types.model';
+import { Attribute } from '../../shared/models/backend-types.model';
 import { SampleFilter, SampleFilterType } from '../../shared/models/sample-filter.model';
 
 @Component({
@@ -13,7 +13,7 @@ export class SampleFilteringComponent implements OnInit {
   constructor(private toastr: ToastrService) {}
 
   @Input() attributes!:  Set<string> | null;
-  @Input() attributeMap!: Map<string, IAttribute> | null;
+  @Input() attributeMap!: Map<string, Attribute> | null;
   @Input() filters!: SampleFilter[];
   @Output() submitFilters = new EventEmitter<SampleFilter[]>();
   @Output() cancelEditFilters = new EventEmitter();
@@ -48,7 +48,7 @@ export class SampleFilteringComponent implements OnInit {
 
   applyFilters(): void {
     if (this.attributeMap) {
-      if (this.filters.every(f => f.validate(this.attributeMap as Map<string, IAttribute>))) {
+      if (this.filters.every(f => f.validate(this.attributeMap as Map<string, Attribute>))) {
         this.submitFilters.emit(this.filters);
       } else {
         this.haveTriedToSubmit = true;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { IAttribute, IBatch, IDataset, Sample } from '../models/backend-types.model';
+import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -14,8 +14,8 @@ export class BackendService {
 
   serviceUrl = environment.apiUrl;
 
-  getDatasets(): Observable<IDataset[]> {
-    return this.http.get<IDataset[]>(this.serviceUrl + 'dataset')
+  getDatasets(): Observable<Dataset[]> {
+    return this.http.get<Dataset[]>(this.serviceUrl + 'dataset')
       .pipe(
         tap(() => console.log('fetched datasets')),
         catchError((error: HttpErrorResponse) => {
@@ -25,8 +25,8 @@ export class BackendService {
       );
   }
 
-  getBatchesForDataset(datasetId: string): Observable<IBatch[]> {
-    return this.http.get<IBatch[]>(this.serviceUrl + 'batch/dataset/'
+  getBatchesForDataset(datasetId: string): Observable<Batch[]> {
+    return this.http.get<Batch[]>(this.serviceUrl + 'batch/dataset/'
       + datasetId)
       .pipe(
         tap(() => console.log('fetched batches')),
@@ -49,8 +49,8 @@ export class BackendService {
       )
   }
 
-  getAttributesForBatch(batchId: string): Observable<IAttribute[]> {
-    return this.http.get<IAttribute[]>(this.serviceUrl + 'attribute/batch/'
+  getAttributesForBatch(batchId: string): Observable<Attribute[]> {
+    return this.http.get<Attribute[]>(this.serviceUrl + 'attribute/batch/'
       + batchId)
       .pipe(
         tap(() => console.log('fetched attributes')),

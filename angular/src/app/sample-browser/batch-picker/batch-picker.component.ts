@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { IBatch } from 'src/app/shared/models/backend-types.model';
+import { Batch } from 'src/app/shared/models/backend-types.model';
 
 @Component({
   selector: 'app-batch-picker',
@@ -9,7 +9,7 @@ import { IBatch } from 'src/app/shared/models/backend-types.model';
 export class BatchPickerComponent {
 
   @Input() datasetId!: string | null;
-  @Input() batches!: IBatch[] | null;
+  @Input() batches!: Batch[] | null;
 
   @Input() selectedBatch!: string | null;
   @Output() selectedBatchChange = new EventEmitter<string>();

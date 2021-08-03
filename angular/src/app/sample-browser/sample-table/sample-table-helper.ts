@@ -1,5 +1,5 @@
 import { BehaviorSubject } from "rxjs";
-import { IAttribute } from "src/app/shared/models/backend-types.model";
+import { Attribute } from "src/app/shared/models/backend-types.model";
 import { SampleFilter } from "src/app/shared/models/sample-filter.model";
 
 export class SampleTableHelper {
@@ -17,7 +17,7 @@ export class SampleTableHelper {
     }
   }
 
-  createColumnForAttribute(attribute: IAttribute): Tabulator.ColumnDefinition {
+  createColumnForAttribute(attribute: Attribute): Tabulator.ColumnDefinition {
     const column: Tabulator.ColumnDefinition =  {
       title: attribute.title,
       field: attribute.id,

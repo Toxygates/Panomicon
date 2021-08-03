@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { IDataset } from 'src/app/shared/models/backend-types.model';
+import { Dataset } from 'src/app/shared/models/backend-types.model';
 
 @Component({
   selector: 'app-dataset-picker',
@@ -11,7 +11,7 @@ export class DatasetPickerComponent {
   @Input() selectedDataset!: string | null;
   @Output() selectedDatasetChange = new EventEmitter<string>();
 
-  @Input() datasets!: IDataset[] | null;
+  @Input() datasets!: Dataset[] | null;
 
   selectDataset(datasetId: string): void {
     this.selectedDataset = datasetId;

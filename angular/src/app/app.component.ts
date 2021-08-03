@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ISampleGroup } from './shared/models/frontend-types.model';
+import { SampleGroup } from './shared/models/frontend-types.model';
 import { UserDataService } from './shared/services/user-data.service';
 
 @Component({
@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
   navbarIsCollapsed = true;
   enabledSampleGroupsExist = false;
 
-  enabledGroups$!: Observable<ISampleGroup[]>;
+  enabledGroups$!: Observable<SampleGroup[]>;
 
   ngOnInit(): void {
     this.enabledGroups$ = this.userData.enabledGroups$;

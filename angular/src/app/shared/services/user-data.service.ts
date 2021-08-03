@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Sample } from '../models/backend-types.model'
-import { IGeneSet, ISampleGroup } from '../models/frontend-types.model'
+import { GeneSet, SampleGroup } from '../models/frontend-types.model'
 import { SampleGroupLogic } from '../models/sample-group-logic.class';
 
 @Injectable({
@@ -10,14 +10,14 @@ import { SampleGroupLogic } from '../models/sample-group-logic.class';
 })
 export class UserDataService {
 
-  sampleGroups$: BehaviorSubject<Map<string, ISampleGroup>>;
-  geneSets$: BehaviorSubject<Map<string, IGeneSet>>;
+  sampleGroups$: BehaviorSubject<Map<string, SampleGroup>>;
+  geneSets$: BehaviorSubject<Map<string, GeneSet>>;
 
   selectedDataset$: BehaviorSubject<string | null>;
   selectedBatch$: BehaviorSubject<string | null>;
 
-  private enabledGroupsBehaviorSubject: BehaviorSubject<ISampleGroup[]>;
-  enabledGroups$: Observable<ISampleGroup[]>;
+  private enabledGroupsBehaviorSubject: BehaviorSubject<SampleGroup[]>;
+  enabledGroups$: Observable<SampleGroup[]>;
   platform$: Observable<string | undefined>;
 
   static readonly SELECTED_DATASET_KEY: string ="selectedDataset_v1";
@@ -52,7 +52,7 @@ export class UserDataService {
       }
     });
 
-    this.enabledGroupsBehaviorSubject = this.enabledGroups$ = new BehaviorSubject([] as ISampleGroup[]);
+    this.enabledGroupsBehaviorSubject = this.enabledGroups$ = new BehaviorSubject([] as SampleGroup[]);
     this.sampleGroups$.pipe(
       map(value => Array.from(value.values()).filter(group => group.enabled))
     ).subscribe(this.enabledGroupsBehaviorSubject);
@@ -61,7 +61,7 @@ export class UserDataService {
     );
   }
 
-  canSelectGroup(group: ISampleGroup): boolean {
+  canSelectGroup(group: SampleGroup): boolean {
     return SampleGroupLogic.canSelectGroup(group, this.enabledGroupsBehaviorSubject.value);
   }
 

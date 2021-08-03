@@ -1,21 +1,21 @@
-export interface IDataset {
+export interface Dataset {
   id: string;
   description: string;
 }
 
-export interface IBatch {
+export interface Batch {
   id: string;
 }
 
 export type Sample = Record<string, string>;
 
-export interface IAttribute {
+export interface Attribute {
   id: string;
   title: string;
   isNumerical: boolean;
 }
 
-export interface IMatrix {
+export interface Matrix {
   columns: {
     name: string,
   }[],

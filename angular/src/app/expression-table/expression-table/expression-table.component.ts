@@ -2,7 +2,7 @@ import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, View
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../../shared/services/user-data.service';
-import { IGeneSet, ISampleGroup } from '../../shared/models/frontend-types.model'
+import { GeneSet, SampleGroup } from '../../shared/models/frontend-types.model'
 import Tabulator from 'tabulator-tables';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -28,9 +28,9 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   tableData$ = new BehaviorSubject<Record<string, string>[]>([]);
 
-  enabledSampleGroups: ISampleGroup[] = [];
+  enabledSampleGroups: SampleGroup[] = [];
   enabledSampleGroupsSubscription: Subscription | undefined;
-  geneSets$!: Observable<Map<string, IGeneSet>>;
+  geneSets$!: Observable<Map<string, GeneSet>>;
   geneSetNames$!: Observable<string[]>;
 
   currentGeneSet: string | undefined;
@@ -192,7 +192,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
       name: name,
       platform: platform,
       probes: probes
-    } as IGeneSet;
+    } as GeneSet;
 
     this.userData.geneSets$.value.set(name, geneSet);
     this.userData.geneSets$.next(this.userData.geneSets$.value);

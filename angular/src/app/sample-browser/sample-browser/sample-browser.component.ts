@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
-import { IBatch, IDataset } from '../../shared/models/backend-types.model';
+import { Batch, Dataset } from '../../shared/models/backend-types.model';
 import { UserDataService } from '../../shared/services/user-data.service';
 
 @Component({
@@ -14,8 +14,8 @@ export class SampleBrowserComponent implements OnInit {
   constructor(private userData: UserDataService,
     private fetchedData: FetchedDataService) {}
 
-  datasets$!: Observable<IDataset[] | null>;
-  batches$!: Observable<IBatch[] | null>;
+  datasets$!: Observable<Dataset[] | null>;
+  batches$!: Observable<Batch[] | null>;
 
   datasetId$!: BehaviorSubject<string | null>;
   batchId$!: BehaviorSubject<string | null>;

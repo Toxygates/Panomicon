@@ -1,4 +1,4 @@
-export interface ISampleGroup {
+export interface SampleGroup {
   name: string;
   organism: string;
   type: string;
@@ -7,7 +7,7 @@ export interface ISampleGroup {
   enabled: boolean;
 }
 
-export interface IGeneSet {
+export interface GeneSet {
   name: string;
   platform: string;
   probes: string[];

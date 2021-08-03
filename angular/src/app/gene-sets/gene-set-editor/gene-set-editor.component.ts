@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { IGeneSet } from 'src/app/shared/models/frontend-types.model';
+import { GeneSet } from 'src/app/shared/models/frontend-types.model';
 import { UserDataService } from 'src/app/shared/services/user-data.service';
 
 @Component({
@@ -18,7 +18,7 @@ export class GeneSetEditorComponent implements OnInit {
     private route: ActivatedRoute, private router: Router) { }
 
   geneSetName$!: Observable<string | undefined>;
-  geneSet$!: Observable<IGeneSet | undefined>;
+  geneSet$!: Observable<GeneSet | undefined>;
 
   newProbesText = "";
 
@@ -37,7 +37,7 @@ export class GeneSetEditorComponent implements OnInit {
       );
   }
 
-  deleteProbes(geneSet: IGeneSet, probes: string[]): void {
+  deleteProbes(geneSet: GeneSet, probes: string[]): void {
     geneSet.probes = geneSet.probes.filter(probe => !probes.includes(probe));
     this.userData.geneSets$.value.set(geneSet.name, geneSet);
     this.userData.geneSets$.next(this.userData.geneSets$.value);
@@ -45,7 +45,7 @@ export class GeneSetEditorComponent implements OnInit {
       `Deleted ${probes.length} probes`,);
   }
 
-  addProbes(geneSet: IGeneSet, text: string): void {
+  addProbes(geneSet: GeneSet, text: string): void {
     const candidates = [...new Set(text.split(/[\s,]+/))]
     const existing = new Set(geneSet.probes);
     const toAdd = candidates.filter(p => p.length > 0 && !existing.has(p));

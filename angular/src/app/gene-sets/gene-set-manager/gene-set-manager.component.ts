@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { IGeneSet } from 'src/app/shared/models/frontend-types.model';
+import { GeneSet } from 'src/app/shared/models/frontend-types.model';
 import { UserDataService } from 'src/app/shared/services/user-data.service';
 
 @Component({
@@ -13,7 +13,7 @@ export class GeneSetManagerComponent implements OnInit {
 
   constructor(private userData: UserDataService) { }
 
-  @Input() geneSets$!: Observable<Map<string, IGeneSet>>
+  @Input() geneSets$!: Observable<Map<string, GeneSet>>
   platforms$!: Observable<Set<string>>;
 
   ngOnInit(): void {
@@ -29,7 +29,7 @@ export class GeneSetManagerComponent implements OnInit {
     )
   }
 
-  geneSetsForPlatform$(platform: string): Observable<IGeneSet[]> {
+  geneSetsForPlatform$(platform: string): Observable<GeneSet[]> {
     return this.geneSets$.pipe(
       map(geneSets => {
         return Array.from(geneSets.values()).filter(geneSet => geneSet.platform == platform);

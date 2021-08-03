@@ -1,4 +1,4 @@
-import { IAttribute } from "./backend-types.model";
+import { Attribute } from "./backend-types.model";
 
 export class SampleFilter {
   attribute: string | undefined;
@@ -33,17 +33,17 @@ export class SampleFilter {
     }
   }
 
-  validate(attributeMap: Map<string, IAttribute>): boolean {
+  validate(attributeMap: Map<string, Attribute>): boolean {
     return this.validateAttribute(attributeMap) &&
       this.validateType(attributeMap) &&
       this.validateParameter();
   }
 
-  validateAttribute(attributeMap: Map<string, IAttribute>): boolean {
+  validateAttribute(attributeMap: Map<string, Attribute>): boolean {
     return this.attribute != null && (attributeMap.has(this.attribute));
   }
 
-  validateType(attributeMap: Map<string, IAttribute>,
+  validateType(attributeMap: Map<string, Attribute>,
       type: SampleFilterType | undefined = this.type): boolean {
     const foundAttribute =
       this.attribute != null && attributeMap.get(this.attribute);
@@ -88,7 +88,7 @@ export class SampleFilter {
     }
   }
 
-  correctTypeInfo(attributeMap: Map<string, IAttribute>): string {
+  correctTypeInfo(attributeMap: Map<string, Attribute>): string {
     const foundAttribute =
       this.attribute != null && attributeMap.get(this.attribute);
     if (foundAttribute && !foundAttribute.isNumerical) {

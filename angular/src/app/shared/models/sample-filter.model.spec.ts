@@ -1,9 +1,9 @@
-import { IAttribute } from './backend-types.model';
+import { Attribute } from './backend-types.model';
 import { SampleFilter, SampleFilterType } from './sample-filter.model';
 
 describe('SampleFilter', () => {
   let filter: SampleFilter;
-  let attributeMap: Map<string, IAttribute>;
+  let attributeMap: Map<string, Attribute>;
 
   beforeEach(() => {
     filter = new SampleFilter();
@@ -14,7 +14,7 @@ describe('SampleFilter', () => {
       id: "numerical",
       title: "A numerical attribute",
       isNumerical: true
-    } as IAttribute],
+    } as Attribute],
     ["non-numerical", {
       id: "non-numerical",
       title: "A non-numerical attribute",

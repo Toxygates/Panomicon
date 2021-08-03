@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, concat, of } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
-import { IAttribute, IBatch, IDataset, Sample } from '../models/backend-types.model';
+import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
 import { SampleFilter } from '../models/sample-filter.model';
 import { BackendService } from './backend.service';
 import { UserDataService } from './user-data.service';
@@ -11,15 +11,15 @@ import { UserDataService } from './user-data.service';
 })
 export class FetchedDataService {
 
-  datasets$: BehaviorSubject<IDataset[] | null>;
-  batches$: BehaviorSubject<IBatch[] | null>;
+  datasets$: BehaviorSubject<Dataset[] | null>;
+  batches$: BehaviorSubject<Batch[] | null>;
 
   samples$: BehaviorSubject<Sample[] | null>;
   samplesMap$: BehaviorSubject<Map<string, Sample>>;
   sampleFilters$: BehaviorSubject<SampleFilter[]>
   filteredSamples$: BehaviorSubject<Sample[] | null>;
-  attributes$: BehaviorSubject<IAttribute[] | null>;
-  attributeMap$: BehaviorSubject<Map<string, IAttribute>>;
+  attributes$: BehaviorSubject<Attribute[] | null>;
+  attributeMap$: BehaviorSubject<Map<string, Attribute>>;
   requiredAttributes = new Set<string>();
   fetchedAttributes$: BehaviorSubject<Set<string>>;
   columnDefinitions$: BehaviorSubject<Tabulator.ColumnDefinition[]>;
@@ -27,10 +27,10 @@ export class FetchedDataService {
   constructor(private backend: BackendService,
     private userData: UserDataService) {
 
-    this.datasets$ = new BehaviorSubject<IDataset[] | null>(null);
+    this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
     this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
 
-    this.batches$ = new BehaviorSubject<IBatch[] | null>(null);
+    this.batches$ = new BehaviorSubject<Batch[] | null>(null);
     this.userData.selectedDataset$.pipe(
       filter(dataset => dataset != null),
       switchMap(datasetId => {
@@ -89,7 +89,7 @@ export class FetchedDataService {
       })
     ).subscribe(this.filteredSamples$);
 
-    this.attributes$ = new BehaviorSubject<IAttribute[] | null>(null);
+    this.attributes$ = new BehaviorSubject<Attribute[] | null>(null);
     this.userData.selectedBatch$.pipe(
       filter(batchId => batchId != null),
       switchMap(batchId => {
@@ -98,10 +98,10 @@ export class FetchedDataService {
       })
       ).subscribe(this.attributes$);
 
-    this.attributeMap$ = new BehaviorSubject<Map<string, IAttribute>>(new Map());
+    this.attributeMap$ = new BehaviorSubject<Map<string, Attribute>>(new Map());
     this.attributes$.pipe(
       map(attributes => {
-        const attributeMap = new Map<string, IAttribute>();
+        const attributeMap = new Map<string, Attribute>();
         attributes?.forEach(a => attributeMap.set(a.id, a));
         return attributeMap;
       })).subscribe(this.attributeMap$);
@@ -139,7 +139,7 @@ export class FetchedDataService {
     ];
   }
 
-  fetchAttribute(attribute: IAttribute): void {
+  fetchAttribute(attribute: Attribute): void {
     const samples = this.samples$.value;
     if (!samples) throw new Error("samples not defined");
 
