@@ -73,6 +73,7 @@ export class SampleTableComponent implements AfterViewInit {
       } else {
         if (previous == null) {
           this.tryDrawTable();
+          setTimeout(() => void this.tabulator?.setData(latest));
         } else {
           void this.tabulator?.setData(latest);
         }
@@ -180,7 +181,7 @@ export class SampleTableComponent implements AfterViewInit {
 
       this.ngZone.runOutsideAngular(() => {
         this.tabulator = new Tabulator(tabulatorElement, {
-          data: this.filteredSamples$.value as Sample[],
+          data: [],
           selectable: true,
           columns: this.columnDefinitions$.value,
           layout:"fitDataFill",
