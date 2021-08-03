@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, concat, of } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, concat, EMPTY, of } from 'rxjs';
+import { filter, map, pairwise, switchMap } from 'rxjs/operators';
 import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
 import { SampleFilter } from '../models/sample-filter.model';
 import { BackendService } from './backend.service';
@@ -64,22 +64,26 @@ export class FetchedDataService {
 
     this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
     combineLatest([this.samples$, this.sampleFilters$]).pipe(
-      map(([samples, sampleFilters]) => {
-        if (samples == null || sampleFilters.length == 0) {
-          return samples;
+      pairwise(),
+      switchMap(([[samples1, filters1], [samples2, filters2]]) => {
+        if (samples2 == null || filters2.length == 0) {
+          return samples1 == null ? EMPTY : of(samples2);
         } else {
-          const filteredSamples = samples.filter(sample =>
-            sampleFilters.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
+          if (samples1 === samples2 && filters1.length === 0 && filters2.length === 0) {
+            return EMPTY;
+          }
+          const filteredSamples = samples2.filter(sample =>
+            filters2.every(filter => filter.attribute && filter.passesFilter(sample[filter.attribute])));
 
           const includedTreatments = new Set<string>();
           filteredSamples.forEach(sample => {
             includedTreatments.add(sample.treatment);
             includedTreatments.add(sample.control_treatment);
           });
-          const groupedFilteredSamples = samples.filter(sample =>
+          const groupedFilteredSamples = samples2.filter(sample =>
             includedTreatments.has(sample.treatment)
           );
-          return groupedFilteredSamples;
+          return of(groupedFilteredSamples);
         }
       })
     ).subscribe(this.filteredSamples$);
