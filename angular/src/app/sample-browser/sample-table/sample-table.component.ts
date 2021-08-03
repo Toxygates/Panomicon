@@ -79,8 +79,9 @@ export class SampleTableComponent implements AfterViewInit {
       }
     }));
 
-    this.subscriptions.push(this.fetchedAttributes$.subscribe(_attributes => {
-      if (this.filteredSamples$.value) {
+    const pairwiseAttributes = concat(of(null), this.fetchedAttributes$).pipe(pairwise());
+    this.subscriptions.push(pairwiseAttributes.subscribe(([previous, latest]) => {
+      if (previous?.size && latest?.size && this.filteredSamples$.value) {
         void this.tabulator?.replaceData(this.filteredSamples$.value);
       }
     }));
