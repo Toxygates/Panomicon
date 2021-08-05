@@ -68,13 +68,16 @@ export class SampleTableComponent implements AfterViewInit {
     this.subscriptions.push(pairwiseSamples.subscribe(([previous, latest]) => {
       if (latest == null) {
         if (this.tabulatorContainer != null) {
+          console.log("clearing table");
           (this.tabulatorContainer.nativeElement as HTMLElement).innerHTML = '';
         }
       } else {
         if (previous == null) {
+          console.log("drawing table");
           this.tryDrawTable();
           setTimeout(() => void this.tabulator?.setData(latest));
         } else {
+          console.log("updating table");
           void this.tabulator?.setData(latest);
         }
       }
