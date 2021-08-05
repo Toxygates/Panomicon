@@ -5,6 +5,9 @@ import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
 if (environment.production) {
+  /* eslint-disable */
+  window.console.log = function() {};
+  /* eslint-ensable */
   enableProdMode();
 }
 
