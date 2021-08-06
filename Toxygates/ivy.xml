@@ -53,5 +53,7 @@
     <!-- Dependencies from Scalatra project template -->
   <dependency org="org.scalatra" name="scalatra_2.12" rev="2.7.0" />
   <dependency org="ch.qos.logback" name="logback-classic" rev="1.2.3" />
+
+  <dependency org="com.github.jwt-scala" name="jwt-upickle_2.12" rev="9.0.0" />
 </dependencies>
 </ivy-module>
