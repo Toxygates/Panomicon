@@ -19,12 +19,15 @@ import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.{Base64, Date}
 import javax.servlet.ServletContext
 import t.common.shared.sample.Group
 import t.util.LRUCache
 import ujson.Value.Selector
 
+import java.util
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 import scala.collection.JavaConverters._
 
 
@@ -404,6 +407,36 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val attributes: Seq[Attribute] = params("attributes").arr.map(v => baseConfig.attributes.byId(v.str))
     val samplesWithValues = sampleStore.sampleAttributeValues(sampleIds, batches, attributes)
     write(samplesWithValues.map(sampleToMap))
+  }
+
+  post("/authenticate") {
+    val params = ujson.read(request.body)
+    val username: String = params.obj("username").str
+    val password: String = params.obj("password").str
+
+    // TODO get real username, salt, and password from somewhere
+    val fakeUsername = "admin"
+    if (username == fakeUsername) {
+      // Base64-encoded strings like this would be in the server
+      // The password encoded here is "bad_password"
+      val fakeSaltForUser = "iqg6/+Dn6H37xWMpwltFIA=="
+      val fakeHashedPasswordForUser = "QbYI3N/lhEnMHALmnXkKig=="
+
+      val decodedSalt = Base64.getDecoder.decode(fakeSaltForUser)
+      val decodedPassword = Base64.getDecoder.decode(fakeHashedPasswordForUser)
+
+      val spec = new PBEKeySpec(password.toCharArray(), decodedSalt, 65536, 128)
+      val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+      val hashed = factory.generateSecret(spec).getEncoded()
+
+      if (util.Arrays.equals(decodedPassword, hashed)) {
+        "Authenticated!"
+      } else {
+        halt(401, "Unauthenticated")
+      }
+    } else {
+      halt(401, "Unauthenticated")
+    }
   }
 
   /**
