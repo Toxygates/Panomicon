@@ -1,6 +1,7 @@
 package t.viewer.server.servlet
 
 import org.scalatra._
+import pdi.jwt.{JwtAlgorithm, JwtClaim, JwtUpickle}
 import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
 import t.model.sample.{Attribute, CoreParameter}
@@ -18,6 +19,7 @@ import t.viewer.shared._
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
+import java.time.Instant
 import java.text.SimpleDateFormat
 import java.util.{Base64, Date}
 import javax.servlet.ServletContext
@@ -409,6 +411,46 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(samplesWithValues.map(sampleToMap))
   }
 
+  // TODO this key should come from somewhere safe, like an environment variable
+  val jwtEncodingKey = "secretKey"
+  val tokenValidMinutes = 15
+
+  def bearerToken(username: String): String = {
+    val claim = JwtClaim(
+      issuer = Some("Panomicon"),
+      expiration = Some(Instant.now.plusSeconds(60 * tokenValidMinutes)
+        .getEpochSecond),
+      subject = Some(username)
+    )
+    JwtUpickle.encode(claim, jwtEncodingKey, JwtAlgorithm.HS256)
+  }
+
+  def validateToken(): String = {
+    val authHeader = request.getHeader("Authorization")
+    if (authHeader == null) halt(401, "Unauthenticated")
+    val substrings = authHeader.split(" ")
+    if (substrings.length != 2 || substrings(0) != "Bearer") {
+      halt(401, "Unauthenticated")
+    } else {
+      val token = substrings(1)
+      val decodedToken = JwtUpickle.decode(token, jwtEncodingKey, Seq(JwtAlgorithm.HS256))
+      if (decodedToken.isFailure) {
+        halt(401, "Unauthenticated")
+      } else {
+        val tokenValue = decodedToken.get
+        // TODO check for valid user here
+        if (tokenValue.issuer == Some("Panomicon") &&
+          tokenValue.subject == Some("admin") &&
+          tokenValue.expiration.isDefined &&
+          tokenValue.expiration.get > Instant.now.getEpochSecond) {
+          "admin"
+        } else {
+          halt(401, "Unauthenticated")
+        }
+      }
+    }
+  }
+
   post("/authenticate") {
     val params = ujson.read(request.body)
     val username: String = params.obj("username").str
@@ -430,13 +472,18 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       val hashed = factory.generateSecret(spec).getEncoded()
 
       if (util.Arrays.equals(decodedPassword, hashed)) {
-        "Authenticated!"
+        bearerToken(username)
       } else {
         halt(401, "Unauthenticated")
       }
     } else {
       halt(401, "Unauthenticated")
     }
+  }
+
+  get("/refresh-token") {
+    val username = validateToken()
+    bearerToken(username)
   }
 
   /**
