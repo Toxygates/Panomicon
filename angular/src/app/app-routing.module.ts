@@ -1,17 +1,26 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
-import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { PageNotFoundComponent } from './viewer/page-not-found/page-not-found.component';
+import { ViewerComponent } from './viewer/viewer.component';
 
 const routes: Routes = [
-  { path: 'sample-browser', loadChildren: () =>
-    import('./sample-browser/sample-browser.module').then(m => m.SampleBrowserModule) },
-  { path: 'expression-table', loadChildren: () =>
-    import('./expression-table/expression-table.module').then(m => m.ExpressionTableModule) },
-  { path: 'sample-groups', loadChildren: () =>
-    import('./group-manager/group-manager.module').then(m => m.GroupManagerModule) },
-  { path: 'gene-sets', loadChildren: () =>
-    import('./gene-sets/gene-sets.module').then(m => m.GeneSetsModule) },
-  { path: '',   redirectTo: '/sample-browser', pathMatch: 'full' },
+  {
+    path: 'viewer',
+      component: ViewerComponent, // this is the component with the <router-outlet> in the template
+      children: [
+        { path: 'sample-browser', loadChildren: () =>
+          import('./viewer/sample-browser/sample-browser.module').then(m => m.SampleBrowserModule) },
+        { path: 'expression-table', loadChildren: () =>
+          import('./viewer/expression-table/expression-table.module').then(m => m.ExpressionTableModule) },
+        { path: 'sample-groups', loadChildren: () =>
+          import('./viewer/group-manager/group-manager.module').then(m => m.GroupManagerModule) },
+        { path: 'gene-sets', loadChildren: () =>
+          import('./viewer/gene-sets/gene-sets.module').then(m => m.GeneSetsModule) },
+        { path: '',   redirectTo: 'sample-browser', pathMatch: 'full' },
+        { path: '**', component: PageNotFoundComponent }
+      ]
+  },
+  { path: '',   redirectTo: 'viewer/sample-browser', pathMatch: 'full' },
   { path: '**', component: PageNotFoundComponent }
 ];
 

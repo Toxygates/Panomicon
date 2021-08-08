@@ -1,6 +1,6 @@
 import { BehaviorSubject } from "rxjs";
-import { Attribute } from "src/app/shared/models/backend-types.model";
-import { SampleFilter } from "src/app/shared/models/sample-filter.model";
+import { Attribute } from "../../shared/models/backend-types.model";
+import { SampleFilter } from "../../shared/models/sample-filter.model";
 
 export class SampleTableHelper {
 

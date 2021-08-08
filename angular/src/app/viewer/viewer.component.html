@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-sm navbar-light ui_panel">
+    <a class="navbar-brand">Panomicon</a>
+    <button class="navbar-toggler" type="button" (click)="navbarIsCollapsed = !navbarIsCollapsed"
+        aria-controls="navbarSupportedContent" [attr.aria-expanded]="!navbarIsCollapsed" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse" [collapse]="navbarIsCollapsed" [isAnimated]="true">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="sample-browser">Sample Browser</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="sample-groups">Sample Groups</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="expression-table"
+                [class.disabled]="(enabledGroups$ | async)?.length === 0">Expression Table</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="gene-sets">Gene Sets</a>
+        </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="main_content">
+    <router-outlet></router-outlet>
+</div>

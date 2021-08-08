@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { Batch } from 'src/app/shared/models/backend-types.model';
+import { Batch } from '../../shared/models/backend-types.model';
 
 @Component({
   selector: 'app-batch-picker',

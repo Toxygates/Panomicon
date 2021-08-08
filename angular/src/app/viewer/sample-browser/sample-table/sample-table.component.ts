@@ -8,7 +8,7 @@ import { SampleFilter } from '../../shared/models/sample-filter.model';
 import { Attribute, Sample } from '../../shared/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
 import { BehaviorSubject, concat, Observable, of, Subscription } from 'rxjs';
-import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
+import { FetchedDataService } from '../../shared/services/fetched-data.service';
 import { pairwise } from 'rxjs/operators';
 
 @Component({
