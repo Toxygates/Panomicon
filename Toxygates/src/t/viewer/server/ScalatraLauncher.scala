@@ -24,13 +24,13 @@ object ScalatraLauncher {
      * May be extended as needed.
      */
     val configuration = Map(
-      "repositoryURL" -> "http://localhost:3030/Toxygates/query",
-      "dataDir" -> "kcchunk:/shiba/scratch/toxygates/rebuild_test",
-      "matrixDbOptions" -> "#pccap=1073741824#msiz=4294967296",
-      "repositoryUser" -> "abc",
-      "repositoryPassword" -> "xyz",
-      "updateURL" -> "http://localhost:3030/Toxygates/update",
-      "instanceName" -> "dev"
+      "repositoryURL" -> System.getenv("T_TS_URL"),
+      "dataDir" -> System.getenv("T_DATA_DIR"),
+      "matrixDbOptions" -> System.getenv("T_DATA_MATDBCONFIG"),
+      "repositoryUser" -> System.getenv("T_TS_USER"),
+      "repositoryPassword" -> System.getenv("T_TS_PASS"),
+      "updateURL" -> System.getenv("T_TS_UPDATE_URL"),
+      "instanceName" -> System.getenv("T_INSTANCE_NAME")
     )
     for { (k,v) <- configuration } {
       context.setInitParameter(k, v)
