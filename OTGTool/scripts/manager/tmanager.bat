@@ -1,6 +1,6 @@
 @echo off
 
-set MAIN_ROOT=C:\Users\yuji\Documents\Toxygates\repository 4.7
+set MAIN_ROOT=C:\Users\yuji\Documents\Toxygates\repository
 set OTGTOOL_ROOT=%MAIN_ROOT%\OTGTool
 set TOXY_ROOT=%MAIN_ROOT%\Toxygates
 
@@ -20,6 +20,6 @@ set T_DATA_DIR=kcchunk:C:\Users\yuji\Documents\Toxygates\kyoto_data
 ::set T_DATA_DIR=kcchunk:C:\Users\yuji\Documents\Toxygates\kyoto_testdata
 set T_DATA_MATDBCONFIG=#pccap=1073741824#msiz=4294967296
 
-::echo "%OTGTOOL_ROOT%\bin;%CLASSPATH%"
+::echo "%OTGTOOL_ROOT%\lib\jar;%OTGTOOL_ROOT%\lib\bundle;%OTGTOOL_ROOT%\mlib;%OTGTOOL_ROOT%\classes;%CLASSPATH%"
 
-scala -J-Xmx4g -classpath "%OTGTOOL_ROOT%\bin;%CLASSPATH%" t.Manager %*
+scala -J-Xmx4g -classpath "%OTGTOOL_ROOT%\lib\jar;%OTGTOOL_ROOT%\lib\bundle;%OTGTOOL_ROOT%\mlib;%OTGTOOL_ROOT%\classes;%CLASSPATH%" t.manager.Manager %*
