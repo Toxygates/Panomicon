@@ -1,14 +1,10 @@
 package t.viewer.server.servlet
 
-import com.inversoft.rest.ClientResponse
 import io.fusionauth.client.FusionAuthClient
-import io.fusionauth.domain.oauth2.AccessToken
 import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
-import io.fusionauth.security.DefaultCryptoProvider
 import org.scalatra._
-import pdi.jwt.{JwtAlgorithm, JwtClaim, JwtUpickle}
 import t.common.shared.sample.Group
 import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
@@ -30,11 +26,7 @@ import upickle.default.{macroRW, ReadWriter => RW, _}
 
 import java.security.{MessageDigest, SecureRandom}
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.util
 import java.util.{Base64, Date}
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.PBEKeySpec
 import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
 
@@ -417,46 +409,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     write(samplesWithValues.map(sampleToMap))
   }
 
-  // TODO this key should come from somewhere safe, like an environment variable
-  val jwtEncodingKey = "secretKey"
-  val tokenValidMinutes = 15
-
-  def bearerToken(username: String): String = {
-    val claim = JwtClaim(
-      issuer = Some("Panomicon"),
-      expiration = Some(Instant.now.plusSeconds(60 * tokenValidMinutes)
-        .getEpochSecond),
-      subject = Some(username)
-    )
-    JwtUpickle.encode(claim, jwtEncodingKey, JwtAlgorithm.HS256)
-  }
-
-  def validateToken(): String = {
-    val authHeader = request.getHeader("Authorization")
-    if (authHeader == null) halt(401, "Unauthenticated")
-    val substrings = authHeader.split(" ")
-    if (substrings.length != 2 || substrings(0) != "Bearer") {
-      halt(401, "Unauthenticated")
-    } else {
-      val token = substrings(1)
-      val decodedToken = JwtUpickle.decode(token, jwtEncodingKey, Seq(JwtAlgorithm.HS256))
-      if (decodedToken.isFailure) {
-        halt(401, "Unauthenticated")
-      } else {
-        val tokenValue = decodedToken.get
-        // TODO check for valid user here
-        if (tokenValue.issuer == Some("Panomicon") &&
-          tokenValue.subject == Some("admin") &&
-          tokenValue.expiration.isDefined &&
-          tokenValue.expiration.get > Instant.now.getEpochSecond) {
-          "admin"
-        } else {
-          halt(401, "Unauthenticated")
-        }
-      }
-    }
-  }
-
   val fusionAuthBaseUrl = System.getenv("FUSIONAUTH_BASEURL")
   val fusionAuthClientId = System.getenv("FUSIONAUTH_CLIENTID")
   val fusionAuthClientSecret = System.getenv("FUSIONAUTH_CLIENTSECRET")
@@ -524,53 +476,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       }
 
     }
-  }
-
-//  val csrfTokenLength = 60
-//  val csrfBuffer = new Array[Char](csrfTokenLength)
-//  val random = new SecureRandom()
-//  val csrfCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".toCharArray()
-//
-//  def generateCsrfToken() {
-//    for (i <- 0 until csrfTokenLength) {
-//      csrfBuffer(i) = csrfCharacters(random.nextInt(csrfCharacters.length))
-//    }
-//    new String(csrfBuffer)
-//  }
-
-  post("/authenticate") {
-    val params = ujson.read(request.body)
-    val username: String = params.obj("username").str
-    val password: String = params.obj("password").str
-
-    // TODO get real username, salt, and password from somewhere
-    val fakeUsername = "admin"
-    if (username == fakeUsername) {
-      // Base64-encoded strings like this would be in the server
-      // The password encoded here is "bad_password"
-      val fakeSaltForUser = "iqg6/+Dn6H37xWMpwltFIA=="
-      val fakeHashedPasswordForUser = "QbYI3N/lhEnMHALmnXkKig=="
-
-      val decodedSalt = Base64.getDecoder.decode(fakeSaltForUser)
-      val decodedPassword = Base64.getDecoder.decode(fakeHashedPasswordForUser)
-
-      val spec = new PBEKeySpec(password.toCharArray(), decodedSalt, 65536, 128)
-      val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-      val hashed = factory.generateSecret(spec).getEncoded()
-
-      if (util.Arrays.equals(decodedPassword, hashed)) {
-        bearerToken(username)
-      } else {
-        halt(401, "Unauthenticated")
-      }
-    } else {
-      halt(401, "Unauthenticated")
-    }
-  }
-
-  get("/refresh-token") {
-    val username = validateToken()
-    bearerToken(username)
   }
 
   /**
