@@ -3,6 +3,10 @@ package t.viewer.server.servlet
 import com.inversoft.rest.ClientResponse
 import io.fusionauth.client.FusionAuthClient
 import io.fusionauth.domain.oauth2.AccessToken
+import io.fusionauth.jwt.JWTDecoder
+import io.fusionauth.jwt.hmac.HMACVerifier
+import io.fusionauth.jwt.rsa.RSAVerifier
+import io.fusionauth.security.DefaultCryptoProvider
 import org.scalatra._
 import pdi.jwt.{JwtAlgorithm, JwtClaim, JwtUpickle}
 import t.common.shared.sample.Group
@@ -499,6 +503,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       val responseContent = response.successResponse
       val accessToken = responseContent.token
       val refreshToken = responseContent.refreshToken
+
+      val decoder = new JWTDecoder()
+      val jwt = decoder.decode(accessToken,
+        HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
+        RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
+      )
+      println("Manually decoded jwt:")
+      println(jwt.toString())
+
       println(s"Got access token $accessToken and refresh token $refreshToken")
       s"Got access token $accessToken and refresh token $refreshToken"
     } else {
