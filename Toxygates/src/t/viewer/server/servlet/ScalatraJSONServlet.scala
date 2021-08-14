@@ -489,7 +489,20 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       } else if (jwt.issuer != jwtIssuer) {
         Right("Wrong token issuer")
       } else if (jwt.isExpired()) {
-        Right("Expired token")
+        val refreshToken = cookies.find(c => c.getName == "__Host-refreshToken").get.getValue
+        val refreshResponse =
+          fusionAuthClient.exchangeRefreshTokenForAccessToken(refreshToken,
+            fusionAuthClientId, fusionAuthClientSecret, "", "")
+        if (refreshResponse.wasSuccessful()) {
+          val newToken = refreshResponse.successResponse.token
+          response.addHeader("Set-Cookie", s"__Host-jwt=${newToken}; Secure; Path=/; HttpOnly; SameSite=Strict")
+          Left(new JWTDecoder().decode(newToken,
+            HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
+            RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
+          ))
+        } else {
+          Right(s"Error getting refresh token: ${refreshResponse.exception.toString()}")
+        }
       } else {
         val roles = jwt.getList("roles")
         println(roles)
