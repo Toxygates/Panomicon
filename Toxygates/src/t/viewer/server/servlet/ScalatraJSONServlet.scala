@@ -1,6 +1,7 @@
 package t.viewer.server.servlet
 
 import io.fusionauth.client.FusionAuthClient
+import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
@@ -413,6 +414,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
   val fusionAuthClientId = System.getenv("FUSIONAUTH_CLIENTID")
   val fusionAuthClientSecret = System.getenv("FUSIONAUTH_CLIENTSECRET")
   val redirectAfterAuthUrl = System.getenv("REDIRECT_AFTER_AUTH_URL")
+  val jwtIssuer = System.getenv("JWT_ISSUER")
 
   val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthBaseUrl);
   val random = new SecureRandom()
@@ -472,22 +474,38 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     }
   }
 
-  get("/check-cookie") {
+  def getJwtToken(): Either[JWT, String] = {
     val cookies = request.getCookies
     try {
       val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").get
-      //val refreshCookie = cookies.find(c => c.getName == "__Host-refreshToken").get
 
       val jwt = new JWTDecoder().decode(tokenCookie.getValue,
         HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
         RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
       )
-      jwt.toString
+
+      if (jwt.audience != fusionAuthClientId) {
+        Right("Wrong token audience")
+      } else if (jwt.issuer != jwtIssuer) {
+        Right("Wrong token issuer")
+      } else if (jwt.isExpired()) {
+        Right("Expired token")
+      } else {
+        val roles = jwt.getList("roles")
+        println(roles)
+        Left(jwt)
+      }
     } catch {
       case e: Throwable => {
-        println(s"Error: ${e.toString}")
-        s"Error: ${e.toString}"
+        Right(s"Error getting token: ${e.toString}")
       }
+    }
+  }
+
+  get("/check-cookie") {
+    getJwtToken() match {
+      case Left(jwt) => jwt.toString()
+      case Right(error) => error
     }
   }
 
