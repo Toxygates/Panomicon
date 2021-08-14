@@ -453,11 +453,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     }
   }
 
-  // TODO get these from environment variables rather than hardcoding
-  val fusionAuthBaseUrl = "http://localhost:9011"
-  val fusionAuthClientId = "4b65d0c8-9538-43ac-a006-9b863bfdb0b4"
-  val fusionAuthClientSecret = "FbC6no_Gq6TH75f6QGHrbRcm4yM44Q38vZOC_IDQ87s"
-  val redirectAfterAuthUrl = "http://localhost:8888/json/oauth-redirect"
+  val fusionAuthBaseUrl = System.getenv("FUSIONAUTH_BASEURL")
+  val fusionAuthClientId = System.getenv("FUSIONAUTH_CLIENTID")
+  val fusionAuthClientSecret = System.getenv("FUSIONAUTH_CLIENTSECRET")
+  val redirectAfterAuthUrl = System.getenv("REDIRECT_AFTER_AUTH_URL")
 
   val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthBaseUrl);
   val random = new SecureRandom()
