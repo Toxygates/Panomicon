@@ -1,35 +1,37 @@
 package t.viewer.server.servlet
 
+import com.inversoft.rest.ClientResponse
+import io.fusionauth.client.FusionAuthClient
+import io.fusionauth.domain.oauth2.AccessToken
 import org.scalatra._
 import pdi.jwt.{JwtAlgorithm, JwtClaim, JwtUpickle}
+import t.common.shared.sample.Group
 import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
-import t.model.sample.{Attribute, CoreParameter}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
+import t.model.sample.{Attribute, CoreParameter}
 import t.platform.mirna.TargetTableBuilder
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
+import t.util.LRUCache
 import t.viewer.server.Conversions.asJavaSample
-import t.viewer.server.matrix.{ControllerParams, ExpressionRow, MatrixController, PageDecorator}
+import t.viewer.server.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.viewer.server.rpc.NetworkLoader
 import t.viewer.server.{AssociationMasterLookup, Configuration, PlatformRegistry}
+import t.viewer.shared._
 import t.viewer.shared.mirna.MirnaSource
 import t.viewer.shared.network.Interaction
-import t.viewer.shared._
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
-import java.time.Instant
+import java.security.{MessageDigest, SecureRandom}
 import java.text.SimpleDateFormat
-import java.util.{Base64, Date}
-import javax.servlet.ServletContext
-import t.common.shared.sample.Group
-import t.util.LRUCache
-import ujson.Value.Selector
-
+import java.time.Instant
 import java.util
+import java.util.{Base64, Date}
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
+import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
 
 
@@ -450,6 +452,79 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       }
     }
   }
+
+  // TODO get these from environment variables rather than hardcoding
+  val fusionAuthBaseUrl = "http://localhost:9011"
+  val fusionAuthClientId = "4b65d0c8-9538-43ac-a006-9b863bfdb0b4"
+  val fusionAuthClientSecret = "FbC6no_Gq6TH75f6QGHrbRcm4yM44Q38vZOC_IDQ87s"
+  val redirectAfterAuthUrl = "http://localhost:8888/json/oauth-redirect"
+
+  val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthBaseUrl);
+  val random = new SecureRandom()
+
+  def generatePKCEVerifier(): String =  {
+    val codeVerifier = new Array[Byte](32);
+    random.nextBytes(codeVerifier)
+    Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier)
+  }
+
+  def generatePKCEChallenge(codeVerifier: String): String = {
+    val bytes = codeVerifier.getBytes("US-ASCII");
+    val messageDigest = MessageDigest.getInstance("SHA-256");
+    messageDigest.update(bytes, 0, bytes.length);
+    val digest = messageDigest.digest();
+    Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
+  }
+
+  get("/login") {
+    val verifier = generatePKCEVerifier()
+    session("verifier") = verifier
+    val challenge = generatePKCEChallenge(verifier)
+
+    redirect(s"$fusionAuthBaseUrl/oauth2/authorize?client_id=$fusionAuthClientId" +
+      s"&response_type=code&redirect_uri=$redirectAfterAuthUrl"
+      + s"&scope=openid offline_access&code_challenge=$challenge&code_challenge_method=S256")
+  }
+
+  get("/oauth-redirect") {
+    // TODO this should be a different status code/message
+    if (!session.contains("verifier")) halt(401, "Unauthenticated")
+
+    val authorizationCode = params("code")
+    val verifier: String = session("verifier").asInstanceOf[String]
+
+    val response = fusionAuthClient.exchangeOAuthCodeForAccessTokenUsingPKCE(authorizationCode,
+      fusionAuthClientId, fusionAuthClientSecret, redirectAfterAuthUrl, verifier)
+
+    if (response.wasSuccessful()) {
+      val responseContent = response.successResponse
+      val accessToken = responseContent.token
+      val refreshToken = responseContent.refreshToken
+      println(s"Got access token $accessToken and refresh token $refreshToken")
+      s"Got access token $accessToken and refresh token $refreshToken"
+    } else {
+      if (response.errorResponse != null) {
+        response.errorResponse.toString
+      } else if (response.exception != null) {
+        response.exception.toString
+      } else {
+        s"Failed; status = ${response.status}"
+      }
+
+    }
+  }
+
+//  val csrfTokenLength = 60
+//  val csrfBuffer = new Array[Char](csrfTokenLength)
+//  val random = new SecureRandom()
+//  val csrfCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".toCharArray()
+//
+//  def generateCsrfToken() {
+//    for (i <- 0 until csrfTokenLength) {
+//      csrfBuffer(i) = csrfCharacters(random.nextInt(csrfCharacters.length))
+//    }
+//    new String(csrfBuffer)
+//  }
 
   post("/authenticate") {
     val params = ujson.read(request.body)
