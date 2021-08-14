@@ -448,31 +448,26 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     val authorizationCode = params("code")
     val verifier: String = session("verifier").asInstanceOf[String]
 
-    val response = fusionAuthClient.exchangeOAuthCodeForAccessTokenUsingPKCE(authorizationCode,
+    val tokenResponse = fusionAuthClient.exchangeOAuthCodeForAccessTokenUsingPKCE(authorizationCode,
       fusionAuthClientId, fusionAuthClientSecret, redirectAfterAuthUrl, verifier)
 
-    if (response.wasSuccessful()) {
-      val responseContent = response.successResponse
+    if (tokenResponse.wasSuccessful()) {
+      val responseContent = tokenResponse.successResponse
       val accessToken = responseContent.token
       val refreshToken = responseContent.refreshToken
 
-      val decoder = new JWTDecoder()
-      val jwt = decoder.decode(accessToken,
-        HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
-        RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
-      )
-      println("Manually decoded jwt:")
-      println(jwt.toString())
+      response.addHeader("Set-Cookie", s"__Host-jwt=$accessToken; Secure; Path=/; HttpOnly; SameSite=Strict")
+      response.addHeader("Set-Cookie", s"__Host-refreshToken=$refreshToken; Secure; Path=/; HttpOnly; SameSite=Strict")
 
       println(s"Got access token $accessToken and refresh token $refreshToken")
       s"Got access token $accessToken and refresh token $refreshToken"
     } else {
-      if (response.errorResponse != null) {
-        response.errorResponse.toString
-      } else if (response.exception != null) {
-        response.exception.toString
+      if (tokenResponse.errorResponse != null) {
+        tokenResponse.errorResponse.toString
+      } else if (tokenResponse.exception != null) {
+        tokenResponse.exception.toString
       } else {
-        s"Failed; status = ${response.status}"
+        s"Failed; status = ${tokenResponse.status}"
       }
 
     }
