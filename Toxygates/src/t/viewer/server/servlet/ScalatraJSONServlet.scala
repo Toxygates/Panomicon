@@ -469,7 +469,25 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       } else {
         s"Failed; status = ${tokenResponse.status}"
       }
+    }
+  }
 
+  get("/check-cookie") {
+    val cookies = request.getCookies
+    try {
+      val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").get
+      //val refreshCookie = cookies.find(c => c.getName == "__Host-refreshToken").get
+
+      val jwt = new JWTDecoder().decode(tokenCookie.getValue,
+        HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
+        RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
+      )
+      jwt.toString
+    } catch {
+      case e: Throwable => {
+        println(s"Error: ${e.toString}")
+        s"Error: ${e.toString}"
+      }
     }
   }
 
