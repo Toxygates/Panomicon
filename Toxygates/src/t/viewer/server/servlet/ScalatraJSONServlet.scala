@@ -27,6 +27,7 @@ import upickle.default.{macroRW, ReadWriter => RW, _}
 
 import java.security.{MessageDigest, SecureRandom}
 import java.text.SimpleDateFormat
+import java.util
 import java.util.{Base64, Date}
 import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
@@ -504,8 +505,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
           Right(s"Error getting refresh token: ${refreshResponse.exception.toString()}")
         }
       } else {
-        val roles = jwt.getList("roles")
-        println(roles)
         Left(jwt)
       }
     } catch {
@@ -519,6 +518,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
     getJwtToken() match {
       case Left(jwt) => jwt.toString()
       case Right(error) => error
+    }
+  }
+
+  get("/roles") {
+    getJwtToken() match {
+      case Left(jwt) => {
+        val roles = jwt.getList("roles").asInstanceOf[util.List[String]].asScala
+        writeJs(roles)
+      }
+      case Right(error) => halt(401)
     }
   }
 
