@@ -179,7 +179,7 @@ object PlatformManager extends ManagerTool {
       val platforms = new PlatformStore(context.config)
       try {
         args(0) match {
-          case "add" | "addEnsembl" =>
+          case "add" | "addEnsembl" | "addAffy" =>
             val pfFormat = format(args(0))
 
             val title = require(stringOption(args, "-title"),
