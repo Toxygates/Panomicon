@@ -38,12 +38,20 @@ class CSVRawExpressionData(exprFile: String,
 
   import t.util.DoThenClose._
 
+  //Consistency check
+  for {callFileR <- callFile} {
+    val notInCallsSamples = samplesInFile(callFileR).toSet -- samplesInFile(exprFile)
+    if (notInCallsSamples.nonEmpty) {
+      throw new Exception(s"Invalid CSVRawExpressionData - the following samples have no P/A calls available: ${notInCallsSamples mkString ","}")
+    }
+  }
+
   protected val expectedColumns = expectedSamples.map(_ + 1)
 
   lazy val defaultCalls = probes.map(_ => 'P')
 
-  val exprCache: CMap[Sample, Array[Double]] = readValuesFromTable(exprFile, _.toDouble)
-  val callsCache: CMap[Sample, Array[Char]] = callFile match {
+  lazy val exprCache: CMap[Sample, Array[Double]] = readValuesFromTable(exprFile, _.toDouble)
+  lazy val callsCache: CMap[Sample, Array[Char]] = callFile match {
     case Some(f) => readValuesFromTable(f, x => unquote(x)(0))
     case _ => Map()
   }
