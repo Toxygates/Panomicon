@@ -38,12 +38,20 @@ class CSVRawExpressionData(exprFile: String,
 
   import t.util.DoThenClose._
 
+  //Consistency check
+  for {callFileR <- callFile} {
+    val notInCallsSamples = samplesInFile(callFileR).toSet -- samplesInFile(exprFile)
+    if (notInCallsSamples.nonEmpty) {
+      throw new Exception(s"Invalid CSVRawExpressionData - the following samples have no P/A calls available: ${notInCallsSamples mkString ","}")
+    }
+  }
+
   protected val expectedColumns = expectedSamples.map(_ + 1)
 
   lazy val defaultCalls = probes.map(_ => 'P')
 
-  val exprCache: CMap[Sample, Array[Double]] = readValuesFromTable(exprFile, _.toDouble)
-  val callsCache: CMap[Sample, Array[Char]] = callFile match {
+  lazy val exprCache: CMap[Sample, Array[Double]] = readValuesFromTable(exprFile, _.toDouble)
+  lazy val callsCache: CMap[Sample, Array[Char]] = callFile match {
     case Some(f) => readValuesFromTable(f, x => unquote(x)(0))
     case _ => Map()
   }
@@ -51,11 +59,11 @@ class CSVRawExpressionData(exprFile: String,
   private def samplesInFile(file: String) = {
     val firstLine = doThenClose(Source.fromFile(file))(_.getLines.next)
     val columns = firstLine.split(",", -1).map(_.trim)
-    columns.drop(1).toArray.map(s => Sample(unquote(s)))
+    columns.drop(1).map(s => Sample(unquote(s)))
   }
 
   override lazy val samples: Array[Sample] =
-    samplesInFile(exprFile).distinct.toArray
+    samplesInFile(exprFile).distinct
 
   override lazy val probes: Array[String] =
     probesInFile(exprFile).toArray
@@ -84,13 +92,13 @@ class CSVRawExpressionData(exprFile: String,
     })
   }
 
-  protected def probeBuffer[T] = {
+  protected def probeBuffer[T]: ArrayBuffer[T] = {
     val r = ArrayBuffer[T]()
     r.sizeHint(probes.size)
     r
   }
 
-  protected def sampleBuffer[T] = {
+  protected def sampleBuffer[T]: ArrayBuffer[T] = {
     val r = ArrayBuffer[T]()
     r.sizeHint(samples.size)
     r
@@ -99,9 +107,9 @@ class CSVRawExpressionData(exprFile: String,
   private[this] def unquote(x: String) = x.replace("\"", "")
 
   import java.lang.{Double => JDouble}
-  override def data(ss: Iterable[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
-    val exprs = filterExprValues(ss.toSeq.distinct)
-    val calls = filterCalls(ss.toSeq.distinct)
+  override def data(ss: List[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
+    val exprs = filterExprValues(ss.distinct)
+    val calls = filterCalls(ss.distinct)
 
     exprs.map { case (s, col) => {
         val sampleCalls = calls.getOrElse(s, defaultCalls)
@@ -115,7 +123,7 @@ class CSVRawExpressionData(exprFile: String,
   }
 
   def data(s: Sample): CMap[ProbeId, FoldPExpr] = {
-    data(Set(s)).headOption.map(_._2).getOrElse(Map())
+    data(List(s)).headOption.map(_._2).getOrElse(Map())
   }
 
   override def calls(x: Sample): Array[Option[Char]] =

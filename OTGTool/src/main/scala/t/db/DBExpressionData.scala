@@ -94,7 +94,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
    * Should be a subset of the samples requested at construction.
    * Does nothing if the requested samples have already been cached.
    */
-  override def loadData(ss: Iterable[Sample]) {
+  override def loadData(ss: List[Sample]) {
     if (((ss.toSet -- currentSamples.toSet).nonEmpty)) {
       val loadSamples = reader.sortSamples(ss)
       logEvent(s"DB read $loadSamples")
@@ -106,7 +106,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
   }
 
   def data(s: Sample): collection.Map[ProbeId, FoldPExpr] = {
-    loadData(Seq(s))
+    loadData(List(s))
     val pec = (probes.iterator zip (exprs(s).iterator zip calls(s).iterator))
     mutable.Map.empty ++ pec.collect { case (p, (Some(exp), Some(call))) =>
       p -> (exp, call, 0.0)
@@ -117,7 +117,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
    * Obtain calls for all probes.
    */
   override def calls(x: Sample): Array[Option[Char]] = {
-    loadData(Seq(x))
+    loadData(List(x))
     currentCalls(currentSamples indexOf x).toArray
   }
 
@@ -125,7 +125,7 @@ class DBColumnExpressionData(reader: MatrixDBReader[_ <: ExprValue],
    * Obtain expression values for all probes.
    */
   override def exprs(x: Sample): Array[Option[Double]] = {
-    loadData(Seq(x))
+    loadData(List(x))
     currentExprs(currentSamples indexOf x).toArray
   }
 

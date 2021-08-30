@@ -247,7 +247,8 @@ class BatchManager(context: Context) {
 
     for {
       metadata <- readTSVMetadata(metadataFile)
-      _ <- newMetadataCheck(batch.title, metadata, config, append) andThen
+      data <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
+      _ <- newMetadataCheck(batch.title, metadata, config, append, Some(data)) andThen
         addMetadata(batch, metadata, append) andThen
         addEnums(metadata) andThen
         // Note that we rely on probe maps, sample maps etc in matrixContext
@@ -281,16 +282,14 @@ class BatchManager(context: Context) {
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
     val probeMap = new ProbeStore(config.triplestoreConfig).platformsAndProbes
-    val probes = platforms.flatMap(probeMap(_)).toSeq
+    val probes = platforms.flatMap(probeMap(_))
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
-
-    val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
 
     val dbReader = () => config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
 
     val recalculateChunks = (for (unitChunk <- units.grouped(50);
-      sampleChunk = unitChunk.toSeq.flatMap(u => u._1 ++ u._2).distinct;
+      sampleChunk = unitChunk.flatMap(u => u._1 ++ u._2).distinct;
       filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
     ) yield {
       for {
@@ -388,7 +387,8 @@ class BatchManager(context: Context) {
       deleteRDF(title) //Also removes the "batch record"
   }
 
-  def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean) =
+  def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean,
+                       expressionData: Option[ColumnExpressionData]) =
       new AtomicTask[Unit]("Check validity of new metadata") {
     override def run(): Unit = {
         checkValidIdentifier(title, "batch ID")
@@ -396,7 +396,7 @@ class BatchManager(context: Context) {
         val batches = new BatchStore(baseConfig.triplestoreConfig)
         val batchExists = batches.getList().contains(title)
         if (append && !batchExists) {
-          throw new Exception(s"Cannot append to nonexsistent batch $title")
+          throw new Exception(s"Cannot append to nonexistent batch $title")
         } else if (!append && batchExists) {
           throw new Exception(s"Cannot create new batch $title: batch already exists")
         }
@@ -409,6 +409,16 @@ class BatchManager(context: Context) {
         val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
         if (foundInBatch.size > 0) {
           log(s"Will replace samples ${foundInBatch mkString ", "}")
+        }
+
+        for {exprData <- expressionData} {
+          val samples = exprData.samples.map(_.sampleId)
+          val notFoundInExprData = metadataIds.toSet -- samples
+          if (notFoundInExprData.nonEmpty) {
+            throw new Exception(s"The samples ${notFoundInExprData mkString ", "} are defined in the metadata, but not defined in the expression data.")
+          } else {
+            log("All samples are defined in the expression data.")
+          }
         }
 
         val existingSamples = samples.getList().toSet

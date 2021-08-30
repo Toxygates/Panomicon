@@ -46,7 +46,7 @@ class IDConverter(raw: ColumnExpressionData, conversion: Map[ProbeId, Iterable[P
 
   def samples = raw.samples
 
-  override def loadData(ss: Iterable[Sample]) {
+  override def loadData(ss: List[Sample]) {
     raw.loadData(ss)
   }
 

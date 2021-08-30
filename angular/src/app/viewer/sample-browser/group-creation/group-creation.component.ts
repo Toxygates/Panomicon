@@ -15,7 +15,6 @@ export class GroupCreationComponent  {
   saveSampleGroup(): void {
     this.sampleGroupSaved.emit(this.sampleGroupName);
     this.sampleGroupName = undefined;
-    this.collapsed = true;
   }
 
 }

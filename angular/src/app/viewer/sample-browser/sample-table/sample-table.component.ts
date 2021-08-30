@@ -106,6 +106,7 @@ export class SampleTableComponent implements AfterViewInit {
       this.toastr.success('Group name: ' + sampleGroupName, 'Sample group saved');
       this.selectedTreatmentGroups.clear();
 
+      this.sampleCreationIsCollapsed =  true;
       this.tabulator?.redraw();
     }
   }
