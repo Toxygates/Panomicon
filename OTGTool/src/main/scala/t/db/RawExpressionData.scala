@@ -35,7 +35,7 @@ trait ColumnExpressionData extends Closeable {
    * Pre-cache data for efficiency, if the implementation supports it.
    * Calling this method is optional.
    */
-  def loadData(ss: Iterable[Sample]) {}
+  def loadData(ss: List[Sample]) {}
 
   protected val sampleChunkSize = 100
 
@@ -44,7 +44,7 @@ trait ColumnExpressionData extends Closeable {
    */
   def samplesAndData(forSamples: Array[Sample]): Iterator[(Sample, Array[(ProbeId, FoldPExpr)])] = {
     forSamples.grouped(sampleChunkSize).flatMap(ss => {
-      loadData(ss)
+      loadData(ss.toList)
       ss.iterator.map(s => (s, data(s).toArray))
     })
   }
@@ -53,11 +53,11 @@ trait ColumnExpressionData extends Closeable {
    * Iterate through the data in this source in the most efficient way.
    */
   def samplesAndData: Iterator[(Sample, Array[(ProbeId, FoldPExpr)])] =
-    samplesAndData(samples.toArray)
+    samplesAndData(samples)
 
   def data(s: Sample): CMap[ProbeId, FoldPExpr]
 
-  def data(ss: Iterable[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
+  def data(ss: List[Sample]): CMap[Sample, CMap[ProbeId, FoldPExpr]] = {
     loadData(ss)
     Map() ++ ss.map(s => s -> data(s))
   }

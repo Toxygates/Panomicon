@@ -281,16 +281,14 @@ class BatchManager(context: Context) {
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
     val probeMap = new ProbeStore(config.triplestoreConfig).platformsAndProbes
-    val probes = platforms.flatMap(probeMap(_)).toSeq
+    val probes = platforms.flatMap(probeMap(_))
     val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
-
-    val treatedSamples = metadata.samples.filter(!metadata.isControl(_))
 
     val dbReader = () => config.data.absoluteDBReader
     val units = metadata.treatedControlGroups(metadata.samples)
 
     val recalculateChunks = (for (unitChunk <- units.grouped(50);
-      sampleChunk = unitChunk.toSeq.flatMap(u => u._1 ++ u._2).distinct;
+      sampleChunk = unitChunk.flatMap(u => u._1 ++ u._2).distinct;
       filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
     ) yield {
       for {
@@ -396,7 +394,7 @@ class BatchManager(context: Context) {
         val batches = new BatchStore(baseConfig.triplestoreConfig)
         val batchExists = batches.getList().contains(title)
         if (append && !batchExists) {
-          throw new Exception(s"Cannot append to nonexsistent batch $title")
+          throw new Exception(s"Cannot append to nonexistent batch $title")
         } else if (!append && batchExists) {
           throw new Exception(s"Cannot create new batch $title: batch already exists")
         }
