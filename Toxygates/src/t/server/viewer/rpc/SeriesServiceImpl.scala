@@ -29,7 +29,7 @@ import t.shared.common.{Dataset, SeriesType}
 import t.shared.viewer.{MatchResult, NoSuchProbeException, RankRule}
 import t.sparql._
 import t.util.SafeMath
-import t.viewer.client.rpc.SeriesService
+import t.gwt.viewer.client.rpc.SeriesService
 import t._
 
 import scala.language.implicitConversions

@@ -31,7 +31,7 @@ import t.model.SampleClass
 import t.model.sample.{Attribute, CoreParameter, SampleLike}
 import t.sparql._
 import t.sparql.secondary._
-import t.viewer.client.rpc._
+import t.gwt.viewer.client.rpc._
 import t.server.viewer.CSVHelper.CSVFile
 import t.server.viewer.Conversions._
 import t.server.viewer.{rpc, _}

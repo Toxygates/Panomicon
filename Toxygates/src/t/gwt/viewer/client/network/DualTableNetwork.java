@@ -1,0 +1,133 @@
+/*
+ * Copyright (c) 2012-2019 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package t.gwt.viewer.client.network;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.annotation.Nullable;
+
+import com.google.gwt.view.client.SingleSelectionModel;
+
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.ExpressionRow;
+import t.gwt.viewer.client.table.AssociationSummary;
+import t.gwt.viewer.client.table.DualTableView.DualMode;
+import t.gwt.viewer.client.table.ExpressionTable;
+
+public class DualTableNetwork implements NetworkViewer {
+  private final ExpressionTable mainTable, sideTable;
+  
+  private final DualMode dualMode;
+  
+  private Logger logger = SharedUtils.getLogger("dualTableNetwork");
+  
+  /**
+   * An interaction network displayed in two ExpressionTables.
+   * 
+   * @param mainTable The table that shows the main nodes (controlling the network display)
+   * @param sideTable The table that shows the secondary nodes.
+   * @param dualMode The mode of the network (encodes information about the types of nodes in each
+   *        table, and how they are linked
+   */
+  public DualTableNetwork(ExpressionTable mainTable, ExpressionTable sideTable,                          
+      DualMode dualMode, int maxSideRows) {
+    this.mainTable = mainTable;
+    this.sideTable = sideTable;
+    this.dualMode = dualMode;
+  }
+    
+  @Nullable 
+  private String getSelectedNode(ExpressionTable table) {
+    ExpressionRow r =
+        ((SingleSelectionModel<ExpressionRow>) table.selectionModel()).getSelectedObject();
+    return (r != null ? r.getProbe() : null);
+  }
+  
+  @Override
+  public @Nullable String getSelectedSourceNode() {
+    return getSelectedNode(mainTable);    
+  }
+  
+  @Override
+  public @Nullable String getSelectedDestNode() {
+    return getSelectedNode(sideTable);    
+  }
+
+  @Override
+  public void setHighlightedSourceNodes(Set<String> selected) {
+    mainTable.setIndicatedProbes(selected, true);
+  }
+  
+  @Override
+  public void setHighlightedDestNodes(Set<String> selected) {
+    sideTable.setIndicatedProbes(selected, true);
+  }
+
+  @Override
+  public void onSourceSelectionChanged() {      
+    setHighlightedDestNodes(getIndicatedRows(getSelectedSourceNode(), true));
+  }
+
+  @Override
+  public void onDestSelectionChanged() {    
+    setHighlightedSourceNodes(getIndicatedRows(getSelectedDestNode(), false));    
+  }
+  
+  protected Set<String> getIndicatedRows(@Nullable String selected, boolean fromMain) {
+    Map<String, Collection<String>> lookup = fromMain ? linkingMap() : mappingSummary.getReverseMap();    
+    if (selected != null) {   
+      if (lookup != null && lookup.containsKey(selected)) {          
+        return new HashSet<String>(lookup.get(selected));        
+      } else {
+        logger.warning("No association indications for " + selected);
+      }
+    }                
+    return new HashSet<String>();
+  }
+  
+//Maps main table to side table via a column.
+  protected AssociationSummary<ExpressionRow> mappingSummary;
+  
+  /**
+   * Maps mRNA-miRNA in forward mode, miRNA-mRNA in reverse mode
+   * @return
+   */
+  public Map<String, Collection<String>> linkingMap() {    
+    return mappingSummary.getFullMap();
+  }
+
+  /**
+   * To be called each time the main table rows have changed.
+   */
+  public void updateLinkingMap() {
+    mappingSummary = mainTable.associations().associationSummary(dualMode.linkingType);
+    if (sideTable.chosenColumns().isEmpty()) {
+      return;
+    }
+    
+    if (mappingSummary == null) {
+      logger.info("Unable to get miRNA-mRNA summary - not updating side table probes");     
+    }          
+  }
+}

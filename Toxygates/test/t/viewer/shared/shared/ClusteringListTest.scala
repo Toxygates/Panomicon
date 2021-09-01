@@ -25,7 +25,7 @@ import t.shared.viewer._
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import t.viewer.client.storage.ItemListPacker
+import t.gwt.viewer.client.storage.ItemListPacker
 import t.shared.viewer.clustering.{Algorithm, ClusteringList, Distances, Methods}
 
 @RunWith(classOf[JUnitRunner])

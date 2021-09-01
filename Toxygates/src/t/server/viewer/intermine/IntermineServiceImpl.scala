@@ -21,7 +21,7 @@ package t.server.viewer.intermine
 
 import org.intermine.webservice.client.results.TabTableResult
 import t.sparql.ProbeStore
-import t.viewer.client.intermine.IntermineService
+import t.gwt.viewer.client.intermine.IntermineService
 import t.server.viewer.{Configuration, PlatformRegistry}
 import t.server.viewer.rpc.{TServiceServlet}
 import t.shared.viewer.StringList

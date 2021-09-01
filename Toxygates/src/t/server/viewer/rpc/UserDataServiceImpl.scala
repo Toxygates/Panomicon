@@ -27,7 +27,7 @@ import t.db.Metadata
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter.{Platform, Treatment}
 import t.model.sample.OTGAttribute.{Compound, DoseLevel, ExposureTime, Organ, Organism, Repeat, TestType}
-import t.viewer.client.rpc.UserDataService
+import t.gwt.viewer.client.rpc.UserDataService
 import t.server.viewer.Configuration
 
 /**

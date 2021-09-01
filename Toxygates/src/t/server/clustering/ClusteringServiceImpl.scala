@@ -22,7 +22,7 @@ package t.server.clustering
 import java.util.{List => JList}
 import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import t.viewer.client.clustering.ClusteringService
+import t.gwt.viewer.client.clustering.ClusteringService
 import t.shared.viewer.clustering.Algorithm
 
 abstract class ClusteringServiceImpl[C, R] extends RemoteServiceServlet with ClusteringService[C, R] {

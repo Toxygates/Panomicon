@@ -1,0 +1,120 @@
+/* Based on com/google/gwt/user/cellview/client/DataGrid.gss and
+   com/google/gwt/user/cellview/client/CellTable.gss
+   
+   All the styling in this stylesheet is from the original GWT stylesheets.
+   Please only remove declarations from this file; additional styling should
+   be put in OTGViewer.gss.   
+   
+   Note: the DataGrid.Style and Celltable.Style interfaces requires 
+   certain selectors to be present, so empty declaration blocks 
+   shouldn't be deleted.
+*/
+
+@external '*';
+
+@def SELECTION_BORDER_WIDTH 2px;
+
+.dataGridWidget, .cellTableWidget {
+}
+
+.dataGridFirstColumn, .cellTableFirstColumn {
+}
+
+.dataGridLastColumn, .cellTableLastColumn {
+}
+
+.dataGridFooter, .cellTableFooter {
+  padding: 3px;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dataGridHeader, .cellTableHeader {
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dataGridCell, .cellTableCell {
+  overflow: hidden;
+}
+
+.dataGridFirstColumnFooter, .cellTableFirstColumnFooter {
+  
+}
+
+.dataGridFirstColumnHeader, .cellTableFirstColumnHeader {
+  
+}
+
+.dataGridLastColumnFooter, .cellTableLastColumnFooter {
+  
+}
+
+.dataGridLastColumnHeader, .cellTableLastColumnHeader {
+  
+}
+
+.dataGridSortableHeader, .cellTableSortableHeader {
+  cursor: pointer;
+  cursor: hand;
+}
+
+.dataGridSortableHeader:hover, .cellTableSortableHeader:hover {
+}
+
+.dataGridSortedHeaderAscending, .cellTableSortedHeaderAscending {
+  
+}
+
+.dataGridSortedHeaderDescending, .cellTableSortedHeaderDescending {
+  
+}
+
+.dataGridEvenRow, .cellTableEvenRow {
+}
+
+.dataGridEvenRowCell, .cellTableEvenRowCell {
+}
+
+.dataGridOddRow, .cellTableOddRow {
+}
+
+.dataGridOddRowCell, .cellTableOddRowCell {
+}
+
+.dataGridHoveredRow, .cellTableHoveredRow {
+}
+
+.dataGridHoveredRowCell, .cellTableHoveredRowCell {
+}
+
+.dataGridKeyboardSelectedRow, .cellTableKeyboardSelectedRow {
+  background: #ffc;
+}
+
+.dataGridKeyboardSelectedRowCell, .cellTableKeyboardSelectedRowCell {
+  border: selectionBorderWidth solid #ffc;
+}
+
+.dataGridSelectedRow, .cellTableSelectedRow {
+  color: white;
+  height: auto;
+  overflow: auto;
+}
+
+.dataGridSelectedRowCell, .cellTableSelectedRowCell {
+  border: selectionBorderWidth solid #628cd5;
+}
+
+/**
+ * The keyboard selected cell is visible over selection.
+ */
+.dataGridKeyboardSelectedCell, .cellTableKeyboardSelectedCell {
+  border: selectionBorderWidth solid #d7dde8;
+}
+
+.cellTableLoading {
+  margin: 30px;
+}

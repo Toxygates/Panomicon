@@ -22,7 +22,7 @@ package t.shared.viewer
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import t.viewer.client.storage.ItemListPacker
+import t.gwt.viewer.client.storage.ItemListPacker
 
 @RunWith(classOf[JUnitRunner])
 class StringListTest extends TTestSuite {

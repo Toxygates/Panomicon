@@ -24,7 +24,7 @@ import t.model.SampleClass
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.model.sample.{OTGAttribute, OTGAttributeSet}
-import t.viewer.client.storage.Packer
+import t.gwt.viewer.client.storage.Packer
 
 /**
  * Tests for unpacking model classes from string input.

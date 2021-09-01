@@ -28,7 +28,7 @@ import t.shared.common.ValueType
 import t.shared.common.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
 import t.platform.{OrthologMapping, Probe}
-import t.viewer.client.rpc.{MatrixService, NetworkService}
+import t.gwt.viewer.client.rpc.{MatrixService, NetworkService}
 import t.server.viewer._
 import t.server.viewer.matrix._
 import t.shared.viewer._

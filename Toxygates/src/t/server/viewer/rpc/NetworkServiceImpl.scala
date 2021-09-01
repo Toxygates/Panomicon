@@ -29,7 +29,7 @@ import t.intermine.{MiRNATargets, MiRawImporter}
 import t.platform.mirna._
 import t.platform.mirna.TargetTable
 import t.sparql.ProbeStore
-import t.viewer.client.rpc.NetworkService
+import t.gwt.viewer.client.rpc.NetworkService
 import t.server.viewer.{CSVHelper, Configuration, MirnaSources, PlatformRegistry}
 import t.server.viewer.Conversions._
 import t.server.viewer.matrix.ControllerParams

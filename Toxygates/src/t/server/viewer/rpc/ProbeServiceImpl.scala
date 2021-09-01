@@ -30,7 +30,7 @@ import t.platform.mirna.TargetTable
 import t.sparql.secondary._
 import t.sparql.{ProbeStore, SampleFilter, SampleStore}
 import t.util.{PeriodicRefresh, Refreshable}
-import t.viewer.client.rpc.ProbeService
+import t.gwt.viewer.client.rpc.ProbeService
 import t.server.viewer.Conversions.{asJavaSample, asSpecies}
 import t.server.viewer.servlet.GeneSetServlet
 import t.server.viewer.{Configuration, _}

@@ -113,7 +113,7 @@
       <arg value="war"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
-      <arg value="t.viewer.Toxygates"/>
+      <arg value="t.gwt.viewer.Toxygates"/>
       <arg value="t.gwt.admin.AdminConsole"/>
     </java>
 
@@ -130,7 +130,7 @@
       <jvmarg value="-Xmx3g"/>
       <arg value="-bindAddress"/>
       <arg value="0.0.0.0"/>
-      <arg value="t.viewer.Toxygates"/>
+      <arg value="t.gwt.viewer.Toxygates"/>
       <arg value="t.gwt.admin.AdminConsole"/>
     </java>
   </target>

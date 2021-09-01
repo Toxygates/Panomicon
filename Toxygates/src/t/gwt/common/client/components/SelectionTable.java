@@ -48,7 +48,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 
   public interface Resources extends CellTable.Resources {
     @Override
-    @Source("t/viewer/client/table/Tables.gss")
+    @Source("t/gwt/viewer/client/table/Tables.gss")
     CellTable.Style cellTableStyle();
   }
 
