@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import t.admin.shared.PlatformType;
+import t.shared.admin.PlatformType;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
 import t.shared.common.maintenance.MaintenanceConstants;

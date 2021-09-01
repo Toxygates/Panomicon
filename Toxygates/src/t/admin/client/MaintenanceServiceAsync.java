@@ -19,7 +19,7 @@
 
 package t.admin.client;
 
-import t.admin.shared.PlatformType;
+import t.shared.admin.PlatformType;
 import t.common.client.rpc.BatchOperationsAsync;
 import t.shared.common.*;
 import t.shared.common.maintenance.Batch;

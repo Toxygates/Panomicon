@@ -7,6 +7,6 @@
 <module rename-to="t.shared.Shared">
 	<inherits name="t.model.Model" />
 
+	<source path='admin' />
 	<source path='common' />
-	<source path='viewer' />
 </module>

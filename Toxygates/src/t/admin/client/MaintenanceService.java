@@ -22,7 +22,7 @@ package t.admin.client;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-import t.admin.shared.PlatformType;
+import t.shared.admin.PlatformType;
 import t.common.client.rpc.BatchOperations;
 import t.shared.common.*;
 import t.shared.common.maintenance.Instance;

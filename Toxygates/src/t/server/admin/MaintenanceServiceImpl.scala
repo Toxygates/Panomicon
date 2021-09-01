@@ -21,7 +21,7 @@ package t.server.admin
 
 import javax.servlet.http.HttpSession
 import t.admin.client.MaintenanceService
-import t.admin.shared.PlatformType
+import t.shared.admin.PlatformType
 import t.server.common.maintenance.BatchOpsImpl
 import t.shared.common.maintenance.MaintenanceConstants._
 import t.shared.common.maintenance.{Instance, _}
