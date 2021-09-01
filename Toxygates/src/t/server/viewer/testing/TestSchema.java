@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package t.common.testing;
+package t.server.viewer.testing;
 
 import t.model.sample.OTGAttribute;
 import t.shared.common.DataSchema;

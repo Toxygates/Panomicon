@@ -19,33 +19,27 @@
 
 package t.server.viewer.network
 
-import scala.collection.JavaConverters._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import t.server.viewer.rpc.Conversions._
-import t.{Context, TTestSuite}
-import t.shared.common.ValueType
-import t.shared.common.sample.Group
 import t.db.testing.NetworkTestData
 import t.platform.mirna._
 import t.server.viewer.Conversions._
-import t.server.viewer.PlatformRegistry
-import t.server.viewer.MemoryPlatforms
-import t.server.viewer.matrix.ControllerParams
-import t.server.viewer.matrix.ExtFoldBuilder
-import t.server.viewer.matrix.MatrixController
+import t.server.viewer.matrix.{ControllerParams, ExtFoldBuilder, ManagedMatrix, MatrixController}
+import t.server.viewer.testing.TestData
+import t.server.viewer.{MemoryPlatforms, PlatformRegistry, testing}
+import t.shared.common.ValueType
+import t.shared.common.sample.Group
 import t.shared.viewer.network.Network
-import t.shared.viewer.ColumnFilter
-import t.server.viewer.matrix.ManagedMatrix
-import t.platform.mirna.TargetTable
+import t.{Context, TTestSuite}
+
+import scala.collection.JavaConverters._
 
 @RunWith(classOf[JUnitRunner])
 class ManagedNetworkTest extends TTestSuite {
-  import t.common.testing.TestData.groups
   import t.db.testing.NetworkTestData._
 
   NetworkTestData.populate()
-  val dataSchema = t.common.testing.TestData.dataSchema
+  val dataSchema = TestData.dataSchema
   val mrnaBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
     mrnaIds)
   val mirnaBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
@@ -59,7 +53,7 @@ class ManagedNetworkTest extends TTestSuite {
 
   val platforms: PlatformRegistry = new PlatformRegistry(platformLoader)
 
-  val mrnaGroups = t.common.testing.TestData.groups take 5
+  val mrnaGroups = testing.TestData.groups take 5
 
   test("basic") {
     val main = mrnaBuilder.build(mrnaGroups, false)

@@ -27,13 +27,14 @@ import t.shared.common.sample._
 import t.db.testing._
 import t.db.testing.DBTestData._
 import org.scalactic.source.Position.apply
+import t.server.viewer.testing.TestData
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {
   import DBTestData._
-  import t.common.testing.TestData.groups
+  import t.server.viewer.testing.TestData.groups
 
-  val schema = t.common.testing.TestData.dataSchema
+  val schema = TestData.dataSchema
 
   //Note: the FakeContext used for testing doesn't define an absoluteDBReader currently
   def normBuilder = new NormalizedBuilder(false, context.absoluteDBReader,

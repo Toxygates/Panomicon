@@ -26,6 +26,7 @@ import t.server.viewer.AssociationResolverTest
 import t.shared.viewer.RuleType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.server.viewer.testing.TestConfiguration
 import t.shared.viewer.{RankRule, RuleType}
 
 @RunWith(classOf[JUnitRunner])
@@ -33,7 +34,7 @@ class SeriesServiceTest extends TTestSuite {
 
   var s: SeriesServiceImpl = _
   before {
-    val conf = t.viewer.testing.TestConfiguration.config
+    val conf = TestConfiguration.config
     s = new SeriesServiceImpl()
     s.tServletInit(conf)
     s.localInit(conf)

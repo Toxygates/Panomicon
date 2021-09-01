@@ -43,7 +43,8 @@ object AssociationResolverTest {
 @RunWith(classOf[JUnitRunner])
 class AssociationResolverTest extends TTestSuite {
 
-  import t.viewer.testing.TestConfiguration
+  import t.server.viewer.testing.TestConfiguration
+
   def conf = TestConfiguration.config
   def baseConf = new BaseConfig(TestConfiguration.tc.tsConfig,
       TestConfiguration.tc.dataConfig)

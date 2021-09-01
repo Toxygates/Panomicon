@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
 import t.shared.common.sample.Group
-import t.common.testing.{TestData => OTestData}
+import t.server.viewer.testing.{TestData => OTestData}
 import t.db.ExprValue
 import t.db.testing.DBTestData
 import t.server.viewer.Conversions._
