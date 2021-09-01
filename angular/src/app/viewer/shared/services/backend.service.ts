@@ -76,4 +76,15 @@ export class BackendService {
         })
       )
   }
+
+  getRoles(): Observable<string[]> {
+    return this.http.get<string[]>(this.serviceUrl + 'roles')
+      .pipe(
+        tap(() => console.log('fetched roles')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error fetching roles: ${error.message}`)
+          throw error;
+        })
+      )
+  }
 }

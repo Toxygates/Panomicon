@@ -20,6 +20,8 @@ const routes: Routes = [
         { path: '**', component: PageNotFoundComponent }
       ]
   },
+  { path: 'admin', loadChildren: () =>
+          import('./admin/admin.module').then(m => m.AdminModule) },
   { path: '',   redirectTo: 'viewer/sample-browser', pathMatch: 'full' },
   { path: '**', component: PageNotFoundComponent }
 ];
