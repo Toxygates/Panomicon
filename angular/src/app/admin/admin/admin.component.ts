@@ -30,4 +30,18 @@ export class AdminComponent implements OnInit {
       })
   }
 
+  handleFileInput(target: EventTarget | null): void {
+    const input = target as HTMLInputElement;
+    const file = input.files?.item(0);
+    if (!file) {
+      throw new Error("No file selected for upload");
+    }
+    this.backend.uploadFile(file).subscribe(data => {
+      console.log(data);
+      // do something, if upload success
+      }, error => {
+        console.log(error);
+      });
+  }
+
 }

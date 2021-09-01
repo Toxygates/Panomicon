@@ -87,4 +87,16 @@ export class BackendService {
         })
       )
   }
+
+  uploadFile(file: File): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append('fileKey', file, file.name);
+    return this.http.post(this.serviceUrl + 'upload', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('uploaded file')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error uploading file: ${error.message}`)
+          throw error;
+      }));
+  }
 }

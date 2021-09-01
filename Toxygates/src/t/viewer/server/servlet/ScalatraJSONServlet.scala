@@ -6,6 +6,7 @@ import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
 import org.scalatra._
+import org.scalatra.servlet.{FileItem, FileUploadSupport}
 import t.common.shared.sample.Group
 import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
@@ -25,6 +26,7 @@ import t.viewer.shared.network.Interaction
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
+import java.nio.charset.StandardCharsets
 import java.security.{MessageDigest, SecureRandom}
 import java.text.SimpleDateFormat
 import java.util
@@ -111,7 +113,8 @@ object Encoders {
   implicit val batRW: RW[Batch] = macroRW
 }
 
-class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with MinimalTServlet {
+class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
+    with MinimalTServlet with FileUploadSupport {
   import Encoders._
 
   val tconfig = Configuration.fromServletContext(scontext)
@@ -525,6 +528,18 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet with
       case Left(jwt) => {
         val roles = jwt.getList("roles").asInstanceOf[util.List[String]].asScala
         writeJs(roles)
+      }
+      case Right(error) => halt(401)
+    }
+  }
+
+  post("/upload") {
+    getJwtToken() match {
+      case Left(jwt) => {
+        val file = fileParams("fileKey")
+        val fileContents = new String(file.get(), StandardCharsets.UTF_8);
+        println(fileContents)
+        fileContents
       }
       case Right(error) => halt(401)
     }
