@@ -24,7 +24,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.screen.Screen;
 import t.viewer.client.components.compoundsel.RankingCompoundSelector;
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.ClusteringList;
 import t.common.shared.DataSchema;
 import t.common.shared.SeriesType;
 import t.model.SampleClass;

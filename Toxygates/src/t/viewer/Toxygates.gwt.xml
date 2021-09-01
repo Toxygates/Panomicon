@@ -15,7 +15,6 @@
 
 	<inherits name="com.google.gwt.user.User" />
 	<inherits name="t.common.Common" />
-	<inherits name="t.clustering.Clustering" />
 	<inherits name="com.google.gwt.logging.Logging"/>
 
 	<!-- Specify the app entry point class.                         -->

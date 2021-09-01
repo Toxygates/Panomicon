@@ -21,11 +21,9 @@ package t.server.viewer.rpc
 
 import java.util.logging.Logger
 import java.util.{List => JList}
-
 import javax.annotation.Nullable
 import t.Context
 import t.server.clustering.RClustering
-import t.clustering.shared.Algorithm
 import t.common.shared.ValueType
 import t.common.shared.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
@@ -34,6 +32,7 @@ import t.viewer.client.rpc.{MatrixService, NetworkService}
 import t.server.viewer._
 import t.server.viewer.matrix._
 import t.viewer.shared._
+import t.viewer.shared.clustering.Algorithm
 
 object MatrixServiceImpl {
 

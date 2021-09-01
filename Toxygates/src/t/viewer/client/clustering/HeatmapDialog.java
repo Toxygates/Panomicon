@@ -16,22 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package t.clustering.client;
+package t.viewer.client.clustering;
 
-import java.util.*;
-import java.util.logging.Logger;
-
-import com.google.gwt.core.client.*;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-
-import t.clustering.shared.*;
 import t.viewer.client.Utils;
+import t.viewer.shared.clustering.Algorithm;
+import t.viewer.shared.clustering.Distances;
+import t.viewer.shared.clustering.Methods;
+
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * GUI for configuring, requesting, and displaying a heatmap.
@@ -416,7 +422,7 @@ abstract public class HeatmapDialog<C, R> {
     });
 
     $wnd.inchlib.selection_state_changed = function(state) {
-      $wnd.widget.@t.clustering.client.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
+      $wnd.widget.@t.viewer.client.clustering.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
     }
 
     $wnd.inchlib.get_current_object_ids = function() {

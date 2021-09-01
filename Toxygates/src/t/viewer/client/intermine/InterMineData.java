@@ -23,7 +23,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 import t.viewer.client.screen.ImportingScreen;
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.ClusteringList;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;

@@ -22,7 +22,7 @@ package t.viewer.client.screen.data;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.ClusteringList;
 import t.common.shared.GroupUtils;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;

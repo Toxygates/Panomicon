@@ -19,15 +19,12 @@
 package t.server.clustering
 
 import java.util.logging.Logger
-
-
-
 import org.rosuda.REngine.Rserve.RserveException
-
-import t.clustering.shared.Algorithm
+import t.viewer.shared.clustering.Algorithm
 
 /**
  * Connects to Rserve to perform a clustering.
+ *
  * @param codeDir the root directory where R/InCHlibUtils.R is available.
  */
 class RClustering(codeDir: String) {

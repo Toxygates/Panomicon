@@ -24,8 +24,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
-import t.clustering.shared.Algorithm;
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.AlgorithmEnum;
+import t.viewer.shared.clustering.Algorithm;
+import t.viewer.shared.clustering.ClusteringList;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.MenuItemCaptionSeparator;
@@ -155,7 +156,7 @@ public class GeneSetsMenu {
     Collection<ProbeClustering> clusterings = screen.appInfo().probeClusterings();
 
     // append items recursively
-    for (t.viewer.shared.clustering.Algorithm algo : t.viewer.shared.clustering.Algorithm
+    for (AlgorithmEnum algo : AlgorithmEnum
         .values()) {
       MenuBar mb = new MenuBar(true);
 
@@ -166,7 +167,7 @@ public class GeneSetsMenu {
     root.addSeparator(new MenuItemSeparator());
   }
 
-  private void appendChildren(MenuBar parent, t.viewer.shared.clustering.Algorithm algo,
+  private void appendChildren(MenuBar parent, AlgorithmEnum algo,
       Collection<ProbeClustering> clusterings) {
     for (String cl : algo.getClusterings()) {
       MenuBar mb = new MenuBar(true);

@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @SuppressWarnings("serial")
 public abstract class Clusterings implements Serializable {
-  protected Algorithm algorithm;
+  protected AlgorithmEnum algorithm;
   protected String clustering; // e.g. "LV"
   protected Map<String, String> params; // e.g. { K -> 120 }
   protected String cluster; // e.g. "C1"
@@ -36,8 +36,8 @@ public abstract class Clusterings implements Serializable {
 
   public Clusterings() {}
 
-  public Clusterings(Algorithm algorithm, String clustering, Map<String, String> params,
-      String cluster, String title) {
+  public Clusterings(AlgorithmEnum algorithm, String clustering, Map<String, String> params,
+                     String cluster, String title) {
     this.algorithm = algorithm;
     this.clustering = clustering;
     this.params = params;
@@ -45,7 +45,7 @@ public abstract class Clusterings implements Serializable {
     this.title = title;
   }
 
-  public Algorithm getAlgorithm() {
+  public AlgorithmEnum getAlgorithm() {
     return algorithm;
   }
 

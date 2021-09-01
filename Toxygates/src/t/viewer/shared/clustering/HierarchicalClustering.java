@@ -28,8 +28,8 @@ class HierarchicalClustering extends Clusterings {
     super();
   }
 
-  public HierarchicalClustering(Algorithm algorithm, String clustering, Map<String, String> params,
-      String cluster, String title) {
+  public HierarchicalClustering(AlgorithmEnum algorithm, String clustering, Map<String, String> params,
+                                String cluster, String title) {
     super(algorithm, clustering, params, cluster, title);
   }
 
@@ -46,7 +46,7 @@ class HierarchicalClustering extends Clusterings {
     }
     
     // check clusterings
-    List<String> clusterings = new ArrayList<String>(Arrays.asList(Algorithm.HIERARCHICAL.getClusterings()));
+    List<String> clusterings = new ArrayList<String>(Arrays.asList(AlgorithmEnum.HIERARCHICAL.getClusterings()));
     if (!clusterings.contains(items[0])) {
       return null;
     }
@@ -70,7 +70,7 @@ class HierarchicalClustering extends Clusterings {
     // params = { K -> 120 }
     // cluster = "C1"
     // title = "LV_K120_C1"
-    return new HierarchicalClustering(Algorithm.HIERARCHICAL, items[0], params, items[2], title);
+    return new HierarchicalClustering(AlgorithmEnum.HIERARCHICAL, items[0], params, items[2], title);
   }
 
 }

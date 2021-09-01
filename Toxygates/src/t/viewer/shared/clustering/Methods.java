@@ -16,32 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package t.clustering.shared;
+package t.viewer.shared.clustering;
 
-public enum Distances {
-  EUCLIDIAN("euclidean"), MAXIMUM("maximum"), MANHATTAN("manhattan"), CANBERRA("canberra"), BINARY(
-      "binary"), PEARSON("pearson"), ABSPEARSON("abspearson"), COERRELATION(
-          "correlation"), ABSORRELATION("abscorrelation"), SPEARMAN("spearman"), KENDALL("kendall");
-  private String distance;
+public enum Methods {
+  WARD_D("ward.D"), WARD_D2("ward.D2"), SINGLE("single"), COMPLETE("complete"), AVERAGE(
+      "average"), MCQUITTY("mcquitty"), MEDIAN("median"), CENTROID("centroid");
 
-  Distances(String distance) {
-    this.distance = distance;
+  private String method;
+
+  Methods(String method) {
+    this.method = method;
   }
 
   public String asParam() {
-    return distance;
+    return method;
   }
 
   /** 
-   *  Return an enum constant that matches given distance.
+   *  Return an enum constant that matches given method.
    *  Note that the usage of this function differs from Enum#valueOf(String).
    *  
    *  @see Enum#valueOf(Class, String)
    */
-  static public Distances lookup(String distance) {
-    for (Distances d : Distances.values()) {
-      if (d.distance.equalsIgnoreCase(distance)) {
-        return d;
+  static public Methods lookup(String method) {
+    for (Methods m : Methods.values()) {
+      if (m.method.equalsIgnoreCase(method)) {
+        return m;
       }
     }
     return null;

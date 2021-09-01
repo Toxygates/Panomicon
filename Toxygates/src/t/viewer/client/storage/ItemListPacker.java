@@ -19,7 +19,7 @@
 
 package t.viewer.client.storage;
 
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.ClusteringList;
 import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;

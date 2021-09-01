@@ -25,8 +25,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import t.clustering.shared.Algorithm;
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.Algorithm;
+import t.viewer.shared.clustering.ClusteringList;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
@@ -66,7 +66,7 @@ public class HeatmapViewer extends Composite {
         matrixId);
   }
 
-  public class HeatmapDialog extends t.clustering.client.HeatmapDialog<Group, String> {
+  public class HeatmapDialog extends t.viewer.client.clustering.HeatmapDialog<Group, String> {
     final ImportingScreen screen = HeatmapViewer.this.screen;
     private ValueType defaultType;
     private Button saveButton, enrichButton;

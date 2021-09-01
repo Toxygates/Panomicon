@@ -16,38 +16,71 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package t.viewer.shared.clustering;
 
-import javax.annotation.Nullable;
+import java.io.Serializable;
 
-/**
- * Definitions of available clusterings
- */
-public enum Algorithm {
-  HIERARCHICAL("Hierarchical", new String[] {"LV", "LN", "SP"}, new String[] {"K"});
+@SuppressWarnings("serial")
+public class Algorithm implements Serializable {
 
-  private String title;
-  private String[] clusterings;
-  private String[] params;
+  private Methods rowMethod;
+  private Distances rowDistance;
+  private Methods colMethod;
+  private Distances colDistance;
 
-  Algorithm(String title, String[] clusterings, @Nullable String[] params) {
-    this.title = title;
-    this.clusterings = clusterings;
-    this.params = params;
+  public Algorithm() {
+    this(Methods.WARD_D, Distances.COERRELATION, Methods.WARD_D, Distances.COERRELATION);
   }
 
-  public String getTitle() {
-    return title;
+  public Algorithm(Methods rowMethod, Distances rowDistance, Methods colMethod,
+      Distances colDistance) {
+    this.rowMethod = rowMethod;
+    this.rowDistance = rowDistance;
+    this.colMethod = colMethod;
+    this.colDistance = colDistance;
   }
 
-  public String[] getClusterings() {
-    return clusterings;
+  public Methods getRowMethod() {
+    return rowMethod;
   }
 
-  @Nullable
-  public String[] getParams() {
-    return params;
+  public Distances getRowDistance() {
+    return rowDistance;
   }
-  
+
+  public Methods getColMethod() {
+    return colMethod;
+  }
+
+  public Distances getColDistance() {
+    return colDistance;
+  }
+
+  /**
+   * Note that generated string is based on the value returned by asParam()
+   */
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(rowMethod.asParam());
+    sb.append(",");
+    sb.append(rowDistance.asParam());
+    sb.append(",");
+    sb.append(colMethod.asParam());
+    sb.append(",");
+    sb.append(colDistance.asParam());
+
+    return sb.toString();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Algorithm)) {
+      return false;
+    }
+    Algorithm algo = (Algorithm) obj;
+
+    return rowMethod.equals(algo.rowMethod) && rowDistance.equals(algo.rowDistance)
+        && colMethod.equals(algo.colMethod) && colDistance.equals(algo.colDistance);
+  }
 }

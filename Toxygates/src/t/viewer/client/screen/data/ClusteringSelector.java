@@ -29,7 +29,7 @@ import t.viewer.client.Utils;
 import t.viewer.client.components.ListChooser;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
-import t.viewer.shared.clustering.Algorithm;
+import t.viewer.shared.clustering.AlgorithmEnum;
 import t.viewer.shared.clustering.ProbeClustering;
 
 import java.util.*;
@@ -51,7 +51,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
 
   private Set<String> loadedProbes = new HashSet<String>();
   
-  private Algorithm lastAlgorithm;
+  private AlgorithmEnum lastAlgorithm;
   private Map<String, ClListBox> params = new HashMap<String, ClListBox>();
   
   class ClListBox extends ListBox {
@@ -116,7 +116,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
       return;
     }
     
-    Algorithm selected = Algorithm.valueOf(algorithm.toUpperCase());
+    AlgorithmEnum selected = AlgorithmEnum.valueOf(algorithm.toUpperCase());
     lastAlgorithm = selected;
     
     List<String> items = new ArrayList<String>();
@@ -259,7 +259,7 @@ public abstract class ClusteringSelector extends Composite implements RequiresRe
     
     // set up algorithm list
     List<String> items = new ArrayList<String>();
-    for (Algorithm algo : Algorithm.values()) {
+    for (AlgorithmEnum algo : AlgorithmEnum.values()) {
       items.add(algo.getTitle());
     }
     algorithm.setItems(items);

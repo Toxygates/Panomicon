@@ -75,7 +75,7 @@ public class ProbeClustering implements Serializable {
   }
 
   public static Collection<ProbeClustering> filterByAlgorithm(Collection<ProbeClustering> from,
-      final Algorithm algorithm) {
+      final AlgorithmEnum algorithm) {
     return new ProbeClusteringFilter() {
       @Override
       protected boolean accept(ProbeClustering pc) {

@@ -22,7 +22,7 @@ package t.viewer.client.screen.data;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
-import t.clustering.shared.ClusteringList;
+import t.viewer.shared.clustering.ClusteringList;
 import t.viewer.client.Utils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;

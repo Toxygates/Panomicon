@@ -18,11 +18,11 @@
  */
 
 
-package t.clustering.client;
+package t.viewer.client.clustering;
 
 import java.util.List;
 
-import t.clustering.shared.Algorithm;
+import t.viewer.shared.clustering.Algorithm;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 

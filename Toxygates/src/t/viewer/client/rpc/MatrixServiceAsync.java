@@ -23,8 +23,8 @@ import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import t.clustering.client.ClusteringServiceAsync;
-import t.clustering.shared.Algorithm;
+import t.viewer.client.clustering.ClusteringServiceAsync;
+import t.viewer.shared.clustering.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;

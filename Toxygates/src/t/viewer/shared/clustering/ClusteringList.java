@@ -17,16 +17,15 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.clustering.shared;
-
-import java.util.*;
-import java.util.Map.Entry;
-
-import javax.annotation.Nullable;
+package t.viewer.shared.clustering;
 
 import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.Map.Entry;
 
 @SuppressWarnings("serial")
 public class ClusteringList extends ItemList {
@@ -60,8 +59,8 @@ public class ClusteringList extends ItemList {
     this.clusters = clusters.toArray(new StringList[0]);
   }
 
-  public ClusteringList(String type, String name, 
-      @Nullable Algorithm algorithm, StringList[] clusters) {
+  public ClusteringList(String type, String name,
+                        @Nullable Algorithm algorithm, StringList[] clusters) {
     super(type, name);
 
     this.algorithm = algorithm;
