@@ -114,7 +114,7 @@
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
       <arg value="t.viewer.Toxygates"/>
-      <arg value="t.admin.AdminConsole"/>
+      <arg value="t.gwt.admin.AdminConsole"/>
     </java>
 
   </target>
@@ -131,7 +131,7 @@
       <arg value="-bindAddress"/>
       <arg value="0.0.0.0"/>
       <arg value="t.viewer.Toxygates"/>
-      <arg value="t.admin.AdminConsole"/>
+      <arg value="t.gwt.admin.AdminConsole"/>
     </java>
   </target>
 

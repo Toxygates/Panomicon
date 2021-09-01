@@ -17,16 +17,17 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.gwt.admin.client;
 
-import javax.annotation.Nullable;
-
-import com.google.gwt.user.client.ui.*;
-
-import t.shared.admin.PlatformType;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
+import t.shared.admin.PlatformType;
 import t.shared.common.maintenance.MaintenanceConstants;
+
+import javax.annotation.Nullable;
 
 public class PlatformUploader extends ItemUploader {
 

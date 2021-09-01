@@ -16,58 +16,50 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package t.admin.client;
+
+package t.gwt.admin.client;
 
 import java.util.Date;
 
 import javax.annotation.Nullable;
 
 import t.common.client.maintenance.ManagedItemEditor;
-import t.common.client.maintenance.TaskCallback;
-import t.shared.common.Platform;
+import t.shared.common.Dataset;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 
-public class PlatformEditor extends ManagedItemEditor {
+public class DatasetEditor extends ManagedItemEditor {
 
-  private @Nullable PlatformUploader uploader;
+  private final TextBox descText;
   protected TextArea publicComments;
 
   protected final MaintenanceServiceAsync maintenanceService = GWT.create(MaintenanceService.class);
   
-  public PlatformEditor(@Nullable Platform p, boolean addNew) {
-    super(p, addNew);
+  public DatasetEditor(@Nullable Dataset d, boolean addNew) {
+    super(d, addNew);
+
+    descText = addLabelledTextBox("Description");
     publicComments = addTextArea("Public comments");
 
-    if (p != null) {
-      publicComments.setValue(p.getPublicComment());
-    }
-
-    if (addNew) {
-      uploader = new PlatformUploader();
-      vp.add(uploader);
+    if (d != null) {
+      descText.setValue(d.getDescription());
+      publicComments.setValue(d.getPublicComment());
     }
     addCommands();
-  }  
+  }
 
   @Override
   protected void triggerEdit() {
-    Platform p = new Platform(idText.getValue(), 0, commentArea.getValue(), 
-        new Date(), publicComments.getValue());
+    Dataset d =
+        new Dataset(idText.getValue(), descText.getValue(), 
+            commentArea.getValue(), new Date(), 
+            publicComments.getValue(), 0);
     if (addNew) {
-      maintenanceService.addPlatformAsync(p, uploader.platformType(), new TaskCallback(
-          logger, "Add platform", maintenanceService) {
-        @Override
-        protected void onCompletion() {
-          onFinish();
-          onFinishOrAbort();
-        }
-      });
-
-    } else {
-      maintenanceService.update(p, editCallback());
+      maintenanceService.add(d, editCallback());
+    } else {      
+      maintenanceService.update(d, editCallback());
     }
   }
-
 }

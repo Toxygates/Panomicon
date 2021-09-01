@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.gwt.admin.client;
 
 import java.util.Date;
 

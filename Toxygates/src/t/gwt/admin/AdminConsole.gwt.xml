@@ -10,5 +10,5 @@
 	
 	<source path="client" />
 
-	<entry-point class="t.admin.client.AdminConsole"></entry-point>
+	<entry-point class="t.gwt.admin.client.AdminConsole"></entry-point>
 </module>
