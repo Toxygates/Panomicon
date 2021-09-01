@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package t.server.clustering
+package t.server.viewer.clustering
 
-import java.util.logging.Logger
 import org.rosuda.REngine.Rserve.RserveException
 import t.shared.viewer.clustering.Algorithm
+
+import java.util.logging.Logger
 
 /**
  * Connects to Rserve to perform a clustering.

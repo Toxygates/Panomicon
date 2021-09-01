@@ -17,16 +17,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.server.clustering
-
-import java.util.logging.Level
-import java.util.logging.Logger
-
-import scala.collection.immutable.Queue
+package t.server.viewer.clustering
 
 import org.rosuda.REngine.REXP
-import org.rosuda.REngine.Rserve.RConnection
-import org.rosuda.REngine.Rserve.RserveException
+import org.rosuda.REngine.Rserve.{RConnection, RserveException}
+
+import java.util.logging.{Level, Logger}
+import scala.collection.immutable.Queue
 
 class R() {
   private val logger = Logger.getLogger("R")

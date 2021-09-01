@@ -17,13 +17,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.server.clustering
+package t.server.viewer.clustering
 
-import java.util.{List => JList}
-import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import t.gwt.viewer.client.clustering.ClusteringService
 import t.shared.viewer.clustering.Algorithm
+
+import java.util.{List => JList}
 
 abstract class ClusteringServiceImpl[C, R] extends RemoteServiceServlet with ClusteringService[C, R] {
 

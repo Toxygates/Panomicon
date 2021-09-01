@@ -23,13 +23,13 @@ import java.util.logging.Logger
 import java.util.{List => JList}
 import javax.annotation.Nullable
 import t.Context
-import t.server.clustering.RClustering
 import t.shared.common.ValueType
 import t.shared.common.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
 import t.platform.{OrthologMapping, Probe}
 import t.gwt.viewer.client.rpc.{MatrixService, NetworkService}
 import t.server.viewer._
+import t.server.viewer.clustering.RClustering
 import t.server.viewer.matrix._
 import t.shared.viewer._
 import t.shared.viewer.clustering.Algorithm

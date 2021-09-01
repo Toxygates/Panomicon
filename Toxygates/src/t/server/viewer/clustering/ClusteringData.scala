@@ -18,9 +18,7 @@
  */
 
 
-package t.server.clustering
-
-import scala.collection.JavaConversions._
+package t.server.viewer.clustering
 
 /**
  * Data provider for a heatmap clustering.

@@ -20,9 +20,7 @@
 package t.server.viewer.rpc
 
 import scala.collection.JavaConversions._
-
 import org.apache.commons.lang.StringUtils
-
 import t.shared.common.ValueType
 import t.platform.Probe
 import t.sparql.ProbeStore
@@ -33,7 +31,7 @@ import t.server.viewer.matrix.ManagedMatrix
 class ClusteringData(val controller: MatrixController,
                      probeStore: ProbeStore,
                      rows: Seq[String],
-                     valueType: ValueType) extends t.server.clustering.ClusteringData {
+                     valueType: ValueType) extends t.server.viewer.clustering.ClusteringData {
 
   val mm = controller.managedMatrix
   val mat = if (rows != null && rows.length > 0) {
