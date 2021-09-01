@@ -26,8 +26,8 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.FullMatrix;
-import t.viewer.shared.Series;
+import t.shared.viewer.FullMatrix;
+import t.shared.viewer.Series;
 
 import java.util.*;
 import java.util.logging.Level;

@@ -21,7 +21,7 @@ package t.viewer.client.table;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import t.shared.common.SharedUtils;
-import t.viewer.shared.AssociationValue;
+import t.shared.viewer.AssociationValue;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

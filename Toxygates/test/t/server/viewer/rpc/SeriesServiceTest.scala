@@ -20,13 +20,13 @@
 package t.server.viewer.rpc
 
 import java.util.Date
-
 import t.TTestSuite
 import t.shared.common.{Dataset, SeriesType}
 import t.server.viewer.AssociationResolverTest
-import t.viewer.shared.{RankRule, RuleType}
+import t.shared.viewer.RuleType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.shared.viewer.{RankRule, RuleType}
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {

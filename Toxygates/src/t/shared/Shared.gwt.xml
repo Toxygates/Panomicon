@@ -9,4 +9,5 @@
 
 	<source path='admin' />
 	<source path='common' />
+	<source path='viewer' />
 </module>

@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 import t.shared.common.ValueType;
 import t.viewer.client.ClientGroup;
-import t.viewer.shared.Association;
+import t.shared.viewer.Association;
 
 import javax.annotation.Nullable;
 import java.util.*;

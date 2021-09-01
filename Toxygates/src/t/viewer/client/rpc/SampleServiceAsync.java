@@ -30,7 +30,7 @@ import t.shared.common.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
-import t.viewer.shared.Pathology;
+import t.shared.viewer.Pathology;
 
 import java.util.List;
 import java.util.Map;

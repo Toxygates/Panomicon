@@ -30,8 +30,8 @@ import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
 
 /**
  * The ListChooser allows the user to select from a range of named lists, as well as save and delete

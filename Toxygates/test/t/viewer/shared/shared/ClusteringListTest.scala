@@ -17,16 +17,16 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared.shared
+package t.shared.viewer.shared
 
-import t.viewer.shared.clustering.ClusteringList._
-import t.viewer.shared.shared._
-import t.viewer.shared._
+import t.shared.viewer.clustering.ClusteringList._
+import t.shared.viewer.shared._
+import t.shared.viewer._
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
 import t.viewer.client.storage.ItemListPacker
-import t.viewer.shared.clustering.{Algorithm, ClusteringList, Distances, Methods}
+import t.shared.viewer.clustering.{Algorithm, ClusteringList, Distances, Methods}
 
 @RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends TTestSuite {
@@ -34,7 +34,7 @@ class ClusteringListTest extends TTestSuite {
   val items = List(new StringList("type", "list1", Array("a", "b", "c")), new StringList("type", "list2", Array("d", "e", "f")))
   val algorithm = new Algorithm(Methods.WARD_D, Distances.COERRELATION, Methods.WARD_D2, Distances.EUCLIDIAN)
 
-  import t.viewer.shared.clustering.ClusteringList._
+  import t.shared.viewer.clustering.ClusteringList._
 
   test("basic") {
     val l = new ClusteringList(USER_CLUSTERING_TYPE,

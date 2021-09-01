@@ -19,7 +19,7 @@
 
 package t.viewer.client.screen.ranking;
 
-import t.viewer.shared.RuleType;
+import t.shared.viewer.RuleType;
 
 public class SimpleRuleInputHelper extends RuleInputHelper {
 

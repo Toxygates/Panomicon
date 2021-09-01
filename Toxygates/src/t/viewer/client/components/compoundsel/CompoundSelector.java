@@ -29,7 +29,7 @@ import t.viewer.client.components.stackedlist.FreeEdit;
 import t.viewer.client.components.stackedlist.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.StringList;
+import t.shared.viewer.StringList;
 
 import javax.annotation.Nullable;
 import java.util.*;

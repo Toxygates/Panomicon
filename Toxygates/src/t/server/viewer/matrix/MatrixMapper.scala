@@ -20,7 +20,7 @@
 package t.server.viewer.matrix
 
 import t.db.{BasicExprValue, ExprValue}
-import t.viewer.shared.ManagedMatrixInfo
+import t.shared.viewer.ManagedMatrixInfo
 
 /**
  * A matrix mapper converts a whole matrix from one domain into

@@ -24,12 +24,12 @@ import t.platform.Probe
 import t.platform.mirna._
 import t.server.viewer.PlatformRegistry
 import t.server.viewer.matrix.{ExpressionMatrix, ManagedMatrix, PageDecorator}
-import t.viewer.shared.network.Interaction
-import t.viewer.shared.network.Network
-import t.viewer.shared.network.Node
+import t.shared.viewer.network.Interaction
+import t.shared.viewer.network.Network
+import t.shared.viewer.network.Node
 
 import scala.collection.mutable.{Set => MSet}
-import t.viewer.shared.ManagedMatrixInfo
+import t.shared.viewer.ManagedMatrixInfo
 import t.shared.common.GWTTypes
 
 object NetworkBuilder {

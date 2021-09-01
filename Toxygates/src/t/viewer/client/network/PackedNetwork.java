@@ -21,12 +21,12 @@ package t.viewer.client.network;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import t.viewer.shared.network.Network;
+import t.shared.viewer.network.Network;
 
 /**
  * A packed network consists of a title String and a JSON String which can be
  * unpacked into (a JavaScript Network which can be converted into) an instance
- * of t.viewer.shared.network.Network.
+ * of t.shared.viewer.network.Network.
  */
 public class PackedNetwork {
   private String title, jsonString;

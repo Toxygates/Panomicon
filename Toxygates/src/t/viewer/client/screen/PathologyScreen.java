@@ -33,7 +33,7 @@ import t.viewer.client.ClientGroup;
 import t.viewer.client.Groups;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.Pathology;
+import t.shared.viewer.Pathology;
 import t.common.client.ImageClickCell;
 import t.shared.common.GroupUtils;
 import t.shared.common.sample.Sample;

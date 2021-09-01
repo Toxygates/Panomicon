@@ -36,9 +36,9 @@ import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.future.Future;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.shared.MatchResult;
-import t.viewer.shared.RankRule;
-import t.viewer.shared.Series;
+import t.shared.viewer.MatchResult;
+import t.shared.viewer.RankRule;
+import t.shared.viewer.Series;
 
 import java.util.ArrayList;
 import java.util.HashMap;

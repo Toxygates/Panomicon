@@ -34,8 +34,8 @@ import t.server.viewer.MemoryPlatforms
 import t.server.viewer.matrix.ControllerParams
 import t.server.viewer.matrix.ExtFoldBuilder
 import t.server.viewer.matrix.MatrixController
-import t.viewer.shared.network.Network
-import t.viewer.shared.ColumnFilter
+import t.shared.viewer.network.Network
+import t.shared.viewer.ColumnFilter
 import t.server.viewer.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable
 

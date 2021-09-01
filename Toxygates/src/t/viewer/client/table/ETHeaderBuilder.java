@@ -29,7 +29,7 @@ import com.google.gwt.user.cellview.client.DefaultHeaderOrFooterBuilder;
 import t.shared.common.DataSchema;
 import t.shared.common.sample.ExpressionRow;
 import t.shared.common.sample.Group;
-import t.viewer.shared.ManagedMatrixInfo;
+import t.shared.viewer.ManagedMatrixInfo;
 
 /**
  * Implementation of HeaderBuilder for ExpressionTable, subclassed in order to

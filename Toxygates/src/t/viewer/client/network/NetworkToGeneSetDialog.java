@@ -29,8 +29,8 @@ import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.screen.ImportingScreen;
 import t.viewer.client.Utils;
-import t.viewer.shared.StringList;
-import t.viewer.shared.network.Network;
+import t.shared.viewer.StringList;
+import t.shared.viewer.network.Network;
 
 public class NetworkToGeneSetDialog {
   protected DialogBox mainDialog = new DialogBox();

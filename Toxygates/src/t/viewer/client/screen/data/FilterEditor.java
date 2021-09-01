@@ -29,8 +29,8 @@ import com.google.gwt.user.client.ui.*;
 import t.common.client.components.ItemSelector;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.FilterType;
+import t.shared.viewer.ColumnFilter;
+import t.shared.viewer.FilterType;
 
 /**
  * A dialog for displaying and modifying a column filter.

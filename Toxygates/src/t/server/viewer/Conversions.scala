@@ -31,7 +31,7 @@ import t.shared.common.sample.ExpressionValue
 import t.shared.common.sample.Sample
 import t.db.{ExprValue => TExprValue}
 import t.platform.Species
-import t.viewer.shared.AssociationValue
+import t.shared.viewer.AssociationValue
 import t.shared.common.GroupUtils
 import t.shared.common.sample.Group
 import java.util.NoSuchElementException

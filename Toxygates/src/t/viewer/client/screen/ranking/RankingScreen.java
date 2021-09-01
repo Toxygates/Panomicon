@@ -33,8 +33,8 @@ import t.viewer.client.future.Future;
 import t.viewer.client.future.FutureUtils;
 import t.viewer.client.screen.FilterAndSelectorScreen;
 import t.viewer.client.screen.ScreenManager;
-import t.viewer.shared.MatchResult;
-import t.viewer.shared.RankRule;
+import t.shared.viewer.MatchResult;
+import t.shared.viewer.RankRule;
 
 import java.util.List;
 

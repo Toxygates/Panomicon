@@ -48,8 +48,8 @@ import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.SortKey;
+import t.shared.viewer.ManagedMatrixInfo;
+import t.shared.viewer.SortKey;
 
 /**
  * The main data display table. This class has many different functionalities. (maybe still too

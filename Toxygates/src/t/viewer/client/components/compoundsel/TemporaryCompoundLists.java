@@ -19,12 +19,12 @@
 
 package t.viewer.client.components.compoundsel;
 
-import t.viewer.shared.StringList;
+import t.shared.viewer.StringList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static t.viewer.shared.StringList.COMPOUND_LIST_TYPE;
+import static t.shared.viewer.StringList.COMPOUND_LIST_TYPE;
 
 public class TemporaryCompoundLists {
 

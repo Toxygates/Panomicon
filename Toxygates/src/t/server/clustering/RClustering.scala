@@ -20,7 +20,7 @@ package t.server.clustering
 
 import java.util.logging.Logger
 import org.rosuda.REngine.Rserve.RserveException
-import t.viewer.shared.clustering.Algorithm
+import t.shared.viewer.clustering.Algorithm
 
 /**
  * Connects to Rserve to perform a clustering.

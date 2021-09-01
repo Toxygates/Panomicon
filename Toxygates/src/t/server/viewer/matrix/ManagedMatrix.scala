@@ -23,10 +23,10 @@ import t.shared.common.sample.ExpressionValue
 import t.shared.common.sample.{Sample => SSample}
 import t.db._
 import t.server.viewer.Conversions._
-import t.viewer.shared.ColumnFilter
-import t.viewer.shared.ManagedMatrixInfo
-import t.viewer.shared.Synthetic
+import t.shared.viewer.ColumnFilter
+import t.shared.viewer.ManagedMatrixInfo
 import t.shared.common.GroupUtils
+import t.shared.viewer.Synthetic
 
 object ManagedMatrix {
  type RowData = Seq[BasicExprValue]

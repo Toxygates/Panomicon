@@ -30,7 +30,7 @@ import com.google.gwt.user.client.ui.*;
 import t.viewer.client.screen.Screen;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
-import t.viewer.shared.mirna.MirnaSource;
+import t.shared.viewer.mirna.MirnaSource;
 
 public class MirnaSourceDialog extends InteractionDialog {
   MirnaSourceSelector selector;

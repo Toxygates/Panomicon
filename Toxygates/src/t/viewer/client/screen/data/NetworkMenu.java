@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 import t.viewer.client.components.MenuItemCaptionSeparator;
 import t.viewer.client.network.PackedNetwork;
-import t.viewer.shared.network.Format;
+import t.shared.viewer.network.Format;
 
 import java.util.List;
 

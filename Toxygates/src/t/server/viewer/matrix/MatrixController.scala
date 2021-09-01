@@ -25,10 +25,10 @@ import t.shared.common.sample.Group
 import t.db.ExtMatrixDB
 import t.platform.OrthologMapping
 import t.server.viewer.Conversions._
-import t.viewer.shared.DBUnavailableException
-import t.viewer.shared.ManagedMatrixInfo
+import t.shared.viewer.DBUnavailableException
+import t.shared.viewer.ManagedMatrixInfo
 import t.server.viewer.PlatformRegistry
-import t.viewer.shared.SortKey
+import t.shared.viewer.SortKey
 import t.model.sample.CoreParameter
 
 object MatrixController {

@@ -28,7 +28,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.shared.common.Pair;
 import t.viewer.client.Utils;
-import t.viewer.shared.mirna.MirnaSource;
+import t.shared.viewer.mirna.MirnaSource;
 
 /**
  * A dialog for selecting among a set of available miRNA sources and,

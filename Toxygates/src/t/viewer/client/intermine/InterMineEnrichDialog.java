@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.common.client.components.ItemSelector;
 import t.viewer.client.screen.Screen;
-import t.viewer.shared.intermine.*;
+import t.shared.viewer.intermine.*;
 
 public class InterMineEnrichDialog extends InterMineSyncDialog {
 

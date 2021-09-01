@@ -20,7 +20,6 @@
 package t.server.viewer.rpc
 
 import java.util.{List => JList}
-
 import javax.annotation.Nullable
 import t.shared.common._
 import t.shared.common.sample.{Group, Sample}
@@ -35,7 +34,8 @@ import t.viewer.client.rpc.ProbeService
 import t.server.viewer.Conversions.{asJavaSample, asSpecies}
 import t.server.viewer.servlet.GeneSetServlet
 import t.server.viewer.{Configuration, _}
-import t.viewer.shared.{AppInfo, Association, TimeoutException}
+import t.shared.viewer.{AppInfo, Association, TimeoutException}
+import t.shared.viewer.TimeoutException
 
 import scala.collection.JavaConverters._
 

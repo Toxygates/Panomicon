@@ -21,9 +21,9 @@ package t.viewer.client.table;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import t.shared.common.AType;
-import t.viewer.shared.Association;
-import t.viewer.shared.AssociationValue;
-import t.viewer.shared.SortKey;
+import t.shared.viewer.Association;
+import t.shared.viewer.AssociationValue;
+import t.shared.viewer.SortKey;
 
 import java.util.Collection;
 import java.util.HashSet;

@@ -27,12 +27,12 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+import t.shared.viewer.*;
 import t.viewer.client.clustering.ClusteringService;
-import t.viewer.shared.clustering.Algorithm;
+import t.shared.viewer.clustering.Algorithm;
 import t.shared.common.ValueType;
 import t.shared.common.sample.ExpressionRow;
 import t.shared.common.sample.Group;
-import t.viewer.shared.*;
 
 /**
  * This service obtains expression data from the underlying data store.
@@ -44,7 +44,7 @@ import t.viewer.shared.*;
 public interface MatrixService extends ClusteringService<Group, String>, RemoteService {
 
   ManagedMatrixInfo loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
-      List<ColumnFilter> initFilters);
+                               List<ColumnFilter> initFilters);
 
   /**
    * Filter data that has already been loaded into the session.
@@ -102,7 +102,7 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
    * @return
    */
-  List<ExpressionRow> matrixRows(String id, int offset, int size, SortKey sortKey, 
+  List<ExpressionRow> matrixRows(String id, int offset, int size, SortKey sortKey,
       boolean ascending) throws ServerError;
 
   /**
@@ -116,8 +116,8 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    *        slightly slower)
    * @return
    */
-  FullMatrix getFullData(List<Group> gs, String[] probes, 
-      boolean withSymbols, ValueType type) throws ServerError;
+  FullMatrix getFullData(List<Group> gs, String[] probes,
+                         boolean withSymbols, ValueType type) throws ServerError;
 
   /**
    * Prepare a CSV file representing the loaded data for download. Requires that loadDataset was

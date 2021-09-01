@@ -19,7 +19,7 @@
 
 package t.server.viewer.network
 
-import t.viewer.shared.network._
+import t.shared.viewer.network._
 import java.io.PrintWriter
 import scala.collection.JavaConverters._
 import t.util.SafeMath

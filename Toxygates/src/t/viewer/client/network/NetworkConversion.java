@@ -21,7 +21,7 @@ package t.viewer.client.network;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import t.viewer.shared.network.Network;
+import t.shared.viewer.network.Network;
 
 /**
  * Helper methods for converting Java networks to/from JavaScript networks.
@@ -32,12 +32,12 @@ public class NetworkConversion {
    */
   public static native JavaScriptObject convertNetworkToJS(Network network) /*-{
     // If there's already a stored JSON representation of the network, use that instead.
-    var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
+    var jsonString = network.@t.shared.viewer.network.Network::jsonString()();
     if (jsonString != "") {
       return @t.viewer.client.network.NetworkConversion::reanimateNetwork(Lcom/google/gwt/core/client/JavaScriptObject;)(JSON.parse(jsonString));
     }
 
-    var networkName = network.@t.viewer.shared.network.Network::title()();
+    var networkName = network.@t.shared.viewer.network.Network::title()();
 
     // Helper function to map a function over every element of a Java list and  
     // store the result in a JavaScript list.
@@ -53,21 +53,21 @@ public class NetworkConversion {
     }
 
     var jsNodes = mapJavaList(
-      network.@t.viewer.shared.network.Network::nodes()(),
+      network.@t.shared.viewer.network.Network::nodes()(),
       function(node) {
-        var id = node.@t.viewer.shared.network.Node::id()();
+        var id = node.@t.shared.viewer.network.Node::id()();
         var symbols = mapJavaList(
-          node.@t.viewer.shared.network.Node::symbols()(),
+          node.@t.shared.viewer.network.Node::symbols()(),
           function(symbol) {
             return symbol;
           });
-        var type = node.@t.viewer.shared.network.Node::type()();
+        var type = node.@t.shared.viewer.network.Node::type()();
         if (type == 'miRNA') {
           type = 'microRNA';
         }
 
         var jsWeights = {};
-        var weights = node.@t.viewer.shared.network.Node::weights()();
+        var weights = node.@t.shared.viewer.network.Node::weights()();
         var weightKeySet = weights.@java.util.HashMap::keySet()();
         var weightKeyIterator = weightKeySet.@java.util.Set::iterator()();
         while (weightKeyIterator.@java.util.Iterator::hasNext()()) {
@@ -82,19 +82,19 @@ public class NetworkConversion {
     });
 
     var jsInteractions = mapJavaList(
-      network.@t.viewer.shared.network.Network::interactions()(),
+      network.@t.shared.viewer.network.Network::interactions()(),
       function(interaction) {
-        var label = interaction.@t.viewer.shared.network.Interaction::label()();
-        var weight = interaction.@t.viewer.shared.network.Interaction::weight()();
-        var from = interaction.@t.viewer.shared.network.Interaction::from()();
-        var fromId = from.@t.viewer.shared.network.Node::id()();
-        var to = interaction.@t.viewer.shared.network.Interaction::to()();
-        var toId = to.@t.viewer.shared.network.Node::id()();
+        var label = interaction.@t.shared.viewer.network.Interaction::label()();
+        var weight = interaction.@t.shared.viewer.network.Interaction::weight()();
+        var from = interaction.@t.shared.viewer.network.Interaction::from()();
+        var fromId = from.@t.shared.viewer.network.Node::id()();
+        var to = interaction.@t.shared.viewer.network.Interaction::to()();
+        var toId = to.@t.shared.viewer.network.Node::id()();
         return $wnd.makeInteraction(fromId, toId, label, weight);
     });
     
     var jsNetwork = $wnd.makeNetwork(networkName, jsInteractions, jsNodes);
-    network.@t.viewer.shared.network.Network::storeJsonString(Ljava/lang/String;)(JSON.stringify(jsNetwork));
+    network.@t.shared.viewer.network.Network::storeJsonString(Ljava/lang/String;)(JSON.stringify(jsNetwork));
     
     return jsNetwork;
   }-*/;
@@ -104,12 +104,12 @@ public class NetworkConversion {
    * network, then converting it to JSON.
    */
   public static native String packNetwork(Network network) /*-{
-    var jsonString = network.@t.viewer.shared.network.Network::jsonString()();
+    var jsonString = network.@t.shared.viewer.network.Network::jsonString()();
     if (jsonString != "") {
       return jsonString;
     }
 
-    var network = @t.viewer.client.network.NetworkConversion::convertNetworkToJS(Lt/viewer/shared/network/Network;)(network);
+    var network = @t.viewer.client.network.NetworkConversion::convertNetworkToJS(Lt/shared/viewer/network/Network;)(network);
     return JSON.stringify(network);
   }-*/;
 
@@ -129,7 +129,7 @@ public class NetworkConversion {
       node.symbol.forEach(function(symbol) {
         javaSymbols.@java.util.ArrayList::add(Ljava/lang/Object;)(symbol);
       });
-      var javaNode = @t.viewer.shared.network.Node::new(Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/HashMap;)(node.id, javaSymbols, node.type, javaWeights);
+      var javaNode = @t.shared.viewer.network.Node::new(Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/HashMap;)(node.id, javaSymbols, node.type, javaWeights);
       javaNodes.@java.util.ArrayList::add(Ljava/lang/Object;)(javaNode);
       nodeDictionary[node.id] = javaNode;
     });
@@ -138,13 +138,13 @@ public class NetworkConversion {
     network.interactions.forEach(function(interaction) {
       var from = nodeDictionary[interaction.from];
       var to =  nodeDictionary[interaction.to];
-      var javaInteraction = @t.viewer.shared.network.Interaction::new(Lt/viewer/shared/network/Node;Lt/viewer/shared/network/Node;Ljava/lang/String;Ljava/lang/Double;)(from, to, interaction.label, interaction.weight);
+      var javaInteraction = @t.shared.viewer.network.Interaction::new(Lt/shared/viewer/network/Node;Lt/shared/viewer/network/Node;Ljava/lang/String;Ljava/lang/Double;)(from, to, interaction.label, interaction.weight);
       javaInteractions.@java.util.ArrayList::add(Ljava/lang/Object;)(javaInteraction);
     });
     
     var jsonString = JSON.stringify(network);
     
-    return @t.viewer.shared.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)(network.title, javaNodes, javaInteractions, jsonString);
+    return @t.shared.viewer.network.Network::new(Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)(network.title, javaNodes, javaInteractions, jsonString);
   }-*/;
 
   /**

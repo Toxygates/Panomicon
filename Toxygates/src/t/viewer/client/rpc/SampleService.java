@@ -21,7 +21,7 @@ package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import t.viewer.shared.Pathology;
+import t.shared.viewer.Pathology;
 import t.shared.common.Dataset;
 import t.shared.common.Pair;
 import t.shared.common.RequestResult;
@@ -32,7 +32,7 @@ import t.shared.common.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
-import t.viewer.shared.TimeoutException;
+import t.shared.viewer.TimeoutException;
 
 import javax.annotation.Nullable;
 import java.util.List;

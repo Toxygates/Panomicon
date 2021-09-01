@@ -31,8 +31,8 @@ import t.common.client.Resources;
 import t.shared.common.*;
 import t.shared.common.sample.ExpressionRow;
 import t.shared.common.sample.Group;
-import t.viewer.shared.AssociationValue;
-import t.viewer.shared.ManagedMatrixInfo;
+import t.shared.viewer.AssociationValue;
+import t.shared.viewer.ManagedMatrixInfo;
 
 /**
  * Some column management code factored out of ExpressionTable.

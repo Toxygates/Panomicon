@@ -34,7 +34,7 @@ import t.model.sample.Attribute
 import t.server.viewer.Conversions._
 import org.scalatest.junit.JUnitRunner
 import t.testing.TestData
-import t.viewer.shared.OTGSchema
+import t.shared.viewer.OTGSchema
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {

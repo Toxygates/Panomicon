@@ -21,7 +21,6 @@ package t.server.viewer.rpc
 
 import java.util
 import java.util.{List => JList}
-
 import t.server.common.GWTUtils._
 import t.shared.common._
 import t.shared.common.sample._
@@ -36,8 +35,9 @@ import t.viewer.client.rpc._
 import t.server.viewer.CSVHelper.CSVFile
 import t.server.viewer.Conversions._
 import t.server.viewer.{rpc, _}
-import t.viewer.shared.{Pathology, _}
+import t.shared.viewer._
 import t.shared.common.Dataset
+import t.shared.viewer.Pathology
 
 import scala.collection.JavaConverters._
 

@@ -39,10 +39,10 @@ import t.viewer.client.screen.Screen;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.SortKey;
-import t.viewer.shared.Synthetic;
+import t.shared.viewer.ColumnFilter;
+import t.shared.viewer.ManagedMatrixInfo;
+import t.shared.viewer.SortKey;
+import t.shared.viewer.Synthetic;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

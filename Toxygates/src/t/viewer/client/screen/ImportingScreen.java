@@ -26,10 +26,10 @@ import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
-import t.viewer.shared.intermine.IntermineInstance;
+import t.shared.viewer.AppInfo;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
+import t.shared.viewer.intermine.IntermineInstance;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

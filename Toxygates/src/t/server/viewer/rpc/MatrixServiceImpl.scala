@@ -31,8 +31,8 @@ import t.platform.{OrthologMapping, Probe}
 import t.viewer.client.rpc.{MatrixService, NetworkService}
 import t.server.viewer._
 import t.server.viewer.matrix._
-import t.viewer.shared._
-import t.viewer.shared.clustering.Algorithm
+import t.shared.viewer._
+import t.shared.viewer.clustering.Algorithm
 
 object MatrixServiceImpl {
 

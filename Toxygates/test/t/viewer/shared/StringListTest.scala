@@ -17,7 +17,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared
+package t.shared.viewer
 
 import org.junit.runner.RunWith
 import t.TTestSuite

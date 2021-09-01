@@ -25,9 +25,9 @@ import t.shared.common.AType;
 import t.shared.common.Pair;
 import t.shared.common.sample.Sample;
 import t.model.SampleClass;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.Association;
-import t.viewer.shared.TimeoutException;
+import t.shared.viewer.AppInfo;
+import t.shared.viewer.Association;
+import t.shared.viewer.TimeoutException;
 
 import javax.annotation.Nullable;
 import java.util.List;

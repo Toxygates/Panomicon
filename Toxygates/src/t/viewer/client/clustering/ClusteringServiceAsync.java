@@ -22,7 +22,7 @@ package t.viewer.client.clustering;
 
 import java.util.List;
 
-import t.viewer.shared.clustering.Algorithm;
+import t.shared.viewer.clustering.Algorithm;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

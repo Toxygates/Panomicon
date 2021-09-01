@@ -22,8 +22,8 @@ package t.viewer.client.intermine;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-import t.viewer.shared.StringList;
-import t.viewer.shared.intermine.*;
+import t.shared.viewer.StringList;
+import t.shared.viewer.intermine.*;
 
 @RemoteServiceRelativePath("intermine")
 public interface IntermineService extends RemoteService {

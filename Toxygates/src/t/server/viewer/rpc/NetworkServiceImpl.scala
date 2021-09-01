@@ -36,12 +36,12 @@ import t.server.viewer.matrix.ControllerParams
 import t.server.viewer.matrix.MatrixController
 import t.server.viewer.network.NetworkController
 import t.server.viewer.network.Serializer
-import t.viewer.shared.Synthetic
-import t.viewer.shared.TimeoutException
-import t.viewer.shared.mirna.MirnaSource
-import t.viewer.shared.network.Format
-import t.viewer.shared.network.Network
-import t.viewer.shared.network.NetworkInfo
+import t.shared.viewer.Synthetic
+import t.shared.viewer.TimeoutException
+import t.shared.viewer.mirna.MirnaSource
+import t.shared.viewer.network.Format
+import t.shared.viewer.network.Network
+import t.shared.viewer.network.NetworkInfo
 
 object NetworkState {
   val stateKey = "network"

@@ -24,7 +24,7 @@ import t.Context
 import t.Factory
 import t.TriplestoreConfig
 import t.sparql.InstanceStore
-import t.viewer.shared.intermine.IntermineInstance
+import t.shared.viewer.intermine.IntermineInstance
 
 object Configuration {
 

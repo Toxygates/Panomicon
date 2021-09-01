@@ -27,10 +27,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.Utils;
 import t.viewer.client.components.ListChooser;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
-import t.viewer.shared.clustering.AlgorithmEnum;
-import t.viewer.shared.clustering.ProbeClustering;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
+import t.shared.viewer.clustering.AlgorithmEnum;
+import t.shared.viewer.clustering.ProbeClustering;
 
 import java.util.*;
 import java.util.Map.Entry;

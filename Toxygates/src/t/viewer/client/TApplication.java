@@ -54,7 +54,7 @@ import t.viewer.client.screen.Screen;
 import t.viewer.client.screen.ScreenManager;
 import t.viewer.client.screen.StartScreen;
 import t.viewer.client.storage.StorageProvider;
-import t.viewer.shared.AppInfo;
+import t.shared.viewer.AppInfo;
 
 import javax.annotation.Nullable;
 import java.util.*;

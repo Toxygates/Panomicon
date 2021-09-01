@@ -32,9 +32,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.Utils;
-import t.viewer.shared.clustering.Algorithm;
-import t.viewer.shared.clustering.Distances;
-import t.viewer.shared.clustering.Methods;
+import t.shared.viewer.clustering.Algorithm;
+import t.shared.viewer.clustering.Distances;
+import t.shared.viewer.clustering.Methods;
 
 import java.util.*;
 import java.util.logging.Logger;

@@ -28,12 +28,12 @@ import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
 import org.json.JSONObject
 
-import t.viewer.shared.StringList
+import t.shared.viewer.StringList
 import t.sparql._
 import t.sparql.ProbeStore
 import t.sparql.secondary._
 import t.server.viewer.PlatformRegistry
-import t.viewer.shared.intermine._
+import t.shared.viewer.intermine._
 import t.intermine._
 
 class IntermineConnector(instance: IntermineInstance,

@@ -27,10 +27,10 @@ import t.shared.common.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.network.PackedNetwork;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
-import t.viewer.shared.mirna.MirnaSource;
+import t.shared.viewer.AppInfo;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
+import t.shared.viewer.mirna.MirnaSource;
 
 import java.util.ArrayList;
 import java.util.List;

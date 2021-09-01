@@ -28,7 +28,7 @@ import t.server.viewer.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable
 import t.server.viewer.PlatformRegistry
 import t.server.viewer.matrix.ControllerParams
-import t.viewer.shared.network.{Network, NetworkInfo}
+import t.shared.viewer.network.{Network, NetworkInfo}
 
 /**
  * A MatrixController that turns the main matrix into a ManagedNetwork

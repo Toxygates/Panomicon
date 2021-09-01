@@ -31,7 +31,7 @@ import t.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import t.viewer.client.charts.google.GDTDataset;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.shared.Series;
+import t.shared.viewer.Series;
 
 import java.util.ArrayList;
 import java.util.Arrays;

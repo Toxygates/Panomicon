@@ -28,6 +28,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
+import t.shared.viewer.AppInfo;
+import t.shared.viewer.Association;
+import t.shared.viewer.ColumnFilter;
+import t.shared.viewer.ManagedMatrixInfo;
 import t.viewer.client.UIFactory;
 import t.viewer.client.screen.ScreenManager;
 import t.viewer.client.screen.groupdef.ColumnScreen;
@@ -42,8 +46,7 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.HeatmapViewer;
 import t.viewer.client.screen.data.MirnaSourceDialog;
-import t.viewer.shared.*;
-import t.viewer.shared.mirna.MirnaSource;
+import t.shared.viewer.mirna.MirnaSource;
 
 /**
  * A DataView based on a single ExpressionTable.

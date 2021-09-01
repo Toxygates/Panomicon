@@ -22,7 +22,7 @@ package t.viewer.client.dialog;
 import com.google.gwt.user.client.ui.*;
 
 import t.shared.common.Platform;
-import t.viewer.shared.AppInfo;
+import t.shared.viewer.AppInfo;
 
 public class MetadataInfo extends Composite {
 

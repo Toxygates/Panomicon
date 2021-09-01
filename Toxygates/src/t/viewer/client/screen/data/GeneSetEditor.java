@@ -39,7 +39,7 @@ import t.viewer.client.screen.ImportingScreen;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.StringList;
+import t.shared.viewer.StringList;
 
 import javax.annotation.Nullable;
 import java.util.*;

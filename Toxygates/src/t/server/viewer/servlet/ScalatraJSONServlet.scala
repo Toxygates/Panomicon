@@ -23,9 +23,9 @@ import t.server.viewer.Conversions.asJavaSample
 import t.server.viewer.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.server.viewer.rpc.NetworkLoader
 import t.server.viewer.{AssociationMasterLookup, Configuration, PlatformRegistry}
-import t.viewer.shared._
-import t.viewer.shared.mirna.MirnaSource
-import t.viewer.shared.network.Interaction
+import t.shared.viewer._
+import t.shared.viewer.mirna.MirnaSource
+import t.shared.viewer.network.Interaction
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 

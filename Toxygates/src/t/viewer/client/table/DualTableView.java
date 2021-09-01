@@ -38,12 +38,12 @@ import t.viewer.client.rpc.NetworkServiceAsync;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.NetworkMenu;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.Association;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.mirna.MirnaSource;
-import t.viewer.shared.network.Format;
-import t.viewer.shared.network.Network;
-import t.viewer.shared.network.NetworkInfo;
+import t.shared.viewer.Association;
+import t.shared.viewer.ColumnFilter;
+import t.shared.viewer.mirna.MirnaSource;
+import t.shared.viewer.network.Format;
+import t.shared.viewer.network.Network;
+import t.shared.viewer.network.NetworkInfo;
 
 import java.util.ArrayList;
 import java.util.HashSet;

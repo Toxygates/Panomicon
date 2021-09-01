@@ -23,7 +23,7 @@ import com.google.gwt.cell.client.TextCell;
 
 import t.shared.common.sample.ExpressionRow;
 import t.viewer.client.Utils;
-import t.viewer.shared.SortKey;
+import t.shared.viewer.SortKey;
 
 public class ExpressionColumn extends TooltipColumn<ExpressionRow> implements MatrixSortable {
   final int i;

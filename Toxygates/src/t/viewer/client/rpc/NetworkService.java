@@ -23,9 +23,9 @@ import java.util.List;
 
 import t.shared.common.ValueType;
 import t.shared.common.sample.Group;
-import t.viewer.shared.TimeoutException;
-import t.viewer.shared.mirna.MirnaSource;
-import t.viewer.shared.network.*;
+import t.shared.viewer.TimeoutException;
+import t.shared.viewer.mirna.MirnaSource;
+import t.shared.viewer.network.*;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

@@ -26,7 +26,7 @@ import t.model.sample.AttributeSet;
 import t.viewer.client.Resources;
 import t.viewer.client.UIFactory;
 import t.viewer.client.storage.StorageProvider;
-import t.viewer.shared.AppInfo;
+import t.shared.viewer.AppInfo;
 
 import java.util.List;
 import java.util.logging.Logger;

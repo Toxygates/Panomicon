@@ -19,7 +19,7 @@
 
 package t.viewer.client.table;
 
-import t.viewer.shared.SortKey;
+import t.shared.viewer.SortKey;
 
 public interface MatrixSortable {
 

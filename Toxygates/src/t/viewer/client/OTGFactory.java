@@ -36,8 +36,8 @@ import t.viewer.client.screen.data.GeneSetsMenu;
 import t.viewer.client.screen.groupdef.GroupInspector;
 import t.viewer.client.screen.groupdef.SelectionTDGrid;
 import t.viewer.client.screen.groupdef.TreatedControlSelTDGrid;
-import t.viewer.shared.StringList;
-import t.viewer.shared.intermine.IntermineInstance;
+import t.shared.viewer.StringList;
+import t.shared.viewer.intermine.IntermineInstance;
 
 
 /**

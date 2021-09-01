@@ -35,7 +35,7 @@ import t.sparql.SampleFilter
 import t.sparql.SampleStore
 import t.server.viewer.Conversions.asJavaSample
 import t.server.viewer.UnitsHelper
-import t.viewer.shared.OTGSchema
+import t.shared.viewer.OTGSchema
 
   /**
    * Companion object to create sample search objects; meant to encapsulate

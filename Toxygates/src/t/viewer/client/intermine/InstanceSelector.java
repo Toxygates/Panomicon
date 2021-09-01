@@ -20,8 +20,8 @@
 package t.viewer.client.intermine;
 
 import t.common.client.components.ItemSelector;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.intermine.IntermineInstance;
+import t.shared.viewer.AppInfo;
+import t.shared.viewer.intermine.IntermineInstance;
 
 public class InstanceSelector extends ItemSelector<IntermineInstance> {
 

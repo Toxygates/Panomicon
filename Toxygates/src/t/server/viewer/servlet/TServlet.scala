@@ -23,7 +23,7 @@ import javax.servlet.{ServletConfig, ServletException}
 import javax.servlet.http.HttpServlet
 import t.{BaseConfig, Context, Factory}
 import t.server.viewer.Configuration
-import t.viewer.shared.OTGSchema
+import t.shared.viewer.OTGSchema
 
 /**
  * Minimal trait for HTTPServlets to participate in the framework with a basic configuration.

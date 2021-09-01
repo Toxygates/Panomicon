@@ -28,8 +28,8 @@ import t.shared.common.SeriesType;
 import t.model.SampleClass;
 import t.model.sample.OTGAttribute;
 import t.viewer.client.components.PendingAsyncCallback;
-import t.viewer.shared.RankRule;
-import t.viewer.shared.RuleType;
+import t.shared.viewer.RankRule;
+import t.shared.viewer.RuleType;
 
 import java.util.List;
 

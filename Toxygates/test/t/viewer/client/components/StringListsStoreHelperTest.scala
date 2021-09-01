@@ -23,10 +23,10 @@ import java.util.logging.Logger
 import scala.collection.JavaConverters._
 import org.junit.runner.RunWith
 import t.TTestSuite
-import t.viewer.shared.ItemList
-import t.viewer.shared.StringList
+import t.shared.viewer.ItemList
+import t.shared.viewer.StringList
 import org.scalatest.junit.JUnitRunner
-import t.viewer.shared.clustering.ClusteringList
+import t.shared.viewer.clustering.ClusteringList
 
 @RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends TTestSuite {

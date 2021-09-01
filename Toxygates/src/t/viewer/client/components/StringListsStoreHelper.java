@@ -21,9 +21,9 @@ package t.viewer.client.components;
 import java.util.*;
 import java.util.logging.Logger;
 
-import t.viewer.shared.clustering.ClusteringList;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.shared.viewer.clustering.ClusteringList;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
 
 public class StringListsStoreHelper {
   private final static String SET_PREFIX = "Set:";

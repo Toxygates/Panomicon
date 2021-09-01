@@ -1,7 +1,7 @@
 package t.viewer.client.storage;
 
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
 
 public class StringListPacker extends Packer<StringList> {
 

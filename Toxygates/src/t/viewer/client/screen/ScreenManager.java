@@ -29,7 +29,7 @@ import t.viewer.client.rpc.SeriesServiceAsync;
 import t.shared.common.DataSchema;
 import t.viewer.client.rpc.*;
 import t.viewer.client.storage.StorageProvider;
-import t.viewer.shared.AppInfo;
+import t.shared.viewer.AppInfo;
 
 import java.util.logging.Logger;
 

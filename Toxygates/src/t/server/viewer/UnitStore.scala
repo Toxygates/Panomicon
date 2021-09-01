@@ -32,7 +32,7 @@ import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.SampleStore
 import t.server.viewer.Conversions._
-import t.viewer.shared.TimeoutException
+import t.shared.viewer.TimeoutException
 
 object UnitStore {
   def asUnit(ss: Iterable[Sample], schema: DataSchema) = new Unit(

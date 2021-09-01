@@ -23,8 +23,8 @@ import t.shared.common.sample.Group
 import t.shared.common.sample.{Sample => SSample}
 import t.shared.common.sample.{Unit => TUnit}
 import t.db._
-import t.viewer.shared.ColumnFilter
-import t.viewer.shared.ManagedMatrixInfo
+import t.shared.viewer.ColumnFilter
+import t.shared.viewer.ManagedMatrixInfo
 
 import scala.reflect.ClassTag
 

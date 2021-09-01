@@ -27,9 +27,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import t.shared.common.Dataset;
 import t.shared.common.SeriesType;
 import t.model.SampleClass;
-import t.viewer.shared.MatchResult;
-import t.viewer.shared.RankRule;
-import t.viewer.shared.Series;
+import t.shared.viewer.MatchResult;
+import t.shared.viewer.RankRule;
+import t.shared.viewer.Series;
 
 /**
  * A service for retrieving averaged time series and for ranking compounds.

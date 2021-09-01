@@ -19,9 +19,9 @@
 
 package t.viewer.client.intermine;
 
-import t.viewer.shared.StringList;
-import t.viewer.shared.intermine.EnrichmentParams;
-import t.viewer.shared.intermine.IntermineInstance;
+import t.shared.viewer.StringList;
+import t.shared.viewer.intermine.EnrichmentParams;
+import t.shared.viewer.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

@@ -19,11 +19,11 @@
 
 package t.viewer.client.storage;
 
-import t.viewer.shared.clustering.ClusteringList;
+import t.shared.viewer.clustering.ClusteringList;
 import t.shared.common.SharedUtils;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
-import t.viewer.shared.clustering.ProbeClustering;
+import t.shared.viewer.ItemList;
+import t.shared.viewer.StringList;
+import t.shared.viewer.clustering.ProbeClustering;
 
 public class ItemListPacker extends Packer<ItemList> {
 

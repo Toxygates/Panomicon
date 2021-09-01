@@ -24,8 +24,8 @@ import t.shared.common.AType;
 import t.shared.common.Pair;
 import t.shared.common.sample.Sample;
 import t.model.SampleClass;
-import t.viewer.shared.AppInfo;
-import t.viewer.shared.Association;
+import t.shared.viewer.AppInfo;
+import t.shared.viewer.Association;
 
 import java.util.List;
 

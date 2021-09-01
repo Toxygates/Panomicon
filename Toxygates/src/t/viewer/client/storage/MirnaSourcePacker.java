@@ -21,7 +21,7 @@ package t.viewer.client.storage;
 
 import javax.annotation.Nullable;
 
-import t.viewer.shared.mirna.MirnaSource;
+import t.shared.viewer.mirna.MirnaSource;
 
 public class MirnaSourcePacker extends Packer<MirnaSource> {
 

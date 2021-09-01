@@ -29,7 +29,7 @@ import t.shared.common.sample.ExpressionRow;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.screen.Screen;
-import t.viewer.shared.Association;
+import t.shared.viewer.Association;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

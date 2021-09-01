@@ -29,7 +29,7 @@ import t.sparql.secondary._
 import t.sparql.{toBioMap, _}
 import t.server.viewer.Conversions._
 import t.server.viewer.network.NetworkController
-import t.viewer.shared.Association
+import t.shared.viewer.Association
 
 import scala.collection.{Set => CSet}
 

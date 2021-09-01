@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import t.shared.common.sample.ExpressionRow;
-import t.viewer.shared.AssociationValue;
+import t.shared.viewer.AssociationValue;
 
 /**
  * Summarises a single association column as a histogram for a set of rows.

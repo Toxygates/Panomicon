@@ -28,8 +28,8 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.SuggestBox;
 import t.common.client.components.ItemSelector;
 import t.model.SampleClass;
-import t.viewer.shared.RankRule;
-import t.viewer.shared.RuleType;
+import t.shared.viewer.RankRule;
+import t.shared.viewer.RuleType;
 
 import java.util.List;
 

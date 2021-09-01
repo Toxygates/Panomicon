@@ -23,20 +23,20 @@ import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.shared.viewer.*;
 import t.viewer.client.clustering.ClusteringServiceAsync;
-import t.viewer.shared.clustering.Algorithm;
+import t.shared.viewer.clustering.Algorithm;
 import t.shared.common.ValueType;
 import t.shared.common.sample.ExpressionRow;
 import t.shared.common.sample.Group;
-import t.viewer.shared.*;
 
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
   void loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
-      List<ColumnFilter> initFilters, AsyncCallback<ManagedMatrixInfo> callback);
+                  List<ColumnFilter> initFilters, AsyncCallback<ManagedMatrixInfo> callback);
 
   void matrixRows(String id, int offset, int size, SortKey sortKey, boolean ascending,
-      AsyncCallback<List<ExpressionRow>> callback);
+                  AsyncCallback<List<ExpressionRow>> callback);
 
   void selectProbes(String id, String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
 

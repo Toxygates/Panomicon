@@ -24,8 +24,8 @@ import t.sparql.ProbeStore
 import t.viewer.client.intermine.IntermineService
 import t.server.viewer.{Configuration, PlatformRegistry}
 import t.server.viewer.rpc.{TServiceServlet}
-import t.viewer.shared.StringList
-import t.viewer.shared.intermine._
+import t.shared.viewer.StringList
+import t.shared.viewer.intermine._
 
 import scala.collection.JavaConverters._
 

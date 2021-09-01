@@ -30,8 +30,8 @@ import t.viewer.client.screen.ranking.CompoundRanker;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
 import t.shared.common.DataSchema;
-import t.viewer.shared.StringList;
-import t.viewer.shared.intermine.IntermineInstance;
+import t.shared.viewer.StringList;
+import t.shared.viewer.intermine.IntermineInstance;
 
 import javax.annotation.Nullable;
 import java.util.List;

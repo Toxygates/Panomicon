@@ -38,7 +38,7 @@ import com.google.gwt.user.client.ui.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.*;
 import t.viewer.client.storage.NamedObjectStorage;
-import t.viewer.shared.network.Network;
+import t.shared.viewer.network.Network;
 
 public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   private static final String[] injectList = {

@@ -24,10 +24,12 @@ import t.shared.common.{FirstKeyedPair, GWTTypes, Platform}
 import t.platform.mirna.MiRDBConverter
 import t.sparql.{ProbeStore, _}
 import t.server.viewer.Conversions._
-import t.viewer.shared.{AppInfo, StringList}
-import t.viewer.shared.clustering.ProbeClustering
-import t.viewer.shared.mirna.MirnaSource
+import t.shared.viewer.StringList
+import t.shared.viewer.clustering.ProbeClustering
+import t.shared.viewer.mirna.MirnaSource
 import t.server.common.GWTUtils._
+import t.shared.viewer.{AppInfo, StringList}
+
 import scala.collection.JavaConverters._
 
 class AppInfoLoader(probeStore: ProbeStore,
