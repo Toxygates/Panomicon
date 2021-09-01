@@ -19,8 +19,8 @@
 
 package t.viewer.client;
 
-import t.common.client.ValueAcceptor;
-import t.common.client.components.StringArrayTable;
+import t.gwt.common.client.ValueAcceptor;
+import t.gwt.common.client.components.StringArrayTable;
 import t.shared.common.Dataset;
 import t.model.sample.Attribute;
 import t.viewer.client.components.PendingAsyncCallback;

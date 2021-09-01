@@ -26,7 +26,7 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.SuggestBox;
-import t.common.client.components.ItemSelector;
+import t.gwt.common.client.components.ItemSelector;
 import t.model.SampleClass;
 import t.shared.viewer.RankRule;
 import t.shared.viewer.RuleType;

@@ -26,7 +26,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.common.client.components.ItemSelector;
+import t.gwt.common.client.components.ItemSelector;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.shared.viewer.ColumnFilter;

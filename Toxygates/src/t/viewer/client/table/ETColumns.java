@@ -26,8 +26,8 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 
-import t.common.client.ImageClickCell;
-import t.common.client.Resources;
+import t.gwt.common.client.ImageClickCell;
+import t.gwt.common.client.Resources;
 import t.shared.common.*;
 import t.shared.common.sample.ExpressionRow;
 import t.shared.common.sample.Group;

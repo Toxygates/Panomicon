@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.*;
 
-import t.common.client.maintenance.BatchEditor;
+import t.gwt.common.client.maintenance.BatchEditor;
 import t.shared.common.Dataset;
 import t.shared.common.maintenance.Batch;
 import t.shared.common.maintenance.Instance;

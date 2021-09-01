@@ -19,7 +19,7 @@
 
 package t.viewer.client.intermine;
 
-import t.common.client.components.ItemSelector;
+import t.gwt.common.client.components.ItemSelector;
 import t.shared.viewer.AppInfo;
 import t.shared.viewer.intermine.IntermineInstance;
 

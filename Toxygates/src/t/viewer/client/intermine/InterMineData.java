@@ -24,7 +24,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 import t.viewer.client.screen.ImportingScreen;
 import t.shared.viewer.clustering.ClusteringList;
-import t.common.client.components.StringArrayTable;
+import t.gwt.common.client.components.StringArrayTable;
 import t.shared.common.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.PendingAsyncCallback;

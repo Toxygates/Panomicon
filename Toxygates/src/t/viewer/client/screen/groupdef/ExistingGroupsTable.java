@@ -26,7 +26,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
-import t.common.client.components.SelectionTable;
+import t.gwt.common.client.components.SelectionTable;
 import t.model.sample.CoreParameter;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.screen.groupdef.GroupInspector.ButtonCellResources;

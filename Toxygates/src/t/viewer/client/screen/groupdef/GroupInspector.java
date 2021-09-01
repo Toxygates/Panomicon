@@ -27,7 +27,7 @@ import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.screen.Screen;
-import t.common.client.components.SelectionTable;
+import t.gwt.common.client.components.SelectionTable;
 import t.shared.common.DataSchema;
 import t.shared.common.Dataset;
 import t.shared.common.SharedUtils;
@@ -143,9 +143,9 @@ abstract public class GroupInspector extends Composite implements RequiresResize
     existingGroupsTable.setVisible(false);
     existingGroupsTable.table().setRowStyles(new GroupColouring());
     existingGroupsTable.setSize("100%", "100px");
-    splitPanel.addSouth(t.common.client.Utils.makeScrolled(existingGroupsTable), 200);
+    splitPanel.addSouth(t.gwt.common.client.Utils.makeScrolled(existingGroupsTable), 200);
 
-    splitPanel.add(t.common.client.Utils.makeScrolled(verticalPanel));
+    splitPanel.add(t.gwt.common.client.Utils.makeScrolled(verticalPanel));
   }
   
   private void setupToolPanel() {

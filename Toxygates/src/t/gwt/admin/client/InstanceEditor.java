@@ -23,9 +23,9 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.ItemSelector;
-import t.common.client.maintenance.AccessPolicy;
-import t.common.client.maintenance.ManagedItemEditor;
+import t.gwt.common.client.components.ItemSelector;
+import t.gwt.common.client.maintenance.AccessPolicy;
+import t.gwt.common.client.maintenance.ManagedItemEditor;
 import t.shared.common.maintenance.Instance;
 
 import com.google.gwt.core.shared.GWT;

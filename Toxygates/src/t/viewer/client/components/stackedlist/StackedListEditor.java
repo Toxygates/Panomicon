@@ -29,8 +29,8 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
-import t.common.client.components.SetEditor;
-import t.common.client.components.StringSelectionTable;
+import t.gwt.common.client.components.SetEditor;
+import t.gwt.common.client.components.StringSelectionTable;
 import t.viewer.client.Utils;
 import t.viewer.client.components.ListChooser;
 import t.viewer.client.storage.NamedObjectStorage;

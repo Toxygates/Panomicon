@@ -33,7 +33,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 
 import t.viewer.client.screen.Screen;
-import t.common.client.Utils;
+import t.gwt.common.client.Utils;
 import t.shared.common.DataSchema;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.TickMenuItem;

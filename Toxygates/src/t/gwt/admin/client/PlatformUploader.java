@@ -22,8 +22,8 @@ package t.gwt.admin.client;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import t.common.client.maintenance.ItemUploader;
-import t.common.client.maintenance.UploadWrapper;
+import t.gwt.common.client.maintenance.ItemUploader;
+import t.gwt.common.client.maintenance.UploadWrapper;
 import t.shared.admin.PlatformType;
 import t.shared.common.maintenance.MaintenanceConstants;
 

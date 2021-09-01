@@ -23,7 +23,7 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.client.DataRecordSelector;
+import t.gwt.common.client.DataRecordSelector;
 import t.shared.common.maintenance.Batch;
 import t.shared.common.maintenance.Instance;
 

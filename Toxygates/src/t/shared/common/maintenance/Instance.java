@@ -21,7 +21,7 @@ package t.shared.common.maintenance;
 
 import java.util.Date;
 
-import t.common.client.maintenance.AccessPolicy;
+import t.gwt.common.client.maintenance.AccessPolicy;
 import t.shared.common.ManagedItem;
 
 @SuppressWarnings("serial")

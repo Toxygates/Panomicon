@@ -22,8 +22,8 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.common.client.maintenance.ManagedItemEditor;
-import t.common.client.maintenance.TaskCallback;
+import t.gwt.common.client.maintenance.ManagedItemEditor;
+import t.gwt.common.client.maintenance.TaskCallback;
 import t.shared.common.Platform;
 
 import com.google.gwt.core.shared.GWT;

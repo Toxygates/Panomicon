@@ -22,7 +22,7 @@ package t.viewer.client.table;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import t.common.client.components.StringArrayTable;
+import t.gwt.common.client.components.StringArrayTable;
 import t.shared.common.AType;
 import t.shared.common.DataSchema;
 import t.shared.common.sample.ExpressionRow;

@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.model.sample.OTGAttribute;
 import t.viewer.client.screen.Screen;
-import t.common.client.components.ItemSelector;
+import t.gwt.common.client.components.ItemSelector;
 import t.shared.common.*;
 import t.shared.common.sample.*;
 import t.model.sample.Attribute;

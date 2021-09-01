@@ -20,7 +20,7 @@
 package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import t.common.client.rpc.BatchOperationsAsync;
+import t.gwt.common.client.rpc.BatchOperationsAsync;
 
 public interface UserDataServiceAsync extends BatchOperationsAsync {
     void newUserKey(AsyncCallback<String> callback);

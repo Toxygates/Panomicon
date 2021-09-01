@@ -5,7 +5,7 @@
 
 <module rename-to="AdminConsole">
 	<inherits name="com.google.gwt.user.User" />
-	<inherits name='t.common.Common' />
+	<inherits name='t.gwt.common.Common' />
 	<inherits name='com.google.gwt.user.theme.clean.Clean' />
 	
 	<source path="client" />

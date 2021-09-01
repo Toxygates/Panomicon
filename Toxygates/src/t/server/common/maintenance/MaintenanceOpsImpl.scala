@@ -37,7 +37,7 @@ import t.server.viewer.rpc.TServiceServlet
 /**
  * Servlet routines for uploading files and running tasks.
  */
-trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
+trait MaintenanceOpsImpl extends t.gwt.common.client.rpc.MaintenanceOperations {
   this: TServiceServlet =>
 
   //Methods for accessing the http request's thread local state.

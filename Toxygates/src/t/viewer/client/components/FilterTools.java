@@ -20,7 +20,7 @@
 package t.viewer.client.components;
 
 import com.google.gwt.user.client.ui.*;
-import t.common.client.Utils;
+import t.gwt.common.client.Utils;
 import t.shared.common.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.future.Future;

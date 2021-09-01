@@ -19,7 +19,7 @@
 
 package t.viewer.client;
 
-import static t.common.client.Utils.makeScrolled;
+import static t.gwt.common.client.Utils.makeScrolled;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -48,7 +48,7 @@ import t.viewer.client.dialog.DialogPosition;
  */
 public class Utils {
   public static String formatNumber(double v) {
-    return t.common.client.Utils.formatNumber(v);    
+    return t.gwt.common.client.Utils.formatNumber(v);
   }
 
   public static HorizontalPanel mkHorizontalPanel() {

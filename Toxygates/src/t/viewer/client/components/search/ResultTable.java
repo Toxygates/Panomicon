@@ -26,8 +26,8 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.*;
 
 import t.model.sample.OTGAttribute;
-import t.common.client.Utils;
-import t.common.client.components.SelectionTable;
+import t.gwt.common.client.Utils;
+import t.gwt.common.client.components.SelectionTable;
 import t.shared.common.sample.Unit;
 import t.shared.common.sample.search.MatchCondition;
 import t.model.sample.Attribute;

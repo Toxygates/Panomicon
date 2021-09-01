@@ -23,7 +23,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.common.client.maintenance.ManagedItemEditor;
+import t.gwt.common.client.maintenance.ManagedItemEditor;
 import t.shared.common.Dataset;
 
 import com.google.gwt.core.shared.GWT;

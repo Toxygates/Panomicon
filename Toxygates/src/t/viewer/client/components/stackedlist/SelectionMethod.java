@@ -20,7 +20,7 @@ package t.viewer.client.components.stackedlist;
 
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import t.common.client.components.SetEditor;
+import t.gwt.common.client.components.SetEditor;
 
 import javax.annotation.Nullable;
 import java.util.*;

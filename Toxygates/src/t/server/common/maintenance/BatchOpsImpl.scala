@@ -39,7 +39,7 @@ import scala.language.implicitConversions
  * Routines for servlets that support the management of batches.
  */
 trait BatchOpsImpl extends MaintenanceOpsImpl
-    with t.common.client.rpc.BatchOperations {
+    with t.gwt.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
 
   /**

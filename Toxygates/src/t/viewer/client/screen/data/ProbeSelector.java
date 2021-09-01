@@ -24,7 +24,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-import t.common.client.components.ResizingListBox;
+import t.gwt.common.client.components.ResizingListBox;
 import t.shared.common.SharedUtils;
 import t.shared.common.Term;
 import t.shared.common.sample.Sample;

@@ -23,7 +23,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 import t.viewer.client.screen.Screen;
-import t.common.client.components.SetEditor;
+import t.gwt.common.client.components.SetEditor;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.stackedlist.FreeEdit;
 import t.viewer.client.components.stackedlist.StackedListEditor;

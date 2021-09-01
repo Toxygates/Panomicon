@@ -21,7 +21,7 @@ package t.viewer.client;
 
 import com.google.gwt.resources.client.*;
 
-public interface Resources extends t.common.client.Resources {
+public interface Resources extends t.gwt.common.client.Resources {
 
   interface OtgCssResource extends CssResource {
     String group0_color();

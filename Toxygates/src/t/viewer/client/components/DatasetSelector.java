@@ -23,7 +23,9 @@ import java.util.*;
 
 import com.google.gwt.user.client.ui.*;
 
-import t.common.client.*;
+import t.gwt.common.client.DataRecordSelector;
+import t.gwt.common.client.RunCommand;
+import t.gwt.common.client.Utils;
 import t.shared.common.Dataset;
 
 public class DatasetSelector extends Composite {

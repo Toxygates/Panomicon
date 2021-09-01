@@ -27,7 +27,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
-import t.common.client.components.ItemSelector;
+import t.gwt.common.client.components.ItemSelector;
 import t.shared.common.sample.search.AtomicMatch;
 import t.shared.common.sample.search.MatchType;
 import t.model.sample.Attribute;

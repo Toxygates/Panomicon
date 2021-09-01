@@ -25,8 +25,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import t.viewer.client.components.GeneOracle;
 import t.viewer.client.screen.Screen;
-import t.common.client.components.ResizingDockLayoutPanel;
-import t.common.client.components.ResizingListBox;
+import t.gwt.common.client.components.ResizingDockLayoutPanel;
+import t.gwt.common.client.components.ResizingListBox;
 import t.shared.common.SharedUtils;
 import t.shared.common.Term;
 import t.shared.common.sample.Group;
@@ -46,7 +46,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static t.common.client.Utils.makeButton;
+import static t.gwt.common.client.Utils.makeButton;
 
 public class GeneSetEditor extends Composite {
 

@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import t.common.client.components.StringSelectionTable;
+import t.gwt.common.client.components.StringSelectionTable;
 import t.viewer.client.Utils;
 
 import java.util.*;

@@ -23,12 +23,12 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import t.common.client.components.StringArrayTable;
+import t.gwt.common.client.components.StringArrayTable;
 import t.viewer.client.Utils;
 
 import javax.annotation.Nullable;
 
-import static t.common.client.Utils.makeScrolled;
+import static t.gwt.common.client.Utils.makeScrolled;
 
 /**
  * This is the first screen, where a dataset can be selected.

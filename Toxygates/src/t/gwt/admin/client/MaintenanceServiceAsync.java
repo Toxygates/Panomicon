@@ -20,7 +20,7 @@
 package t.gwt.admin.client;
 
 import t.shared.admin.PlatformType;
-import t.common.client.rpc.BatchOperationsAsync;
+import t.gwt.common.client.rpc.BatchOperationsAsync;
 import t.shared.common.*;
 import t.shared.common.maintenance.Batch;
 import t.shared.common.maintenance.Instance;

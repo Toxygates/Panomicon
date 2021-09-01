@@ -38,7 +38,7 @@ import t.shared.viewer.RankRule;
 
 import java.util.List;
 
-import static t.common.client.Utils.makeScrolled;
+import static t.gwt.common.client.Utils.makeScrolled;
 
 public class RankingScreen extends FilterAndSelectorScreen implements FilterTools.Delegate,
     RankingCompoundSelector.Delegate {

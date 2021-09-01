@@ -23,7 +23,7 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import t.shared.admin.PlatformType;
-import t.common.client.rpc.BatchOperations;
+import t.gwt.common.client.rpc.BatchOperations;
 import t.shared.common.*;
 import t.shared.common.maintenance.Instance;
 import t.shared.common.maintenance.MaintenanceException;

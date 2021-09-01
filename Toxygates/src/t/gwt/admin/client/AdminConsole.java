@@ -31,8 +31,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ListDataProvider;
 
-import t.common.client.Resources;
-import t.common.client.maintenance.*;
+import t.gwt.common.client.Resources;
+import t.gwt.common.client.maintenance.*;
 import t.shared.common.*;
 import t.shared.common.maintenance.Batch;
 import t.shared.common.maintenance.Instance;

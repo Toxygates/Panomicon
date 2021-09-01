@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import t.common.client.components.ItemSelector;
+import t.gwt.common.client.components.ItemSelector;
 import t.viewer.client.screen.Screen;
 import t.shared.viewer.intermine.*;
 
