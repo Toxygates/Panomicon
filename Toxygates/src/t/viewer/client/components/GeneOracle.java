@@ -22,7 +22,7 @@ package t.viewer.client.components;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import t.common.shared.Pair;
+import t.shared.common.Pair;
 import t.model.SampleClass;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.screen.Screen;

@@ -24,7 +24,7 @@ import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.groupdef.ColumnScreen;
 import t.viewer.client.screen.ranking.RankingScreen;
 import t.viewer.shared.OTGSchema;
-import t.common.shared.DataSchema;
+import t.shared.common.DataSchema;
 
 public class OTGViewer extends TApplication {
 

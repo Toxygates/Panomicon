@@ -26,9 +26,9 @@ import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.DefaultHeaderOrFooterBuilder;
 
-import t.common.shared.DataSchema;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
+import t.shared.common.DataSchema;
+import t.shared.common.sample.ExpressionRow;
+import t.shared.common.sample.Group;
 import t.viewer.shared.ManagedMatrixInfo;
 
 /**

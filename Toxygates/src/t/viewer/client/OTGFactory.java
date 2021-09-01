@@ -28,7 +28,7 @@ import t.viewer.client.intermine.InterMineData;
 import t.viewer.client.screen.groupdef.TreatedControlGroupInspector;
 import t.viewer.client.screen.ranking.CompoundRanker;
 import t.viewer.client.screen.ranking.SimpleCompoundRanker;
-import t.common.shared.DataSchema;
+import t.shared.common.DataSchema;
 import t.viewer.client.components.GroupLabels;
 import t.viewer.client.screen.data.DataScreen;
 import t.viewer.client.screen.data.GeneSetEditor;

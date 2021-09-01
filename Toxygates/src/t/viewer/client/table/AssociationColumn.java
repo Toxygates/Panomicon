@@ -20,7 +20,7 @@
 package t.viewer.client.table;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
-import t.common.shared.AType;
+import t.shared.common.AType;
 import t.viewer.shared.Association;
 import t.viewer.shared.AssociationValue;
 import t.viewer.shared.SortKey;

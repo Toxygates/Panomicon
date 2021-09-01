@@ -21,7 +21,7 @@ package t.viewer.shared;
 
 import java.io.Serializable;
 
-import t.common.shared.AType;
+import t.shared.common.AType;
 
 public interface SortKey extends Serializable {
   @SuppressWarnings("serial")

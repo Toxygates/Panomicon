@@ -19,7 +19,7 @@
 
 package t.server.common
 
-import t.common.shared.GWTTypes
+import t.shared.common.GWTTypes
 
 /**
  * Builders of and conversions to/from GWT serialized objects.

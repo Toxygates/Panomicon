@@ -24,8 +24,8 @@ import java.util.List;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-import t.common.shared.Dataset;
-import t.common.shared.SeriesType;
+import t.shared.common.Dataset;
+import t.shared.common.SeriesType;
 import t.model.SampleClass;
 import t.viewer.shared.MatchResult;
 import t.viewer.shared.RankRule;

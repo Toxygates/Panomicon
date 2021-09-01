@@ -23,8 +23,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import t.viewer.shared.MatchResult;
 import t.viewer.shared.RankRule;
 import t.viewer.shared.Series;
-import t.common.shared.Dataset;
-import t.common.shared.SeriesType;
+import t.shared.common.Dataset;
+import t.shared.common.SeriesType;
 import t.model.SampleClass;
 
 import java.util.List;

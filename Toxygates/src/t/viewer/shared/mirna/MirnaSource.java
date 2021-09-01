@@ -24,7 +24,7 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.Pair;
+import t.shared.common.Pair;
 
 @SuppressWarnings("serial")
 public class MirnaSource implements Serializable  {

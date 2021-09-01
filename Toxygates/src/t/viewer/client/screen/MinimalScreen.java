@@ -26,7 +26,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 import t.model.sample.AttributeSet;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;

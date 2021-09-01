@@ -19,7 +19,7 @@
 
 package t.server
 
-import t.common.shared.AType
+import t.shared.common.AType
 import t.sparql._
 import t.platform.Probe
 import t.model.SampleClass

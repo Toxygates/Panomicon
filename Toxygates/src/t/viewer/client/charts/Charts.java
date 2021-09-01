@@ -20,8 +20,8 @@
 package t.viewer.client.charts;
 
 import t.viewer.client.screen.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
+import t.shared.common.DataSchema;
+import t.shared.common.SharedUtils;
 import t.model.SampleClass;
 import t.viewer.client.charts.google.GVizFactory;
 import t.viewer.client.storage.StorageProvider;

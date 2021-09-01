@@ -19,7 +19,7 @@
 
 package t.viewer.shared.clustering;
 
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 

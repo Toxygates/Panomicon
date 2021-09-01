@@ -19,7 +19,7 @@
 
 package t.server.viewer
 
-import t.common.shared.AType
+import t.shared.common.AType
 import t.model.SampleClass
 import t.model.sample.{Attribute, OTGAttribute}
 import t.sparql.secondary._

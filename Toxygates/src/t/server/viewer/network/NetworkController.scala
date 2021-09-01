@@ -21,8 +21,8 @@ package t.server.viewer.network
 
 import t.server.viewer.matrix.MatrixController
 import t.Context
-import t.common.shared.ValueType
-import t.common.shared.sample.Group
+import t.shared.common.ValueType
+import t.shared.common.sample.Group
 import t.db.MatrixContext
 import t.server.viewer.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable

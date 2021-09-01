@@ -19,7 +19,7 @@
 package t.viewer.client.screen.groupdef;
 
 import t.viewer.client.screen.Screen;
-import t.common.shared.sample.Unit;
+import t.shared.common.sample.Unit;
 
 /**
  * A SelectionTDGrid that displays counts of both treated and control samples.

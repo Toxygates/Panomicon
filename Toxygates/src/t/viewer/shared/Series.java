@@ -19,8 +19,8 @@
 
 package t.viewer.shared;
 
-import t.common.shared.HasClass;
-import t.common.shared.sample.ExpressionValue;
+import t.shared.common.HasClass;
+import t.shared.common.sample.ExpressionValue;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 

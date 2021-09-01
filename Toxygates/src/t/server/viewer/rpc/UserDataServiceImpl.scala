@@ -21,8 +21,8 @@ package t.server.viewer.rpc
 
 import javax.servlet.http.HttpSession
 import t.server.common.maintenance.BatchOpsImpl
-import t.common.shared.Dataset
-import t.common.shared.maintenance.{Batch, MaintenanceException}
+import t.shared.common.Dataset
+import t.shared.common.maintenance.{Batch, MaintenanceException}
 import t.db.Metadata
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter.{Platform, Treatment}

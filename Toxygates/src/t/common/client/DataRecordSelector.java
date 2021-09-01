@@ -22,7 +22,7 @@ package t.common.client;
 import java.util.*;
 
 import t.common.client.components.SelectionTable;
-import t.common.shared.DataRecord;
+import t.shared.common.DataRecord;
 
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;

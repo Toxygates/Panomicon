@@ -25,11 +25,11 @@ import t.model.sample.OTGAttribute._
 import t.TTestSuite
 import t.server.common.sample.search.IndividualSearch
 import t.server.common.sample.search.UnitSearch
-import t.common.shared.sample.search.AndMatch
-import t.common.shared.sample.search.AtomicMatch
-import t.common.shared.sample.search.MatchCondition
-import t.common.shared.sample.search.MatchType
-import t.common.shared.sample.search.OrMatch
+import t.shared.common.sample.search.AndMatch
+import t.shared.common.sample.search.AtomicMatch
+import t.shared.common.sample.search.MatchCondition
+import t.shared.common.sample.search.MatchType
+import t.shared.common.sample.search.OrMatch
 import t.model.sample.Attribute
 import t.server.viewer.Conversions._
 import org.scalatest.junit.JUnitRunner

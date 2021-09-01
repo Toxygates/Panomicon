@@ -19,8 +19,8 @@
 
 package t.common.client.rpc;
 
-import t.common.shared.ManagedItem;
-import t.common.shared.maintenance.*;
+import t.shared.common.ManagedItem;
+import t.shared.common.maintenance.*;
 
 /**
  * Common maintenance operations for a RPC service.

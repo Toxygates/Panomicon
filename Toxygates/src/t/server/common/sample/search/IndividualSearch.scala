@@ -20,16 +20,16 @@
 package t.server.common.sample.search
 
 import t.model.sample.OTGAttribute._
-import t.common.shared.DataSchema
-import t.common.shared.sample.Sample
-import t.common.shared.sample.search.MatchCondition
+import t.shared.common.DataSchema
+import t.shared.common.sample.Sample
+import t.shared.common.sample.search.MatchCondition
 import t.db.SimpleVarianceSet
 import t.model.SampleClass
 import t.model.sample.{AttributeSet, CoreParameter, VarianceSet}
 import t.sparql.SampleFilter
 import t.sparql.SampleStore
 import t.server.viewer.UnitsHelper
-import t.common.shared.sample.Unit
+import t.shared.common.sample.Unit
 
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 

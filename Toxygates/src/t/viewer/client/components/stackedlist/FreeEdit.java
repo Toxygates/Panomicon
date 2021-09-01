@@ -27,7 +27,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 import t.viewer.client.Utils;
 import t.viewer.client.components.ResizableTextArea;
 

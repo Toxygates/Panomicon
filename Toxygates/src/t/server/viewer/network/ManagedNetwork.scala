@@ -24,7 +24,7 @@ import t.server.viewer.matrix._
 import t.platform.mirna._
 import t.server.viewer.PlatformRegistry
 import scala.collection.JavaConverters._
-import t.common.shared.GWTTypes
+import t.shared.common.GWTTypes
 import t.server.common.GWTUtils
 
 /**

@@ -19,7 +19,7 @@
 
 package t.server.viewer
 
-import t.common.shared.Platform
+import t.shared.common.Platform
 
 /**
  * Conversion into t.common.shared.Platform

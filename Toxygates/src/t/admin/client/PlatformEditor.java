@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 
 import t.common.client.maintenance.ManagedItemEditor;
 import t.common.client.maintenance.TaskCallback;
-import t.common.shared.Platform;
+import t.shared.common.Platform;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.TextArea;

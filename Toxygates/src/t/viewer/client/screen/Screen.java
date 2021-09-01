@@ -21,7 +21,7 @@ package t.viewer.client.screen;
 
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
-import t.common.shared.DataSchema;
+import t.shared.common.DataSchema;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Resources;
 import t.viewer.client.UIFactory;

@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.*;
 
-import t.common.shared.Pair;
+import t.shared.common.Pair;
 import t.viewer.client.Utils;
 import t.viewer.shared.mirna.MirnaSource;
 

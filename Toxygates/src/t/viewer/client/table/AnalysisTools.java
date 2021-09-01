@@ -25,9 +25,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import t.common.shared.ValueType;
-import t.common.shared.sample.DataColumn;
-import t.common.shared.sample.Group;
+import t.shared.common.ValueType;
+import t.shared.common.sample.DataColumn;
+import t.shared.common.sample.Group;
 import t.viewer.client.Analytics;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Utils;

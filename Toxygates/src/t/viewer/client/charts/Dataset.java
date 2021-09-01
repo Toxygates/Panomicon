@@ -19,9 +19,9 @@
 
 package t.viewer.client.charts;
 
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Sample;
+import t.shared.common.DataSchema;
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.Sample;
 import t.model.SampleClass;
 
 import javax.annotation.Nullable;

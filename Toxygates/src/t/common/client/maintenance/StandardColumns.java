@@ -21,7 +21,7 @@ package t.common.client.maintenance;
 
 import java.util.Date;
 
-import t.common.shared.DataRecord;
+import t.shared.common.DataRecord;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;

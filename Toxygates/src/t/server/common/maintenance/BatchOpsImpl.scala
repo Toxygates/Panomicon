@@ -21,9 +21,9 @@ package t.server.common.maintenance
 
 import javax.annotation.Nullable
 import t.BaseConfig
-import t.common.shared.{Dataset, ManagedItem}
-import t.common.shared.maintenance.MaintenanceConstants._
-import t.common.shared.maintenance.{Batch, BatchUploadException, MaintenanceException}
+import t.shared.common.{Dataset, ManagedItem}
+import t.shared.common.maintenance.MaintenanceConstants._
+import t.shared.common.maintenance.{Batch, BatchUploadException, MaintenanceException}
 import t.db.{IDConverter, Metadata}
 import t.manager.BatchManager
 import t.model.sample.CoreParameter.{Platform, Type, Treatment}

@@ -24,9 +24,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.ExpressionValue;
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.ExpressionRow;
+import t.shared.common.sample.ExpressionValue;
 import t.viewer.shared.ManagedMatrixInfo;
 
 @SuppressWarnings("serial")

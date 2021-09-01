@@ -19,7 +19,7 @@
 
 package t.common.testing
 
-import t.common.shared.sample.Group
+import t.shared.common.sample.Group
 
 import t.db.ColumnExpressionData
 import t.server.viewer.Conversions._

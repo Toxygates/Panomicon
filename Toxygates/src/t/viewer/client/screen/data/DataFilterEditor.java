@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import t.viewer.client.screen.Screen;
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 

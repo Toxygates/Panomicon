@@ -23,9 +23,9 @@ import java.util
 import java.util.{List => JList}
 
 import t.server.common.GWTUtils._
-import t.common.shared._
-import t.common.shared.sample._
-import t.common.shared.sample.search.MatchCondition
+import t.shared.common._
+import t.shared.common.sample._
+import t.shared.common.sample.search.MatchCondition
 import t.db
 import t.db.SimpleVarianceSet
 import t.model.SampleClass
@@ -37,7 +37,7 @@ import t.server.viewer.CSVHelper.CSVFile
 import t.server.viewer.Conversions._
 import t.server.viewer.{rpc, _}
 import t.viewer.shared.{Pathology, _}
-import t.common.shared.Dataset
+import t.shared.common.Dataset
 
 import scala.collection.JavaConverters._
 
@@ -50,7 +50,7 @@ class SampleState(instanceURI: Option[String]) {
  */
 class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService {
 
-  type DataColumn = t.common.shared.sample.DataColumn[Sample]
+  type DataColumn = t.shared.common.sample.DataColumn[Sample]
 
   var instanceURI: Option[String] = None
 

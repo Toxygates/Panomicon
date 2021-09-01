@@ -29,8 +29,8 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.view.client.SingleSelectionModel;
 
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.ExpressionRow;
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.ExpressionRow;
 import t.viewer.client.table.AssociationSummary;
 import t.viewer.client.table.DualTableView.DualMode;
 import t.viewer.client.table.ExpressionTable;

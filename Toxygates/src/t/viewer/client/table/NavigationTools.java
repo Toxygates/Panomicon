@@ -24,8 +24,8 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.ui.*;
 
-import t.common.shared.ValueType;
-import t.common.shared.sample.ExpressionRow;
+import t.shared.common.ValueType;
+import t.shared.common.sample.ExpressionRow;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 

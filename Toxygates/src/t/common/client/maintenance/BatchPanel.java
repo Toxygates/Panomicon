@@ -33,7 +33,7 @@ import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.client.components.StringArrayTable;
 import t.common.client.rpc.BatchOperationsAsync;
-import t.common.shared.maintenance.Batch;
+import t.shared.common.maintenance.Batch;
 
 abstract public class BatchPanel extends ManagerPanel<Batch> {
 

@@ -21,13 +21,13 @@ package t.server.common.sample.search
 
 import scala.collection.JavaConverters._
 import scala.collection.Seq
-import t.common.shared.DataSchema
-import t.common.shared.sample.Sample
-import t.common.shared.sample.search.AndMatch
-import t.common.shared.sample.search.AtomicMatch
-import t.common.shared.sample.search.MatchCondition
-import t.common.shared.sample.search.MatchType
-import t.common.shared.sample.search.OrMatch
+import t.shared.common.DataSchema
+import t.shared.common.sample.Sample
+import t.shared.common.sample.search.AndMatch
+import t.shared.common.sample.search.AtomicMatch
+import t.shared.common.sample.search.MatchCondition
+import t.shared.common.sample.search.MatchType
+import t.shared.common.sample.search.OrMatch
 import t.model.SampleClass
 import t.model.sample.{Attribute, AttributeSet, CoreParameter, SampleLike, VarianceSet}
 import t.sparql.SampleClassFilter

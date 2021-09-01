@@ -27,9 +27,9 @@ import gwtupload.server.UploadServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
 import t.manager.{Task, TaskRunner}
-import t.common.shared.maintenance.MaintenanceException
-import t.common.shared.maintenance.OperationResults
-import t.common.shared.maintenance.Progress
+import t.shared.common.maintenance.MaintenanceException
+import t.shared.common.maintenance.OperationResults
+import t.shared.common.maintenance.Progress
 import t.global.KCDBRegistry
 import t.util.TempFiles
 import t.server.viewer.rpc.TServiceServlet

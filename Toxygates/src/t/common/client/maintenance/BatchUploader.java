@@ -19,7 +19,7 @@
 
 package t.common.client.maintenance;
 
-import static t.common.shared.maintenance.MaintenanceConstants.*;
+import static t.shared.common.maintenance.MaintenanceConstants.*;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;

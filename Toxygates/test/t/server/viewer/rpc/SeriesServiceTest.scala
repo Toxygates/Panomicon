@@ -22,7 +22,7 @@ package t.server.viewer.rpc
 import java.util.Date
 
 import t.TTestSuite
-import t.common.shared.{Dataset, SeriesType}
+import t.shared.common.{Dataset, SeriesType}
 import t.server.viewer.AssociationResolverTest
 import t.viewer.shared.{RankRule, RuleType}
 import org.junit.runner.RunWith

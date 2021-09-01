@@ -27,13 +27,13 @@ import t.server.common.GWTUtils._
 import scala.collection.{Map => CMap}
 import scala.collection.{Set => CSet}
 import scala.language.implicitConversions
-import t.common.shared.sample.ExpressionValue
-import t.common.shared.sample.Sample
+import t.shared.common.sample.ExpressionValue
+import t.shared.common.sample.Sample
 import t.db.{ExprValue => TExprValue}
 import t.platform.Species
 import t.viewer.shared.AssociationValue
-import t.common.shared.GroupUtils
-import t.common.shared.sample.Group
+import t.shared.common.GroupUtils
+import t.shared.common.sample.Group
 import java.util.NoSuchElementException
 
 import t.db.BioObject

@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import t.viewer.client.screen.Screen;
-import t.common.shared.ValueType;
+import t.shared.common.ValueType;
 import t.viewer.client.ClientGroup;
 
 /**

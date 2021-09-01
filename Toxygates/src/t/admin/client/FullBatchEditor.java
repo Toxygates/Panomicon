@@ -27,9 +27,9 @@ import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.client.maintenance.BatchEditor;
-import t.common.shared.Dataset;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.Instance;
+import t.shared.common.Dataset;
+import t.shared.common.maintenance.Batch;
+import t.shared.common.maintenance.Instance;
 
 public class FullBatchEditor extends BatchEditor {
 

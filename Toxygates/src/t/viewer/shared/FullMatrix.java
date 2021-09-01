@@ -22,7 +22,7 @@ package t.viewer.shared;
 import java.io.Serializable;
 import java.util.List;
 
-import t.common.shared.sample.ExpressionRow;
+import t.shared.common.sample.ExpressionRow;
 
 @SuppressWarnings("serial")
 public class FullMatrix implements Serializable {

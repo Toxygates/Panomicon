@@ -24,8 +24,8 @@ import java.util.{List => JList}
 import javax.annotation.Nullable
 import t.Context
 import t.server.clustering.RClustering
-import t.common.shared.ValueType
-import t.common.shared.sample.{ExpressionRow, Group}
+import t.shared.common.ValueType
+import t.shared.common.sample.{ExpressionRow, Group}
 import t.db.MatrixContext
 import t.platform.{OrthologMapping, Probe}
 import t.viewer.client.rpc.{MatrixService, NetworkService}

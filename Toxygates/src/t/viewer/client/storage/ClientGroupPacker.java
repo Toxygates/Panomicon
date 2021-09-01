@@ -1,9 +1,9 @@
 package t.viewer.client.storage;
 
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleGroup;
+import t.shared.common.DataSchema;
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.Sample;
+import t.shared.common.sample.SampleGroup;
 import t.viewer.client.ClientGroup;
 
 /**

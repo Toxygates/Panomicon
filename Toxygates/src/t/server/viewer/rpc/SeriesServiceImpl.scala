@@ -22,7 +22,7 @@ package t.server.viewer.rpc
 import Conversions.asScala
 import t.{Context, OTGDoseSeriesBuilder, OTGMatrixContext, OTGSeries, OTGSeriesBuilder, OTGTimeSeriesBuilder, SeriesRanking}
 import t.server.common.GWTUtils._
-import t.common.shared.{Dataset, SeriesType}
+import t.shared.common.{Dataset, SeriesType}
 import t.db._
 import t.model.SampleClass
 import t.model.sample.OTGAttribute

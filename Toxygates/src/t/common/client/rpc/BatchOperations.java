@@ -21,9 +21,9 @@ package t.common.client.rpc;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.Dataset;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.MaintenanceException;
+import t.shared.common.Dataset;
+import t.shared.common.maintenance.Batch;
+import t.shared.common.maintenance.MaintenanceException;
 import t.model.sample.Attribute;
 
 /**

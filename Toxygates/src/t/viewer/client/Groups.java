@@ -22,8 +22,8 @@ package t.viewer.client;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import t.common.shared.DataSchema;
-import t.common.shared.sample.*;
+import t.shared.common.DataSchema;
+import t.shared.common.sample.*;
 import t.viewer.client.storage.NamedObjectStorage;
 import t.viewer.client.storage.Storage;
 

@@ -29,7 +29,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.client.*;
-import t.common.shared.ManagedItem;
+import t.shared.common.ManagedItem;
 
 abstract public class ManagerPanel<T extends ManagedItem> {
 

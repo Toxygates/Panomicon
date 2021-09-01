@@ -19,8 +19,8 @@
 package t.common.testing;
 
 import t.model.sample.OTGAttribute;
-import t.common.shared.DataSchema;
-import t.common.shared.SeriesType;
+import t.shared.common.DataSchema;
+import t.shared.common.SeriesType;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 

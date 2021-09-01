@@ -33,9 +33,9 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import t.common.client.Resources;
 import t.common.client.maintenance.*;
-import t.common.shared.*;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.Instance;
+import t.shared.common.*;
+import t.shared.common.maintenance.Batch;
+import t.shared.common.maintenance.Instance;
 
 /**
  * Entry point for the data and instance management tool.

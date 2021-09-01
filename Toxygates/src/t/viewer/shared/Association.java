@@ -19,7 +19,7 @@
 
 package t.viewer.shared;
 
-import t.common.shared.AType;
+import t.shared.common.AType;
 
 import java.io.Serializable;
 import java.util.*;

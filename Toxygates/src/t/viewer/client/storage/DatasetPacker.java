@@ -19,7 +19,7 @@
 
 package t.viewer.client.storage;
 
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 
 public class DatasetPacker extends Packer<Dataset> {
   @Override

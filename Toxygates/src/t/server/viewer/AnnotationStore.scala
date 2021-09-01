@@ -20,8 +20,8 @@
 package t.server.viewer
 
 import t.BaseConfig
-import t.common.shared.DataSchema
-import t.common.shared.sample.Sample
+import t.shared.common.DataSchema
+import t.shared.common.sample.Sample
 import t.platform.BioParameter
 import t.sparql.SampleStore
 

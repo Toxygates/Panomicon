@@ -35,9 +35,9 @@ import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.Pathology;
 import t.common.client.ImageClickCell;
-import t.common.shared.GroupUtils;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
+import t.shared.common.GroupUtils;
+import t.shared.common.sample.Sample;
+import t.shared.common.sample.SampleColumn;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 

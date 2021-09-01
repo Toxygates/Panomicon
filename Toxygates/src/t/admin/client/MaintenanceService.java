@@ -24,9 +24,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import t.admin.shared.PlatformType;
 import t.common.client.rpc.BatchOperations;
-import t.common.shared.*;
-import t.common.shared.maintenance.Instance;
-import t.common.shared.maintenance.MaintenanceException;
+import t.shared.common.*;
+import t.shared.common.maintenance.Instance;
+import t.shared.common.maintenance.MaintenanceException;
 
 @RemoteServiceRelativePath("maintenance")
 public interface MaintenanceService extends BatchOperations, RemoteService {

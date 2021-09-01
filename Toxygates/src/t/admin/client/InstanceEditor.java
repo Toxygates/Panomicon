@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 import t.common.client.components.ItemSelector;
 import t.common.client.maintenance.AccessPolicy;
 import t.common.client.maintenance.ManagedItemEditor;
-import t.common.shared.maintenance.Instance;
+import t.shared.common.maintenance.Instance;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.Label;

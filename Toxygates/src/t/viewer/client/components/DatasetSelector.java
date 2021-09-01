@@ -24,7 +24,7 @@ import java.util.*;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.client.*;
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 
 public class DatasetSelector extends Composite {
   final static private String message = "Please select the datasets you want to work with.";

@@ -20,13 +20,13 @@
 package t.viewer.client.charts;
 
 import t.viewer.client.screen.Screen;
-import t.common.shared.GroupUtils;
-import t.common.shared.Pair;
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import t.shared.common.GroupUtils;
+import t.shared.common.Pair;
+import t.shared.common.ValueType;
+import t.shared.common.sample.Group;
+import t.shared.common.sample.Sample;
+import t.shared.common.sample.SampleClassUtils;
+import t.shared.common.sample.Unit;
 import t.model.SampleClass;
 import t.model.sample.CoreParameter;
 import t.model.sample.OTGAttribute;

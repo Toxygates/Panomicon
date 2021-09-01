@@ -23,7 +23,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
-import t.common.shared.ValueType;
+import t.shared.common.ValueType;
 import t.viewer.client.ClientGroup;
 import t.viewer.shared.Association;
 

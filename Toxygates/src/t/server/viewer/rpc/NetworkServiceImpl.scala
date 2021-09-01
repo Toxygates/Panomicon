@@ -23,8 +23,8 @@ import java.util.{List => JList}
 import t.Context
 
 import scala.collection.JavaConverters._
-import t.common.shared.{GroupUtils, ValueType}
-import t.common.shared.sample.Group
+import t.shared.common.{GroupUtils, ValueType}
+import t.shared.common.sample.Group
 import t.intermine.{MiRNATargets, MiRawImporter}
 import t.platform.mirna._
 import t.platform.mirna.TargetTable

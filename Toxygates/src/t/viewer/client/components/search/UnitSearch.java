@@ -23,9 +23,9 @@ import java.util.*;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import t.common.shared.Pair;
-import t.common.shared.RequestResult;
-import t.common.shared.sample.*;
+import t.shared.common.Pair;
+import t.shared.common.RequestResult;
+import t.shared.common.sample.*;
 import t.model.SampleClass;
 import t.model.sample.*;
 import t.viewer.client.Analytics;

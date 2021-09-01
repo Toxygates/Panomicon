@@ -23,12 +23,11 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.RequestResult;
-import t.common.shared.sample.*;
-import t.common.shared.sample.search.MatchCondition;
+import t.shared.common.RequestResult;
+import t.shared.common.sample.*;
+import t.shared.common.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
-import t.model.sample.AttributeSet;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.user.client.Window;

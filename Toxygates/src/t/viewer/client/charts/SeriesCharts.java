@@ -21,10 +21,10 @@ package t.viewer.client.charts;
 
 import com.google.gwt.user.client.Window;
 import t.viewer.client.screen.Screen;
-import t.common.shared.FirstKeyedPair;
-import t.common.shared.Pair;
-import t.common.shared.SampleMultiFilter;
-import t.common.shared.SeriesType;
+import t.shared.common.FirstKeyedPair;
+import t.shared.common.Pair;
+import t.shared.common.SampleMultiFilter;
+import t.shared.common.SeriesType;
 import t.model.SampleClass;
 import t.model.sample.OTGAttribute;
 import t.viewer.client.charts.ColorPolicy.TimeDoseColorPolicy;

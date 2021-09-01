@@ -20,12 +20,12 @@
 package t.viewer.client.components;
 
 import com.google.gwt.user.client.ui.*;
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import t.shared.common.DataSchema;
+import t.shared.common.Pair;
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.Sample;
+import t.shared.common.sample.SampleClassUtils;
+import t.shared.common.sample.Unit;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.future.Future;

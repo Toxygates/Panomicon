@@ -19,8 +19,8 @@
 
 package t.viewer.shared;
 
-import t.common.shared.Platform;
-import t.common.shared.sample.Group;
+import t.shared.common.Platform;
+import t.shared.common.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.shared.clustering.ProbeClustering;
 import t.viewer.shared.intermine.IntermineInstance;

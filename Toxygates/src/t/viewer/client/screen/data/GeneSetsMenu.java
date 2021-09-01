@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.MenuItemSeparator;
 import t.viewer.shared.clustering.AlgorithmEnum;
 import t.viewer.shared.clustering.Algorithm;
 import t.viewer.shared.clustering.ClusteringList;
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.MenuItemCaptionSeparator;
 import t.viewer.shared.ItemList;

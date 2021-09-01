@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.*;
 import t.admin.shared.PlatformType;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
-import t.common.shared.maintenance.MaintenanceConstants;
+import t.shared.common.maintenance.MaintenanceConstants;
 
 public class PlatformUploader extends ItemUploader {
 

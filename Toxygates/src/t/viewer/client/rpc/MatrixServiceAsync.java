@@ -25,9 +25,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.viewer.client.clustering.ClusteringServiceAsync;
 import t.viewer.shared.clustering.Algorithm;
-import t.common.shared.ValueType;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
+import t.shared.common.ValueType;
+import t.shared.common.sample.ExpressionRow;
+import t.shared.common.sample.Group;
 import t.viewer.shared.*;
 
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {

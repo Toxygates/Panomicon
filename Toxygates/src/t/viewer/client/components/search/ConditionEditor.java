@@ -23,7 +23,7 @@ import java.util.Collection;
 
 import com.google.gwt.user.client.ui.SimplePanel;
 
-import t.common.shared.sample.search.MatchCondition;
+import t.shared.common.sample.search.MatchCondition;
 import t.model.sample.Attribute;
 
 /**

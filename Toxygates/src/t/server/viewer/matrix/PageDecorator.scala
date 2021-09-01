@@ -1,7 +1,7 @@
 package t.server.viewer.matrix
 
 import t.Context
-import t.common.shared.sample
+import t.shared.common.sample
 import t.server.viewer.Conversions
 
 /**

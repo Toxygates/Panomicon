@@ -22,8 +22,8 @@ package t.server.viewer.rpc
 import java.util.{List => JList}
 
 import javax.annotation.Nullable
-import t.common.shared._
-import t.common.shared.sample.{Group, Sample}
+import t.shared.common._
+import t.shared.common.sample.{Group, Sample}
 import t.model.SampleClass
 import t.model.sample.{CoreParameter, OTGAttribute}
 import t.platform.{Probe, Species}

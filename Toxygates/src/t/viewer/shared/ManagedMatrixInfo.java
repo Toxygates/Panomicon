@@ -19,15 +19,15 @@
 
 package t.viewer.shared;
 
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
+import t.shared.common.sample.Group;
+import t.shared.common.sample.Sample;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
-import static t.common.shared.GWTTypes.mkList;
+import static t.shared.common.GWTTypes.mkList;
 
 /**
  * Information about a ManagedMatrix that the server maintains on behalf of the client. The main

@@ -19,8 +19,8 @@
 
 package t.viewer.client.screen;
 
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
+import t.shared.common.sample.Group;
+import t.shared.common.sample.Sample;
 
 public class ScreenUtils {
   public static void displaySampleDetail(Screen screen, Sample sample) {

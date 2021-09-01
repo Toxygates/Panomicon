@@ -19,8 +19,8 @@
 
 package t.server.viewer
 
-import t.common.shared.AType
-import t.common.shared.AType._
+import t.shared.common.AType
+import t.shared.common.AType._
 import t.db.DefaultBio
 import t.model.SampleClass
 import t.platform.Probe

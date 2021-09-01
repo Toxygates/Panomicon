@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 
 import org.apache.commons.lang.StringUtils
 
-import t.common.shared.ValueType
+import t.shared.common.ValueType
 import t.platform.Probe
 import t.sparql.ProbeStore
 import t.server.viewer.matrix.MatrixController

@@ -21,7 +21,7 @@ package t.viewer.client.components;
 
 import com.google.gwt.user.client.ui.*;
 import t.common.client.Utils;
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.future.Future;
 import t.viewer.client.screen.Screen;

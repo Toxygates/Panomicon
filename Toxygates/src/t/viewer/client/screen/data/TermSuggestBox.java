@@ -23,7 +23,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
-import t.common.shared.Term;
+import t.shared.common.Term;
 import t.viewer.client.screen.data.TermSuggestOracle.TermSuggestion;
 
 import java.util.ArrayList;

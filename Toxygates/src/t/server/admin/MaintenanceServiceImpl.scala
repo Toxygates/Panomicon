@@ -23,9 +23,9 @@ import javax.servlet.http.HttpSession
 import t.admin.client.MaintenanceService
 import t.admin.shared.PlatformType
 import t.server.common.maintenance.BatchOpsImpl
-import t.common.shared.maintenance.MaintenanceConstants._
-import t.common.shared.maintenance.{Instance, _}
-import t.common.shared.{Dataset, ManagedItem, Platform}
+import t.shared.common.maintenance.MaintenanceConstants._
+import t.shared.common.maintenance.{Instance, _}
+import t.shared.common.{Dataset, ManagedItem, Platform}
 import t.manager.{PlatformManager, Task}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform, PlatformFormat}
 import t.sparql.{DatasetStore, InstanceStore, PlatformStore, ProbeStore, TRDF}

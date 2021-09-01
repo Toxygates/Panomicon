@@ -21,12 +21,12 @@ package t.viewer.client.screen;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ProvidesResize;
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 import t.viewer.client.Resources;
 import t.viewer.client.UIFactory;
 import t.viewer.client.future.Future;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.common.shared.DataSchema;
+import t.shared.common.DataSchema;
 import t.viewer.client.rpc.*;
 import t.viewer.client.storage.StorageProvider;
 import t.viewer.shared.AppInfo;

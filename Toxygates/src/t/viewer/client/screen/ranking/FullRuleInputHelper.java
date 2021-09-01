@@ -24,7 +24,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
-import t.common.shared.SeriesType;
+import t.shared.common.SeriesType;
 import t.model.SampleClass;
 import t.model.sample.OTGAttribute;
 import t.viewer.client.components.PendingAsyncCallback;

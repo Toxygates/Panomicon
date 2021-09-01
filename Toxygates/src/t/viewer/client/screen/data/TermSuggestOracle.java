@@ -23,9 +23,9 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import t.viewer.client.screen.Screen;
-import t.common.shared.AType;
-import t.common.shared.Pair;
-import t.common.shared.Term;
+import t.shared.common.AType;
+import t.shared.common.Pair;
+import t.shared.common.Term;
 import t.viewer.client.rpc.ProbeServiceAsync;
 
 import java.util.ArrayList;

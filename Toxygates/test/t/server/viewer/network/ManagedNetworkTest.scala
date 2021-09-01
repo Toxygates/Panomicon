@@ -24,8 +24,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.server.viewer.rpc.Conversions._
 import t.{Context, TTestSuite}
-import t.common.shared.ValueType
-import t.common.shared.sample.Group
+import t.shared.common.ValueType
+import t.shared.common.sample.Group
 import t.db.testing.NetworkTestData
 import t.platform.mirna._
 import t.server.viewer.Conversions._

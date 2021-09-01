@@ -32,7 +32,7 @@ import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSe
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import t.common.shared.ManagedItem;
+import t.shared.common.ManagedItem;
 
 public class Utils {
 

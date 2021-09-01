@@ -29,7 +29,7 @@ import com.google.gwt.user.client.ui.*;
 
 import t.common.client.RunCommand;
 import t.common.client.Utils;
-import t.common.shared.ManagedItem;
+import t.shared.common.ManagedItem;
 
 
 public abstract class ManagedItemEditor extends Composite {

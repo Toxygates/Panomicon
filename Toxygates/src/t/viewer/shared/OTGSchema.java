@@ -22,7 +22,7 @@ package t.viewer.shared;
 import java.util.*;
 
 import t.model.sample.OTGAttribute;
-import t.common.shared.*;
+import t.shared.common.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;

@@ -19,9 +19,9 @@
 
 package t.server.viewer.matrix
 
-import t.common.shared.sample.Group
-import t.common.shared.sample.{Sample => SSample}
-import t.common.shared.sample.{Unit => TUnit}
+import t.shared.common.sample.Group
+import t.shared.common.sample.{Sample => SSample}
+import t.shared.common.sample.{Unit => TUnit}
 import t.db._
 import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
@@ -138,7 +138,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue : ClassTag](reader: MatrixDBR
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: List[Int]): List[E] = is.map(data(_))
 
-  protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
+  protected def unitIdxs(us: Iterable[t.shared.common.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
     val ids = us.flatMap(u => u.getSamples.map(_.id)).toSet
     val inSet = samples.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)

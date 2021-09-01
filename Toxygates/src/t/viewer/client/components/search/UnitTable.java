@@ -25,7 +25,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 
 import t.common.client.ImageClickCell;
-import t.common.shared.sample.Unit;
+import t.shared.common.sample.Unit;
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
 

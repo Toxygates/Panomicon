@@ -20,7 +20,7 @@
 package t.server.viewer
 
 import t.BaseConfig
-import t.common.shared.{FirstKeyedPair, GWTTypes, Platform}
+import t.shared.common.{FirstKeyedPair, GWTTypes, Platform}
 import t.platform.mirna.MiRDBConverter
 import t.sparql.{ProbeStore, _}
 import t.server.viewer.Conversions._

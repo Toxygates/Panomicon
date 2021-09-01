@@ -23,8 +23,8 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import t.common.shared.Dataset;
-import t.common.shared.maintenance.Batch;
+import t.shared.common.Dataset;
+import t.shared.common.maintenance.Batch;
 import t.model.sample.Attribute;
 
 public interface BatchOperationsAsync extends MaintenanceOperationsAsync {

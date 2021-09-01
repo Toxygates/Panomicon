@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.Pair;
+import t.shared.common.Pair;
 
 @SuppressWarnings("serial")
 public class AssociationValue implements Serializable {

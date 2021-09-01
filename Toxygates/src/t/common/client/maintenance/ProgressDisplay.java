@@ -31,8 +31,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import t.common.client.rpc.MaintenanceOperationsAsync;
-import t.common.shared.maintenance.OperationResults;
-import t.common.shared.maintenance.Progress;
+import t.shared.common.maintenance.OperationResults;
+import t.shared.common.maintenance.Progress;
 
 /**
  * A widget that periodically polls and displays the current progress status from the server.

@@ -20,10 +20,10 @@
 package t.viewer.client.storage;
 
 import com.google.gwt.user.client.Window;
-import t.common.shared.DataSchema;
-import t.common.shared.Dataset;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
+import t.shared.common.DataSchema;
+import t.shared.common.Dataset;
+import t.shared.common.SharedUtils;
+import t.shared.common.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.network.PackedNetwork;

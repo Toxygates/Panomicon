@@ -19,7 +19,7 @@
 
 package t.viewer.client.components.search;
 
-import t.common.shared.sample.Sample;
+import t.shared.common.sample.Sample;
 import t.model.sample.Attribute;
 
 import com.google.gwt.cell.client.TextCell;

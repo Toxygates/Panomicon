@@ -20,8 +20,8 @@
 package t.viewer.client.charts;
 
 import t.viewer.client.screen.Screen;
-import t.common.shared.*;
-import t.common.shared.sample.*;
+import t.shared.common.*;
+import t.shared.common.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.components.PendingAsyncCallback;

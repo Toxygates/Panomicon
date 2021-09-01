@@ -19,7 +19,7 @@
 
 package t.server.viewer
 
-import t.common.shared.Dataset
+import t.shared.common.Dataset
 
 import t.sparql.DatasetStore
 

@@ -28,9 +28,9 @@ import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.common.shared.*;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
+import t.shared.common.*;
+import t.shared.common.sample.ExpressionRow;
+import t.shared.common.sample.Group;
 import t.viewer.shared.AssociationValue;
 import t.viewer.shared.ManagedMatrixInfo;
 

@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 
-import t.common.shared.sample.search.*;
+import t.shared.common.sample.search.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 

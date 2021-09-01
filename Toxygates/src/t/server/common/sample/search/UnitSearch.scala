@@ -21,9 +21,9 @@ package t.server.common.sample.search
 
 import scala.collection.JavaConverters._
 import t.model.sample.OTGAttribute._
-import t.common.shared.sample.Sample
-import t.common.shared.sample.Unit
-import t.common.shared.sample.search.MatchCondition
+import t.shared.common.sample.Sample
+import t.shared.common.sample.Unit
+import t.shared.common.sample.search.MatchCondition
 import t.model.sample.{AttributeSet, CoreParameter, VarianceSet}
 import t.server.viewer.UnitsHelper
 

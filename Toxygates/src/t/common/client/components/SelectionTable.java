@@ -29,7 +29,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;

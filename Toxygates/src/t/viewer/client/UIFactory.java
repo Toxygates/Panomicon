@@ -29,7 +29,7 @@ import t.viewer.client.screen.groupdef.SelectionTDGrid;
 import t.viewer.client.screen.ranking.CompoundRanker;
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
-import t.common.shared.DataSchema;
+import t.shared.common.DataSchema;
 import t.viewer.shared.StringList;
 import t.viewer.shared.intermine.IntermineInstance;
 

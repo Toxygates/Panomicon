@@ -21,8 +21,8 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
+import t.shared.common.ValueType;
+import t.shared.common.sample.Group;
 import t.viewer.shared.TimeoutException;
 import t.viewer.shared.mirna.MirnaSource;
 import t.viewer.shared.network.*;

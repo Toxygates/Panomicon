@@ -22,7 +22,7 @@ package t.viewer.client.screen;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 import t.viewer.client.components.compoundsel.CompoundSelector;

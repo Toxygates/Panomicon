@@ -30,7 +30,7 @@ import t.viewer.shared.network.Node
 
 import scala.collection.mutable.{Set => MSet}
 import t.viewer.shared.ManagedMatrixInfo
-import t.common.shared.GWTTypes
+import t.shared.common.GWTTypes
 
 object NetworkBuilder {
   /**

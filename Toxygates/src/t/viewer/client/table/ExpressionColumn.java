@@ -21,7 +21,7 @@ package t.viewer.client.table;
 
 import com.google.gwt.cell.client.TextCell;
 
-import t.common.shared.sample.ExpressionRow;
+import t.shared.common.sample.ExpressionRow;
 import t.viewer.client.Utils;
 import t.viewer.shared.SortKey;
 

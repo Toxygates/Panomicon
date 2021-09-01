@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.server.viewer.rpc.Conversions._
 import t.TTestSuite
-import t.common.shared.sample._
+import t.shared.common.sample._
 import t.db.testing._
 import t.db.testing.DBTestData._
 import org.scalactic.source.Position.apply

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.sample.ExpressionRow;
+import t.shared.common.sample.ExpressionRow;
 import t.viewer.shared.AssociationValue;
 
 /**

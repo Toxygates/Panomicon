@@ -22,7 +22,7 @@ package t.viewer.client.storage;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 
 /**
  * Converts (packs) objects of a given type into a string, and also converts

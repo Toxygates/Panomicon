@@ -8,11 +8,10 @@
 
 <module rename-to="t.common.Common">
 	<inherits name="com.google.gwt.user.User" />
-	<inherits name="t.model.Model" />
+	<inherits name="t.shared.Shared" />
 	<inherits name="gwtupload.GWTUpload" />		
 	<source path="client"/>
-	<source path='shared' />
-	
+
 	<set-configuration-property name="CssResource.enableGss" value="true" />
 	<set-configuration-property name="CssResource.conversionMode" value="strict" />
 </module>

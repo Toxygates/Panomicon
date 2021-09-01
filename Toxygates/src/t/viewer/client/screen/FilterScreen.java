@@ -21,7 +21,7 @@ package t.viewer.client.screen;
 
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 import t.model.SampleClass;
 import t.viewer.client.components.FilterTools;
 import t.viewer.client.future.Future;

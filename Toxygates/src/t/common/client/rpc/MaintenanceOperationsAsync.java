@@ -21,9 +21,9 @@ package t.common.client.rpc;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import t.common.shared.ManagedItem;
-import t.common.shared.maintenance.OperationResults;
-import t.common.shared.maintenance.Progress;
+import t.shared.common.ManagedItem;
+import t.shared.common.maintenance.OperationResults;
+import t.shared.common.maintenance.Progress;
 
 /**
  * Async version of the common maintenance operations.

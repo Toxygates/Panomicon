@@ -22,7 +22,7 @@ package t.viewer.client.storage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 
 /**
  * Packs/unpacks lists of type T, using a Packer<T>.

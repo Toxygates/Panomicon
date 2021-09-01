@@ -19,9 +19,9 @@
 
 package t.viewer.client.screen.groupdef;
 
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.sample.Unit;
+import t.shared.common.DataSchema;
+import t.shared.common.Pair;
+import t.shared.common.sample.Unit;
 import t.model.sample.Attribute;
 import t.viewer.client.ClientGroup;
 import t.viewer.client.Groups;

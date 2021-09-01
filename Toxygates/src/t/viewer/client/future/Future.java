@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import t.common.shared.Pair;
+import t.shared.common.Pair;
 
 /**
  * Represents an operation that will be completed in the future, either resulting 

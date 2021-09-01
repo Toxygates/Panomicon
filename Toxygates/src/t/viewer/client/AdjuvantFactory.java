@@ -21,7 +21,7 @@ package t.viewer.client;
 
 import t.common.client.ValueAcceptor;
 import t.common.client.components.StringArrayTable;
-import t.common.shared.Dataset;
+import t.shared.common.Dataset;
 import t.model.sample.Attribute;
 import t.viewer.client.components.PendingAsyncCallback;
 import t.viewer.client.rpc.UserDataServiceAsync;

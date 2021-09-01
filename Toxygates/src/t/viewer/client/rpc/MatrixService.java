@@ -29,9 +29,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import t.viewer.client.clustering.ClusteringService;
 import t.viewer.shared.clustering.Algorithm;
-import t.common.shared.ValueType;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
+import t.shared.common.ValueType;
+import t.shared.common.sample.ExpressionRow;
+import t.shared.common.sample.Group;
 import t.viewer.shared.*;
 
 /**

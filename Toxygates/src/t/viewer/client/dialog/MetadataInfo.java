@@ -21,7 +21,7 @@ package t.viewer.client.dialog;
 
 import com.google.gwt.user.client.ui.*;
 
-import t.common.shared.Platform;
+import t.shared.common.Platform;
 import t.viewer.shared.AppInfo;
 
 public class MetadataInfo extends Composite {

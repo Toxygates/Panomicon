@@ -35,7 +35,7 @@ import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import t.viewer.client.screen.Screen;
 import t.viewer.client.screen.ScreenUtils;
-import t.common.shared.sample.Sample;
+import t.shared.common.sample.Sample;
 import t.viewer.client.charts.ChartGrid;
 import t.viewer.client.charts.ChartStyle;
 import t.viewer.client.storage.Packer.UnpackInputException;

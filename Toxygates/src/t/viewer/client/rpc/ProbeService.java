@@ -21,9 +21,9 @@ package t.viewer.client.rpc;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import t.common.shared.AType;
-import t.common.shared.Pair;
-import t.common.shared.sample.Sample;
+import t.shared.common.AType;
+import t.shared.common.Pair;
+import t.shared.common.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;

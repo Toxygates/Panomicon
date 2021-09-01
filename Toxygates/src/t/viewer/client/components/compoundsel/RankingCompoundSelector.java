@@ -27,7 +27,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import t.viewer.client.screen.Screen;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.common.shared.SeriesType;
+import t.shared.common.SeriesType;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;

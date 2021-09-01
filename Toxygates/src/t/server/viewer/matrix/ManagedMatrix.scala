@@ -19,14 +19,14 @@
 
 package t.server.viewer.matrix
 
-import t.common.shared.sample.ExpressionValue
-import t.common.shared.sample.{Sample => SSample}
+import t.shared.common.sample.ExpressionValue
+import t.shared.common.sample.{Sample => SSample}
 import t.db._
 import t.server.viewer.Conversions._
 import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
-import t.common.shared.GroupUtils
+import t.shared.common.GroupUtils
 
 object ManagedMatrix {
  type RowData = Seq[BasicExprValue]

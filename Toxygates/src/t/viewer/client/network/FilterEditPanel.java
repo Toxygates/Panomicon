@@ -28,7 +28,7 @@ import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.ui.*;
 
-import t.common.shared.sample.ExpressionRow;
+import t.shared.common.sample.ExpressionRow;
 import t.viewer.client.Utils;
 import t.viewer.client.table.ETMatrixManager;
 import t.viewer.client.table.ExpressionColumn;

@@ -28,8 +28,8 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
 import t.common.client.components.ItemSelector;
-import t.common.shared.sample.search.AtomicMatch;
-import t.common.shared.sample.search.MatchType;
+import t.shared.common.sample.search.AtomicMatch;
+import t.shared.common.sample.search.MatchType;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 

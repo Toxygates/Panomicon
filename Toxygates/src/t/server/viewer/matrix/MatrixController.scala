@@ -20,8 +20,8 @@
 package t.server.viewer.matrix
 
 import t.Context
-import t.common.shared._
-import t.common.shared.sample.Group
+import t.shared.common._
+import t.shared.common.sample.Group
 import t.db.ExtMatrixDB
 import t.platform.OrthologMapping
 import t.server.viewer.Conversions._

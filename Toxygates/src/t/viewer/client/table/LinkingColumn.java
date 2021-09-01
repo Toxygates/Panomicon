@@ -20,7 +20,7 @@
 package t.viewer.client.table;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
-import t.common.shared.SharedUtils;
+import t.shared.common.SharedUtils;
 import t.viewer.shared.AssociationValue;
 
 import javax.annotation.Nullable;

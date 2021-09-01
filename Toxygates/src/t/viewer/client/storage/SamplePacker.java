@@ -21,7 +21,7 @@ package t.viewer.client.storage;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.sample.Sample;
+import t.shared.common.sample.Sample;
 import t.model.SampleClass;
 
 public class SamplePacker extends Packer<Sample> {

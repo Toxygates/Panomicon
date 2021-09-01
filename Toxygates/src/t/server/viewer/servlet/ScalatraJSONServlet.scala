@@ -7,9 +7,9 @@ import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
 import org.scalatra._
 import org.scalatra.servlet.{FileItem, FileUploadSupport}
-import t.common.shared.maintenance.{MaintenanceException, OperationResults}
-import t.common.shared.sample.Group
-import t.common.shared.{AType, ValueType}
+import t.shared.common.maintenance.{MaintenanceException, OperationResults}
+import t.shared.common.sample.Group
+import t.shared.common.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
 import t.global.KCDBRegistry
 import t.manager.{BatchManager, Task, TaskRunner}
@@ -145,8 +145,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   def isDataVisible(data: Dataset, userKey: String) = {
-    data.id == t.common.shared.Dataset.userDatasetId(userKey) ||
-      t.common.shared.Dataset.isSharedDataset(data.id) ||
+    data.id == t.shared.common.Dataset.userDatasetId(userKey) ||
+      t.shared.common.Dataset.isSharedDataset(data.id) ||
       !data.id.startsWith("user-")
   }
 
@@ -622,7 +622,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       })
     }
 
-    import t.common.shared.sample.{Unit => TUnit}
+    import t.shared.common.sample.{Unit => TUnit}
     def unitForTreatment(sf: SampleFilter, treatment: String): Option[TUnit] = {
       val samples = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> treatment)), sf)()
       if (samples.nonEmpty) {

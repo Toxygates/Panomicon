@@ -32,8 +32,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.client.rpc.MaintenanceOperationsAsync;
-import t.common.shared.Dataset;
-import t.common.shared.maintenance.*;
+import t.shared.common.Dataset;
+import t.shared.common.maintenance.*;
 
 abstract public class BatchEditor extends ManagedItemEditor {
   @Nullable protected BatchUploader uploader;
