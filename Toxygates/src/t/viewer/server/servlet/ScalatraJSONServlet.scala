@@ -7,9 +7,12 @@ import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
 import org.scalatra._
 import org.scalatra.servlet.{FileItem, FileUploadSupport}
+import t.common.shared.maintenance.{MaintenanceException, OperationResults}
 import t.common.shared.sample.Group
 import t.common.shared.{AType, ValueType}
 import t.db.{BasicExprValue, Sample}
+import t.global.KCDBRegistry
+import t.manager.{BatchManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
@@ -542,6 +545,48 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
         fileContents
       }
       case Right(error) => halt(401)
+    }
+  }
+
+  delete("/batch/:batch") {
+    getJwtToken() match {
+      case Left(jwt) => {
+        val batchId = params("batch")
+        val batchManager = new BatchManager(context)
+        runTasks(batchManager.delete(batchId, false))
+        "Deleting batch " + batchId
+      }
+      case Right(error) => halt(401)
+    }
+  }
+
+  protected def runTasks(task: Task[_]) {
+    if (!TaskRunner.available) {
+      throw new Exception("Another task is already in progress.")
+    }
+//    setLastResults(None)
+    val currentRequest = request
+    val session = request.getSession
+    TaskRunner.runThenFinally(task) {
+      TaskRunner.log("Writing databases, this may take a while...")
+      KCDBRegistry.closeWriters()
+      TaskRunner.log("Databases written")
+      TaskRunner.synchronized {
+        try {
+          val success = TaskRunner.errorCause == None
+//          if (getAttribute[Option[OperationResults]]("lastResults", session).isEmpty) {
+//            setAttribute("lastResults", Some(new OperationResults(
+//              getAttribute[String]("lastTask", session), success, TaskRunner.resultMessages.toArray)), session)
+//          }
+//          if (success) {
+//            maintenanceUploads(session).dropAll()
+//          }
+        } catch {
+          case e: Exception =>
+            println(e)
+            e.printStackTrace()
+        }
+      }
     }
   }
 

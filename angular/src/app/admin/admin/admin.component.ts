@@ -44,4 +44,11 @@ export class AdminComponent implements OnInit {
       });
   }
 
+  deleteBatch(batchId: string): void {
+    console.log("deleting batch " + batchId);
+    this.backend.deleteBatch(batchId)
+      .subscribe(result => {
+        console.log(result);
+      });
+  }
 }

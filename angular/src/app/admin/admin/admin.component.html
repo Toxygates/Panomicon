@@ -6,4 +6,11 @@
         id="file"
         (change)="handleFileInput($event.target)"
     >
+
+    <label for="batchIdInput">Delete batch</label>
+    <!-- [(ngModel)]="sampleGroupName"  -->
+    <input type="text" ngModel #batchIdInput="ngModel" name="batchIdInput"
+        class="form-control mb-2" placeholder="Enter batch name"
+        (keyup.enter)="deleteBatch(batchIdInput.value)"
+    >
 </div>
