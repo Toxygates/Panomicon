@@ -1,4 +1,4 @@
-package t.server.viewer
+package panomicon
 
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.DefaultServlet
@@ -11,7 +11,7 @@ import org.scalatra.servlet.ScalatraListener
  */
 object ScalatraLauncher {
   def main(args: Array[String]) {
-    val port = if(System.getenv("PORT") != null) System.getenv("PORT").toInt else 8888
+    val port = if (System.getenv("PORT") != null) System.getenv("PORT").toInt else 8888
 
     val server = new Server(port)
     val context = new WebAppContext()
@@ -32,7 +32,7 @@ object ScalatraLauncher {
       "updateURL" -> System.getenv("T_TS_UPDATE_URL"),
       "instanceName" -> System.getenv("T_INSTANCE_NAME")
     )
-    for { (k,v) <- configuration } {
+    for {(k, v) <- configuration} {
       context.setInitParameter(k, v)
     }
 

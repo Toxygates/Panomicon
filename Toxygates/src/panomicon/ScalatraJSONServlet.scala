@@ -1,15 +1,12 @@
-package t.server.viewer.servlet
+package panomicon
 
 import io.fusionauth.client.FusionAuthClient
-import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.JWTDecoder
+import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
 import org.scalatra._
-import org.scalatra.servlet.{FileItem, FileUploadSupport}
-import t.shared.common.maintenance.{MaintenanceException, OperationResults}
-import t.shared.common.sample.Group
-import t.shared.common.{AType, ValueType}
+import org.scalatra.servlet.FileUploadSupport
 import t.db.{BasicExprValue, Sample}
 import t.global.KCDBRegistry
 import t.manager.{BatchManager, Task, TaskRunner}
@@ -17,15 +14,17 @@ import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
 import t.platform.mirna.TargetTableBuilder
-import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
-import t.util.LRUCache
 import t.server.viewer.Conversions.asJavaSample
-import t.server.viewer.matrix.{ExpressionRow, MatrixController, PageDecorator}
+import t.server.viewer.matrix.{ExpressionRow, ManagedMatrix, MatrixController, PageDecorator}
 import t.server.viewer.rpc.NetworkLoader
+import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration, PlatformRegistry}
+import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.shared.viewer.mirna.MirnaSource
 import t.shared.viewer.network.Interaction
+import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
+import t.util.LRUCache
 import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
@@ -37,35 +36,34 @@ import java.util.{Base64, Date}
 import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
 
-
 package json {
 
-  import t.server.viewer.matrix.ManagedMatrix
+    import t.server.viewer.matrix.ManagedMatrix
 
-  object Group { implicit val rw: RW[Group] = macroRW }
-  case class Group(name: String, sampleIds: Seq[String])
+    object Group { implicit val rw: RW[Group] = macroRW }
+    case class Group(name: String, sampleIds: Seq[String])
 
-  object FilterSpec { implicit val rw: RW[FilterSpec] = macroRW }
-  case class FilterSpec(column: String, `type`: String, threshold: Double)
+    object FilterSpec { implicit val rw: RW[FilterSpec] = macroRW }
+    case class FilterSpec(column: String, `type`: String, threshold: Double)
 
-  object SortSpec { implicit val rw: RW[SortSpec] = macroRW }
-  case class SortSpec(field: String, dir: String)
+    object SortSpec { implicit val rw: RW[SortSpec] = macroRW }
+    case class SortSpec(field: String, dir: String)
 
-  object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
-  case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
-                          filtering: Seq[FilterSpec] = Seq(),
-                          sorter: SortSpec = null) {
+    object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
+    case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
+                            filtering: Seq[FilterSpec] = Seq(),
+                            sorter: SortSpec = null) {
 
-    def applyFilters(mat: ManagedMatrix): Unit = {
-      for (f <- filtering) {
-        val col = f.column
-        val idx = mat.info.findColumnByName(col)
-        if (idx != -1) {
-          //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
-          val filt = new ColumnFilter(f.threshold, FilterType.parse(f.`type`))
-          println(s"Filter for column $idx: $filt")
-          mat.setFilter(idx, filt)
-        } else {
+      def applyFilters(mat: ManagedMatrix): Unit = {
+        for (f <- filtering) {
+          val col = f.column
+          val idx = mat.info.findColumnByName(col)
+          if (idx != -1) {
+            //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
+            val filt = new ColumnFilter(f.threshold, FilterType.parse(f.`type`))
+            println(s"Filter for column $idx: $filt")
+            mat.setFilter(idx, filt)
+          } else {
           Console.err.println(s"Unable to find column $col. Filtering will not apply to this column.")
         }
       }
@@ -92,10 +90,10 @@ package json {
 
   object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
   case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
-                           associationSource: String, associationLimit: String = null)
+                                                       associationSource: String, associationLimit: String = null)
 }
 
-object Encoders {
+  object Encoders {
   // date should be added, either ISO 8601 or millis since 1970
   // https://stackoverflow.com/a/15952652/689356
   //Work in progress - this supposedly conforms to ISO 8601
@@ -115,8 +113,7 @@ object Encoders {
   implicit val dsRW: RW[Dataset] = macroRW
   implicit val batRW: RW[Batch] = macroRW
 }
-
-class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
+  class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     with MinimalTServlet with FileUploadSupport {
   import Encoders._
 
@@ -638,9 +635,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
      * This is the default behaviour for /matrix requests for now; in the future, we may want to
      * make it optional, since the system in principle supports sub-treatment level sample groups.
      */
-    def fillGroup(name: String, group: Seq[Sample]): Group = {
+    def fillGroup(name: String, group: Seq[Sample]): t.shared.common.sample.Group = {
       if (group.isEmpty) {
-        return new Group(name, Array[TUnit](), Array[TUnit]())
+        return new t.shared.common.sample.Group(name, Array[TUnit](), Array[TUnit]())
       }
       val batchURI = group.head.apply(CoreParameter.Batch)
       val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
@@ -653,7 +650,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       val treatedUnits = treatedTreatments.flatMap(t => unitForTreatment(sf, t))
       val controlUnits = controlTreatments.flatMap(t => unitForTreatment(sf, t))
 
-      new Group(name, treatedUnits.toArray, controlUnits.toArray)
+      new t.shared.common.sample.Group(name, treatedUnits.toArray, controlUnits.toArray)
     }
 
     def flattenRows(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {
@@ -670,3 +667,56 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
 }
+
+  object Group { implicit val rw: RW[Group] = macroRW }
+  case class Group(name: String, sampleIds: Seq[String])
+
+  object FilterSpec { implicit val rw: RW[FilterSpec] = macroRW }
+  case class FilterSpec(column: String, `type`: String, threshold: Double)
+
+  object SortSpec { implicit val rw: RW[SortSpec] = macroRW }
+  case class SortSpec(field: String, dir: String)
+
+  object MatrixParams { implicit val rw: RW[MatrixParams] = macroRW }
+  case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
+                          filtering: Seq[FilterSpec] = Seq(),
+                          sorter: SortSpec = null) {
+
+    def applyFilters(mat: ManagedMatrix): Unit = {
+      for (f <- filtering) {
+        val col = f.column
+        val idx = mat.info.findColumnByName(col)
+        if (idx != -1) {
+          //Filter types can be, e.g.: ">", "<", "|x| >", "|x| <"
+          val filt = new ColumnFilter(f.threshold, FilterType.parse(f.`type`))
+          println(s"Filter for column $idx: $filt")
+          mat.setFilter(idx, filt)
+        } else {
+          Console.err.println(s"Unable to find column $col. Filtering will not apply to this column.")
+        }
+      }
+    }
+
+    def applySorting(mat: ManagedMatrix): Unit = {
+      val defaultSortCol = 0
+      val defaultSortAsc = false
+      Option(sorter) match {
+        case Some(sort) =>
+          val idx = mat.info.findColumnByName(sort.field)
+          if (idx != -1) {
+            val asc = sort.dir == "asc"
+            mat.sort(idx, asc)
+          } else {
+            Console.err.println(s"Unable to find column ${sort.field}. Sorting will not apply to this column.")
+            mat.sort(defaultSortCol, defaultSortAsc)
+          }
+        case None =>
+          mat.sort(defaultSortCol, defaultSortAsc)
+      }
+    }
+  }
+
+object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
+
+case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
+                           associationSource: String, associationLimit: String = null)
