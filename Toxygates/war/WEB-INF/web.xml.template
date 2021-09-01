@@ -113,24 +113,24 @@
 	
 	<servlet>
 		<servlet-name>sampleServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.SampleServiceImpl</servlet-class>
+		<servlet-class>t.server.viewer.rpc.SampleServiceImpl</servlet-class>
 	</servlet>
 
     <servlet>
         <servlet-name>probeServlet</servlet-name>
-        <servlet-class>t.viewer.server.rpc.ProbeServiceImpl</servlet-class>
+        <servlet-class>t.server.viewer.rpc.ProbeServiceImpl</servlet-class>
         <!-- give ProbeServlet a chance to preload platforms -->
         <load-on-startup>0</load-on-startup>
     </servlet>
 
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.SeriesServiceImpl</servlet-class>
+		<servlet-class>t.server.viewer.rpc.SeriesServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>matrixServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.MatrixServiceImpl</servlet-class>
+		<servlet-class>t.server.viewer.rpc.MatrixServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
@@ -155,7 +155,7 @@
   	
   	<servlet>
 		<servlet-name>userDataServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.UserDataServiceImpl</servlet-class>
+		<servlet-class>t.server.viewer.rpc.UserDataServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>userDataServlet</servlet-name>
@@ -164,7 +164,7 @@
 
  	<servlet>
 		<servlet-name>networkServlet</servlet-name>
-		<servlet-class>t.viewer.server.rpc.NetworkServiceImpl</servlet-class>
+		<servlet-class>t.server.viewer.rpc.NetworkServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>networkServlet</servlet-name>
@@ -173,7 +173,7 @@
 
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
-		<servlet-class>t.viewer.server.intermine.IntermineServiceImpl</servlet-class>
+		<servlet-class>t.server.viewer.intermine.IntermineServiceImpl</servlet-class>
 	</servlet>
     <servlet-mapping>
 		<servlet-name>intermineServlet</servlet-name>
@@ -193,7 +193,7 @@
 	    be sure to comment this servlet out, or anybody will be able to see and edit/delete all the data. -->
     <servlet>
         <servlet-name>maintenanceServlet</servlet-name>
-        <servlet-class>t.admin.server.MaintenanceServiceImpl</servlet-class>
+        <servlet-class>t.server.admin.MaintenanceServiceImpl</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>maintenanceServlet</servlet-name>
@@ -206,7 +206,7 @@
     <!-- Non-GWT servlets -->
 	<servlet>
 		<servlet-name>geneSetServlet</servlet-name>
-		<servlet-class>t.viewer.server.servlet.GeneSetServlet</servlet-class>
+		<servlet-class>t.server.viewer.servlet.GeneSetServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>geneSetServlet</servlet-name>

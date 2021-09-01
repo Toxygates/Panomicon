@@ -22,8 +22,8 @@ package t.common.testing
 import t.common.shared.sample.Group
 
 import t.db.ColumnExpressionData
-import t.viewer.server.Conversions._
-import t.viewer.server.matrix.ExpressionMatrix
+import t.server.viewer.Conversions._
+import t.server.viewer.matrix.ExpressionMatrix
 
 /**
  * @author johan

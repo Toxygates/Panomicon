@@ -21,7 +21,7 @@ package t.common.shared
 
 import org.junit.runner.RunWith
 import t.TTestSuite
-import t.common.server.GWTUtils._
+import t.server.common.GWTUtils._
 import t.model.SampleClass
 import org.scalatest.junit.JUnitRunner
 import t.model.sample.Attribute

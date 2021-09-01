@@ -60,7 +60,7 @@
 
 	<servlet>
 		<servlet-name>maintenanceServlet</servlet-name>
-		<servlet-class>t.admin.server.MaintenanceServiceImpl</servlet-class>
+		<servlet-class>t.server.admin.MaintenanceServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>maintenanceServlet</servlet-name>

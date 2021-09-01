@@ -17,25 +17,31 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.testing
+package t.server.viewer.matrix
 
-import t.server.viewer.Configuration
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.platform.OrthologMapping
 
 /**
- * Generates configurations for testing of servlet implementations.
- * Maps the TestConfig from OTGTool into a Configuration.
+ * A ProbeMapper maps probes from one domain to another.
+ * Examples: transcripts to genes, genes to proteins, etc.
+ * In the general case, the mapping is many-to-many.
  */
-object TestConfiguration {
-  val tc = t.testing.TestConfig
-  val ts = tc.tsConfig
-  val data = tc.dataConfig
+trait ProbeMapper {
+  def toRange(p: String): Iterable[String]
+  def toDomain(p: String): Iterable[String]
 
-  lazy val config = new Configuration(ts.repository,
-      KCChunkMatrixDB.CHUNK_PREFIX + data.dir, null, null,
-      ts.url, ts.updateUrl,
-      ts.user, ts.pass,
-      null, null,
-      data.matrixDbOptions)
+  def domain: Iterable[String]
+  def range: Iterable[String]
+}
 
+class OrthologProbeMapper(mapping: OrthologMapping) extends ProbeMapper {
+  var tmp = mapping.forProbe.toSeq.map(x => (x._2, x._2.mkString("/")))
+  val forward = Map() ++ tmp.flatMap(m => m._1.map(x => x -> m._2))
+  val reverse = Map() ++ tmp.map(m => m._2 -> m._1)
+
+  def toRange(p: String) = List(forward(p))
+  def toDomain(p: String) = reverse(p)
+
+  def domain = forward.keySet
+  def range = reverse.keySet
 }

@@ -17,25 +17,25 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.testing
+package t.server.viewer
 
-import t.server.viewer.Configuration
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.common.shared.Platform
 
 /**
- * Generates configurations for testing of servlet implementations.
- * Maps the TestConfig from OTGTool into a Configuration.
+ * Conversion into t.common.shared.Platform
  */
-object TestConfiguration {
-  val tc = t.testing.TestConfig
-  val ts = tc.tsConfig
-  val data = tc.dataConfig
+trait SharedPlatforms {
+  this: t.sparql.PlatformStore =>
 
-  lazy val config = new Configuration(ts.repository,
-      KCChunkMatrixDB.CHUNK_PREFIX + data.dir, null, null,
-      ts.url, ts.updateUrl,
-      ts.user, ts.pass,
-      null, null,
-      data.matrixDbOptions)
+  def sharedList: Iterable[Platform] =
+    getList().map(asShared)
 
+  private def asShared(d: String): Platform = {
+    val com = getComments()
+    val pcom = getPublicComments()
+    val ts = getTimestamps()
+    new Platform(d, 0,
+      com.getOrElse(d, ""), ts.getOrElse(d, null),
+      pcom.getOrElse(d, ""))
+  }
 }

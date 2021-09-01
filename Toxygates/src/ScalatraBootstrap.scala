@@ -1,5 +1,5 @@
 import javax.servlet.ServletContext
-import t.viewer.server.servlet._
+import t.server.viewer.servlet._
 import org.scalatra._
 
 /**
