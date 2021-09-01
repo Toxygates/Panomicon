@@ -19,11 +19,11 @@
 
 package t.shared.viewer;
 
-import java.util.*;
-
 import javax.annotation.Nullable;
-
-import t.gwt.viewer.client.storage.ItemListPacker;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class StringList extends ItemList {
@@ -74,11 +74,6 @@ public class StringList extends ItemList {
       }
     }
     return r;
-  }
-  
-  @Override
-  public String toString() {
-    return "StringList:" + ItemListPacker.doPack(this);
   }
 
   @Override
