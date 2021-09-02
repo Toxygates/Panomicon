@@ -13,11 +13,7 @@ import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
-import t.shared.viewer.mirna.MirnaSource
-import t.shared.viewer.network.Interaction
 import t.sparql.{BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
-import t.util.LRUCache
-import ujson.Value
 import upickle.default._
 
 import java.nio.charset.StandardCharsets
