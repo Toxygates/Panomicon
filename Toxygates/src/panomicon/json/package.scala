@@ -1,8 +1,13 @@
 package panomicon.json
 
-import t.server.viewer.matrix.ManagedMatrix
+import t.db.BasicExprValue
+import t.server.viewer.matrix.{ExpressionRow, ManagedMatrix}
 import t.shared.viewer.{ColumnFilter, FilterType}
-import upickle.default.{macroRW, ReadWriter => RW}
+import t.sparql.{Batch, Dataset}
+import upickle.default.{macroRW, readwriter, ReadWriter => RW}
+
+import java.text.SimpleDateFormat
+import java.util.Date
 
 object Group { implicit val rw: RW[Group] = macroRW }
 case class Group(name: String, sampleIds: Seq[String])
@@ -55,3 +60,24 @@ case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
 object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
 case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
                          associationSource: String, associationLimit: String = null)
+
+object Encoders {
+  // date should be added, either ISO 8601 or millis since 1970
+  // https://stackoverflow.com/a/15952652/689356
+  //Work in progress - this supposedly conforms to ISO 8601
+  val jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  implicit val dtRW = readwriter[String].bimap[Date](
+    output => jsonDateFormat.format(output),
+    input =>
+      try {
+        jsonDateFormat.parse(input)
+      } catch {
+        case _: Exception => new Date(0)
+      }
+  )
+
+  implicit val bevRw: RW[BasicExprValue] = macroRW
+  implicit val erRw: RW[ExpressionRow] = macroRW
+  implicit val dsRW: RW[Dataset] = macroRW
+  implicit val batRW: RW[Batch] = macroRW
+}

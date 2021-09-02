@@ -3,14 +3,14 @@ package panomicon
 import io.fusionauth.jwt.domain.JWT
 import org.scalatra._
 import org.scalatra.servlet.FileUploadSupport
-import t.db.{BasicExprValue, Sample}
+import t.db.Sample
 import t.global.KCDBRegistry
 import t.manager.{BatchManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 import t.platform.mirna.TargetTableBuilder
-import t.server.viewer.matrix.{ExpressionRow, MatrixController, PageDecorator}
+import t.server.viewer.matrix.{MatrixController, PageDecorator}
 import t.server.viewer.rpc.NetworkLoader
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration, PlatformRegistry}
@@ -18,41 +18,19 @@ import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.shared.viewer.mirna.MirnaSource
 import t.shared.viewer.network.Interaction
-import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
+import t.sparql.{BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
 import t.util.LRUCache
 import ujson.Value
-import upickle.default.{macroRW, ReadWriter => RW, _}
+import upickle.default._
 
 import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
 import java.util
-import java.util.Date
 import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
 
-object Encoders {
-  // date should be added, either ISO 8601 or millis since 1970
-  // https://stackoverflow.com/a/15952652/689356
-  //Work in progress - this supposedly conforms to ISO 8601
-  val jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-  implicit val dtRW = readwriter[String].bimap[Date](
-    output => jsonDateFormat.format(output),
-    input =>
-      try {
-        jsonDateFormat.parse(input)
-      } catch {
-        case _: Exception => new Date(0)
-      }
-  )
-
-  implicit val bevRw: RW[BasicExprValue] = macroRW
-  implicit val erRw: RW[ExpressionRow] = macroRW
-  implicit val dsRW: RW[Dataset] = macroRW
-  implicit val batRW: RW[Batch] = macroRW
-}
 class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     with MinimalTServlet with FileUploadSupport {
-  import Encoders._
+  import json.Encoders._
 
   val tconfig = Configuration.fromServletContext(scontext)
   var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
