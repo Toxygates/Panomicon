@@ -404,6 +404,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
+  def verifyRole(role: String): JWT = {
+    val jwt = verifyJWT()
+    val roles = jwt.getList("roles").asInstanceOf[util.List[String]]
+    if (!roles.contains(role)) halt(401) else jwt
+  }
+
   get("/check-cookie") {
     verifyJWT()
   }
@@ -415,7 +421,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/upload") {
-    val jwt = verifyJWT()
+    verifyRole("admin")
     val file = fileParams("fileKey")
     val fileContents = new String(file.get(), StandardCharsets.UTF_8);
     println(fileContents)
@@ -423,7 +429,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/batch/:batch") {
-    val jwt = verifyJWT()
+    verifyRole("admin")
     val batchId = params("batch")
     val batchManager = new BatchManager(context)
     runTasks(batchManager.delete(batchId, false))
