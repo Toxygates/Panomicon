@@ -2,6 +2,7 @@ package panomicon.json
 
 import t.db.BasicExprValue
 import t.server.viewer.matrix.{ExpressionRow, ManagedMatrix}
+import t.shared.viewer.mirna.MirnaSource
 import t.shared.viewer.{ColumnFilter, FilterType}
 import t.sparql.{Batch, Dataset}
 import upickle.default.{macroRW, readwriter, ReadWriter => RW}
@@ -59,7 +60,16 @@ case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
 
 object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
 case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
-                         associationSource: String, associationLimit: String = null)
+                         associationSource: String, associationLimit: String = null) {
+  import java.lang.{Double => JDouble}
+
+  def mirnaSource = {
+    val limit = Option(associationLimit).map(x => JDouble.parseDouble(x): JDouble)
+    new MirnaSource(associationSource, "", false,
+      limit.getOrElse(null: JDouble),
+      0, null, null, null)
+  }
+}
 
 object Encoders {
   // date should be added, either ISO 8601 or millis since 1970

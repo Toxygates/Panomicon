@@ -9,9 +9,6 @@ import t.manager.{BatchManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
-import t.platform.mirna.TargetTableBuilder
-import t.server.viewer.matrix.{MatrixController, PageDecorator}
-import t.server.viewer.rpc.NetworkLoader
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.shared.common.{AType, ValueType}
@@ -46,8 +43,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   lazy val probeStore =  context.probeStore
 
   val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
-
-  lazy val netLoader = new NetworkLoader(context, baseConfig.data.mirnaDir)
+  val networkHandling = new NetworkHandling(context, matrixHandling)
 
   val authentication = new Authentication()
 
@@ -167,29 +163,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     ] }'
    */
 
-  /**
-   * Cache the most recently used matrices in memory
-   */
-  private val matrixCache = new LRUCache[(json.MatrixParams, ValueType), MatrixController](10)
-
   post("/matrix") {
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
     println(s"Load request: $matParams")
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
 
-    val key = (matParams, valueType)
-    val controller = matrixCache.get(key) match {
-      case Some(mat) => mat
-      case _ =>
-        val c = matrixHandling.loadMatrix(matParams, valueType)
-        matrixCache.insert(key, c)
-        c
-    }
-
-    val matrix = controller.managedMatrix
-
-    val pages = new PageDecorator(context, controller)
     val defaultPageSize = 100
 
     val offset = params.getOrElse("offset", "0").toInt
@@ -198,10 +177,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       case None => defaultPageSize
     }
 
+    val (matrix, page) = matrixHandling.findOrLoadMatrix(matParams, valueType, offset, pageSize)
     val numPages = (matrix.info.numRows.toFloat / pageSize).ceil.toInt
-
-    val page = pages.getPageView(offset, pageSize, true)
-    val ci = matrixHandling.columnInfo(matrix.info)
+    val ci = matrixHandling.columnInfoToJS(matrix.info)
 
     //writeJs avoids the problem of Map[String, Any] not having an encoder
     write(Map(
@@ -210,25 +188,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
         "column" -> writeJs(matrix.sortColumn.getOrElse(-1)),
         "ascending" -> writeJs(matrix.sortAscending))
       ),
-      "rows" -> writeJs(matrixHandling.flattenRows(page, matrix.info)),
+      "rows" -> writeJs(matrixHandling.rowsToJS(page, matrix.info)),
       "last_page" -> writeJs(numPages),
     ))
   }
 
-  def interactionsToJson(ints: Iterable[Interaction]): Seq[Value] = {
-    ints.toSeq.map(i => {
-      writeJs(Map(
-        "from" -> writeJs(i.from().id()),
-        "to" -> writeJs(i.to().id()),
-        "label" -> writeJs(i.label()),
-        "weight" -> writeJs(i.weight().doubleValue())
-      ))
-    })
-  }
-
   post("/network") {
-
-    import java.lang.{Double => JDouble}
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
     println(s"Load request: $netParams")
     val valueType = ValueType.valueOf(
@@ -238,29 +203,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       case Some(l) => l.toInt
       case None => defaultLimit
     }
-
-    var r = new TargetTableBuilder
-    val mirnaSource = new MirnaSource(netParams.associationSource, "", false,
-      Option(netParams.associationLimit).map(x => JDouble.parseDouble(x): JDouble).getOrElse(null: JDouble),
-      0, null, null, null)
-    for (t <- netLoader.mirnaTargetTable(mirnaSource)) {
-      r.addAll(t)
-    }
-    val targetTable = r.build
-
-    println(s"Constructed target table of size ${targetTable.size}")
-    if (targetTable.isEmpty) {
-      println("Warning: the target table is empty, no networks can be constructed.")
-    }
-
-    val mainGroups = matrixHandling.filledGroups(netParams.matrix1)
-    val mainInitProbes = netParams.matrix1.probes
-    val sideGroups = matrixHandling.filledGroups(netParams.matrix2)
-    val netController = netLoader.load(targetTable, mainGroups, mainInitProbes.toArray,
-      sideGroups, valueType, pageSize)
-    val network = netController.makeNetwork
+    val network = networkHandling.loadNetwork(valueType, pageSize, netParams)
     write(Map(
-      "interactions" -> interactionsToJson(network.interactions().asScala)
+      "interactions" -> networkHandling.interactionsToJson(network.interactions().asScala)
     ))
   }
 

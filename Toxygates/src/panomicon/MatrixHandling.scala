@@ -6,10 +6,11 @@ import t.model.sample.CoreParameter
 import t.model.sample.CoreParameter.{ControlTreatment, Treatment}
 import t.server.viewer.Configuration
 import t.server.viewer.Conversions.asJavaSample
-import t.server.viewer.matrix.{ExpressionRow, MatrixController}
+import t.server.viewer.matrix.{ExpressionRow, ManagedMatrix, MatrixController, PageDecorator}
 import t.shared.common.ValueType
 import t.shared.viewer.ManagedMatrixInfo
 import t.sparql.{SampleClassFilter, SampleFilter}
+import t.util.LRUCache
 import ujson.Value
 import upickle.default.writeJs
 
@@ -35,7 +36,7 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
     controller
   }
 
-  def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, Value]] = {
+  def columnInfoToJS(info: ManagedMatrixInfo): Seq[Map[String, Value]] = {
     (0 until info.numColumns()).map(i => {
       Map("name" -> writeJs(info.columnName(i)),
         "parent" -> writeJs(info.parentColumnName(i)),
@@ -80,7 +81,7 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
     new t.shared.common.sample.Group(name, treatedUnits.toArray, controlUnits.toArray)
   }
 
-  def flattenRows(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {
+  def rowsToJS(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {
     rows.map(r => Map(
       "probe" -> writeJs(r.probe),
       "probeTitles" -> writeJs(r.probeTitles),
@@ -90,5 +91,27 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
         .map(matrixInfo.columnName(_)) zip r
         .values.map(v => writeJs(v.value))))
     ))
+  }
+
+  /**
+   * Cache the most recently used matrices in memory
+   */
+  private val matrixCache = new LRUCache[(json.MatrixParams, ValueType), MatrixController](10)
+
+  def findOrLoadMatrix(params: json.MatrixParams, valueType: ValueType, offset: Int, pageSize: Int):
+    (ManagedMatrix, Seq[ExpressionRow]) = {
+    val key = (params, valueType)
+    val controller = matrixCache.get(key) match {
+      case Some(mat) => mat
+      case _ =>
+        val c = loadMatrix(key._1, key._2)
+        matrixCache.insert(key, c)
+        c
+    }
+
+    val matrix = controller.managedMatrix
+    val pages = new PageDecorator(context, controller)
+    val page = pages.getPageView(offset, pageSize, true)
+    (matrix, page)
   }
 }
