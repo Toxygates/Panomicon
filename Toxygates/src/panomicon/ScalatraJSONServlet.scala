@@ -354,7 +354,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       response.addHeader("Set-Cookie", s"__Host-jwt=$accessToken; Secure; Path=/; HttpOnly; SameSite=Strict")
       response.addHeader("Set-Cookie", s"__Host-refreshToken=$refreshToken; Secure; Path=/; HttpOnly; SameSite=Strict")
 
-      redirect("http://localhost:4200/admin/")
+      redirect("/admin/")
     } else {
       if (tokenResponse.errorResponse != null) {
         tokenResponse.errorResponse.toString
