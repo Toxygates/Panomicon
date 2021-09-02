@@ -23,11 +23,10 @@ import t.Context
 import t.shared.common._
 import t.shared.common.sample.Group
 import t.db.ExtMatrixDB
-import t.platform.OrthologMapping
+import t.platform.{OrthologMapping, PlatformRegistry}
 import t.server.viewer.Conversions._
 import t.shared.viewer.DBUnavailableException
 import t.shared.viewer.ManagedMatrixInfo
-import t.server.viewer.PlatformRegistry
 import t.shared.viewer.SortKey
 import t.model.sample.CoreParameter
 
@@ -38,12 +37,11 @@ object MatrixController {
             orthologs: () => Iterable[OrthologMapping] = noOrthologs): MatrixController = {
 
     val params = ControllerParams(groups, initProbes, typ)
-    val platforms = new PlatformRegistry(context.probeStore)
 
     if (params.platforms(context).size > 1) {
-      new MergedMatrixController(context, platforms, params, orthologs)
+      new MergedMatrixController(context, params, orthologs)
     } else {
-      new DefaultMatrixController(context, platforms, params)
+      new DefaultMatrixController(context, params)
     }
   }
 }
@@ -70,9 +68,7 @@ case class ControllerParams(val groups: Seq[Group],
  * The matrix is loaded automatically when a MatrixController
  * instance is created.
  */
-abstract class MatrixController(context: Context,
-                                platforms: PlatformRegistry,
-                                params: ControllerParams) {
+abstract class MatrixController(context: Context, params: ControllerParams) {
 
   def matrixContext = context.matrix
   val groups = params.groups
@@ -88,7 +84,7 @@ abstract class MatrixController(context: Context,
   def groupSpecies = groups.headOption.flatMap(g => asSpecies(g.getSamples()(0).sampleClass()))
 
   lazy val filteredProbes =
-    platforms.filterProbes(initProbes, groupPlatforms, groupSpecies)
+    context.platformRegistry.filterProbes(initProbes, groupPlatforms, groupSpecies)
 
   protected def enhancedCols = true
 
@@ -157,7 +153,7 @@ abstract class MatrixController(context: Context,
       probes
     } else {
       println("Select all probes")
-      platforms.filterProbes(List(), groupPlatforms, groupSpecies)
+      context.platformRegistry.filterProbes(List(), groupPlatforms, groupSpecies)
     })
     managedMatrix.selectProbes(useProbes.toSeq)
     managedMatrix
@@ -191,8 +187,7 @@ abstract class MatrixController(context: Context,
 /**
  * A controller that produces ManagedMatrix instances and can apply a mapper.
  */
-class DefaultMatrixController(context: Context, platforms: PlatformRegistry,
-                              params: ControllerParams) extends MatrixController(context, platforms, params) {
+class DefaultMatrixController(context: Context, params: ControllerParams) extends MatrixController(context, params) {
   type Mat = ManagedMatrix
   def finish(mm: ManagedMatrix): ManagedMatrix = mm
 
@@ -217,10 +212,8 @@ class DefaultMatrixController(context: Context, platforms: PlatformRegistry,
 /**
  * A matrix controller that applies the MedianValueMapper.
  */
-class MergedMatrixController(context: Context,
-                             platforms: PlatformRegistry,
-                             params: ControllerParams, orthologs: () => Iterable[OrthologMapping])
-    extends DefaultMatrixController(context, platforms, params) {
+class MergedMatrixController(context: Context, params: ControllerParams, orthologs: () => Iterable[OrthologMapping])
+    extends DefaultMatrixController(context, params) {
 
   override protected def enhancedCols = false
 
@@ -234,7 +227,7 @@ class MergedMatrixController(context: Context,
     //Use orthologs to expand the probe set if this request is
     //multi-platform
     val expanded = initProbes.flatMap(orth.forProbe.getOrElse(_, Set()))
-    platforms.filterProbes(expanded, groupPlatforms)
+    context.platformRegistry.filterProbes(expanded, groupPlatforms)
   }
 
   override protected def mapper: Option[MatrixMapper] = {

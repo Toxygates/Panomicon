@@ -21,20 +21,18 @@ package t.server.viewer.intermine
 
 import scala.Vector
 import scala.collection.JavaConverters._
-
 import org.intermine.webservice.client.core.ContentType
 import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
 import org.json.JSONObject
-
 import t.shared.viewer.StringList
 import t.sparql._
 import t.sparql.ProbeStore
 import t.sparql.secondary._
-import t.server.viewer.PlatformRegistry
 import t.shared.viewer.intermine._
 import t.intermine._
+import t.platform.PlatformRegistry
 
 class IntermineConnector(instance: IntermineInstance,
     platforms: PlatformRegistry) extends t.intermine.Connector(instance.appName,

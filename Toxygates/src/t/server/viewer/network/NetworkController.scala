@@ -24,9 +24,9 @@ import t.Context
 import t.shared.common.ValueType
 import t.shared.common.sample.Group
 import t.db.MatrixContext
+import t.platform.PlatformRegistry
 import t.server.viewer.matrix.ManagedMatrix
 import t.platform.mirna.TargetTable
-import t.server.viewer.PlatformRegistry
 import t.server.viewer.matrix.ControllerParams
 import t.shared.viewer.network.{Network, NetworkInfo}
 
@@ -38,24 +38,23 @@ import t.shared.viewer.network.{Network, NetworkInfo}
  * Will not be used for subsequent calls to makeNetwork, as we expect the
  * ManagedNetwork (managedMatrix) to contain the latest updated targets.
  */
-class NetworkController(context: Context, platforms: PlatformRegistry,
-                        params: ControllerParams,
+class NetworkController(context: Context, params: ControllerParams,
                         val sideController: MatrixController, targets: TargetTable,
                         initMainPageSize: Int,
-                        sideIsMRNA: Boolean) extends MatrixController(context, platforms, params) {
+                        sideIsMRNA: Boolean) extends MatrixController(context, params) {
   def sideMatrix = sideController.managedMatrix
 
   type Mat = ManagedNetwork
 
   override def finish(mm: ManagedMatrix): Mat = {
-    new ManagedNetwork(mm.params, sideMatrix, targets, platforms, initMainPageSize, sideIsMRNA)
+    new ManagedNetwork(mm.params, sideMatrix, targets, context.platformRegistry, initMainPageSize, sideIsMRNA)
   }
 
   /**
    * Produce a network object that reflects the current view.
    */
   def makeNetwork: Network =
-    new NetworkBuilder(managedMatrix.targets, platforms, managedMatrix, sideMatrix).build
+    new NetworkBuilder(managedMatrix.targets, context.platformRegistry, managedMatrix, sideMatrix).build
 
   def makeNetworkWithInfo = new NetworkInfo(managedMatrix.info, sideMatrix.info, makeNetwork)
 }

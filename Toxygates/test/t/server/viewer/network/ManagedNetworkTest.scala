@@ -22,11 +22,12 @@ package t.server.viewer.network
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.testing.NetworkTestData
+import t.platform.{MemoryPlatforms, PlatformRegistry}
 import t.platform.mirna._
 import t.server.viewer.Conversions._
 import t.server.viewer.matrix.{ControllerParams, ExtFoldBuilder, ManagedMatrix, MatrixController}
 import t.server.viewer.testing.TestData
-import t.server.viewer.{MemoryPlatforms, PlatformRegistry, testing}
+import t.server.viewer.testing
 import t.shared.common.ValueType
 import t.shared.common.sample.Group
 import t.shared.viewer.network.Network
@@ -116,19 +117,21 @@ class ManagedNetworkTest extends TTestSuite {
                   sideGroups: Seq[Group],
       mainPlatform: String, reverseLookup: Boolean) {
 
-    val testContext = new Context(null, null, null, null, context)
+    val testContext = new Context(null, null, null, null, context) {
+      override lazy val platformRegistry: PlatformRegistry = ManagedNetworkTest.this.platforms
+    }
 
     val params = ControllerParams(mainGroups, Seq(), ValueType.Folds)
     val mainPageSize = 100
 
     //Partial MatrixController. Note: should find a more permanent solution and structure the code better
     val sideControllerParams = ControllerParams(sideGroups, Seq(), ValueType.Folds)
-    val sideController = new MatrixController(null, null, sideControllerParams) {
+    val sideController = new MatrixController(null, sideControllerParams) {
       override lazy val managedMatrix = side.asInstanceOf[this.Mat]
       override def finish(mm: ManagedMatrix): this.Mat = ???
     }
 
-    val netCon = new NetworkController(testContext, platforms, params, sideController,
+    val netCon = new NetworkController(testContext, params, sideController,
       targets, mainPageSize, false)
     val main = netCon.managedMatrix
 

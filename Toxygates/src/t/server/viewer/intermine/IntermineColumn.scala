@@ -20,15 +20,13 @@
 package t.server.viewer.intermine;
 
 import scala.collection.JavaConverters._
-
 import org.intermine.pathquery.Constraints
 import org.intermine.pathquery.PathQuery
-
 import t.db.DefaultBio
 import t.intermine.Query
+import t.platform.PlatformRegistry
 import t.sparql._
 import t.sparql.secondary.Gene
-import t.server.viewer.PlatformRegistry
 
 object TargetmineColumns {
   def connector(mines: Intermines,

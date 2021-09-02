@@ -20,6 +20,7 @@
 package t
 
 import t.db.MatrixContext
+import t.platform.PlatformRegistry
 import t.sparql.{ProbeStore, SampleStore}
 
 object Context {
@@ -41,19 +42,6 @@ class Context(val config: BaseConfig,
               val sampleStore: SampleStore,
               val matrix: MatrixContext) {
 
-  /*
-   * Note: this may not be the best location for the auxSortMap
-   */
+  lazy val platformRegistry = new PlatformRegistry(probeStore)
 
-  /**
-   * Obtain an ordering of the probes, identified by a string key.
-   *
-   * This mechanism was formerly used to sort by an association in Tritigate,
-   * but is not currently used.
-   */
-  def auxSortMap(key: String): Map[String, Double] = {
-    val allProbes = matrix.probeMap.tokens
-    println("Aux map for " + allProbes.size + " probes key " + key)
-    probeStore.auxSortMap(allProbes, key)
-  }
 }

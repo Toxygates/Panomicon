@@ -20,9 +20,8 @@
 package t.server.viewer.network
 
 import t.server.common.GWTUtils._
-import t.platform.Probe
+import t.platform.{PlatformRegistry, Probe}
 import t.platform.mirna._
-import t.server.viewer.PlatformRegistry
 import t.server.viewer.matrix.{ExpressionMatrix, ManagedMatrix, PageDecorator}
 import t.shared.viewer.network.Interaction
 import t.shared.viewer.network.Network

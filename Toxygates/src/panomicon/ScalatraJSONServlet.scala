@@ -13,7 +13,7 @@ import t.platform.mirna.TargetTableBuilder
 import t.server.viewer.matrix.{MatrixController, PageDecorator}
 import t.server.viewer.rpc.NetworkLoader
 import t.server.viewer.servlet.MinimalTServlet
-import t.server.viewer.{AssociationMasterLookup, Configuration, PlatformRegistry}
+import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.shared.viewer.mirna.MirnaSource
@@ -34,7 +34,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   val tconfig = Configuration.fromServletContext(scontext)
   var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
-  lazy val associationLookup = new AssociationMasterLookup(probeStore, sampleStore, sampleFilter)
+  lazy val associationLookup = new AssociationMasterLookup(context, sampleFilter)
 
   tServletInit(tconfig)
   new PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
@@ -47,8 +47,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
 
-  lazy val platformRegistry = new PlatformRegistry(probeStore)
-  lazy val netLoader = new NetworkLoader(context, platformRegistry, baseConfig.data.mirnaDir)
+  lazy val netLoader = new NetworkLoader(context, baseConfig.data.mirnaDir)
 
   val authentication = new Authentication()
 

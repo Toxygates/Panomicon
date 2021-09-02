@@ -19,11 +19,12 @@
 
 package t.server.viewer
 
+import t.Context
 import t.shared.common.AType
 import t.shared.common.AType._
 import t.db.DefaultBio
 import t.model.SampleClass
-import t.platform.Probe
+import t.platform.{PlatformRegistry, Probe}
 import t.platform.mirna.TargetTable
 import t.sparql.secondary._
 import t.sparql.{toBioMap, _}
@@ -53,7 +54,7 @@ class DrugTargetResolver(sampleStore: SampleStore, chembl: ChEMBL,
   }
 }
 
-class MirnaResolver(probeStore: ProbeStore, platforms: t.server.viewer.PlatformRegistry, mirnaTable: TargetTable,
+class MirnaResolver(probeStore: ProbeStore, platforms: PlatformRegistry, mirnaTable: TargetTable,
                     mainPlatform: Option[String], sidePlatform: Option[String]) {
 
   def lookup: AssociationLookup = {
@@ -180,16 +181,18 @@ class AssociationResolver(probeStore: ProbeStore,
 /**
  * Holds references to the various association sources and marshals lookup requests.
  */
-class AssociationMasterLookup(probeStore: ProbeStore, sampleStore: SampleStore,
-                              sampleFilter: SampleFilter) {
+class AssociationMasterLookup(context: Context, sampleFilter: SampleFilter) {
   val chembl = new ChEMBL()
   val drugBank = new DrugBank()
 
+  val probeStore = context.probeStore
+  val sampleStore = context.sampleStore
   val triplestore = sampleStore.triplestore
+  lazy val platformsCache = context.platformRegistry
   lazy val drugTargetResolver = new DrugTargetResolver(sampleStore, chembl, drugBank).lookup
   lazy val b2rKegg: B2RKegg = new B2RKegg(triplestore.conn)
   lazy val associationResolver =  new AssociationResolver(probeStore, sampleStore, b2rKegg)
-  lazy val platformsCache = new PlatformRegistry(probeStore)
+
 
   /**
    * Basic association lookup

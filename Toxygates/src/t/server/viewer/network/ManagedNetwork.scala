@@ -20,9 +20,10 @@
 package t.server.viewer.network
 
 import t.db._
+import t.platform.PlatformRegistry
 import t.server.viewer.matrix._
 import t.platform.mirna._
-import t.server.viewer.PlatformRegistry
+
 import scala.collection.JavaConverters._
 import t.shared.common.GWTTypes
 import t.server.common.GWTUtils

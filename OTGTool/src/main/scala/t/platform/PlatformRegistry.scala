@@ -17,11 +17,10 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.server.viewer
+package t.platform
 
-import t.platform.Probe
-import t.sparql.{PlatformLoader, ProbeStore}
 import t.platform.Species.Species
+import t.sparql.PlatformLoader
 
 /**
  * A loader that contains in-memory probes.
@@ -34,6 +33,10 @@ class MemoryPlatforms(platforms: Map[String, Iterable[Probe]]) extends PlatformL
   def allPlatforms: Map[String, Iterable[Probe]] = platforms
 }
 
+/**
+ * A cache for probes and platforms, managing the mappings between the two
+ * @param loader
+ */
 class PlatformRegistry(loader: PlatformLoader) {
   //map platform to probe sets
   private lazy val platformSets = loader.allPlatforms.mapValues(_.map(_.identifier).toSet)

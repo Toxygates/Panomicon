@@ -25,7 +25,7 @@ import t.shared.common._
 import t.shared.common.sample.{Group, Sample}
 import t.model.SampleClass
 import t.model.sample.{CoreParameter, OTGAttribute}
-import t.platform.{Probe, Species}
+import t.platform.{PlatformRegistry, Probe, Species}
 import t.platform.mirna.TargetTable
 import t.sparql.secondary._
 import t.sparql.{ProbeStore, SampleFilter, SampleStore}
@@ -49,15 +49,13 @@ object ProbeServiceImpl {
 class ProbeServiceImpl extends TServiceServlet with ProbeService {
   import ProbeServiceImpl._
 
-  lazy val platformsCache = new PlatformRegistry(probeStore)
-
   protected def sampleStore: SampleStore = context.sampleStore
   protected def probeStore: ProbeStore = context.probeStore
   protected var instanceURI: Option[String] = None
 
   protected var uniprot: Uniprot = _
   protected lazy val b2rKegg: B2RKegg = new B2RKegg(baseConfig.triplestoreConfig.triplestore)
-  protected lazy val associationLookup = new AssociationMasterLookup(probeStore, sampleStore, defaultSampleFilter)
+  protected lazy val associationLookup = new AssociationMasterLookup(context, defaultSampleFilter)
 
   protected var configuration: Configuration = _
 
@@ -83,7 +81,7 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
     //Preload
     appInfoLoader.latest
 
-    platformsCache //force preloading all platforms
+    context.platformRegistry //force preloading all platforms
   }
 
   protected def reloadAppInfo = {
@@ -171,7 +169,7 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
                           samples: JList[Sample]): Array[String] = {
 
     def geneLookup(gene: String): Option[Iterable[Probe]] =
-      platformsCache.geneLookup.get(Gene(gene))
+      context.platformRegistry.geneLookup.get(Gene(gene))
 
     val ps = if (titlePatternMatch) {
       probeStore.forTitlePatterns(identifiers)

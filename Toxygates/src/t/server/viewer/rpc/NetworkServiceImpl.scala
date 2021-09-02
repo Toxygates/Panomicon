@@ -19,7 +19,6 @@
 
 package t.server.viewer.rpc
 import java.util.{List => JList}
-
 import t.Context
 
 import scala.collection.JavaConverters._
@@ -30,7 +29,8 @@ import t.platform.mirna._
 import t.platform.mirna.TargetTable
 import t.sparql.ProbeStore
 import t.gwt.viewer.client.rpc.NetworkService
-import t.server.viewer.{CSVHelper, Configuration, MirnaSources, PlatformRegistry}
+import t.platform.PlatformRegistry
+import t.server.viewer.{CSVHelper, Configuration, MirnaSources}
 import t.server.viewer.Conversions._
 import t.server.viewer.matrix.ControllerParams
 import t.server.viewer.matrix.MatrixController
@@ -81,10 +81,9 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   var config: Configuration = _
 
   def mirnaDir = context.config.data.mirnaDir
-  lazy val netLoader = new NetworkLoader(context, platforms, mirnaDir)
+  lazy val netLoader = new NetworkLoader(context, mirnaDir)
 
   private def probeStore: ProbeStore = context.probeStore
-  lazy val platforms = new PlatformRegistry(probeStore)
 
   override def localInit(c: Configuration) {
     super.localInit(c)
@@ -149,7 +148,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   }
 }
 
-class NetworkLoader(context: Context, platforms: PlatformRegistry, mirnaDir: String) {
+class NetworkLoader(context: Context, mirnaDir: String) {
   def load(targetTable: TargetTable,
            mainColumns: Seq[Group], mainInitProbes: Array[String],
            sideColumns: Seq[Group], valueType: ValueType,
@@ -165,7 +164,7 @@ class NetworkLoader(context: Context, platforms: PlatformRegistry, mirnaDir: Str
 
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
-    val net = new NetworkController(context, platforms, netControllerParams,
+    val net = new NetworkController(context, netControllerParams,
       sideMatrix, targetTable, mainPageSize, sideIsMRNA)
 
     val mainMatrix = net.managedMatrix
@@ -202,7 +201,7 @@ class NetworkLoader(context: Context, platforms: PlatformRegistry, mirnaDir: Str
       MiRNATargets.tableFromFile(_))
 
   lazy val miRawTable = {
-    val allTranscripts = platforms.allProbes.iterator.flatMap(_.transcripts).toSet
+    val allTranscripts = context.platformRegistry.allProbes.iterator.flatMap(_.transcripts).toSet
 
     tryReadTargetTable(
       s"$mirnaDir/miraw_hsa_targets.txt",
