@@ -1,10 +1,6 @@
 package panomicon
 
-import io.fusionauth.client.FusionAuthClient
-import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.domain.JWT
-import io.fusionauth.jwt.hmac.HMACVerifier
-import io.fusionauth.jwt.rsa.RSAVerifier
 import org.scalatra._
 import org.scalatra.servlet.FileUploadSupport
 import t.db.{BasicExprValue, Sample}
@@ -29,10 +25,9 @@ import ujson.Value
 import upickle.default.{macroRW, ReadWriter => RW, _}
 
 import java.nio.charset.StandardCharsets
-import java.security.{MessageDigest, SecureRandom}
 import java.text.SimpleDateFormat
 import java.util
-import java.util.{Base64, Date}
+import java.util.Date
 import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
 
