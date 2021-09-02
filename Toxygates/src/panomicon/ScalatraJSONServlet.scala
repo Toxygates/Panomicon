@@ -56,7 +56,7 @@ import scala.collection.JavaConverters._
   implicit val dsRW: RW[Dataset] = macroRW
   implicit val batRW: RW[Batch] = macroRW
 }
-  class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
+class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     with MinimalTServlet with FileUploadSupport {
   import Encoders._
 
@@ -75,6 +75,8 @@ import scala.collection.JavaConverters._
 
   lazy val platformRegistry = new PlatformRegistry(probeStore)
   lazy val netLoader = new NetworkLoader(context, platformRegistry, baseConfig.data.mirnaDir)
+
+  val authentication = new Authentication()
 
   error {
     //Catches exceptions during request processing.
@@ -357,48 +359,20 @@ import scala.collection.JavaConverters._
     write(samplesWithValues.map(sampleToMap))
   }
 
-  val fusionAuthBaseUrl = System.getenv("FUSIONAUTH_BASEURL")
-  val fusionAuthClientId = System.getenv("FUSIONAUTH_CLIENTID")
-  val fusionAuthClientSecret = System.getenv("FUSIONAUTH_CLIENTSECRET")
-  val redirectAfterAuthUrl = System.getenv("REDIRECT_AFTER_AUTH_URL")
-  val jwtIssuer = System.getenv("JWT_ISSUER")
-
-  val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthBaseUrl);
-  val random = new SecureRandom()
-
-  def generatePKCEVerifier(): String =  {
-    val codeVerifier = new Array[Byte](32);
-    random.nextBytes(codeVerifier)
-    Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier)
-  }
-
-  def generatePKCEChallenge(codeVerifier: String): String = {
-    val bytes = codeVerifier.getBytes("US-ASCII");
-    val messageDigest = MessageDigest.getInstance("SHA-256");
-    messageDigest.update(bytes, 0, bytes.length);
-    val digest = messageDigest.digest();
-    Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
-  }
-
   get("/login") {
-    val verifier = generatePKCEVerifier()
+    val (verifier, challenge) = authentication.generatePKCEPair()
     session("verifier") = verifier
-    val challenge = generatePKCEChallenge(verifier)
-
-    redirect(s"$fusionAuthBaseUrl/oauth2/authorize?client_id=$fusionAuthClientId" +
-      s"&response_type=code&redirect_uri=$redirectAfterAuthUrl"
-      + s"&scope=openid offline_access&code_challenge=$challenge&code_challenge_method=S256")
+    redirect(authentication.loginRedirectUri(challenge))
   }
 
   get("/oauth-redirect") {
-    // TODO this should be a different status code/message
     if (!session.contains("verifier")) halt(401, "Unauthenticated")
 
     val authorizationCode = params("code")
     val verifier: String = session("verifier").asInstanceOf[String]
 
-    val tokenResponse = fusionAuthClient.exchangeOAuthCodeForAccessTokenUsingPKCE(authorizationCode,
-      fusionAuthClientId, fusionAuthClientSecret, redirectAfterAuthUrl, verifier)
+    val tokenResponse = authentication
+      .exchangeOAuthCodeForAccessToken(authorizationCode, verifier)
 
     if (tokenResponse.wasSuccessful()) {
       val responseContent = tokenResponse.successResponse
@@ -421,41 +395,12 @@ import scala.collection.JavaConverters._
   }
 
   def getJwtToken(): Either[JWT, String] = {
-    val cookies = request.getCookies
-    try {
-      val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").get
-
-      val jwt = new JWTDecoder().decode(tokenCookie.getValue,
-        HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
-        RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
-      )
-
-      if (jwt.audience != fusionAuthClientId) {
-        Right("Wrong token audience")
-      } else if (jwt.issuer != jwtIssuer) {
-        Right("Wrong token issuer")
-      } else if (jwt.isExpired()) {
-        val refreshToken = cookies.find(c => c.getName == "__Host-refreshToken").get.getValue
-        val refreshResponse =
-          fusionAuthClient.exchangeRefreshTokenForAccessToken(refreshToken,
-            fusionAuthClientId, fusionAuthClientSecret, "", "")
-        if (refreshResponse.wasSuccessful()) {
-          val newToken = refreshResponse.successResponse.token
-          response.addHeader("Set-Cookie", s"__Host-jwt=${newToken}; Secure; Path=/; HttpOnly; SameSite=Strict")
-          Left(new JWTDecoder().decode(newToken,
-            HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
-            RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
-          ))
-        } else {
-          Right(s"Error getting refresh token: ${refreshResponse.exception.toString()}")
-        }
-      } else {
-        Left(jwt)
+    authentication.getJwtToken(request.getCookies) match {
+      case Left((token, tokenString)) => {
+        response.addHeader("Set-Cookie", authentication.cookieHeader(tokenString))
+        Left(token)
       }
-    } catch {
-      case e: Throwable => {
-        Right(s"Error getting token: ${e.toString}")
-      }
+      case Right(error) => Right(error)
     }
   }
 
