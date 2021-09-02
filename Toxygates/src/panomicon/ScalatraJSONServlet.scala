@@ -461,8 +461,3 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
 }
-
-object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
-
-case class NetworkParams(matrix1: json.MatrixParams, matrix2: json.MatrixParams,
-                           associationSource: String, associationLimit: String = null)
