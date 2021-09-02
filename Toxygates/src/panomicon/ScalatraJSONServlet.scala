@@ -277,7 +277,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   /**
    * Obtain association data for one association and a list of probes.
    * A representative sample must be included, from which the sample class is deduced when necessary.
-   * Examle request: curl http://127.0.0.1:8888/json/association/GOBP/003017689013\?probes\=213646_x_at,213060_s_at
+   * Example request: curl http://127.0.0.1:8888/json/association/GOBP/003017689013\?probes\=213646_x_at,213060_s_at
    */
   get("/association/:assoc/:sample") {
     val probes = params.getOrElse("probes", halt(400))
