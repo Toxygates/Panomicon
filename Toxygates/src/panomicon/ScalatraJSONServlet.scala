@@ -394,55 +394,40 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
-  def getJwtToken(): Either[JWT, String] = {
+  def verifyJWT(): JWT = {
     authentication.getJwtToken(request.getCookies) match {
       case Left((token, tokenString)) => {
         response.addHeader("Set-Cookie", authentication.cookieHeader(tokenString))
-        Left(token)
+        token
       }
-      case Right(error) => Right(error)
+      case Right(error) => halt(401)
     }
   }
 
   get("/check-cookie") {
-    getJwtToken() match {
-      case Left(jwt) => jwt.toString()
-      case Right(error) => error
-    }
+    verifyJWT()
   }
 
   get("/roles") {
-    getJwtToken() match {
-      case Left(jwt) => {
-        val roles = jwt.getList("roles").asInstanceOf[util.List[String]].asScala
-        writeJs(roles)
-      }
-      case Right(error) => halt(401)
-    }
+    val jwt = verifyJWT()
+    val roles = jwt.getList("roles").asInstanceOf[util.List[String]].asScala
+    writeJs(roles)
   }
 
   post("/upload") {
-    getJwtToken() match {
-      case Left(jwt) => {
-        val file = fileParams("fileKey")
-        val fileContents = new String(file.get(), StandardCharsets.UTF_8);
-        println(fileContents)
-        fileContents
-      }
-      case Right(error) => halt(401)
-    }
+    val jwt = verifyJWT()
+    val file = fileParams("fileKey")
+    val fileContents = new String(file.get(), StandardCharsets.UTF_8);
+    println(fileContents)
+    fileContents
   }
 
   delete("/batch/:batch") {
-    getJwtToken() match {
-      case Left(jwt) => {
-        val batchId = params("batch")
-        val batchManager = new BatchManager(context)
-        runTasks(batchManager.delete(batchId, false))
-        "Deleting batch " + batchId
-      }
-      case Right(error) => halt(401)
-    }
+    val jwt = verifyJWT()
+    val batchId = params("batch")
+    val batchManager = new BatchManager(context)
+    runTasks(batchManager.delete(batchId, false))
+    "Deleting batch " + batchId
   }
 
   protected def runTasks(task: Task[_]) {
