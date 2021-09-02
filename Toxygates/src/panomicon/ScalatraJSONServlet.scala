@@ -8,9 +8,8 @@ import t.global.KCDBRegistry
 import t.manager.{BatchManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
-import t.model.sample.{Attribute, CoreParameter}
+import t.model.sample.Attribute
 import t.platform.mirna.TargetTableBuilder
-import t.server.viewer.Conversions.asJavaSample
 import t.server.viewer.matrix.{ExpressionRow, MatrixController, PageDecorator}
 import t.server.viewer.rpc.NetworkLoader
 import t.server.viewer.servlet.MinimalTServlet
@@ -67,6 +66,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   lazy val batchStore = new BatchStore(baseConfig.triplestoreConfig)
   lazy val sampleStore = context.sampleStore
   lazy val probeStore =  context.probeStore
+
+  val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
 
   lazy val platformRegistry = new PlatformRegistry(probeStore)
   lazy val netLoader = new NetworkLoader(context, platformRegistry, baseConfig.data.mirnaDir)
@@ -195,7 +196,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   private val matrixCache = new LRUCache[(json.MatrixParams, ValueType), MatrixController](10)
 
   post("/matrix") {
-    import MatrixHandling._
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
     println(s"Load request: $matParams")
     val valueType = ValueType.valueOf(
@@ -205,7 +205,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val controller = matrixCache.get(key) match {
       case Some(mat) => mat
       case _ =>
-        val c = loadMatrix(matParams, valueType)
+        val c = matrixHandling.loadMatrix(matParams, valueType)
         matrixCache.insert(key, c)
         c
     }
@@ -224,7 +224,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val numPages = (matrix.info.numRows.toFloat / pageSize).ceil.toInt
 
     val page = pages.getPageView(offset, pageSize, true)
-    val ci = columnInfo(matrix.info)
+    val ci = matrixHandling.columnInfo(matrix.info)
 
     //writeJs avoids the problem of Map[String, Any] not having an encoder
     write(Map(
@@ -233,7 +233,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
         "column" -> writeJs(matrix.sortColumn.getOrElse(-1)),
         "ascending" -> writeJs(matrix.sortAscending))
       ),
-      "rows" -> writeJs(flattenRows(page, matrix.info)),
+      "rows" -> writeJs(matrixHandling.flattenRows(page, matrix.info)),
       "last_page" -> writeJs(numPages),
     ))
   }
@@ -250,7 +250,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/network") {
-    import MatrixHandling._
 
     import java.lang.{Double => JDouble}
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
@@ -277,9 +276,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       println("Warning: the target table is empty, no networks can be constructed.")
     }
 
-    val mainGroups = filledGroups(netParams.matrix1)
+    val mainGroups = matrixHandling.filledGroups(netParams.matrix1)
     val mainInitProbes = netParams.matrix1.probes
-    val sideGroups = filledGroups(netParams.matrix2)
+    val sideGroups = matrixHandling.filledGroups(netParams.matrix2)
     val netController = netLoader.load(targetTable, mainGroups, mainInitProbes.toArray,
       sideGroups, valueType, pageSize)
     val network = netController.makeNetwork
@@ -458,85 +457,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
             e.printStackTrace()
         }
       }
-    }
-  }
-
-  /**
-   * Routines that support matrix loading requests
-   */
-  object MatrixHandling {
-    def filledGroups(matParams: json.MatrixParams) = {
-      val sampleIds = matParams.groups.flatMap(_.sampleIds)
-      val fullSamples = Map.empty ++
-        context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
-          s => (s.sampleId -> s))
-      matParams.groups.map(g => fillGroup(g.name, g.sampleIds.map(s => fullSamples(s))))
-    }
-
-    def loadMatrix(matParams: json.MatrixParams, valueType: ValueType): MatrixController = {
-      val groups = filledGroups(matParams)
-      val controller = MatrixController(context, groups, matParams.probes, valueType)
-      val matrix = controller.managedMatrix
-      matParams.applyFilters(matrix)
-      matParams.applySorting(matrix)
-      controller
-    }
-
-    def columnInfo(info: ManagedMatrixInfo): Seq[Map[String, Value]] = {
-      (0 until info.numColumns()).map(i => {
-        Map("name" -> writeJs(info.columnName(i)),
-          "parent" -> writeJs(info.parentColumnName(i)),
-          "shortName" -> writeJs(info.shortColumnName(i)),
-          "hint" -> writeJs(info.columnHint(i)),
-          "samples" -> writeJs(info.samples(i).map(s => s.id()))
-        )
-      })
-    }
-
-    import t.shared.common.sample.{Unit => TUnit}
-    def unitForTreatment(sf: SampleFilter, treatment: String): Option[TUnit] = {
-      val samples = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> treatment)), sf)()
-      if (samples.nonEmpty) {
-        Some(new TUnit(samples.head.sampleClass, samples.map(asJavaSample).toArray))
-      } else {
-        None
-      }
-    }
-
-    /**
-     * By using the sample treatment ID, ensure that the group contains
-     * all the available samples for a given treatment.
-     * This is the default behaviour for /matrix requests for now; in the future, we may want to
-     * make it optional, since the system in principle supports sub-treatment level sample groups.
-     */
-    def fillGroup(name: String, group: Seq[Sample]): t.shared.common.sample.Group = {
-      if (group.isEmpty) {
-        return new t.shared.common.sample.Group(name, Array[TUnit](), Array[TUnit]())
-      }
-      val batchURI = group.head.apply(CoreParameter.Batch)
-      val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
-
-      val treatedTreatments = group.map(s => s.sampleClass(Treatment)).distinct
-      val controlTreatments = group.map(s => s.sampleClass(ControlTreatment)).distinct
-
-      //Note: querying treated/control separately leads to one extra sparql query - can
-      //probably be optimised away
-      val treatedUnits = treatedTreatments.flatMap(t => unitForTreatment(sf, t))
-      val controlUnits = controlTreatments.flatMap(t => unitForTreatment(sf, t))
-
-      new t.shared.common.sample.Group(name, treatedUnits.toArray, controlUnits.toArray)
-    }
-
-    def flattenRows(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {
-      rows.map(r => Map(
-        "probe" -> writeJs(r.probe),
-        "probeTitles" -> writeJs(r.probeTitles),
-        "geneIds" -> writeJs(r.geneIds.map(_.toInt)),
-        "geneSymbols" -> writeJs(r.geneSymbols),
-        "expression" -> writeJs(Map() ++ ((0 until matrixInfo.numColumns)
-          .map(matrixInfo.columnName(_)) zip r
-          .values.map(v => writeJs(v.value))))
-      ))
     }
   }
 
