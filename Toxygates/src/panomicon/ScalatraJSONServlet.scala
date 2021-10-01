@@ -33,7 +33,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   val tconfig = Configuration.fromServletContext(scontext)
   var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
-  lazy val associationLookup = new AssociationMasterLookup(context, sampleFilter)
 
   tServletInit(tconfig)
   new PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
@@ -232,16 +231,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       val requestedType = AType.valueOf(params("assoc"))
       val reprSample = params("sample")
       println(s"Get AType $requestedType for $probes and representative sample $reprSample")
-      val sampleData = context.sampleStore.withRequiredAttributes(SampleClassFilter(),
-        sampleFilter, Seq(reprSample))().
-        headOption.getOrElse(halt(400))
-      println(sampleData.sampleClass)
       val limit = params.getOrElse("limit", "100").toInt
-
-      val assoc = associationLookup.doLookup(sampleData.sampleClass, Array(requestedType),
-        probes.split(","), limit).
-        headOption.getOrElse(halt(400))
-
+      val assoc = matrixHandling.association(requestedType, probes.split(","), reprSample, limit)
       write(associationToJSON(assoc))
     } catch {
       case iae: IllegalArgumentException =>

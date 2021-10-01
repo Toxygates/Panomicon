@@ -1,14 +1,14 @@
 package panomicon
 
 import t.Context
-import t.db.Sample
+import t.db.{Sample, SampleId}
 import t.model.sample.CoreParameter
 import t.model.sample.CoreParameter.{ControlTreatment, Treatment}
-import t.server.viewer.Configuration
+import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.server.viewer.Conversions.asJavaSample
 import t.server.viewer.matrix.{ExpressionRow, ManagedMatrix, MatrixController, PageDecorator}
-import t.shared.common.ValueType
-import t.shared.viewer.ManagedMatrixInfo
+import t.shared.common.{AType, ValueType}
+import t.shared.viewer.{Association, ManagedMatrixInfo}
 import t.sparql.{SampleClassFilter, SampleFilter}
 import t.util.LRUCache
 import ujson.Value
@@ -19,6 +19,8 @@ import upickle.default.writeJs
  */
 class MatrixHandling(context: Context, sampleFilter: SampleFilter,
                      tconfig: Configuration) {
+  lazy val associationLookup = new AssociationMasterLookup(context, sampleFilter)
+
   def filledGroups(matParams: json.MatrixParams) = {
     val sampleIds = matParams.groups.flatMap(_.sampleIds)
     val fullSamples = Map.empty ++
@@ -113,5 +115,17 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
     val pages = new PageDecorator(context, controller)
     val page = pages.getPageView(offset, pageSize, true)
     (matrix, page)
+  }
+
+  def association(atype: AType, probes: Array[String], representativeSampleId: SampleId,
+                  limit: Int): Association = {
+    val sampleData = context.sampleStore.withRequiredAttributes(SampleClassFilter(),
+      sampleFilter, Seq(representativeSampleId))().
+      headOption.getOrElse(throw new Exception(s"No such sample $representativeSampleId"))
+
+    val assoc = associationLookup.doLookup(sampleData.sampleClass, Array(atype),
+      probes, limit).headOption.getOrElse(throw new Exception("Unable to get association data"))
+
+    assoc
   }
 }
