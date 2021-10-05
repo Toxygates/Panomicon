@@ -157,7 +157,7 @@ object TaskRunner {
   /**
    * Obtain log messages in time order and remove them from the log
    */
-  def logMessages: Iterable[String] = synchronized {
+  def seizeLogMessages: Iterable[String] = synchronized {
     val r = _logMessages
     _logMessages = Vector()
     r

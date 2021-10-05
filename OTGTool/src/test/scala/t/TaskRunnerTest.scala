@@ -68,7 +68,7 @@ class TaskRunnerTest extends TTestSuite {
     TaskRunner.available should equal(false)
     TaskRunner.shutdown()
     Await.result(future, 200 millis)
-    TaskRunner.logMessages should contain("logged")
+    TaskRunner.seizeLogMessages should contain("logged")
     TaskRunner.currentAtomicTask should equal(None)
     TaskRunner.available should equal(true)
   }

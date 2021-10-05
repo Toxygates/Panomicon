@@ -89,7 +89,7 @@ trait MaintenanceOpsImpl extends t.gwt.common.client.rpc.MaintenanceOperations {
 
   def getProgress(): Progress = {
     TaskRunner.synchronized {
-      val messages = TaskRunner.logMessages.toArray
+      val messages = TaskRunner.seizeLogMessages.toArray
       val p = if (TaskRunner.available) {
         new Progress("No task in progress", 0, true)
       } else {
