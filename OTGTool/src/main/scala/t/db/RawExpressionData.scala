@@ -101,15 +101,3 @@ trait ColumnExpressionData extends Closeable {
   def asExtValues(s: Sample): CMap[ProbeId, PExprValue] =
     Map() ++ data(s).toSeq.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1))
 }
-
-/**
- * This style of log2 computation was used historically in Tritigate
- * but is not currently used in Toxygates.
- */
-class Log2Data(raw: ColumnExpressionData) extends ColumnExpressionData {
-  def probes = raw.probes
-
-  override def data(s: Sample) = raw.data(s).mapValues(x => (ExprValue.log2(x._1), x._2, x._3))
-
-  def samples = raw.samples
-}

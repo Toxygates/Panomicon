@@ -51,8 +51,6 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     platforms.populateAttributes(baseConfig.attributes)
   }
 
-  protected def simpleLog2: Boolean = false
-
   protected def mayAppendBatch: Boolean = true
 
   def addBatchAsync(batch: Batch): Unit = {
@@ -103,8 +101,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       runTasks(batchManager.add(batch, metaFile.get.getAbsolutePath,
         dataFile.get.getAbsolutePath,
         callsFile.map(_.getAbsolutePath),
-        false, simpleLog2,
-        conversion = conversion.getOrElse(BatchManager.identityConverter)))
+        false, conversion = conversion.getOrElse(BatchManager.identityConverter)))
     }
   }
 

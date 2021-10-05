@@ -112,7 +112,6 @@ trait MaintenanceOpsImpl extends t.gwt.common.client.rpc.MaintenanceOperations {
   protected def runTasks(task: Task[_]) {
     grabRunner()
     setLastResults(None)
-    val currentRequest = request
     val session = request.getSession
     TaskRunner.runThenFinally(task) {
       TaskRunner.log("Writing databases, this may take a while...")

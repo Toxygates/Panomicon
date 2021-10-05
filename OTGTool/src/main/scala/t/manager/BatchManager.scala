@@ -242,8 +242,7 @@ class BatchManager(context: Context) {
 
   def add(batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
-    append: Boolean, simpleLog2: Boolean = false,
-    conversion: ExpressionConverter = identityConverter): Task[Unit] = {
+    append: Boolean, conversion: ExpressionConverter = identityConverter): Task[Unit] = {
 
     for {
       metadata <- readTSVMetadata(metadataFile)
@@ -259,25 +258,23 @@ class BatchManager(context: Context) {
             matrixContext()
           }
           _ <- addExprData(metadata, dataFile, callFile, conversion)(mc) andThen
-                recalculateFoldsAndSeries(batch, metadata, simpleLog2)
+                recalculateFoldsAndSeries(batch, metadata)
         } yield ())
     } yield ()
   }
 
   def updateMetadata(batch: Batch, metaFile: String,
-      recalculate: Boolean = false, simpleLog2: Boolean = false,
-      force: Boolean = false): Task[Unit] = {
+      recalculate: Boolean = false, force: Boolean = false): Task[Unit] = {
     for {
       metadata <- readTSVMetadata(metaFile)
       _ <- updateMetadataCheck(batch.title, metadata, config, force) andThen
         deleteRDF(batch.title) andThen
         addMetadata(batch, metadata, false, true) andThen
-        (if (recalculate) recalculateFoldsAndSeries(batch, metadata, simpleLog2) else Task.success)
+        (if (recalculate) recalculateFoldsAndSeries(batch, metadata) else Task.success)
     } yield ()
   }
 
-  def recalculateFoldsAndSeries(batch: Batch, metadata: Metadata,
-      simpleLog2: Boolean = false): Task[Unit] = {
+  def recalculateFoldsAndSeries(batch: Batch, metadata: Metadata): Task[Unit] = {
     implicit val mc = matrixContext()
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
@@ -294,7 +291,7 @@ class BatchManager(context: Context) {
     ) yield {
       for {
         _ <- insertFoldsDataFromExpressionData(dbReader, codedProbes,
-            filteredMetadata, simpleLog2) andThen
+            filteredMetadata) andThen
           addTimeSeriesData(filteredMetadata) andThen
           addDoseSeriesData(filteredMetadata)
       } yield ()
@@ -305,14 +302,13 @@ class BatchManager(context: Context) {
   }
 
   def insertFoldsDataFromExpressionData(reader: () => MatrixDBReader[PExprValue],
-    probes: Iterable[Int], metadata: Metadata, simpleLog2: Boolean)(implicit mc: MatrixContext) =
+    probes: Iterable[Int], metadata: Metadata)(implicit mc: MatrixContext) =
     new AtomicTask[Unit]("Insert fold value data from expression data") {
       def run() {
         val expressionData = new DBColumnExpressionData(reader(), metadata.samples, probes) {
           override def logEvent(msg: String) { log(msg) }
         }
-        doThenClose(expressionData)(data =>
-          addFoldsData(metadata, data, simpleLog2).execute())
+        doThenClose(expressionData)(data => addFoldsData(metadata, data).execute())
       }
     }
 
@@ -575,16 +571,12 @@ class BatchManager(context: Context) {
     } yield ()
   }
 
-  def addFoldsData(md: Metadata, data: ColumnExpressionData, simpleLog2: Boolean)
+  def addFoldsData(md: Metadata, data: ColumnExpressionData)
       (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.foldDb)
     for {
       fvs <- Task.simple("Generate expression data") {
-        if (simpleLog2) {
-          new Log2Data(data)
-        } else {
-          new PFoldValueBuilder(md, data)
-        }
+        new PFoldValueBuilder(md, data)
       }
       _ <- new SimpleValueInsert(db, fvs).insert("Insert fold value data")
     } yield ()
