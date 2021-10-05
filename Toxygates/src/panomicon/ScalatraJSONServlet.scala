@@ -10,8 +10,9 @@ import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 import t.server.viewer.servlet.MinimalTServlet
-import t.server.viewer.Configuration
+import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.shared.common.maintenance.BatchUploadException
+import t.shared.common.maintenance.Batch
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
@@ -328,6 +329,22 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val jwt = verifyJWT()
     val roles = jwt.getList("roles").asInstanceOf[util.List[String]].asScala
     writeJs(roles)
+  }
+
+  get("/batch") {
+    verifyRole("admin")
+
+    val batchStore = new BatchStore(baseConfig.triplestoreConfig)
+    val r = batchStore.getItems(None).map(batch =>  writeJs(Map(
+      "id" -> writeJs(batch.id),
+      "timestamp" -> writeJs(batch.timestamp),
+      "comment" -> writeJs(batch.comment),
+      "publicComment" -> writeJs(batch.publicComment),
+      "dataset" -> writeJs(batch.dataset),
+      "numSamples" -> writeJs(batch.numSamples),
+      "enabledInstances" -> writeJs((batchStore.listAccess(batch.id).toSet))
+    )))
+    write(r)
   }
 
   /** Upload a batch
