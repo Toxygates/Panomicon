@@ -1,0 +1,115 @@
+package panomicon
+
+import org.scalatra.servlet.FileItem
+import t.Context
+import t.global.KCDBRegistry
+import t.manager.BatchManager.Batch
+import t.manager.{BatchManager, Task, TaskRunner}
+import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
+import t.sparql.BatchStore
+import t.util.TempFiles
+import ujson.Value
+import upickle.default.writeJs
+
+class UploadHandling(context: Context) {
+
+  def getProgress(): Value = {
+    TaskRunner.synchronized {
+      val messages = TaskRunner.seizeLogMessages.toArray
+      val p = if (TaskRunner.available) {
+        ("No task in progress", 0, true, TaskRunner.errorCause)
+      } else {
+        TaskRunner.currentAtomicTask match {
+          case Some(t) => (t.name, t.percentComplete, false, TaskRunner.errorCause)
+          case None => ("Error", 0, false, TaskRunner.errorCause)
+        }
+      }
+      writeJs(Map(
+        "task" -> writeJs(p._1),
+        "completion" -> writeJs(p._2),
+        "finished" -> writeJs(p._3),
+        "errorCause" -> writeJs(p._4.map(_.getMessage).getOrElse("")),
+        "messages" -> writeJs(messages)
+      ))
+    }
+  }
+
+  private def itemToFile(tempFiles: TempFiles, key: String, item: FileItem) = {
+    val f = tempFiles.makeNew(key, "tmp")
+    item.write(f)
+    f
+  }
+  private val batchManager = new BatchManager(context)
+
+  def addBatch(batch: String, metadata: FileItem, exprData: FileItem, callsData: Option[FileItem],
+               probesData: Option[FileItem], mayAppendBatch: Boolean = true): String = {
+    val tempFiles = new TempFiles()
+
+    val metaFile = itemToFile(tempFiles, "metadata", metadata)
+    val dataFile = itemToFile(tempFiles, "expr", exprData)
+    val callsFile = callsData.map(c => itemToFile(tempFiles, "calls", c))
+    val probesFile = probesData.map(p => itemToFile(tempFiles, "probes", p))
+
+    ensureNotMaintenance()
+    grabRunner()
+
+    val existingBatches = new BatchStore(context.config.triplestoreConfig).getList()
+    if (existingBatches.contains(batch) && !mayAppendBatch) {
+      throw BatchUploadException.badID(
+        s"The batch $batch already exists and appending is not allowed. " +
+          "Please choose a different name.")
+    }
+
+    //TASK: port over probe conversion routine from BatchOpsImpl
+    val conversion = None
+    runTasks(batchManager.add(Batch(batch, "", None, None), metaFile.getAbsolutePath,
+      dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath),
+      false, conversion = conversion.getOrElse(BatchManager.identityConverter)), Some(tempFiles))
+
+    "Task started"
+  }
+
+  def deleteBatch(batch: String): String = {
+    val batchManager = new BatchManager(context)
+    runTasks(batchManager.delete(batch, false), None)
+    "Task started"
+  }
+
+  protected def grabRunner() {
+    if (!TaskRunner.available) {
+      throw new MaintenanceException("Another task is already in progress.")
+    }
+  }
+
+  protected def isMaintenanceMode: Boolean =
+    context.config.data.isMaintenanceMode
+
+  protected def ensureNotMaintenance(): Unit = {
+    if (isMaintenanceMode) {
+      throw new MaintenanceException("The system is currently in maintenance mode.\n" +
+        "Please try again later.")
+    }
+  }
+
+  protected def runTasks(task: Task[_], tempFiles: Option[TempFiles]) {
+    grabRunner()
+    TaskRunner.runThenFinally(task) {
+      TaskRunner.log("Writing databases, this may take a while...")
+      KCDBRegistry.closeWriters()
+      TaskRunner.log("Databases written")
+      TaskRunner.synchronized {
+        try {
+          for { tf <- tempFiles } {
+            tf.dropAll()
+          }
+          val success = TaskRunner.errorCause == None
+          //Task: associate success/failure with the user's session or ID
+        } catch {
+          case e: Exception =>
+            println(e)
+            e.printStackTrace()
+        }
+      }
+    }
+  }
+}

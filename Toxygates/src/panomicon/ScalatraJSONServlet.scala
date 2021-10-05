@@ -2,7 +2,7 @@ package panomicon
 
 import io.fusionauth.jwt.domain.JWT
 import org.scalatra._
-import org.scalatra.servlet.FileUploadSupport
+import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
 import t.db.Sample
 import t.global.KCDBRegistry
 import t.manager.{BatchManager, Task, TaskRunner}
@@ -10,13 +10,13 @@ import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 import t.server.viewer.servlet.MinimalTServlet
-import t.server.viewer.{AssociationMasterLookup, Configuration}
+import t.server.viewer.Configuration
+import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
 import upickle.default._
 
-import java.nio.charset.StandardCharsets
 import java.util
 import javax.servlet.ServletContext
 import scala.collection.JavaConverters._
@@ -24,6 +24,12 @@ import scala.collection.JavaConverters._
 class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     with MinimalTServlet with FileUploadSupport {
   import json.Encoders._
+
+  //For file uploads
+  configureMultipartHandling(MultipartConfig(
+    maxFileSize = Some(512 * 1024 * 1024),
+    fileSizeThreshold = Some(1024 * 1024))
+  )
 
   val tconfig = Configuration.fromServletContext(scontext)
   var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
@@ -40,6 +46,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
   val networkHandling = new NetworkHandling(context, matrixHandling)
+  val uploadHandling = new UploadHandling(context)
 
   val authentication = new Authentication()
 
@@ -332,50 +339,42 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     writeJs(roles)
   }
 
-  post("/upload") {
+  /** Upload a batch
+   * Example curl command:
+   * curl -X POST -F metadata=@vitamin_a_metadata_full.tsv -F callsData=@vitamin_a_call.csv
+   *   -F exprData=@vitamin_a_expr.csv http://127.0.0.1:4200/json/uploadBatch?batch=vatest
+   * */
+  post("/uploadBatch") {
     verifyRole("admin")
-    val file = fileParams("fileKey")
-    val fileContents = new String(file.get(), StandardCharsets.UTF_8);
-    println(fileContents)
-    fileContents
+
+    val batch = params("batch")
+    val metadata = fileParams.get("metadata")
+    val expr = fileParams.get("exprData")
+    val calls = fileParams.get("callsData")
+    val probes = fileParams.get("probesData")
+
+    if (metadata.isEmpty) {
+      throw new Exception("No metadata file")
+    }
+    if (expr.isEmpty) {
+      throw new Exception("No data file")
+    }
+
+    uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes)
+  }
+
+  /**
+   * Obtain the latest log messages (seizing them and removing them from the server).
+   * Task: associate log messages with the user that started the current task, so they cannot be maliciously removed
+   */
+  get("/uploadProgress") {
+    verifyRole("admin")
+    write(uploadHandling.getProgress())
   }
 
   delete("/batch/:batch") {
     verifyRole("admin")
     val batchId = params("batch")
-    val batchManager = new BatchManager(context)
-    runTasks(batchManager.delete(batchId, false))
-    "Deleting batch " + batchId
+    uploadHandling.deleteBatch(batchId)
   }
-
-  protected def runTasks(task: Task[_]) {
-    if (!TaskRunner.available) {
-      throw new Exception("Another task is already in progress.")
-    }
-//    setLastResults(None)
-    val currentRequest = request
-    val session = request.getSession
-    TaskRunner.runThenFinally(task) {
-      TaskRunner.log("Writing databases, this may take a while...")
-      KCDBRegistry.closeWriters()
-      TaskRunner.log("Databases written")
-      TaskRunner.synchronized {
-        try {
-          val success = TaskRunner.errorCause == None
-//          if (getAttribute[Option[OperationResults]]("lastResults", session).isEmpty) {
-//            setAttribute("lastResults", Some(new OperationResults(
-//              getAttribute[String]("lastTask", session), success, TaskRunner.resultMessages.toArray)), session)
-//          }
-//          if (success) {
-//            maintenanceUploads(session).dropAll()
-//          }
-        } catch {
-          case e: Exception =>
-            println(e)
-            e.printStackTrace()
-        }
-      }
-    }
-  }
-
 }
