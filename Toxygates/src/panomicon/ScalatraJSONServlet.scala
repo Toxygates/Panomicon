@@ -56,6 +56,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       halt(500)
   }
 
+  def paramOrHalt(key: String) = {
+    try {
+      params(key)
+    } catch {
+      case e: Exception =>
+        halt(422, s"Missing parameter $key")
+    }
+  }
+
   def isDataVisible(data: Dataset, userKey: String) = {
     data.id == t.shared.common.Dataset.userDatasetId(userKey) ||
       t.shared.common.Dataset.isSharedDataset(data.id) ||
@@ -70,14 +79,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/dataset/:id") {
-    val reqId = params("id")
+    val reqId = paramOrHalt("id")
     val data = datasetStore.getItems(tconfig.instanceURI).
       find(_.id == reqId).getOrElse(halt(400))
     write(data)
   }
 
   get("/batch/dataset/:dataset") {
-    val requestedDatasetId = params("dataset")
+    val requestedDatasetId = paramOrHalt("dataset")
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
 
@@ -91,7 +100,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       ExposureTime, CoreParameter.Platform, Treatment)
 
   get("/sample/batch/:batch") {
-    val requestedBatchId = params("batch")
+    val requestedBatchId = paramOrHalt("batch")
 
     val fullList = batchStore.getList()
     val exists = fullList.contains(requestedBatchId)
@@ -112,7 +121,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/sample/treatment/:treatment") {
     val sf = SampleFilter(tconfig.instanceURI, None)
-    val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> params("treatment"))), sf)()
+    val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> paramOrHalt("treatment"))), sf)()
     write(data.map(sampleToMap))
   }
 
@@ -144,7 +153,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/parameterValues/:param") {
-    val requestedParam = params("param")
+    val requestedParam = paramOrHalt("param")
     val attr = Option(baseConfig.attributes.byId(requestedParam)).
       getOrElse(halt(400))
     val values = sampleStore.attributeValues(SampleClassFilter().filterAll,
@@ -229,15 +238,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/association/:assoc/:sample") {
     val probes = params.getOrElse("probes", halt(400))
     try {
-      val requestedType = AType.valueOf(params("assoc"))
-      val reprSample = params("sample")
+      val requestedType = AType.valueOf(paramOrHalt("assoc"))
+      val reprSample = paramOrHalt("sample")
       println(s"Get AType $requestedType for $probes and representative sample $reprSample")
       val limit = params.getOrElse("limit", "100").toInt
       val assoc = matrixHandling.association(requestedType, probes.split(","), reprSample, limit)
       write(associationToJSON(assoc))
     } catch {
       case iae: IllegalArgumentException =>
-        System.err.println(s"Unknown association ${params("assoc")}")
+        System.err.println(s"Unknown association ${paramOrHalt("assoc")}")
         halt(400)
     }
   }
@@ -248,7 +257,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/attribute/batch/:batch") {
     // we ignore this parameter for now because per-batch attributes
     // aren't implemented yet
-    val batch = params("batch")
+    val batch = paramOrHalt("batch")
 
     val attributes = baseConfig.attributes.getAll()
     val values = attributes.asScala.map(attrib => writeJs(Map(
@@ -279,7 +288,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/oauth-redirect") {
     if (!session.contains("verifier")) halt(401, "Unauthenticated")
 
-    val authorizationCode = params("code")
+    val authorizationCode = paramOrHalt("code")
     val verifier: String = session("verifier").asInstanceOf[String]
 
     val tokenResponse = authentication
@@ -355,7 +364,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   post("/batch") {
     verifyRole("admin")
 
-    val batch = params("batch")
+    val batch = paramOrHalt("batch")
     val metadata = fileParams.get("metadata")
     val expr = fileParams.get("exprData")
     val calls = fileParams.get("callsData")
@@ -382,10 +391,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
     val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
 
-    val id = params("id")
-    val comment = params("comment")
-    val description = params("description")
-    val publicComment = params("publicComment")
+    val id = paramOrHalt("id")
+    val comment = paramOrHalt("comment")
+    val description = paramOrHalt("description")
+    val publicComment = paramOrHalt("publicComment")
 
     if (!TRDF.isValidIdentifier(id)) {
       throw BatchUploadException.badID(
@@ -405,10 +414,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   put("/dataset") {
     verifyRole("admin")
 
-    val id = params("id")
-    val comment = params("comment")
-    val description = params("description")
-    val publicComment = params("publicComment")
+    val id = paramOrHalt("id")
+    val comment = paramOrHalt("comment")
+    val description = paramOrHalt("description")
+    val publicComment = paramOrHalt("publicComment")
 
     val ds = new DatasetStore(baseConfig.triplestoreConfig)
     ds.setComment(id, TRDF.escape(comment))
@@ -420,7 +429,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   delete("/dataset/:id") {
     verifyRole("admin")
-    val datasetId = params("id")
+    val datasetId = paramOrHalt("id")
     val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
     datasetStore.delete(datasetId)
 
@@ -448,8 +457,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   put("/instance") {
     verifyRole("admin")
 
-    val id = params("id")
-    val comment = params("comment")
+    val id = paramOrHalt("id")
+    val comment = paramOrHalt("comment")
 
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
     instanceStore.setComment(id, TRDF.escape(comment))
@@ -479,9 +488,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   put("/platform") {
     verifyRole("admin")
 
-    val id = params("id")
-    val comment = params("comment")
-    val publicComment = params("publicComment")
+    val id = paramOrHalt("id")
+    val comment = paramOrHalt("comment")
+    val publicComment = paramOrHalt("publicComment")
 
     val platformStore = new PlatformStore(baseConfig)
     platformStore.setComment(id, comment)
@@ -500,7 +509,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   delete("/batch/:batch") {
     verifyRole("admin")
-    val batchId = params("batch")
+    val batchId = paramOrHalt("batch")
     uploadHandling.deleteBatch(batchId)
   }
 }
