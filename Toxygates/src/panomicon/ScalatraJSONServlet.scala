@@ -8,13 +8,13 @@ import t.global.KCDBRegistry
 import t.manager.{BatchManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
-import t.model.sample.Attribute
+import t.model.sample.{Attribute, CoreParameter}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.shared.common.maintenance.{Batch, BatchUploadException, Instance}
-import t.shared.common.{AType, ValueType}
+import t.shared.common.{AType, Platform, ValueType}
 import t.shared.viewer._
-import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, SampleClassFilter, SampleFilter, TRDF}
+import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
 import upickle.default._
 
 import java.util
@@ -88,7 +88,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   protected def overviewParameters: Seq[Attribute] =
     Seq(SampleId, Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
-      ExposureTime, Platform, Treatment)
+      ExposureTime, CoreParameter.Platform, Treatment)
 
   get("/sample/batch/:batch") {
     val requestedBatchId = params("batch")
@@ -456,6 +456,38 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("instance updated")
   }
 
+  get("/platform") {
+    verifyRole("admin")
+
+    val probeStore = new ProbeStore(baseConfig.triplestoreConfig)
+    val numProbes = probeStore.numProbes()
+    val platformStore = new PlatformStore(baseConfig)
+    val comments = platformStore.getComments()
+    val pubComments = platformStore.getPublicComments()
+    val dates = platformStore.getTimestamps()
+
+    contentType = "text/json"
+    write(platformStore.getList().map(id => writeJs(Map(
+      "id" -> writeJs(id),
+      "comment" -> writeJs(comments.getOrElse(id, "")),
+      "date" -> writeJs(dates.getOrElse(id, null)),
+      "probes" -> writeJs(numProbes.getOrElse(id, 0)),
+      "publicComment" -> writeJs(pubComments.getOrElse(id, ""))
+    ))))
+  }
+
+  put("/platform") {
+    verifyRole("admin")
+
+    val id = params("id")
+    val comment = params("comment")
+    val publicComment = params("publicComment")
+
+    val platformStore = new PlatformStore(baseConfig)
+    platformStore.setComment(id, comment)
+    platformStore.setPublicComment(id, publicComment)
+    Ok("platform updated")
+  }
 
   /**
    * Obtain the latest log messages (seizing them and removing them from the server).
