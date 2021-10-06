@@ -11,11 +11,10 @@ import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration}
-import t.shared.common.maintenance.BatchUploadException
-import t.shared.common.maintenance.Batch
+import t.shared.common.maintenance.{Batch, BatchUploadException, Instance}
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
-import t.sparql.{BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
+import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, SampleClassFilter, SampleFilter}
 import upickle.default._
 
 import java.util
@@ -370,6 +369,21 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
     uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes)
   }
+
+  get("/instance") {
+    verifyRole("admin")
+
+    val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
+    val comments = instanceStore.getComments()
+    val timestamps = instanceStore.getTimestamps()
+
+    val foo = writeJs(timestamps.get("bar").map(writeJs(_)))
+    write(instanceStore.getList().map(instanceId => writeJs(Map(
+      "id" -> writeJs(instanceId),
+      "comment" -> writeJs(comments.getOrElse(instanceId, "")),
+      "timestamp" -> writeJs(timestamps.get(instanceId).getOrElse(null))))))
+  }
+
 
   /**
    * Obtain the latest log messages (seizing them and removing them from the server).
