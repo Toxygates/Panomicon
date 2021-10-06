@@ -402,6 +402,31 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("dataset created")
   }
 
+  put("/dataset") {
+    verifyRole("admin")
+
+    val id = params("id")
+    val comment = params("comment")
+    val description = params("description")
+    val publicComment = params("publicComment")
+
+    val ds = new DatasetStore(baseConfig.triplestoreConfig)
+    ds.setComment(id, TRDF.escape(comment))
+    ds.setDescription(id, TRDF.escape(description))
+    ds.setPublicComment(id, TRDF.escape(publicComment))
+
+    Ok("dataset updated")
+  }
+
+  delete("/dataset/:id") {
+    verifyRole("admin")
+    val datasetId = params("id")
+    val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
+    datasetStore.delete(datasetId)
+
+    Ok("dataset deleted")
+  }
+
   get("/instance") {
     verifyRole("admin")
 
