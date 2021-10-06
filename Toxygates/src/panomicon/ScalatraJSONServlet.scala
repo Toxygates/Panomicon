@@ -38,7 +38,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   new PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
 
   lazy val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
-  def datasets = datasetStore.getItems(tconfig.instanceURI)
   lazy val batchStore = new BatchStore(baseConfig.triplestoreConfig)
   lazy val sampleStore = context.sampleStore
   lazy val probeStore =  context.probeStore
@@ -65,13 +64,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/dataset") {
     val userKey = params.getOrElse("userDataKey", "")
-    val data = datasets.filter(isDataVisible(_, userKey))
+    val data = datasetStore.getItems(tconfig.instanceURI).
+      filter(isDataVisible(_, userKey))
     write(data)
   }
 
   get("/dataset/:id") {
     val reqId = params("id")
-    val data = datasets.find(_.id == reqId).getOrElse(halt(400))
+    val data = datasetStore.getItems(tconfig.instanceURI).
+      find(_.id == reqId).getOrElse(halt(400))
     write(data)
   }
 
