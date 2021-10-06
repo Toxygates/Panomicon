@@ -371,6 +371,37 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes)
   }
 
+  get("/dataset/all") {
+    verifyRole("admin")
+    val data = datasetStore.getItems(None)
+    write(data)
+  }
+
+  post("/dataset") {
+    verifyRole("admin")
+
+    val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
+
+    val id = params("id")
+    val comment = params("comment")
+    val description = params("description")
+    val publicComment = params("publicComment")
+
+    if (!TRDF.isValidIdentifier(id)) {
+      throw BatchUploadException.badID(
+        s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+
+    if (datasetStore.getList().contains(id)) {
+      throw BatchUploadException.badID(s"The dataset $id already exists, please choose a different name")
+    } else {
+      datasetStore.addWithTimestamp(id, TRDF.escape(comment))
+      datasetStore.setDescription(id, TRDF.escape(description))
+      datasetStore.setPublicComment(id, TRDF.escape(publicComment))
+    }
+    Ok("dataset created")
+  }
+
   get("/instance") {
     verifyRole("admin")
 
