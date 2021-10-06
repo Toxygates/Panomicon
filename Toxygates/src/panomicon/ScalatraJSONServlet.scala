@@ -14,7 +14,7 @@ import t.server.viewer.{AssociationMasterLookup, Configuration}
 import t.shared.common.maintenance.{Batch, BatchUploadException, Instance}
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
-import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, SampleClassFilter, SampleFilter}
+import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, SampleClassFilter, SampleFilter, TRDF}
 import upickle.default._
 
 import java.util
@@ -382,6 +382,17 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       "id" -> writeJs(instanceId),
       "comment" -> writeJs(comments.getOrElse(instanceId, "")),
       "timestamp" -> writeJs(timestamps.get(instanceId).getOrElse(null))))))
+  }
+
+  put("/instance") {
+    verifyRole("admin")
+
+    val id = params("id")
+    val comment = params("comment")
+
+    val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
+    instanceStore.setComment(id, TRDF.escape(comment))
+    Ok("instance updated")
   }
 
 
