@@ -377,12 +377,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val comments = instanceStore.getComments()
     val timestamps = instanceStore.getTimestamps()
 
-    val foo = writeJs(timestamps.get("bar").map(writeJs(_)))
+    // TODO add access policy and Tomcat role name
     write(instanceStore.getList().map(instanceId => writeJs(Map(
       "id" -> writeJs(instanceId),
       "comment" -> writeJs(comments.getOrElse(instanceId, "")),
       "timestamp" -> writeJs(timestamps.get(instanceId).getOrElse(null))))))
   }
+
+  // TODO add POST method for adding an instance
+  // note that we can't just use the logic from e.g.
+  // MaintenanceServiceImpl.addInstance because it's UNIX-specific
 
   put("/instance") {
     verifyRole("admin")
