@@ -351,7 +351,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * curl -X POST -F metadata=@vitamin_a_metadata_full.tsv -F callsData=@vitamin_a_call.csv
    *   -F exprData=@vitamin_a_expr.csv http://127.0.0.1:4200/json/uploadBatch?batch=vatest
    * */
-  post("/uploadBatch") {
+  post("/batch") {
     verifyRole("admin")
 
     val batch = params("batch")
