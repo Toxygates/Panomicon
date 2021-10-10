@@ -5,12 +5,15 @@ import org.scalatra._
 import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
 import t.db.Sample
 import t.global.KCDBRegistry
-import t.manager.{BatchManager, Task, TaskRunner}
+import t.manager.{BatchManager, PlatformManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
+import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.{AssociationMasterLookup, Configuration}
+import t.shared.admin.PlatformType
+import t.shared.common.maintenance.MaintenanceConstants.platformPrefix
 import t.shared.common.maintenance.{Batch, BatchUploadException, Instance}
 import t.shared.common.{AType, Platform, ValueType}
 import t.shared.viewer._
@@ -382,6 +385,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/dataset/all") {
     verifyRole("admin")
+    contentType = "text/json"
     val data = datasetStore.getItems(None)
     write(data)
   }
@@ -485,6 +489,29 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     ))))
   }
 
+  post("/platform") {
+    verifyRole("admin")
+
+    val id = paramOrHalt("id")
+    val platformType = paramOrHalt("type")
+    val comment = paramOrHalt("comment")
+    val publicComment = paramOrHalt("publicComment")
+
+    val platformFormat = platformType match {
+      case "Standard" => GeneralPlatform
+      case "Affymetrix" => AffymetrixPlatform
+      case "Biological" => BioPlatform
+      case _ => throw new Exception("Invalid platform type.")
+    }
+
+    val platformFile = fileParams.get("platformFile")
+    if (platformFile.isEmpty) {
+      throw new Exception("No platform file")
+    }
+
+    uploadHandling.addPlatform(id, comment, publicComment, platformFormat, platformFile.get)
+  }
+
   put("/platform") {
     verifyRole("admin")
 
@@ -496,6 +523,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     platformStore.setComment(id, comment)
     platformStore.setPublicComment(id, publicComment)
     Ok("platform updated")
+  }
+
+  delete("/platform") {
+    verifyRole("admin")
+
+    val id = paramOrHalt("id")
+
+    uploadHandling.deletePlatform(id)
   }
 
   /**

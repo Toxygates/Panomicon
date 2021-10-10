@@ -4,9 +4,10 @@ import org.scalatra.servlet.FileItem
 import t.Context
 import t.global.KCDBRegistry
 import t.manager.BatchManager.Batch
-import t.manager.{BatchManager, Task, TaskRunner}
+import t.manager.{BatchManager, PlatformManager, Task, TaskRunner}
+import t.platform.PlatformFormat
 import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
-import t.sparql.BatchStore
+import t.sparql.{BatchStore, PlatformStore, TRDF}
 import t.util.TempFiles
 import ujson.Value
 import upickle.default.writeJs
@@ -73,6 +74,36 @@ class UploadHandling(context: Context) {
     val batchManager = new BatchManager(context)
     runTasks(batchManager.delete(batch, false), None)
     "Task started"
+  }
+
+  def addPlatform(id: String, comment: String, publicComment: String,
+                  format: PlatformFormat, platform: FileItem): Unit = {
+    val tempFiles = new TempFiles()
+
+    val platformFile = itemToFile(tempFiles, "metadata", platform)
+
+    ensureNotMaintenance()
+    grabRunner()
+    val pm = new PlatformManager(context)
+
+    if (!TRDF.isValidIdentifier(id)) {
+      throw new Exception(s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+
+    runTasks(pm.add(id, TRDF.escape(comment),
+      platformFile.getAbsolutePath(), format) andThen
+      Task.simple("Set platform parameters"){
+        val pfs = new PlatformStore(context.config)
+        pfs.setComment(id, comment)
+        pfs.setPublicComment(id, comment)
+      }, Some(tempFiles))
+  }
+
+  def deletePlatform(id: String): Unit = {
+    ensureNotMaintenance()
+    grabRunner()
+    val pm = new PlatformManager(context)
+    runTasks(pm.delete(id), None)
   }
 
   protected def grabRunner() {
