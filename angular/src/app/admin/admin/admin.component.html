@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-sm navbar-light ui_panel">
-    <a class="navbar-brand">Admin</a>
+    <a class="navbar-brand">Panomicon Admin</a>
     <button class="navbar-toggler" type="button" (click)="navbarIsCollapsed = !navbarIsCollapsed"
         aria-controls="navbarSupportedContent" [attr.aria-expanded]="!navbarIsCollapsed" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -8,16 +8,16 @@
     <div class="navbar-collapse" [collapse]="navbarIsCollapsed" [isAnimated]="true">
         <ul class="navbar-nav mr-auto">
         <li class="nav-item" routerLinkActive="active">
-            <a class="nav-link" routerLink="platform">Platforms</a>
+            <a class="nav-link" routerLink="datasets">Datasets</a>
         </li>
         <li class="nav-item" routerLinkActive="active">
             <a class="nav-link" routerLink="batches">Batches</a>
         </li>
         <li class="nav-item" routerLinkActive="active">
-            <a class="nav-link" routerLink="dataset">Datasets</a>
+            <a class="nav-link" routerLink="platforms">Platforms</a>
         </li>
         <li class="nav-item" routerLinkActive="active">
-            <a class="nav-link" routerLink="instance">Instances</a>
+            <a class="nav-link" routerLink="instances">Instances</a>
         </li>
         </ul>
     </div>

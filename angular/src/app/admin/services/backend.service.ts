@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Batch } from './admin-types';
+import { Batch, Instance, Dataset, Platform } from './admin-types';
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +14,45 @@ export class BackendService {
 
   serviceUrl = environment.apiUrl;
 
+  getPlatforms(): Observable<Platform[]> {
+    return this.http.get<Platform[]>(this.serviceUrl + 'platform')
+      .pipe(
+        tap(() => console.log('fetched platforms')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching platforms: ${error.message}`);
+          throw error;
+        })
+      );
+  }
+
   getBatches(): Observable<Batch[]> {
     return this.http.get<Batch[]>(this.serviceUrl + 'batch')
       .pipe(
         tap(() => console.log('fetched batches')),
         catchError((error: HttpErrorResponse) => {
           console.error(`Error fetching batches: ${error.message}`);
+          throw error;
+        })
+      );
+  }
+
+  getDatasets(): Observable<Dataset[]> {
+    return this.http.get<Dataset[]>(this.serviceUrl + 'dataset/all')
+      .pipe(
+        tap(() => console.log('fetched datasets')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching datasets: ${error.message}`);
+          throw error;
+        })
+      );
+  }
+
+  getInstances(): Observable<Instance[]> {
+    return this.http.get<Instance[]>(this.serviceUrl + 'instance')
+      .pipe(
+        tap(() => console.log('fetched instances')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching instances: ${error.message}`);
           throw error;
         })
       );
