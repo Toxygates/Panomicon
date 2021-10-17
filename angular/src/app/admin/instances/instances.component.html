@@ -1,18 +1,18 @@
 <div>
   <table class="table">
       <thead>
-      <tr>
+        <tr>
           <th scope="col">Instance ID</th>
           <th scope="col">Timestamp</th>
           <th scope="col">Comment</th>
-      </tr>
+        </tr>
       </thead>
       <tbody>
-          <tr *ngFor="let instance of (adminData.instances$ | async); index as i">
+        <tr *ngFor="let instance of (adminData.instances$ | async); index as i">
           <th scope="row">{{instance.id}}</th>
           <td>{{instance.timestamp}}</td>
           <td>{{instance.comment}}</td>
-          </tr>
+        </tr>
       </tbody>
   </table>
 </div>

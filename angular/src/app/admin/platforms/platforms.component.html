@@ -1,22 +1,22 @@
 <div>
   <table class="table">
       <thead>
-      <tr>
+        <tr>
           <th scope="col">Platform ID</th>
           <th scope="col">Date</th>
           <th scope="col">Probes</th>
           <th scope="col">Comment</th>
           <th scope="col">Public comment</th>
-      </tr>
+        </tr>
       </thead>
       <tbody>
-          <tr *ngFor="let platform of (adminData.platforms$ | async); index as i">
+        <tr *ngFor="let platform of (adminData.platforms$ | async); index as i">
           <th scope="row">{{platform.id}}</th>
           <td>{{platform.date}}</td>
           <td>{{platform.probes}}</td>
           <td>{{platform.comment}}</td>
           <td>{{platform.publicComment}}</td>
-          </tr>
+        </tr>
       </tbody>
   </table>
 </div>
