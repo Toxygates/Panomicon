@@ -27,4 +27,9 @@ export class AdminDataService {
     this.backend.getInstances().subscribe(instances => this.instances$.next(instances));
   }
 
+  refreshDatasets(): void {
+    this.datasets$.next(null);
+    this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
+  }
+
 }

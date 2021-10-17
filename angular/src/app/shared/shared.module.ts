@@ -5,11 +5,13 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { ForbiddenValueListValidatorDirective } from './directives/forbidden-value-list-validator.directive';
 import { FocusInputDirective } from './directives/focus-input.directive';
+import { ValidatedInputComponent } from './components/validated-input/validated-input.component';
 
 @NgModule({
   declarations: [
     ForbiddenValueListValidatorDirective,
-    FocusInputDirective
+    FocusInputDirective,
+    ValidatedInputComponent
   ],
   imports: [
     CommonModule,
@@ -24,6 +26,7 @@ import { FocusInputDirective } from './directives/focus-input.directive';
     CollapseModule,
     ForbiddenValueListValidatorDirective,
     FocusInputDirective,
+    ValidatedInputComponent,
   ]
 })
 export class SharedModule { }

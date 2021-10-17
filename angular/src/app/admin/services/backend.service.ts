@@ -58,4 +58,44 @@ export class BackendService {
       );
   }
 
+  addDataset(dataset: Partial<Dataset>): Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(dataset)) {
+      formData.append(key, value?.toString() || "");
+    }
+    return this.http.post(this.serviceUrl + 'dataset', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('added dataset')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error adding dataset: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  updateDataset(dataset: Partial<Dataset>): Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(dataset)) {
+      formData.append(key, value?.toString() || "");
+    }
+    return this.http.put(this.serviceUrl + 'dataset', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('updated dataset')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error updating dataset: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  deleteDataset(id: string): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("id", id);
+    return this.http.delete(this.serviceUrl + 'dataset/' + id, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('deleted dataset')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error deleting dataset: ${error.message}`)
+          throw error;
+      }));
+  }
+
 }

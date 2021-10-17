@@ -1,0 +1,44 @@
+<div>
+  <h3>{{ addMode ? "Add" : "Edit"}} Dataset</h3>
+
+  <form>
+    <app-validated-input
+      id="id"
+      label="ID"
+      [(value)]="dataset.id"
+      [disabled]="!addMode"
+      [invalid]="!dataset.id"
+      invalidMessage="Please enter a dataset ID"
+    >
+    </app-validated-input>
+
+    <app-validated-input
+      id="description"
+      label="Description"
+      [(value)]="dataset.description"
+    >
+    </app-validated-input>
+
+    <app-validated-input
+      id="comment"
+      label="Comment"
+      [(value)]="dataset.comment"
+    >
+    </app-validated-input>
+
+    <app-validated-input
+      id="publicComment"
+      label="Public Comment"
+      [(value)]="dataset.publicComment"
+    >
+    </app-validated-input>
+  </form>
+  <button type="button" class="btn btn-primary"
+    (click)="submit(dataset)">
+    {{ addMode ? "Add" : "Save"}} dataset
+  </button>
+  <span class="float-right">
+    <a class="btn btn-danger" role="button" routerLink="../"
+    >Cancel</a>
+  </span>
+</div>

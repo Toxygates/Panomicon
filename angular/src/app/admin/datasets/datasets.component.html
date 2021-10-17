@@ -8,6 +8,8 @@
         <th scope="col">Description</th>
         <th scope="col">Comment</th>
         <th scope="col">Public comment</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -18,7 +20,20 @@
         <td>{{dataset.description}}</td>
         <td>{{dataset.comment}}</td>
         <td>{{dataset.publicComment}}</td>
+        <td>
+          <a class="btn btn-primary" role="button"
+            [routerLink]="'edit/' + dataset.id"
+          >Edit</a>
+        </td>
+        <td>
+          <button type="button" class="btn btn-danger"
+            (click)="deleteDataset(dataset.id)">
+            Delete
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
+  <a class="btn btn-primary" role="button" routerLink="add"
+  >Add new dataset</a>
 </div>
