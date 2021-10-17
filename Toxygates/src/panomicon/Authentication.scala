@@ -5,7 +5,6 @@ import io.fusionauth.client.FusionAuthClient
 import io.fusionauth.domain.oauth2.{AccessToken, OAuthError}
 import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.domain.JWT
-import io.fusionauth.jwt.hmac.HMACVerifier
 import io.fusionauth.jwt.rsa.RSAVerifier
 
 import java.security.{MessageDigest, SecureRandom}
@@ -58,7 +57,6 @@ class Authentication {
       val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").get
 
       val jwt = new JWTDecoder().decode(tokenCookie.getValue,
-        HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
         RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
       )
 
@@ -74,7 +72,6 @@ class Authentication {
         if (refreshResponse.wasSuccessful()) {
           val newToken = refreshResponse.successResponse.token
           Left(new JWTDecoder().decode(newToken,
-            HMACVerifier.newVerifier(System.getenv("HMAC_SECRET")),
             RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
           ), newToken)
         } else {
