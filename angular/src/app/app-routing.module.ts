@@ -6,19 +6,19 @@ import { ViewerComponent } from './viewer/viewer.component';
 const routes: Routes = [
   {
     path: 'viewer',
-      component: ViewerComponent, // this is the component with the <router-outlet> in the template
-      children: [
-        { path: 'sample-browser', loadChildren: () =>
-          import('./viewer/sample-browser/sample-browser.module').then(m => m.SampleBrowserModule) },
-        { path: 'expression-table', loadChildren: () =>
-          import('./viewer/expression-table/expression-table.module').then(m => m.ExpressionTableModule) },
-        { path: 'sample-groups', loadChildren: () =>
-          import('./viewer/group-manager/group-manager.module').then(m => m.GroupManagerModule) },
-        { path: 'gene-sets', loadChildren: () =>
-          import('./viewer/gene-sets/gene-sets.module').then(m => m.GeneSetsModule) },
-        { path: '',   redirectTo: 'sample-browser', pathMatch: 'full' },
-        { path: '**', component: PageNotFoundComponent }
-      ]
+    component: ViewerComponent, // this is the component with the <router-outlet> in the template
+    children: [
+      { path: 'sample-browser', loadChildren: () =>
+        import('./viewer/sample-browser/sample-browser.module').then(m => m.SampleBrowserModule) },
+      { path: 'expression-table', loadChildren: () =>
+        import('./viewer/expression-table/expression-table.module').then(m => m.ExpressionTableModule) },
+      { path: 'sample-groups', loadChildren: () =>
+        import('./viewer/group-manager/group-manager.module').then(m => m.GroupManagerModule) },
+      { path: 'gene-sets', loadChildren: () =>
+        import('./viewer/gene-sets/gene-sets.module').then(m => m.GeneSetsModule) },
+      { path: '',   redirectTo: 'sample-browser', pathMatch: 'full' },
+      { path: '**', component: PageNotFoundComponent }
+    ]
   },
   { path: 'admin', loadChildren: () =>
           import('./admin/admin.module').then(m => m.AdminModule) },
