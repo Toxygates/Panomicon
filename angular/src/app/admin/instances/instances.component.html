@@ -1,18 +1,18 @@
 <div>
   <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Instance ID</th>
-          <th scope="col">Timestamp</th>
-          <th scope="col">Comment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let instance of (adminData.instances$ | async); index as i">
-          <th scope="row">{{instance.id}}</th>
-          <td>{{instance.timestamp}}</td>
-          <td>{{instance.comment}}</td>
-        </tr>
-      </tbody>
+    <thead>
+      <tr>
+        <th scope="col">Instance ID</th>
+        <th scope="col">Timestamp</th>
+        <th scope="col">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let instance of (adminData.instances$ | async); index as i">
+        <th scope="row">{{instance.id}}</th>
+        <td>{{instance.timestamp}}</td>
+        <td>{{instance.comment}}</td>
+      </tr>
+    </tbody>
   </table>
 </div>
