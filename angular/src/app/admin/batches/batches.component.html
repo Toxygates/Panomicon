@@ -1,0 +1,26 @@
+<div>
+  <table class="table">
+      <thead>
+      <tr>
+          <th scope="col">Batch ID</th>
+          <th scope="col">Dataset</th>
+          <th scope="col">Timestamp</th>
+          <th scope="col">Enabled instances</th>
+          <th scope="col">Samples</th>
+          <th scope="col">Comment</th>
+          <th scope="col">Public comment</th>
+      </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let batch of (adminData.batches$ | async); index as i">
+          <th scope="row">{{batch.id}}</th>
+          <td>{{batch.dataset}}</td>
+          <td>{{batch.timestamp}}</td>
+          <td>{{batch.enabledInstances.join(", ")}}</td>
+          <td>{{batch.numSamples}}</td>
+          <td>{{batch.comment}}</td>
+          <td>{{batch.publicComment}}</td>
+          </tr>
+      </tbody>
+  </table>
+</div>

@@ -1,6 +1,31 @@
-<p>Roles: {{roles}}</p>
+<nav class="navbar navbar-expand-sm navbar-light ui_panel">
+    <a class="navbar-brand">Admin</a>
+    <button class="navbar-toggler" type="button" (click)="navbarIsCollapsed = !navbarIsCollapsed"
+        aria-controls="navbarSupportedContent" [attr.aria-expanded]="!navbarIsCollapsed" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-<div class="form-group">
+    <div class="navbar-collapse" [collapse]="navbarIsCollapsed" [isAnimated]="true">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="platform">Platforms</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="batches">Batches</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="dataset">Datasets</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="instance">Instances</a>
+        </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- <p>Roles: {{roles}}</p> -->
+
+<!-- <div class="form-group">
     <label for="file">Choose File</label>
     <input type="file"
         id="file"
@@ -8,9 +33,20 @@
     >
 
     <label for="batchIdInput">Delete batch</label>
-    <!-- [(ngModel)]="sampleGroupName"  -->
     <input type="text" ngModel #batchIdInput="ngModel" name="batchIdInput"
         class="form-control mb-2" placeholder="Enter batch name"
         (keyup.enter)="deleteBatch(batchIdInput.value)"
     >
+</div> -->
+
+<div class="main_content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 pcard_container">
+                <div class="pcard ui_panel scrollable mainPanel">
+                    <router-outlet></router-outlet>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

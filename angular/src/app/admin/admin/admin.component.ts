@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { catchError } from 'rxjs/operators';
 import { BackendService } from 'src/app/viewer/shared/services/backend.service';
 import { environment } from 'src/environments/environment';
+import { AdminDataService } from '../services/admin-data';
 
 @Component({
   selector: 'app-admin',
@@ -10,8 +11,12 @@ import { environment } from 'src/environments/environment';
 })
 export class AdminComponent implements OnInit {
 
-  constructor(private backend: BackendService) { }
+  constructor(
+    private backend: BackendService,
+    public adminData: AdminDataService
+  ) { }
 
+  navbarIsCollapsed = true;
   roles: string[] | undefined;
 
   ngOnInit(): void {

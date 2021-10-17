@@ -23,6 +23,7 @@
   'dropdown',
   'button-group',
   'custom-forms',
+  'tables',
   'utilities/screenreaders',
   'utilities/spacing',
   'utilities/visibility',
@@ -72,6 +73,10 @@ body {
     max-height: 340px;
     padding-right: 20px;
     overflow-y: auto;
+}
+
+.scrollable {
+  overflow: auto;
 }
 
 select option:disabled {
