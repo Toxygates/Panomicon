@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { catchError } from 'rxjs/operators';
-import { BackendService } from 'src/app/viewer/shared/services/backend.service';
+import { BackendService } from 'src/app/shared/services/backend.service';
 import { environment } from 'src/environments/environment';
 import { AdminDataService } from '../services/admin-data';
 

@@ -2,13 +2,13 @@ import { Component, ViewChild, AfterViewInit, NgZone, ChangeDetectorRef,
   TemplateRef, ElementRef } from '@angular/core';
 import Tabulator from 'tabulator-tables';
 import { ToastrService } from 'ngx-toastr';
-import { UserDataService } from '../../shared/services/user-data.service';
+import { UserDataService } from '../../../shared/services/user-data.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { SampleFilter } from '../../shared/models/sample-filter.model';
-import { Attribute, Sample } from '../../shared/models/backend-types.model';
+import { SampleFilter } from '../../../shared/models/sample-filter.model';
+import { Attribute, Sample } from '../../../shared/models/backend-types.model';
 import { SampleTableHelper } from './sample-table-helper'
 import { BehaviorSubject, concat, Observable, of, Subscription } from 'rxjs';
-import { FetchedDataService } from '../../shared/services/fetched-data.service';
+import { FetchedDataService } from '../../../shared/services/fetched-data.service';
 import { pairwise } from 'rxjs/operators';
 
 @Component({

@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GeneSet } from '../../shared/models/frontend-types.model';
-import { UserDataService } from '../../shared/services/user-data.service';
+import { GeneSet } from '../../../shared/models/frontend-types.model';
+import { UserDataService } from '../../../shared/services/user-data.service';
 
 @Component({
   selector: 'app-gene-set-editor',

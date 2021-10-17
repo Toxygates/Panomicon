@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { SampleGroup } from './shared/models/frontend-types.model';
-import { UserDataService } from './shared/services/user-data.service';
+import { SampleGroup } from '../shared/models/frontend-types.model';
+import { UserDataService } from '../shared/services/user-data.service';
 
 @Component({
   selector: 'app-viewer',

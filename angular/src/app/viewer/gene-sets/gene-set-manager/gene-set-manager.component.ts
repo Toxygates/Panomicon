@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GeneSet } from '../../shared/models/frontend-types.model';
-import { UserDataService } from '../../shared/services/user-data.service';
+import { GeneSet } from '../../../shared/models/frontend-types.model';
+import { UserDataService } from '../../../shared/services/user-data.service';
 
 @Component({
   selector: 'app-gene-set-manager',

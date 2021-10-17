@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
-import { SharedModule } from "../shared/shared.module";
+import { SharedModule } from "../../shared/shared.module";
 import { BatchPickerComponent } from "./batch-picker/batch-picker.component";
 import { DatasetPickerComponent } from "./dataset-picker/dataset-picker.component";
 import { GroupCreationComponent } from "./group-creation/group-creation.component";

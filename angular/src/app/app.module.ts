@@ -9,7 +9,7 @@ import { ToastrModule } from 'ngx-toastr';
 
 import { AppComponent } from './app.component';
 import { PageNotFoundComponent } from './viewer/page-not-found/page-not-found.component';
-import { SharedModule } from './viewer/shared/shared.module';
+import { SharedModule } from './shared/shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ViewerComponent } from './viewer/viewer.component';
 

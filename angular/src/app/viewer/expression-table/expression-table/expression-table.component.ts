@@ -1,8 +1,8 @@
 import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef, NgZone } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserDataService } from '../../shared/services/user-data.service';
-import { GeneSet, SampleGroup } from '../../shared/models/frontend-types.model'
+import { UserDataService } from '../../../shared/services/user-data.service';
+import { GeneSet, SampleGroup } from '../../../shared/models/frontend-types.model'
 import Tabulator from 'tabulator-tables';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';

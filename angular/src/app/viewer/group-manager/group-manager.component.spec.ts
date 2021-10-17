@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { UserDataService } from '../shared/services/user-data.service';
+import { UserDataService } from '../../shared/services/user-data.service';
 
 import { GroupManagerComponent } from './group-manager.component';
 import { FormsModule } from '@angular/forms';

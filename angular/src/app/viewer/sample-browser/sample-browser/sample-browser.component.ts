@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { FetchedDataService } from '../../shared/services/fetched-data.service';
-import { Batch, Dataset } from '../../shared/models/backend-types.model';
-import { UserDataService } from '../../shared/services/user-data.service';
+import { FetchedDataService } from '../../../shared/services/fetched-data.service';
+import { Batch, Dataset } from '../../../shared/models/backend-types.model';
+import { UserDataService } from '../../../shared/services/user-data.service';
 
 @Component({
   selector: 'app-sample-browser',

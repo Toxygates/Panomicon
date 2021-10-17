@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminComponent } from './admin/admin.component';
 import { RouterModule } from '@angular/router';
-import { SharedModule } from '../viewer/shared/shared.module';
+import { SharedModule } from '../shared/shared.module';
 import { BatchesComponent } from './batches/batches.component';
 import { PlatformsComponent } from './platforms/platforms.component';
 import { DatasetsComponent } from './datasets/datasets.component';
