@@ -33,4 +33,7 @@ Toxygates/.settings
 *.iml
 out/*
 
+#VS Code
+.vscode
+
 *.class
