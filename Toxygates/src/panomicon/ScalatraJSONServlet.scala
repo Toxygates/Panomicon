@@ -4,14 +4,11 @@ import io.fusionauth.jwt.domain.JWT
 import org.scalatra._
 import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
 import t.db.Sample
-import t.global.KCDBRegistry
-import t.manager.{BatchManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.Attribute
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.Configuration
-import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{BatchStore, Dataset, DatasetStore, PlatformStore, SampleClassFilter, SampleFilter}
