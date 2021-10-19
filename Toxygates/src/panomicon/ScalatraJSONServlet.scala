@@ -4,18 +4,14 @@ import io.fusionauth.jwt.domain.JWT
 import org.scalatra._
 import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
 import t.db.Sample
-import t.global.KCDBRegistry
-import t.manager.{BatchManager, PlatformManager, Task, TaskRunner}
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
-import t.server.viewer.{AssociationMasterLookup, Configuration}
-import t.shared.admin.PlatformType
-import t.shared.common.maintenance.MaintenanceConstants.platformPrefix
-import t.shared.common.maintenance.{Batch, BatchUploadException, Instance}
-import t.shared.common.{AType, Platform, ValueType}
+import t.server.viewer.{Configuration}
+import t.shared.common.maintenance.{BatchUploadException}
+import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
 import upickle.default._
