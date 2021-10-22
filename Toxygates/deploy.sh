@@ -26,7 +26,7 @@ function makeAdminWar {
     cd war
     cp WEB-INF/web.xml.admin WEB-INF/web.xml
     rm admin.war
-    jar cf admin.war OTGAdmin admin.html *.css images
+    jar cf admin.war AdminConsole admin.html *.css images
     jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
       -path WEB-INF/classes/t/tomcat -o \
       \( -type f -print \) )
