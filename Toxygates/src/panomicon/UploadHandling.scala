@@ -69,7 +69,24 @@ class UploadHandling(context: Context) {
       false, conversion = conversion.getOrElse(BatchManager.identityConverter)), Some(tempFiles))
   }
 
-  def deleteBatch(batch: String): String = {
+  def updateBatch(batch: t.sparql.Batch, metadata: Option[FileItem], visibleInstances: List[String],
+                  recalculate: Boolean): Unit = {
+    val tempFiles = new TempFiles()
+    val metaFile = metadata.map(c => itemToFile(tempFiles, "metadata", c))
+
+    ensureNotMaintenance()
+    grabRunner()
+
+    val b = batch.toBatchManager(visibleInstances)
+    val update = batchManager.updateBatch(b)
+    val tasks = metaFile match {
+      case Some(mf) => update.andThen(batchManager.updateMetadata(b, mf.getAbsolutePath, recalculate))
+      case _ => update
+    }
+    runTasks(tasks, Some(tempFiles))
+  }
+
+  def deleteBatch(batch: String) {
     val batchManager = new BatchManager(context)
     runTasks(batchManager.delete(batch, false), None)
   }

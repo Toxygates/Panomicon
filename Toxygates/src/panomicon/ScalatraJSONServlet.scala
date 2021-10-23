@@ -371,7 +371,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val expr = fileParams.get("exprData")
     val calls = fileParams.get("callsData")
     val probes = fileParams.get("probesData")
-
     val visibleInstances = params.get("instances").map(_.split(",").toList).getOrElse(List())
 
     if (metadata.isEmpty) {
@@ -383,6 +382,20 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
     uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes, visibleInstances)
     Ok("Task started")
+  }
+
+  //Note: this could also be unified with the /batch endpoint above with e.g. an ?update=true parameter
+  post("/batchUpdate") {
+    verifyRole("admin")
+
+    //timestamp will be overwritten
+    //numSamples will be ignored
+    val batch = read[Batch](request.body)
+    val metadata = fileParams.get("metadata")
+    val recalculate = params.get("recalculate").map(_ == "true").getOrElse(false)
+    val visibleInstances = params.get("instances").map(_.split(",").toList).getOrElse(List())
+
+    uploadHandling.updateBatch(batch, metadata, visibleInstances, recalculate)
   }
 
   get("/dataset/all") {
@@ -512,6 +525,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
 
     uploadHandling.addPlatform(id, comment, publicComment, platformFormat, platformFile.get)
+    Ok("Task started")
   }
 
   put("/platform") {
@@ -533,6 +547,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val id = paramOrHalt("id")
 
     uploadHandling.deletePlatform(id)
+    Ok("Task started")
   }
 
   /**
@@ -548,5 +563,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     verifyRole("admin")
     val batchId = paramOrHalt("batch")
     uploadHandling.deleteBatch(batchId)
+    Ok("Task started")
   }
 }
