@@ -83,7 +83,11 @@ trait BatchGrouping {
 }
 
 case class Batch(id: String, timestamp: Date, comment: String, publicComment: String,
-                 dataset: String, numSamples: Int)
+                 dataset: String, numSamples: Int) {
+  def toBatchManager(instances: List[String]) =
+    t.manager.BatchManager.Batch(id, comment, Some(instances), Some(dataset))
+
+}
 
 /*
  * Note: inheriting BatchGroups (to manage instance membership)

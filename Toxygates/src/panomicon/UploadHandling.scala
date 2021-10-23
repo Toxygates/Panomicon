@@ -42,8 +42,8 @@ class UploadHandling(context: Context) {
   }
   private val batchManager = new BatchManager(context)
 
-  def addBatch(batch: String, metadata: FileItem, exprData: FileItem, callsData: Option[FileItem],
-               probesData: Option[FileItem], mayAppendBatch: Boolean = true): String = {
+  def addBatch(batch: t.sparql.Batch, metadata: FileItem, exprData: FileItem, callsData: Option[FileItem],
+               probesData: Option[FileItem], visibleInstances: List[String], mayAppendBatch: Boolean = true) {
     val tempFiles = new TempFiles()
 
     val metaFile = itemToFile(tempFiles, "metadata", metadata)
@@ -55,7 +55,7 @@ class UploadHandling(context: Context) {
     grabRunner()
 
     val existingBatches = new BatchStore(context.config.triplestoreConfig).getList()
-    if (existingBatches.contains(batch) && !mayAppendBatch) {
+    if (existingBatches.contains(batch.id) && !mayAppendBatch) {
       throw BatchUploadException.badID(
         s"The batch $batch already exists and appending is not allowed. " +
           "Please choose a different name.")
@@ -63,17 +63,15 @@ class UploadHandling(context: Context) {
 
     //TASK: port over probe conversion routine from BatchOpsImpl
     val conversion = None
-    runTasks(batchManager.add(Batch(batch, "", None, None), metaFile.getAbsolutePath,
+    runTasks(batchManager.add(batch.toBatchManager(visibleInstances),
+      metaFile.getAbsolutePath,
       dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath),
       false, conversion = conversion.getOrElse(BatchManager.identityConverter)), Some(tempFiles))
-
-    "Task started"
   }
 
   def deleteBatch(batch: String): String = {
     val batchManager = new BatchManager(context)
     runTasks(batchManager.delete(batch, false), None)
-    "Task started"
   }
 
   def addPlatform(id: String, comment: String, publicComment: String,

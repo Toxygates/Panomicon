@@ -9,11 +9,11 @@ import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
-import t.server.viewer.{Configuration}
-import t.shared.common.maintenance.{BatchUploadException}
+import t.server.viewer.Configuration
+import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
-import t.sparql.{BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
+import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
 import upickle.default._
 
 import java.util
@@ -363,11 +363,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   post("/batch") {
     verifyRole("admin")
 
-    val batch = paramOrHalt("batch")
+    //timestamp will be overwritten
+    //numSamples will be ignored
+    val batch = read[Batch](request.body)
+
     val metadata = fileParams.get("metadata")
     val expr = fileParams.get("exprData")
     val calls = fileParams.get("callsData")
     val probes = fileParams.get("probesData")
+
+    val visibleInstances = params.get("instances").map(_.split(",").toList).getOrElse(List())
 
     if (metadata.isEmpty) {
       throw new Exception("No metadata file")
@@ -376,7 +381,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       throw new Exception("No data file")
     }
 
-    uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes)
+    uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes, visibleInstances)
+    Ok("Task started")
   }
 
   get("/dataset/all") {
