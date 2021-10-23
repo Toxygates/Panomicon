@@ -476,10 +476,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       "timestamp" -> writeJs(timestamps.get(instanceId).getOrElse(null))))))
   }
 
-  // TODO add POST method for adding an instance
-  // note that we can't just use the logic from e.g.
-  // MaintenanceServiceImpl.addInstance because it's UNIX-specific
-
   post("/instance") {
     verifyRole("admin")
     val id = paramOrHalt("id")
@@ -497,14 +493,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val comment = paramOrHalt("comment")
 
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
-    if (instanceStore.getList().contains(id)) {
-      throw new Exception(s"The instance $id already exists, please choose a different name")
+    if (!instanceStore.getList().contains(id)) {
+      throw new Exception(s"The instance $id does not exist")
     }
     instanceStore.setComment(id, TRDF.escape(comment))
     Ok("instance updated")
   }
 
   delete("/instance") {
+    verifyRole("admin")
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
     val id = paramOrHalt("id")
 
