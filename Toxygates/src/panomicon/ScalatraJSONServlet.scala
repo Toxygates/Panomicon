@@ -363,15 +363,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   post("/batch") {
     verifyRole("admin")
 
-    //timestamp will be overwritten
-    //numSamples will be ignored
-    val batch = read[Batch](request.body)
+    val id = paramOrHalt("id")
+    val comment = params.get("comment").getOrElse("")
+    val publicComment = params.get("publicComment").getOrElse("")
+    val dataset = paramOrHalt("dataset")
+    val instances = params.get("instances").map(read[List[String]](_)).getOrElse(List())
 
     val metadata = fileParams.get("metadata")
     val expr = fileParams.get("exprData")
     val calls = fileParams.get("callsData")
     val probes = fileParams.get("probesData")
-    val visibleInstances = params.get("instances").map(_.split(",").toList).getOrElse(List())
 
     if (metadata.isEmpty) {
       throw new Exception("No metadata file")
@@ -380,7 +381,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       throw new Exception("No data file")
     }
 
-    uploadHandling.addBatch(batch, metadata.get, expr.get, calls, probes, visibleInstances)
+    uploadHandling.addBatch(new Batch(id, null, comment, publicComment, dataset, 0),
+      metadata.get, expr.get, calls, probes, instances)
     Ok("Task started")
   }
 
