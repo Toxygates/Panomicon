@@ -22,7 +22,6 @@ package t.sparql
 import java.io.Closeable
 import java.text.SimpleDateFormat
 import java.util.Date
-
 import t.TriplestoreConfig
 
 
@@ -79,9 +78,10 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
   def addWithTimestamp(name: String, comment: String): Unit = {
-    if (name.contains(' ')) {
-      throw new Exception("Name must not contain spaces.")
+    if (!TRDF.isValidIdentifier(name)) {
+      throw new Exception(s"Invalid name: $name (quotation marks and spaces, etc., are not allowed)")
     }
+
     if (comment.contains('"')) {
       throw new Exception("A comment may not contain the \" character.")
     }

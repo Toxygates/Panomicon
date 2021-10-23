@@ -10,7 +10,7 @@ import t.model.sample.{Attribute, CoreParameter}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.Configuration
-import t.shared.common.maintenance.BatchUploadException
+import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
@@ -398,6 +398,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     uploadHandling.updateBatch(batch, metadata, visibleInstances, recalculate)
   }
 
+  delete("/batch/:batch") {
+    verifyRole("admin")
+    val batchId = paramOrHalt("batch")
+    uploadHandling.deleteBatch(batchId)
+    Ok("Task started")
+  }
+
   get("/dataset/all") {
     verifyRole("admin")
     contentType = "text/json"
@@ -473,6 +480,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   // note that we can't just use the logic from e.g.
   // MaintenanceServiceImpl.addInstance because it's UNIX-specific
 
+  post("/instance") {
+    verifyRole("admin")
+    val id = paramOrHalt("id")
+    val comment = paramOrHalt("comment")
+
+    val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
+    instanceStore.addWithTimestamp(id, TRDF.escape(comment))
+    Ok("Instance added")
+  }
+
   put("/instance") {
     verifyRole("admin")
 
@@ -480,8 +497,22 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val comment = paramOrHalt("comment")
 
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
+    if (instanceStore.getList().contains(id)) {
+      throw new Exception(s"The instance $id already exists, please choose a different name")
+    }
     instanceStore.setComment(id, TRDF.escape(comment))
     Ok("instance updated")
+  }
+
+  delete("/instance") {
+    val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
+    val id = paramOrHalt("id")
+
+    if (!instanceStore.getList().contains(id)) {
+      throw new Exception(s"The instance $id already exists, please choose a different name")
+    }
+    instanceStore.delete(id)
+    Ok("Instance deleted")
   }
 
   get("/platform") {
@@ -557,12 +588,5 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/uploadProgress") {
     verifyRole("admin")
     write(uploadHandling.getProgress())
-  }
-
-  delete("/batch/:batch") {
-    verifyRole("admin")
-    val batchId = paramOrHalt("batch")
-    uploadHandling.deleteBatch(batchId)
-    Ok("Task started")
   }
 }

@@ -103,15 +103,7 @@ class MaintenanceServiceImpl extends TServiceServlet
     val im = new InstanceStore(baseConfig.triplestoreConfig)
 
     val id = instance.getId()
-    if (!TRDF.isValidIdentifier(id)) {
-      throw new MaintenanceException(
-          s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
-    }
     val param = instance.getPolicyParameter()
-    if (!TRDF.isValidIdentifier(param)) {
-      throw new MaintenanceException(
-          s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
-    }
     if (im.getList().contains(id)) {
       throw new MaintenanceException(s"The instance $id already exists, please choose a different name")
     }
@@ -119,14 +111,9 @@ class MaintenanceServiceImpl extends TServiceServlet
     maintenance {
       val ap = instance.getAccessPolicy()
       val policy = ap.toString().toLowerCase();
-
       val cmd = s"sh $homeDir/new_instance.${policy}.sh $id $id $param"
-      println(s"Run command: $cmd")
-      val p = Process(cmd).!
+      println(s"To finish adding the new instance, please run : $cmd")
       im.addWithTimestamp(id, TRDF.escape(instance.getComment))
-      if (p != 0) {
-        throw new MaintenanceException(s"Tomcat instance creation failed: return code $p. Please investigate manualy.")
-      }
     }
   }
 
@@ -155,13 +142,8 @@ class MaintenanceServiceImpl extends TServiceServlet
     val im = new InstanceStore(baseConfig.triplestoreConfig)
     maintenance {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
-      println(s"Run command: $cmd")
-      val p = Process(cmd).!
+      println(s"To finish deleting the instance, please run: $cmd")
       im.delete(id)
-      if (p != 0) {
-        throw new MaintenanceException(s"Deleting tomcat instance failed: return code $p. Please investigate manually.")
-      }
-
     }
   }
 
