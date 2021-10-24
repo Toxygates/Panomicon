@@ -367,7 +367,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val comment = params.get("comment").getOrElse("")
     val publicComment = params.get("publicComment").getOrElse("")
     val dataset = paramOrHalt("dataset")
-    val instances = params.get("instances").map(read[List[String]](_)).getOrElse(List())
+    val instances = params.get("enabledInstances").map(_.split(",").toList).getOrElse(List())
 
     val metadata = fileParams.get("metadata")
     val expr = fileParams.get("exprData")
@@ -395,7 +395,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val dataset = paramOrHalt("dataset")
     val metadata = fileParams.get("metadata")
     val recalculate = params.get("recalculate").map(_ == "true").getOrElse(false)
-    val instances = params.get("instances").map(read[List[String]](_)).getOrElse(List())
+    val instances = params.get("enabledInstances").map(_.split(",").toList).getOrElse(List())
 
     uploadHandling.updateBatch(new Batch(id, null, comment, publicComment, dataset, 0),
       metadata, instances, recalculate)
