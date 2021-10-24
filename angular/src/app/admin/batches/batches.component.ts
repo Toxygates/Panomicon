@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AdminDataService } from '../services/admin-data';
+import { BackendService } from '../services/backend.service';
 
 @Component({
   selector: 'app-batches',
@@ -8,6 +9,13 @@ import { AdminDataService } from '../services/admin-data';
 })
 export class BatchesComponent  {
 
-  constructor(public adminData: AdminDataService) { }
+  constructor(public adminData: AdminDataService,
+    private backend: BackendService) { }
+
+  deleteBatch(id: string): void {
+    this.backend.deleteBatch(id).subscribe(_res => {
+      this.adminData.refreshBatches();
+    });
+  }
 
 }

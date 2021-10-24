@@ -58,6 +58,58 @@ export class BackendService {
       );
   }
 
+  addBatch(batch: Partial<Batch>, files: Map<string, File>): Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(batch)) {
+      formData.append(key, value?.toString() || "");
+    }
+    formData.append('metadata', files.get('metadata') as File);
+    formData.append('exprData', files.get('exprData') as File);
+    if (files.get('callsData')) {
+      formData.append('callsData', files.get('callsData') as File);
+    }
+    if (files.get('probesData')) {
+      formData.append('probesData', files.get('probesData') as File);
+    }
+    return this.http.post(this.serviceUrl + 'batch', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('added batch')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error adding batch: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  updateBatch(batch: Partial<Batch>, files: Map<string, File>, recalculate: boolean): Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(batch)) {
+      formData.append(key, value?.toString() || "");
+    }
+    formData.append("recalculate", recalculate ? "true" : "false");
+    if (files.get('metadata')) {
+      formData.append('metadata', files.get('metadata') as File);
+    }
+    return this.http.put(this.serviceUrl + 'batch', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('updated batch')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error updating batch: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  deleteBatch(id: string): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("id", id);
+    return this.http.delete(this.serviceUrl + 'batch/' + id, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('deleted batch')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error deleting batch: ${error.message}`)
+          throw error;
+      }));
+  }
+
   addDataset(dataset: Partial<Dataset>): Observable<string> {
     const formData: FormData = new FormData();
     for (const [key, value] of Object.entries(dataset)) {

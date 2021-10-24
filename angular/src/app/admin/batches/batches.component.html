@@ -9,6 +9,8 @@
         <th scope="col">Samples</th>
         <th scope="col">Comment</th>
         <th scope="col">Public comment</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -20,7 +22,20 @@
         <td>{{batch.numSamples}}</td>
         <td>{{batch.comment}}</td>
         <td>{{batch.publicComment}}</td>
+        <td>
+          <a class="btn btn-primary" role="button"
+            [routerLink]="'edit/' + batch.id"
+          >Edit</a>
+        </td>
+        <td>
+          <button type="button" class="btn btn-danger"
+            (click)="deleteBatch(batch.id)">
+            Delete
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
+  <a class="btn btn-primary" role="button" routerLink="add"
+  >Add new batch</a>
 </div>

@@ -32,4 +32,9 @@ export class AdminDataService {
     this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
   }
 
+  refreshBatches(): void {
+    this.batches$.next(null);
+    this.backend.getBatches().subscribe(batches => this.batches$.next(batches));
+  }
+
 }
