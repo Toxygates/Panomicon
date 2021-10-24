@@ -386,18 +386,19 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("Task started")
   }
 
-  //Note: this could also be unified with the /batch endpoint above with e.g. an ?update=true parameter
-  post("/batchUpdate") {
+  put("/batch") {
     verifyRole("admin")
 
-    //timestamp will be overwritten
-    //numSamples will be ignored
-    val batch = read[Batch](request.body)
+    val id = paramOrHalt("id")
+    val comment = params.get("comment").getOrElse("")
+    val publicComment = params.get("publicComment").getOrElse("")
+    val dataset = paramOrHalt("dataset")
     val metadata = fileParams.get("metadata")
     val recalculate = params.get("recalculate").map(_ == "true").getOrElse(false)
-    val visibleInstances = params.get("instances").map(_.split(",").toList).getOrElse(List())
+    val instances = params.get("instances").map(read[List[String]](_)).getOrElse(List())
 
-    uploadHandling.updateBatch(batch, metadata, visibleInstances, recalculate)
+    uploadHandling.updateBatch(new Batch(id, null, comment, publicComment, dataset, 0),
+      metadata, instances, recalculate)
   }
 
   delete("/batch/:batch") {
