@@ -7,6 +7,8 @@
         <th scope="col">Probes</th>
         <th scope="col">Comment</th>
         <th scope="col">Public comment</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -16,7 +18,20 @@
         <td>{{platform.probes}}</td>
         <td>{{platform.comment}}</td>
         <td>{{platform.publicComment}}</td>
+        <td>
+          <a class="btn btn-primary" role="button"
+            [routerLink]="'edit/' + platform.id"
+          >Edit</a>
+        </td>
+        <td>
+          <button type="button" class="btn btn-danger"
+            (click)="deletePlatform(platform.id)">
+            Delete
+          </button>
+        </td>
       </tr>
     </tbody>
+    <a class="btn btn-primary" role="button" routerLink="add"
+    >Add new platform</a>
   </table>
 </div>

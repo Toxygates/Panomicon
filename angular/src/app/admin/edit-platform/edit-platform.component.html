@@ -1,0 +1,70 @@
+<div>
+  <h3>{{ addMode ? "Add" : "Edit"}} Platform</h3>
+
+  <app-validated-input
+    id="id"
+    label="ID"
+    [(value)]="platform.id"
+    [disabled]="!addMode"
+    [invalid]="!platform.id"
+    invalidMessage="Please enter a platform ID"
+  >
+  </app-validated-input>
+
+  <app-validated-input
+    id="comment"
+    label="Comment"
+    [(value)]="platform.comment"
+  >
+  </app-validated-input>
+
+  <app-validated-input
+    id="publicComment"
+    label="Public Comment"
+    [(value)]="platform.publicComment"
+  >
+  </app-validated-input>
+
+  <ng-container *ngIf="addMode">
+    <div class="form-group">
+      <label for="file">Platform definition file</label>
+      <input type="file"
+        id="file"
+        (change)="handleFileInput($event.target)"
+        [class.is-invalid]="!platformFile"
+      >
+      <div class="invalid-feedback">
+        Please select a platform file
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="platformTypeSelect">File format</label>
+      <select
+        class="form-control"
+        id="platformTypeSelect"
+        name="platformTypeSelect"
+        [(ngModel)]="platformType"
+        [class.is-invalid]="!platformType"
+      >
+        <option value="Affymetrix">Affymetrix CSV</option>
+        <option value="Standard">T platform TSV</option>
+        <option value="Biological">Biological data TSV</option>
+      </select>
+      <div class="invalid-feedback">
+        Please select a platform type
+      </div>
+    </div>
+
+
+  </ng-container>
+
+  <button type="button" class="btn btn-primary"
+    (click)="submit(platform)">
+    {{ addMode ? "Add" : "Save"}} platform
+  </button>
+  <span class="float-right">
+    <a class="btn btn-danger" role="button" routerLink="/admin/platforms"
+    >Cancel</a>
+  </span>
+</div>

@@ -150,4 +150,46 @@ export class BackendService {
       }));
   }
 
+  addPlatform(platform: Partial<Platform>, file: File, type: string):  Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(platform)) {
+      formData.append(key, value?.toString() || "");
+    }
+    formData.append('type', type);
+    formData.append('platformFile', file);
+    return this.http.post(this.serviceUrl + 'platform', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('added platform')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error adding platform: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  updatePlatform(platform: Partial<Platform>):  Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(platform)) {
+      formData.append(key, value?.toString() || "");
+    }
+    return this.http.put(this.serviceUrl + 'platform', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('updated platform')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error updating platform: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  deletePlatform(id: string): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append("id", id);
+    return this.http.delete(this.serviceUrl + 'platform/' + id, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('deleted platform')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error deleting platform: ${error.message}`)
+          throw error;
+      }));
+  }
+
 }

@@ -37,4 +37,9 @@ export class AdminDataService {
     this.backend.getBatches().subscribe(batches => this.batches$.next(batches));
   }
 
+  refreshPlatforms(): void {
+    this.platforms$.next(null);
+    this.backend.getPlatforms().subscribe(platforms => this.platforms$.next(platforms));
+  }
+
 }
