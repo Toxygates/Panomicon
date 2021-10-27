@@ -503,7 +503,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("instance updated")
   }
 
-  delete("/instance") {
+  delete("/instance/:id") {
     verifyRole("admin")
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
     val id = paramOrHalt("id")
@@ -572,7 +572,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("platform updated")
   }
 
-  delete("/platform") {
+  delete("/platform/:id") {
     verifyRole("admin")
 
     val id = paramOrHalt("id")

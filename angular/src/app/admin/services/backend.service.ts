@@ -99,8 +99,6 @@ export class BackendService {
   }
 
   deleteBatch(id: string): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("id", id);
     return this.http.delete(this.serviceUrl + 'batch/' + id, {responseType: 'text'})
       .pipe(
         tap(() => console.log('deleted batch')),
@@ -139,8 +137,6 @@ export class BackendService {
   }
 
   deleteDataset(id: string): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("id", id);
     return this.http.delete(this.serviceUrl + 'dataset/' + id, {responseType: 'text'})
       .pipe(
         tap(() => console.log('deleted dataset')),
@@ -181,8 +177,6 @@ export class BackendService {
   }
 
   deletePlatform(id: string): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append("id", id);
     return this.http.delete(this.serviceUrl + 'platform/' + id, {responseType: 'text'})
       .pipe(
         tap(() => console.log('deleted platform')),
