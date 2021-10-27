@@ -5,6 +5,8 @@
         <th scope="col">Instance ID</th>
         <th scope="col">Timestamp</th>
         <th scope="col">Comment</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -12,7 +14,20 @@
         <th scope="row">{{instance.id}}</th>
         <td>{{instance.timestamp}}</td>
         <td>{{instance.comment}}</td>
+        <td>
+          <a class="btn btn-primary" role="button"
+            [routerLink]="'edit/' + instance.id"
+          >Edit</a>
+        </td>
+        <td>
+          <button type="button" class="btn btn-danger"
+            (click)="deleteInstance(instance.id)">
+            Delete
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
+  <a class="btn btn-primary" role="button" routerLink="add"
+  >Add new instance</a>
 </div>

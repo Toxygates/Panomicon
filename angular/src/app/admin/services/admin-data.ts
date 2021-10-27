@@ -42,4 +42,9 @@ export class AdminDataService {
     this.backend.getPlatforms().subscribe(platforms => this.platforms$.next(platforms));
   }
 
+  refreshInstances(): void {
+    this.instances$.next(null);
+    this.backend.getInstances().subscribe(instances => this.instances$.next(instances));
+  }
+
 }

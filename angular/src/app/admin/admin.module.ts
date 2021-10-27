@@ -10,6 +10,7 @@ import { InstancesComponent } from './instances/instances.component';
 import { EditDatasetComponent } from './edit-dataset/edit-dataset.component';
 import { EditBatchComponent } from './edit-batch/edit-batch.component';
 import { EditPlatformComponent } from './edit-platform/edit-platform.component';
+import { EditInstanceComponent } from './edit-instance/edit-instance.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { EditPlatformComponent } from './edit-platform/edit-platform.component';
     EditDatasetComponent,
     EditBatchComponent,
     EditPlatformComponent,
+    EditInstanceComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +42,8 @@ import { EditPlatformComponent } from './edit-platform/edit-platform.component';
           { path: 'datasets/add', component: EditDatasetComponent },
           { path: 'datasets', component: DatasetsComponent },
           { path: 'instances', component: InstancesComponent },
+          { path: 'instances/edit/:id', component: EditInstanceComponent },
+          { path: 'instances/add', component: EditInstanceComponent },
           { path: '**',   redirectTo: 'datasets', pathMatch: 'full' },
         ]
       }

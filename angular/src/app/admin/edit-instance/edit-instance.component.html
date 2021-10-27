@@ -1,0 +1,29 @@
+<div>
+  <h3>{{ addMode ? "Add" : "Edit"}} Instance</h3>
+
+  <app-validated-input
+    id="id"
+    label="ID"
+    [(value)]="instance.id"
+    [disabled]="!addMode"
+    [invalid]="!instance.id"
+    invalidMessage="Please enter a instance ID"
+  >
+  </app-validated-input>
+
+  <app-validated-input
+    id="comment"
+    label="Comment"
+    [(value)]="instance.comment"
+  >
+  </app-validated-input>
+
+  <button type="button" class="btn btn-primary"
+  (click)="submit(instance)">
+  {{ addMode ? "Add" : "Save"}} instance
+  </button>
+  <span class="float-right">
+    <a class="btn btn-danger" role="button" routerLink="/admin/instances"
+    >Cancel</a>
+  </span>
+</div>

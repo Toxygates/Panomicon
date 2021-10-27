@@ -186,4 +186,41 @@ export class BackendService {
       }));
   }
 
+  addInstance(instance: Partial<Instance>):  Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(instance)) {
+      formData.append(key, value?.toString() || "");
+    }
+    return this.http.post(this.serviceUrl + 'instance', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('added instance')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error adding instance: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  updateInstance(instance: Partial<Instance>):  Observable<string> {
+    const formData: FormData = new FormData();
+    for (const [key, value] of Object.entries(instance)) {
+      formData.append(key, value?.toString() || "");
+    }
+    return this.http.put(this.serviceUrl + 'instance', formData, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('updated instance')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error updating instance: ${error.message}`)
+          throw error;
+      }));
+  }
+
+  deleteInstance(id: string): Observable<string> {
+    return this.http.delete(this.serviceUrl + 'instance/' + id, {responseType: 'text'})
+      .pipe(
+        tap(() => console.log('deleted instance')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error deleting instance: ${error.message}`)
+          throw error;
+      }));
+  }
 }
