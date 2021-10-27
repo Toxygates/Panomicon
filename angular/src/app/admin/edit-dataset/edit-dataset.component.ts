@@ -36,7 +36,7 @@ export class EditDatasetComponent implements OnInit {
   }
 
   submit(dataset: Partial<Dataset>): void {
-    void this.router.navigate(['/admin/batches']);
+    void this.router.navigate(['/admin/datasets']);
     const observable = this.addMode ?
       this.backend.addDataset(dataset) :
       this.backend.updateDataset(dataset);
