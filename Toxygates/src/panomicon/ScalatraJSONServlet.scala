@@ -71,6 +71,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/dataset") {
+    contentType = "text/json"
     val userKey = params.getOrElse("userDataKey", "")
     val data = datasetStore.getItems(tconfig.instanceURI).
       filter(isDataVisible(_, userKey))
@@ -78,6 +79,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/dataset/:id") {
+    contentType = "text/json"
     val reqId = paramOrHalt("id")
     val data = datasetStore.getItems(tconfig.instanceURI).
       find(_.id == reqId).getOrElse(halt(400))
@@ -85,6 +87,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/batch/dataset/:dataset") {
+    contentType = "text/json"
     val requestedDatasetId = paramOrHalt("dataset")
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
@@ -99,6 +102,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       ExposureTime, CoreParameter.Platform, Treatment)
 
   get("/sample/batch/:batch") {
+    contentType = "text/json"
     val requestedBatchId = paramOrHalt("batch")
 
     val fullList = batchStore.getList()
@@ -119,6 +123,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/sample/treatment/:treatment") {
+    contentType = "text/json"
     val sf = SampleFilter(tconfig.instanceURI, None)
     val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> paramOrHalt("treatment"))), sf)()
     write(data.map(sampleToMap))
@@ -128,6 +133,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * This request allows arbitrary GET parameter attribute filters, e.g. ?doseLevel=High
    */
   get("/sample") {
+    contentType = "text/json"
     val scf = SampleClassFilter(
       Map.empty ++ params.iterator.flatMap(x => {
         val attrib = Option(baseConfig.attributes.byId(x._1))
@@ -152,6 +158,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/parameterValues/:param") {
+    contentType = "text/json"
     val requestedParam = paramOrHalt("param")
     val attr = Option(baseConfig.attributes.byId(requestedParam)).
       getOrElse(halt(400))
@@ -175,6 +182,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    */
 
   post("/matrix") {
+    contentType = "text/json"
     val matParams: json.MatrixParams = read[json.MatrixParams](request.body)
     println(s"Load request: $matParams")
     val valueType = ValueType.valueOf(
@@ -205,6 +213,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/network") {
+    contentType = "text/json"
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
     println(s"Load request: $netParams")
     val valueType = ValueType.valueOf(
@@ -235,6 +244,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * Example request: curl http://127.0.0.1:8888/json/association/GOBP/003017689013\?probes\=213646_x_at,213060_s_at
    */
   get("/association/:assoc/:sample") {
+    contentType = "text/json"
     val probes = params.getOrElse("probes", halt(400))
     try {
       val requestedType = AType.valueOf(paramOrHalt("assoc"))
@@ -254,6 +264,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * Obtain attributes for a batch
    */
   get("/attribute/batch/:batch") {
+    contentType = "text/json"
     // we ignore this parameter for now because per-batch attributes
     // aren't implemented yet
     val batch = paramOrHalt("batch")
@@ -270,6 +281,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * Obtain attribute values for a set of samples
    */
   post("/attributeValues") {
+    contentType = "text/json"
     val params = ujson.read(request.body)
     val sampleIds: Seq[String] = params.obj.get("samples").map(_.arr).getOrElse(List()).map(v => v.str)
     val batches: Seq[String] = params.obj.get("batches").map(_.arr).getOrElse(List()).map(v => v.str)
@@ -341,6 +353,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/batch") {
     verifyRole("admin")
+    contentType = "text/json"
 
     val batchStore = new BatchStore(baseConfig.triplestoreConfig)
     val r = batchStore.getItems(None).map(batch =>  writeJs(Map(
@@ -467,6 +480,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/instance") {
     verifyRole("admin")
+    contentType = "text/json"
 
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
     val comments = instanceStore.getComments()
@@ -517,6 +531,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/platform") {
     verifyRole("admin")
+    contentType = "text/json"
 
     val probeStore = new ProbeStore(baseConfig.triplestoreConfig)
     val numProbes = probeStore.numProbes()
@@ -587,6 +602,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    */
   get("/uploadProgress") {
     verifyRole("admin")
+    contentType = "text/json"
     write(uploadHandling.getProgress())
   }
 }
