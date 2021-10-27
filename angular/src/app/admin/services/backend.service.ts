@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Batch, Instance, Dataset, Platform } from './admin-types';
+import { Batch, Instance, Dataset, Platform, ProgressUpdate } from './admin-types';
 
 @Injectable({
   providedIn: 'root'
@@ -58,6 +58,17 @@ export class BackendService {
       );
   }
 
+  getTaskProgress(): Observable<ProgressUpdate> {
+    return this.http.get<ProgressUpdate>(this.serviceUrl + 'taskProgress')
+      .pipe(
+        tap(() => console.log('fetched task progress')),
+        catchError((error: HttpErrorResponse) => {
+          console.error(`Error fetching task progress: ${error.message}`);
+          throw error;
+        })
+      );
+  }
+
   addBatch(batch: Partial<Batch>, files: Map<string, File>): Observable<string> {
     const formData: FormData = new FormData();
     for (const [key, value] of Object.entries(batch)) {
@@ -73,7 +84,7 @@ export class BackendService {
     }
     return this.http.post(this.serviceUrl + 'batch', formData, {responseType: 'text'})
       .pipe(
-        tap(() => console.log('added batch')),
+        tap(() => console.log('began adding  batch')),
         catchError((error: HttpErrorResponse) => {
           console.log(`Error adding batch: ${error.message}`)
           throw error;
@@ -91,7 +102,7 @@ export class BackendService {
     }
     return this.http.put(this.serviceUrl + 'batch', formData, {responseType: 'text'})
       .pipe(
-        tap(() => console.log('updated batch')),
+        tap(() => console.log('began updating batch')),
         catchError((error: HttpErrorResponse) => {
           console.log(`Error updating batch: ${error.message}`)
           throw error;
@@ -101,7 +112,7 @@ export class BackendService {
   deleteBatch(id: string): Observable<string> {
     return this.http.delete(this.serviceUrl + 'batch/' + id, {responseType: 'text'})
       .pipe(
-        tap(() => console.log('deleted batch')),
+        tap(() => console.log('began deleting batch')),
         catchError((error: HttpErrorResponse) => {
           console.log(`Error deleting batch: ${error.message}`)
           throw error;
@@ -155,7 +166,7 @@ export class BackendService {
     formData.append('platformFile', file);
     return this.http.post(this.serviceUrl + 'platform', formData, {responseType: 'text'})
       .pipe(
-        tap(() => console.log('added platform')),
+        tap(() => console.log('began adding platform')),
         catchError((error: HttpErrorResponse) => {
           console.log(`Error adding platform: ${error.message}`)
           throw error;
@@ -179,7 +190,7 @@ export class BackendService {
   deletePlatform(id: string): Observable<string> {
     return this.http.delete(this.serviceUrl + 'platform/' + id, {responseType: 'text'})
       .pipe(
-        tap(() => console.log('deleted platform')),
+        tap(() => console.log('began deleting platform')),
         catchError((error: HttpErrorResponse) => {
           console.log(`Error deleting platform: ${error.message}`)
           throw error;

@@ -30,3 +30,11 @@ export interface Instance {
   timestamp: string;
   comment: string;
 }
+
+export interface ProgressUpdate {
+  messages: string[];
+  task: string;
+  finished: boolean;
+  completion: number;
+  errorCause: string;
+}

@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { last, mergeMap } from 'rxjs/operators';
 import { AdminDataService } from '../services/admin-data';
 import { BackendService } from '../services/backend.service';
 
@@ -10,10 +12,15 @@ import { BackendService } from '../services/backend.service';
 export class PlatformsComponent {
 
   constructor(public adminData: AdminDataService,
+    private router: Router,
     private backend: BackendService) { }
 
   deletePlatform(id: string): void {
-    this.backend.deletePlatform(id).subscribe(_res => {
+    void this.router.navigate(['/admin/progress']);
+    this.backend.deletePlatform(id).pipe(
+      mergeMap(() => this.adminData.startTrackingProgress()),
+      last()
+    ).subscribe(_res => {
       this.adminData.refreshPlatforms();
     });
   }

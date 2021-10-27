@@ -11,6 +11,7 @@ import { EditDatasetComponent } from './edit-dataset/edit-dataset.component';
 import { EditBatchComponent } from './edit-batch/edit-batch.component';
 import { EditPlatformComponent } from './edit-platform/edit-platform.component';
 import { EditInstanceComponent } from './edit-instance/edit-instance.component';
+import { TaskProgressComponent } from './task-progress/task-progress.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { EditInstanceComponent } from './edit-instance/edit-instance.component';
     EditBatchComponent,
     EditPlatformComponent,
     EditInstanceComponent,
+    TaskProgressComponent,
   ],
   imports: [
     CommonModule,
@@ -44,6 +46,7 @@ import { EditInstanceComponent } from './edit-instance/edit-instance.component';
           { path: 'instances', component: InstancesComponent },
           { path: 'instances/edit/:id', component: EditInstanceComponent },
           { path: 'instances/add', component: EditInstanceComponent },
+          { path: 'progress', component: TaskProgressComponent },
           { path: '**',   redirectTo: 'datasets', pathMatch: 'full' },
         ]
       }

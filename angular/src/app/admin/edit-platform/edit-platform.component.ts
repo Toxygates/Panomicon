@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
+import { last, mergeMap } from 'rxjs/operators'
 import { AdminDataService } from '../services/admin-data';
 import { Platform } from '../services/admin-types';
 import { BackendService } from '../services/backend.service';
@@ -51,15 +51,24 @@ export class EditPlatformComponent implements OnInit {
   }
 
   submit(platform: Partial<Platform>): void {
-    void this.router.navigate(['/admin/platforms']);
-    if (!this.platformFile) {
-      throw new Error("No platform file");
+    if (this.addMode) {
+      if (!this.platformFile) {
+        throw new Error("No platform file");
+      }
+      void this.router.navigate(['/admin/progress']);
+      this.backend.addPlatform(platform, this.platformFile,
+          this.platformType as string).pipe(
+        mergeMap(() => this.adminData.startTrackingProgress()),
+        last()
+      ).subscribe(_res => {
+        this.adminData.refreshPlatforms();
+      });
+
+    } else {
+      void this.router.navigate(['/admin/platforms']);
+      this.backend.updatePlatform(platform).subscribe(_res => {
+        this.adminData.refreshPlatforms();
+      })
     }
-    const observable = this.addMode ?
-      this.backend.addPlatform(platform, this.platformFile, this.platformType as string) :
-      this.backend.updatePlatform(platform);
-    observable.subscribe(_res => {
-      this.adminData.refreshBatches();
-    })
   }
 }

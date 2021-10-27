@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { last, mergeMap } from 'rxjs/operators';
 import { AdminDataService } from '../services/admin-data';
 import { Batch } from '../services/admin-types';
 import { BackendService } from '../services/backend.service';
@@ -61,13 +62,17 @@ export class EditBatchComponent implements OnInit {
   }
 
   submit(batch: Partial<Batch>): void {
-    void this.router.navigate(['/admin/batches']);
     const observable = this.addMode ?
       this.backend.addBatch(batch, this.files) :
       this.backend.updateBatch(batch, this.files,
         this.recalculate);
-    observable.subscribe(_res => {
+
+    void this.router.navigate(['/admin/progress']);
+    observable.pipe(
+      mergeMap(() => this.adminData.startTrackingProgress()),
+      last()
+    ).subscribe(_res => {
       this.adminData.refreshBatches();
-    })
+    });
   }
 }
