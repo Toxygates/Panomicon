@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container-fluid">
     <div class="row">
         <div class="col-12 pcard_container">
             <div class="pcard ui_panel">
@@ -11,15 +11,7 @@
                     [selectedBatch]="batchId$ | async"
                     (selectedBatchChange)="batchId$.next($event)">
                 </app-batch-picker>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12 pcard_container">
-            <div class="pcard ui_panel">
+                <hr/>
                 <app-sample-table>
                 </app-sample-table>
             </div>

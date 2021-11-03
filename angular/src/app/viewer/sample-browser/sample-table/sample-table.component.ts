@@ -189,7 +189,7 @@ export class SampleTableComponent implements AfterViewInit {
           selectable: true,
           columns: this.columnDefinitions$.value,
           layout:"fitDataFill",
-          height: "calc(100vh - 18.8rem)",
+          height: "calc(100vh - 17.7rem)",
           /* eslint-disable @typescript-eslint/no-unsafe-assignment,
                             @typescript-eslint/no-explicit-any */
           groupBy: ([function(data: { control_treatment: string }): string {

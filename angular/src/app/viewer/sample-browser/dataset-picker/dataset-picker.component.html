@@ -1,13 +1,13 @@
 <div class="btn-group" dropdown [isDisabled]="!datasets">
     <button id="button-basic" dropdownToggle type="button"
-            class="btn btn-primary dropdown-toggle mr-2 my-1"
+            class="btn btn-primary dropdown-toggle mr-2"
             [class]="datasets ? 'btn-primary' : 'btn-secondary'"
             aria-controls="dropdown-basic">
         <span *ngIf="!datasets" class="spinner-border spinner-border-sm"
             role="status" aria-hidden="true"></span>
         {{  datasets ?
                 selectedDataset ?
-                    selectedDataset
+                    "Dataset: " + selectedDataset
                     : "No dataset selected"
                 : "Loading..."
         }}
