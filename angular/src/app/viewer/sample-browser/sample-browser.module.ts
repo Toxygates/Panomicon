@@ -14,7 +14,14 @@ import { SampleTableComponent } from "./sample-table/sample-table.component";
     CommonModule,
     SharedModule,
     RouterModule.forChild([
-      { path: '', component: SampleBrowserComponent }
+      {
+        path: '',
+        component: SampleBrowserComponent,
+        children: [
+          { path: 'table', component: SampleTableComponent },
+          { path: '**',   redirectTo: 'table', pathMatch: 'full' },
+        ]
+      }
     ]),
   ],
   declarations: [
