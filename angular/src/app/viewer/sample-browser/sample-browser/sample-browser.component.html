@@ -11,6 +11,24 @@
                     [selectedBatch]="batchId$ | async"
                     (selectedBatchChange)="batchId$.next($event)">
                 </app-batch-picker>
+                <div class="btn-group" dropdown>
+                    <button id="button-basic" dropdownToggle type="button"
+                            class="btn btn-primary dropdown-toggle mr-2"
+                            aria-controls="dropdown-basic">
+                        {{currentMode$ | async}}
+                        <span class="caret"></span>
+                    </button>
+                    <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
+                        role="menu" aria-labelledby="button-basic">
+                        <h6 class="dropdown-header">Select view:</h6>
+                        <li *ngFor="let mode of modeOptions" role="menuitem">
+                            <a class="dropdown-item" [routerLink]="mode.path"
+                                queryParamsHandling="preserve">
+                            {{mode.name}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <hr/>
                 <router-outlet>
                 </router-outlet>

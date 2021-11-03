@@ -8,6 +8,7 @@ import { GroupCreationComponent } from "./group-creation/group-creation.componen
 import { SampleBrowserComponent } from "./sample-browser/sample-browser.component";
 import { SampleFilteringComponent } from "./sample-filtering/sample-filtering.component";
 import { SampleTableComponent } from "./sample-table/sample-table.component";
+import { BatchStatisticsComponent } from './batch-statistics/batch-statistics.component';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { SampleTableComponent } from "./sample-table/sample-table.component";
         component: SampleBrowserComponent,
         children: [
           { path: 'table', component: SampleTableComponent },
+          { path: 'batch-statistics', component: BatchStatisticsComponent },
           { path: '**',   redirectTo: 'table', pathMatch: 'full' },
         ]
       }
@@ -30,7 +32,8 @@ import { SampleTableComponent } from "./sample-table/sample-table.component";
     DatasetPickerComponent,
     GroupCreationComponent,
     SampleFilteringComponent,
-    SampleTableComponent
+    SampleTableComponent,
+    BatchStatisticsComponent
   ]
 })
 export class SampleBrowserModule { }
