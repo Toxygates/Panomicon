@@ -331,7 +331,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
         response.addHeader("Set-Cookie", authentication.cookieHeader(tokenString))
         token
       }
-      case Right(error) => halt(401)
+      case Right(error) => {
+        println(error)
+        halt(401)
+      }
     }
   }
 
