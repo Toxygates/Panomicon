@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE doc [
+<!ENTITY dependencies SYSTEM "../ivy.xml">
+]>
 <ivy-module version="2.0" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation=
   "http://ant.apache.org/ivy/schemas/ivy.xsd">
-  <info organisation="level-five" module="toxygates" />
+  <info organisation="nibiohn" module="panomicon" />
 
   <configurations>
     <conf name="compile"  description="Required to compile application"/>
@@ -14,46 +17,7 @@
 
   <dependencies defaultconf="compile->default">
 
-    <!-- for GWT 2.8 -->
-    <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" />
+    &dependencies;
 
-    <!-- Force same version as OTGTool -->
-    <dependency org="commons-logging" name="commons-logging" rev="1.2">
-      <exclude module="servlet-api"/>
-      <exclude module="log4j"/>
-    </dependency>
-
-    <!-- for GWT upload -->
-    <!-- This fails to resolve some of its dependencies as of 15/1/27.
-  In addition, pulls in all of GWT -->
-  <!-- r 1.0.3 is compatible with GWT 2.7 -->
-  <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->
-
- <!-- latest.integration (1.4) causes NotSerializableException as of Jan 2019 -->
-  <dependency org="commons-fileupload" name="commons-fileupload" rev="1.3.3">
-    <exclude module="servlet-api"/>
-  </dependency>
-
-  <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
-  <dependency org="javax.mail" name="mail" rev="latest.integration"/>
-
-  <!-- To harmonise with OTGTool and avoid pulling in 2 different versions of codec (Toxygates pulls in 1.2
-     if this is not specified --> 
-  <!-- <dependency org="commons-codec" name="commons-codec" rev="1.10"/> -->
-
-  <!-- for R -->
-  <!-- r 1.8.1 is known to work -->  
-  <dependency org="org.rosuda.REngine" name="Rserve" rev="latest.integration"/>
-
-  <dependency org="com.lihaoyi" name="upickle_2.12" rev ="0.9.5" />
-
-    <!-- required for upickle -->
-  <dependency org="org.scala-lang.modules" name="scala-collection-compat_2.12" rev="2.1.6" />
-
-    <!-- Dependencies from Scalatra project template -->
-  <dependency org="org.scalatra" name="scalatra_2.12" rev="2.7.0" />
-  <dependency org="ch.qos.logback" name="logback-classic" rev="1.2.3" />
-
-  <dependency org="io.fusionauth" name="fusionauth-java-client" rev="1.29.1" />
 </dependencies>
 </ivy-module>
