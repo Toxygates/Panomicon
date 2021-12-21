@@ -30,7 +30,7 @@ import t.shared.viewer.intermine._
 
 import scala.collection.JavaConverters._
 
-abstract class IntermineServiceImpl extends TServiceServlet with IntermineService {
+class IntermineServiceImpl extends TServiceServlet with IntermineService {
   var affyProbes: ProbeStore = _
   var mines: Intermines = _
   lazy val platforms = context.platformRegistry
