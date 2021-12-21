@@ -1,3 +1,13 @@
+<configurations>
+    <conf name="compile"  description="Required to compile application"/>
+    <conf name="runtime"  description="Additional run-time dependencies" extends="compile"/>
+    <conf name="test"     description="Required for test only" extends="runtime"/>
+    <conf name="provided" description="Needed for compile, but will be present on the target platform."/>
+</configurations>
+
+<!-- Dependencies go into the 'compile' configuration by default. -->
+<dependencies defaultconf="compile->default">
+  
 <!-- ===== OTGTool/backend dependencies ===== -->
 
 <!--    <dependency org="com.sksamuel.scapegoat" name="scalac-scapegoat-plugin_2.12" rev="1.3.9"/> -->
@@ -78,3 +88,5 @@
   <dependency org="ch.qos.logback" name="logback-classic" rev="1.2.3" />
 
   <dependency org="io.fusionauth" name="fusionauth-java-client" rev="1.29.1" />
+  
+</dependencies>
