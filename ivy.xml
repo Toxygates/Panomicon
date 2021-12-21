@@ -63,9 +63,6 @@
 
   <!-- ===== Panomicon/Toxygates/frontend dependencies ===== -->
   
-  <!-- for GWT 2.8 -->
-    <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" />
-
  <!-- latest.integration (1.4) causes NotSerializableException as of Jan 2019 -->
   <dependency org="commons-fileupload" name="commons-fileupload" rev="1.3.3">
     <exclude module="servlet-api"/>

@@ -105,11 +105,9 @@
     <delete dir="${wardir}/WEB-INF/lib" failonerror="false" />
     <mkdir dir="${wardir}/WEB-INF/lib" />
     <copy  todir="${wardir}/WEB-INF/lib">
+    <!--note this is the jars from the OTGTool module, assumed to be the same as in Toxygates -->
       <path refid="jars.classpath"/>
 
-      <!-- The following three paths will be properly set up only after the compile, hence not included in jars.classpath -->
-      <fileset dir="lib/jar"/>
-      <fileset dir="lib/bundle"/>
       <fileset dir="mlib"/>
       <file file="${env.GWT_SDK}/gwt-servlet.jar"/>
     </copy>
