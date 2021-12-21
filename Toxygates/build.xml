@@ -5,18 +5,25 @@
 <project name="Toxygates" default="compile" basedir="."
   xmlns:ivy="antlib:org.apache.ivy.ant">
 
-  <property name="build.dir" value="war/WEB-INF/classes" />
   <property name="test-sources.dir" value="test" />
 
-  <!-- import ../build_common.xml -->
   &common;
 
   <property name="otgtool.root" value="../OTGTool" />
   
-  <!-- Configure path to GWT SDK -->
+  <!-- Configure the path to the GWT SDK -->
   <property name="gwt.sdk" value="${env.GWT_SDK}" />
 
+  <!-- Configure the path where the web application will be hosted for development purposes. 
+    When you compile, classes and jars will be output inside this directory, but static resources must be copied manually once.
+  -->
+  <property name="wardir" value="/var/lib/tomcat9/webapps/panomicon" />
+
+  <!-- Configure the URL prefix of the servlet container that will be used when running dev mode. -->
+  <property name="dev.urlbase" value="http://localhost:8080/panomicon" />
+
   <target name="init">
+  <property name="war.build.dir" value="${wardir}/WEB-INF/classes" />
     <property name="scala-library.jar" 
       value="${scala.home}/lib/scala-library.jar" />
     <property name="scala-compiler.jar" 
@@ -24,11 +31,8 @@
     <property name="scala.reflect" 
       value="${scala.home}/lib/scala-reflect.jar"/>
     <property name="scala.xml"
-      value="${scala.home}/lib/scala-xml_2.12-1.0.6.jar"/>
-    <path id="build.classpath">
-      <pathelement location="${scala-library.jar}" />
-      <pathelement location="${build.dir}" />
-      <pathelement location="${otgtool.root}/classes" />
+    value="${scala.home}/lib/scala-xml_2.12-1.0.6.jar"/>
+    <path id="jars.classpath">
       <fileset dir="mlib">
         <include name="**/*.jar" />
       </fileset>
@@ -41,6 +45,13 @@
       <fileset dir="${otgtool.root}/lib/bundle">
         <include name="**/*.jar" />
       </fileset>
+    </path>
+
+    <path id="build.classpath">
+      <pathelement location="${scala-library.jar}" />
+      <pathelement location="${war.build.dir}" />
+      <pathelement location="${otgtool.root}/classes" />
+      <path refid="jars.classpath" />
 
       <!-- for t.model.Model gwt.xml -->
       <pathelement location="${otgtool.root}/src/main/java" />
@@ -63,23 +74,23 @@
 
   <path id="test.classpath">
     <path refid="compile.classpath" />
-    <pathelement location="${build.dir}" />
+    <pathelement location="${war.build.dir}" />
     <pathelement location="${testbuild.dir}" />
     <pathelement location="${otgtool.root}/test-classes" />
   </path>
 
   <target name="classfiles" depends="init,retrieve">
     <ivy:cachepath pathid="ivy.classpath" />
-    <mkdir dir="${build.dir}" />
+    <mkdir dir="${war.build.dir}" />
     <scalac srcdir="${sources.dir}"
-      destdir="${build.dir}"
+      destdir="${war.build.dir}"
       classpathref="compile.classpath"
       deprecation="on">
       <include name="**/*.scala" />
       <include name="**/*.java" />
     </scalac>
     <javac srcdir="${sources.dir}"
-      destdir="${build.dir}"
+      destdir="${war.build.dir}"
       classpathref="compile.classpath">
       <include name="**/*.java" />
     </javac>
@@ -89,6 +100,24 @@
       deprecation="on">
       <include name="**/*.scala" />
     </scalac>
+
+    <!-- Set up WEB-INF/lib with jars -->
+    <delete dir="${wardir}/WEB-INF/lib" failonerror="false" />
+    <mkdir dir="${wardir}/WEB-INF/lib" />
+    <copy  todir="${wardir}/WEB-INF/lib">
+      <path refid="jars.classpath"/>
+
+      <!-- The following three paths will be properly set up only after the compile, hence not included in jars.classpath -->
+      <fileset dir="lib/jar"/>
+      <fileset dir="lib/bundle"/>
+      <fileset dir="mlib"/>
+      <file file="${env.GWT_SDK}/gwt-servlet.jar"/>
+    </copy>
+
+    <!-- Set up WEB-INF/classes -->
+    <copy  todir="${wardir}/WEB-INF/classes">
+      <fileset dir="${otgtool.root}/classes"/>
+    </copy>
 
   </target>
 
@@ -110,7 +139,7 @@
         <path refid="compile.classpath"/>
       </classpath>
       <arg line="-war"/>
-      <arg value="war"/>
+      <arg value="${wardir}"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
       <arg value="t.gwt.viewer.Toxygates"/>
@@ -121,15 +150,24 @@
 
   <target name="compile" depends="gwtc" />
 
+  <!-- with the -noserver flag, this will not start an embedded jetty instance 
+  inside devmode. Instead, the application should be served from a servlet container like Tomcat. -->
   <target name="devmode" depends="classfiles" description="Run development mode">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
         <pathelement location="src"/>
 	<path refid="compile.classpath"/>
-      </classpath>
+      </classpath>      
       <jvmarg value="-Xmx3g"/>
+      <arg value="-noserver"/>
       <arg value="-bindAddress"/>
       <arg value="0.0.0.0"/>
+      <arg value="-startupUrl"/>
+      <arg value="${dev.urlbase}/toxygates.html"/>
+      <arg value="-startupUrl"/>
+      <arg value="${dev.urlbase}/admin.html"/>
+
+
       <arg value="t.gwt.viewer.Toxygates"/>
       <arg value="t.gwt.admin.AdminConsole"/>
     </java>
@@ -145,8 +183,8 @@
     </java>
   </target>
 
-  <target name="clean">
-    <delete dir="${build.dir}" failonerror="false" />
+  <target name="clean" depends="init">
+    <delete dir="${war.build.dir}" failonerror="false" />
     <delete dir="${testbuild.dir}" failonerror="false" />
   </target>
 

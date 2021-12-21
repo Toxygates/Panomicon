@@ -1,13 +1,14 @@
 #!/bin/bash
 
-TGCP=war/WEB-INF/classes
+WAR=/var/lib/tomcat9/webapps/panomicon
+TGCP=$WAR/WEB-INF/classes
 TOOLCP=../OTGTool/classes
 
 function makeWar {
     OUTPUT=toxygates-template.war
     cp -r $TOOLCP/friedrich $TGCP
     cp -r $TOOLCP/t $TGCP
-    cd war
+    pushd $WAR
     rm $OUTPUT
     rm WEB-INF/web.xml
     [ ! -d csv ] && mkdir csv
@@ -17,23 +18,23 @@ function makeWar {
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global -o \
       -path WEB-INF/classes/t/tomcat \) -prune -o \( -type f -print \) )
-    cd ..
+    popd
 }
 
 function makeAdminWar {
     cp -r $TOOLCP/friedrich $TGCP
     cp -r $TOOLCP/t $TGCP
-    cd war
+    pushd $WAR
     cp WEB-INF/web.xml.admin WEB-INF/web.xml
     rm admin.war
     jar cf admin.war AdminConsole admin.html *.css images
     jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
       -path WEB-INF/classes/t/tomcat -o \
       \( -type f -print \) )
-    cd ..
+    popd
 }
 
-WARLIB=war/WEB-INF/lib
+WARLIB=$WAR/WEB-INF/lib
 [ ! -d $WARLIB ] && mkdir -p $WARLIB
 #ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 rm $WARLIB/*jar
@@ -47,6 +48,7 @@ cp ${GWT_SDK}/gwt-servlet.jar $WARLIB
 rm $WARLIB/kyotocabinet*jar
 rm $WARLIB/scala-library*.jar
 #These should not be deployed in a servlet context
+rm $WARLIB/scala-parser-combinators*jar
 rm $WARLIB/servlet-api*.jar
 rm $WARLIB/javax.servlet-api*.jar
 rm $WARLIB/javaee-api*jar
@@ -54,11 +56,12 @@ rm $WARLIB/scalatest*jar
 rm $WARLIB/gwt-user.jar
 rm $WARLIB/scala-xml*.jar
 
-cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
+cp $WAR/WEB-INF/web.xml $WAR/WEB-INF/web.xml.bak
 
 makeWar
 makeAdminWar
 
-mv war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
+#Restore
+mv $WAR/WEB-INF/web.xml.bak $WAR/WEB-INF/web.xml
 
 jar cf gwtTomcatFilter.jar -C $TGCP t/tomcat
