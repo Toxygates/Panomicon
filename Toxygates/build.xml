@@ -18,12 +18,12 @@
     When you compile, classes and jars will be output inside this directory, but static resources must be copied manually once.
   -->
   <property name="wardir" value="/var/lib/tomcat9/webapps/panomicon" />
+  <property name="war.build.dir" value="${wardir}/WEB-INF/classes" />
 
   <!-- Configure the URL prefix of the servlet container that will be used when running dev mode. -->
   <property name="dev.urlbase" value="http://localhost:8080/panomicon" />
 
   <target name="init">
-  <property name="war.build.dir" value="${wardir}/WEB-INF/classes" />
     <property name="scala-library.jar" 
       value="${scala.home}/lib/scala-library.jar" />
     <property name="scala-compiler.jar" 
@@ -119,12 +119,21 @@
 
   </target>
 
+  <!-- Classpath and source path for the gwt compiler and gwt devmode.
+   This doesn't need the application's entire server classpath when we run devmode with an external container like tomcat.
+   In fact, the entire classpath cannot be included as it currently contains some jars (asm) that conflict with gwt.
+  -->
   <path id="gwtpath">
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <pathelement location="${gwt.sdk}/gwt-dev.jar"/>
     <pathelement location="${gwt.sdk}/validation-api-1.0.0.GA.jar"/>
     <pathelement location="${gwt.sdk}/validation-api-1.0.0.GA-sources.jar"/>
-    <!-- Add any additional non-server libs (such as JUnit) here -->
+
+    <pathelement location="src"/>
+    <pathelement location="${otgtool.root}/src/main/java" />
+    <pathelement location="${otgtool.root}/classes" />
+    <pathelement location="${war.build.dir}"/>
+    <fileset dir="mlib"/>
   </path>
 
   <!-- Arguments to gwtc and devmode targets -->
@@ -133,8 +142,7 @@
   <target name="gwtc" depends="classfiles">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" maxmemory="1g">
       <classpath>
-        <pathelement location="src"/>
-        <path refid="compile.classpath"/>
+        <path refid="gwtpath"/>
       </classpath>
       <arg line="-war"/>
       <arg value="${wardir}"/>
@@ -153,8 +161,7 @@
   <target name="devmode" depends="classfiles" description="Run development mode">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
-        <pathelement location="src"/>
-	<path refid="compile.classpath"/>
+        <path refid="gwtpath"/>
       </classpath>      
       <jvmarg value="-Xmx3g"/>
       <arg value="-noserver"/>

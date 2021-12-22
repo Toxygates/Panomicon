@@ -19,13 +19,11 @@
 
 package t.server.viewer.intermine
 
-import scala.Vector
 import scala.collection.JavaConverters._
-import org.intermine.webservice.client.core.ContentType
-import org.intermine.webservice.client.core.ServiceFactory
-import org.intermine.webservice.client.lists.ItemList
-import org.intermine.webservice.client.services.ListService
-import org.json.JSONObject
+import org.intermine.client.core.ContentType
+import org.intermine.client.core.ServiceFactory
+import org.intermine.client.lists.ItemList
+import org.intermine.client.services.ListService
 import t.shared.viewer.StringList
 import t.sparql._
 import t.sparql.ProbeStore
@@ -56,7 +54,7 @@ class IntermineConnector(instance: IntermineInstance,
   def enrichmentRequest(ls: ListService) =
     ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
-  def asTGList(l: org.intermine.webservice.client.lists.ItemList,
+  def asTGList(l: org.intermine.client.lists.ItemList,
                ap: ProbeStore,
                filterProbes: (Seq[String]) => Seq[String]): Option[StringList] = {
     var items: Vector[Gene] = Vector()

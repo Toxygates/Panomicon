@@ -19,8 +19,8 @@
 
 package t.intermine
 
-import org.intermine.webservice.client.core.ContentType
-import org.intermine.webservice.client.core.ServiceFactory
+import org.intermine.client.core.ContentType
+import org.intermine.client.core.ServiceFactory
 import org.json.JSONObject
 
 /**

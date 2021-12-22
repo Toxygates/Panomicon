@@ -19,7 +19,7 @@
 
 package t.intermine;
 
-import org.intermine.webservice.client.core.ServiceFactory;
+import org.intermine.client.core.ServiceFactory;
 
 /**
  * This class exists purely to suppress the deprecation warning for the insecure

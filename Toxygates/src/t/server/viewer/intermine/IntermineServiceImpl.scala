@@ -19,7 +19,7 @@
 
 package t.server.viewer.intermine
 
-import org.intermine.webservice.client.results.TabTableResult
+import org.intermine.client.results.TabTableResult
 import t.sparql.ProbeStore
 import t.gwt.viewer.client.intermine.IntermineService
 import t.platform.PlatformRegistry
