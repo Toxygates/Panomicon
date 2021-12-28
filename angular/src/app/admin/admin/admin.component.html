@@ -22,6 +22,12 @@
         <li class="nav-item" routerLinkActive="active">
             <a class="nav-link" routerLink="progress">Task progress</a>
         </li>
+        <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="/viewer">Viewer</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" (click)="logout()" [routerLink]="">Logout</a>
+        </li>
         </ul>
     </div>
 </nav>
