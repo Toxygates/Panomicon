@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { BackendService } from 'src/app/shared/services/backend.service';
 import { environment } from 'src/environments/environment';
@@ -13,7 +14,8 @@ export class AdminComponent implements OnInit {
 
   constructor(
     private backend: BackendService,
-    public adminData: AdminDataService
+    public adminData: AdminDataService,
+    private router: Router,
   ) { }
 
   navbarIsCollapsed = true;
@@ -33,6 +35,10 @@ export class AdminComponent implements OnInit {
         }
         this.roles = roles;
       })
+  }
+
+  logout(): void {
+    window.location.href = environment.apiUrl + 'logout';
   }
 
   handleFileInput(target: EventTarget | null): void {

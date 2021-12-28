@@ -110,4 +110,14 @@ export class BackendService {
           throw error;
       }));
   }
+
+  logout(): Observable<string> {
+    return this.http.get<string>(this.serviceUrl + 'logout')
+      .pipe(
+        tap(() => console.log('logged out')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error logging out: ${error.message}`)
+          throw error;
+      }));
+  }
 }

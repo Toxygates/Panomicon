@@ -354,6 +354,17 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     writeJs(roles)
   }
 
+  get("/logout") {
+    for (name <- Array("__Host-jwt", "__Host-refreshToken")) {
+      val cookie = request.getCookies.find(c => c.getName == name).get
+      cookie.setValue("");
+      cookie.setPath("/");
+      cookie.setMaxAge(0);
+      response.addCookie(cookie);
+    }
+    redirect(authentication.logoutUrl)
+  }
+
   get("/batch") {
     verifyRole("admin")
     contentType = "text/json"

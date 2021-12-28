@@ -18,6 +18,8 @@ class Authentication {
   val redirectAfterAuthUrl = System.getenv("REDIRECT_AFTER_AUTH_URL")
   val jwtIssuer = System.getenv("JWT_ISSUER")
 
+  val logoutUrl = s"http://localhost:9011/oauth2/logout?client_id=$fusionAuthClientId"
+
   val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthBaseUrl);
   val random = new SecureRandom()
 
