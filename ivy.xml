@@ -25,11 +25,7 @@
 
   <dependency org="org.apache.logging.log4j" name="log4j-api" rev="latest.integration" />
 
-  <!-- Here it is necessary to explicitly import the "jar" type or only test-jar will be imported,
-  for some reason -->
-  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="latest.integration" >
-    <artifact name="log4j-core" type="jar" />
-  </dependency>
+  <dependency org="org.apache.logging.log4j" name="log4j-core" rev="latest.integration" />
 
   <dependency org="org.apache.logging.log4j" name="log4j-1.2-api" rev="latest.integration" /> 
   <dependency org="org.apache.logging.log4j" name="log4j-slf4j-impl" rev="latest.integration" />
