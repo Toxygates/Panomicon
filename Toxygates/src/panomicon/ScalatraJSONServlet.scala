@@ -356,11 +356,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/logout") {
     for (name <- Array("__Host-jwt", "__Host-refreshToken")) {
-      val cookie = request.getCookies.find(c => c.getName == name).get
-      cookie.setValue("");
-      cookie.setPath("/");
-      cookie.setMaxAge(0);
-      response.addCookie(cookie);
+      response.addHeader("Set-Cookie", s"$name=; Secure; Path=/; HttpOnly; SameSite=Strict; expires=Thu, Jan 01 1970 00:00:00 UTC;")
     }
     redirect(authentication.logoutUrl)
   }
