@@ -168,6 +168,7 @@ trait MaintenanceOpsImpl extends t.gwt.common.client.rpc.MaintenanceOperations {
       case None => None
       case Some(fi) =>
         val f = tempFiles.makeNew(prefix, suffix)
+        f.delete()
         fi.write(f)
         println(s"Deleting ${fi.getFieldName()}")
         fi.delete()
