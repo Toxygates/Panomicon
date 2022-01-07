@@ -15,9 +15,11 @@
   <property name="gwt.sdk" value="${env.GWT_SDK}" />
 
   <!-- Configure the path where the web application will be hosted for development purposes. 
-    When you compile, classes and jars will be output inside this directory, but static resources must be copied manually once.
+    When you compile, classes and jars will be output inside this directory, but static resources must be copied manually once
+    if not already there.
+   A symlink can be set up from e.g. /var/lib/tomcat/webapps/panomicon to this war
   -->
-  <property name="wardir" value="webapps/panomicon" />
+  <property name="wardir" value="war" />
   <property name="war.build.dir" value="${wardir}/WEB-INF/classes" />
 
   <!-- Configure the URL prefix of the servlet container that will be used when running dev mode. -->

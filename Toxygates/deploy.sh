@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WAR=/var/lib/tomcat9/webapps/panomicon
+WAR=war
 TGCP=$WAR/WEB-INF/classes
 TOOLCP=../OTGTool/classes
 
@@ -47,11 +47,7 @@ cp ${GWT_SDK}/gwt-servlet.jar $WARLIB
 #These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar
 rm $WARLIB/scala-library*.jar
-#These should not be deployed 
 rm $WARLIB/scala-parser-combinators*jar
-#rm $WARLIB/servlet-api*.jar
-#rm $WARLIB/javax.servlet-api*.jar
-#rm $WARLIB/javaee-api*jar
 rm $WARLIB/scala-xml*.jar
 
 cp $WAR/WEB-INF/web.xml $WAR/WEB-INF/web.xml.bak

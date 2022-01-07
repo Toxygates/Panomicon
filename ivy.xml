@@ -10,6 +10,8 @@
 
   <!-- ===== OTGTool/backend dependencies ===== -->
 
+  <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
+
   <!--    <dependency org="com.sksamuel.scapegoat" name="scalac-scapegoat-plugin_2.12" rev="1.3.9"/> -->
 
   <!-- 3.7.4 is the latest version that supports Java 8. -->
@@ -22,7 +24,12 @@
   <!-- for javax.annotation.Nullable -->
   <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
 
-  <dependency org="org.intermine" name="intermine-ws-java" rev="latest.integration"/>
+  <dependency org="org.intermine" name="intermine-ws-java" rev="latest.integration">
+    <!-- This pulls in a lot of dependencies that we probably do not need for our uses of the intermine ws client -->
+    <exclude module="intermine-webapp" />
+    <!-- We use the JCL to SLF4J bridge instead of commons-logging directly -->
+    <exclude module="commons-logging" /> 
+  </dependency>
 
   <dependency org="org.apache.logging.log4j" name="log4j-api" rev="latest.integration" />
 

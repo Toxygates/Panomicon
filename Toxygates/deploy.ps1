@@ -14,20 +14,9 @@ Copy-Item "../OTGTool/lib/bundle/*.jar" $WARLIB #error
 Copy-Item "../OTGTool/mlib/*.jar" $WARLIB
 Copy-Item $env:GWT_SDK/gwt-servlet.jar $WARLIB
 
-# These should be in the shared tomcat lib dir (tglobal.jar)
-#Remove-Item ($WARLIB + "/*kyotocabinet*jar")
-#Remove-Item ($WARLIB + "/scala-library*.jar") #error
-# These should not be deployed in a servlet context
-#Remove-Item ($WARLIB + "servlet-api*.jar")
-#Remove-Item ($WARLIB + "javax.servlet-api*.jar")
-#Remove-Item ($WARLIB + "javaee-api*jar")
-#Remove-Item ($WARLIB + "scalatest*jar")
-#Remove-Item ($WARLIB + "gwt-user.jar") # error
-#Remove-Item ($WARLIB + "scala-xml*.jar")
-
 #We need to use backslashes here because we'll be matching full paths as strings
 Set-Variable -Name "WEBINFLIB" -Value "WEB-INF\lib\"
-$ExcludeJars = "*kyotocabinet*jar", "scala-library.jar", "servlet-api*.jar", "javax.servlet-api*.jar", "javaee-api*jar", "scalatest*jar", "gwt-user.jar", "scala-xml*.jar"
+$ExcludeJars = "*kyotocabinet*jar", "scala-library.jar", "gwt-user.jar", "scala-xml*.jar", "scala-parser-combinators*.jar"
 $ExcludeJars = foreach ($jar in $ExcludeJars) {
   "*" + $WEBINFLIB + $jar
 }
