@@ -2,17 +2,9 @@
 Set-Variable -Name "TOOLCP" -Value "../OTGTool/classes"
 
 Set-Variable -Name "WARLIB" -Value "war/WEB-INF/lib"
+#WARLIB will be populated by 'ant classfiles' or 'ant compile'
 
 Move-Item -Path $WARLIB lib-backup
-New-Item -ItemType directory $WARLIB
-
-Copy-Item "lib/jar/*.jar" $WARLIB
-Copy-Item "lib/bundle/*.jar" $WARLIB
-Copy-Item "mlib/*.jar" $WARLIB
-Copy-Item "../OTGTool/lib/jar/*.jar" $WARLIB
-Copy-Item "../OTGTool/lib/bundle/*.jar" $WARLIB #error
-Copy-Item "../OTGTool/mlib/*.jar" $WARLIB
-Copy-Item $env:GWT_SDK/gwt-servlet.jar $WARLIB
 
 #We need to use backslashes here because we'll be matching full paths as strings
 Set-Variable -Name "WEBINFLIB" -Value "WEB-INF\lib\"

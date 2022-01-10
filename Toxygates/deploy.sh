@@ -35,14 +35,6 @@ function makeAdminWar {
 }
 
 WARLIB=$WAR/WEB-INF/lib
-[ ! -d $WARLIB ] && mkdir -p $WARLIB
-#ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
-rm $WARLIB/*jar
-cp lib/{jar,bundle}/*.jar $WARLIB
-cp mlib/*.jar $WARLIB
-cp ../OTGTool/lib/{jar,bundle}/*.jar $WARLIB
-cp ../OTGTool/mlib/*.jar $WARLIB
-cp ${GWT_SDK}/gwt-servlet.jar $WARLIB
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar

@@ -28,7 +28,7 @@
   <!-- compile/runtime dependencies other than those from ivy -->
   <path id="manual.classpath">
     <fileset dir="${otgtool.root}/mlib"/>
-    <file file="${gwt.sdk}/gwt-user.jar"/>
+    <file file="${gwt.sdk}/gwt-servlet.jar"/>
     <fileset dir="mlib"/>
   </path>
 
