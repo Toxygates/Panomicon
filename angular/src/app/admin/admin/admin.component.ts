@@ -25,7 +25,7 @@ export class AdminComponent implements OnInit {
     this.backend.getRoles()
       .pipe(
         catchError((error, _caught) => {
-          window.location.href = environment.apiUrl +'login';
+          window.location.href = environment.apiUrl + 'login';
           throw error;
         })
       )
@@ -51,9 +51,9 @@ export class AdminComponent implements OnInit {
     this.backend.uploadFile(file).subscribe(data => {
       console.log(data);
       // do something, if upload success
-      }, error => {
-        console.log(error);
-      });
+    }, error => {
+      console.log(error);
+    });
   }
 
   deleteBatch(batchId: string): void {
