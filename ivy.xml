@@ -31,12 +31,14 @@
     <exclude module="commons-logging" /> 
   </dependency>
 
-  <dependency org="org.apache.logging.log4j" name="log4j-api" rev="latest.integration" />
+  <!-- Various logging APIs are included indirectly, e.g. the JCL to SLF4J bridge. 
+    (The 'ant ivyreport' task may be used to inspect the dependency graph.) 
+    SLF4J is our preferred logging framework. -->
+    <!-- <dependency org="org.slf4j" name="log4j-over-slf4j" rev="latest.integration" /> -->
 
-  <!-- Various logging APIs are included indirectly, e.g. the JCL to SLF4J bridge. Use
-    the 'ant ivyreport' task to generate reports that explain how. SLF4J is our preferred
-  logging framework. -->
-  <dependency org="org.slf4j" name="log4j-over-slf4j" rev="latest.integration" />
+      <dependency org="org.apache.logging.log4j" name="log4j-slf4j-impl" rev="latest.integration" /> 
+      <dependency org="org.apache.logging.log4j" name="log4j-api" rev="latest.integration" />
+
 
   <!-- mapping maven scope'default' into the ivy configuration 'test' pulls in all 
   the dependencies, not just the top level module. -->
@@ -54,7 +56,6 @@
   <dependency org="javax.mail" name="mail" rev="latest.integration"/>
 
   <!-- for R -->
-  <!-- r 1.8.1 is known to work -->  
   <dependency org="org.rosuda.REngine" name="Rserve" rev="latest.integration"/>
 
   <!-- ===== Scalatra server related dependencies ===== -->
@@ -64,7 +65,6 @@
   <!-- required for upickle -->
   <dependency org="org.scala-lang.modules" name="scala-collection-compat_2.12" rev="latest.integration" />
 
-  <!-- Dependencies from Scalatra project template -->
   <dependency org="org.scalatra" name="scalatra_2.12" rev="2.7.0" />
 
   <dependency org="io.fusionauth" name="fusionauth-java-client" rev="1.29.1" />
