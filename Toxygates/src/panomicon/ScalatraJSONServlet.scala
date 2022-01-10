@@ -341,7 +341,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   def verifyRole(role: String): JWT = {
     val jwt = verifyJWT()
     val roles = jwt.getList("roles").asInstanceOf[util.List[String]]
-    if (!roles.contains(role)) halt(401) else jwt
+    if (!roles.contains(role)) halt(401, s"You do not have role $role") else jwt
   }
 
   get("/check-cookie") {
