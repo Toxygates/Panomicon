@@ -64,15 +64,32 @@ After this has been done, run: `buildData/populate.sh`
 This will download, filter and populate the following data: 
 Ensembl platforms for Human, Rat and Mouse, miRBase miRNA sets, miRDB mRNA-miRNA interactions, and Gene Ontology (GO) terms.
 
-## Testing
+## Running development mode
 
-Once compilation, configuration, and database initialization are complete, Panomicon can be run in development mode for local testing by running
+Once compilation, configuration, and database initialization are complete, Panomicon can be run in development mode for local testing.
+
+### Angular application (new)
+
+First, start the backend by running
+
+`ant scalatra`
+
+in the Toxygates directory.
+
+Next, go into the angular directory and follow the instructions there.
+
+### GWT application (old)
+Since we no longer use the embedded Jetty servlet container in devmode, it is necessary to have a separate servlet container, such as tomcat, for this. The simplest way is to symlink the war/ directory to e.g. /var/lib/tomcat/webapps/panomicon (in the case of tomcat, and depending on the location of your tomcat installation). 
+
+Next, run
 `
 ant devmode
 `
-in the Toxygates directory.
+in the Toxygates directory. This will start the dynamic code server that allows client-side code changes to propagate when you reload the application.
 
-This will start a web server on port 8888 where the main Panomicon interface can be accessed through /toxygates.html. The admin interface can be accessed through /admin.html.
+With devmode and tomcat (or some other servlet container) running, you should be able to go to e.g. localhost:8080/panomicon/toxygates.html.
+
+If you do not need dynamic code reloading, you can simply compile the application with `ant compile` and use a static version at the same URL without devmode.
 
 ## Deployment
 
