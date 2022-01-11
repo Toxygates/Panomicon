@@ -85,6 +85,7 @@
     <!-- Set up WEB-INF/classes with additional classes from OTGTool -->
     <copy  todir="${wardir}/WEB-INF/classes">
       <fileset dir="${otgtool.root}/classes"/>
+      <file file="log4j2-test.properties"/>
     </copy>
 
   </target>

@@ -38,6 +38,7 @@
 
       <dependency org="org.apache.logging.log4j" name="log4j-slf4j-impl" rev="latest.integration" /> 
       <dependency org="org.apache.logging.log4j" name="log4j-api" rev="latest.integration" />
+      <dependency org="org.apache.logging.log4j" name="log4j-web" rev="latest.integration" />
 
 
   <!-- mapping maven scope'default' into the ivy configuration 'test' pulls in all 
@@ -66,6 +67,8 @@
   <dependency org="org.scala-lang.modules" name="scala-collection-compat_2.12" rev="latest.integration" />
 
   <dependency org="org.scalatra" name="scalatra_2.12" rev="2.7.0" />
+  <dependency org="ch.qos.logback" name="logback-classic" rev="1.2.3" />
+
 
   <dependency org="io.fusionauth" name="fusionauth-java-client" rev="1.29.1" />
 
