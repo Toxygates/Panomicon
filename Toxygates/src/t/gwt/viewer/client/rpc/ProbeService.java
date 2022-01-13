@@ -77,10 +77,10 @@ public interface ProbeService extends RemoteService {
       boolean quick, boolean titlePatternMatch, @Nullable List<Sample> samples);
 
   /**
-   * Obtain suggestions from a partial gene symbol
+   * Obtain suggestions from a partial entity (pathway, GO term, ... ) name
    * 
-   * @return An array of pairs, where the first item is the precise gene symbol and the second is
-   *         the full gene name.
+   * @return An array of pairs, where the first item is the full name of the entity and the second is
+   *         its association type.
    */
   Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
 

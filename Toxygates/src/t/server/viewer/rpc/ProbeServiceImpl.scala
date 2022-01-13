@@ -38,6 +38,7 @@ import t.shared.viewer.{AppInfo, Association, TimeoutException}
 import t.shared.viewer.TimeoutException
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object ProbeServiceImpl {
   val APPINFO_KEY = "appInfo"
@@ -197,10 +198,9 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
   }
 
   private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
-    val platforms: Set[String] = group.map(x => x.get(CoreParameter.Platform)).toSet
-    val lookup = probeStore.platformsAndProbes
-    val acceptable = platforms.flatMap(p => lookup(p)).map(_.identifier)
-    probes.filter(acceptable.contains)
+    val platforms = group.map(x => x.get(CoreParameter.Platform)).toList.distinct
+    val probeSet = platforms.flatMap(probeStore.probesForPlatform(_).map(_.identifier)).to[mutable.Set]
+    probes.filter(probeSet.contains)
   }
 
   private def filterByGroup(result: Iterable[String], samples: JList[Sample]) =

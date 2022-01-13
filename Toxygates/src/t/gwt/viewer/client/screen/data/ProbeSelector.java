@@ -171,6 +171,10 @@ abstract public class ProbeSelector extends Composite implements
 
       @Override
       public void handleSuccess(String[] probes) {
+        if (probes.length == 0) {
+          Window.alert("No probes were found for the selected criteria and current platforms.");
+          return;
+        }
         if (!withButton) {
           probesChanged(probes);
         } else {        

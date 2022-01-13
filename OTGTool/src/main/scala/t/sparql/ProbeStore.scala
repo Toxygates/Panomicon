@@ -457,13 +457,12 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
   }
 
   def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
-    //oboInOwl:id is a trick to distinguish GO terms from KEGG pathways, mostly
 
     val query = s"""$tPrefixes
                    |PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
                    |SELECT DISTINCT ?got ?gotn WHERE {
-                   |  GRAPH ?g {
-                   |    ?got rdfs:label ?gotn ; oboInOwl:id ?id
+                   |  GRAPH <http://level-five.jp/t/annotation/go> {
+                   |    ?got rdfs:label ?gotn; oboInOwl:id ?id.
                    |  } """.stripMargin +
       "FILTER regex(STR(?gotn), \".*" + pattern + ".*\", \"i\")" +
       s"} LIMIT ${maxSize}"
@@ -474,9 +473,10 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
   //probes, instead of looking for a matching name.
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = s"""$tPrefixes
+                   |PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
                    |SELECT DISTINCT ?probe WHERE {
-                   |  GRAPH ?g {
-                   |    ?got rdfs:label "${term.name}".
+                   |  GRAPH <http://level-five.jp/t/annotation/go> {
+                   |    ?got rdfs:label "${term.name}"; oboInOwl:id ?id.
                    |  }
                    |  ?g2 a t:platform.
                    |  GRAPH ?g2 {
@@ -509,7 +509,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
                    |    $constraint
                    |  }
                    |  ${multiFilter("?probe", probes.map(p => bracket(p.pack)))}
-                   |  GRAPH ?g2 {
+                   |  GRAPH <http://level-five.jp/t/annotation/go> {
                    |    ?got rdfs:label ?gotname.
                    |  }
                    |  FILTER (?got NOT IN (<http://purl.obolibrary.org/obo/GO_0003674>, <http://purl.obolibrary.org/obo/GO_0005575>,
@@ -537,16 +537,6 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
     makeMultiMap(mq.map(x => x("list") -> Probe(x("probeLabel"))))
   }
 
-  /**
-   * Look up the auxiliary sort map for a given association, identified by
-   * a string.
-   *
-   * This mechanism is not currently used. If we revive it, then it might possibly
-   * be moved to a different location.
-   */
-  def auxSortMap(probes: Iterable[String], key: String): Map[String, Double] = {
-    Map() ++ probes.map(x => x -> 0.0) //default map does nothing
-  }
 
   def annotationsAndComments: Iterable[(String, String)] = {
     val q = s"""$tPrefixes
