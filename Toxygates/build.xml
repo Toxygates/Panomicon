@@ -34,11 +34,7 @@
 
   <path id="compile.classpath">
     <pathelement location="${scala-library.jar}" />
-    <pathelement location="${otgtool.root}/classes" />
     <path refid="manual.classpath" />
-
-    <!-- for t.model.Model gwt.xml -->
-    <pathelement location="${otgtool.root}/src/main/java" />
 
     <path refid="ivy.classpath" />
     <path refid="gwtpath" />
@@ -48,30 +44,30 @@
   <path id="test.classpath">
     <path refid="compile.classpath" />
     <pathelement location="${war.build.dir}" />
-    <pathelement location="${testbuild.dir}" />
-    <pathelement location="${otgtool.root}/test-classes" />
   </path>
 
   <!-- compile scala and java classes, and set up WEB-INF -->
   <target name="classfiles">
     <mkdir dir="${war.build.dir}" />
-    <scalac srcdir="${sources.dir}"
-      destdir="${war.build.dir}"
-      classpathref="compile.classpath"
-      deprecation="on">
+    <scalac destdir="${war.build.dir}" classpathref="compile.classpath" deprecation="on">
+      <src path="${sources.dir}"/>
+      <src path="${otgtool.root}/src"/>
       <include name="**/*.scala" />
       <include name="**/*.java" />
     </scalac>
-    <javac srcdir="${sources.dir}"
-      destdir="${war.build.dir}"
-      classpathref="compile.classpath">
+    <javac destdir="${war.build.dir}" classpathref="compile.classpath">
+      <src path="${sources.dir}"/>
+      <src path="${otgtool.root}/src"/>
       <include name="**/*.java" />
     </javac>
 
     <mkdir dir="${testbuild.dir}" />
-    <scalac srcdir="${test-sources.dir}" destdir="${testbuild.dir}" classpathref="test.classpath"
-      deprecation="on">
+    <scalac destdir="${testbuild.dir}" classpathref="test.classpath" deprecation="on">
+      <src path="${test-sources.dir}"/>
+      <!-- including both test and main from otgtool -->
+      <src path="${otgtool.root}/src/"/>
       <include name="**/*.scala" />
+      <include name="**/*.java" />
     </scalac>
 
     <!-- Set up WEB-INF/lib with jars -->
@@ -84,7 +80,6 @@
 
     <!-- Set up WEB-INF/classes with additional classes from OTGTool -->
     <copy  todir="${wardir}/WEB-INF/classes">
-      <fileset dir="${otgtool.root}/classes"/>
       <file file="log4j2-test.properties"/>
     </copy>
 
