@@ -157,10 +157,12 @@ class ProbeServiceImpl extends TServiceServlet with ProbeService {
 
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String, samples: JList[Sample]): Array[String] = {
+    val group = samples.asScala
+    val platforms = group.map(x => x.get(CoreParameter.Platform)).toList.distinct
     val pmap = context.matrix.probeMap
     val got = GOTerm("", goTerm)
 
-    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
+    val result = probeStore.forGoTerm(got, platforms).map(_.identifier).filter(pmap.isToken)
     filterByGroup(result, samples)
   }
 

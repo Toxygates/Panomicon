@@ -471,7 +471,9 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
 
   //Task: A better solution is to have the URI of the GOTerm as a starting point to find the
   //probes, instead of looking for a matching name.
-  def forGoTerm(term: GOTerm): Iterable[Probe] = {
+  def forGoTerm(term: GOTerm, platforms: List[String]): Iterable[Probe] = {
+    val platformURIs = platforms.map(p =>  s"<${PlatformStore.defaultPrefix}/$p>")
+
     val query = s"""$tPrefixes
                    |PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
                    |SELECT DISTINCT ?probe WHERE {
@@ -479,6 +481,7 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
                    |    ?got rdfs:label "${term.name}"; oboInOwl:id ?id.
                    |  }
                    |  ?g2 a t:platform.
+                   |  FILTER(?g2 IN (${platformURIs.mkString(", ")}))
                    |  GRAPH ?g2 {
                    |    ?probe a t:probe .
                    |    { ?probe t:gomf ?got . }

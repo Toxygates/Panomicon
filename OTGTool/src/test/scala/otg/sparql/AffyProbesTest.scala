@@ -98,7 +98,7 @@ class AffyProbesTest extends TTestSuite {
   }
 
   test("Probes for GO term") {
-    val pbs = affyProbes.forGoTerm(GOTerm("", "aromatic compound catabolic process"))
+    val pbs = affyProbes.forGoTerm(GOTerm("", "aromatic compound catabolic process"), List("Rat230_2"))
     assert(pbs.size >= 28)
     println(pbs)
   }
