@@ -58,7 +58,7 @@
 
   <target name="compile" depends="classfiles">
     <!-- Needed to provide the classpath when running OTGTool scripts like tmanager.sh -->
-    <ivy:retrieve pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
+    <ivy:retrieve file="../ivy.xml" pattern="${lib.dir}/[type]/[artifact]-[revision].[ext]"
       sync="true" type="bundle,jar" />
   </target>
 

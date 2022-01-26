@@ -1,3 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info organisation="nibiohn" module="panomicon" />
+
 <configurations>
   <conf name="compile"  description="Required to compile application"/>
   <conf name="runtime"  description="Additional run-time dependencies" extends="compile"/>
@@ -72,3 +77,4 @@
   <dependency org="io.fusionauth" name="fusionauth-java-client" rev="1.29.1" />
 
 </dependencies>
+</ivy-module>

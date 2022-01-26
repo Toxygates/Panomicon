@@ -29,7 +29,7 @@
     <ivy:report dot="true" />
   </target>
 
-  <ivy:cachepath pathid="ivy.classpath" />
+  <ivy:cachepath file="../ivy.xml" pathid="ivy.classpath" />
 
   <target name="test" depends="classfiles">
     <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
