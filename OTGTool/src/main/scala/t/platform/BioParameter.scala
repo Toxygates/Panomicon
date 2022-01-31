@@ -28,6 +28,7 @@ import t.sample.SampleSet
 import t.model.sample.{Attribute, OTGAttributeSet, VarianceSet}
 import t.model.sample.OTGAttribute._
 
+import java.lang
 import scala.collection.JavaConverters._
 
 /**
@@ -50,8 +51,8 @@ case class BioParameter(attribute: Attribute,
 }
 
 class BioParameters(lookup: Map[Attribute, BioParameter]) {
-  def apply(key: Attribute) = lookup(key)
-  def get(key: Attribute) = lookup.get(key)
+  def apply(key: Attribute): BioParameter = lookup(key)
+  def get(key: Attribute): Option[BioParameter] = lookup.get(key)
 
   /**
    * Obtain the set as attributes, sorted by section and label.
@@ -65,22 +66,10 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
    * attribute maps.
    * @param time The time point, e.g. "24 hr"
    */
-  def forTimePoint(time: String): BioParameters = {
-    val normalTime = time.replaceAll("\\s+", "")
+  def forTimePoint(time: String): BioParameters =
+    new BioParameters(lookup)
 
-    new BioParameters(Map() ++
-      (for (
-        (attr, param) <- lookup;
-        lb = param.attributes.get(s"lowerBound_$normalTime").
-          map(_.toDouble).orElse(param.lowerBound);
-        ub = param.attributes.get(s"upperBound_$normalTime").
-          map(_.toDouble).orElse(param.upperBound);
-        edited = BioParameter(attr, param.section, lb, ub,
-          param.attributes)
-      ) yield (attr -> edited)))
-  }
-
-  def all = lookup.values
+  def all: Iterable[BioParameter] = lookup.values
 }
 
 /**
@@ -89,7 +78,7 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
 class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends VarianceSet {
   val paramVals = samples.map(Map() ++ sampleSet.sampleAttributes(_))
 
-  def standardDeviation(attribute: Attribute) = {
+  def standardDeviation(attribute: Attribute): java.lang.Double = {
     val nvs = paramVals.flatMap(_.get(attribute)).
       flatMap(BioParameter.tryParseDouble)
     if (nvs.size < 2) {
@@ -111,46 +100,9 @@ class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends
 }
 
 object BioParameter {
-
-  def tryParseDouble(x: String) = x.toLowerCase match {
+  def tryParseDouble(x: String): Option[Double] = x.toLowerCase match {
       case Attribute.NOT_AVAILABLE => None
       case Attribute.UNDEFINED_VALUE | Attribute.UNDEFINED_VALUE_2 => None
       case _    => Some(x.toDouble)
     }
-
-  def main(args: Array[String]) {
-     val f = new Factory
-     val attrs = OTGAttributeSet.getDefault
-     val data = TSVMetadata.apply(f, args(0), attrs)
-     var out = Map[Attribute, Seq[String]]()
-
-     for (time <- data.attributeValues(ExposureTime)) {
-       val ftime = time.replaceAll("\\s+", "")
-       var samples = data.samples
-       samples = samples.filter(s => {
-         val m = data.parameterMap(s)
-         m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
-       })
-       val rawValues = samples.map(s => data.sampleAttributes(s))
-       for (attr <- attrs.getAll.asScala; if attr.isNumerical()) {
-         if (!out.contains(attr)) {
-           out += attr -> Seq()
-         }
-
-        val rawdata = rawValues.map(_.find( _._1 == attr).get).map(x => tryParseDouble(x._2))
-        if (!rawdata.isEmpty) {
-          val v = StatUtils.variance(rawdata.flatten.toArray)
-          val m = StatUtils.mean(rawdata.flatten.toArray)
-          val sd = Math.sqrt(v)
-          val upper = m + 2 * sd
-          val lower = m - 2 * sd
-          out += attr -> (out(attr) :+ s"lowerBound_$ftime=$lower")
-          out += attr -> (out(attr) :+ s"upperBound_$ftime=$upper")
-        }
-       }
-     }
-     for ((k, vs) <- out) {
-       println(k.id + "\t" + vs.mkString(","))
-     }
-  }
 }
