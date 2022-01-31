@@ -27,11 +27,11 @@ import t.{Context, TTestSuite}
 @RunWith(classOf[JUnitRunner])
 class CSVRawExpressionDataTest extends TTestSuite {
   val fact = Context.factory
-  val meta = TSVMetadata.apply(fact, "testData/meta.tsv",
+  val meta = TSVMetadata.apply(fact, "../OTGTool/testData/meta.tsv",
     TestConfig.config.attributes, println(_))
 
   test("basic") {
-    val d = new CSVRawExpressionData("testData/data.csv", None,
+    val d = new CSVRawExpressionData("../OTGTool/testData/data.csv", None,
       Some(meta.samples.size), m => println(s"Warning: $m"))
 
     d.samples should (contain theSameElementsAs(meta.samples))
