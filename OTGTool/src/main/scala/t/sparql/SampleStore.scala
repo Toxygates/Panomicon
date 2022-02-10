@@ -115,18 +115,12 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
   /**
    * Adjust parameters of the sample after loading from the triplestore.
    */
-  protected def adjustSample(map: Map[String, String],
-                             overrideBatch: Option[String] = None): Map[String, String] = {
-    var result = if (map.contains("dataset")) {
+  protected def adjustSample(map: Map[String, String]): Map[String, String] = {
+    if (map.contains("dataset")) {
       map + ("dataset" -> DatasetStore.unpackURI(map("dataset")))
     } else {
       map
     }
-    result = overrideBatch match {
-      case Some(ob) => result + ("batchGraph" -> ob)
-      case _ => result
-    }
-    result
   }
 
   /**
@@ -155,20 +149,21 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
           |  )""".stripMargin
 
     val batchFilter = filter.get(CoreParameter.Batch)
-    val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
+    val batchGraphFilter = batchFilter.map("FILTER(?batchGraph == <" + _ + ">)").getOrElse("")
 
     Query(prefixes,
       s"""SELECT * WHERE {
-         |  GRAPH $batchFilterQ {
+         |  GRAPH ?batchGraph {
          |    ?x a $itemClass; rdfs:label ?id;
          |    ${standardPred.map(a => s"t:${a.id} ?${a.id}").mkString("; ")} .""".stripMargin,
 
-      s"""|} ?batchGraph rdfs:label ?batchLabel.
+      s"""|} ${batchGraphFilter}
+          |  ?batchGraph rdfs:label ?batchLabel.
           |  ${sf.standardSampleFilters} $filterString
           |}""".stripMargin,
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
-        val attributeValues = convertMapToAttributes(adjustSample(x, batchFilter), bc.attributes)
+        val attributeValues = convertMapToAttributes(adjustSample(x), bc.attributes)
         val sampleId = x("id")
         Sample(sampleId, SampleClassFilter(attributeValues) ++ filter)
       })

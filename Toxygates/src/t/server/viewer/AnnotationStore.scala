@@ -38,12 +38,12 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
   //Task: use ControlGroup to calculate bounds here too
   def prepareCSVDownload(sampleStore: SampleStore, samples: Seq[Sample],
                          csvDir: String, csvUrlBase: String): String = {
-    val timepoints = samples.toSeq.flatMap(s =>
+    val timepoints = samples.flatMap(s =>
       Option(s.get(schema.timeParameter()))).distinct
 
     val params = bioParameters.sampleParameters
     val raw = samples.map(x => {
-      sampleStore.parameterQuery(x.id, params).toSeq
+      sampleStore.parameterQuery(x.id, params)
     })
 
     val colNames = params.map(_.title)
@@ -58,6 +58,7 @@ class AnnotationStore(val schema: DataSchema, val baseConfig: BaseConfig) {
     def extractd(b: Option[BioParameter], f: BioParameter => Option[Double]): String =
       b.map(f).flatten.map(_.toString).getOrElse("")
 
+    //Note: currently this data isn't populated and the min/max thresholds are always empty
     val rr = timepoints.map(t => {
       val bpt = bioParameters.forTimePoint(t)
       val bps = params.map(p => bpt.get(p))

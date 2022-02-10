@@ -97,10 +97,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     write(r)
   }
 
-  protected def overviewParameters: Seq[Attribute] =
-    Seq(SampleId, Type, Organism, TestType, Repeat, Organ, Compound, DoseLevel,
-      ExposureTime, CoreParameter.Platform, Treatment)
-
   get("/sample/batch/:batch") {
     contentType = "text/json"
     val requestedBatchId = paramOrHalt("batch")

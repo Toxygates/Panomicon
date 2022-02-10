@@ -123,7 +123,7 @@ class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
 
     val attribs = triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {
-        |  ?p a t:platform; t:platformType t:biological.
+        |  ?p a t:platform; $platformType $biologicalPlatform.
         |  GRAPH ?p {
         |    ?probe a t:probe; rdfs:label ?id; ?key ?value.
         |  }
@@ -137,7 +137,7 @@ class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
 
     val bps = triplestore.mapQuery(s"""$tPrefixes
       |SELECT ?id ?desc ?sec ?type ?lower ?upper WHERE {
-      |  ?p a t:platform; t:platformType t:biological.
+      |  ?p a t:platform; $platformType $biologicalPlatform.
       |  GRAPH ?p {
       |    ?probe a t:probe; rdfs:label ?id; t:label ?desc; t:type ?type.
       |    OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
