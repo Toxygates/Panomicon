@@ -32,6 +32,18 @@ object PlatformStore extends RDFClass {
   val biologicalPlatform = "t:biological"
 
   def context(name: String) = defaultPrefix + "/" + name
+
+  /**
+   * Populate an attribute set with the results from an attribute query
+   * @param into
+   * @param attribs
+   */
+  def populateAttributeResults(into: AttributeSet, attribs: Iterable[Map[String, String]]): Unit = {
+    for { a <- attribs } {
+      val at = into.findOrCreate(a("id"), a("title"), a("type"), a.get("section").orNull)
+      println(s"Create attribute $at")
+    }
+  }
 }
 
 class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
@@ -108,11 +120,7 @@ class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
         |  }
         |}""".stripMargin, timeout)
 
-     for (a <- attribs) {
-       val at = into.findOrCreate(a("id"), a("title"), a("type"),
-           a.get("section").orNull)
-       println(s"Create attribute $at")
-     }
+    populateAttributeResults(into, attribs)
   }
 
   /**

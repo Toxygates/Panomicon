@@ -21,21 +21,21 @@ package t.model.sample;
 
 import java.io.Serializable;
 import java.util.*;
-
 import javax.annotation.Nullable;
+import static t.model.sample.CoreParameter.*;
 
 /**
- * A set of sample attributes.
+ * A mutable set of sample attributes. The findOrCreate operation can be used
+ * to look up or add attributes.
  */
 @SuppressWarnings("serial")
-abstract public class AttributeSet implements Serializable {
+public class AttributeSet implements Serializable {
  
   //GWT constructor
   public AttributeSet() {}
   
   /**
-   * Construct a new attribute set. 
-   * Throughout an application, only one attribute set should be used in most cases.
+   * Construct a new attribute set.*
    * @param attributes All attributes in the set.
    * @param required The subset of attributes that are required to be present in new batches.
    */
@@ -44,6 +44,18 @@ abstract public class AttributeSet implements Serializable {
     for (Attribute a: attributes) {
       add(a);
     }
+  }
+
+  /**
+   * Obtain a new minimal attribute set containing all core attributes. This can be used as a template
+   * for building larger sets.
+   */
+  public static AttributeSet newMinimalSet() {
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    Collections.addAll(attributes, SampleId, Treatment, ControlTreatment, Batch, Platform, Type);
+    List<Attribute> required = new ArrayList<Attribute>();
+    Collections.addAll(required, SampleId, Treatment, ControlTreatment, Batch, Platform, Type);
+    return new AttributeSet(attributes, required);
   }
   
   protected Collection<Attribute> attributes = new ArrayList<Attribute>();
@@ -92,12 +104,12 @@ abstract public class AttributeSet implements Serializable {
   /**
    * Get all attributes that are suitable for a high level grouping of samples.
    */
-  abstract public Collection<Attribute> getHighLevel();
+  public Collection<Attribute> getHighLevel() { return Collections.emptyList(); }
   
   /**
    * Get all attributes that are sufficient for distinguishing units within the high-level grouping
    */
-  abstract public Collection<Attribute> getUnitLevel();
+  public Collection<Attribute> getUnitLevel() { return Collections.emptyList(); }
   
   public @Nullable Attribute byId(String id) {
     return byId.get(id);

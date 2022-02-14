@@ -6,7 +6,7 @@ import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
 import t.db.Sample
 import t.model.sample.CoreParameter._
 import t.model.sample.OTGAttribute._
-import t.model.sample.{Attribute, CoreParameter}
+import t.model.sample.{Attribute, AttributeSet, CoreParameter}
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.Configuration
@@ -261,11 +261,18 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    */
   get("/attribute/batch/:batch") {
     contentType = "text/json"
-    // we ignore this parameter for now because per-batch attributes
-    // aren't implemented yet
     val batch = paramOrHalt("batch")
+    val batchURI = BatchStore.packURI(batch)
+    val template = AttributeSet.newMinimalSet()
+    val attributes = sampleStore.attributeSetForBatch(batchURI, template) match {
+      case Some(as) =>
+        println(s"Found specific attributes for batch $batch")
+        as.getAll()
+      case _ =>
+        println(s"No specific attributes found for batch $batch, using defaults")
+        baseConfig.attributes.getAll()
+    }
 
-    val attributes = baseConfig.attributes.getAll()
     val values = attributes.asScala.map(attrib => writeJs(Map(
       "id" -> writeJs(attrib.id()),
       "title" -> writeJs(attrib.title()),

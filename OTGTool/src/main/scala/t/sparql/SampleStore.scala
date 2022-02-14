@@ -136,6 +136,29 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
   protected def graphCon(g: Option[String]) = g.map("<" + _ + ">").getOrElse("?g")
 
   /**
+   * Read batch-specific attributes for a batch
+   * @param batchURI The batch
+   * @param template The template attribute set to populate into (which may also have pre-existing attributes)
+   * @return The attribute set if it is defined, or None otherwise
+   */
+  def attributeSetForBatch(batchURI: String, template: AttributeSet): Option[AttributeSet] = {
+    val attribs = triplestore.mapQuery(s"""$prefixes
+         |SELECT * WHERE {
+         |  GRAPH <$batchURI> {
+         |    ?probe a t:probe; rdfs:label ?id; t:type ?type; t:label ?title.
+         |    OPTIONAL { ?probe t:section ?section. }
+         |  }
+         |}""".stripMargin)
+
+    if (attribs.nonEmpty) {
+      PlatformStore.populateAttributeResults(template, attribs)
+      Some(template)
+    } else {
+      None
+    }
+  }
+
+  /**
    * Constructs a sample query that respects a SampleClassFilter and normal SampleFilter
    */
   def sampleQuery(filter: SampleClassFilter, sf: SampleFilter): Query[Vector[Sample]] = {
