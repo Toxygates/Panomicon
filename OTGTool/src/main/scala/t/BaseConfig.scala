@@ -35,9 +35,11 @@ case class BaseConfig(triplestoreConfig: TriplestoreConfig, data: DataConfig) {
   def timeSeriesBuilder = OTGTimeSeriesBuilder
   def doseSeriesBuilder = OTGDoseSeriesBuilder
 
+  /**
+   * Default attribute set for batches that have no specific attributes defined
+   * @return
+   */
   def attributes = OTGAttributeSet.getDefault
-
-  def appName = "Toxygates"
 }
 
 case class TriplestoreConfig(url: String, updateUrl: String,

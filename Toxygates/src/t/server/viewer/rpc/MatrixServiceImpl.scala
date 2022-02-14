@@ -239,7 +239,7 @@ class MatrixServiceImpl extends StatefulServlet[MatrixState] with MatrixService 
       state += "\nColumns: " + cmat.columnKeys.mkString(", ")
     }
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
-      config.feedbackFromAddress, context.config.appName)
+      config.feedbackFromAddress, "Panomicon")
   }
 
   //Note, this is currently unsupported for NetworkService matrices
