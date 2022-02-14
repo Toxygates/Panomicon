@@ -97,7 +97,6 @@
 
     <pathelement location="src"/>
     <pathelement location="${otgtool.root}/src/main/java" />
-    <pathelement location="${otgtool.root}/classes" />
     <pathelement location="${war.build.dir}"/>
     <fileset dir="mlib"/>
   </path>
