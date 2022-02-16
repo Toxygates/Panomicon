@@ -34,11 +34,7 @@ First, export the following environment variables:
 
 * GWT_SDK - path to GWT SDK
 
-Then, build the back end by going into the OTGTool directory and running:
-`
-ant compile
-`
-After the back end has been built, the front end can be compiled in the Toxygates directory by running:
+Then, build the back end by going into the Toxygates directory and running:
 `
 ant compile
 `
@@ -55,8 +51,12 @@ In particular, the following must be configured:
 
 In addition to the above configuration, Panomicon also requires that the database be initialized and populated with some necessary data. This can be done by running some of the scripts in the OTGTool/scripts directory. In order to run these scripts, you will need access to the command-line tools for Kyoto Cabinet, which can be obtained from https://fallabs.com/kyotocabinet/ (either download and compile the C/C++ libraries, which include the command-line tools, or download the binaries if you are running Windows. Alternatively, if you are using a Linux distribution which has a Kyoto Cabinet package, that can be installed instead.)
 
-Once the Kyoto Cabinet command line tools, such as `kctreemgr` and `kchashmgr`, have been placed in your PATH along with scala, edit the file `config.sh` and set variables appropriately. 
-In particular, the data directory and triplestore access must be configured in the same way as in web.xml. OTGTool must also have been successfully compiled as above. This script will be sourced by other scripts to provide configuration.
+Once the Kyoto Cabinet command line tools, such as `kctreemgr` and `kchashmgr`, have been placed in your PATH along with scala, edit the file `config.sh` and set variables appropriately.  In particular, the data directory and triplestore access must be configured in the same way as in web.xml. 
+
+Compile the back-end tools by going into the OTGTool directory and running:
+`
+ant compile
+`
 
 Then, from the scripts directory, run: `buildData/newDB.sh`
 This will initialise omics expression value databases.
