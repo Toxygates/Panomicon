@@ -49,13 +49,14 @@ object BatchStore extends RDFClass {
       attr <- attributes.getAll.asScala
       if ! predefinedAttributes.contains(attr.id())
     } {
+      fout.write(t.sparql.TTLfilePrefixes)
       fout.write(s"<${ProbeStore.defaultPrefix}/${attr.id()}>")
       fout.write(s"  a ${ProbeStore.itemClass}; rdfs:label " + "\"" + attr.id() + "\";")
-      fout.write("  t:title \"" + attr.title() + "\"; t:type " +
+      fout.write("  t:label \"" + attr.title() + "\"; t:type " +
         (if(attr.isNumerical) "\"numerical\"" else "\"string\""))
       Option(attr.section()) match {
         case Some(sec) =>
-          fout.write("  t:section \"" + sec +"\".")
+          fout.write(";  t:section \"" + sec +"\".")
         case _ => fout.write(".")
       }
     }
@@ -70,6 +71,7 @@ object BatchStore extends RDFClass {
     val file = tempFiles.makeNew("metadata", "ttl")
     val fout = new BufferedWriter(new FileWriter(file))
     for (s <- samples) {
+      fout.write(t.sparql.TTLfilePrefixes)
       fout.write(s"<${SampleStore.defaultPrefix}/${s.identifier}>\n")
       fout.write(s"  a ${SampleStore.itemClass}; rdfs:label" + "\"" + s.identifier + "\"; \n")
       val params = md.sampleAttributes(s).map(

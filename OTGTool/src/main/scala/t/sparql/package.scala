@@ -24,6 +24,7 @@ import scala.collection.DefaultMap
 
 package object sparql {
   val tRoot = "http://level-five.jp/t"
+  val TTLfilePrefixes = s"@prefix t: <$tRoot/> .\n"
 
   import scala.collection.mutable.{ HashMap, MultiMap, Map, Set }
   import scala.collection.{ Set => CSet, Map => CMap }

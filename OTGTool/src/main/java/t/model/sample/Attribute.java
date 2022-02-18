@@ -67,7 +67,9 @@ public class Attribute implements Serializable, Comparable<Attribute> {
   /**
    * The section that the attribute belongs to, if any.
    */
-  public @Nullable String section() { return section; }
+  public @Nullable String section() {
+    return (section == null || section.equals("") ? null : section);
+  }
 
   @Override
   public String toString() {
