@@ -21,16 +21,19 @@ package t.db.file
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.model.sample.AttributeSet
 import t.testing.TestConfig
 import t.{Context, TTestSuite}
+import scala.collection.JavaConverters._
 
 @RunWith(classOf[JUnitRunner])
 class CSVRawExpressionDataTest extends TTestSuite {
   val fact = Context.factory
-  val meta = TSVMetadata.apply(fact, "../OTGTool/testData/meta.tsv",
-    TestConfig.config.attributes, println(_))
 
   test("basic") {
+    val meta = TSVMetadata.apply(fact, "../OTGTool/testData/meta.tsv",
+      Some(TestConfig.config.attributes), println(_))
+
     val d = new CSVRawExpressionData("../OTGTool/testData/data.csv", None,
       Some(meta.samples.size), m => println(s"Warning: $m"))
 
@@ -38,5 +41,21 @@ class CSVRawExpressionDataTest extends TTestSuite {
     for (s <- meta.samples) {
       d.data(s).size should (be > 0)
     }
+  }
+
+  test("read typed attributes") {
+    val meta = TSVMetadata.apply(fact, "../OTGTool/testData/meta.tsv", None, println(_))
+    val d = new CSVRawExpressionData("../OTGTool/testData/data.csv", None,
+      Some(meta.samples.size), m => println(s"Warning: $m"))
+    d.samples should (contain theSameElementsAs(meta.samples))
+    for (s <- meta.samples) {
+      d.data(s).size should (be > 0)
+    }
+
+    val attrs = meta.attributeSet
+    attrs.getAll.size should equal(71) //70 in file + batch, which can't be specified
+    attrs.getAll.asScala.map(_.id) should contain allElementsOf(List("sample_id", "k", "ast", "kidney_wt_right",
+      "rbc", "mcv"))
+    attrs.getNumerical.asScala.size should equal(45)
   }
 }

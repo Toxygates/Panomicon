@@ -38,7 +38,7 @@ class Factory {
   def probes(config: TriplestoreConfig): ProbeStore =
     new ProbeStore(config)
 
-  def tsvMetadata(file: String, attr: AttributeSet,
+  def tsvMetadata(file: String, attr: Option[AttributeSet],
                   warningHandler: (String) => Unit = println): Metadata =
     TSVMetadata.apply(this, file, attr, warningHandler)
 

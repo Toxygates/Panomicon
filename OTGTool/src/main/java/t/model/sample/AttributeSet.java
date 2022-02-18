@@ -53,8 +53,10 @@ public class AttributeSet implements Serializable {
   public static AttributeSet newMinimalSet() {
     List<Attribute> attributes = new ArrayList<Attribute>();
     Collections.addAll(attributes, SampleId, Treatment, ControlTreatment, Batch, Platform, Type);
+
     List<Attribute> required = new ArrayList<Attribute>();
-    Collections.addAll(required, SampleId, Treatment, ControlTreatment, Batch, Platform, Type);
+    //Batch is managed by the system and cannot be specified by the user
+    Collections.addAll(required, SampleId, Treatment, ControlTreatment, Platform, Type);
     return new AttributeSet(attributes, required);
   }
   
@@ -87,7 +89,7 @@ public class AttributeSet implements Serializable {
   }
   
   /**
-   * Get all attributes that are required to be present in new batches.
+   * Get all attributes that are required to be present for samples in new batches.
    */
   public Collection<Attribute> getRequired() {
     return required;

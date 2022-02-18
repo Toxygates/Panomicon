@@ -33,20 +33,42 @@ import t.model.sample.Helpers._
 object TSVMetadata {
   def ifNone[A](o: Option[A], action: => Unit): Option[A] = { if (o == None) action; o }
 
-  def apply(fact: Factory, file: String, attributes: AttributeSet,
+  /**
+   * Read a metadata TSV file.
+   * @param fact
+   * @param file
+   * @param attributes The attribute set to use. Required attributes in the set will be checked for presence in the
+   *                   file. New attributes will be added to the set. If none is supplied, a new set will be created and
+   *                   returned as part of the result.
+   * @param warningHandler Function to report warning messages
+   * @return
+   */
+  def apply(fact: Factory, file: String, attributes: Option[AttributeSet],
       warningHandler: (String) => Unit = println): Metadata = {
+    val attrSet = attributes.getOrElse(AttributeSet.newMinimalSet())
+
     val metadata: Map[String, Seq[String]] = {
-      val columns = TSVFile.readMap("", file)
+      val columns = TSVFile.readMap(file, false)
+      val headerRows = TSVFile.readHeaderMap(file, false)
+
       Map() ++ (for {
-        column <- columns
-        lowerCase = column._1.toLowerCase().trim
-        trimmed = column._2.map(_.trim)
-        attribute <- ifNone(attributes.byIdLowercase.get(lowerCase),
-            warningHandler(s"attribute $lowerCase not found"))
+        (attrib, values) <- columns
+        lowerCaseID = attrib.toLowerCase().trim
+        trimmed = values.map(_.trim)
+        attribute <- ifNone(attrSet.byIdLowercase.get(lowerCaseID),
+            {
+              //If they exist, the header rows are here presumed to contain only one meaningful line,
+              //which is the attribute type
+              val attribType = headerRows.getOrElse(attrib, List[String]()).
+                filter(_.trim != "").headOption.getOrElse("string")
+              //TODO safe URI check for the id string
+              attrSet.findOrCreate(lowerCaseID, attrib, attribType)
+              warningHandler(s"attribute $lowerCaseID not found, creating new as type $attribType")
+            })
       } yield attribute.id -> trimmed)
     }
 
-    val required = attributes.getRequired().asScala.map(_.id).map(_.toLowerCase)
+    val required = attrSet.getRequired().asScala.map(_.id).map(_.toLowerCase)
     val missingColumns = required.filter(!metadata.keySet.contains(_))
     if (!missingColumns.isEmpty) {
       warningHandler(s"The following columns are missing in $file: $missingColumns")
@@ -61,7 +83,7 @@ object TSVMetadata {
       }
       uniqueIds += id
     }
-    fact.metadata(metadata, attributes)
+    fact.metadata(metadata, attrSet)
   }
 }
 
@@ -94,7 +116,7 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
   }
 
   def attributeValues(attribute: Attribute): Seq[String] =
-    metadata(attribute.id).toSeq.distinct
+    metadata(attribute.id).distinct
 
   override def sampleAttribute(s: Sample, attribute: Attribute): Option[String] = {
     val idx = getIdx(s)
