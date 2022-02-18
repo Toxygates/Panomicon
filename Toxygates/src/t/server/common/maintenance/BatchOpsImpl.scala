@@ -83,7 +83,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
 
       val conversion = probesFile.map(file => {
-        val meta = factory.tsvMetadata(metaFile.get.getAbsolutePath(), context.config.attributes)
+        val meta = factory.tsvMetadata(metaFile.get.getAbsolutePath(), Some(context.config.attributes))
         val pfs = meta.attributeValues(CoreParameter.Platform)
         if (pfs.size != 1) {
           throw BatchUploadException.badPlatformForConversion("Need exactly one platform in batch for probe conversion");
@@ -100,7 +100,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       runTasks(batchManager.add(batch, metaFile.get.getAbsolutePath,
         dataFile.get.getAbsolutePath,
         callsFile.map(_.getAbsolutePath),
-        false, conversion = conversion.getOrElse(BatchManager.identityConverter)))
+        false, false, conversion = conversion.getOrElse(BatchManager.identityConverter)))
     }
   }
 

@@ -23,7 +23,7 @@ import t.db._
 import t.db.file.{CSVRawExpressionData, PFoldValueBuilder}
 import t.db.kyotocabinet._
 import t.global.KCDBRegistry
-import t.model.sample.CoreParameter
+import t.model.sample.{AttributeSet, CoreParameter}
 import t.sparql._
 import t.util.DoThenClose._
 import t.util.TempFiles
@@ -50,6 +50,7 @@ object BatchManager extends ManagerTool {
             "Please specify a title with -title")
           val append = booleanOption(args, "-append")
           val comment = stringOption(args, "-comment").getOrElse("")
+          val genAttrib = booleanOption(args, "-genAttrib")
           val idConversion = t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"), context)
 
           val bm = new BatchManager(context)
@@ -72,7 +73,7 @@ object BatchManager extends ManagerTool {
                 println(s"Insert $dataFile")
                 val task = bm.add(Batch(title, comment, None, None),
                   metadata, dataFile, callFile,
-                  if (first) append else true, conversion = idConversion)
+                  if (first) append else true, genAttrib, conversion = idConversion)
 
                 first = false
                 task
@@ -88,7 +89,7 @@ object BatchManager extends ManagerTool {
               new PlatformStore(config).populateAttributes(config.attributes)
               //val md = factory.tsvMetadata(metaFile, config.attributes)
               startTaskRunner(bm.add(Batch(title, comment, None, None),
-                metaFile, dataFile, callFile, append, conversion = idConversion))
+                metaFile, dataFile, callFile, append, genAttrib, conversion = idConversion))
           }
 
         case "recalculate" =>
@@ -240,15 +241,32 @@ class BatchManager(context: Context) {
   val requiredParameters = config.attributes.getRequired.asScala.map(_.id)
   val hlParameters = config.attributes.getHighLevel.asScala.map(_.id)
 
+  /**
+   * Add a batch.
+   * @param batch The batch, with visible instances and dataset flags
+   * @param metadataFile
+   * @param dataFile
+   * @param callFile
+   * @param append Whether to append to a pre-existing batch
+   * @param generateAttributes Whether to generate per-batch attributes (internal probes) in the RDF
+   *                           data for this batch
+   * @param conversion The transformation to apply to expression data as it is read from the file, if any
+   *                   (or [[identityConverter]] for no transformation)
+   * @return
+   */
   def add(batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
-    append: Boolean, conversion: ExpressionConverter = identityConverter): Task[Unit] = {
+    append: Boolean, generateAttributes: Boolean,
+          conversion: ExpressionConverter = identityConverter): Task[Unit] = {
+
+    //Generate a new attribute set if adding attributes was requested
+    val attrSet = if (generateAttributes) None else Some(config.attributes)
 
     for {
-      metadata <- readTSVMetadata(metadataFile)
+      metadata <- readTSVMetadata(metadataFile, attrSet)
       data <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
       _ <- newMetadataCheck(batch.title, metadata, config, append, Some(data)) andThen
-        addMetadata(batch, metadata, append) andThen
+        addMetadata(batch, metadata, append, generateAttributes) andThen
         addEnums(metadata) andThen
         // Note that we rely on probe maps, sample maps etc in matrixContext
         // not being read until they are needed
@@ -266,10 +284,10 @@ class BatchManager(context: Context) {
   def updateMetadata(batch: Batch, metaFile: String,
       recalculate: Boolean = false, force: Boolean = false): Task[Unit] = {
     for {
-      metadata <- readTSVMetadata(metaFile)
+      metadata <- readTSVMetadata(metaFile, Some(config.attributes))
       _ <- updateMetadataCheck(batch.title, metadata, config, force) andThen
         deleteRDF(batch.title) andThen
-        addMetadata(batch, metadata, false, true) andThen
+        addMetadata(batch, metadata, false, false,true) andThen
         (if (recalculate) recalculateFoldsAndSeries(batch, metadata) else Task.success)
     } yield ()
   }
@@ -312,14 +330,15 @@ class BatchManager(context: Context) {
       }
     }
 
-  def readTSVMetadata(filename: String) = new AtomicTask[Metadata]("Read TSV metadata") {
+  def readTSVMetadata(filename: String, attributes: Option[AttributeSet]) =
+    new AtomicTask[Metadata]("Read TSV metadata") {
     override def run(): Metadata = {
-      context.factory.tsvMetadata(filename, config.attributes, log(_))
+      context.factory.tsvMetadata(filename, attributes, log(_))
     }
   }
 
   def addMetadata(batch: Batch, metadata: Metadata,
-      append: Boolean, update: Boolean = false): Task[Unit] = {
+      append: Boolean, generateAttributes: Boolean, update: Boolean = false): Task[Unit] = {
     val ts = config.triplestoreConfig.getTriplestore()
 
     val addRecordIfNecessary =
@@ -332,7 +351,7 @@ class BatchManager(context: Context) {
 
     addRecordIfNecessary andThen
       (if (!update) addSampleIDs(metadata) else Task.success) andThen
-      addRDF(batch.title, metadata, ts)
+      addRDF(batch.title, metadata, ts, generateAttributes)
   }
 
   def updateBatch(batch: Batch) = new AtomicTask[Unit]("Update batch record") {
@@ -512,7 +531,8 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addRDF(title: String, metadata: Metadata, ts: Triplestore) =
+  def addRDF(title: String, metadata: Metadata, ts: Triplestore,
+             addAttributes: Boolean) =
     new AtomicTask[Unit]("Insert sample RDF data") {
       override def run(): Unit = {
         val tempFiles = new TempFiles()
@@ -523,13 +543,17 @@ class BatchManager(context: Context) {
           val total = metadata.samples.size
           val grs = metadata.samples.grouped(250)
           var percentComplete = 0d
+          val context = BatchStore.context(title)
+          if (addAttributes) {
+            val ttl = BatchStore.attributesToTTL(metadata.attributeSet, tempFiles)
+            ts.addTTL(ttl, context)
+          }
           while (grs.hasNext && shouldContinue(percentComplete)) {
             val g = grs.next
             for (s <- summaries) {
               s.check(metadata, g)
             }
-            val ttl = BatchStore.metadataToTTL(metadata, tempFiles, g)
-            val context = BatchStore.context(title)
+            val ttl = BatchStore.metadataSamplesToTTL(metadata, tempFiles, g)
             ts.addTTL(ttl, context)
             percentComplete += 250.0 * 100.0 / total
           }

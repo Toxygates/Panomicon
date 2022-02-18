@@ -20,12 +20,12 @@
 package t.db.file
 
 import scala.collection.JavaConverters._
-
 import friedrich.util.formats.TSVFile
 import t.Factory
 import t.db._
 import t.model.sample._
 import t.model.sample.Helpers._
+import t.sparql.TRDF
 
 /**
  * Metadata that is read from a TSV file.
@@ -51,22 +51,26 @@ object TSVMetadata {
       val columns = TSVFile.readMap(file, false)
       val headerRows = TSVFile.readHeaderMap(file, false)
 
-      Map() ++ (for {
+      Map.empty ++ (for {
         (attrib, values) <- columns
         lowerCaseID = attrib.toLowerCase().trim
         trimmed = values.map(_.trim)
-        attribute <- ifNone(attrSet.byIdLowercase.get(lowerCaseID),
+        attribute = attrSet.byIdLowercase.getOrElse(lowerCaseID,
             {
               //If they exist, the header rows are here presumed to contain only one meaningful line,
               //which is the attribute type
               val attribType = headerRows.getOrElse(attrib, List[String]()).
                 filter(_.trim != "").headOption.getOrElse("string")
-              //TODO safe URI check for the id string
-              attrSet.findOrCreate(lowerCaseID, attrib, attribType)
+
+              TRDF.checkValidIdentifier(lowerCaseID, "Attribute ID")
+              TRDF.checkValidIdentifier(attribType, "Attribute type")
               warningHandler(s"attribute $lowerCaseID not found, creating new as type $attribType")
+              attrSet.findOrCreate(lowerCaseID, attrib, attribType.toLowerCase)
             })
       } yield attribute.id -> trimmed)
     }
+
+    datatypeCheck(attrSet, metadata, warningHandler)
 
     val required = attrSet.getRequired().asScala.map(_.id).map(_.toLowerCase)
     val missingColumns = required.filter(!metadata.keySet.contains(_))
@@ -84,6 +88,29 @@ object TSVMetadata {
       uniqueIds += id
     }
     fact.metadata(metadata, attrSet)
+  }
+
+  def datatypeCheck(attrSet: AttributeSet, data: Map[String, Seq[String]],
+                    warningHandler: String => Unit): Unit = {
+
+    def canParseNum(x: String) = try {
+      x.toDouble
+      true
+    } catch {
+      case nfe: NumberFormatException => false
+    }
+
+    for {
+      attrib <- attrSet.getNumerical.asScala
+      values = data.getOrElse(attrib.id(), Seq())
+    } {
+      val nonParsing = values.filter(!canParseNum(_))
+      if (nonParsing.nonEmpty) {
+        warningHandler(
+          s"${nonParsing.size} value(s) in the column ${attrib.id()} had a bad number format." +
+            s"Treating as absent. Example: ${nonParsing.head}")
+      }
+    }
   }
 }
 

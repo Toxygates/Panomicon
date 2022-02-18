@@ -21,11 +21,12 @@ package t.sparql
 
 import java.io._
 import java.util.Date
-
 import Triplestore.tPrefixes
 import t.TriplestoreConfig
 import t.db._
+import t.model.sample.AttributeSet
 import t.util.TempFiles
+import scala.collection.JavaConverters._
 
 object BatchStore extends RDFClass {
   val defaultPrefix: String = s"$tRoot/batch"
@@ -33,14 +34,44 @@ object BatchStore extends RDFClass {
   val itemClass: String = "t:batch"
 
   /**
-   * Construct RDF data as a TTL file to represent the given metadata.
+   * Construct a TTL file(RDF) to represent sample attributes.
+   * @param md
+   * @param tempFiles
+   * @return
    */
-  def metadataToTTL(md: Metadata, tempFiles: TempFiles, samples: Iterable[Sample]): File = {
+  def attributesToTTL(attributes: AttributeSet, tempFiles: TempFiles): File = {
+    //These may not be redefined
+    val predefinedAttributes = AttributeSet.newMinimalSet().getRequired.asScala.map(_.id()).toSet
+    val file = tempFiles.makeNew("metadata", "ttl")
+    val fout = new BufferedWriter(new FileWriter(file))
+
+    for {
+      attr <- attributes.getAll.asScala
+      if ! predefinedAttributes.contains(attr.id())
+    } {
+      fout.write(s"<${ProbeStore.defaultPrefix}/${attr.id()}>")
+      fout.write(s"  a ${ProbeStore.itemClass}; rdfs:label " + "\"" + attr.id() + "\";")
+      fout.write("  t:title \"" + attr.title() + "\"; t:type " +
+        (if(attr.isNumerical) "\"numerical\"" else "\"string\""))
+      Option(attr.section()) match {
+        case Some(sec) =>
+          fout.write("  t:section \"" + sec +"\".")
+        case _ => fout.write(".")
+      }
+    }
+    fout.close()
+    file
+  }
+
+  /**
+   * Construct a TTL file (RDF) to represent samples in the given metadata.
+   */
+  def metadataSamplesToTTL(md: Metadata, tempFiles: TempFiles, samples: Iterable[Sample]): File = {
     val file = tempFiles.makeNew("metadata", "ttl")
     val fout = new BufferedWriter(new FileWriter(file))
     for (s <- samples) {
       fout.write(s"<${SampleStore.defaultPrefix}/${s.identifier}>\n")
-      fout.write(s"  a <$tRoot/sample>; rdfs:label" + "\"" + s.identifier + "\"; \n")
+      fout.write(s"  a ${SampleStore.itemClass}; rdfs:label" + "\"" + s.identifier + "\"; \n")
       val params = md.sampleAttributes(s).map(
         p => s"<$tRoot/${p._1.id}> " + "\"" + TRDF.escape(p._2) + "\"")
       fout.write(params.mkString(";\n  ") + ".")
