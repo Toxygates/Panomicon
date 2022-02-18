@@ -100,7 +100,7 @@ object IDConverter {
    */
   def fromMirbase(file: String, validProbes: Iterable[String]) = {
     val lookup = validProbes.toSet
-    val colMap = TSVFile.readMap("", file, true)
+    val colMap = TSVFile.readMap(file, true)
     val expanded = (
       colMap(probeIdColumn) zip colMap(mirbaseIdColumn)
     ) . flatMap(x => {

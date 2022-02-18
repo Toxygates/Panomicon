@@ -20,7 +20,7 @@ object EnsemblPlatformHelper {
    * @param file
    */
   def loadConversionTable(file: String): Map[ProbeId, Iterable[ProbeId]] = {
-    val colMap = TSVFile.readMap("", file, true)
+    val colMap = TSVFile.readMap(file, true)
     val processedRS = colMap(refseqColumn).map(removeVersionNumber)
     val mapping = colMap(probeIdColumn) zip processedRS
     mapping.groupBy(_._1).map(x => (x._1, x._2.map(_._2))).filter(_._2.nonEmpty)

@@ -12,13 +12,13 @@ import scala.io.{Codec, Source}
  * Reads files with tab-separated columns.
  * Result stored in column-major format.
  */
-object TSVFile extends FileReadable[Seq[Seq[String]]] {
+object TSVFile {
   import t.util.DoThenClose._
 
-  protected def read(prefix: String = ".", name: String, unquote: Boolean = false) = {
-    doThenClose(Source.fromFile(prefix + name)(Codec.UTF8))(r => {
+  protected def read(name: String, unquote: Boolean = false) = {
+    doThenClose(Source.fromFile(name)(Codec.UTF8))(r => {
       var data = Vector[Array[String]]()
-      for {l <- r.getLines} {
+      for { l <- r.getLines.filter(!isHeaderLine(_)) } {
         val cs = l.split("\t").map(normalize(unquote, _))
         if (cs.nonEmpty && l.length > 0) {
           //ignore empty lines
@@ -39,6 +39,10 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
     })
   }
 
+  def isHeaderLine(line: String): Boolean = {
+    line.startsWith("#")
+  }
+
   def normalize(unquote: Boolean, value: String) =
     if (unquote)
       value.replace("\"", "")
@@ -48,8 +52,12 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
   /**
    * A map indexed by column.
    */
-  def readMap(prefix: String = ".", name: String, unquote: Boolean = false): Map[String, Seq[String]] = {
-    val cs = read(prefix, name, unquote)
+  def readMap(name: String, unquote: Boolean): Map[String, Seq[String]] = {
+    val cs = read(name, unquote)
     Map() ++ cs.map(col => normalize(unquote, col.head) -> col.tail)
+  }
+
+  def readHeaderMap(name: String): Map[String, Seq[String]] = {
+    ???
   }
 }
