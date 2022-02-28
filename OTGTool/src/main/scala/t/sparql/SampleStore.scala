@@ -129,7 +129,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
    */
   protected def convertMapToAttributes(map: Map[String, String],
                                        attributeSet: AttributeSet): Map[Attribute, String] = {
-    map.map(x => Option(bc.attributes.byId(x._1)) -> x._2)
+    map.map(x => Option(attributeSet.byId(x._1)) -> x._2)
       .collect { case (Some(attrib), value) => (attrib, value) }
   }
 
@@ -161,8 +161,10 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
   /**
    * Constructs a sample query that respects a SampleClassFilter and normal SampleFilter
    */
-  def sampleQuery(filter: SampleClassFilter, sf: SampleFilter): Query[Vector[Sample]] = {
-    val standardPred = standardAttributes.filter(isPredicateAttribute)
+  def sampleQuery(filter: SampleClassFilter, sf: SampleFilter,
+                  customAttributeSet: Option[AttributeSet] = None): Query[Vector[Sample]] = {
+    val attrSet = customAttributeSet.getOrElse(bc.attributes)
+    val standardPred = attrSet.getRequired.asScala.filter(isPredicateAttribute)
 
     val filterString = if(filter.constraints.isEmpty) "" else
       s"""|
@@ -186,7 +188,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
           |}""".stripMargin,
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
-        val attributeValues = convertMapToAttributes(adjustSample(x), bc.attributes)
+        val attributeValues = convertMapToAttributes(adjustSample(x), attrSet)
         val sampleId = x("id")
         Sample(sampleId, SampleClassFilter(attributeValues) ++ filter)
       })
@@ -250,7 +252,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
    * Can the given predicate ID be queried as a predicate of a sample?
    */
   protected def isPredicateAttribute(attribute: Attribute): Boolean =
-    attribute != CoreParameter.Batch
+    attribute != CoreParameter.Batch && attribute != CoreParameter.Dataset
 
   /**
    * Get parameter values for some samples, either by sample ID, batch, both,

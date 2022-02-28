@@ -31,6 +31,7 @@ public class CoreParameter {
   public static final Attribute Platform = new Attribute("platform_id", "Platform ID", false, "Sample details");
   public static final Attribute Type = new Attribute("type", "Type", false, "Sample details");
   public static final Attribute ControlSampleId = new Attribute("control_sample_id", "Control Sample ID", false, "Sample details");
+  public static final Attribute Dataset = new Attribute("dataset", "Dataset", false, "Sample details");
 
   /**
    * Groups samples with the same treatment globally in the database.

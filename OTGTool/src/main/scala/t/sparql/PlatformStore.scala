@@ -41,7 +41,6 @@ object PlatformStore extends RDFClass {
   def populateAttributeResults(into: AttributeSet, attribs: Iterable[Map[String, String]]): Unit = {
     for { a <- attribs } {
       val at = into.findOrCreate(a("id"), a("title"), a("type"), a.get("section").orNull)
-      println(s"Create attribute $at")
     }
   }
 }
