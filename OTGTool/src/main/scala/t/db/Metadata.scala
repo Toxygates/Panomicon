@@ -19,7 +19,6 @@
 
 package t.db
 
-import t.Factory
 import t.model.sample.CoreParameter._
 import t.sample.SampleSet
 import t.model.sample.{Attribute, AttributeSet, OTGAttribute}
@@ -54,7 +53,7 @@ trait Metadata extends SampleSet {
    * Obtain a new metadata set after applying a mapping function to one
    * of the parameters.
    */
-  def mapParameter(fact: Factory, key: String, f: String => String): Metadata
+  def mapParameter(key: String, f: String => String): Metadata
 
   private def controlGroupKey(s: Sample) = sampleAttribute(s, ControlTreatment).get
 
@@ -78,8 +77,8 @@ class FilteredMetadata(from: Metadata, visibleSamples: Iterable[Sample]) extends
   def attributeValues(attr: Attribute): Seq[String] =
     samples.toSeq.flatMap(x => sampleAttributes(x, Seq(attr)).map(_._2)).distinct
   
-  def mapParameter(fact: Factory, key: String, f: String => String): Metadata =
-    new FilteredMetadata(from.mapParameter(fact, key, f), visibleSamples)
+  def mapParameter(key: String, f: String => String): Metadata =
+    new FilteredMetadata(from.mapParameter(key, f), visibleSamples)
 
   def sampleAttributes(sample: Sample): Seq[(Attribute, String)] =
     if (samples.contains(sample)) from.sampleAttributes(sample) else Seq()

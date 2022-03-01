@@ -28,10 +28,9 @@ import scala.collection.JavaConverters._
 
 @RunWith(classOf[JUnitRunner])
 class CSVRawExpressionDataTest extends TTestSuite {
-  val fact = Context.factory
 
   test("basic") {
-    val meta = TSVMetadata.apply(fact, "../OTGTool/testData/meta.tsv",
+    val meta = TSVMetadata.apply("../OTGTool/testData/meta.tsv",
       Some(TestConfig.config.attributes), println(_))
 
     val d = new CSVRawExpressionData("../OTGTool/testData/data.csv", None,
@@ -44,7 +43,7 @@ class CSVRawExpressionDataTest extends TTestSuite {
   }
 
   test("read typed attributes") {
-    val meta = TSVMetadata.apply(fact, "../OTGTool/testData/meta.tsv", None, println(_))
+    val meta = TSVMetadata.apply("../OTGTool/testData/meta.tsv", None, println(_))
     val d = new CSVRawExpressionData("../OTGTool/testData/data.csv", None,
       Some(meta.samples.size), m => println(s"Warning: $m"))
     d.samples should (contain theSameElementsAs(meta.samples))

@@ -24,11 +24,9 @@ import t.platform.PlatformRegistry
 import t.sparql.{ProbeStore, SampleStore}
 
 object Context {
-  val factory = new Factory()
-
   def apply(bc: BaseConfig) =
-    new Context(bc, factory,
-      factory.probes(bc.triplestoreConfig), factory.samples(bc),
+    new Context(bc,
+      new ProbeStore(bc.triplestoreConfig), new SampleStore(bc),
       new OTGMatrixContext(bc))
 }
 
@@ -37,7 +35,6 @@ object Context {
  * application
  */
 class Context(val config: BaseConfig,
-              val factory: Factory,
               val probeStore: ProbeStore,
               val sampleStore: SampleStore,
               val matrix: MatrixContext) {

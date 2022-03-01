@@ -82,7 +82,7 @@ class UserDataServiceImpl extends TServiceServlet with BatchOpsImpl with UserDat
   //Currently not used - kept here for reference
   override protected def alterMetadataPriorToInsert(md: Metadata): Metadata = {
     //Enforce a special suffix for user data
-    md.mapParameter(factory, "compound_name", n => {
+    md.mapParameter("compound_name", n => {
       if (n.endsWith("[user]")) { n } else { s"$n [user]" }
     })
   }

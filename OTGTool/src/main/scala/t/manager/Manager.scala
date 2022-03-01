@@ -4,7 +4,7 @@ import scala.collection.JavaConverters._
 import friedrich.util.CmdLineOptions
 import t.global.KCDBRegistry
 import t.platform.SSOrthTTL
-import t.{BaseConfig, Context, DataConfig, Factory, TriplestoreConfig}
+import t.{BaseConfig, Context, DataConfig, TriplestoreConfig}
 import t.platform.Species._
 
 /**
@@ -25,7 +25,7 @@ object Manager extends CmdLineOptions {
       env.getOrElse("T_TS_REPO", null))
 
   def getDataConfig(env: CMap[String, String]): DataConfig =
-    factory.dataConfig(
+    DataConfig(
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
@@ -38,8 +38,6 @@ object Manager extends CmdLineOptions {
 
   def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): BaseConfig =
     BaseConfig(ts, d)
-
-  lazy val factory: Factory = new Factory()
 
   def initContext(bc: BaseConfig): Context = Context(bc)
 

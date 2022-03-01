@@ -15,7 +15,6 @@ object MatrixManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
 
     def config = context.config
-    def factory = context.factory
 
     def samplesInBatch(batch: String) = {
       val sf = t.sparql.SampleFilter(None, Some(BatchStore.packURI(batch)))

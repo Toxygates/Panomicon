@@ -20,7 +20,7 @@
 package t.manager
 import t._
 import t.db._
-import t.db.file.{CSVRawExpressionData, PFoldValueBuilder}
+import t.db.file.{CSVRawExpressionData, PFoldValueBuilder, TSVMetadata}
 import t.db.kyotocabinet._
 import t.global.KCDBRegistry
 import t.model.sample.{AttributeSet, CoreParameter}
@@ -38,7 +38,6 @@ object BatchManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
 
     def config = context.config
-    def factory = context.factory
 
     val batches = new BatchStore(config.triplestoreConfig)
     if (args.size < 1) {
@@ -98,7 +97,7 @@ object BatchManager extends ManagerTool {
           new PlatformStore(config).populateAttributes(config.attributes)
           val sampleFilter = new SampleFilter(None, Some(BatchStore.packURI(title)))
           val metadata =
-            factory.cachingTriplestoreMetadata(context.sampleStore, config.attributes,
+            new CachingTriplestoreMetadata(context.sampleStore, config.attributes,
                 config.attributes.getHighLevel.asScala ++
                 config.attributes.getUnitLevel.asScala ++
                 List(CoreParameter.Platform, CoreParameter.Treatment,
@@ -305,7 +304,7 @@ class BatchManager(context: Context) {
 
     val recalculateChunks = (for (unitChunk <- units.grouped(50);
       sampleChunk = unitChunk.flatMap(u => u._1 ++ u._2).distinct;
-      filteredMetadata = context.factory.filteredMetadata(metadata, sampleChunk)
+      filteredMetadata = new FilteredMetadata(metadata, sampleChunk)
     ) yield {
       for {
         _ <- insertFoldsDataFromExpressionData(dbReader, codedProbes,
@@ -333,7 +332,7 @@ class BatchManager(context: Context) {
   def readTSVMetadata(filename: String, attributes: Option[AttributeSet]) =
     new AtomicTask[Metadata]("Read TSV metadata") {
     override def run(): Metadata = {
-      context.factory.tsvMetadata(filename, attributes, log(_))
+      TSVMetadata(filename, attributes, log(_))
     }
   }
 
@@ -742,7 +741,7 @@ class BatchManager(context: Context) {
 
       val sf = SampleFilter(batchURI = Some(batchURI))
 
-      val md = context.factory.cachingTriplestoreMetadata(samples, config.attributes,
+      val md = new CachingTriplestoreMetadata(samples, config.attributes,
         config.attributes.getRequired.asScala ++ config.attributes.getHighLevel.asScala
           ++ config.attributes.getUnitLevel.asScala, sf)
 

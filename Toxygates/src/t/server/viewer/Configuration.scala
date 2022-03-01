@@ -20,9 +20,7 @@
 package t.server.viewer
 
 import javax.servlet.{ServletConfig, ServletContext}
-import t.Context
-import t.Factory
-import t.TriplestoreConfig
+import t.{BaseConfig, Context, DataConfig, TriplestoreConfig}
 import t.sparql.InstanceStore
 import t.shared.viewer.intermine.IntermineInstance
 
@@ -94,16 +92,16 @@ class Configuration(val repositoryName: String,
   /**
    * Mainly for test purposes
    */
-  def this(owlimRepository: String, toxygatesHome: String) =
-    this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"),
+  def this(repoName: String, toxygatesHome: String) =
+    this(repoName, toxygatesHome, System.getProperty("otg.csvDir"),
       System.getProperty("otg.csvUrlBase"))
 
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
     repositoryUser, repositoryPass, repositoryName)
 
-  def dataConfig(f: Factory) = f.dataConfig(toxygatesHomeDir, matrixDbOptions)
+  def dataConfig = DataConfig(toxygatesHomeDir, matrixDbOptions)
 
-  def context(f: Factory): Context = f.context(tsConfig, dataConfig(f))
+  def context: Context = t.Context(BaseConfig(tsConfig, dataConfig))
 
   def instanceURI: Option[String] =
     if (instanceName == null || instanceName == "") {

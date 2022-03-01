@@ -23,7 +23,6 @@ import scala.collection.JavaConverters._
 
 import t.db.Sample
 import t.db.Metadata
-import t.Factory
 import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
 import t.model.sample.AttributeSet
@@ -50,7 +49,7 @@ class TriplestoreMetadata(sampleStore: SampleStore,
   override def attributeValues(attribute: Attribute): Seq[String] =
     sampleStore.sampleAttributeQuery(attribute, sf)().distinct
 
-  override def mapParameter(fact: Factory, key: String, f: String => String) = ???
+  override def mapParameter(key: String, f: String => String) = ???
 }
 
 /**

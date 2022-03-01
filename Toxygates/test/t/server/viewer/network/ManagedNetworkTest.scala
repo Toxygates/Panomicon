@@ -117,7 +117,7 @@ class ManagedNetworkTest extends TTestSuite {
                   sideGroups: Seq[Group],
       mainPlatform: String, reverseLookup: Boolean) {
 
-    val testContext = new Context(null, null, null, null, context) {
+    val testContext = new Context(null, null, null, context) {
       override lazy val platformRegistry: PlatformRegistry = ManagedNetworkTest.this.platforms
     }
 

@@ -19,6 +19,8 @@
 
 package t.server.common.maintenance
 
+import t.db.file.TSVMetadata
+
 import javax.annotation.Nullable
 import t.BaseConfig
 import t.shared.common.{Dataset, ManagedItem}
@@ -26,7 +28,7 @@ import t.shared.common.maintenance.MaintenanceConstants._
 import t.shared.common.maintenance.{Batch, BatchUploadException, MaintenanceException}
 import t.db.{IDConverter, Metadata}
 import t.manager.BatchManager
-import t.model.sample.CoreParameter.{Platform, Type, Treatment}
+import t.model.sample.CoreParameter.{Platform, Treatment, Type}
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
 import t.sparql.{BatchStore, DatasetStore, SampleFilter, TRDF}
@@ -83,7 +85,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       }
 
       val conversion = probesFile.map(file => {
-        val meta = factory.tsvMetadata(metaFile.get.getAbsolutePath(), Some(context.config.attributes))
+        val meta = TSVMetadata(metaFile.get.getAbsolutePath(), Some(context.config.attributes))
         val pfs = meta.attributeValues(CoreParameter.Platform)
         if (pfs.size != 1) {
           throw BatchUploadException.badPlatformForConversion("Need exactly one platform in batch for probe conversion");

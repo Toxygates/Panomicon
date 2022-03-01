@@ -21,7 +21,7 @@ package t.server.viewer.servlet
 
 import javax.servlet.{ServletConfig, ServletException}
 import javax.servlet.http.HttpServlet
-import t.{BaseConfig, Context, Factory}
+import t.{BaseConfig, Context}
 import t.server.viewer.Configuration
 import t.shared.viewer.OTGSchema
 
@@ -32,10 +32,8 @@ trait MinimalTServlet {
   this: HttpServlet =>
 
   protected def context: Context = _context
-  protected def factory: Factory = _factory
 
   protected var _context: Context = _
-  protected var _factory: Factory = _
 
   //Subclasses should call this method or the one below
   @throws(classOf[ServletException])
@@ -52,8 +50,7 @@ trait MinimalTServlet {
   }
 
   def tServletInit(config: Configuration): Unit = {
-    _factory = new Factory
-    _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
+    _context = t.Context(BaseConfig(config.tsConfig, config.dataConfig))
   }
 
   protected def baseConfig: BaseConfig = context.config

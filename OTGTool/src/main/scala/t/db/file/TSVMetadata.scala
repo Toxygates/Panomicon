@@ -21,7 +21,6 @@ package t.db.file
 
 import scala.collection.JavaConverters._
 import friedrich.util.formats.TSVFile
-import t.Factory
 import t.db._
 import t.model.sample._
 import t.model.sample.Helpers._
@@ -43,7 +42,7 @@ object TSVMetadata {
    * @param warningHandler Function to report warning messages
    * @return
    */
-  def apply(fact: Factory, file: String, attributes: Option[AttributeSet],
+  def apply(file: String, attributes: Option[AttributeSet],
       warningHandler: (String) => Unit = println): Metadata = {
     val attrSet = attributes.getOrElse(AttributeSet.newMinimalSet())
 
@@ -87,7 +86,7 @@ object TSVMetadata {
       }
       uniqueIds += id
     }
-    fact.metadata(metadata, attrSet)
+    new MapMetadata(metadata, attrSet)
   }
 
   def datatypeCheck(attrSet: AttributeSet, data: Map[String, Seq[String]],
@@ -150,8 +149,8 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
     metadata.get(attribute.id).map(_(idx))
   }
 
-  def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {
+  def mapParameter(key: String, f: String => String): Metadata = {
     val newMap = metadata + (key -> metadata(key).map(f))
-    fact.metadata(newMap, attributeSet)
+    new MapMetadata(newMap, attributeSet)
   }
 }

@@ -26,7 +26,7 @@ import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, OTGAttributeSet}
 import t.model.shared.SampleClassHelper._
 import t.platform._
-import t.{DoseSeries, Factory, OTGSeries, TimeSeries}
+import t.{DoseSeries, OTGSeries, TimeSeries}
 
 object TestData {
   import t.db.testing.DBTestData._
@@ -105,7 +105,7 @@ object TestData {
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.DBTestData.samples
 
-    def mapParameter(fact: Factory, key: String, f: String => String) = ???
+    def mapParameter(key: String, f: String => String) = ???
 
     def attributeValues(attribute: Attribute): Seq[String] =
       enumMaps(attribute.id).keys.toSeq.distinct
