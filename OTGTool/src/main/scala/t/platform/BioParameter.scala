@@ -19,17 +19,10 @@
 
 package t.platform
 
-import t.db.file.TSVMetadata
-import t.db.file.MapMetadata
-import t.db.{Metadata, Sample}
-import t.{BaseConfig, Factory}
+import t.db.Sample
 import org.apache.commons.math3.stat.StatUtils
 import t.sample.SampleSet
-import t.model.sample.{Attribute, OTGAttributeSet, VarianceSet}
-import t.model.sample.OTGAttribute._
-
-import java.lang
-import scala.collection.JavaConverters._
+import t.model.sample.{Attribute, VarianceSet}
 
 /**
  * Construct a BioParameter object.
