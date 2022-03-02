@@ -100,7 +100,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/sample/batch/:batch") {
     contentType = "text/json"
     val requestedBatchId = paramOrHalt("batch")
-    val attrSet = attributeSetForBatch(requestedBatchId)
+    val queries = sampleStore.batchSpecific(requestedBatchId)
 
     val fullList = batchStore.getList()
     val exists = fullList.contains(requestedBatchId)
@@ -111,7 +111,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val batchURI = BatchStore.packURI(requestedBatchId)
     val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
     val scf = SampleClassFilter()
-    val samples = sampleStore.sampleQuery(scf, sf, Some(attrSet))().map(sampleToMap)
+    val samples = queries.sampleQuery(scf, sf)().map(sampleToMap)
     write(samples)
   }
 
@@ -257,26 +257,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
-  private def attributeSetForBatch(batch: String): AttributeSet = {
-    val batchURI = BatchStore.packURI(batch)
-    val template = AttributeSet.newMinimalSet()
-    sampleStore.attributeSetForBatch(batchURI, template) match {
-      case Some(as) =>
-        println(s"Found specific attributes for batch $batch")
-        as
-      case _ =>
-        println(s"No specific attributes found for batch $batch, using defaults")
-        baseConfig.attributes
-    }
-  }
-
   /**
    * Obtain attributes for a batch
    */
   get("/attribute/batch/:batch") {
     contentType = "text/json"
     val batch = paramOrHalt("batch")
-    val attributes = attributeSetForBatch(batch).getAll()
+    val attributes = sampleStore.batchSpecific(batch).attributeSet.getAll
 
     val values = attributes.asScala.map(attrib => writeJs(Map(
       "id" -> writeJs(attrib.id()),
@@ -294,14 +281,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val sampleIds: Seq[String] = params.obj.get("samples").map(_.arr).getOrElse(List()).map(v => v.str)
     val batches: Seq[String] = params.obj.get("batches").map(_.arr).getOrElse(List()).map(v => v.str)
 
-    val attribSet = if (batches.size == 1) {
-      attributeSetForBatch(batches(0))
+    val queries = if (batches.size == 1) {
+      //Note: in the future, we could support this request even for multiple batches if needed
+      sampleStore.batchSpecific(batches(0))
     } else {
       println("Zero or multiple batches requested. Unable to use per-batch attributes for /attributeValues request")
-      baseConfig.attributes
+      sampleStore.defaultAttributeQueries
     }
 
-    val attributes: Seq[Attribute] = params("attributes").arr.map(v => attribSet.byId(v.str))
+    val attributes: Seq[Attribute] = params("attributes").arr.map(v => queries.attributeSet.byId(v.str))
     val samplesWithValues = sampleStore.sampleAttributeValues(sampleIds, batches, attributes)
     write(samplesWithValues.map(sampleToMap))
   }
