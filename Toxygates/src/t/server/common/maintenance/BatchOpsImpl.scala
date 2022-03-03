@@ -121,7 +121,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
 
-      runTasks(batchManager.updateMetadata(batch, metaFile.get.getAbsolutePath, recalculate))
+      runTasks(batchManager.updateMetadata(batch, metaFile.get.getAbsolutePath, false, recalculate))
     }
   }
 

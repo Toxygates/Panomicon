@@ -26,6 +26,8 @@ import t.model.sample._
 import t.model.sample.Helpers._
 import t.sparql.TRDF
 
+import scala.collection.mutable
+
 /**
  * Metadata that is read from a TSV file.
  */
@@ -49,22 +51,17 @@ object TSVMetadata {
     val metadata: Map[String, Seq[String]] = {
       val columns = TSVFile.readMap(file, false)
       val headerRows = TSVFile.readHeaderMap(file, false)
+      checkAttributeDefinitions(columns, headerRows)
 
       Map.empty ++ (for {
         (attrib, values) <- columns
-        lowerCaseID = attrib.toLowerCase().trim
+        normalizedID = normalizeAttributeID(attrib)
         trimmed = values.map(_.trim)
-        attribute = attrSet.byIdLowercase.getOrElse(lowerCaseID,
+        attribute = attrSet.byIdLowercase.getOrElse(normalizedID,
             {
-              //If they exist, the header rows are here presumed to contain only one meaningful line,
-              //which is the attribute type
-              val attribType = headerRows.getOrElse(attrib, List[String]()).
-                filter(_.trim != "").headOption.getOrElse("string")
-
-              TRDF.checkValidIdentifier(lowerCaseID, "Attribute ID")
-              TRDF.checkValidIdentifier(attribType, "Attribute type")
-              warningHandler(s"attribute $lowerCaseID not found, creating new as type $attribType")
-              attrSet.findOrCreate(lowerCaseID, attrib, attribType.toLowerCase)
+              val attribType = getAttribType(attrib, headerRows)
+              warningHandler(s"attribute $normalizedID not found, creating new as type $attribType")
+              attrSet.findOrCreate(normalizedID, attrib, attribType.toLowerCase)
             })
       } yield attribute.id -> trimmed)
     }
@@ -87,6 +84,33 @@ object TSVMetadata {
       uniqueIds += id
     }
     new MapMetadata(metadata, attrSet)
+  }
+
+  /** Normalize an attribute ID by replacing special characters */
+  private def normalizeAttributeID(id: String) = {
+    id.toLowerCase().trim.replaceAll("\\s", "_")
+  }
+
+  private def getAttribType(attrib: String, headerRows: Map[String, Seq[String]]): String = {
+    //If they exist, the header rows are here presumed to contain only one meaningful line,
+    //which is the attribute type. In the future we might have multiple header rows
+    //(e.g. for defining the attribute label).
+    headerRows.getOrElse(attrib, List[String]()).
+      filter(_.trim != "").headOption.getOrElse("string")
+  }
+
+  /** Validate that attribute definitions in the metadata file pass basic sanity checks */
+  private def checkAttributeDefinitions(columns: Map[String, Seq[String]], headerRows: Map[String, Seq[String]]): Unit = {
+    val seen = mutable.Set[String]()
+    for { (attrib, _) <- columns
+          normalized = normalizeAttributeID(attrib) } {
+      TRDF.checkValidIdentifier(normalized, "Attribute ID")
+      TRDF.checkValidIdentifier(getAttribType(attrib, headerRows), "Attribute type")
+      if (seen.contains(normalized)) {
+        throw new Exception(s"The column $normalized is defined twice (after removing special characters).")
+      }
+      seen += normalized
+    }
   }
 
   def datatypeCheck(attrSet: AttributeSet, data: Map[String, Seq[String]],

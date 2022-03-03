@@ -103,8 +103,7 @@ object BatchManager extends ManagerTool {
                 List(CoreParameter.Platform, CoreParameter.Treatment,
                   CoreParameter.ControlTreatment, CoreParameter.Batch),
               sampleFilter)
-          startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(
-            Batch(title, "", None, None), metadata))
+          startTaskRunner(new BatchManager(context).recalculateFoldsAndSeries(metadata, false))
 
         case "updateMetadata" | "updatemetadata" =>
           val title = require(stringOption(args, "-title"),
@@ -118,7 +117,7 @@ object BatchManager extends ManagerTool {
           new PlatformStore(config).populateAttributes(config.attributes)
           //val md = factory.tsvMetadata(metaFile, config.attributes)
           startTaskRunner(bm.updateMetadata(Batch(title, comment, None, None),
-              metaFile, recalculate, force = force))
+              metaFile, false, recalculate, force = force))
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -266,7 +265,7 @@ class BatchManager(context: Context) {
       data <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
       _ <- newMetadataCheck(batch.title, metadata, config, append, Some(data)) andThen
         addMetadata(batch, metadata, append, generateAttributes) andThen
-        addEnums(metadata) andThen
+        addEnums(metadata, generateAttributes) andThen
         // Note that we rely on probe maps, sample maps etc in matrixContext
         // not being read until they are needed
         // (after addSampleIDs has run, which happens in addMetadata)
@@ -275,23 +274,26 @@ class BatchManager(context: Context) {
             matrixContext()
           }
           _ <- addExprData(metadata, dataFile, callFile, conversion)(mc) andThen
-                recalculateFoldsAndSeries(batch, metadata)
+                recalculateFoldsAndSeries(metadata, generateAttributes)
         } yield ())
     } yield ()
   }
 
-  def updateMetadata(batch: Batch, metaFile: String,
+  def updateMetadata(batch: Batch, metaFile: String, customAttributes: Boolean,
       recalculate: Boolean = false, force: Boolean = false): Task[Unit] = {
+    //Generate a new attribute set if adding attributes was requested
+    val attrSet = if (customAttributes) None else Some(config.attributes)
+
     for {
-      metadata <- readTSVMetadata(metaFile, Some(config.attributes))
+      metadata <- readTSVMetadata(metaFile, attrSet)
       _ <- updateMetadataCheck(batch.title, metadata, config, force) andThen
         deleteRDF(batch.title) andThen
-        addMetadata(batch, metadata, false, false,true) andThen
-        (if (recalculate) recalculateFoldsAndSeries(batch, metadata) else Task.success)
+        addMetadata(batch, metadata, false, customAttributes,true) andThen
+        (if (recalculate) recalculateFoldsAndSeries(metadata, customAttributes) else Task.success)
     } yield ()
   }
 
-  def recalculateFoldsAndSeries(batch: Batch, metadata: Metadata): Task[Unit] = {
+  def recalculateFoldsAndSeries(metadata: Metadata, customAttributes: Boolean): Task[Unit] = {
     implicit val mc = matrixContext()
 
     val platforms = metadata.attributeValues(CoreParameter.Platform)
@@ -314,7 +316,7 @@ class BatchManager(context: Context) {
       } yield ()
     }).reduce(_ andThen _)
 
-    addEnums(metadata) andThen recalculateChunks
+    addEnums(metadata, customAttributes) andThen recalculateChunks
 
   }
 
@@ -650,13 +652,15 @@ class BatchManager(context: Context) {
       }
     }
 
-  def addEnums(md: Metadata) =
+  def addEnums(md: Metadata, customAttributes: Boolean) =
     new AtomicTask[Unit]("Add enum values") {
       /*
        * Note: enums currently cannot be deleted. We may eventually need a system
        * to rebuild enum databases.
        */
       override def run(): Unit = {
+        if (customAttributes) return
+
         val db = KCIndexDB(config.data.enumIndex, true)
         doThenClose(db)(db => {
           for (
