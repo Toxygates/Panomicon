@@ -50,7 +50,7 @@ object BatchManager extends ManagerTool {
           val append = booleanOption(args, "-append")
           val comment = stringOption(args, "-comment").getOrElse("")
           val genAttrib = booleanOption(args, "-genAttrib")
-          val idConversion = t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"), context)
+          val idConversion = Some(t.db.IDConverter.fromArgument(stringOption(args, "-idConversion"), context))
 
           val bm = new BatchManager(context)
 
@@ -174,7 +174,6 @@ object BatchManager extends ManagerTool {
   }
 
   type ExpressionConverter = ColumnExpressionData => ColumnExpressionData
-  def identityConverter: ExpressionConverter = (x => x)
 
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
@@ -249,13 +248,13 @@ class BatchManager(context: Context) {
    * @param generateAttributes Whether to generate per-batch attributes (internal probes) in the RDF
    *                           data for this batch
    * @param conversion The transformation to apply to expression data as it is read from the file, if any
-   *                   (or [[identityConverter]] for no transformation)
+   *
    * @return
    */
   def add(batch: Batch, metadataFile: String,
     dataFile: String, callFile: Option[String],
     append: Boolean, generateAttributes: Boolean,
-          conversion: ExpressionConverter = identityConverter): Task[Unit] = {
+          conversion: Option[ExpressionConverter]): Task[Unit] = {
 
     //Generate a new attribute set if adding attributes was requested
     val attrSet = if (generateAttributes) None else Some(config.attributes)
@@ -578,16 +577,16 @@ class BatchManager(context: Context) {
 
   def readCSVExpressionData(md: Metadata, niFile: String,
       callFile: Option[String],
-      conversion: ExpressionConverter): Task[ColumnExpressionData] =
+      conversion: Option[ExpressionConverter]): Task[ColumnExpressionData] =
     new AtomicTask[ColumnExpressionData]("Read raw expression data") {
       override def run() = {
-        conversion(new CSVRawExpressionData(niFile, callFile,
-          Some(md.samples.size), m => log(s"Warning: $m")))
+        val raw = new CSVRawExpressionData(niFile, callFile, Some(md.samples.size), m => log(s"Warning: $m"))
+        conversion.map(c => c(raw)).getOrElse(raw)
       }
   }
 
   def addExprData(md: Metadata, niFile: String, callFile: Option[String],
-      conversion: ExpressionConverter)
+      conversion: Option[ExpressionConverter])
       (implicit mc: MatrixContext) = {
     val db = () => config.data.extWriter(config.data.exprDb)
     for {

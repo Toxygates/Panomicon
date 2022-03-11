@@ -61,13 +61,9 @@ class UploadHandling(context: Context) {
           "Please choose a different name.")
     }
 
-    //TASK: port over probe conversion routine from BatchOpsImpl
-    val conversion = None
     runTasks(batchManager.add(batch.toBatchManager(visibleInstances),
       metaFile.getAbsolutePath, dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath),
-      false, true,
-      conversion = conversion.getOrElse(BatchManager.identityConverter)),
-      Some(tempFiles))
+      append = false, generateAttributes = true, conversion = None), Some(tempFiles))
   }
 
   def updateBatch(batch: t.sparql.Batch, metadata: Option[FileItem], visibleInstances: List[String],

@@ -102,7 +102,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       runTasks(batchManager.add(batch, metaFile.get.getAbsolutePath,
         dataFile.get.getAbsolutePath,
         callsFile.map(_.getAbsolutePath),
-        false, false, conversion = conversion.getOrElse(BatchManager.identityConverter)))
+        append = false, generateAttributes = false, conversion = conversion))
     }
   }
 
