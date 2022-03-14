@@ -575,7 +575,10 @@ class BatchManager(context: Context) {
     override def run(): Unit = {
       val bs = new BatchStore(config.triplestoreConfig)
       metadata match {
-        case Some(m) => bs.deleteSamples(title, m.samples)
+        case Some(m) =>
+          bs.deleteSamples(title, m.samples)
+          //Also delete the old timestamp, in anticipation of a new one
+          bs.deleteTimestamp(title)
         case _ => bs.delete(title)
       }
     }

@@ -192,6 +192,12 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
       s"DROP GRAPH <$defaultPrefix/$name>")
   }
 
+  def deleteTimestamp(batch: String): Unit = {
+    triplestore.update(s"$tPrefixes\n " +
+      s"DELETE { <$defaultPrefix/$batch> t:timestamp ?o. } \n" +
+      s"WHERE { <$defaultPrefix/$batch> t:timestamp ?o. } ")
+  }
+
   def deleteSamples(batch: String, samples: Iterable[Sample]): Unit = {
     val sampleIds = samples.toList.map(_.sampleId)
     triplestore.update(
