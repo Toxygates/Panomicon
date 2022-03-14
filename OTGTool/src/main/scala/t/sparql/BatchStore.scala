@@ -192,6 +192,19 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
       s"DROP GRAPH <$defaultPrefix/$name>")
   }
 
+  def deleteSamples(batch: String, samples: Iterable[Sample]): Unit = {
+    val sampleIds = samples.toList.map(_.sampleId)
+    triplestore.update(
+      s"""|$tPrefixes\n
+          |DELETE { GRAPH <$defaultPrefix/$batch> {
+          |  ?x a t:sample; rdfs:label ?label; ?y ?z.
+          | } }
+          | WHERE { GRAPH <$defaultPrefix/$batch> {
+          |   ?x a t:sample; rdfs:label ?label; ?y ?z.
+          |  } FILTER(?label IN(${sampleIds.map(x => "\"" + x + "\"").mkString(",")}))
+          | }
+    """.stripMargin)
+  }
 
   private def additionalFilter(instanceUri: Option[String], dataset: Option[String] = None) = {
     val r = (instanceUri match {

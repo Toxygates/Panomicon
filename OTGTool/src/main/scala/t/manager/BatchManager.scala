@@ -286,7 +286,7 @@ class BatchManager(context: Context) {
     for {
       metadata <- readTSVMetadata(metaFile, attrSet)
       _ <- updateMetadataCheck(batch.title, metadata, config, force) andThen
-        deleteRDF(batch.title) andThen
+        deleteBatchRDF(batch.title, Some(metadata)) andThen
         addMetadata(batch, metadata, false, customAttributes,true) andThen
         (if (recalculate) recalculateFoldsAndSeries(metadata, customAttributes) else Task.success)
     } yield ()
@@ -399,7 +399,7 @@ class BatchManager(context: Context) {
       println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
       Task.success
     }) andThen
-      deleteRDF(title) //Also removes the "batch record"
+      deleteBatchRDF(title, None) //Also removes the "batch record"
   }
 
   def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean,
@@ -465,7 +465,7 @@ class BatchManager(context: Context) {
       metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
 
       val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
-      if (notInBatch.size > 0 && !force) {
+      if (notInBatch.nonEmpty && !force) {
         val msg = "New metadata file contained the following samples that " +
           s"could not be found in the existing batch: ${notInBatch mkString " "}"
         throw new Exception(msg)
@@ -473,10 +473,8 @@ class BatchManager(context: Context) {
 
       val inBatchSet = foundInBatch.toSet
       val notInMetadata = batchSampleIds.filter(x => !(inBatchSet contains x))
-      if (notInMetadata.size > 0 && !force) {
-        val msg = "New metadata file is missing the following batch samples: " +
-          (notInMetadata mkString " ")
-        throw new Exception(msg)
+      if (notInMetadata.nonEmpty) {
+        log(s"${notInMetadata.size} samples in the batch were not included in the new metadata. They will remain unchanged.")
       }
     }
   }
@@ -568,10 +566,18 @@ class BatchManager(context: Context) {
       }
     }
 
-  def deleteRDF(title: String) = new AtomicTask[Unit]("Delete RDF data") {
+  /** Delete the RDF data associated with a batch.
+   * @param title batch ID
+   * @param metadata if given, only samples in the metadata will be deleted from the batch, otherwise the entire batch is deleted.
+   */
+  def deleteBatchRDF(title: String, metadata: Option[Metadata]) =
+    new AtomicTask[Unit]("Delete RDF data") {
     override def run(): Unit = {
       val bs = new BatchStore(config.triplestoreConfig)
-      bs.delete(title)
+      metadata match {
+        case Some(m) => bs.deleteSamples(title, m.samples)
+        case _ => bs.delete(title)
+      }
     }
   }
 
