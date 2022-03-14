@@ -50,7 +50,7 @@ object BatchStore extends RDFClass {
       if ! predefinedAttributes.contains(attr.id())
     } {
       fout.write(t.sparql.TTLfilePrefixes)
-      fout.write(s"<${ProbeStore.defaultPrefix}/${attr.id()}>")
+      fout.write(s"<${tRoot}/${attr.id()}>")
       fout.write(s"  a ${ProbeStore.itemClass}; rdfs:label " + "\"" + attr.id() + "\";")
       fout.write("  t:label \"" + attr.title() + "\"; t:type " +
         (if(attr.isNumerical) "\"numerical\"" else "\"string\""))
