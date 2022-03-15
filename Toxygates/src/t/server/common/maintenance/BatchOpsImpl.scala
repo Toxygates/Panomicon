@@ -162,7 +162,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   protected def updateBatch(batch: Batch): Unit = {
-    new BatchManager(context).updateBatch(batch).run()
+    new BatchManager(context).updateBatchProperties(batch).run()
   }
 
   protected def overviewParameters: Seq[Attribute] =

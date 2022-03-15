@@ -341,20 +341,21 @@ class BatchManager(context: Context) {
       append: Boolean, generateAttributes: Boolean, update: Boolean = false): Task[Unit] = {
     val ts = config.triplestoreConfig.getTriplestore()
 
-    val addRecordIfNecessary =
+    val createGraphIfNecessary =
       if (!append) {
-        addRecord(batch.title, batch.comment, config.triplestoreConfig) andThen
-          updateBatch(batch)
+        createBatchGraph(batch.title, batch.comment, config.triplestoreConfig) andThen
+          updateBatchProperties(batch)
       } else {
         Task.success
       }
 
-    addRecordIfNecessary andThen
+    createGraphIfNecessary andThen
       (if (!update) addSampleIDs(metadata) else Task.success) andThen
-      addRDF(batch.title, metadata, ts, generateAttributes)
+      addSampleRDF(batch.title, metadata, ts, generateAttributes)
   }
 
-  def updateBatch(batch: Batch) = new AtomicTask[Unit]("Update batch record") {
+  /** Update batch properties like visibility, comments */
+  def updateBatchProperties(batch: Batch) = new AtomicTask[Unit]("Update batch record") {
     override def run(): Unit = {
       val bs = new BatchStore(config.triplestoreConfig)
       // Update instances and dataset if specified in batch
@@ -488,7 +489,7 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addRecord(title: String, comment: String, ts: TriplestoreConfig) =
+  def createBatchGraph(title: String, comment: String, ts: TriplestoreConfig) =
     new AtomicTask[Unit]("Add batch record") {
       override def run(): Unit = {
         val bs = new BatchStore(ts)
@@ -529,8 +530,8 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addRDF(title: String, metadata: Metadata, ts: Triplestore,
-             addAttributes: Boolean) =
+  def addSampleRDF(title: String, metadata: Metadata, ts: Triplestore,
+                   addAttributes: Boolean) =
     new AtomicTask[Unit]("Insert sample RDF data") {
       override def run(): Unit = {
         val tempFiles = new TempFiles()

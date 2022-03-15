@@ -75,7 +75,7 @@ class UploadHandling(context: Context) {
     grabRunner()
 
     val b = batch.toBatchManager(visibleInstances)
-    val update = batchManager.updateBatch(b)
+    val update = batchManager.updateBatchProperties(b)
     val tasks = metaFile match {
       case Some(mf) => update.andThen(batchManager.updateMetadata(b, mf.getAbsolutePath,
         true, recalculate))
