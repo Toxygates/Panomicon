@@ -41,7 +41,7 @@ object BatchStore extends RDFClass {
    */
   def attributesToTTL(attributes: AttributeSet, tempFiles: TempFiles): File = {
     //These may not be redefined
-    val predefinedAttributes = AttributeSet.newMinimalSet().getRequired.asScala.map(_.id()).toSet
+    val predefinedAttributes = AttributeSet.newMinimalSet().getAll.asScala.map(_.id()).toSet
     val file = tempFiles.makeNew("metadata", "ttl")
     val fout = new BufferedWriter(new FileWriter(file))
 
@@ -209,6 +209,18 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
           |   ?x a t:sample; rdfs:label ?label; ?y ?z.
           |  } FILTER(?label IN(${sampleIds.map(x => "\"" + x + "\"").mkString(",")}))
           | }
+    """.stripMargin)
+  }
+
+  def deleteCustomAttributes(batch: String): Unit = {
+    triplestore.update(
+      s"""|$tPrefixes\n
+          |DELETE { GRAPH <$defaultPrefix/$batch> {
+          |  ?x a t:probe; ?y ?z.
+          | } }
+          | WHERE { GRAPH <$defaultPrefix/$batch> {
+          |   ?x a t:probe; ?y ?z.
+          | } }
     """.stripMargin)
   }
 

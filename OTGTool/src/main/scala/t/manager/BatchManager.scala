@@ -280,8 +280,13 @@ class BatchManager(context: Context) {
 
   def updateMetadata(batch: Batch, metaFile: String, customAttributes: Boolean,
       recalculate: Boolean = false, force: Boolean = false): Task[Unit] = {
-    //Generate a new attribute set if adding attributes was requested
-    val attrSet = if (customAttributes) None else Some(config.attributes)
+
+    val attrSet = if (customAttributes) {
+      //If the batch already had custom attributes, the existing custom set will be used as a basis.
+      //Else we create a new set
+      val batchURI = BatchStore.packURI(batch.title)
+      samples.attributeSetForBatch(batchURI, AttributeSet.newMinimalSet())
+    } else Some(config.attributes)
 
     for {
       metadata <- readTSVMetadata(metaFile, attrSet)
@@ -569,7 +574,9 @@ class BatchManager(context: Context) {
 
   /** Delete the RDF data associated with a batch.
    * @param title batch ID
-   * @param metadata if given, only samples in the metadata will be deleted from the batch, otherwise the entire batch is deleted.
+   * @param metadata If not given, the entire batch is deleted.
+   *                 If given, only samples in the metadata, as well as all custom attributes in the batch will
+   *                 be deleted.
    */
   def deleteBatchRDF(title: String, metadata: Option[Metadata]) =
     new AtomicTask[Unit]("Delete RDF data") {
@@ -578,6 +585,8 @@ class BatchManager(context: Context) {
       metadata match {
         case Some(m) =>
           bs.deleteSamples(title, m.samples)
+          //Delete custom attributes in the batch
+          bs.deleteCustomAttributes(title)
           //Also delete the old timestamp, in anticipation of a new one
           bs.deleteTimestamp(title)
         case _ => bs.delete(title)

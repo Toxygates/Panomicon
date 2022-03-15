@@ -57,12 +57,17 @@ object TSVMetadata {
         (attrib, values) <- columns
         normalizedID = normalizeAttributeID(attrib)
         trimmed = values.map(_.trim)
-        attribute = attrSet.byIdLowercase.getOrElse(normalizedID,
-            {
+        attribute = {
               val attribType = getAttribType(attrib, headerRows)
-              warningHandler(s"attribute $normalizedID not found, creating new as type $attribType")
-              attrSet.findOrCreate(normalizedID, attrib, attribType.toLowerCase)
-            })
+              if (attrSet.mayRedefine(normalizedID) && attrSet.hasId(normalizedID)) {
+                warningHandler(s"Redefining attribute $normalizedID with type $attribType")
+              } else if (!attrSet.hasId(normalizedID)) {
+                warningHandler(s"attribute $normalizedID not found, creating new as type $attribType")
+              } else {
+                warningHandler(s"Attribute $normalizedID exists and may not be redefined")
+              }
+              attrSet.redefineOrCreate(normalizedID, attrib, attribType.toLowerCase, null)
+            }
       } yield attribute.id -> trimmed)
     }
 
@@ -130,7 +135,7 @@ object TSVMetadata {
       val nonParsing = values.filter(!canParseNum(_))
       if (nonParsing.nonEmpty) {
         warningHandler(
-          s"${nonParsing.size} value(s) in the column ${attrib.id()} had a bad number format." +
+          s"${nonParsing.size} value(s) in the column ${attrib.id()} had a bad number format. " +
             s"Treating as absent. Example: ${nonParsing.head}")
       }
     }
