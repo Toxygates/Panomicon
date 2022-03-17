@@ -59,6 +59,9 @@ class UploadHandling(context: Context) {
       throw BatchUploadException.badID(
         s"The batch $batch already exists and appending is not allowed. " +
           "Please choose a different name.")
+    } else if (!existingBatches.contains(batch.id) && append) {
+      throw BatchUploadException.badID(
+        s"The batch $batch does not exist, but appending was requested.")
     }
 
     runTasks(batchManager.add(batch.toBatchManager(visibleInstances),
@@ -77,8 +80,8 @@ class UploadHandling(context: Context) {
     val b = batch.toBatchManager(visibleInstances)
     val update = batchManager.updateBatchProperties(b)
     val tasks = metaFile match {
-      case Some(mf) => update.andThen(batchManager.updateMetadata(b, mf.getAbsolutePath,
-        true, recalculate))
+      case Some(mf) => update.andThen(batchManager.updateMetadataFromFile(b, mf.getAbsolutePath,
+        customAttributes = true, recalculate = recalculate, append = false))
       case _ => update
     }
     runTasks(tasks, Some(tempFiles))
