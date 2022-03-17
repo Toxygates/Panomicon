@@ -391,6 +391,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     verifyRole("admin")
 
     val id = paramOrHalt("id")
+    val append = params.get("append").map(_ == "true").getOrElse(false)
     val comment = params.get("comment").getOrElse("")
     val publicComment = params.get("publicComment").getOrElse("")
     val dataset = paramOrHalt("dataset")
@@ -409,7 +410,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
 
     uploadHandling.addBatch(new Batch(id, null, comment, publicComment, dataset, 0),
-      metadata.get, expr.get, calls, probes, instances)
+      metadata.get, expr.get, calls, probes, instances, append)
     Ok("Task started")
   }
 

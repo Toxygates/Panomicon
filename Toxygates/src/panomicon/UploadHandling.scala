@@ -43,7 +43,7 @@ class UploadHandling(context: Context) {
   private val batchManager = new BatchManager(context)
 
   def addBatch(batch: t.sparql.Batch, metadata: FileItem, exprData: FileItem, callsData: Option[FileItem],
-               probesData: Option[FileItem], visibleInstances: List[String], mayAppendBatch: Boolean = true) {
+               probesData: Option[FileItem], visibleInstances: List[String], append: Boolean) {
     val tempFiles = new TempFiles()
 
     val metaFile = itemToFile(tempFiles, "metadata", metadata)
@@ -55,7 +55,7 @@ class UploadHandling(context: Context) {
     grabRunner()
 
     val existingBatches = new BatchStore(context.config.triplestoreConfig).getList()
-    if (existingBatches.contains(batch.id) && !mayAppendBatch) {
+    if (existingBatches.contains(batch.id) && !append) {
       throw BatchUploadException.badID(
         s"The batch $batch already exists and appending is not allowed. " +
           "Please choose a different name.")
@@ -63,7 +63,7 @@ class UploadHandling(context: Context) {
 
     runTasks(batchManager.add(batch.toBatchManager(visibleInstances),
       metaFile.getAbsolutePath, dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath),
-      append = false, generateAttributes = true, conversion = None), Some(tempFiles))
+      append = append, generateAttributes = true, conversion = None), Some(tempFiles))
   }
 
   def updateBatch(batch: t.sparql.Batch, metadata: Option[FileItem], visibleInstances: List[String],
