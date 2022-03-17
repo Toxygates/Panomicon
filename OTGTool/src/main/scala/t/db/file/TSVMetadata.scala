@@ -23,7 +23,6 @@ import scala.collection.JavaConverters._
 import friedrich.util.formats.TSVFile
 import t.db._
 import t.model.sample._
-import t.model.sample.Helpers._
 import t.sparql.TRDF
 
 import scala.collection.mutable
