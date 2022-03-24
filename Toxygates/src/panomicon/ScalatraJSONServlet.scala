@@ -403,10 +403,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val probes = fileParams.get("probesData")
 
     if (metadata.isEmpty) {
-      throw new Exception("No metadata file")
+      Console.err.println("No metadata file")
+      halt(400)
     }
     if (expr.isEmpty) {
-      throw new Exception("No data file")
+      Console.err.println("No data file")
+      halt(400)
     }
 
     uploadHandling.addBatch(new Batch(id, null, comment, publicComment, dataset, 0),
