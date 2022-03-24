@@ -595,7 +595,8 @@ class BatchManager(context: Context) {
       metadata match {
         case Some(m) =>
           bs.deleteSamples(title, m.samples)
-          //Delete custom attributes in the batch
+          //Delete custom attributes in the batch.
+          //If we are updating metadata, then these will be reinserted after the attribute set has been updated.
           bs.deleteCustomAttributes(title)
           //Also delete the old timestamp, in anticipation of a new one
           bs.deleteTimestamp(title)
