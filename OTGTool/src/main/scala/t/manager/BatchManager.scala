@@ -261,7 +261,7 @@ class BatchManager(context: Context) {
       data <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
       _ <- newMetadataCheck(batch.title, metadata, config, append, Some(data)) andThen
         (if (append) updateMetadata(batch, metadata, generateAttributes, append = true, recalculate = false) else
-          addMetadata(batch, metadata, append, generateAttributes)) andThen
+          addMetadata(batch, metadata, generateAttributes)) andThen
         addEnums(metadata, generateAttributes) andThen
         // Note that we rely on probe maps, sample maps etc in matrixContext
         // not being read until they are needed
@@ -299,7 +299,7 @@ class BatchManager(context: Context) {
     for {
       _ <- updateMetadataCheck(batch.title, metadata, config, append, force) andThen
         deleteBatchRDF(batch.title, Some(metadata)) andThen
-        addMetadata(batch, metadata, append, customAttributes,true) andThen
+        addMetadata(batch, metadata, customAttributes) andThen
         (if (recalculate) recalculateFoldsAndSeries(metadata, customAttributes) else Task.success)
     } yield ()
   }
@@ -356,20 +356,13 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addMetadata(batch: Batch, metadata: Metadata,
-      append: Boolean, generateAttributes: Boolean, update: Boolean = false): Task[Unit] = {
+  def addMetadata(batch: Batch, metadata: Metadata, generateAttributes: Boolean): Task[Unit] = {
     val ts = config.triplestoreConfig.getTriplestore()
 
-    val createGraphIfNecessary =
-      if (!append) {
-        createBatchGraph(batch.title, batch.comment, config.triplestoreConfig) andThen
-          updateBatchProperties(batch)
-      } else {
-        Task.success
-      }
-
-    createGraphIfNecessary andThen
-      (if (!update || append) addSampleIDs(metadata) else Task.success) andThen
+    //CreateBatchGraph will have no effect if the batch already exists, other than adding a new timestamp
+    createBatchGraph(batch.title, batch.comment, config.triplestoreConfig) andThen
+      updateBatchProperties(batch) andThen
+      addSampleIDs(metadata) andThen
       addSampleRDF(batch.title, metadata, ts, generateAttributes)
   }
 
@@ -451,8 +444,11 @@ class BatchManager(context: Context) {
           val notFoundInExprData = metadataIds.toSet -- samples
           if (notFoundInExprData.nonEmpty) {
             throw new Exception(s"The samples ${notFoundInExprData mkString ", "} are defined in the metadata, but not defined in the expression data.")
-          } else {
-            log("All samples are defined in the expression data.")
+          }
+
+          val notFoundInMetadata = samples.toSet -- metadataIds
+          if (notFoundInMetadata.nonEmpty) {
+            throw new Exception(s"The samples ${notFoundInMetadata mkString ","} are defined in the expression data, but not in the metadata.")
           }
         }
 
