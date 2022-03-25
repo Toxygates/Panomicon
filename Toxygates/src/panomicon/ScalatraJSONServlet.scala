@@ -422,7 +422,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   /** Update metadata for a batch.
    * The metadata can be full (for all samples in the batch) or partial (for just some samples).
-   * In the latter case, existing samples will be left unchanged in the batch.
+   * In the latter case, existing samples that are not referenced in the new metadata will be left unchanged.
    */
   put("/batch") {
     verifyRole("admin")
