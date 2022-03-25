@@ -244,7 +244,7 @@ class BatchManager(context: Context) {
    * @param metadataFile File to read metadata from
    * @param dataFile Expression data file
    * @param callFile Calls (P/A for e.g. affymetrix arrays) file
-   * @param append Whether to append to a pre-existing batch
+   * @param append Whether to append to a pre-existing batch.
    * @param generateAttributes Whether to generate per-batch attributes in the RDF
    *                           data for this batch. If false, system-wide attributes will be used
    * @param conversion The transformation to apply to expression data as it is read from the file, if any
@@ -415,6 +415,10 @@ class BatchManager(context: Context) {
       deleteBatchRDF(title, None) //Also removes the "batch record"
   }
 
+  /** Validate metadata for insertion.
+   * @param append Whether the operation is an append (new sample insertion is allowed)
+   * @param expressionData Expression data to co-validate with the metadata, if any
+   */
   def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean,
                        expressionData: Option[ColumnExpressionData]) =
       new AtomicTask[Unit]("Check validity of new metadata") {

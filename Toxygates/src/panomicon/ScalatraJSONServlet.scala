@@ -382,10 +382,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     write(r)
   }
 
-  /** Upload a batch
+  /** Upload a new batch, or append samples to an existing batch if ?append=true.
    * Example curl command:
    * curl -X POST -F metadata=@vitamin_a_metadata_full.tsv -F callsData=@vitamin_a_call.csv
    *   -F exprData=@vitamin_a_expr.csv http://127.0.0.1:4200/json/uploadBatch?batch=vatest
+   *
+   * In insert (default) mode, a new batch is created.
+   * In append mode (if ?append=true), samples are added to a batch.
+   * In both cases, other parameters like dataset, enabledInstances, comment etc will also be set.
    * */
   post("/batch") {
     verifyRole("admin")
@@ -416,6 +420,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("Task started")
   }
 
+  /** Update metadata for a batch.
+   * The metadata can be full (for all samples in the batch) or partial (for just some samples).
+   * In the latter case, existing samples will be left unchanged in the batch.
+   */
   put("/batch") {
     verifyRole("admin")
 
