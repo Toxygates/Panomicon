@@ -63,7 +63,10 @@ object TSVMetadata {
               } else if (!attrSet.hasId(normalizedID)) {
                 warningHandler(s"attribute $normalizedID not found, creating new as type $attribType")
               } else {
-                warningHandler(s"Attribute $normalizedID exists and may not be redefined")
+                //Non-redefinable attribute.
+                //In general, this is a normal circumstance since e.g. sample_id and treatment must be specified
+                //for all samples.
+                warningHandler(s"System attribute $normalizedID found")
               }
               attrSet.redefineOrCreate(normalizedID, attrib, attribType.toLowerCase, null)
             }
