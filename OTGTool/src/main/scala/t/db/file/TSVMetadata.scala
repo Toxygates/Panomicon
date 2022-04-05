@@ -40,11 +40,11 @@ object TSVMetadata {
    * @param attributes The attribute set to use. Required attributes in the set will be checked for presence in the
    *                   file. New attributes will be added to the set. If none is supplied, a new set will be created and
    *                   returned as part of the result.
-   * @param warningHandler Function to report warning messages
+   * @param logMessage Function to log messages
    * @return
    */
   def apply(file: String, attributes: Option[AttributeSet],
-      warningHandler: (String) => Unit = println): Metadata = {
+            logMessage: (String) => Unit = println): Metadata = {
     val attrSet = attributes.getOrElse(AttributeSet.newMinimalSet())
 
     val metadata: Map[String, Seq[String]] = {
@@ -59,26 +59,26 @@ object TSVMetadata {
         attribute = {
               val attribType = getAttribType(attrib, headerRows)
               if (attrSet.mayRedefine(normalizedID) && attrSet.hasId(normalizedID)) {
-                warningHandler(s"Redefining attribute $normalizedID with type $attribType")
+                logMessage(s"Redefining attribute $normalizedID with type $attribType")
               } else if (!attrSet.hasId(normalizedID)) {
-                warningHandler(s"attribute $normalizedID not found, creating new as type $attribType")
+                logMessage(s"attribute $normalizedID not found, creating new as type $attribType")
               } else {
                 //Non-redefinable attribute.
                 //In general, this is a normal circumstance since e.g. sample_id and treatment must be specified
                 //for all samples.
-                warningHandler(s"System attribute $normalizedID found")
+                logMessage(s"System attribute $normalizedID found")
               }
               attrSet.redefineOrCreate(normalizedID, attrib, attribType.toLowerCase, null)
             }
       } yield attribute.id -> trimmed)
     }
 
-    datatypeCheck(attrSet, metadata, warningHandler)
+    datatypeCheck(attrSet, metadata, logMessage)
 
     val required = attrSet.getRequired().asScala.map(_.id).map(_.toLowerCase)
     val missingColumns = required.filter(!metadata.keySet.contains(_))
     if (!missingColumns.isEmpty) {
-      warningHandler(s"The following columns are missing in $file: $missingColumns")
+      logMessage(s"The following columns are missing in $file: $missingColumns")
       throw new Exception(s"Missing columns in metadata: ${missingColumns mkString ", "}")
     }
 
