@@ -70,9 +70,8 @@ object BatchManager extends ManagerTool {
                 val f = new java.io.File(metadata.replace(".meta.tsv", ".call.csv"))
                 val callFile = if (f.exists()) Some(f.getPath) else None
                 println(s"Insert $dataFile")
-                val task = bm.add(Batch(title, comment, None, None),
-                  metadata, dataFile, callFile,
-                  if (first) append else true, genAttrib, conversion = idConversion)
+                val ops = bm.dataOps(Batch(title, comment), metadata, genAttrib, conversion = idConversion)
+                val task = if (first && ! append) ops.add(dataFile, callFile) else ops.appendSamplesAndUpdate(dataFile, callFile)
 
                 first = false
                 task
@@ -87,8 +86,10 @@ object BatchManager extends ManagerTool {
 
               new PlatformStore(config).populateAttributes(config.attributes)
               //val md = factory.tsvMetadata(metaFile, config.attributes)
-              startTaskRunner(bm.add(Batch(title, comment, None, None),
-                metaFile, dataFile, callFile, append, genAttrib, conversion = idConversion))
+              startTaskRunner(
+                bm.dataOps(Batch(title, comment), metaFile, genAttrib, idConversion).
+                  add(dataFile, callFile)
+              )
           }
 
         case "recalculate" =>
@@ -116,8 +117,10 @@ object BatchManager extends ManagerTool {
           val recalculate = booleanOption(args, "-recalculate")
           new PlatformStore(config).populateAttributes(config.attributes)
           //val md = factory.tsvMetadata(metaFile, config.attributes)
-          startTaskRunner(bm.updateMetadataFromFile(Batch(title, comment, None, None),
-              metaFile, customAttributes = false, append = false, recalculate = recalculate, force = force))
+          startTaskRunner(
+            bm.dataOps(Batch(title, comment), metaFile, customAttributes = false).
+              updateMetadata(recalculate = recalculate, force = force)
+          )
 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
@@ -202,7 +205,8 @@ object BatchManager extends ManagerTool {
     println("Please specify a command (add/updateMetadata/recalculate/delete/list/list-access/enable/disable)")
   }
 
-  case class Batch(title: String, comment: String, instances: Option[Seq[String]], dataset: Option[String])
+  case class Batch(title: String, comment: String,
+                   instances: Option[Seq[String]] = None, dataset: Option[String] = None)
 }
 
 class BatchManager(context: Context) {
@@ -235,100 +239,111 @@ class BatchManager(context: Context) {
       }
     }
 
-  val requiredParameters = config.attributes.getRequired.asScala.map(_.id)
-  val hlParameters = config.attributes.getHighLevel.asScala.map(_.id)
-
-  /**
-   * Add a batch, or append samples to an existing batch
+  /** Operations for creating batches and for editing data in them.
    * @param batch The batch, with visible instances and dataset flags
-   * @param metadataFile File to read metadata from
-   * @param dataFile Expression data file
-   * @param callFile Calls (P/A for e.g. affymetrix arrays) file
-   * @param append Whether to append to a pre-existing batch.
-   * @param generateAttributes Whether to generate per-batch attributes in the RDF
+   * @param metadataFile File to read metadata from (new or updated, full or partial)
+   * @param customAttributes Whether to generate per-batch attributes in the RDF
    *                           data for this batch. If false, system-wide attributes will be used
-   * @param conversion The transformation to apply to expression data as it is read from the file, if any
-   *
-   * @return
+   * @param conversion The transformation to apply to expression data as it is read from files, if any
    */
-  def add(batch: Batch, metadataFile: String,
-    dataFile: String, callFile: Option[String],
-    append: Boolean, generateAttributes: Boolean,
-          conversion: Option[ExpressionConverter]): Task[Unit] = {
+  def dataOps(batch: Batch, metadataFile: String, customAttributes: Boolean,
+              conversion: Option[ExpressionConverter] = None) =
+    new BatchDataOps(batch, metadataFile, customAttributes, conversion)
 
-    for {
-      metadata <- readTSVMetadata(batch, metadataFile, generateAttributes)
-      data <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
-      _ <- newMetadataCheck(batch.title, metadata, config, append, Some(data)) andThen
-        (if (append) updateMetadata(batch, metadata, generateAttributes, append = true, recalculate = false) else
-          addMetadata(batch, metadata, generateAttributes)) andThen
-        addEnums(metadata, generateAttributes) andThen
+  class BatchDataOps(batch: Batch, metadataFile: String, customAttributes: Boolean,
+                     conversion: Option[ExpressionConverter]) {
+
+    /**
+     * Add a batch. Visible instances and datasets will be set.
+     * @param dataFile Expression data file
+     * @param callFile Calls (P/A for e.g. affymetrix arrays) file
+     * @return
+     */
+   def add(dataFile: String, callFile: Option[String]): Task[Unit] = {
+     for {
+       metadata <- readTSVMetadata()
+       exprData <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
+       _ <- newMetadataCheck(batch.title, metadata, config, false, Some(exprData)) andThen
+           addMetadata(metadata) andThen
+         addMatrixData(metadata, dataFile, callFile)
+     } yield ()
+   }
+
+    /** Append samples and update metadata */
+    def appendSamplesAndUpdate(dataFile: String, callFile: Option[String]): Task[Unit] = {
+      for {
+        metadata <- readTSVMetadata()
+        exprData <- readCSVExpressionData(metadata, dataFile, callFile, conversion)
+        _ <- newMetadataCheck(batch.title, metadata, config, true, Some(exprData)) andThen
+          updateMetadata(metadata, append = true, recalculate = false, force = false) andThen
+          addMatrixData(metadata, dataFile, callFile)
+      } yield ()
+    }
+
+    private def addMatrixData(metadata: Metadata, dataFile: String, callFile: Option[String]) = {
+      addEnums(metadata, customAttributes) andThen
+      (for {
         // Note that we rely on probe maps, sample maps etc in matrixContext
         // not being read until they are needed
         // (after addSampleIDs has run, which happens in addMetadata)
-        (for {
-          mc <- Task.simple("Create matrix context") {
-            matrixContext()
-          }
-          _ <- addExprData(metadata, dataFile, callFile, conversion)(mc) andThen
-                recalculateFoldsAndSeries(metadata, generateAttributes)
-        } yield ())
-    } yield ()
-  }
+        mc <- Task.simple("Create matrix context") {
+          matrixContext()
+        }
+        _ <- addExprData(metadata, dataFile, callFile, conversion)(mc) andThen
+          recalculateFoldsAndSeries(metadata, customAttributes)
+      } yield ())
+    }
 
-  def updateMetadataFromFile(batch: Batch, metaFile: String, customAttributes: Boolean,
-                             append: Boolean, recalculate: Boolean, force: Boolean = false): Task[Unit] = {
-    for {
-      metadata <- readTSVMetadata(batch, metaFile, customAttributes)
-      _ <- updateMetadata(batch, metadata, customAttributes, append, recalculate, force)
-    } yield ()
-  }
-
-  /**
-   * Update metadata for samples in a batch. This (partially) deletes batch metadata and reinserts
-   * the specified new metadata.
-   *
-   * @param metadata Specifies the samples to update metadata for. If append is enabled, this may be a mix of
-   *                 existing and new samples.
-   * @param append Whether to allow adding new samples
-   * @param force Allow the update to proceed even if some sanity checks do not pass
-   */
-  def updateMetadata(batch: Batch, metadata: Metadata, customAttributes: Boolean,
-                     append: Boolean, recalculate: Boolean, force: Boolean = false): Task[Unit] = {
-
-    for {
-      _ <- updateMetadataCheck(batch.title, metadata, config, append, force) andThen
-        deleteBatchRDF(batch.title, Some(metadata.samples)) andThen
-        addMetadata(batch, metadata, customAttributes) andThen
-        (if (recalculate) recalculateFoldsAndSeries(metadata, customAttributes) else Task.success)
-    } yield ()
-  }
-
-  def recalculateFoldsAndSeries(metadata: Metadata, customAttributes: Boolean): Task[Unit] = {
-    implicit val mc = matrixContext()
-
-    val platforms = metadata.attributeValues(CoreParameter.Platform)
-    val probeMap = new ProbeStore(config.triplestoreConfig).platformsAndProbes
-    val probes = platforms.flatMap(probeMap(_))
-    val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
-
-    val dbReader = () => config.data.absoluteDBReader
-    val units = metadata.treatedControlGroups(metadata.samples)
-
-    val recalculateChunks = (for (unitChunk <- units.grouped(50);
-      sampleChunk = unitChunk.flatMap(u => u._1 ++ u._2).distinct;
-      filteredMetadata = new FilteredMetadata(metadata, sampleChunk)
-    ) yield {
+    /** Update metadata for existing samples only */
+    def updateMetadata(recalculate: Boolean, force: Boolean = false): Task[Unit] = {
       for {
-        _ <- insertFoldsDataFromExpressionData(dbReader, codedProbes,
-            filteredMetadata) andThen
-          addTimeSeriesData(filteredMetadata) andThen
-          addDoseSeriesData(filteredMetadata)
+        metadata <- readTSVMetadata()
+        _ <- updateMetadata(metadata, false, recalculate, force)
       } yield ()
-    }).reduce(_ andThen _)
+    }
 
-    addEnums(metadata, customAttributes) andThen recalculateChunks
+    /**
+     * Update metadata for samples in a batch. This (partially) deletes batch metadata and reinserts
+     * the specified new metadata.
+     *
+     * @param metadata Specifies the samples to update metadata for. If append is enabled, this may be a mix of
+     *                 existing and new samples.
+     * @param append Whether to allow adding new samples
+     * @param force Allow the update to proceed even if some sanity checks do not pass
+     */
+    private def updateMetadata(metadata: Metadata, append: Boolean, recalculate: Boolean,
+                               force: Boolean): Task[Unit] = {
 
+      for {
+        _ <- updateMetadataCheck(batch.title, metadata, config, append, force) andThen
+          deleteBatchRDF(batch.title, Some(metadata.samples)) andThen
+          addMetadata(metadata) andThen
+          (if (recalculate) recalculateFoldsAndSeries(metadata, customAttributes) else Task.success)
+      } yield ()
+    }
+
+    /** Read the metadata file and configure its attribute set */
+    private def readTSVMetadata(): AtomicTask[Metadata] =
+      new AtomicTask[Metadata]("Read TSV metadata") {
+        override def run(): Metadata = {
+          val attrSet = if (customAttributes) {
+            //If the batch already had custom attributes, the existing custom set will be used as a basis.
+            //Else we create a new set
+            val batchURI = BatchStore.packURI(batch.title)
+            samples.attributeSetForBatch(batchURI, AttributeSet.newMinimalSet())
+          } else Some(config.attributes) //default attribute set, not batch specific
+
+          TSVMetadata(metadataFile, attrSet, log(_))
+        }
+      }
+
+    private def addMetadata(metadata: Metadata): Task[Unit] = {
+      //createBatchGraph will have no effect if the batch already exists, other than adding a new timestamp
+      createBatchGraph(batch) andThen
+        updateBatchProperties(batch) andThen
+        addSampleIDs(metadata) andThen
+        addSampleRDF(batch.title, metadata, customAttributes)
+    }
   }
 
   def insertFoldsDataFromExpressionData(reader: () => MatrixDBReader[PExprValue],
@@ -342,29 +357,32 @@ class BatchManager(context: Context) {
       }
     }
 
-  def readTSVMetadata(batch: Batch, filename: String, customAttributes: Boolean) =
-    new AtomicTask[Metadata]("Read TSV metadata") {
-    override def run(): Metadata = {
-      val attrSet = if (customAttributes) {
-        //If the batch already had custom attributes, the existing custom set will be used as a basis.
-        //Else we create a new set
-        val batchURI = BatchStore.packURI(batch.title)
-        samples.attributeSetForBatch(batchURI, AttributeSet.newMinimalSet())
-      } else Some(config.attributes)
+  def recalculateFoldsAndSeries(metadata: Metadata, customAttributes: Boolean): Task[Unit] = {
+    implicit val mc = matrixContext()
 
-      TSVMetadata(filename, attrSet, log(_))
-    }
+    val platforms = metadata.attributeValues(CoreParameter.Platform)
+    val probeMap = new ProbeStore(config.triplestoreConfig).platformsAndProbes
+    val probes = platforms.flatMap(probeMap(_))
+    val codedProbes = probes.map(p => mc.probeMap.pack(p.identifier))
+
+    val dbReader = () => config.data.absoluteDBReader
+    val units = metadata.treatedControlGroups(metadata.samples)
+
+    val recalculateChunks = (for (unitChunk <- units.grouped(50);
+                                  sampleChunk = unitChunk.flatMap(u => u._1 ++ u._2).distinct;
+                                  filteredMetadata = new FilteredMetadata(metadata, sampleChunk)
+                                  ) yield {
+      for {
+        _ <- insertFoldsDataFromExpressionData(dbReader, codedProbes,
+          filteredMetadata) andThen
+          addTimeSeriesData(filteredMetadata) andThen
+          addDoseSeriesData(filteredMetadata)
+      } yield ()
+    }).reduce(_ andThen _)
+
+    addEnums(metadata, customAttributes) andThen recalculateChunks
   }
 
-  def addMetadata(batch: Batch, metadata: Metadata, generateAttributes: Boolean): Task[Unit] = {
-    val ts = config.triplestoreConfig.getTriplestore()
-
-    //CreateBatchGraph will have no effect if the batch already exists, other than adding a new timestamp
-    createBatchGraph(batch.title, batch.comment, config.triplestoreConfig) andThen
-      updateBatchProperties(batch) andThen
-      addSampleIDs(metadata) andThen
-      addSampleRDF(batch.title, metadata, ts, generateAttributes)
-  }
 
   /** Update batch properties like visibility, comments */
   def updateBatchProperties(batch: Batch) = new AtomicTask[Unit]("Update batch record") {
@@ -508,11 +526,12 @@ class BatchManager(context: Context) {
     }
   }
 
-  def createBatchGraph(title: String, comment: String, ts: TriplestoreConfig) =
+  def createBatchGraph(b: Batch) =
     new AtomicTask[Unit]("Add batch record") {
+      val ts = config.triplestoreConfig
       override def run(): Unit = {
         val bs = new BatchStore(ts)
-        bs.addWithTimestamp(title, TRDF.escape(comment))
+        bs.addWithTimestamp(b.title, TRDF.escape(b.comment))
       }
     }
 
@@ -549,9 +568,9 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addSampleRDF(title: String, metadata: Metadata, ts: Triplestore,
-                   addAttributes: Boolean) =
+  def addSampleRDF(title: String, metadata: Metadata, addAttributes: Boolean) =
     new AtomicTask[Unit]("Insert sample RDF data") {
+      val ts = config.triplestoreConfig.getTriplestore()
       override def run(): Unit = {
         val tempFiles = new TempFiles()
         //time series and dose series use same enums
@@ -611,8 +630,7 @@ class BatchManager(context: Context) {
     }
   }
 
-  def readCSVExpressionData(md: Metadata, niFile: String,
-      callFile: Option[String],
+  def readCSVExpressionData(md: Metadata, niFile: String, callFile: Option[String],
       conversion: Option[ExpressionConverter]): Task[ColumnExpressionData] =
     new AtomicTask[ColumnExpressionData]("Read raw expression data") {
       override def run() = {

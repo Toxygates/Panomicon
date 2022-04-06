@@ -99,10 +99,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         }
       })
 
-      runTasks(batchManager.add(batch, metaFile.get.getAbsolutePath,
-        dataFile.get.getAbsolutePath,
-        callsFile.map(_.getAbsolutePath),
-        append = false, generateAttributes = false, conversion = conversion))
+      val ops = batchManager.dataOps(batch, metaFile.get.getAbsolutePath, false, conversion = conversion)
+      runTasks(ops.add(dataFile.get.getAbsolutePath, callsFile.map(_.getAbsolutePath)))
     }
   }
 
@@ -121,8 +119,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
 
-      runTasks(batchManager.updateMetadataFromFile(batch,
-        metaFile.get.getAbsolutePath, append = false, customAttributes = false, recalculate = recalculate))
+      val ops = batchManager.dataOps(batch, metaFile.get.getAbsolutePath, customAttributes = false)
+      runTasks(ops.updateMetadata(recalculate = recalculate))
     }
   }
 
