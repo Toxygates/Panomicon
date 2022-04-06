@@ -31,6 +31,12 @@ trait Metadata extends SampleSet {
   def parameterMap(s: Sample): Map[String, String] =
     Map() ++ sampleAttributes(s).map(x => x._1.id -> x._2)
 
+  def definedForAllSamples(attribute: Attribute): Boolean =
+    samples.filter(s => sampleAttribute(s, attribute).isEmpty).isEmpty
+
+  def definedForAllSamples(attributes: Iterable[Attribute]): Boolean =
+    attributes.filter(a => !definedForAllSamples(a)).isEmpty
+
   /**
    * Obtain all values for a given parameter represented by the samples in
    * this metadata.

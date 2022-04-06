@@ -742,6 +742,12 @@ class BatchManager(context: Context) {
     builder: SeriesBuilder[S], kind: String)(implicit mc: MatrixContext) =
       new AtomicTask[Unit](s"Insert $kind series data") {
     override def run(): Unit = {
+      if (!md.definedForAllSamples(builder.requiredAttributes)) {
+        log("Series insertion not supported for this batch. The following attributes are required for time/dose series:")
+        log("  " + builder.requiredAttributes.map(_.id()).mkString(", "))
+        return
+      }
+
       //idea: use RawExpressionData directly as source +
       //give KCMatrixDB and e.g. CSVRawExpressionData a common trait/adapter
 

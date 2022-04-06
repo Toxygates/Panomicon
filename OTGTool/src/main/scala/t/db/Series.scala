@@ -73,6 +73,8 @@ case class SeriesPoint(code: Int, value: ExprValue) {
  * for a particular application.
  */
 trait SeriesBuilder[S <: Series[S]] {
+  def requiredAttributes: Iterable[Attribute]
+
   /**
    * Construct a series with no points.
    */
