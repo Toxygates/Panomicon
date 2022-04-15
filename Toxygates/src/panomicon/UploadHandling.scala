@@ -4,7 +4,7 @@ import org.scalatra.servlet.FileItem
 import t.Context
 import t.global.KCDBRegistry
 import t.manager.BatchManager.Batch
-import t.manager.{BatchManager, PlatformManager, Task, TaskRunner}
+import t.manager.{BatchManager, ExprDataInput, MetadataInput, PlatformManager, Task, TaskRunner}
 import t.platform.PlatformFormat
 import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
 import t.sparql.{BatchStore, PlatformStore, TRDF}
@@ -61,9 +61,9 @@ class UploadHandling(context: Context) {
           "Please choose a different name.")
     }
 
-    val ops = batchManager.dataOps(batch.toBatchManager(visibleInstances), metaFile.getAbsolutePath,
-      customAttributes = true)
-    runTasks(ops.add(dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath)), Some(tempFiles))
+    val metadataInput = MetadataInput(metaFile.getAbsolutePath, customAttributes = true)
+    val exprFileInput = ExprDataInput(dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath))
+    runTasks(batchManager.add(batch.toBatchManager(visibleInstances), metadataInput, exprFileInput), Some(tempFiles))
   }
 
   def updateBatch(batch: t.sparql.Batch, metadata: Option[FileItem], visibleInstances: List[String],
@@ -83,21 +83,9 @@ class UploadHandling(context: Context) {
         s"The batch $batch does not exist.")
     }
     val b = batch.toBatchManager(visibleInstances)
-    val tasks = metaFile match {
-      case Some(mf) =>
-        val ops = batchManager.dataOps(b, mf.getAbsolutePath, customAttributes = true)
-        exprFile match {
-          case Some(ed) =>
-            //Update metadata and append samples
-            ops.appendSamplesAndUpdate(ed.getAbsolutePath, callsFile.map(_.getAbsolutePath))
-          case _ =>
-            //Update metadata only
-            ops.updateMetadata(recalculate = recalculate)
-        }
-      case _ =>
-        //Update batch properties only (visible instances, comment etc)
-        batchManager.updateBatchProperties(b)
-    }
+    val metadataInput = metaFile.map(mf => MetadataInput(mf.getAbsolutePath, customAttributes = true))
+    val exprDataInput = exprFile.map(ef => ExprDataInput(ef.getAbsolutePath, callsFile.map(_.getAbsolutePath)))
+    val tasks = batchManager.update(b, metadataInput, exprDataInput)
     runTasks(tasks, Some(tempFiles))
   }
 
