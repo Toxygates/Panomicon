@@ -1,10 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { VisualizationRoutingModule } from './visualization-routing.module';
+import { VisualizationCanvasComponent } from './visualization-canvas/visualization-canvas.component';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    VisualizationCanvasComponent
+  ],
   imports: [
-    CommonModule
+    CommonModule,
+		VisualizationRoutingModule
   ]
 })
 export class VisualizationModule { }
