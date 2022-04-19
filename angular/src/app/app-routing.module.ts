@@ -16,6 +16,8 @@ const routes: Routes = [
         import('./viewer/group-manager/group-manager.module').then(m => m.GroupManagerModule) },
       { path: 'gene-sets', loadChildren: () =>
         import('./viewer/gene-sets/gene-sets.module').then(m => m.GeneSetsModule) },
+			{ path: 'visaulization', loadChildren: () => 
+				import('./viewer/visualization/visualization.module').then(m => m.VisualizationModule)},
       { path: '',   redirectTo: 'sample-browser', pathMatch: 'full' },
       { path: '**', component: PageNotFoundComponent }
     ]
