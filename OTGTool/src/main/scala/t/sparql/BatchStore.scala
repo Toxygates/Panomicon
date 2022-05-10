@@ -192,10 +192,13 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
       s"DROP GRAPH <$defaultPrefix/$name>")
   }
 
-  def deleteTimestamp(batch: String): Unit = {
+  /** Delete properties that are replaced each time batch metadata is updated. */
+  def deleteBatchProperties(batch: String): Unit = {
     triplestore.update(s"$tPrefixes\n " +
-      s"DELETE { <$defaultPrefix/$batch> t:timestamp ?o. } \n" +
-      s"WHERE { <$defaultPrefix/$batch> t:timestamp ?o. } ")
+      s"DELETE { <$defaultPrefix/$batch> t:timestamp ?o. } WHERE { <$defaultPrefix/$batch> t:timestamp ?o. } ")
+
+    triplestore.update(s"$tPrefixes\n " +
+      s"DELETE { <$defaultPrefix/$batch> t:comment ?o. } WHERE { <$defaultPrefix/$batch> t:comment ?o. } ")
   }
 
   def deleteSamples(batch: String, samples: Iterable[Sample]): Unit = {

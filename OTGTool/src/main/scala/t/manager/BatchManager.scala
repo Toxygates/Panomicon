@@ -662,8 +662,8 @@ class BatchManager(context: Context) {
           //Delete custom attributes in the batch.
           //If we are updating metadata, then these will be reinserted after the attribute set has been updated.
           bs.deleteCustomAttributes(title)
-          //Also delete the old timestamp, in anticipation of a new one
-          bs.deleteTimestamp(title)
+          //Delete batch properties that will be replaced
+          bs.deleteBatchProperties(title)
         case _ =>
           //Delete all data associated with the batch
           bs.delete(title)
