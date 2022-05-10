@@ -68,11 +68,11 @@ class UploadHandling(context: Context) {
 
   def updateBatch(batch: t.sparql.Batch, metadata: Option[FileItem], visibleInstances: List[String],
                   recalculate: Boolean,
-                  appendExprData: Option[FileItem], appendCallsData: Option[FileItem]): Unit = {
+                  exprData: Option[FileItem], callsData: Option[FileItem]): Unit = {
     val tempFiles = new TempFiles()
     val metaFile = metadata.map(c => itemToFile(tempFiles, "metadata", c))
-    val exprFile = appendExprData.map(c => itemToFile(tempFiles, "exprData", c))
-    val callsFile = appendCallsData.map(c => itemToFile(tempFiles, "callsData", c))
+    val exprFile = exprData.map(c => itemToFile(tempFiles, "exprData", c))
+    val callsFile = callsData.map(c => itemToFile(tempFiles, "callsData", c))
 
     ensureNotMaintenance()
     grabRunner()
@@ -83,7 +83,8 @@ class UploadHandling(context: Context) {
         s"The batch $batch does not exist.")
     }
     val b = batch.toBatchManager(visibleInstances)
-    val metadataInput = metaFile.map(mf => MetadataInput(mf.getAbsolutePath, customAttributes = true))
+    val metadataInput = metaFile.map(mf => MetadataInput(mf.getAbsolutePath,
+      customAttributes = true, recalculate = recalculate))
     val exprDataInput = exprFile.map(ef => ExprDataInput(ef.getAbsolutePath, callsFile.map(_.getAbsolutePath)))
     val tasks = batchManager.update(b, metadataInput, exprDataInput)
     runTasks(tasks, Some(tempFiles))

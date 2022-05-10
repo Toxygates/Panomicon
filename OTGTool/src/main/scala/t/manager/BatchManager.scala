@@ -76,7 +76,7 @@ object BatchManager extends ManagerTool {
                 val exprInput = ExprDataInput(dataFile, callFile, idConversion)
 
                 val task = if (first && ! append) bm.add(batch, metadataInput, exprInput) else
-                  bm.appendSamplesAndUpdate(batch, metadataInput, exprInput)
+                  bm.writeSamplesAndUpdate(batch, metadataInput, exprInput)
 
                 first = false
                 task
@@ -232,6 +232,7 @@ case class ExprDataInput(exprDataFile: String, callsDataFile: Option[String] = N
  * @param metadataFile File to read metadata from (new or updated, full or partial)
  * @param customAttributes Whether to generate per-batch attributes in the RDF
  *                           data for this batch. If false, system-wide attributes will be used
+ * @param recalculate Whether to force re-calculation when metadata is updated in existing batches using this input.
  */
 case class MetadataInput(metadataFile: String, customAttributes: Boolean,
   recalculate: Boolean = false)
@@ -282,14 +283,18 @@ class BatchManager(context: Context) {
      } yield ()
    }
 
-    /** Append samples and update metadata */
-    def appendSamplesAndUpdate(batch: Batch, metadataInput: MetadataInput, exprDataInput: ExprDataInput): Task[Unit] = {
+    /**
+     * Append/overwrite samples and update metadata.
+     * metadataInput and exprDataInput must describe the same samples, but individual samples
+     * may be either new or pre-existing in the batch.
+     */
+    def writeSamplesAndUpdate(batch: Batch, metadataInput: MetadataInput, exprDataInput: ExprDataInput): Task[Unit] = {
       for {
         metadata <- readTSVMetadata(batch, metadataInput)
         exprData <- readCSVExpressionData(metadata, exprDataInput)
         _ <- newMetadataCheck(batch.title, metadata, config, true, Some(exprData)) andThen
           updateMetadata(batch, metadata, metadataInput.customAttributes,
-            append = true, recalculate = false, force = false) andThen
+            mayAppend = true, recalculate = false, force = false) andThen
           addMatrixData(metadata, metadataInput.customAttributes, exprDataInput)
       } yield ()
     }
@@ -317,14 +322,13 @@ class BatchManager(context: Context) {
     }
 
   /**
-   * Update batch properties, optionally also updating batch metadata, and optionally also
-   * inserting additional samples
+   * Update batch properties, optionally also updating batch metadata, and optionally also updating/inserting
+   * expression data.
    * @param batch Batch properties
-   * @param metadataInput Metadata input, to be specified if metadata should be updated and/or samples should be appended.
-   *                      If metadata for existing samples is updated, the samples specified in the metadata can be a subset
-   *                      of what already exists in the batch.
-   * @param exprDataInput Expression data input for appending samples.
-   *                      If specified, the samples must correspond precisely to the sample set in the metadata
+   * @param metadataInput Metadata input, to be specified if metadata should be updated and/or expression data should be
+   *                      updated/appended.
+   * @param exprDataInput Expression data input for updating/appending.
+   *                      If specified, the samples must correspond precisely to the sample set in metadataInput.
    * @return
    */
     def update(batch: Batch, metadataInput: Option[MetadataInput], exprDataInput: Option[ExprDataInput]) = {
@@ -332,7 +336,7 @@ class BatchManager(context: Context) {
         case Some(mi) =>
           exprDataInput match {
             case Some(ei) =>
-              appendSamplesAndUpdate(batch, mi, ei)
+              writeSamplesAndUpdate(batch, mi, ei)
             case None =>
               updateMetadata(batch, mi)
           }
@@ -346,14 +350,14 @@ class BatchManager(context: Context) {
      *
      * @param metadata Specifies the samples to update metadata for. If append is enabled, this may be a mix of
      *                 existing and new samples.
-     * @param append Whether to allow adding new samples
+     * @param mayAppend Whether to allow adding new samples
      * @param force Allow the update to proceed even if some sanity checks do not pass
      */
-    private def updateMetadata(batch: Batch, metadata: Metadata, customAttributes: Boolean, append: Boolean,
+    private def updateMetadata(batch: Batch, metadata: Metadata, customAttributes: Boolean, mayAppend: Boolean,
                                recalculate: Boolean, force: Boolean): Task[Unit] = {
 
       for {
-        _ <- updateMetadataCheck(batch.title, metadata, config, append, force) andThen
+        _ <- updateMetadataCheck(batch.title, metadata, config, mayAppend, force) andThen
           deleteBatchRDF(batch.title, Some(metadata.samples)) andThen
           addMetadata(batch, metadata, customAttributes) andThen
           (if (recalculate) recalculateFoldsAndSeries(metadata, customAttributes) else Task.success)
@@ -471,7 +475,7 @@ class BatchManager(context: Context) {
   }
 
   /** Validate metadata for insertion.
-   * @param append Whether the operation is an append (new sample insertion is allowed)
+   * @param append Whether the operation allows appending new samples
    * @param expressionData Expression data to co-validate with the metadata, if any
    */
   def newMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig, append: Boolean,
@@ -523,7 +527,7 @@ class BatchManager(context: Context) {
   }
 
   def updateMetadataCheck(title: String, metadata: Metadata, baseConfig: BaseConfig,
-                          append: Boolean, force: Boolean) =
+                          mayAppend: Boolean, force: Boolean) =
       new AtomicTask[Unit]("Check validity of metadata update") {
     override def run(): Unit = {
       checkValidIdentifier(title, "batch ID")
@@ -540,7 +544,7 @@ class BatchManager(context: Context) {
       metadataIds.foreach(checkValidIdentifier(_, "sample ID"))
 
       val (foundInBatch, notInBatch) = metadataIds.partition(batchSampleIds contains _)
-      if (notInBatch.nonEmpty && !append && !force) {
+      if (notInBatch.nonEmpty && !mayAppend && !force) {
         val msg = "New metadata file contained the following samples that " +
           s"could not be found in the existing batch: ${notInBatch mkString " "}"
         throw new Exception(msg)

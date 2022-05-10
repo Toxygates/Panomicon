@@ -419,12 +419,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   /** Update metadata for a batch, or append samples to the batch.
    *
-   * If metadata is specified, the metadata can be full (for all samples in the batch)
+   * If metadata is specified but exprData is not, the metadata can be full (for all samples in the batch)
    * or partial (for just some samples). In the latter case, existing samples that are not referenced in the new
    * metadata will be left unchanged.
    *
-   * If exprData is specified, new samples are appended to the batch. Metadata must then also be specified, and
-   * must describe exactly the same samples that the metadata describes.
+   * If metadata and exprData are specified, sample expression data may be inserted (appending new samples) and/or
+   * overwritten (for existing samples). Metadata must then describe exactly the same samples that exprData describes.
    */
   put("/batch") {
     verifyRole("admin")
