@@ -118,7 +118,7 @@ trait BatchGrouping {
 case class Batch(id: String, timestamp: Date, comment: String, publicComment: String,
                  dataset: String, numSamples: Int) {
   def toBatchManager(instances: List[String]) =
-    t.manager.BatchManager.Batch(id, comment, Some(instances), Some(dataset))
+    t.manager.BatchManager.Batch(id, comment, Some(instances), Some(dataset), publicComment = publicComment)
 
 }
 
@@ -190,15 +190,6 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
     super.delete(name)
     triplestore.update(s"$tPrefixes\n " +
       s"DROP GRAPH <$defaultPrefix/$name>")
-  }
-
-  /** Delete properties that are replaced each time batch metadata is updated. */
-  def deleteBatchProperties(batch: String): Unit = {
-    triplestore.update(s"$tPrefixes\n " +
-      s"DELETE { <$defaultPrefix/$batch> t:timestamp ?o. } WHERE { <$defaultPrefix/$batch> t:timestamp ?o. } ")
-
-    triplestore.update(s"$tPrefixes\n " +
-      s"DELETE { <$defaultPrefix/$batch> t:comment ?o. } WHERE { <$defaultPrefix/$batch> t:comment ?o. } ")
   }
 
   def deleteSamples(batch: String, samples: Iterable[Sample]): Unit = {

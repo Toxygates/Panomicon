@@ -215,7 +215,8 @@ object BatchManager extends ManagerTool {
   }
 
   case class Batch(title: String, comment: String,
-                   instances: Option[Seq[String]] = None, dataset: Option[String] = None)
+                   instances: Option[Seq[String]] = None, dataset: Option[String] = None,
+                   publicComment: String = "")
 }
 
 /**
@@ -425,7 +426,7 @@ class BatchManager(context: Context) {
   }
 
 
-  /** Update batch properties like visibility, comments */
+  /** Update batch properties like visibility, comments, timestamp */
   def updateBatchProperties(batch: Batch) = new AtomicTask[Unit]("Update batch record") {
     override def run(): Unit = {
       val bs = new BatchStore(config.triplestoreConfig)
@@ -452,8 +453,10 @@ class BatchManager(context: Context) {
           ds.addMember(batch.title, dataset)
           log(s"Associating batch with dataset $dataset")
         }
-        bs.setComment(batch.title, TRDF.escape(batch.comment))
       })
+      bs.setComment(batch.title, TRDF.escape(batch.comment))
+      bs.setPublicComment(batch.title, TRDF.escape(batch.publicComment))
+      bs.setTimestamp(batch.title)
     }
   }
 
@@ -662,8 +665,6 @@ class BatchManager(context: Context) {
           //Delete custom attributes in the batch.
           //If we are updating metadata, then these will be reinserted after the attribute set has been updated.
           bs.deleteCustomAttributes(title)
-          //Delete batch properties that will be replaced
-          bs.deleteBatchProperties(title)
         case _ =>
           //Delete all data associated with the batch
           bs.delete(title)
