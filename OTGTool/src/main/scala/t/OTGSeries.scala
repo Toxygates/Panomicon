@@ -112,8 +112,10 @@ object OTGTimeSeriesBuilder extends OTGSeriesBuilder(TimeSeries)
 
 class OTGSeriesBuilder(val seriesType: OTGSeriesType) extends SeriesBuilder[OTGSeries] {
 
-  val enums = List(Repeat, Organ, Organism, DoseLevel, ExposureTime,
-    Compound, TestType).map(_.id)
+  override def requiredAttributes: Iterable[Attribute] = List(Repeat, Organ, Organism, DoseLevel, ExposureTime,
+    Compound, TestType)
+
+  val enums = requiredAttributes.map(_.id)
 
   private def rem(mc: MatrixContext, key: String): Map[Int, String] =
     mc.reverseEnumMaps(key)

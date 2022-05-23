@@ -161,19 +161,31 @@ abstract class ListManager[T](config: TriplestoreConfig) extends Closeable {
       s"WHERE { ?s ?p <$defaultPrefix/$name> . } ")
   }
 
+  //Update a predicate of an item that is supposed to have at most one value
   def updateSinglePredicate(name: String, key: String, value: String): Unit = {
-       triplestore.update(s"$tPrefixes\n " +
-        s"DELETE { <$defaultPrefix/$name> $key ?o. } \n" +
-        s"WHERE { <$defaultPrefix/$name> $key ?o. } ")
     triplestore.update(s"$tPrefixes\n " +
-        s"INSERT DATA { <$defaultPrefix/$name> $key $value }")
+      s"DELETE { <$defaultPrefix/$name> $key ?o. } \n" +
+      s"WHERE { <$defaultPrefix/$name> $key ?o. } ")
+    triplestore.update(s"$tPrefixes\n " +
+      s"INSERT DATA { <$defaultPrefix/$name> $key $value }")
+  }
+
+  def setTimestamp(name: String): Unit = {
+    val encodedDate = dateFormat.format(new Date())
+    updateSinglePredicate(name, timestampRel, "\"" + encodedDate + "\"")
   }
 
   def setComment(name: String, comment: String): Unit = {
-    updateSinglePredicate(name, "t:comment", "\"" + comment + "\"")
+    if (comment.contains('"')) {
+      throw new Exception("A comment may not contain the \" character.")
+    }
+    updateSinglePredicate(name, commentRel, "\"" + comment + "\"")
   }
 
   def setPublicComment(name: String, comment: String): Unit = {
-    updateSinglePredicate(name, "t:publicComment", "\"" + comment + "\"")
+    if (comment.contains('"')) {
+      throw new Exception("A comment may not contain the \" character.")
+    }
+    updateSinglePredicate(name, publicCommentRel, "\"" + comment + "\"")
   }
 }

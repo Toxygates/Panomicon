@@ -23,7 +23,6 @@ import scala.collection.JavaConverters._
 import friedrich.util.formats.TSVFile
 import t.db._
 import t.model.sample._
-import t.model.sample.Helpers._
 import t.sparql.TRDF
 
 import scala.collection.mutable
@@ -41,11 +40,11 @@ object TSVMetadata {
    * @param attributes The attribute set to use. Required attributes in the set will be checked for presence in the
    *                   file. New attributes will be added to the set. If none is supplied, a new set will be created and
    *                   returned as part of the result.
-   * @param warningHandler Function to report warning messages
+   * @param logMessage Function to log messages
    * @return
    */
   def apply(file: String, attributes: Option[AttributeSet],
-      warningHandler: (String) => Unit = println): Metadata = {
+            logMessage: (String) => Unit = println): Metadata = {
     val attrSet = attributes.getOrElse(AttributeSet.newMinimalSet())
 
     val metadata: Map[String, Seq[String]] = {
@@ -57,21 +56,29 @@ object TSVMetadata {
         (attrib, values) <- columns
         normalizedID = normalizeAttributeID(attrib)
         trimmed = values.map(_.trim)
-        attribute = attrSet.byIdLowercase.getOrElse(normalizedID,
-            {
+        attribute = {
               val attribType = getAttribType(attrib, headerRows)
-              warningHandler(s"attribute $normalizedID not found, creating new as type $attribType")
-              attrSet.findOrCreate(normalizedID, attrib, attribType.toLowerCase)
-            })
+              if (attrSet.mayRedefine(normalizedID) && attrSet.hasId(normalizedID)) {
+                logMessage(s"Redefining attribute $normalizedID with type $attribType")
+              } else if (!attrSet.hasId(normalizedID)) {
+                logMessage(s"attribute $normalizedID not found, creating new as type $attribType")
+              } else {
+                //Non-redefinable attribute.
+                //In general, this is a normal circumstance since e.g. sample_id and treatment must be specified
+                //for all samples.
+                logMessage(s"System attribute $normalizedID found")
+              }
+              attrSet.redefineOrCreate(normalizedID, attrib, attribType.toLowerCase, null)
+            }
       } yield attribute.id -> trimmed)
     }
 
-    datatypeCheck(attrSet, metadata, warningHandler)
+    datatypeCheck(attrSet, metadata, logMessage)
 
     val required = attrSet.getRequired().asScala.map(_.id).map(_.toLowerCase)
     val missingColumns = required.filter(!metadata.keySet.contains(_))
     if (!missingColumns.isEmpty) {
-      warningHandler(s"The following columns are missing in $file: $missingColumns")
+      logMessage(s"The following columns are missing in $file: $missingColumns")
       throw new Exception(s"Missing columns in metadata: ${missingColumns mkString ", "}")
     }
 
@@ -130,7 +137,7 @@ object TSVMetadata {
       val nonParsing = values.filter(!canParseNum(_))
       if (nonParsing.nonEmpty) {
         warningHandler(
-          s"${nonParsing.size} value(s) in the column ${attrib.id()} had a bad number format." +
+          s"${nonParsing.size} value(s) in the column ${attrib.id()} had a bad number format. " +
             s"Treating as absent. Example: ${nonParsing.head}")
       }
     }

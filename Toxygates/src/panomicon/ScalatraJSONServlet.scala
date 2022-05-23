@@ -120,6 +120,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/sample/treatment/:treatment") {
+    //Note: this request does not yet respect per-batch attributes, always uses systemwide
     contentType = "text/json"
     val sf = SampleFilter(tconfig.instanceURI, None)
     val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> paramOrHalt("treatment"))), sf)()
@@ -130,6 +131,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * This request allows arbitrary GET parameter attribute filters, e.g. ?doseLevel=High
    */
   get("/sample") {
+    //Note: this request does not yet respect per-batch attributes, always uses systemwide
     contentType = "text/json"
     val scf = SampleClassFilter(
       Map.empty ++ params.iterator.flatMap(x => {
@@ -290,7 +292,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
 
     val attributes: Seq[Attribute] = params("attributes").arr.map(v => queries.attributeSet.byId(v.str))
-    val samplesWithValues = sampleStore.sampleAttributeValues(sampleIds, batches, attributes)
+    val samplesWithValues = queries.sampleAttributeValues(sampleIds, batches, attributes)
     write(samplesWithValues.map(sampleToMap))
   }
 
@@ -382,7 +384,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     write(r)
   }
 
-  /** Upload a batch
+  /** Upload a new batch.
    * Example curl command:
    * curl -X POST -F metadata=@vitamin_a_metadata_full.tsv -F callsData=@vitamin_a_call.csv
    *   -F exprData=@vitamin_a_expr.csv http://127.0.0.1:4200/json/uploadBatch?batch=vatest
@@ -402,17 +404,28 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val probes = fileParams.get("probesData")
 
     if (metadata.isEmpty) {
-      throw new Exception("No metadata file")
+      Console.err.println("No metadata file")
+      halt(400)
     }
     if (expr.isEmpty) {
-      throw new Exception("No data file")
+      Console.err.println("No data file")
+      halt(400)
     }
 
-    uploadHandling.addBatch(new Batch(id, null, comment, publicComment, dataset, 0),
+    uploadHandling.addBatch(Batch(id, null, comment, publicComment, dataset, 0),
       metadata.get, expr.get, calls, probes, instances)
     Ok("Task started")
   }
 
+  /** Update metadata for a batch, or append samples to the batch.
+   *
+   * If metadata is specified but exprData is not, the metadata can be full (for all samples in the batch)
+   * or partial (for just some samples). In the latter case, existing samples that are not referenced in the new
+   * metadata will be left unchanged.
+   *
+   * If metadata and exprData are specified, sample expression data may be inserted (appending new samples) and/or
+   * overwritten (for existing samples). Metadata must then describe exactly the same samples that exprData describes.
+   */
   put("/batch") {
     verifyRole("admin")
 
@@ -420,12 +433,18 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val comment = params.get("comment").getOrElse("")
     val publicComment = params.get("publicComment").getOrElse("")
     val dataset = paramOrHalt("dataset")
-    val metadata = fileParams.get("metadata")
-    val recalculate = params.get("recalculate").map(_ == "true").getOrElse(false)
     val instances = params.get("enabledInstances").map(_.split(",").toList).getOrElse(List())
 
-    uploadHandling.updateBatch(new Batch(id, null, comment, publicComment, dataset, 0),
-      metadata, instances, recalculate)
+    val metadata = fileParams.get("metadata")
+    //recalculate is only meaningful if exprData is not specified.
+    //if we are appending samples, recalculate is always forced.
+    val recalculate = params.get("recalculate").map(_ == "true").getOrElse(false)
+
+    val expr = fileParams.get("exprData")
+    val calls = fileParams.get("callsData")
+
+    uploadHandling.updateBatch(Batch(id, null, comment, publicComment, dataset, 0),
+      metadata, instances, recalculate, expr, calls)
   }
 
   delete("/batch/:batch") {

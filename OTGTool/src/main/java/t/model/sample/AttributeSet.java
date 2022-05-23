@@ -21,6 +21,7 @@ package t.model.sample;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import static t.model.sample.CoreParameter.*;
 
@@ -46,13 +47,16 @@ public class AttributeSet implements Serializable {
     }
   }
 
+  private static Attribute[] systemAttributes =
+          new Attribute[] {SampleId, Treatment, ControlTreatment, Batch, Platform, Type, Dataset};
+
   /**
    * Obtain a new minimal attribute set containing all core attributes. This can be used as a template
    * for building larger sets.
    */
   public static AttributeSet newMinimalSet() {
     List<Attribute> attributes = new ArrayList<Attribute>();
-    Collections.addAll(attributes, SampleId, Treatment, ControlTreatment, Batch, Platform, Type, Dataset);
+    Collections.addAll(attributes, systemAttributes);
 
     List<Attribute> required = new ArrayList<Attribute>();
     //Batch and dataset are managed by the system and cannot be specified by the user
@@ -116,6 +120,10 @@ public class AttributeSet implements Serializable {
   public @Nullable Attribute byId(String id) {
     return byId.get(id);
   }
+
+  public boolean hasId(String id) {
+    return byId(id) != null;
+  }
   
   public @Nullable Attribute byTitle(String title) {
     return byTitle.get(title);
@@ -151,6 +159,28 @@ public class AttributeSet implements Serializable {
     add(a);
     return a;
   }
+
+  public boolean mayRedefine(String id) {
+    return !Arrays.stream(systemAttributes).anyMatch(a -> id.equals(a.id()));
+  }
+
+  /**
+   * Redefine the attribute with the given id (if allowed) or create it
+   * if it doesn't exist.*
+   */
+  synchronized public Attribute redefineOrCreate(String id, @Nullable String title,
+    @Nullable String kind, @Nullable String section) {
+    if (mayRedefine(id)) {
+      attributes = attributes.stream().filter(a -> !id.equals(a.id())).collect(Collectors.toList());
+      Attribute old = byId.get(id);
+      if (old != null) {
+        byId.remove(id);
+        byTitle.remove(old.title());
+      }
+    }
+    return findOrCreate(id, title, kind, null);
+  }
+
   
   public static int compare(Attribute a1, Attribute a2) {
     return a1.title().compareTo(a2.title());

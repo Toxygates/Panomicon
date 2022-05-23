@@ -270,6 +270,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
          |  GRAPH <$batchURI> {
          |    ?probe a t:probe; rdfs:label ?id; t:type ?type; t:label ?title.
          |    OPTIONAL { ?probe t:section ?section. }
+         |    FILTER EXISTS { GRAPH <$batchURI>  { ?x a t:sample; ?probe ?value. } }
          |  }
          |}""".stripMargin)
 

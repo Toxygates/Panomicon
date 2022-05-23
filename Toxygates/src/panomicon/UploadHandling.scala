@@ -4,7 +4,7 @@ import org.scalatra.servlet.FileItem
 import t.Context
 import t.global.KCDBRegistry
 import t.manager.BatchManager.Batch
-import t.manager.{BatchManager, PlatformManager, Task, TaskRunner}
+import t.manager.{BatchManager, ExprDataInput, MetadataInput, PlatformManager, Task, TaskRunner}
 import t.platform.PlatformFormat
 import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
 import t.sparql.{BatchStore, PlatformStore, TRDF}
@@ -43,7 +43,7 @@ class UploadHandling(context: Context) {
   private val batchManager = new BatchManager(context)
 
   def addBatch(batch: t.sparql.Batch, metadata: FileItem, exprData: FileItem, callsData: Option[FileItem],
-               probesData: Option[FileItem], visibleInstances: List[String], mayAppendBatch: Boolean = true) {
+               probesData: Option[FileItem], visibleInstances: List[String]) {
     val tempFiles = new TempFiles()
 
     val metaFile = itemToFile(tempFiles, "metadata", metadata)
@@ -55,32 +55,38 @@ class UploadHandling(context: Context) {
     grabRunner()
 
     val existingBatches = new BatchStore(context.config.triplestoreConfig).getList()
-    if (existingBatches.contains(batch.id) && !mayAppendBatch) {
+    if (existingBatches.contains(batch.id)) {
       throw BatchUploadException.badID(
         s"The batch $batch already exists and appending is not allowed. " +
           "Please choose a different name.")
     }
 
-    runTasks(batchManager.add(batch.toBatchManager(visibleInstances),
-      metaFile.getAbsolutePath, dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath),
-      append = false, generateAttributes = true, conversion = None), Some(tempFiles))
+    val metadataInput = MetadataInput(metaFile.getAbsolutePath, customAttributes = true)
+    val exprFileInput = ExprDataInput(dataFile.getAbsolutePath, callsFile.map(_.getAbsolutePath))
+    runTasks(batchManager.add(batch.toBatchManager(visibleInstances), metadataInput, exprFileInput), Some(tempFiles))
   }
 
   def updateBatch(batch: t.sparql.Batch, metadata: Option[FileItem], visibleInstances: List[String],
-                  recalculate: Boolean): Unit = {
+                  recalculate: Boolean,
+                  exprData: Option[FileItem], callsData: Option[FileItem]): Unit = {
     val tempFiles = new TempFiles()
     val metaFile = metadata.map(c => itemToFile(tempFiles, "metadata", c))
+    val exprFile = exprData.map(c => itemToFile(tempFiles, "exprData", c))
+    val callsFile = callsData.map(c => itemToFile(tempFiles, "callsData", c))
 
     ensureNotMaintenance()
     grabRunner()
 
-    val b = batch.toBatchManager(visibleInstances)
-    val update = batchManager.updateBatch(b)
-    val tasks = metaFile match {
-      case Some(mf) => update.andThen(batchManager.updateMetadata(b, mf.getAbsolutePath,
-        true, recalculate))
-      case _ => update
+    val existingBatches = new BatchStore(context.config.triplestoreConfig).getList()
+    if (!existingBatches.contains(batch.id)) {
+      throw BatchUploadException.badID(
+        s"The batch $batch does not exist.")
     }
+    val b = batch.toBatchManager(visibleInstances)
+    val metadataInput = metaFile.map(mf => MetadataInput(mf.getAbsolutePath,
+      customAttributes = true, recalculate = recalculate))
+    val exprDataInput = exprFile.map(ef => ExprDataInput(ef.getAbsolutePath, callsFile.map(_.getAbsolutePath)))
+    val tasks = batchManager.update(b, metadataInput, exprDataInput)
     runTasks(tasks, Some(tempFiles))
   }
 

@@ -41,7 +41,7 @@ object BatchStore extends RDFClass {
    */
   def attributesToTTL(attributes: AttributeSet, tempFiles: TempFiles): File = {
     //These may not be redefined
-    val predefinedAttributes = AttributeSet.newMinimalSet().getRequired.asScala.map(_.id()).toSet
+    val predefinedAttributes = AttributeSet.newMinimalSet().getAll.asScala.map(_.id()).toSet
     val file = tempFiles.makeNew("metadata", "ttl")
     val fout = new BufferedWriter(new FileWriter(file))
 
@@ -50,7 +50,7 @@ object BatchStore extends RDFClass {
       if ! predefinedAttributes.contains(attr.id())
     } {
       fout.write(t.sparql.TTLfilePrefixes)
-      fout.write(s"<${ProbeStore.defaultPrefix}/${attr.id()}>")
+      fout.write(s"<${tRoot}/${attr.id()}>")
       fout.write(s"  a ${ProbeStore.itemClass}; rdfs:label " + "\"" + attr.id() + "\";")
       fout.write("  t:label \"" + attr.title() + "\"; t:type " +
         (if(attr.isNumerical) "\"numerical\"" else "\"string\""))
@@ -118,7 +118,7 @@ trait BatchGrouping {
 case class Batch(id: String, timestamp: Date, comment: String, publicComment: String,
                  dataset: String, numSamples: Int) {
   def toBatchManager(instances: List[String]) =
-    t.manager.BatchManager.Batch(id, comment, Some(instances), Some(dataset))
+    t.manager.BatchManager.Batch(id, comment, Some(instances), Some(dataset), publicComment = publicComment)
 
 }
 
@@ -192,6 +192,31 @@ class BatchStore(config: TriplestoreConfig) extends ListManager[Batch](config) w
       s"DROP GRAPH <$defaultPrefix/$name>")
   }
 
+  def deleteSamples(batch: String, samples: Iterable[Sample]): Unit = {
+    val sampleIds = samples.toList.map(_.sampleId)
+    triplestore.update(
+      s"""|$tPrefixes\n
+          |DELETE { GRAPH <$defaultPrefix/$batch> {
+          |  ?x a t:sample; rdfs:label ?label; ?y ?z.
+          | } }
+          | WHERE { GRAPH <$defaultPrefix/$batch> {
+          |   ?x a t:sample; rdfs:label ?label; ?y ?z.
+          |  } FILTER(?label IN(${sampleIds.map(x => "\"" + x + "\"").mkString(",")}))
+          | }
+    """.stripMargin)
+  }
+
+  def deleteCustomAttributes(batch: String): Unit = {
+    triplestore.update(
+      s"""|$tPrefixes\n
+          |DELETE { GRAPH <$defaultPrefix/$batch> {
+          |  ?x a t:probe; ?y ?z.
+          | } }
+          | WHERE { GRAPH <$defaultPrefix/$batch> {
+          |   ?x a t:probe; ?y ?z.
+          | } }
+    """.stripMargin)
+  }
 
   private def additionalFilter(instanceUri: Option[String], dataset: Option[String] = None) = {
     val r = (instanceUri match {
