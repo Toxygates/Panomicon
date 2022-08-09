@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import * as cytoscape from 'cytoscape';
 
+import { Network } from './network';
+
 @Component({
   selector: 'app-visualization-canvas',
   templateUrl: './visualization-canvas.component.html',
@@ -9,50 +11,43 @@ import * as cytoscape from 'cytoscape';
 export class VisualizationCanvasComponent implements OnInit {
 	
 	private _cy: any;
+	private _net: Network;
 
-  constructor() {	}
+  constructor() {	
+		this._net = new Network();
+	}
 
   ngOnInit(): void {
-		this._cy = cytoscape({
+		this._cy = cytoscape({ 
 			container: document.getElementById('cy'),
-			elements: [ // list of graph elements to start with
-			{ // node a
-				data: { id: 'a' }
-			},
-			{ // node b
-				data: { id: 'b' }
-			},
-			{ // edge ab
-				data: { id: 'ab', source: 'a', target: 'b' }
-			}
-		],
-	
-		style: [ // the stylesheet for the graph
-			{
-				selector: 'node',
-				style: {
-					'background-color': '#666',
-					'label': 'data(id)'
+			style: [
+				{
+					selector: 'node',
+					style: {
+						'label': 'data(label)',
+						'text-valign': 'center',
+						'text-halign': 'center',
+						'background-color': 'data(color)',
+						'border-color': 'data(borderColor)',
+						'border-width': '1px',
+						'display': 'element',
+					}
+				},
+				{
+					selector: "edge",
+					style :{
+						"line-color": "data(color)",
+					}
 				}
-			},
-	
-			{
-				selector: 'edge',
-				style: {
-					'width': 3,
-					'line-color': '#ccc',
-					'target-arrow-color': '#ccc',
-					'target-arrow-shape': 'triangle',
-					'curve-style': 'bezier'
-				}
-			}
-		],
-	
-		layout: {
-			name: 'grid',
-			rows: 1
-		}
-		}); 
-  }
+			]
+		});
+		this._cy.add(this._net.getNodes());
+		this._cy.add(this._net.getInteractions());
 
+		let layout = this._cy.layout({name: 'concentric'});
+		layout.run();
+		this._cy.fit();
+
+		
+	}
 }
