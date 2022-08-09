@@ -27,7 +27,7 @@ import t.shared.common.{Dataset, ManagedItem}
 import t.shared.common.maintenance.MaintenanceConstants._
 import t.shared.common.maintenance.{Batch, BatchUploadException, MaintenanceException}
 import t.db.{IDConverter, Metadata}
-import t.manager.BatchManager
+import t.manager.{BatchManager, ExprDataInput, MetadataInput}
 import t.model.sample.CoreParameter.{Platform, Treatment, Type}
 import t.model.sample.OTGAttribute._
 import t.model.sample.{Attribute, CoreParameter}
@@ -99,8 +99,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         }
       })
 
-      val ops = batchManager.dataOps(batch, metaFile.get.getAbsolutePath, false, conversion = conversion)
-      runTasks(ops.add(dataFile.get.getAbsolutePath, callsFile.map(_.getAbsolutePath)))
+      val metaInput = MetadataInput(metaFile.get.getAbsolutePath, false)
+      val exprDataInput = ExprDataInput(dataFile.get.getAbsolutePath, callsFile.map(_.getAbsolutePath))
+      runTasks(batchManager.add(batch, metaInput, exprDataInput))
     }
   }
 
@@ -119,8 +120,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
 
-      val ops = batchManager.dataOps(batch, metaFile.get.getAbsolutePath, customAttributes = false)
-      runTasks(ops.updateMetadata(recalculate = recalculate))
+      val metadataInput = MetadataInput(metaFile.get.getAbsolutePath, customAttributes = false, recalculate = recalculate)
+      runTasks(batchManager.updateMetadata(batch, metadataInput))
     }
   }
 
