@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import * as cytoscape from 'cytoscape';
+import cytoscape from 'cytoscape';
 
 import { Network } from './network';
 
