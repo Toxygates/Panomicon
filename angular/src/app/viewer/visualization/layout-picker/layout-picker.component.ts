@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-layout-picker',
@@ -7,7 +7,9 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class LayoutPickerComponent implements OnInit {
 	
-	@Input() selectedLayout!: any | null;
+	@Input() selectedLayout!: any;
+
+	@Output() changeLayoutEmitter = new EventEmitter<string>();
 
 	public layouts: any = [
 		{ value:'null'         , id:'None' },
@@ -25,8 +27,8 @@ export class LayoutPickerComponent implements OnInit {
   ngOnInit(): void {
   }
 
-	selectLayout(layout: string){
-		this.selectedLayout = layout;
+	changeLayout(value:any):void{
+		this.changeLayoutEmitter.emit(value);
 	}
 
 }

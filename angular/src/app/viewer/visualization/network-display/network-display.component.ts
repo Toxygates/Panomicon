@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
-
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { DisplayCanvasComponent } from '../display-canvas/display-canvas.component';
+import { LayoutPickerComponent } from '../layout-picker/layout-picker.component';
 import { Network } from './network';
 
 @Component({
@@ -7,22 +8,33 @@ import { Network } from './network';
   templateUrl: './network-display.component.html',
   styleUrls: ['./network-display.component.scss']
 })
-export class NetworkDisplayComponent implements OnInit {
+export class NetworkDisplayComponent implements AfterViewInit {
 
-	public selectedLayout: any = {value: 'concentric', id: 'Concentric'};
+	public selectedLayout: any = {value: 'concentric', id: 'Concentric'};	
+	public network: Network;
 
-	private _cy: any;
-	private _net: Network;
+	@ViewChild('layoutPicker')
+	layoutPicker!: LayoutPickerComponent;
+
+	@ViewChild('networkCanvas')
+	networkCanvas!: DisplayCanvasComponent;
 	
-
-  constructor() { 
-		this._net = new Network();
+	constructor() { 
+		this.network = new Network();
+	}
+	
+	ngAfterViewInit(): void {
+		console.log('Values at NetDisplayComp on ngAfterViewinit():');
+		console.log('layoutPicker: ', this.layoutPicker);
 	}
 
-  ngOnInit(): void {
+  // ngOnInit(): void {
 
-  }
+  // }
 
-
+	setSelectedLayout(layout: any): void{
+		this.selectedLayout = layout;
+		this.networkCanvas.updateLayout(this.selectedLayout.value);
+	}
 
 }

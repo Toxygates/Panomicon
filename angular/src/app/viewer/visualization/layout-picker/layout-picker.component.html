@@ -2,7 +2,11 @@
 	<button id="layout-button-basic" dropdownToggle type="button"
 		class="btn btn-primary dropdown-toggle mr-2"
 		aria-controls="layout-dropdown-basic">
-		Layout: {{selectedLayout.id}}
+		{{
+			selectedLayout ? 
+				"Layout: "+selectedLayout.id :
+				"No selected layout"
+		}}
 		<span class="caret"></span>
 	</button>
 	<ul id="layout-dropdown-basic" *dropdownMenu
@@ -11,7 +15,7 @@
 		aria-labelledby="layout-button-basic">
 		<h6 class="dropdown-header">Select Layout:</h6>
 		<li *ngFor="let layout of layouts" role="menuitem">
-			<a class="dropdown-item" (click)="selectLayout(layout)">
+			<a class="dropdown-item" (click)="changeLayout(layout)">
 				{{layout.id}}
 			</a>
 		</li>
