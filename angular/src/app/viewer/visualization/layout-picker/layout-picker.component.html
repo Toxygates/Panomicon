@@ -1,0 +1,19 @@
+<div class="btn-group" dropdown [isDisabled]="!layouts">
+	<button id="layout-button-basic" dropdownToggle type="button"
+		class="btn btn-primary dropdown-toggle mr-2"
+		aria-controls="layout-dropdown-basic">
+		Layout: {{selectedLayout.id}}
+		<span class="caret"></span>
+	</button>
+	<ul id="layout-dropdown-basic" *dropdownMenu
+		class="dropdown-menu dropdown-scrollable"
+		role="menu"
+		aria-labelledby="layout-button-basic">
+		<h6 class="dropdown-header">Select Layout:</h6>
+		<li *ngFor="let layout of layouts" role="menuitem">
+			<a class="dropdown-item" (click)="selectLayout(layout)">
+				{{layout.id}}
+			</a>
+		</li>
+	</ul>
+</div>
