@@ -126,65 +126,23 @@ class NetworkBuilder(targets: TargetTable,
         int = new Interaction(miLookup, pLookup, label, score)
       } yield int)
 
-    val truncated = (mainSel.rows < main.current.rows)
-    val trueSize = main.current.rows
-
     //In case there are too many interactions,
     //we might prioritise by weight here and limit the number.
     //Currently edges/interactions are not limited.
     //val interactions = r.flatMap(_._2) //.toSeq.sortBy(_.weight()) take Network.MAX_EDGES
-    new Network("Network", nodes.asGWT, ints.asGWT,
-      truncated, trueSize)
-  }
-
-  /**
-   * Pick the top rows that have interactions from the given matrix,
-   * padding with non-interacting rows if needed
-   */
-  def topProbesWithInteractions(targets: Iterable[(MiRNA, Probe)]) = {
-
-    var haveInteractions = MSet[String]()
-    //Track which probes (on both sides) have interactions
-    for ((mirna, mrna) <- targets) {
-      haveInteractions += mirna.id
-      haveInteractions += mrna.identifier
-    }
-    var count = 0
-    val max = Network.MAX_NODES
-
-    //Preserve the sort order while taking at most MAX_NODES nodes with interactions
-    var keepMainNodes = Set[String]()
-    for {
-      n <- main.current.rowKeys
-      if (count < max)
-      if (haveInteractions.contains(n))
-    } {
-      count += 1
-      keepMainNodes += n
-    }
-
-    //Extend the main node set if too few nodes had interactions
-    if (keepMainNodes.size < max) {
-      val need = max - keepMainNodes.size
-      keepMainNodes ++= main.current.rowKeys.filter(!keepMainNodes.contains(_)).take(need)
-    }
-    keepMainNodes.toSeq
+    new Network("Network", nodes.asGWT, ints.asGWT)
   }
 
   def build: Network = {
     if (main.info.numColumns() == 0) {
-      return new Network("Network", mkList(), mkList(), false, 0)
+      return new Network("Network", mkList(), mkList())
     }
 
     val mainPlatform = main.params.platform
-    val probes = platforms.resolve(mainPlatform, main.current.rowKeys)
     val sidePlatform = side.params.platform
     val sidePlatformProbes = platforms.platformProbes(sidePlatform).toSeq
-    val allTargets = probeTargets(probes, sidePlatformProbes)
 
-    val keepNodes = topProbesWithInteractions(allTargets.map(x => (x._1, x._2)))
-    val mainSel = main.current.selectNamedRows(keepNodes)
-    val mainTargets = probeTargets(platforms.resolve(mainPlatform, mainSel.rowKeys), sidePlatformProbes)
+    val mainTargets = probeTargets(platforms.resolve(mainPlatform, main.current.rowKeys), sidePlatformProbes)
     val sideTableProbeSet = side.rawGrouped.rowKeys.toSet
     val sideProbes = mainTargets.map(targetSideProbe).toSeq.distinct.
       filter(sideTableProbeSet.contains)
@@ -193,6 +151,6 @@ class NetworkBuilder(targets: TargetTable,
     //displayed
     val sideSel = side.selectProbesAsCopy(sideProbes.toSeq)
 
-    networkFromSelection(mainSel, sideSel.current, mainTargets)
+    networkFromSelection(main.current, sideSel.current, mainTargets)
   }
 }

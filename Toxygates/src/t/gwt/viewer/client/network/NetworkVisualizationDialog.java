@@ -86,7 +86,6 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
   public void initWindow(@Nullable Network network) {
     createPanel();
     exportPendingRequestHandling();
-    truncationCheck(network);
 
     Utils.loadHTML(GWT.getModuleBaseURL() + "network-visualization/uiPanel.html", new Utils.HTMLCallback() {
       @Override
@@ -105,20 +104,10 @@ public class NetworkVisualizationDialog implements LoadNetworkDialog.Delegate {
 
   public void loadNetwork(Network network) {
     storeNetwork(NetworkConversion.convertNetworkToJS(network));
-    truncationCheck(network);
     changeNetwork();
   }
 
   private ShowOnceDialog messageDialog = new ShowOnceDialog();
-  private void truncationCheck(Network network) {
-    if (network.wasTruncated()) {
-      messageDialog
-          .showIfDesired("Warning: for performance reasons, the network was truncated from "
-              + network.trueSize() + " to " + Network.MAX_NODES
-          + " main nodes, using the current sort order. "
-          + "You may wish to apply filtering.");
-    }
-  }
 
   private void injectOnce(final Runnable callback) {
     if (!injected) {

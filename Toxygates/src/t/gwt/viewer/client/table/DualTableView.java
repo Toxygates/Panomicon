@@ -60,7 +60,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected final static String mainMatrix = NetworkService.tablePrefix + "MAIN";
   protected final static String sideMatrix = NetworkService.tablePrefix + "SIDE";
   
-  final static int MAX_SECONDARY_ROWS = Network.MAX_NODES;
+  final static int MAX_SECONDARY_ROWS = 100;
 
   protected NetworkServiceAsync networkService;
   
