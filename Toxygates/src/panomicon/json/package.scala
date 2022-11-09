@@ -59,7 +59,8 @@ case class MatrixParams(groups: Seq[Group], probes: Seq[String] = Seq(),
 }
 
 object NetworkParams { implicit val rw: RW[NetworkParams] = macroRW }
-case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
+case class NetworkParams(groups1: Seq[Group], probes1: Seq[String] = Seq(),
+                         groups2: Seq[Group],
                          associationSource: String, associationLimit: String = null) {
   import java.lang.{Double => JDouble}
 
@@ -69,6 +70,9 @@ case class NetworkParams(matrix1: MatrixParams, matrix2: MatrixParams,
       limit.getOrElse(null: JDouble),
       0, null, null, null)
   }
+
+  def matrix1: MatrixParams = MatrixParams(groups1, probes1)
+  def matrix2: MatrixParams = MatrixParams(groups2)
 }
 
 object Encoders {
