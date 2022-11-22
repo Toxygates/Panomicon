@@ -167,6 +167,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   /*
+  Obtain a matrix page.
+
   URL parameters: valueType, offset, limit
   other parameters in MatrixParams
   Example request:
@@ -211,18 +213,33 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     ))
   }
 
+  /*
+  Obtain a network as a list of interactions.
+  Example request:
+
+  { "groups1": [
+        { "name": "a", "sampleIds":
+            [ "003017689013", "003017689014",  "003017689015", "003017688002", "003017688003", "003017688004"]
+        },
+    ],
+    "probes1": [ "p00001", "p00002", "p00003" ],
+    "groups2": [
+    { "name": "b", "sampleIds":
+            [ "mirna0001", "mirna0002", "mirna0003" ]
+        },
+    ],
+    "associationSource": "miRDB",
+    "associationLimit": "90"
+  }
+   */
   post("/network") {
     contentType = "text/json"
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
     println(s"Load request: $netParams")
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
-    val defaultLimit = 100
-    val pageSize = params.get("limit") match {
-      case Some(l) => l.toInt
-      case None => defaultLimit
-    }
-    val network = networkHandling.loadNetwork(valueType, pageSize, netParams)
+
+    val network = networkHandling.loadNetwork(valueType, netParams)
     write(Map(
       "interactions" -> networkHandling.interactionsToJson(network.interactions().asScala)
     ))

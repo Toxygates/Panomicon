@@ -15,9 +15,9 @@ import upickle.default.writeJs
 class NetworkHandling(context: Context, matrixHandling: MatrixHandling) {
   lazy val netLoader = new NetworkLoader(context, context.config.data.mirnaDir)
 
-  def loadNetwork(valueType: ValueType, pageSize: Int, netParams: NetworkParams): Network = {
+  def loadNetwork(valueType: ValueType, netParams: NetworkParams): Network = {
 
-    var r = new TargetTableBuilder
+    val r = new TargetTableBuilder
     for (t <- netLoader.mirnaTargetTable(netParams.mirnaSource)) {
       r.addAll(t)
     }
@@ -32,7 +32,7 @@ class NetworkHandling(context: Context, matrixHandling: MatrixHandling) {
     val mainInitProbes = netParams.matrix1.probes
     val sideGroups = matrixHandling.filledGroups(netParams.matrix2)
     val netController = netLoader.load(targetTable, mainGroups, mainInitProbes.toArray,
-      sideGroups, valueType, pageSize)
+      sideGroups, valueType)
     netController.makeNetwork
   }
 
