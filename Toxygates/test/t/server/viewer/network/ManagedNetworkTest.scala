@@ -62,7 +62,7 @@ class ManagedNetworkTest extends TTestSuite {
     val builder = new NetworkBuilder(targets, platforms, main, side)
     val network = builder.build
 
-    val expMainNodes = main.current.asRows take Network.MAX_NODES
+    val expMainNodes = main.current.asRows
     assert(expMainNodes.map(_.probe).toSet.subsetOf(mrnaIds.toSet))
 
     val expSideNodes = side.current.asRows

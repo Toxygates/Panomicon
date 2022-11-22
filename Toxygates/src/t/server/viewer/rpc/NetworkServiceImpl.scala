@@ -129,8 +129,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   def distinctInteractions(net: Network): Network = {
     val all = net.interactions().asScala.groupBy(i => (i.from, i.to))
     val distinct = all.values.map(_.head)
-    new Network(net.title(), net.nodes(),
-      distinct.toList.asJava, net.wasTruncated(), net.trueSize())
+    new Network(net.title(), net.nodes(), distinct.toList.asJava)
   }
 
   def prepareNetworkDownload(mainTableId: String, format: Format,
