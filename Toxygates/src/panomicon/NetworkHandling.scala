@@ -5,9 +5,10 @@ import t.Context
 import t.platform.mirna.TargetTableBuilder
 import t.server.viewer.rpc.NetworkLoader
 import t.shared.common.ValueType
-import t.shared.viewer.network.{Interaction, Network}
+import t.shared.viewer.network.{Interaction, Network, Node}
 import ujson.Value
-import upickle.default.writeJs
+import upickle.default._
+import scala.collection.JavaConverters._
 
 /**
  * Routines that support network loading requests
@@ -36,15 +37,38 @@ class NetworkHandling(context: Context, matrixHandling: MatrixHandling) {
     netController.makeNetwork
   }
 
-  def interactionsToJson(ints: Iterable[Interaction]): Seq[Value] = {
-    ints.toSeq.map(i => {
-      writeJs(Map(
+  def networkToJson(n: Network): Map[String, Value] =
+    Map(
+      "nodes" -> nodesToJson(n.nodes().asScala),
+      "interactions" -> interactionsToJson(n.interactions().asScala)
+    )
+
+  def interactionsToJson(ints: Seq[Interaction]): Seq[Value] = {
+    ints.map(i => writeJs(Map(
         "from" -> writeJs(i.from().id()),
         "to" -> writeJs(i.to().id()),
         "label" -> writeJs(i.label()),
         "weight" -> writeJs(i.weight().doubleValue())
       ))
-    })
+    )
   }
+
+  private def normalizeNodeType(t: String) = t match {
+    case "miRNA" => "microRNA"
+    case _ => t
+  }
+
+  def nodesToJson(nodes: Seq[Node]): Seq[Value] = {
+    nodes.map(n => writeJs(
+      Map(
+      "id" -> writeJs(n.id()),
+      "type" -> writeJs(normalizeNodeType(n.`type`())),
+      "weights" -> writeJs(
+        n.weights().asScala.toMap.map(x => x._1 -> writeJs[Double](x._2))),
+      "symbols" -> writeJs(n.symbols().asScala)
+    )
+    ))
+  }
+
 
 }

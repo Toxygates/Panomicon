@@ -240,9 +240,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       params.getOrElse("valueType", "Folds"))
 
     val network = networkHandling.loadNetwork(valueType, netParams)
-    write(Map(
-      "interactions" -> networkHandling.interactionsToJson(network.interactions().asScala)
-    ))
+    write(networkHandling.networkToJson(network))
   }
 
   def associationToJSON(a: Association): Seq[(String, Seq[(String, String)])] = {
