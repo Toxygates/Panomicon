@@ -64,20 +64,7 @@ public class Node implements Serializable {
     this.type = type;
     this.weights = weights;
   }
-  
-  @Override
-  public int hashCode() {
-    return id.hashCode();
-  }
-  
-  @Override
-  public boolean equals(Object other) {
-    if (other instanceof Node) {
-      return id.equals(((Node)other).id);
-    }
-    return false;
-  }
-  
+
   public String id() { return id; }
   public String type() { return type; }
 
