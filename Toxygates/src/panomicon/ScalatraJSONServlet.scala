@@ -214,7 +214,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   /*
-  Obtain a network as a list of interactions.
+  Obtain an interaction network, for two sets of sample groups (of two omics types, e.g. mRNA and miRNA),
+  based on an interaction source for the two types.
+  The result is a list of interactions and a list of nodes, with expression values for the given sample groups
+  attached to the nodes.
+  Optionally, a set of probes for the first set of sample groups can be specified.
+  If it is left empty, all the probes in the platform that are defined for the sample groups will be returned.
+
   Example request:
 
   { "groups1": [
@@ -231,7 +237,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     "associationSource": "miRDB",
     "associationLimit": "90"
   }
-   */
+  */
   post("/network") {
     contentType = "text/json"
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)

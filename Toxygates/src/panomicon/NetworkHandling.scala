@@ -53,6 +53,7 @@ class NetworkHandling(context: Context, matrixHandling: MatrixHandling) {
     )
   }
 
+  /* Alter this label for the sake of legibility for the end user (to help distinguish from mRNA) */
   private def normalizeNodeType(t: String) = t match {
     case "miRNA" => "microRNA"
     case _ => t
