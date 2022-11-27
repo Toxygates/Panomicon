@@ -40,14 +40,13 @@ import t.shared.viewer.network.{Network, NetworkInfo}
  */
 class NetworkController(context: Context, params: ControllerParams,
                         val sideController: MatrixController, targets: TargetTable,
-                        initMainPageSize: Int,
                         sideIsMRNA: Boolean) extends MatrixController(context, params) {
   def sideMatrix = sideController.managedMatrix
 
   type Mat = ManagedNetwork
 
   override def finish(mm: ManagedMatrix): Mat = {
-    new ManagedNetwork(mm.params, sideMatrix, targets, context.platformRegistry, initMainPageSize, sideIsMRNA)
+    new ManagedNetwork(mm.params, sideMatrix, targets, context.platformRegistry, sideIsMRNA)
   }
 
   /**

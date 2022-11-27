@@ -65,7 +65,7 @@ class NetworkState extends MatrixState {
       network.currentRowsChanged()
       //Make the count column update
       network.sideMatrix.reapplySynthetics()
-      network.updateSideMatrix()
+      network.updateSideMatrix(network.currentPageStart, network.currentPageLength)
     }
   }
 
@@ -108,14 +108,13 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
    * and the mapping between the two.
    */
   def loadNetwork(mainId: String, mainColumns: JList[Group], mainProbes: Array[String],
-                  sideId: String, sideColumns: JList[Group], typ: ValueType,
-                  mainPageSize: Int): NetworkInfo = {
+                  sideId: String, sideColumns: JList[Group], typ: ValueType): NetworkInfo = {
 
     val scSideColumns = sideColumns.asScala
     val species = groupSpecies(scSideColumns(0))
     val netController = netLoader.load(getState.targetTable.speciesFilter(species),
       mainColumns.asScala, mainProbes,
-      sideColumns.asScala, typ, mainPageSize)
+      sideColumns.asScala, typ)
 
     getState.controllers += (sideId -> netController.sideController)
     getState.controllers += mainId -> netController
@@ -129,8 +128,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
   def distinctInteractions(net: Network): Network = {
     val all = net.interactions().asScala.groupBy(i => (i.from, i.to))
     val distinct = all.values.map(_.head)
-    new Network(net.title(), net.nodes(),
-      distinct.toList.asJava, net.wasTruncated(), net.trueSize())
+    new Network(net.title(), net.nodes(), distinct.toList.asJava)
   }
 
   def prepareNetworkDownload(mainTableId: String, format: Format,
@@ -151,8 +149,7 @@ class NetworkServiceImpl extends StatefulServlet[NetworkState] with NetworkServi
 class NetworkLoader(context: Context, mirnaDir: String) {
   def load(targetTable: TargetTable,
            mainColumns: Seq[Group], mainInitProbes: Array[String],
-           sideColumns: Seq[Group], valueType: ValueType,
-           mainPageSize: Int): NetworkController = {
+           sideColumns: Seq[Group], valueType: ValueType): NetworkController = {
 
     val sideMatrix = MatrixController(context, sideColumns, Seq(), valueType)
 
@@ -165,7 +162,7 @@ class NetworkLoader(context: Context, mirnaDir: String) {
     //The network controller (actually the managed network) will ensure that
     //the side matrix stays updated when the main matrix changes
     val net = new NetworkController(context, netControllerParams,
-      sideMatrix, targetTable, mainPageSize, sideIsMRNA)
+      sideMatrix, targetTable, sideIsMRNA)
 
     val mainMatrix = net.managedMatrix
     if (mainInitProbes.nonEmpty) {

@@ -62,13 +62,13 @@ class ManagedNetworkTest extends TTestSuite {
     val builder = new NetworkBuilder(targets, platforms, main, side)
     val network = builder.build
 
-    val expMainNodes = main.current.asRows take Network.MAX_NODES
+    val expMainNodes = main.current.asRows
     assert(expMainNodes.map(_.probe).toSet.subsetOf(mrnaIds.toSet))
 
     val expSideNodes = side.current.asRows
     assert(expSideNodes.map(_.probe).toSet.subsetOf(mirnaIds.toSet))
 
-    val ids = (expMainNodes.toSeq ++ expSideNodes).map(_.probe)
+    val ids = (expMainNodes ++ expSideNodes).map(_.probe)
     network.nodes.asScala.map(_.id).toSet should equal(ids.toSet)
   }
 
@@ -122,7 +122,6 @@ class ManagedNetworkTest extends TTestSuite {
     }
 
     val params = ControllerParams(mainGroups, Seq(), ValueType.Folds)
-    val mainPageSize = 100
 
     //Partial MatrixController. Note: should find a more permanent solution and structure the code better
     val sideControllerParams = ControllerParams(sideGroups, Seq(), ValueType.Folds)
@@ -132,7 +131,7 @@ class ManagedNetworkTest extends TTestSuite {
     }
 
     val netCon = new NetworkController(testContext, params, sideController,
-      targets, mainPageSize, false)
+      targets, false)
     val main = netCon.managedMatrix
 
     //Check that the side table - main table correspondence agrees with what the target table says
@@ -145,7 +144,7 @@ class ManagedNetworkTest extends TTestSuite {
     main.resetSortAndFilter()
     main.targets = targets.scoreFilter(90)
     //Propagate the new target table
-    main.updateSideMatrix()
+    main.updateSideMatrix(main.currentPageStart, main.currentPageLength)
     assert(main.targets.size > 0)
     assert(main.targets.size != targets.size)
     checkNetworkInvariants(main, side, reverseLookup)

@@ -167,6 +167,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   /*
+  Obtain a matrix page.
+
   URL parameters: valueType, offset, limit
   other parameters in MatrixParams
   Example request:
@@ -211,21 +213,40 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     ))
   }
 
+  /*
+  Obtain an interaction network, for two sets of sample groups (of two omics types, e.g. mRNA and miRNA),
+  based on an interaction source for the two types.
+  The result is a list of interactions and a list of nodes, with expression values for the given sample groups
+  attached to the nodes.
+  Optionally, a set of probes for the first set of sample groups can be specified.
+  If it is left empty, all the probes in the platform that are defined for the sample groups will be returned.
+
+  Example request:
+
+  { "groups1": [
+        { "name": "a", "sampleIds":
+            [ "003017689013", "003017689014",  "003017689015", "003017688002", "003017688003", "003017688004"]
+        },
+    ],
+    "probes1": [ "p00001", "p00002", "p00003" ],
+    "groups2": [
+    { "name": "b", "sampleIds":
+            [ "mirna0001", "mirna0002", "mirna0003" ]
+        },
+    ],
+    "associationSource": "miRDB",
+    "associationLimit": "90"
+  }
+  */
   post("/network") {
     contentType = "text/json"
     val netParams: json.NetworkParams = read[json.NetworkParams](request.body)
     println(s"Load request: $netParams")
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
-    val defaultLimit = 100
-    val pageSize = params.get("limit") match {
-      case Some(l) => l.toInt
-      case None => defaultLimit
-    }
-    val network = networkHandling.loadNetwork(valueType, pageSize, netParams)
-    write(Map(
-      "interactions" -> networkHandling.interactionsToJson(network.interactions().asScala)
-    ))
+
+    val network = networkHandling.loadNetwork(valueType, netParams)
+    write(networkHandling.networkToJson(network))
   }
 
   def associationToJSON(a: Association): Seq[(String, Seq[(String, String)])] = {

@@ -60,7 +60,7 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   protected final static String mainMatrix = NetworkService.tablePrefix + "MAIN";
   protected final static String sideMatrix = NetworkService.tablePrefix + "SIDE";
   
-  final static int MAX_SECONDARY_ROWS = Network.MAX_NODES;
+  final static int MAX_SECONDARY_ROWS = 100;
 
   protected NetworkServiceAsync networkService;
   
@@ -325,12 +325,11 @@ public class DualTableView extends TableView implements NetworkMenu.Delegate, Ne
   }
   
   @Override
-  public void loadInitialMatrix(ValueType valueType, int initPageSize,
-		  List<ColumnFilter> initFilters) {
+  public void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters) {
     networkService.loadNetwork(mainMatrix, ClientGroup.convertToGroups(expressionTable.chosenColumns), 
         chosenProbes, sideMatrix, 
         ClientGroup.convertToGroups(sideExpressionTable.chosenColumns), 
-        valueType, initPageSize, 
+        valueType,
       new PendingAsyncCallback<NetworkInfo>(screen.manager(), "Unable to load network") {
         
         @Override
