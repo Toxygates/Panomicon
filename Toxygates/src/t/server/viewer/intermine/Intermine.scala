@@ -86,48 +86,30 @@ class IntermineConnector(instance: IntermineInstance,
   /**
    * Add a set of probe lists by first mapping them to genes
    */
-  def addProbeLists(ls: ListService,
-    lists: Iterable[StringList], replace: Boolean): Unit = {
+  def addProbeLists(ls: ListService, lists: Iterable[StringList], replace: Boolean): Unit = {
 
-    for (l <- lists) {
-      addProbeList(ls, l.items(), Some(l.name()), replace)
+    for { l <- lists } {
+      addProbeList(ls, l.items(), l.name(), replace)
     }
   }
 
   /**
-   * Obtain a valid list name, or None if the export cannot proceed.
-   * This potentially deletes a pre-existing list.
+   * Delete pre-existing lists with the same name as the one about to be exported, if replacement was requested.
+   * Returns a list name that may be used if the export can proceed, or None if it cannot.
    */
-  private def validNameForExport(ls: ListService, name: Option[String],
-      replace: Boolean): Option[String] = {
+  private def checkListNameForExport(service: ListService, name: String, replace: Boolean): Option[String] = {
+    val serverList = Option(service.getList(name))
 
-    var serverList = name.map(n => Option(ls.getList(n))).flatten
-    if (serverList != None && replace) {
-      ls.deleteList(serverList.get)
-    }
-
-    //the Set: prefix gets appended by the front-end
-    if (serverList == None && name != None) {
-      val altName = name.get.split("Set:")
-      if (altName.size > 1) {
-        serverList = Option(ls.getList(altName(1)))
-        if (serverList != None) {
-          println(s"Assume list ${name.get} corresponds to ${altName(1)} on server")
-        }
-      }
-    }
-    if (serverList != None && replace) {
+    if (serverList.nonEmpty && replace) {
       println(s"Delete list $serverList for replacement")
-      ls.deleteList(serverList.get)
+      service.deleteList(serverList.get)
     }
 
-    val useName = name.getOrElse("")
-    if (serverList == None || replace) {
-      Some(useName)
+    if (serverList.isEmpty || replace) {
+      Some(name)
     } else {
-      val n = name.getOrElse("")
       //Could report this message to the user somehow
-      println(s"Not exporting list '$n' since it already existed (replacement not requested)")
+      println(s"Not exporting list '$name' since it already existed (replacement not requested)")
       //      throw new IntermineException(
       //        s"Unable to add list, ${name.get} already existed and replacement not requested")
       None
@@ -137,8 +119,7 @@ class IntermineConnector(instance: IntermineInstance,
   /**
    * Add a probe list to InterMine by first mapping it into genes (lazily)
    */
-  def addProbeList(ls: ListService,
-    probes: Iterable[String], name: Option[String], replace: Boolean,
+  def addProbeList(ls: ListService, probes: Iterable[String], name: String, replace: Boolean,
     tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
     addEntrezList(ls,
         () =>
@@ -148,10 +129,9 @@ class IntermineConnector(instance: IntermineInstance,
     /**
    *  Add a list of NCBI/Entrez genes to InterMine
    */
-  def addEntrezList(ls: ListService, getGenes: () => Iterable[String],
-    name: Option[String], replace: Boolean,
+  def addEntrezList(ls: ListService, getGenes: () => Iterable[String], name: String, replace: Boolean,
     tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
-    validNameForExport(ls, name, replace) match {
+    checkListNameForExport(ls, name, replace) match {
       case Some(useName) =>
         val ci = new ls.ListCreationInfo("Gene", useName)
         //Note: we have the option of doing a fuzzy (e.g. symbol-based) export here
