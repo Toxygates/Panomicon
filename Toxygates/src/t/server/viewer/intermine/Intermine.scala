@@ -79,15 +79,13 @@ class IntermineConnector(instance: IntermineInstance,
     }
     println(s"${filtered take 100} ...")
 
-    Some(new StringList(StringList.PROBES_LIST_TYPE,
-        l.getName(), filtered.toArray))
+    Some(new StringList(StringList.PROBES_LIST_TYPE, l.getName(), filtered.toArray))
   }
 
   /**
    * Add a set of probe lists by first mapping them to genes
    */
   def addProbeLists(ls: ListService, lists: Iterable[StringList], replace: Boolean): Unit = {
-
     for { l <- lists } {
       addProbeList(ls, l.items(), l.name(), replace)
     }
@@ -120,22 +118,21 @@ class IntermineConnector(instance: IntermineInstance,
    * Add a probe list to InterMine by first mapping it into genes (lazily)
    */
   def addProbeList(ls: ListService, probes: Iterable[String], name: String, replace: Boolean,
-    tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
+    tags: Seq[String] = Seq("toxygates")): Option[ItemList] =
     addEntrezList(ls,
-        () =>
           platforms.resolve(probes.toSeq).flatMap(_.genes.map(_.identifier)),
           name, replace, tags)
-  }
+
     /**
    *  Add a list of NCBI/Entrez genes to InterMine
    */
-  def addEntrezList(ls: ListService, getGenes: () => Iterable[String], name: String, replace: Boolean,
+  def addEntrezList(ls: ListService, genes: Seq[String], name: String, replace: Boolean,
     tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
     checkListNameForExport(ls, name, replace) match {
       case Some(useName) =>
         val ci = new ls.ListCreationInfo("Gene", useName)
         //Note: we have the option of doing a fuzzy (e.g. symbol-based) export here
-        ci.setContent(getGenes().toSeq.asJava)
+        ci.setContent(genes.asJava)
         ci.addTags(tags.asJava)
         println(s"Exporting list '$useName'")
         Some(ls.createList(ci))
