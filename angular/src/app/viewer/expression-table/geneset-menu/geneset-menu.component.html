@@ -9,20 +9,20 @@
       role="menu" aria-labelledby="button-basic">
     <li role="menuitem">
       <a class="dropdown-item" (click)="openGeneSetNameModal()"
-          [routerLink]="" queryParamsHandling="preserve">
+          [routerLink]="[]" queryParamsHandling="preserve">
           New gene set
       </a>
     </li>
     <li role="menuitem">
       <a class="dropdown-item" (click)="showAllGenes.emit()"
-          [routerLink]="" queryParamsHandling="preserve">
+          [routerLink]="[]" queryParamsHandling="preserve">
           Show all genes
       </a>
     </li>
     <div class="dropdown-divider"></div>
     <li *ngFor="let name of geneSetNames" role="menuitem">
         <a class="dropdown-item" (click)="selectGeneSet.emit(name)"
-            [routerLink]="" queryParamsHandling="preserve">
+            [routerLink]="[]" queryParamsHandling="preserve">
             <i *ngIf="currentGeneSet === name" class="bi bi-check"></i>
             {{name}}
         </a>
