@@ -9,14 +9,14 @@
       role="menu" aria-labelledby="button-basic">
       <li role="menuitem">
         <a class="dropdown-item"
-          (click)="removeAttribute(i)" [routerLink]="" queryParamsHandling="preserve">
+          (click)="removeAttribute(i)" [routerLink]="[]" queryParamsHandling="preserve">
           Remove {{selectedAttribute.title}}
         </a>
       </li>
       <h6 class="dropdown-header">Change attribute:</h6>
       <li *ngFor="let attribute of attributes$ | async" role="menuitem">
         <a class="dropdown-item" [class.disabled]="selectedAttributes.includes(attribute)"
-          (click)="changeAttribute(i, attribute)" [routerLink]="" queryParamsHandling="preserve">
+          (click)="changeAttribute(i, attribute)" [routerLink]="[]" queryParamsHandling="preserve">
           <i *ngIf="attribute === selectedAttribute" class="bi bi-check"></i>
           {{attribute.title}}
         </a>
@@ -36,7 +36,7 @@
       <h6 class="dropdown-header">Select attribute:</h6>
       <li *ngFor="let attribute of attributes$ | async" role="menuitem">
         <a class="dropdown-item" [class.disabled]="selectedAttributes.includes(attribute)"
-          (click)="addAttribute(attribute)" [routerLink]="" queryParamsHandling="preserve">
+          (click)="addAttribute(attribute)" [routerLink]="[]" queryParamsHandling="preserve">
           {{attribute.title}}
         </a>
       </li>

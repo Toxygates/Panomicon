@@ -41,7 +41,7 @@
             <!--<h6 class="dropdown-header">Select batch:</h6>-->
             <li *ngFor="let attribute of attributes$ | async" role="menuitem">
                 <a class="dropdown-item" [class.disabled]="fetchedData.requiredAttributes.has(attribute.id)"
-                (click)="toggleColumn(attribute)" [routerLink]=""queryParamsHandling="preserve">
+                (click)="toggleColumn(attribute)" [routerLink]="[]"queryParamsHandling="preserve">
                 <i *ngIf="findColumnForAttribute(attribute)" class="bi bi-check"></i>
                 {{attribute.title}}
                 </a>

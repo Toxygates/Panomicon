@@ -18,7 +18,7 @@
         <h6 class="dropdown-header">Select dataset:</h6>
         <li *ngFor="let dataset of datasets" role="menuitem">
             <a class="dropdown-item" (click)="selectDataset(dataset.id)"
-            [routerLink]=""queryParamsHandling="preserve">
+            [routerLink]="[]"queryParamsHandling="preserve">
             {{dataset.description}} ({{dataset.id}})
             </a>
         </li>
