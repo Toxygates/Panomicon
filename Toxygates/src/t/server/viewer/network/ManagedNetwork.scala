@@ -42,15 +42,15 @@ class ManagedNetwork(mainParams: LoadParams,
                      val sideMatrix: ManagedMatrix,
                      var targets: TargetTable,
                      platforms: PlatformRegistry,
-                     var currentPageSize: Int,
                      sideIsMRNA: Boolean) extends ManagedMatrix(mainParams) {
 
-  protected var currentPageRows: Option[(Int, Int)] = None
+  //Offset and length of the current page in the main matrix, if any
+  var currentPageStart: Int = 0
+  var currentPageLength: Int = current.rows
 
   override def getPageView(offset: Int, length: Int): Seq[ExpressionRow] = {
     val r = super.getPageView(offset, length)
-    currentPageRows = Some((offset, r.size))
-    updateSideMatrix()
+    updateSideMatrix(offset, length)
     r
   }
 
@@ -58,10 +58,11 @@ class ManagedNetwork(mainParams: LoadParams,
    * To be called when the superclass' current view has changed.
    * Obtains the relevant rows for and reloads the side matrix
    * accordingly.
+   * pageStartLength is a pair of (probe offset, page length) for the main matrix.
    */
-  def updateSideMatrix() {
-    val offset = currentPageRows.map(_._1).getOrElse(0)
-    val length = currentPageRows.map(_._2).getOrElse(currentPageSize)
+  def updateSideMatrix(offset: Int, length: Int) {
+    currentPageStart = offset
+    currentPageLength = length
     if (targets.isEmpty) {
       println("Warning: targets table is empty. No side table can be constructed.")
     }

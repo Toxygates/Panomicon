@@ -96,10 +96,8 @@ public class ETMatrixManager {
     /**
      * Perform an initial matrix load. The method should load data and then call
      * setInitialMatrix.
-     * @param initPageSize initial page size. Provided as a hint to the loader to optimize
-     * certain operations.
      */
-    void loadInitialMatrix(ValueType valueType, int initPageSize, List<ColumnFilter> initFilters);
+    void loadInitialMatrix(ValueType valueType, List<ColumnFilter> initFilters);
   }
 
   public ETMatrixManager(Screen screen, TableFlags flags, Delegate delegate, Loader loader,
@@ -342,7 +340,7 @@ public class ETMatrixManager {
     delegate.setEnabled(false);
     List<ColumnFilter> initFilters = preserveFilters ? lastColumnFilters : new ArrayList<ColumnFilter>();
     asyncProvider.updateRowCount(0, false);
-    loader.loadInitialMatrix(chosenValueType, NavigationTools.INIT_PAGE_SIZE, initFilters);
+    loader.loadInitialMatrix(chosenValueType, initFilters);
   }
 
   class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
