@@ -30,9 +30,9 @@ export class AdminComponent implements OnInit {
         })
       )
       .subscribe(roles => {
-        if (!roles.includes("admin")) {
-          alert("Authentication failed: you do not have the admin role. Please contact an administrator.\nLogging out...");
-          this.logout();
+        if (!roles?.includes("admin")) {
+          alert("You do not have the admin role. Switching to viewer screen.");
+          void this.router.navigateByUrl('/');
         }
         this.roles = roles;
       })
