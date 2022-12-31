@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { BackendService } from 'src/app/shared/services/backend.service';
+import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
 import { environment } from 'src/environments/environment';
 import { AdminDataService } from '../services/admin-data';
 
@@ -14,6 +15,7 @@ export class AdminComponent implements OnInit {
 
   constructor(
     private backend: BackendService,
+    private fetchedData: FetchedDataService,
     public adminData: AdminDataService,
     private router: Router,
   ) { }
@@ -22,7 +24,7 @@ export class AdminComponent implements OnInit {
   roles: string[] | undefined;
 
   ngOnInit(): void {
-    this.backend.getRoles()
+    this.fetchedData.roles$
       .pipe(
         catchError((error, _caught) => {
           window.location.href = environment.apiUrl + 'login';

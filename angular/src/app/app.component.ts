@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { catchError } from 'rxjs/operators';
-import { BackendService } from './shared/services/backend.service';
 import { environment } from 'src/environments/environment';
+import { FetchedDataService } from './shared/services/fetched-data.service';
 
 @Component({
   selector: 'app-root',
@@ -10,11 +10,11 @@ import { environment } from 'src/environments/environment';
 })
 export class AppComponent implements OnInit {
   constructor(
-    private backend: BackendService,
+    private fetchedData: FetchedDataService,
   ) { }
 
   ngOnInit(): void {
-    this.backend.getRoles()
+    this.fetchedData.roles$
       .pipe(
         catchError((error, _caught) => {
           window.location.href = environment.apiUrl + 'login';

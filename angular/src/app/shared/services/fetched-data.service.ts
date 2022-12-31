@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, concat, EMPTY, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, concat, EMPTY, Observable, of } from 'rxjs';
 import { filter, map, pairwise, switchMap } from 'rxjs/operators';
 import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
 import { SampleFilter } from '../models/sample-filter.model';
@@ -10,6 +10,8 @@ import { UserDataService } from './user-data.service';
   providedIn: 'root'
 })
 export class FetchedDataService {
+
+  roles$: Observable<string[]>;
 
   datasets$: BehaviorSubject<Dataset[] | null>;
   batches$: BehaviorSubject<Batch[] | null>;
@@ -26,6 +28,8 @@ export class FetchedDataService {
 
   constructor(private backend: BackendService,
     private userData: UserDataService) {
+
+    this.roles$ = this.backend.getRoles();
 
     this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
     this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
