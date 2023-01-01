@@ -1,1 +1,14 @@
 <router-outlet></router-outlet>
+
+<ng-template #loginModal>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Login required</h4>
+  </div>
+  <div class="modal-body">
+    <p>You must log in to use this application.</p>
+    <button type="button" class="btn btn-primary mt-2" (click)="login()">Login</button>
+    <span class="float-right">
+      <button type="button" class="btn btn-primary mt-2" (click)="register()">Create account</button>
+    </span>
+  </div>
+</ng-template>
