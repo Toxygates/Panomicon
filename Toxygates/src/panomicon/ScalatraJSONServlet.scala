@@ -324,7 +324,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/register") {
-    redirect(authentication.registrationRedirectUri)
+    val (verifier, challenge) = authentication.generatePKCEPair()
+    session("verifier") = verifier
+    redirect(authentication.registrationRedirectUri(challenge))
   }
 
   get("/oauth-redirect") {

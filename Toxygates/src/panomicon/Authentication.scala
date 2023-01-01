@@ -29,9 +29,10 @@ class Authentication {
       s"&response_type=code&redirect_uri=$redirectAfterAuthUrl" +
       s"&scope=openid offline_access&code_challenge=$challenge&code_challenge_method=S256"
 
-  val registrationRedirectUri =
+  def registrationRedirectUri(challenge: String): String =
     s"$fusionAuthBaseUrl/oauth2/register?client_id=$fusionAuthClientId" +
-      s"&response_type=code&redirect_uri=$redirectAfterAuthUrl"
+      s"&response_type=code&redirect_uri=$redirectAfterAuthUrl" +
+      s"&scope=openid offline_access&code_challenge=$challenge&code_challenge_method=S256"
 
   def generatePKCEVerifier(): String =  {
     val codeVerifier = new Array[Byte](32);
