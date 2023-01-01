@@ -323,6 +323,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     redirect(authentication.loginRedirectUri(challenge))
   }
 
+  get("/register") {
+    redirect(authentication.registrationRedirectUri)
+  }
+
   get("/oauth-redirect") {
     if (!session.contains("verifier")) halt(401, "Unauthenticated")
 
