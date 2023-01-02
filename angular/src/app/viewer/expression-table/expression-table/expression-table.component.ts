@@ -6,6 +6,7 @@ import { GeneSet, SampleGroup } from '../../../shared/models/frontend-types.mode
 import Tabulator from 'tabulator-tables';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
 
 @Component({
   selector: 'app-expression-table',
@@ -17,6 +18,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   constructor(private userData: UserDataService,
     private activatedRoute: ActivatedRoute,
+    private fetchedData: FetchedDataService,
     private router: Router, private modalService: BsModalService,
     private changeDetector: ChangeDetectorRef,
     private ngZone: NgZone) { }
@@ -112,7 +114,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   }
 
   ngAfterViewInit(): void {
-    this.drawTable();
+    // Don't draw the table (which triggers a data fetch) until we know user is logged in
+    this.fetchedData.roles$.subscribe(_roles => {
+      this.drawTable();
+    });
   }
 
   ngOnDestroy(): void {
