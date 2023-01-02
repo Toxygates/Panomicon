@@ -16,7 +16,6 @@ class Authentication {
   val fusionAuthClientId = System.getenv("FUSIONAUTH_CLIENTID")
   val fusionAuthClientSecret = System.getenv("FUSIONAUTH_CLIENTSECRET")
   val redirectAfterAuthUrl = System.getenv("REDIRECT_AFTER_AUTH_URL")
-  val redirectAfterRegistrationUrl = System.getenv("REDIRECT_AFTER_REGISTRATION_URL")
   val jwtIssuer = System.getenv("JWT_ISSUER")
 
   val logoutUrl = s"http://localhost:9011/oauth2/logout?client_id=$fusionAuthClientId"
