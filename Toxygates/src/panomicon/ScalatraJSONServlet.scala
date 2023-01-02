@@ -89,6 +89,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/batch/dataset/:dataset") {
     contentType = "text/json"
     val requestedDatasetId = paramOrHalt("dataset")
+    verifyRole(requestedDatasetId)
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
 
