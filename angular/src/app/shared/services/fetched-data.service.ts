@@ -29,12 +29,25 @@ export class FetchedDataService {
   constructor(private backend: BackendService,
     private userData: UserDataService) {
 
+    this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
+    this.batches$ = new BehaviorSubject<Batch[] | null>(null);
+    this.samples$ = new BehaviorSubject<Sample[] | null>(null);
+    this.samplesMap$ = new BehaviorSubject<Map<string, Sample>>(new Map());
+    this.sampleFilters$ = new BehaviorSubject<SampleFilter[]>([]);
+    this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
+    this.attributes$ = new BehaviorSubject<Attribute[] | null>(null);
+    this.attributeMap$ = new BehaviorSubject<Map<string, Attribute>>(new Map());
+    this.fetchedAttributes$ = new BehaviorSubject<Set<string>>(new Set());
+    this.columnDefinitions$ = new BehaviorSubject<Tabulator.ColumnDefinition[]>([]);
+
+    this.requiredAttributes.add("sample_id");
+
     this.roles$ = this.backend.getRoles();
 
-    this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
+    // fetch datasets
     this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
 
-    this.batches$ = new BehaviorSubject<Batch[] | null>(null);
+    // fetch batches for selected dataset
     this.userData.selectedDataset$.pipe(
       filter(dataset => dataset != null),
       switchMap(datasetId => {
@@ -47,7 +60,7 @@ export class FetchedDataService {
       })
       ).subscribe(this.batches$);
 
-    this.samples$ = new BehaviorSubject<Sample[] | null>(null);
+    // fetch samples for selected batch
     this.userData.selectedBatch$.pipe(
       filter(batchId => batchId != null),
       switchMap(batchId => {
@@ -56,7 +69,7 @@ export class FetchedDataService {
       })
       ).subscribe(this.samples$);
 
-    this.samplesMap$ = new BehaviorSubject<Map<string, Sample>>(new Map());
+    // create sample ID -> sample map
     this.samples$.pipe(
       map(samples => {
         const samplesMap = new Map<string, Sample>();
@@ -64,9 +77,7 @@ export class FetchedDataService {
         return samplesMap;
       })).subscribe(this.samplesMap$);
 
-    this.sampleFilters$ = new BehaviorSubject<SampleFilter[]>([]);
-
-    this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
+    // generate filtered samples based on samples and sample filters
     combineLatest([this.samples$, this.sampleFilters$]).pipe(
       pairwise(),
       switchMap(([[samples1, filters1], [samples2, filters2]]) => {
@@ -92,13 +103,14 @@ export class FetchedDataService {
       })
     ).subscribe(this.filteredSamples$);
 
+    // clear sample filters when samples are fetched
     this.samples$.pipe(
       switchMap(_samples => {
         return of<SampleFilter[]>([]);
       })
     ).subscribe(this.sampleFilters$);
 
-    this.attributes$ = new BehaviorSubject<Attribute[] | null>(null);
+    // fetch attributes for batch
     this.userData.selectedBatch$.pipe(
       filter(batchId => batchId != null),
       switchMap(batchId => {
@@ -107,7 +119,7 @@ export class FetchedDataService {
       })
       ).subscribe(this.attributes$);
 
-    this.attributeMap$ = new BehaviorSubject<Map<string, Attribute>>(new Map());
+    // create attribute name -> attribute map
     this.attributes$.pipe(
       map(attributes => {
         const attributeMap = new Map<string, Attribute>();
@@ -115,9 +127,8 @@ export class FetchedDataService {
         return attributeMap;
       })).subscribe(this.attributeMap$);
 
-    this.requiredAttributes.add("sample_id");
 
-    this.fetchedAttributes$ = new BehaviorSubject<Set<string>>(new Set());
+    // initialize set of fetched attributes when samples and attributes are fetched
     combineLatest([this.samples$, this.attributeMap$]).pipe(
       map(([samples, attributeMap]) => {
         const fetchedAttributes = new Set<string>();
@@ -133,7 +144,7 @@ export class FetchedDataService {
         return fetchedAttributes;
       })).subscribe(this.fetchedAttributes$);
 
-    this.columnDefinitions$ = new BehaviorSubject<Tabulator.ColumnDefinition[]>([]);
+    // reinitialize column definitions when samples are fetched
     this.samples$.pipe(
       switchMap(_samples => {
         return of(this.initialColumns());
