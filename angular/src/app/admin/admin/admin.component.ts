@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError } from 'rxjs/operators';
 import { BackendService } from 'src/app/shared/services/backend.service';
 import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
 import { environment } from 'src/environments/environment';
@@ -25,12 +24,6 @@ export class AdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchedData.roles$
-      .pipe(
-        catchError((error, _caught) => {
-          window.location.href = environment.apiUrl + 'login';
-          throw error;
-        })
-      )
       .subscribe(roles => {
         if (!roles?.includes("admin")) {
           alert("You do not have the admin role. Switching to viewer screen.");
