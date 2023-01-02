@@ -42,8 +42,14 @@ export class FetchedDataService {
 
     this.requiredAttributes.add("sample_id");
 
+    // only fetch data if user is logged in
     this.roles$ = this.backend.getRoles();
+    this.roles$.subscribe(_roles => {
+      this.fetchData();
+    })
+  }
 
+  private fetchData() {
     // fetch datasets
     this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
 
