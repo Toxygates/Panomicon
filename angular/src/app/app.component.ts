@@ -1,6 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { FetchedDataService } from './shared/services/fetched-data.service';
 
@@ -18,15 +17,12 @@ export class AppComponent implements OnInit {
   @ViewChild('loginModal') loginTemplate!: TemplateRef<unknown>;
 
   ngOnInit(): void {
-    this.fetchedData.roles$
-      .pipe(
-        catchError((error, _caught) => {
-          this.modalService.show(this.loginTemplate,
-            { class: 'modal-dialog-centered' });
-          throw error;
-        })
-      )
-      .subscribe() // empty subscription to trigger API call
+    this.fetchedData.roles$.subscribe(roles => {
+      if (roles == null) {
+        this.modalService.show(this.loginTemplate,
+          { class: 'modal-dialog-centered' });
+      }
+    })
   }
 
   login(): void {

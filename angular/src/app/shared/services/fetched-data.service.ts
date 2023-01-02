@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, concat, EMPTY, Observable, of } from 'rxjs';
-import { filter, map, pairwise, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, concat, EMPTY, Observable, of, ReplaySubject } from 'rxjs';
+import { catchError, filter, map, pairwise, switchMap } from 'rxjs/operators';
 import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
 import { SampleFilter } from '../models/sample-filter.model';
 import { BackendService } from './backend.service';
@@ -11,7 +11,7 @@ import { UserDataService } from './user-data.service';
 })
 export class FetchedDataService {
 
-  roles$: Observable<string[]>;
+  roles$: Observable<string[] | null>;
 
   datasets$: BehaviorSubject<Dataset[] | null>;
   batches$: BehaviorSubject<Batch[] | null>;
@@ -42,10 +42,23 @@ export class FetchedDataService {
 
     this.requiredAttributes.add("sample_id");
 
+    const rolesSubject = new ReplaySubject<string[] | null>();
+    this.roles$ = rolesSubject
+    this.backend.getRoles()
+      .pipe(
+        catchError(() => {
+          return of(null);
+        })
+      )
+      .subscribe(roles => {
+        rolesSubject.next(roles);
+      });
+
     // only fetch data if user is logged in
-    this.roles$ = this.backend.getRoles();
-    this.roles$.subscribe(_roles => {
-      this.fetchData();
+    this.roles$.subscribe(roles => {
+      if (roles != null) {
+        this.fetchData();
+      }
     })
   }
 

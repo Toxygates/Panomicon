@@ -20,7 +20,6 @@ export class AdminComponent implements OnInit {
   ) { }
 
   navbarIsCollapsed = true;
-  roles: string[] | undefined;
 
   ngOnInit(): void {
     this.fetchedData.roles$
@@ -29,7 +28,6 @@ export class AdminComponent implements OnInit {
           alert("You do not have the admin role. Switching to viewer screen.");
           void this.router.navigateByUrl('/');
         }
-        this.roles = roles;
       })
   }
 

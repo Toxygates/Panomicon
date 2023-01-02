@@ -115,8 +115,10 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   ngAfterViewInit(): void {
     // Don't draw the table (which triggers a data fetch) until we know user is logged in
-    this.fetchedData.roles$.subscribe(_roles => {
-      this.drawTable();
+    this.fetchedData.roles$.subscribe(roles => {
+      if (roles != null) {
+        this.drawTable();
+      }
     });
   }
 
