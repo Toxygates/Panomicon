@@ -87,37 +87,4 @@ export class BackendService {
         })
       )
   }
-
-  deleteBatch(batchId: string): Observable<string> {
-    console.log(this.serviceUrl + 'batch/' + batchId);
-    return this.http.delete<string>(this.serviceUrl + 'batch/' + batchId)
-      .pipe(
-        tap(() => console.log('deleted batch')),
-        catchError((error: HttpErrorResponse) => {
-          console.log(`Error deleting batch: ${error.message}`)
-          throw error;
-      }));
-  }
-
-  uploadFile(file: File): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append('fileKey', file, file.name);
-    return this.http.post(this.serviceUrl + 'upload', formData, {responseType: 'text'})
-      .pipe(
-        tap(() => console.log('uploaded file')),
-        catchError((error: HttpErrorResponse) => {
-          console.log(`Error uploading file: ${error.message}`)
-          throw error;
-      }));
-  }
-
-  logout(): Observable<string> {
-    return this.http.get<string>(this.serviceUrl + 'logout')
-      .pipe(
-        tap(() => console.log('logged out')),
-        catchError((error: HttpErrorResponse) => {
-          console.log(`Error logging out: ${error.message}`)
-          throw error;
-      }));
-  }
 }

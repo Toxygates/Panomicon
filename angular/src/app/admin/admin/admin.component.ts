@@ -41,26 +41,4 @@ export class AdminComponent implements OnInit {
   logout(): void {
     window.location.href = environment.apiUrl + 'logout';
   }
-
-  handleFileInput(target: EventTarget | null): void {
-    const input = target as HTMLInputElement;
-    const file = input.files?.item(0);
-    if (!file) {
-      throw new Error("No file selected for upload");
-    }
-    this.backend.uploadFile(file).subscribe(data => {
-      console.log(data);
-      // do something, if upload success
-    }, error => {
-      console.log(error);
-    });
-  }
-
-  deleteBatch(batchId: string): void {
-    console.log("deleting batch " + batchId);
-    this.backend.deleteBatch(batchId)
-      .subscribe(result => {
-        console.log(result);
-      });
-  }
 }
