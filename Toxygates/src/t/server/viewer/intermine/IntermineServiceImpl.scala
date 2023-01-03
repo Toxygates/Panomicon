@@ -107,7 +107,7 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
     ls.setAuthentication(session)
     val tags = List()
 
-    val tempList = conn.addProbeList(ls, list.items(), Some("temp_enrichment"), false, tags)
+    val tempList = conn.addProbeList(ls, list.items(), "temp_enrichment", false, tags)
 
     tempList match {
       case Some(tl) =>
