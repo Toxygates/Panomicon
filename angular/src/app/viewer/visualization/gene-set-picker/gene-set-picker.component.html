@@ -1,6 +1,7 @@
 <div class="btn-group" dropdown>
   <button id="button-basic" dropdownToggle type="button"
           class="btn btn-primary dropdown-toggle mr-2"
+          [disabled]="disabled"
           aria-controls="dropdown-basic">
           {{  selectedGeneSet ?
                   selectedGeneSet.type + " gene set: " + selectedGeneSet.name

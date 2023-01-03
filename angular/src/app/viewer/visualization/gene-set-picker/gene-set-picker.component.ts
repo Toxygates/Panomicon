@@ -14,6 +14,7 @@ export class GeneSetPickerComponent implements OnInit {
   @Output() selectedGeneSetChange = new EventEmitter<string>();
 
   @Input() geneSets$!: Observable<GeneSet[]>;
+  @Input() disabled!: boolean;
 
   mrnaGeneSets$!: Observable<GeneSet[]>;
   mirnaGeneSets$!: Observable<GeneSet[]>;

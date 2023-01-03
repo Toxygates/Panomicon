@@ -13,6 +13,7 @@ export class SampleGroupPickerComponent {
 
   @Input() sampleGroupType!: string;
   @Input() sampleGroups!: SampleGroup[] | null;
+  @Input() disabled!: boolean;
 
   selectSampleGroup(sampleGroup: string): void {
     this.selectedSampleGroup = sampleGroup;

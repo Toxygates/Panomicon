@@ -36,6 +36,7 @@ export class NetworkDisplayComponent implements AfterViewInit {
 	isReadyToGenerateNetwork$!: Observable<boolean>;
 
 	fetchedNetwork$: BehaviorSubject<BackendNetwork | null> = new BehaviorSubject<BackendNetwork | null>(null);
+	fetchingNetwork = false;
 	
 	constructor(
 		private userData: UserDataService,
@@ -78,6 +79,8 @@ export class NetworkDisplayComponent implements AfterViewInit {
 	}
 
 	generateNetwork(): void {
+		this.fetchingNetwork = true;
+
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const geneSet = this.userData.geneSets$.value.get(this.networkGeneSet$.value!);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -95,6 +98,9 @@ export class NetworkDisplayComponent implements AfterViewInit {
 		}
 
 		network$.subscribe(this.fetchedNetwork$);
+		network$.subscribe(() => {
+			this.fetchingNetwork = false;
+		});
 	}
 
   // ngOnInit(): void {
