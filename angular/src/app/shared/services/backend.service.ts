@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
+import { Attribute, Batch, Dataset, Network, Sample } from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
+import { GeneSet, SampleGroup } from '../models/frontend-types.model';
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +76,34 @@ export class BackendService {
           throw error;
         })
       )
+  }
+
+  getNetwork(sourceGroup: SampleGroup, targetGroup: SampleGroup, sourceGeneSet: GeneSet): Observable<Network> {
+    const requestBody = {
+      groups1: [
+        {
+          name: sourceGroup.name,
+          sampleIds: sourceGroup.samples
+        }
+      ],
+      groups2: [
+        {
+          name: targetGroup.name,
+          sampleIds: targetGroup.samples
+        }
+      ],
+      probes1: sourceGeneSet.probes,
+      associationSource: "miRDB",
+      associationLimit: "90",
+    }
+
+    return this.http.post<Network>(this.serviceUrl + 'network', requestBody)
+      .pipe(
+        tap(() => console.log('fetched network')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error fetching network: ${error.message}`)
+          throw error;
+      }));
   }
 
   getRoles(): Observable<string[]> {

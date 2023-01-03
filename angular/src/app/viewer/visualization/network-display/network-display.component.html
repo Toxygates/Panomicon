@@ -13,6 +13,18 @@
                 <app-gene-set-picker [geneSets$]="geneSets$"
                     (selectedGeneSetChange)="networkGeneSet$.next($event)">
                 </app-gene-set-picker>
+                <button type="button" class="btn btn-success mr-2"
+                    [disabled]="(isReadyToGenerateNetwork$ | async) === false"
+                    (click)="generateNetwork()">
+                    Generate network
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 pcard_container">
+            <div class="pcard ui_panel">
+                {{fetchedNetwork$ | async}}
             </div>
         </div>
     </div>
