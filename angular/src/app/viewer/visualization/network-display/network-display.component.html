@@ -1,21 +1,35 @@
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-12 pcard_container">
-			<div class="pcard ui_panel">
-				<app-layout-picker #layoutPicker
-					(changeLayoutEmitter)="setSelectedLayout($event)"
-					[selectedLayout]="selectedLayout">
-				</app-layout-picker>
-				<hr />
-				<app-display-canvas #networkCanvas
-					[network]="network">
-
-				</app-display-canvas>
-				
-				<router-outlet>
-				</router-outlet>
-			</div>
-		</div>
-	</div>
+    <div class="row">
+        <div class="col-12 pcard_container">
+            <div class="pcard ui_panel">
+                <app-sample-group-picker [sampleGroups]="firstNetworkSampleGroupOptions$ | async"
+                    sampleGroupType="mRNA"
+                    (selectedSampleGroupChange)="firstNetworkSampleGroup$.next($event)">
+                </app-sample-group-picker>
+                <app-sample-group-picker [sampleGroups]="secondNetworkSampleGroupOptions$ | async"
+                    sampleGroupType="miRNA"
+                    (selectedSampleGroupChange)="secondNetworkSampleGroup$.next($event)">
+                </app-sample-group-picker>
+                <app-gene-set-picker [geneSets$]="geneSets$"
+                    (selectedGeneSetChange)="networkGeneSet$.next($event)">
+                </app-gene-set-picker>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 pcard_container">
+            <div class="pcard ui_panel">
+                <app-layout-picker #layoutPicker
+                    (changeLayoutEmitter)="setSelectedLayout($event)"
+                    [selectedLayout]="selectedLayout">
+                </app-layout-picker>
+                <hr />
+                <app-display-canvas #networkCanvas
+                    [network]="network">
+                </app-display-canvas>
+                <router-outlet>
+                </router-outlet>
+            </div>
+        </div>
+    </div>
 </div>
-	

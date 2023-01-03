@@ -1,0 +1,29 @@
+<div class="btn-group" dropdown>
+  <button id="button-basic" dropdownToggle type="button"
+          class="btn btn-primary dropdown-toggle mr-2"
+          aria-controls="dropdown-basic">
+          {{  selectedGeneSet ?
+                  selectedGeneSet.type + " gene set: " + selectedGeneSet.name
+                  : "Select gene set"
+          }}
+       <span class="caret"></span>
+  </button>
+  <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
+      role="menu" aria-labelledby="button-basic">
+      <h6 class="dropdown-header">Select mRNA sample group:</h6>
+      <li *ngFor="let geneSet of mrnaGeneSets$ | async" role="menuitem">
+          <a class="dropdown-item" (click)="selectGeneSet(geneSet)"
+          [routerLink]="[]" queryParamsHandling="preserve">
+          {{geneSet.name}} ({{geneSet.platform}})
+          </a>
+      </li>
+      <h6 class="dropdown-header">Select miRNA sample group:</h6>
+      <li *ngFor="let geneSet of mirnaGeneSets$ | async" role="menuitem">
+          <a class="dropdown-item" (click)="selectGeneSet(geneSet)"
+          [routerLink]="[]" queryParamsHandling="preserve">
+          {{geneSet.name}} ({{geneSet.platform}})
+          </a>
+      </li>
+  </ul>
+</div>
+
