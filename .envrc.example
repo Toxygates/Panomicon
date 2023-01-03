@@ -1,0 +1,28 @@
+# Needed for compilation
+export SCALA_HOME="/Users/yuji/dev/toxygates/scala-2.12.17"
+export GWT_SDK="/Users/yuji/dev/toxygates/gwt-2.8.2"
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home"
+export JRE_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home/jre"
+
+# For compiling/running with ant
+PATH_add "/Users/yuji/dev/toxygates/apache-ant-1.10.12/bin"
+PATH_add "/Users/yuji/dev/toxygates/scala-2.12.17/bin"
+
+# Necessary environment variables for the back end
+export T_TS_URL="http://localhost:3030/otg/query"
+export T_TS_UPDATE_URL="http://localhost:3030/otg/update"
+export T_TS_USER="x"
+export T_TS_PASS="y"
+export T_DATA_DIR="kcchunk:/Users/yuji/dev/toxygates/kyoto_data"
+export T_DATA_MATDBCONFIG="#pccap=1073741824#msiz=4294967296"
+export T_INSTANCE_NAME="dev"
+
+# Additional back end variables for FusionAuth
+# (the values below work out of the box with the docker-compose file)
+export FUSIONAUTH_BASEURL="http://localhost:9011"
+export FUSIONAUTH_CLIENTID="056867c7-e20a-4af9-8570-47100496229f"
+export FUSIONAUTH_CLIENTSECRET="Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg"
+export REDIRECT_AFTER_AUTH_URL="http://localhost:4200/json/oauth-redirect"
+export JWT_ISSUER="toxygates.nibiohn.go.jp"
+export RSA_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs03pveF/NZZ05R9xGqNezpKAe3rC93aVQYl1PSzArv8gOfiqlRBeaQDidT+9eg3ZKcqnkrPKWOAfmBuCoMZhpEnnmT4+WNbYsD1XpwGc3umu233IZ2itB4kLbAivjnwYRY5/8T5h2KYzvfBijARFZZG812RcMHlvXsrmOfrC3t/S2v9cWP4EpcHNUD8muhlYWzzCuHpjlNlvF7z+xVBK6ZgBVbP2iFKxNuhPrrVjCUvgz1Tsgxjkl1Ewr74gcHDiiQRSG105cYtLLrj+gC3tUeqONk0S2mugamSCO+DsGC246BxBzJsB5nGteMp6+he50iI6jBTxWsTUofCoBuiR3QIDAQAB-----END PUBLIC KEY-----"
+
