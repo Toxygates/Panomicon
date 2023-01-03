@@ -183,15 +183,17 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   onCreateGeneSet(name: string): void {
     const platform = this.enabledSampleGroups[0].platform;
+    const type = this.enabledSampleGroups[0].type;
     const data: {probe: string}[] | undefined = this.tabulator?.getData();
     const probes = data?.map(row => row.probe);
 
     if (probes == undefined) throw new Error("No probes available for gene set");
 
     const geneSet = {
-      name: name,
-      platform: platform,
-      probes: probes
+      name,
+      platform,
+      probes,
+      type,
     } as GeneSet;
 
     this.userData.geneSets$.value.set(name, geneSet);

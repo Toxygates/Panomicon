@@ -1,7 +1,7 @@
 <h2>Gene set editor</h2>
 
 <div *ngIf="(geneSet$ | async) as geneSet else geneSetNotFound">
-  <h3>{{geneSet.name}} ({{geneSet.platform}})</h3>
+  <h3>{{geneSet.name}} ({{geneSet.platform}} / {{geneSet.type}})</h3>
     <div class="form-group">
       <label for="probeSelect">Probes</label>
       <select #probeSelect="ngModel" ngModel multiple
