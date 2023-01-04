@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, timer  } from 'rxjs';
 import { mergeMap, scan, share, takeWhile, tap } from 'rxjs/operators'
+import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
 import { Batch, Instance, Dataset, Platform, ProgressUpdate } from './admin-types';
 import { BackendService } from './backend.service';
 
@@ -17,22 +18,26 @@ export class AdminDataService {
   progressState$: BehaviorSubject<ProgressUpdate | null>;
   progressMessages$: BehaviorSubject<string[]>;
 
-  constructor(private backend: BackendService) {
+  constructor(private backend: BackendService,
+    private fetchedData: FetchedDataService,
+  ) {
     this.platforms$ = new BehaviorSubject<Platform[] | null>(null);
-    this.backend.getPlatforms().subscribe(platforms => this.platforms$.next(platforms));
-
     this.batches$ = new BehaviorSubject<Batch[] | null>(null);
-    this.backend.getBatches().subscribe(batches => this.batches$.next(batches));
-
     this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
-    this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
-
     this.instances$ = new BehaviorSubject<Instance[] | null>(null);
-    this.backend.getInstances().subscribe(instances => this.instances$.next(instances));
-
     this.progressState$ = new BehaviorSubject<ProgressUpdate | null>(null);
     this.progressMessages$ = new BehaviorSubject<string[]>([]);
-    this.startTrackingProgress();
+
+    // only attempt to fetch data if user is logged in as admin
+    this.fetchedData.roles$.subscribe(roles => {
+      if (roles?.includes('admin')) {
+        this.backend.getBatches().subscribe(batches => this.batches$.next(batches));
+        this.backend.getPlatforms().subscribe(platforms => this.platforms$.next(platforms));
+        this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
+        this.backend.getInstances().subscribe(instances => this.instances$.next(instances));
+        this.startTrackingProgress();
+      }
+    })
   }
 
   refreshDatasets(): void {
