@@ -25,7 +25,6 @@ import org.intermine.client.core.ServiceFactory
 import org.intermine.client.lists.ItemList
 import org.intermine.client.services.ListService
 import t.shared.viewer.StringList
-import t.sparql._
 import t.sparql.ProbeStore
 import t.sparql.secondary._
 import t.shared.viewer.intermine._
@@ -54,9 +53,9 @@ class IntermineConnector(instance: IntermineInstance,
   def enrichmentRequest(ls: ListService) =
     ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
-  def asTGList(l: org.intermine.client.lists.ItemList,
-               ap: ProbeStore,
-               filterProbes: (Seq[String]) => Seq[String]): Option[StringList] = {
+  /** Convert an intermine ItemList into a pair of (list items, name),
+   * preserving only those items that are known to the platforms in our system. */
+  def asTGList(l: org.intermine.client.lists.ItemList): Option[(Array[String], String)] = {
     var items: Vector[Gene] = Vector()
     println(s"Importing ${l.getName}")
 
@@ -67,28 +66,20 @@ class IntermineConnector(instance: IntermineInstance,
 
     //we will have obtained the genes as ENTREZ identifiers
     println(s"${items take 100} ...")
-    var probes = items.flatMap(g => platforms.geneLookup.get(g)).
+    val probes = items.flatMap(g => platforms.geneLookup.get(g)).
       flatten.map(_.identifier).distinct
 
-    val filtered = if (!probes.isEmpty) {
-      filterProbes(probes)
-    } else {
+    val filtered = platforms.filterProbesAllPlatforms(probes)
+
+    if (filtered.isEmpty) {
       println(s"Warning: the following imported list had no corresponding probes in the system: ${l.getName}")
       println(s"The original size was ${l.getSize}")
       return None
     }
-    println(s"${filtered take 100} ...")
+    println(s"${filtered.take(100)} ...")
 
-    Some(new StringList(StringList.PROBES_LIST_TYPE, l.getName(), filtered.toArray))
+    Some((filtered.toArray, l.getName))
   }
-
-  /**
-   * Add a set of probe lists by first mapping them to genes
-   */
-  def addProbeLists(ls: ListService, lists: Iterable[StringList], replace: Boolean): Unit =
-    for { l <- lists } {
-      addProbeList(ls, l.items(), l.name(), replace)
-    }
 
   /**
    * Add a probe list to InterMine by first mapping it into genes (lazily)
@@ -131,6 +122,42 @@ class IntermineConnector(instance: IntermineInstance,
     ci.addTags(tags.asJava)
     println(s"Exporting list '$name'")
     Some(ls.createList(ci))
+  }
+
+  def exportLists(user: String, pass: String, itemsNames: Iterable[(Iterable[String], String)], replace: Boolean): Unit =
+    try {
+      val ls = getListService(Some(user), Some(pass))
+      for { (items, name) <- itemsNames } {
+        addProbeList(ls, items, name, replace)
+      }
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw new IntermineException(s"$e")
+    }
+
+  /** Import gene lists.
+   * @return pairs of (list items, name). */
+  def importLists(user: String, pass: String): Iterable[(Array[String], String)] = {
+  // Task: pass in a preferred species, get status info back
+    try {
+      val ls = getListService(Some(user), Some(pass))
+      val imLists = ls.getAccessibleLists.asScala
+
+      println("Accessible lists: ")
+      for {iml <- imLists} {
+        println(s"${iml.getName} ${iml.getType} ${iml.getSize}")
+      }
+
+      for { iml <- imLists
+           if iml.getType == "Gene"
+           list <- asTGList(iml)
+           } yield list
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw new IntermineException(s"$e")
+    }
   }
 }
 
