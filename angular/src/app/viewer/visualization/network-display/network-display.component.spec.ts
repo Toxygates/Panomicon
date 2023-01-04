@@ -1,6 +1,9 @@
+import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NetworkDisplayComponent } from './network-display.component';
+
+class MockService {}
 
 describe('NetworkDisplayComponent', () => {
   let component: NetworkDisplayComponent;
@@ -8,7 +11,10 @@ describe('NetworkDisplayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NetworkDisplayComponent ]
+      declarations: [ NetworkDisplayComponent ],
+      providers: [
+        { provide: HttpClient, useClass: MockService },
+      ],
     })
     .compileComponents();
   });
@@ -20,6 +26,6 @@ describe('NetworkDisplayComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    void expect(component).toBeTruthy();
   });
 });

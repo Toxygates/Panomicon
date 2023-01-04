@@ -25,3 +25,22 @@ export interface Matrix {
   },
   rows: Record<string, string | string[]>
 }
+
+interface Node {
+  id: string,
+  type: "mRNA" | "miRNA",
+  weights: Record<string, string | number>,
+  symbols: string[],
+}
+
+interface Interaction {
+  from: string,
+  to: string,
+  label: string,
+  weight: number,
+}
+
+export interface Network {
+  nodes: Node[],
+  interactions: Interaction[],
+}
