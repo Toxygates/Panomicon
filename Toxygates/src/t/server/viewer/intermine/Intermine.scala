@@ -24,12 +24,13 @@ import org.intermine.client.core.ContentType
 import org.intermine.client.core.ServiceFactory
 import org.intermine.client.lists.ItemList
 import org.intermine.client.services.ListService
-import t.shared.viewer.StringList
-import t.sparql.ProbeStore
 import t.sparql.secondary._
 import t.shared.viewer.intermine._
 import t.intermine._
 import t.platform.PlatformRegistry
+
+/** A named list of probes or genes */
+case class GeneList(name: String, items: Seq[String])
 
 class IntermineConnector(instance: IntermineInstance,
     platforms: PlatformRegistry) extends t.intermine.Connector(instance.appName,
@@ -53,9 +54,9 @@ class IntermineConnector(instance: IntermineInstance,
   def enrichmentRequest(ls: ListService) =
     ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
-  /** Convert an intermine ItemList into a pair of (list items, name),
+  /** Convert an intermine ItemList into a GeneList,
    * preserving only those items that are known to the platforms in our system. */
-  def asTGList(l: org.intermine.client.lists.ItemList): Option[(Array[String], String)] = {
+  def asTGList(l: ItemList): Option[GeneList] = {
     var items: Vector[Gene] = Vector()
     println(s"Importing ${l.getName}")
 
@@ -78,57 +79,58 @@ class IntermineConnector(instance: IntermineInstance,
     }
     println(s"${filtered.take(100)} ...")
 
-    Some((filtered.toArray, l.getName))
+    Some(GeneList(l.getName, filtered))
   }
 
   /**
    * Add a probe list to InterMine by first mapping it into genes (lazily)
    */
-  def addProbeList(ls: ListService, probes: Iterable[String], name: String, replace: Boolean,
+  def addProbeList(ls: ListService, list: GeneList, replace: Boolean,
     tags: Seq[String] = Seq("panomicon")): Option[ItemList] =
     addEntrezList(ls,
-          platforms.resolve(probes.toSeq).flatMap(_.genes.map(_.identifier)),
-          name, replace, tags)
+      list.copy(items =
+        platforms.resolve(list.items).flatMap(_.genes.map(_.identifier))
+      ),
+      replace, tags)
 
   /**
    *  Add a list of NCBI/Entrez genes to InterMine.
    *  @param ls the ListService
-   *  @param genes the genes (entrez IDs) to be added
-   *  @param name the name of the list to be created
+   *  @param list the genes (entrez IDs) to be added
    *  @param replace whether any existing list with the same name should be replaced
    *  @param tags any tags to be added to the list (stored on the InterMine server)
    *  @return the ItemList if it was successfully created, or None if the operation failed.
    */
-  def addEntrezList(ls: ListService, genes: Seq[String], name: String, replace: Boolean,
-    tags: Seq[String] = Seq("panomicon")): Option[ItemList] = {
+  def addEntrezList(ls: ListService, list: GeneList, replace: Boolean,
+                    tags: Seq[String] = Seq("panomicon")): Option[ItemList] = {
 
-    for {existingList <- Option(ls.getList(name))} {
+    for {existingList <- Option(ls.getList(list.name))} {
       if (replace) {
         println(s"Delete list $existingList for replacement")
         ls.deleteList(existingList)
       } else {
         //The list existed and replacement was not requested, so we can't proceed.
         //Could report this message to the user somehow
-        println(s"Not exporting list '$name' since it already existed (replacement not requested)")
+        println(s"Not exporting list '${list.name}' since it already existed (replacement not requested)")
         //throw new IntermineException(
         //  s"Unable to add list, ${name.get} already existed and replacement not requested
         return None
       }
     }
 
-    val ci = new ls.ListCreationInfo("Gene", name)
+    val ci = new ls.ListCreationInfo("Gene", list.name)
     //Note: we have the option of doing a fuzzy (e.g. symbol-based) export here
-    ci.setContent(genes.asJava)
+    ci.setContent(list.items.asJava)
     ci.addTags(tags.asJava)
-    println(s"Exporting list '$name'")
+    println(s"Exporting list '${list.name}'")
     Some(ls.createList(ci))
   }
 
-  def exportLists(user: String, pass: String, itemsNames: Iterable[(Iterable[String], String)], replace: Boolean): Unit =
+  def exportLists(user: String, pass: String, lists: Iterable[GeneList], replace: Boolean): Unit =
     try {
       val ls = getListService(Some(user), Some(pass))
-      for { (items, name) <- itemsNames } {
-        addProbeList(ls, items, name, replace)
+      for { list <- lists } {
+        addProbeList(ls, list, replace)
       }
     } catch {
       case e: Exception =>
@@ -138,7 +140,7 @@ class IntermineConnector(instance: IntermineInstance,
 
   /** Import gene lists.
    * @return pairs of (list items, name). */
-  def importLists(user: String, pass: String): Iterable[(Array[String], String)] = {
+  def importLists(user: String, pass: String): Iterable[GeneList] = {
   // Task: pass in a preferred species, get status info back
     try {
       val ls = getListService(Some(user), Some(pass))

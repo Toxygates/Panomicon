@@ -1,8 +1,7 @@
 package panomicon
 
-import panomicon.json.GeneList
 import t.Context
-import t.server.viewer.intermine.IntermineConnector
+import t.server.viewer.intermine.{IntermineConnector}
 import t.shared.viewer.intermine.IntermineInstance
 
 class IntermineHandling(context: Context) {
@@ -18,11 +17,4 @@ class IntermineHandling(context: Context) {
   }
 
   lazy val connector = new IntermineConnector(instance, context.platformRegistry)
-
-  def importLists(user: String, pass: String): Iterable[GeneList] =
-    connector.importLists(user, pass).map(l => GeneList(l._2, l._1))
-
-  def exportLists(user: String, pass: String, lists: Iterable[GeneList], replace: Boolean): Unit =
-    connector.exportLists(user, pass, lists.map(l => (l.items, l.name)), replace)
-
 }

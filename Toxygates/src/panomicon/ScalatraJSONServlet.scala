@@ -3,13 +3,13 @@ package panomicon
 import io.fusionauth.jwt.domain.JWT
 import org.scalatra._
 import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
-import panomicon.json.GeneList
 import t.db.Sample
 import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.Configuration
+import t.server.viewer.intermine.GeneList
 import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
@@ -674,7 +674,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/intermine/list") {
     val user = paramOrHalt("user")
     val pass = paramOrHalt("pass")
-    write(intermineHandling.importLists(user, pass))
+    write(intermineHandling.connector.importLists(user, pass))
   }
 
   /** Export gene lists to the configured intermine instance, optionally overwriting existing lists with the same name. */
@@ -683,6 +683,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val pass = paramOrHalt("pass")
     val replace = (paramOrHalt("replace") == "true")
     val lists = read[Seq[GeneList]](request.body)
-    intermineHandling.exportLists(user, pass, lists, replace)
+    intermineHandling.connector.exportLists(user, pass, lists, replace)
   }
 }

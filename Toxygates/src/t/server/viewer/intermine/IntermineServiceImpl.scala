@@ -51,7 +51,7 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
   def importLists(inst: IntermineInstance, user: String, pass: String): Array[StringList] = {
     val conn = mines.connector(inst, platforms)
     conn.importLists(user, pass).map(l =>
-      new StringList(StringList.PROBES_LIST_TYPE, l._2, l._1)
+      new StringList(StringList.PROBES_LIST_TYPE, l.name, l.items.toArray)
     ).toArray
   }
 
@@ -59,7 +59,7 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
       lists: Array[StringList], replace: Boolean): Unit = {
     val conn = mines.connector(inst, platforms)
     conn.exportLists(user, pass,
-      lists.map(l => (l.items().toSeq, l.name())), replace)
+      lists.map(l => GeneList(l.name(), l.items().toSeq)), replace)
   }
 
   // This is mainly to adjust the formatting of the p-value
@@ -82,7 +82,7 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
     ls.setAuthentication(session)
     val tags = List()
 
-    val tempList = conn.addProbeList(ls, list.items(), "temp_enrichment", false, tags)
+    val tempList = conn.addProbeList(ls, GeneList("temp_enrichment", list.items()), false, tags)
 
     tempList match {
       case Some(tl) =>
