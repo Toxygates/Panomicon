@@ -3,14 +3,14 @@ package panomicon
 import io.fusionauth.jwt.domain.JWT
 import org.scalatra._
 import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
+import panomicon.json.GeneList
 import t.db.Sample
 import t.model.sample.CoreParameter._
-import t.model.sample.OTGAttribute._
-import t.model.sample.{Attribute, AttributeSet, CoreParameter}
+import t.model.sample.Attribute
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.Configuration
-import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
+import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
@@ -44,6 +44,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
   val networkHandling = new NetworkHandling(context, matrixHandling)
   val uploadHandling = new UploadHandling(context)
+  val intermineHandling = new IntermineHandling(context)
 
   val authentication = new Authentication()
 
@@ -266,7 +267,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    */
   get("/association/:assoc/:sample") {
     contentType = "text/json"
-    val probes = params.getOrElse("probes", halt(400))
+    val probes = paramOrHalt("probes")
     try {
       val requestedType = AType.valueOf(paramOrHalt("assoc"))
       val reprSample = paramOrHalt("sample")
@@ -665,5 +666,23 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     verifyRole("admin")
     contentType = "text/json"
     write(uploadHandling.getProgress())
+  }
+
+  /**
+   * Import gene lists from the configured intermine instance.
+   */
+  get("/intermine/list") {
+    val user = paramOrHalt("user")
+    val pass = paramOrHalt("pass")
+    write(intermineHandling.importLists(user, pass))
+  }
+
+  /** Export gene lists to the configured intermine instance, optionally overwriting existing lists with the same name. */
+  post("/intermine/list") {
+    val user = paramOrHalt("user")
+    val pass = paramOrHalt("pass")
+    val replace = (paramOrHalt("replace") == "true")
+    val lists = read[Seq[GeneList]](request.body)
+    intermineHandling.exportLists(user, pass, lists, replace)
   }
 }

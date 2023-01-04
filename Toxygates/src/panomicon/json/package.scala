@@ -75,6 +75,9 @@ case class NetworkParams(groups1: Seq[Group], probes1: Seq[String] = Seq(),
   def matrix2: MatrixParams = MatrixParams(groups2)
 }
 
+object GeneList { implicit val rw: RW[GeneList] = macroRW }
+case class GeneList(name: String, items: Seq[String])
+
 object Encoders {
   // date should be added, either ISO 8601 or millis since 1970
   // https://stackoverflow.com/a/15952652/689356
