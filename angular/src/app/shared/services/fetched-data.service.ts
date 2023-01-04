@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, concat, EMPTY, of } from 'rxjs';
-import { filter, map, pairwise, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, concat, EMPTY, Observable, of, ReplaySubject } from 'rxjs';
+import { catchError, filter, map, pairwise, switchMap } from 'rxjs/operators';
 import { Attribute, Batch, Dataset, Sample } from '../models/backend-types.model';
 import { SampleFilter } from '../models/sample-filter.model';
 import { BackendService } from './backend.service';
@@ -10,6 +10,8 @@ import { UserDataService } from './user-data.service';
   providedIn: 'root'
 })
 export class FetchedDataService {
+
+  roles$: Observable<string[] | null>;
 
   datasets$: BehaviorSubject<Dataset[] | null>;
   batches$: BehaviorSubject<Batch[] | null>;
@@ -28,9 +30,43 @@ export class FetchedDataService {
     private userData: UserDataService) {
 
     this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
+    this.batches$ = new BehaviorSubject<Batch[] | null>(null);
+    this.samples$ = new BehaviorSubject<Sample[] | null>(null);
+    this.samplesMap$ = new BehaviorSubject<Map<string, Sample>>(new Map());
+    this.sampleFilters$ = new BehaviorSubject<SampleFilter[]>([]);
+    this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
+    this.attributes$ = new BehaviorSubject<Attribute[] | null>(null);
+    this.attributeMap$ = new BehaviorSubject<Map<string, Attribute>>(new Map());
+    this.fetchedAttributes$ = new BehaviorSubject<Set<string>>(new Set());
+    this.columnDefinitions$ = new BehaviorSubject<Tabulator.ColumnDefinition[]>([]);
+
+    this.requiredAttributes.add("sample_id");
+
+    const rolesSubject = new ReplaySubject<string[] | null>();
+    this.roles$ = rolesSubject
+    this.backend.getRoles()
+      .pipe(
+        catchError(() => {
+          return of(null);
+        })
+      )
+      .subscribe(roles => {
+        rolesSubject.next(roles);
+      });
+
+    // only fetch data if user is logged in
+    this.roles$.subscribe(roles => {
+      if (roles != null) {
+        this.fetchData();
+      }
+    })
+  }
+
+  private fetchData() {
+    // fetch datasets
     this.backend.getDatasets().subscribe(datasets => this.datasets$.next(datasets));
 
-    this.batches$ = new BehaviorSubject<Batch[] | null>(null);
+    // fetch batches for selected dataset
     this.userData.selectedDataset$.pipe(
       filter(dataset => dataset != null),
       switchMap(datasetId => {
@@ -43,7 +79,7 @@ export class FetchedDataService {
       })
       ).subscribe(this.batches$);
 
-    this.samples$ = new BehaviorSubject<Sample[] | null>(null);
+    // fetch samples for selected batch
     this.userData.selectedBatch$.pipe(
       filter(batchId => batchId != null),
       switchMap(batchId => {
@@ -52,7 +88,7 @@ export class FetchedDataService {
       })
       ).subscribe(this.samples$);
 
-    this.samplesMap$ = new BehaviorSubject<Map<string, Sample>>(new Map());
+    // create sample ID -> sample map
     this.samples$.pipe(
       map(samples => {
         const samplesMap = new Map<string, Sample>();
@@ -60,9 +96,7 @@ export class FetchedDataService {
         return samplesMap;
       })).subscribe(this.samplesMap$);
 
-    this.sampleFilters$ = new BehaviorSubject<SampleFilter[]>([]);
-
-    this.filteredSamples$ = new BehaviorSubject<Sample[] | null>(null);
+    // generate filtered samples based on samples and sample filters
     combineLatest([this.samples$, this.sampleFilters$]).pipe(
       pairwise(),
       switchMap(([[samples1, filters1], [samples2, filters2]]) => {
@@ -88,13 +122,14 @@ export class FetchedDataService {
       })
     ).subscribe(this.filteredSamples$);
 
+    // clear sample filters when samples are fetched
     this.samples$.pipe(
       switchMap(_samples => {
         return of<SampleFilter[]>([]);
       })
     ).subscribe(this.sampleFilters$);
 
-    this.attributes$ = new BehaviorSubject<Attribute[] | null>(null);
+    // fetch attributes for batch
     this.userData.selectedBatch$.pipe(
       filter(batchId => batchId != null),
       switchMap(batchId => {
@@ -103,7 +138,7 @@ export class FetchedDataService {
       })
       ).subscribe(this.attributes$);
 
-    this.attributeMap$ = new BehaviorSubject<Map<string, Attribute>>(new Map());
+    // create attribute name -> attribute map
     this.attributes$.pipe(
       map(attributes => {
         const attributeMap = new Map<string, Attribute>();
@@ -111,9 +146,8 @@ export class FetchedDataService {
         return attributeMap;
       })).subscribe(this.attributeMap$);
 
-    this.requiredAttributes.add("sample_id");
 
-    this.fetchedAttributes$ = new BehaviorSubject<Set<string>>(new Set());
+    // initialize set of fetched attributes when samples and attributes are fetched
     combineLatest([this.samples$, this.attributeMap$]).pipe(
       map(([samples, attributeMap]) => {
         const fetchedAttributes = new Set<string>();
@@ -129,7 +163,7 @@ export class FetchedDataService {
         return fetchedAttributes;
       })).subscribe(this.fetchedAttributes$);
 
-    this.columnDefinitions$ = new BehaviorSubject<Tabulator.ColumnDefinition[]>([]);
+    // reinitialize column definitions when samples are fetched
     this.samples$.pipe(
       switchMap(_samples => {
         return of(this.initialColumns());

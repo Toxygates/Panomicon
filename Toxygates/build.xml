@@ -73,10 +73,12 @@
     <!-- Set up WEB-INF/lib with jars -->
     <delete dir="${wardir}/WEB-INF/lib" failonerror="false" />
     <mkdir dir="${wardir}/WEB-INF/lib" />
+    <ivy:retrieve pattern="${wardir}/WEB-INF/lib/[artifact]-[revision].[ext]" conf="runtime" type="bundle,jar"/>
+
+    <!-- copy manual.classpath (mlib etc) over ivy:retrieve, so that we can overwrite ivy jars if we wish to -->
     <copy  todir="${wardir}/WEB-INF/lib">
       <path refid="manual.classpath"/>
     </copy>
-    <ivy:retrieve pattern="${wardir}/WEB-INF/lib/[artifact]-[revision].[ext]" conf="runtime" type="bundle,jar"/>
 
     <!-- Set up WEB-INF/classes with additional classes from OTGTool -->
     <copy  todir="${wardir}/WEB-INF/classes">

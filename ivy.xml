@@ -36,6 +36,9 @@
     <exclude module="commons-logging" /> 
   </dependency>
 
+  <!-- For intermine -->
+  <dependency org="antlr" name="antlr" rev="2.7.6" />
+
   <!-- Various logging APIs are included indirectly, e.g. the JCL to SLF4J bridge. 
     (The 'ant ivyreport' task may be used to inspect the dependency graph.) 
     SLF4J is our preferred logging framework. -->

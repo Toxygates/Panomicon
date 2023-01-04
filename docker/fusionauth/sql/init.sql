@@ -37,7 +37,7 @@ ALTER ROLE fusionauth WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOR
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.9 (Debian 12.9-1.pgdg110+1)
+-- Dumped from database version 12.13 (Debian 12.13-1.pgdg110+1)
 -- Dumped by pg_dump version 15.1
 
 SET statement_timeout = 0;
@@ -80,7 +80,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.9 (Debian 12.9-1.pgdg110+1)
+-- Dumped from database version 12.13 (Debian 12.13-1.pgdg110+1)
 -- Dumped by pg_dump version 15.1
 
 SET statement_timeout = 0;
@@ -1703,6 +1703,12 @@ ALTER TABLE ONLY public.user_consents_email_plus ALTER COLUMN id SET DEFAULT nex
 COPY public.application_daily_active_users (applications_id, count, day) FROM stdin;
 056867c7-e20a-4af9-8570-47100496229f	1	19344
 3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	19344
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	19357
+056867c7-e20a-4af9-8570-47100496229f	4	19357
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	19348
+056867c7-e20a-4af9-8570-47100496229f	1	19348
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	19358
+056867c7-e20a-4af9-8570-47100496229f	2	19358
 \.
 
 
@@ -1711,8 +1717,10 @@ COPY public.application_daily_active_users (applications_id, count, day) FROM st
 --
 
 COPY public.application_monthly_active_users (applications_id, count, month) FROM stdin;
+056867c7-e20a-4af9-8570-47100496229f	4	635
 3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	635
-056867c7-e20a-4af9-8570-47100496229f	1	635
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	636
+056867c7-e20a-4af9-8570-47100496229f	2	636
 \.
 
 
@@ -1723,6 +1731,10 @@ COPY public.application_monthly_active_users (applications_id, count, month) FRO
 COPY public.application_registration_counts (applications_id, count, decremented_count, hour) FROM stdin;
 3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	0	464265
 056867c7-e20a-4af9-8570-47100496229f	1	0	464265
+056867c7-e20a-4af9-8570-47100496229f	1	0	464579
+056867c7-e20a-4af9-8570-47100496229f	2	2	464594
+056867c7-e20a-4af9-8570-47100496229f	0	1	464616
+056867c7-e20a-4af9-8570-47100496229f	1	0	464618
 \.
 
 
@@ -1769,6 +1781,9 @@ COPY public.application_roles (id, applications_id, description, insert_instant,
 631ecd9d-8d40-4c13-8277-80cedb823711	3c219e58-ed0e-4b18-ad48-f4f92793ae32	ACL deleter	1671355209652	f	f	1671355209652	acl_deleter
 631ecd9d-8d40-4c13-8277-80cedb823712	3c219e58-ed0e-4b18-ad48-f4f92793ae32	ACL manager	1671355209652	f	f	1671355209652	acl_manager
 ff345e71-6387-466e-9601-7362e3540eb0	056867c7-e20a-4af9-8570-47100496229f	\N	1671356177125	f	f	1671356177125	admin
+3c3a91d0-0c8c-440b-ade8-613fe7a64e19	056867c7-e20a-4af9-8570-47100496229f	\N	1672483334767	t	f	1672483334767	otg
+9d125c40-ab89-4c0b-849d-3d48004fdf91	056867c7-e20a-4af9-8570-47100496229f	\N	1672483347877	f	f	1672483347877	adjuvant
+67d65c8d-7ab9-4803-9f97-1e0ed0384047	056867c7-e20a-4af9-8570-47100496229f	\N	1672626580240	f	f	1672626580240	adju-mirna
 \.
 
 
@@ -1778,7 +1793,7 @@ ff345e71-6387-466e-9601-7362e3540eb0	056867c7-e20a-4af9-8570-47100496229f	\N	167
 
 COPY public.applications (id, access_token_populate_lambdas_id, access_token_signing_keys_id, active, admin_registration_forms_id, data, email_update_email_templates_id, email_verification_email_templates_id, email_verified_email_templates_id, forgot_password_email_templates_id, forms_id, id_token_populate_lambdas_id, id_token_signing_keys_id, insert_instant, last_update_instant, login_id_in_use_on_create_email_templates_id, login_id_in_use_on_update_email_templates_id, login_new_device_email_templates_id, login_suspicious_email_templates_id, multi_factor_email_message_templates_id, multi_factor_sms_message_templates_id, name, passwordless_email_templates_id, password_update_email_templates_id, password_reset_success_email_templates_id, samlv2_default_verification_keys_id, samlv2_issuer, samlv2_keys_id, samlv2_logout_keys_id, samlv2_logout_default_verification_keys_id, samlv2_populate_lambdas_id, samlv2_single_logout_keys_id, self_service_user_forms_id, set_password_email_templates_id, tenants_id, themes_id, two_factor_method_add_email_templates_id, two_factor_method_remove_email_templates_id, ui_ip_access_control_lists_id, verification_email_templates_id) FROM stdin;
 3c219e58-ed0e-4b18-ad48-f4f92793ae32	\N	a06e2c22-5bf5-04c0-e2a8-137ed19b3cf6	t	2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66	{"jwtConfiguration": {"enabled": true, "timeToLiveInSeconds": 60, "refreshTokenExpirationPolicy": "SlidingWindow", "refreshTokenTimeToLiveInMinutes": 60, "refreshTokenUsagePolicy": "OneTimeUse"},"registrationConfiguration": {"type":"basic"}, "oauthConfiguration": {"authorizedRedirectURLs": ["/admin/login"], "clientId": "3c219e58-ed0e-4b18-ad48-f4f92793ae32", "clientSecret": "MzhjYmE2OWVhZDMxZWE2ZDJiZjkxMzk1YjE3ZTM0OWRmYzkyNWJhYjkwNzM4YmQ1YjU0ZjM5NjNkNGIwODNhNA==", "enabledGrants": ["authorization_code", "refresh_token"], "logoutURL": "/admin/single-logout", "generateRefreshTokens": true, "clientAuthenticationPolicy": "Required", "proofKeyForCodeExchangePolicy": "Required" },"loginConfiguration": {"allowTokenRefresh": false, "generateRefreshTokens": false, "requireAuthentication": true},"unverified":{ "behavior": "Allow" },"verificationStrategy":"ClickableLink","state": "Active"}	\N	\N	\N	\N	\N	\N	092dbedc-30af-4149-9c61-b578f2c72f59	1671355209652	1671355209652	\N	\N	\N	\N	\N	\N	FusionAuth	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N	\N	\N	\N	\N
-056867c7-e20a-4af9-8570-47100496229f	\N	e71e1cb5-691f-4ccd-95ca-dd9529f53897	t	2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66	{"accessControlConfiguration":{},"authenticationTokenConfiguration":{"enabled":false},"data":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"jwtConfiguration":{"enabled":true,"refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"oauthConfiguration":{"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":false,"enabled":false,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":false,"required":false},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"samlv2Configuration":{"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}}	\N	\N	\N	\N	\N	\N	720146f5-7f56-4c86-a0f0-b429b7e8929d	1671355252302	1671356262885	\N	\N	\N	\N	\N	\N	Panomicon	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N	\N	\N	\N	\N
+056867c7-e20a-4af9-8570-47100496229f	\N	e71e1cb5-691f-4ccd-95ca-dd9529f53897	t	2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66	{"accessControlConfiguration":{},"authenticationTokenConfiguration":{"enabled":false},"data":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"jwtConfiguration":{"enabled":true,"refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"oauthConfiguration":{"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect","http://localhost:4200/"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":true,"enabled":true,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":true,"required":true},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"samlv2Configuration":{"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}}	\N	\N	\N	\N	\N	\N	720146f5-7f56-4c86-a0f0-b429b7e8929d	1671355252302	1672492702737	\N	\N	\N	\N	\N	\N	Panomicon	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N	\N	\N	\N	\N
 \.
 
 
@@ -1803,6 +1818,21 @@ COPY public.audit_logs (id, insert_instant, insert_user, message, data) FROM std
 6	1671356177132	yuji.kosugi@gmail.com	Added role with Id [ff345e71-6387-466e-9601-7362e3540eb0] and name [admin] to application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"reason":"FusionAuth User Interface"}
 7	1671356262889	yuji.kosugi@gmail.com	Updated the application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"newValue":{"accessControlConfiguration":{},"active":true,"authenticationTokenConfiguration":{"enabled":false},"data":{},"emailConfiguration":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"id":"056867c7-e20a-4af9-8570-47100496229f","insertInstant":1671355252302,"jwtConfiguration":{"accessTokenKeyId":"e71e1cb5-691f-4ccd-95ca-dd9529f53897","enabled":true,"idTokenKeyId":"720146f5-7f56-4c86-a0f0-b429b7e8929d","refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"lambdaConfiguration":{},"lastUpdateInstant":1671356262885,"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"name":"Panomicon","oauthConfiguration":{"authorizedOriginURLs":[],"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":false,"enabled":false,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":false,"required":false},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"roles":[{"id":"ff345e71-6387-466e-9601-7362e3540eb0","insertInstant":1671356177125,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1671356177125,"name":"admin"}],"samlv2Configuration":{"authorizedRedirectURLs":[],"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}},"oldValue":{"accessControlConfiguration":{},"active":true,"authenticationTokenConfiguration":{"enabled":false},"data":{},"emailConfiguration":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"id":"056867c7-e20a-4af9-8570-47100496229f","insertInstant":1671355252302,"jwtConfiguration":{"accessTokenKeyId":"e71e1cb5-691f-4ccd-95ca-dd9529f53897","enabled":true,"idTokenKeyId":"720146f5-7f56-4c86-a0f0-b429b7e8929d","refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"lambdaConfiguration":{},"lastUpdateInstant":1671355521465,"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"name":"Panomicon","oauthConfiguration":{"authorizedOriginURLs":[],"authorizedRedirectURLs":[],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":false,"enabled":false,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":false,"required":false},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"roles":[{"id":"ff345e71-6387-466e-9601-7362e3540eb0","insertInstant":1671356177125,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1671356177125,"name":"admin"}],"samlv2Configuration":{"authorizedRedirectURLs":[],"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}},"reason":"FusionAuth User Interface"}
 8	1671356313137	yuji.kosugi@gmail.com	Created user registration with Id [c78bf303-fd85-4bf5-bc33-13d756ffe30b] for user with Id [ddf28f6c-75ec-4949-90d0-759c6b09a80a] and application with Id [056867c7-e20a-4af9-8570-47100496229f]	{"data":{},"reason":"FusionAuth User Interface"}
+9	1671709357226	yuji.kosugi@gmail.com	Created the application with Id [2b0ce797-a2b8-4446-9bc5-e9a98cac3471] and name [Acme]	{"data":{},"reason":"FusionAuth User Interface"}
+10	1671709387825	yuji.kosugi@gmail.com	Deleted the application with Id [2b0ce797-a2b8-4446-9bc5-e9a98cac3471] and name [Acme]	{"data":{},"reason":"FusionAuth User Interface"}
+11	1672480850197	yuji.kosugi@gmail.com	Created user with Id [49a6cdde-2ab2-4fef-b561-76f300de23c2], name [null] and loginId [pubbawup@gmail.com]	{"data":{},"reason":"FusionAuth User Interface"}
+12	1672480908790	yuji.kosugi@gmail.com	Updated the user with Id [49a6cdde-2ab2-4fef-b561-76f300de23c2] and loginId [pubbawup@gmail.com]	{"data":{},"newValue":{"active":true,"connectorId":"e3306678-a53a-4964-9040-1c96f36dda72","data":{},"email":"pubbawup@gmail.com","id":"49a6cdde-2ab2-4fef-b561-76f300de23c2","insertInstant":1672480850150,"lastLoginInstant":1672480850150,"lastUpdateInstant":1672480908776,"memberships":[],"passwordChangeRequired":false,"passwordLastUpdateInstant":1672480908784,"preferredLanguages":[],"registrations":[],"tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","twoFactor":{"methods":[],"recoveryCodes":[]},"uniqueUsername":"basic-test-user","username":"basic-test-user","usernameStatus":"ACTIVE","verified":true},"oldValue":{"active":true,"connectorId":"e3306678-a53a-4964-9040-1c96f36dda72","data":{},"email":"pubbawup@gmail.com","encryptionScheme":"salted-pbkdf2-hmac-sha256","id":"49a6cdde-2ab2-4fef-b561-76f300de23c2","insertInstant":1672480850150,"lastLoginInstant":1672480850150,"lastUpdateInstant":1672480850150,"memberships":[],"passwordChangeRequired":false,"passwordLastUpdateInstant":1672480850155,"preferredLanguages":[],"registrations":[],"tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","twoFactor":{"methods":[],"recoveryCodes":[]},"uniqueUsername":"pub","username":"pub","usernameStatus":"ACTIVE","verified":true},"reason":"FusionAuth User Interface"}
+13	1672480922252	yuji.kosugi@gmail.com	Updated the user with Id [49a6cdde-2ab2-4fef-b561-76f300de23c2] and loginId [pubbawup@gmail.com]	{"data":{},"newValue":{"active":true,"connectorId":"e3306678-a53a-4964-9040-1c96f36dda72","data":{},"email":"pubbawup@gmail.com","id":"49a6cdde-2ab2-4fef-b561-76f300de23c2","insertInstant":1672480850150,"lastLoginInstant":1672480850150,"lastUpdateInstant":1672480922249,"memberships":[],"passwordChangeRequired":false,"passwordLastUpdateInstant":1672480908784,"preferredLanguages":[],"registrations":[],"tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","twoFactor":{"methods":[],"recoveryCodes":[]},"usernameStatus":"ACTIVE","verified":true},"oldValue":{"active":true,"connectorId":"e3306678-a53a-4964-9040-1c96f36dda72","data":{},"email":"pubbawup@gmail.com","encryptionScheme":"salted-pbkdf2-hmac-sha256","id":"49a6cdde-2ab2-4fef-b561-76f300de23c2","insertInstant":1672480850150,"lastLoginInstant":1672480850150,"lastUpdateInstant":1672480908776,"memberships":[],"passwordChangeRequired":false,"passwordLastUpdateInstant":1672480908784,"preferredLanguages":[],"registrations":[],"tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","twoFactor":{"methods":[],"recoveryCodes":[]},"uniqueUsername":"basic-test-user","username":"basic-test-user","usernameStatus":"ACTIVE","verified":true},"reason":"FusionAuth User Interface"}
+14	1672483334773	yuji.kosugi@gmail.com	Added role with Id [3c3a91d0-0c8c-440b-ade8-613fe7a64e19] and name [otg] to application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"reason":"FusionAuth User Interface"}
+15	1672483347880	yuji.kosugi@gmail.com	Added role with Id [9d125c40-ab89-4c0b-849d-3d48004fdf91] and name [adjuvant] to application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"reason":"FusionAuth User Interface"}
+16	1672483686760	yuji.kosugi@gmail.com	Updated the application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"newValue":{"accessControlConfiguration":{},"active":true,"authenticationTokenConfiguration":{"enabled":false},"data":{},"emailConfiguration":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"id":"056867c7-e20a-4af9-8570-47100496229f","insertInstant":1671355252302,"jwtConfiguration":{"accessTokenKeyId":"e71e1cb5-691f-4ccd-95ca-dd9529f53897","enabled":true,"idTokenKeyId":"720146f5-7f56-4c86-a0f0-b429b7e8929d","refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"lambdaConfiguration":{},"lastUpdateInstant":1672483686750,"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"name":"Panomicon","oauthConfiguration":{"authorizedOriginURLs":[],"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":true,"enabled":true,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":true,"required":true},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"roles":[{"id":"9d125c40-ab89-4c0b-849d-3d48004fdf91","insertInstant":1672483347877,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1672483347877,"name":"adjuvant"},{"id":"ff345e71-6387-466e-9601-7362e3540eb0","insertInstant":1671356177125,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1671356177125,"name":"admin"},{"id":"3c3a91d0-0c8c-440b-ade8-613fe7a64e19","insertInstant":1672483334767,"isDefault":true,"isSuperRole":false,"lastUpdateInstant":1672483334767,"name":"otg"}],"samlv2Configuration":{"authorizedRedirectURLs":[],"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}},"oldValue":{"accessControlConfiguration":{},"active":true,"authenticationTokenConfiguration":{"enabled":false},"data":{},"emailConfiguration":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"id":"056867c7-e20a-4af9-8570-47100496229f","insertInstant":1671355252302,"jwtConfiguration":{"accessTokenKeyId":"e71e1cb5-691f-4ccd-95ca-dd9529f53897","enabled":true,"idTokenKeyId":"720146f5-7f56-4c86-a0f0-b429b7e8929d","refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"lambdaConfiguration":{},"lastUpdateInstant":1671356262885,"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"name":"Panomicon","oauthConfiguration":{"authorizedOriginURLs":[],"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":false,"enabled":false,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":false,"required":false},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"roles":[{"id":"9d125c40-ab89-4c0b-849d-3d48004fdf91","insertInstant":1672483347877,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1672483347877,"name":"adjuvant"},{"id":"ff345e71-6387-466e-9601-7362e3540eb0","insertInstant":1671356177125,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1671356177125,"name":"admin"},{"id":"3c3a91d0-0c8c-440b-ade8-613fe7a64e19","insertInstant":1672483334767,"isDefault":true,"isSuperRole":false,"lastUpdateInstant":1672483334767,"name":"otg"}],"samlv2Configuration":{"authorizedRedirectURLs":[],"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}},"reason":"FusionAuth User Interface"}
+17	1672492702752	yuji.kosugi@gmail.com	Updated the application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"newValue":{"accessControlConfiguration":{},"active":true,"authenticationTokenConfiguration":{"enabled":false},"data":{},"emailConfiguration":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"id":"056867c7-e20a-4af9-8570-47100496229f","insertInstant":1671355252302,"jwtConfiguration":{"accessTokenKeyId":"e71e1cb5-691f-4ccd-95ca-dd9529f53897","enabled":true,"idTokenKeyId":"720146f5-7f56-4c86-a0f0-b429b7e8929d","refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"lambdaConfiguration":{},"lastUpdateInstant":1672492702737,"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"name":"Panomicon","oauthConfiguration":{"authorizedOriginURLs":[],"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect","http://localhost:4200/"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":true,"enabled":true,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":true,"required":true},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"roles":[{"id":"9d125c40-ab89-4c0b-849d-3d48004fdf91","insertInstant":1672483347877,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1672483347877,"name":"adjuvant"},{"id":"ff345e71-6387-466e-9601-7362e3540eb0","insertInstant":1671356177125,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1671356177125,"name":"admin"},{"id":"3c3a91d0-0c8c-440b-ade8-613fe7a64e19","insertInstant":1672483334767,"isDefault":true,"isSuperRole":false,"lastUpdateInstant":1672483334767,"name":"otg"}],"samlv2Configuration":{"authorizedRedirectURLs":[],"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}},"oldValue":{"accessControlConfiguration":{},"active":true,"authenticationTokenConfiguration":{"enabled":false},"data":{},"emailConfiguration":{},"externalIdentifierConfiguration":{},"formConfiguration":{"adminRegistrationFormId":"2f9d03d9-44e5-5e48-a4a1-a4d81ed2ad66"},"id":"056867c7-e20a-4af9-8570-47100496229f","insertInstant":1671355252302,"jwtConfiguration":{"accessTokenKeyId":"e71e1cb5-691f-4ccd-95ca-dd9529f53897","enabled":true,"idTokenKeyId":"720146f5-7f56-4c86-a0f0-b429b7e8929d","refreshTokenExpirationPolicy":"Fixed","refreshTokenTimeToLiveInMinutes":43200,"refreshTokenUsagePolicy":"Reusable","timeToLiveInSeconds":3600},"lambdaConfiguration":{},"lastUpdateInstant":1672483686750,"loginConfiguration":{"allowTokenRefresh":false,"generateRefreshTokens":false,"requireAuthentication":true},"multiFactorConfiguration":{"email":{},"sms":{}},"name":"Panomicon","oauthConfiguration":{"authorizedOriginURLs":[],"authorizedRedirectURLs":["http://localhost:4200/json/oauth-redirect"],"clientAuthenticationPolicy":"Required","clientId":"056867c7-e20a-4af9-8570-47100496229f","clientSecret":"Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg","debug":false,"enabledGrants":["authorization_code","refresh_token"],"generateRefreshTokens":true,"logoutBehavior":"AllApplications","logoutURL":"http://localhost:4200/viewer","proofKeyForCodeExchangePolicy":"NotRequired","requireClientAuthentication":true,"requireRegistration":false},"passwordlessConfiguration":{"enabled":false},"registrationConfiguration":{"birthDate":{"enabled":false,"required":false},"confirmPassword":true,"enabled":true,"firstName":{"enabled":false,"required":false},"fullName":{"enabled":true,"required":true},"lastName":{"enabled":false,"required":false},"loginIdType":"email","middleName":{"enabled":false,"required":false},"mobilePhone":{"enabled":false,"required":false},"type":"basic"},"registrationDeletePolicy":{"unverified":{"enabled":false,"numberOfDaysToRetain":120}},"roles":[{"id":"9d125c40-ab89-4c0b-849d-3d48004fdf91","insertInstant":1672483347877,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1672483347877,"name":"adjuvant"},{"id":"ff345e71-6387-466e-9601-7362e3540eb0","insertInstant":1671356177125,"isDefault":false,"isSuperRole":false,"lastUpdateInstant":1671356177125,"name":"admin"},{"id":"3c3a91d0-0c8c-440b-ade8-613fe7a64e19","insertInstant":1672483334767,"isDefault":true,"isSuperRole":false,"lastUpdateInstant":1672483334767,"name":"otg"}],"samlv2Configuration":{"authorizedRedirectURLs":[],"debug":false,"enabled":false,"initiatedLogin":{"enabled":false,"nameIdFormat":"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"},"logout":{"behavior":"AllParticipants","requireSignedRequests":false,"singleLogout":{"enabled":false,"xmlSignatureC14nMethod":"exclusive_with_comments"},"xmlSignatureC14nMethod":"exclusive_with_comments"},"requireSignedRequests":false,"xmlSignatureC14nMethod":"exclusive_with_comments","xmlSignatureLocation":"Assertion"},"state":"Active","tenantId":"4544ae7e-7b90-67da-4ee5-91f1afd726d9","unverified":{"behavior":"Allow"},"verificationStrategy":"ClickableLink","verifyRegistration":false,"webAuthnConfiguration":{"bootstrapWorkflow":{"enabled":false},"enabled":false,"reauthenticationWorkflow":{"enabled":false}}},"reason":"FusionAuth User Interface"}
+18	1672539250261	yuji.kosugi@gmail.com	Deleted user with Id [abadd580-a02e-4633-8a96-940da93e213c]	{"data":{},"reason":"FusionAuth User Interface"}
+19	1672539258080	yuji.kosugi@gmail.com	Deleted user with Id [c71b1d60-90ad-487d-85bd-dc40186faad4]	{"data":{},"reason":"FusionAuth User Interface"}
+20	1672618997166	yuji.kosugi@gmail.com	Deleted user with Id [82ac31e8-ce2c-4ee5-8ec2-fcc45dd57d97]	{"data":{},"reason":"FusionAuth User Interface"}
+21	1672625664390	yuji.kosugi@gmail.com	Updated user registration with Id [c78bf303-fd85-4bf5-bc33-13d756ffe30b] for user with Id [ddf28f6c-75ec-4949-90d0-759c6b09a80a] and application with Id [056867c7-e20a-4af9-8570-47100496229f]	{"data":{},"newValue":{"applicationId":"056867c7-e20a-4af9-8570-47100496229f","data":{},"id":"c78bf303-fd85-4bf5-bc33-13d756ffe30b","insertInstant":1671356313126,"lastLoginInstant":1672618085178,"lastUpdateInstant":1672625664371,"preferredLanguages":[],"roles":["adjuvant","admin","otg"],"tokens":{},"usernameStatus":"ACTIVE","verified":true},"oldValue":{"applicationId":"056867c7-e20a-4af9-8570-47100496229f","data":{},"id":"c78bf303-fd85-4bf5-bc33-13d756ffe30b","insertInstant":1671356313126,"lastLoginInstant":1672618085178,"lastUpdateInstant":1671356313126,"preferredLanguages":[],"roles":["admin"],"tokens":{},"usernameStatus":"ACTIVE","verified":true},"reason":"FusionAuth User Interface"}
+22	1672626580292	yuji.kosugi@gmail.com	Added role with Id [67d65c8d-7ab9-4803-9f97-1e0ed0384047] and name [adju-mirna] to application with Id [056867c7-e20a-4af9-8570-47100496229f] and name [Panomicon]	{"data":{},"reason":"FusionAuth User Interface"}
+23	1672626593515	yuji.kosugi@gmail.com	Updated user registration with Id [c78bf303-fd85-4bf5-bc33-13d756ffe30b] for user with Id [ddf28f6c-75ec-4949-90d0-759c6b09a80a] and application with Id [056867c7-e20a-4af9-8570-47100496229f]	{"data":{},"newValue":{"applicationId":"056867c7-e20a-4af9-8570-47100496229f","data":{},"id":"c78bf303-fd85-4bf5-bc33-13d756ffe30b","insertInstant":1671356313126,"lastLoginInstant":1672626535078,"lastUpdateInstant":1672626593510,"preferredLanguages":[],"roles":["adju-mirna","adjuvant","admin","otg"],"tokens":{},"usernameStatus":"ACTIVE","verified":true},"oldValue":{"applicationId":"056867c7-e20a-4af9-8570-47100496229f","data":{},"id":"c78bf303-fd85-4bf5-bc33-13d756ffe30b","insertInstant":1671356313126,"lastLoginInstant":1672626535078,"lastUpdateInstant":1672625664371,"preferredLanguages":[],"roles":["adjuvant","admin","otg"],"tokens":{},"usernameStatus":"ACTIVE","verified":true},"reason":"FusionAuth User Interface"}
 \.
 
 
@@ -1976,6 +2006,7 @@ COPY public.entity_user_grants (id, data, entities_id, insert_instant, last_upda
 --
 
 COPY public.event_logs (id, insert_instant, message, type) FROM stdin;
+1	1672480850206	Async Email Send exception occurred.\n\nTemplate Id: 1e93cf8f-cc01-4aa8-9600-fdd95748337e\nTemplate Name: [FusionAuth Default] Setup Password\nTenant Id: 4544ae7e-7b90-67da-4ee5-91f1afd726d9\nAddressed to: pubbawup@gmail.com\n\nCause:\ncom.sun.mail.util.MailConnectException : Message: Couldn't connect to host, port: localhost, 25; timeout -1	2
 \.
 
 
@@ -2086,6 +2117,9 @@ COPY public.forms (id, data, insert_instant, last_update_instant, name, type) FR
 
 COPY public.global_daily_active_users (count, day) FROM stdin;
 1	19344
+1	19348
+5	19357
+2	19358
 \.
 
 
@@ -2094,7 +2128,8 @@ COPY public.global_daily_active_users (count, day) FROM stdin;
 --
 
 COPY public.global_monthly_active_users (count, month) FROM stdin;
-1	635
+5	635
+2	636
 \.
 
 
@@ -2104,6 +2139,9 @@ COPY public.global_monthly_active_users (count, month) FROM stdin;
 
 COPY public.global_registration_counts (count, decremented_count, hour) FROM stdin;
 1	0	464265
+1	0	464578
+1	0	464579
+2	2	464594
 \.
 
 
@@ -2136,9 +2174,8 @@ COPY public.groups (id, data, insert_instant, last_update_instant, name, tenants
 --
 
 COPY public.hourly_logins (applications_id, count, data, hour) FROM stdin;
-056867c7-e20a-4af9-8570-47100496229f	12	\N	464267
-3c219e58-ed0e-4b18-ad48-f4f92793ae32	1	\N	464267
-056867c7-e20a-4af9-8570-47100496229f	121	\N	464265
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	3	\N	464618
+056867c7-e20a-4af9-8570-47100496229f	4	\N	464618
 \.
 
 
@@ -2147,7 +2184,8 @@ COPY public.hourly_logins (applications_id, count, data, hour) FROM stdin;
 --
 
 COPY public.identities (id, breached_password_last_checked_instant, breached_password_status, connectors_id, email, encryption_scheme, factor, insert_instant, last_login_instant, last_update_instant, password, password_change_reason, password_change_required, password_last_update_instant, salt, status, tenants_id, username, username_index, username_status, users_id, verified) FROM stdin;
-1	\N	\N	e3306678-a53a-4964-9040-1c96f36dda72	yuji.kosugi@gmail.com	salted-pbkdf2-hmac-sha256	24000	1671355235602	1671364072248	1671355235602	iPvYJ+9mO6fjYYMz+pihW3NMbrIkTNfJJ3Sn1Bj7hZ0=	\N	f	1671355235681	nG4J0T7Juu/Pto4zqOBDrLka2BSfarw3ZsqoT1CfTrQ=	0	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N	\N	0	ddf28f6c-75ec-4949-90d0-759c6b09a80a	t
+2	\N	\N	e3306678-a53a-4964-9040-1c96f36dda72	pubbawup@gmail.com	salted-pbkdf2-hmac-sha256	24000	1672480850150	1672625737122	1672625703183	cwat48wzaQ9zxrOk3Csjb95p7h7zjU65yoo09LYUyjw=	\N	f	1672480908784	kr+d8G90m498otBBZoBNi4qfjXoqq5zg9oYa88aSRkA=	0	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N	\N	0	49a6cdde-2ab2-4fef-b561-76f300de23c2	t
+1	\N	\N	e3306678-a53a-4964-9040-1c96f36dda72	yuji.kosugi@gmail.com	salted-pbkdf2-hmac-sha256	24000	1671355235602	1672626611774	1672492521090	iPvYJ+9mO6fjYYMz+pihW3NMbrIkTNfJJ3Sn1Bj7hZ0=	\N	f	1671355235681	nG4J0T7Juu/Pto4zqOBDrLka2BSfarw3ZsqoT1CfTrQ=	0	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N	\N	0	ddf28f6c-75ec-4949-90d0-759c6b09a80a	t
 \.
 
 
@@ -2287,7 +2325,7 @@ AsyncTaskManager	\N
 --
 
 COPY public.master_record (id, instant) FROM stdin;
-cd96d470-cd68-4d9a-882d-6b9d0d686da0	1671364837242
+a3ba805a-6891-4490-8653-924be542cea5	1672626678717
 \.
 
 
@@ -2327,7 +2365,7 @@ io.fusionauth.api.migration.guice.Migration_1_30_0	0
 --
 
 COPY public.nodes (id, data, insert_instant, last_checkin_instant, runtime_mode, url) FROM stdin;
-cd96d470-cd68-4d9a-882d-6b9d0d686da0	{"data":{},"ipAddresses":{"eth0":["172.25.0.3"]},"platform":{"arch":"aarch64","name":"Linux","version":"5.15.49-linuxkit"}}	1671362884312	1671364867232	development	http://fusionauth:9011
+a3ba805a-6891-4490-8653-924be542cea5	{"data":{},"ipAddresses":{"eth0":["192.168.80.3"]},"platform":{"arch":"aarch64","name":"Linux","version":"5.15.49-linuxkit"}}	1672625632740	1672626670710	development	http://fusionauth:9011
 \.
 
 
@@ -2344,8 +2382,9 @@ COPY public.previous_passwords (insert_instant, encryption_scheme, factor, passw
 --
 
 COPY public.raw_application_daily_active_users (applications_id, day, users_id) FROM stdin;
-3c219e58-ed0e-4b18-ad48-f4f92793ae32	19344	ddf28f6c-75ec-4949-90d0-759c6b09a80a
-056867c7-e20a-4af9-8570-47100496229f	19344	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+056867c7-e20a-4af9-8570-47100496229f	19358	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	19358	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+056867c7-e20a-4af9-8570-47100496229f	19358	49a6cdde-2ab2-4fef-b561-76f300de23c2
 \.
 
 
@@ -2354,8 +2393,9 @@ COPY public.raw_application_daily_active_users (applications_id, day, users_id) 
 --
 
 COPY public.raw_application_monthly_active_users (applications_id, month, users_id) FROM stdin;
-3c219e58-ed0e-4b18-ad48-f4f92793ae32	635	ddf28f6c-75ec-4949-90d0-759c6b09a80a
-056867c7-e20a-4af9-8570-47100496229f	635	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+056867c7-e20a-4af9-8570-47100496229f	636	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+3c219e58-ed0e-4b18-ad48-f4f92793ae32	636	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+056867c7-e20a-4af9-8570-47100496229f	636	49a6cdde-2ab2-4fef-b561-76f300de23c2
 \.
 
 
@@ -2372,7 +2412,8 @@ COPY public.raw_application_registration_counts (id, applications_id, count, dec
 --
 
 COPY public.raw_global_daily_active_users (day, users_id) FROM stdin;
-19344	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+19358	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+19358	49a6cdde-2ab2-4fef-b561-76f300de23c2
 \.
 
 
@@ -2381,7 +2422,8 @@ COPY public.raw_global_daily_active_users (day, users_id) FROM stdin;
 --
 
 COPY public.raw_global_monthly_active_users (month, users_id) FROM stdin;
-635	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+636	ddf28f6c-75ec-4949-90d0-759c6b09a80a
+636	49a6cdde-2ab2-4fef-b561-76f300de23c2
 \.
 
 
@@ -2521,8 +2563,9 @@ COPY public.user_consents_email_plus (id, next_email_instant, user_consents_id) 
 --
 
 COPY public.user_registrations (id, applications_id, authentication_token, clean_speak_id, data, insert_instant, last_login_instant, last_update_instant, timezone, username, username_status, users_id, verified) FROM stdin;
-c78bf303-fd85-4bf5-bc33-13d756ffe30b	056867c7-e20a-4af9-8570-47100496229f	\N	\N	{"data":{},"preferredLanguages":[],"tokens":{}}	1671356313126	1671363801612	1671356313126	\N	\N	0	ddf28f6c-75ec-4949-90d0-759c6b09a80a	t
-4cb5abf5-a7b1-4f14-aeb4-9f1b36e1d043	3c219e58-ed0e-4b18-ad48-f4f92793ae32	\N	\N	{"data":{},"preferredLanguages":[],"tokens":{}}	1671355235687	1671364072248	1671355235687	\N	\N	0	ddf28f6c-75ec-4949-90d0-759c6b09a80a	t
+af66733a-4a7e-40f0-a9cd-0b98796cdc1b	056867c7-e20a-4af9-8570-47100496229f	\N	\N	{"data":{},"preferredLanguages":[],"tokens":{}}	1672625703187	1672625737122	1672625703187	\N	\N	0	49a6cdde-2ab2-4fef-b561-76f300de23c2	t
+4cb5abf5-a7b1-4f14-aeb4-9f1b36e1d043	3c219e58-ed0e-4b18-ad48-f4f92793ae32	\N	\N	{"data":{},"preferredLanguages":[],"tokens":{}}	1671355235687	1672626557911	1671355235687	\N	\N	0	ddf28f6c-75ec-4949-90d0-759c6b09a80a	t
+c78bf303-fd85-4bf5-bc33-13d756ffe30b	056867c7-e20a-4af9-8570-47100496229f	\N	\N	{"data":{},"preferredLanguages":[],"tokens":{}}	1671356313126	1672626611774	1672626593510	\N	\N	0	ddf28f6c-75ec-4949-90d0-759c6b09a80a	t
 \.
 
 
@@ -2532,7 +2575,11 @@ c78bf303-fd85-4bf5-bc33-13d756ffe30b	056867c7-e20a-4af9-8570-47100496229f	\N	\N	
 
 COPY public.user_registrations_application_roles (application_roles_id, user_registrations_id) FROM stdin;
 631ecd9d-8d40-4c13-8277-80cedb8236e2	4cb5abf5-a7b1-4f14-aeb4-9f1b36e1d043
+3c3a91d0-0c8c-440b-ade8-613fe7a64e19	af66733a-4a7e-40f0-a9cd-0b98796cdc1b
+67d65c8d-7ab9-4803-9f97-1e0ed0384047	c78bf303-fd85-4bf5-bc33-13d756ffe30b
+9d125c40-ab89-4c0b-849d-3d48004fdf91	c78bf303-fd85-4bf5-bc33-13d756ffe30b
 ff345e71-6387-466e-9601-7362e3540eb0	c78bf303-fd85-4bf5-bc33-13d756ffe30b
+3c3a91d0-0c8c-440b-ade8-613fe7a64e19	c78bf303-fd85-4bf5-bc33-13d756ffe30b
 \.
 
 
@@ -2541,7 +2588,8 @@ ff345e71-6387-466e-9601-7362e3540eb0	c78bf303-fd85-4bf5-bc33-13d756ffe30b
 --
 
 COPY public.users (id, active, birth_date, clean_speak_id, data, expiry, first_name, full_name, image_url, insert_instant, last_name, last_update_instant, middle_name, mobile_phone, parent_email, tenants_id, timezone) FROM stdin;
-ddf28f6c-75ec-4949-90d0-759c6b09a80a	t	\N	\N	{"data":{},"preferredLanguages":[],"twoFactor":{}}	\N	Yuji	\N	\N	1671355235602	Kosugi	1671355235602	\N	\N	\N	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N
+ddf28f6c-75ec-4949-90d0-759c6b09a80a	t	\N	\N	{"data":{},"preferredLanguages":[],"twoFactor":{}}	\N	Yuji	Yuji Kosugi	\N	1671355235602	Kosugi	1672492521090	\N	\N	\N	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N
+49a6cdde-2ab2-4fef-b561-76f300de23c2	t	\N	\N	{"data":{},"preferredLanguages":[],"twoFactor":{}}	\N	\N	Test User	\N	1672480850150	\N	1672625703183	\N	\N	\N	4544ae7e-7b90-67da-4ee5-91f1afd726d9	\N
 \.
 
 
@@ -2582,35 +2630,35 @@ COPY public.webhooks_tenants (webhooks_id, tenants_id) FROM stdin;
 -- Name: audit_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: fusionauth
 --
 
-SELECT pg_catalog.setval('public.audit_logs_id_seq', 8, true);
+SELECT pg_catalog.setval('public.audit_logs_id_seq', 23, true);
 
 
 --
 -- Name: event_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: fusionauth
 --
 
-SELECT pg_catalog.setval('public.event_logs_id_seq', 1, false);
+SELECT pg_catalog.setval('public.event_logs_id_seq', 1, true);
 
 
 --
 -- Name: identities_id_seq; Type: SEQUENCE SET; Schema: public; Owner: fusionauth
 --
 
-SELECT pg_catalog.setval('public.identities_id_seq', 1, true);
+SELECT pg_catalog.setval('public.identities_id_seq', 5, true);
 
 
 --
 -- Name: raw_application_registration_counts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: fusionauth
 --
 
-SELECT pg_catalog.setval('public.raw_application_registration_counts_id_seq', 2, true);
+SELECT pg_catalog.setval('public.raw_application_registration_counts_id_seq', 9, true);
 
 
 --
 -- Name: raw_global_registration_counts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: fusionauth
 --
 
-SELECT pg_catalog.setval('public.raw_global_registration_counts_id_seq', 1, true);
+SELECT pg_catalog.setval('public.raw_global_registration_counts_id_seq', 8, true);
 
 
 --
@@ -4971,7 +5019,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.9 (Debian 12.9-1.pgdg110+1)
+-- Dumped from database version 12.13 (Debian 12.13-1.pgdg110+1)
 -- Dumped by pg_dump version 15.1
 
 SET statement_timeout = 0;

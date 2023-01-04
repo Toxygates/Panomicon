@@ -89,6 +89,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/batch/dataset/:dataset") {
     contentType = "text/json"
     val requestedDatasetId = paramOrHalt("dataset")
+    verifyRole(requestedDatasetId)
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
 
@@ -323,6 +324,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     redirect(authentication.loginRedirectUri(challenge))
   }
 
+  get("/register") {
+    val (verifier, challenge) = authentication.generatePKCEPair()
+    session("verifier") = verifier
+    redirect(authentication.registrationRedirectUri(challenge))
+  }
+
   get("/oauth-redirect") {
     if (!session.contains("verifier")) halt(401, "Unauthenticated")
 
@@ -340,7 +347,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       response.addHeader("Set-Cookie", s"__Host-jwt=$accessToken; Secure; Path=/; HttpOnly; SameSite=Strict")
       response.addHeader("Set-Cookie", s"__Host-refreshToken=$refreshToken; Secure; Path=/; HttpOnly; SameSite=Strict")
 
-      redirect("/admin/")
+      redirect("/")
     } else {
       if (tokenResponse.errorResponse != null) {
         tokenResponse.errorResponse.toString
