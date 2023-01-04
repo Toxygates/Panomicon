@@ -4,8 +4,8 @@
             [disabled]="disabled"
             aria-controls="dropdown-basic">
             {{  selectedSampleGroup ?
-                    sampleGroupType + " sample group: " + selectedSampleGroup
-                    : "Select " + sampleGroupType + " sample group"
+                sampleGroupType + " sample group: " + selectedSampleGroup
+                : "Select " + sampleGroupType + " sample group"
             }}
          <span class="caret"></span>
     </button>
@@ -15,7 +15,7 @@
         <li *ngFor="let sampleGroup of sampleGroups" role="menuitem">
             <a class="dropdown-item" (click)="selectSampleGroup(sampleGroup.name)"
             [routerLink]="[]" queryParamsHandling="preserve">
-            {{sampleGroup.name}} ({{sampleGroup.platform}} / {{sampleGroup.type}})
+                {{sampleGroup.name}} ({{sampleGroup.platform}} / {{sampleGroup.type}})
             </a>
         </li>
     </ul>
