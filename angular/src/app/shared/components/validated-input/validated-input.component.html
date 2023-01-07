@@ -1,12 +1,16 @@
 <div class="form-group">
-  <label [for]="id">{{label}}</label>
-  <input type="text" [id]="id" [ngModel]="value"
+  <label [for]="id">{{ label }}</label>
+  <input
+    type="text"
+    [id]="id"
+    [ngModel]="value"
     (ngModelChange)="valueChange.emit($event)"
-    name="id" class="form-control"
+    name="id"
+    class="form-control"
     [disabled]="disabled"
     [class.is-invalid]="invalid"
-  >
+  />
   <div class="invalid-feedback">
-    {{invalidMessage}}
+    {{ invalidMessage }}
   </div>
 </div>

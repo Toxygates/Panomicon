@@ -1,8 +1,22 @@
-import { AfterViewInit, OnInit, ChangeDetectorRef, Component, HostListener, ViewChild, OnDestroy, ElementRef, TemplateRef, NgZone } from '@angular/core';
+import {
+  AfterViewInit,
+  OnInit,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  ViewChild,
+  OnDestroy,
+  ElementRef,
+  TemplateRef,
+  NgZone,
+} from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserDataService } from '../../../shared/services/user-data.service';
-import { GeneSet, SampleGroup } from '../../../shared/models/frontend-types.model'
+import {
+  GeneSet,
+  SampleGroup,
+} from '../../../shared/models/frontend-types.model';
 import Tabulator from 'tabulator-tables';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -11,17 +25,20 @@ import { FetchedDataService } from 'src/app/shared/services/fetched-data.service
 @Component({
   selector: 'app-expression-table',
   templateUrl: './expression-table.component.html',
-  styleUrls: ['./expression-table.component.scss']
+  styleUrls: ['./expression-table.component.scss'],
 })
-export class ExpressionTableComponent implements OnInit, AfterViewInit,
-  OnDestroy {
-
-  constructor(private userData: UserDataService,
+export class ExpressionTableComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
+  constructor(
+    private userData: UserDataService,
     private activatedRoute: ActivatedRoute,
     private fetchedData: FetchedDataService,
-    private router: Router, private modalService: BsModalService,
+    private router: Router,
+    private modalService: BsModalService,
     private changeDetector: ChangeDetectorRef,
-    private ngZone: NgZone) { }
+    private ngZone: NgZone
+  ) {}
 
   tabulator: Tabulator | undefined;
   modalRef: BsModalRef | undefined;
@@ -43,70 +60,114 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
   tablePageNumber = 0;
   goToPageSubmitEnabled = false;
 
-  probeTitlesMutator = (_value: unknown,
-      data: Record<string, string | string[]>, _type: unknown,
-      _params: unknown, _component: unknown): string => {
-    return (data.probeTitles as string[]).join(" / ");
-  }
+  probeTitlesMutator = (
+    _value: unknown,
+    data: Record<string, string | string[]>,
+    _type: unknown,
+    _params: unknown,
+    _component: unknown
+  ): string => {
+    return (data.probeTitles as string[]).join(' / ');
+  };
 
-  geneSymbolsMutator = (_value: unknown,
-      data: Record<string, string | string[]>, _type: unknown,
-      _params: unknown, _component: unknown): string => {
-    return (data.geneSymbols as string[]).join(" / ");
-  }
+  geneSymbolsMutator = (
+    _value: unknown,
+    data: Record<string, string | string[]>,
+    _type: unknown,
+    _params: unknown,
+    _component: unknown
+  ): string => {
+    return (data.geneSymbols as string[]).join(' / ');
+  };
 
-  log2foldMutator = (field: string) =>
-    (_value: unknown, data: {expression: Record<string, string>},
-      _type: unknown, _params:unknown, _column:unknown): string => {
-      const numericalValue = Number(data["expression"][field]);
+  log2foldMutator =
+    (field: string) =>
+    (
+      _value: unknown,
+      data: { expression: Record<string, string> },
+      _type: unknown,
+      _params: unknown,
+      _column: unknown
+    ): string => {
+      const numericalValue = Number(data['expression'][field]);
       return Number(numericalValue).toFixed(3);
-    }
+    };
 
-  pValueMutator = (field: string) =>
-    (_value: unknown, data: {expression: Record<string, string>},
-      _type: unknown, _params:unknown, _column:unknown): string => {
-      const numericalValue = Number(data["expression"][`${field}(p)`]);
-      if (numericalValue > .0001) {
+  pValueMutator =
+    (field: string) =>
+    (
+      _value: unknown,
+      data: { expression: Record<string, string> },
+      _type: unknown,
+      _params: unknown,
+      _column: unknown
+    ): string => {
+      const numericalValue = Number(data['expression'][`${field}(p)`]);
+      if (numericalValue > 0.0001) {
         return numericalValue.toFixed(4);
       } else {
         return numericalValue.toExponential(3);
       }
-    }
+    };
 
   columns: Tabulator.ColumnDefinition[] = [
-    {title: 'Gene symbols', field: 'geneSymbols',
-      mutator: this.geneSymbolsMutator, headerSort:false, width:"10rem"},
-    {title: 'Probe titles', field: 'probeTitles',
-      mutator: this.probeTitlesMutator, headerSort:false, width:"30rem"},
-    {title: 'Probe', field: 'probe', headerSort:false, width:"10rem"},
-  ]
+    {
+      title: 'Gene symbols',
+      field: 'geneSymbols',
+      mutator: this.geneSymbolsMutator,
+      headerSort: false,
+      width: '10rem',
+    },
+    {
+      title: 'Probe titles',
+      field: 'probeTitles',
+      mutator: this.probeTitlesMutator,
+      headerSort: false,
+      width: '30rem',
+    },
+    { title: 'Probe', field: 'probe', headerSort: false, width: '10rem' },
+  ];
 
   ngOnInit(): void {
-    this.enabledSampleGroupsSubscription = this.userData.enabledGroups$.subscribe(enabledGroups => {
-      this.enabledSampleGroups = enabledGroups;
-      if (enabledGroups.length == 0) {
-        void this.router.navigate(['']);
-      } else {
-        for (const group of enabledGroups) {
-          this.columns.push({title: group.name, field: group.name,
-            mutator: this.log2foldMutator(group.name), headerSort: true,
-            headerSortStartingDir:'desc', width:"13rem"});
-          this.columns.push({title: group.name + ' (p)', field: group.name + '(p)',
-            mutator: this.pValueMutator(group.name), headerSort: true,
-            headerSortStartingDir:'desc', width:"13rem"});
+    this.enabledSampleGroupsSubscription =
+      this.userData.enabledGroups$.subscribe((enabledGroups) => {
+        this.enabledSampleGroups = enabledGroups;
+        if (enabledGroups.length == 0) {
+          void this.router.navigate(['']);
+        } else {
+          for (const group of enabledGroups) {
+            this.columns.push({
+              title: group.name,
+              field: group.name,
+              mutator: this.log2foldMutator(group.name),
+              headerSort: true,
+              headerSortStartingDir: 'desc',
+              width: '13rem',
+            });
+            this.columns.push({
+              title: group.name + ' (p)',
+              field: group.name + '(p)',
+              mutator: this.pValueMutator(group.name),
+              headerSort: true,
+              headerSortStartingDir: 'desc',
+              width: '13rem',
+            });
+          }
         }
-      }
-      // this.filters = []
-    });
+        // this.filters = []
+      });
     this.geneSets$ = this.userData.geneSets$;
-    this.geneSetNames$ = combineLatest([this.geneSets$, this.userData.platform$]).pipe(
+    this.geneSetNames$ = combineLatest([
+      this.geneSets$,
+      this.userData.platform$,
+    ]).pipe(
       map(([geneSets, platform]) => {
         if (platform == undefined) {
           return [];
         } else {
           return Array.from(geneSets.values())
-            .filter(g => g.platform === platform)
-            .map(g => g.name)
+            .filter((g) => g.platform === platform)
+            .map((g) => g.name)
             .sort();
         }
       })
@@ -115,7 +176,7 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   ngAfterViewInit(): void {
     // Don't draw the table (which triggers a data fetch) until we know user is logged in
-    this.fetchedData.roles$.subscribe(roles => {
+    this.fetchedData.roles$.subscribe((roles) => {
       if (roles != null) {
         this.drawTable();
       }
@@ -128,77 +189,89 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
 
   private drawTable(): void {
     const tabulatorElement = document.createElement('div');
-    tabulatorElement.style.width = "auto";
-    (this.tabulatorContainer.nativeElement as HTMLElement).appendChild(tabulatorElement);
+    tabulatorElement.style.width = 'auto';
+    (this.tabulatorContainer.nativeElement as HTMLElement).appendChild(
+      tabulatorElement
+    );
     this.ngZone.runOutsideAngular(() => {
       this.tabulator = new Tabulator(tabulatorElement, {
-        pagination:"remote",
-        ajaxURL: "json/matrix",
-        ajaxConfig:"POST",
+        pagination: 'remote',
+        ajaxURL: 'json/matrix',
+        ajaxConfig: 'POST',
         ajaxContentType: {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: (_url, _config, params: { page: number, sorters: string[] }) => {
+          body: (
+            _url,
+            _config,
+            params: { page: number; sorters: string[] }
+          ) => {
             const groupInfoArray = [];
             for (const group of this.enabledSampleGroups) {
-              groupInfoArray.push({ "name": group.name, "sampleIds": group.samples })
+              groupInfoArray.push({
+                name: group.name,
+                sampleIds: group.samples,
+              });
             }
             const requestBodyObject = {
               groups: groupInfoArray,
               page: params.page,
               sorter: params.sorters[0],
               // filtering: this.filters,
-              probes: this.probes
-            }
-            return(JSON.stringify(requestBodyObject));
+              probes: this.probes,
+            };
+            return JSON.stringify(requestBodyObject);
           },
         },
-        ajaxURLGenerator: function(url, _config, params: {page: number}){
+        ajaxURLGenerator: function (url, _config, params: { page: number }) {
           const page = params.page;
-          return `${url}?offset=${((page - 1) * 100)}`;
+          return `${url}?offset=${(page - 1) * 100}`;
         },
         ajaxFiltering: true,
         paginationDataReceived: {
-          "data": "rows",
+          data: 'rows',
         },
-        dataLoaded: (sampleTableComponent => {
-          return function(this: Tabulator, data: Record<string, string>[]) {
+        dataLoaded: ((sampleTableComponent) => {
+          return function (this: Tabulator, data: Record<string, string>[]) {
             sampleTableComponent.tableData$.next(data);
             sampleTableComponent.dataFetched = true;
-            sampleTableComponent.lastPage = (this.getPageMax() as number);
+            sampleTableComponent.lastPage = this.getPageMax() as number;
             sampleTableComponent.changeDetector.detectChanges();
-            sampleTableComponent.tablePageNumber = (this.getPage() as number);
+            sampleTableComponent.tablePageNumber = this.getPage() as number;
           };
         })(this),
         columns: this.columns,
-        index: "probe",
-        layout:"fitDataFill",
-        height: "calc(100vh - 11.725rem)",
-        columnHeaderSortMulti:false,
-        ajaxSorting:true,
-        initialSort:[
-          {column: this.enabledSampleGroups[0].name, dir:"desc"}
+        index: 'probe',
+        layout: 'fitDataFill',
+        height: 'calc(100vh - 11.725rem)',
+        columnHeaderSortMulti: false,
+        ajaxSorting: true,
+        initialSort: [
+          { column: this.enabledSampleGroups[0].name, dir: 'desc' },
         ],
-        tooltips:true,
-        tooltipsHeader:true,
-        ajaxLoaderLoading: "<div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"sr-only\">Loading...</span></div>",
-        footerElement:"<div class=\"d-none d-sm-block\" style=\"float: left;\"><button class=\"tabulator-page\" style=\"border-radius: 4px; border: 1px solid #dee2e6;\" onclick=\"window.dispatchEvent(new CustomEvent('OpenGotoPageModal'));\">Go to page...</button></div>",
+        tooltips: true,
+        tooltipsHeader: true,
+        ajaxLoaderLoading:
+          '<div class="spinner-border text-secondary" role="status"><span class="sr-only">Loading...</span></div>',
+        footerElement:
+          '<div class="d-none d-sm-block" style="float: left;"><button class="tabulator-page" style="border-radius: 4px; border: 1px solid #dee2e6;" onclick="window.dispatchEvent(new CustomEvent(\'OpenGotoPageModal\'));">Go to page...</button></div>',
       });
     });
   }
 
   onCreateGeneSet(name: string): void {
     const platform = this.enabledSampleGroups[0].platform;
-    const data: {probe: string}[] | undefined = this.tabulator?.getData();
-    const probes = data?.map(row => row.probe);
+    const data: { probe: string }[] | undefined = this.tabulator?.getData();
+    const probes = data?.map((row) => row.probe);
 
-    if (probes == undefined) throw new Error("No probes available for gene set");
+    if (probes == undefined)
+      throw new Error('No probes available for gene set');
 
     const geneSet = {
       name: name,
       platform: platform,
-      probes: probes
+      probes: probes,
     } as GeneSet;
 
     this.userData.geneSets$.value.set(name, geneSet);
@@ -227,14 +300,15 @@ export class ExpressionTableComponent implements OnInit, AfterViewInit,
     }
   }
 
-  @HostListener("window:OpenGotoPageModal")
+  @HostListener('window:OpenGotoPageModal')
   onOpenGotoPageModal(): void {
-    this.modalRef = this.modalService.show(this.gotoPageTemplate,
-      { class: 'modal-dialog-centered' });
+    this.modalRef = this.modalService.show(this.gotoPageTemplate, {
+      class: 'modal-dialog-centered',
+    });
   }
 
   onSubmitGotoPageModal(): void {
-    if (!this.tabulator) throw new Error("tabulator is not defined");
+    if (!this.tabulator) throw new Error('tabulator is not defined');
     void this.tabulator?.setPage(this.tablePageNumber);
     this.modalRef?.hide();
   }

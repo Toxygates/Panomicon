@@ -1,72 +1,109 @@
-<div *ngFor="let selectedAttribute of selectedAttributes; index as i" class="btn-group" dropdown>
-  <button id="button-basic" dropdownToggle type="button"
-          class="btn btn-primary dropdown-toggle mr-2"
-          aria-controls="dropdown-basic">
-      {{selectedAttribute.title}}
-      <span class="caret"></span>
+<div
+  *ngFor="let selectedAttribute of selectedAttributes; index as i"
+  class="btn-group"
+  dropdown
+>
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    aria-controls="dropdown-basic"
+  >
+    {{ selectedAttribute.title }}
+    <span class="caret"></span>
   </button>
-  <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-      role="menu" aria-labelledby="button-basic">
-      <li role="menuitem">
-        <a class="dropdown-item"
-          (click)="removeAttribute(i)" [routerLink]="[]" queryParamsHandling="preserve">
-          Remove {{selectedAttribute.title}}
-        </a>
-      </li>
-      <h6 class="dropdown-header">Change attribute:</h6>
-      <li *ngFor="let attribute of attributes$ | async" role="menuitem">
-        <a class="dropdown-item" [class.disabled]="selectedAttributes.includes(attribute)"
-          (click)="changeAttribute(i, attribute)" [routerLink]="[]" queryParamsHandling="preserve">
-          <i *ngIf="attribute === selectedAttribute" class="bi bi-check"></i>
-          {{attribute.title}}
-        </a>
-      </li>
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
+    <li role="menuitem">
+      <a
+        class="dropdown-item"
+        (click)="removeAttribute(i)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        Remove {{ selectedAttribute.title }}
+      </a>
+    </li>
+    <h6 class="dropdown-header">Change attribute:</h6>
+    <li *ngFor="let attribute of attributes$ | async" role="menuitem">
+      <a
+        class="dropdown-item"
+        [class.disabled]="selectedAttributes.includes(attribute)"
+        (click)="changeAttribute(i, attribute)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        <i *ngIf="attribute === selectedAttribute" class="bi bi-check"></i>
+        {{ attribute.title }}
+      </a>
+    </li>
   </ul>
 </div>
 
-<div class="btn-group" dropdown >
-  <button id="button-basic" dropdownToggle type="button"
-          class="btn btn-primary dropdown-toggle mr-2"
-          aria-controls="dropdown-basic">
-      Add attribute
-      <span class="caret"></span>
+<div class="btn-group" dropdown>
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    aria-controls="dropdown-basic"
+  >
+    Add attribute
+    <span class="caret"></span>
   </button>
-  <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-      role="menu" aria-labelledby="button-basic">
-      <h6 class="dropdown-header">Select attribute:</h6>
-      <li *ngFor="let attribute of attributes$ | async" role="menuitem">
-        <a class="dropdown-item" [class.disabled]="selectedAttributes.includes(attribute)"
-          (click)="addAttribute(attribute)" [routerLink]="[]" queryParamsHandling="preserve">
-          {{attribute.title}}
-        </a>
-      </li>
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
+    <h6 class="dropdown-header">Select attribute:</h6>
+    <li *ngFor="let attribute of attributes$ | async" role="menuitem">
+      <a
+        class="dropdown-item"
+        [class.disabled]="selectedAttributes.includes(attribute)"
+        (click)="addAttribute(attribute)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        {{ attribute.title }}
+      </a>
+    </li>
   </ul>
 </div>
 
-<button id="button-basic" type="button" class="btn btn-primary mr-2"
-        (click)="generateEntries()">
-  {{entries.length > 0 ? "Regenerate entries" : "Generate entries"}}
+<button
+  id="button-basic"
+  type="button"
+  class="btn btn-primary mr-2"
+  (click)="generateEntries()"
+>
+  {{ entries.length > 0 ? "Regenerate entries" : "Generate entries" }}
 </button>
 
 <div>
   <table class="table">
     <thead>
       <tr>
-        <th *ngFor="let attribute of displayedAttributes"
-            scope="col">
-          {{attribute.title}}
+        <th *ngFor="let attribute of displayedAttributes" scope="col">
+          {{ attribute.title }}
         </th>
-        <th scope="col">
-          Count
-        </th>
+        <th scope="col">Count</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let entry of entries">
-        <td *ngFor="let attribute of displayedAttributes" >
-          {{entry.representative[attribute.id]}}
+        <td *ngFor="let attribute of displayedAttributes">
+          {{ entry.representative[attribute.id] }}
         </td>
-        <td>{{entry.count}}</td>
+        <td>{{ entry.count }}</td>
       </tr>
     </tbody>
   </table>

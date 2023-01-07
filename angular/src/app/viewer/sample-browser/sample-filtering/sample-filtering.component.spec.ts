@@ -11,12 +11,9 @@ describe('SampleFilteringComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SampleFilteringComponent ],
-      providers: [
-        { provide: ToastrService, useClass: MockToastrService }
-      ],
-    })
-    .compileComponents();
+      declarations: [SampleFilteringComponent],
+      providers: [{ provide: ToastrService, useClass: MockToastrService }],
+    }).compileComponents();
   });
 
   beforeEach(() => {

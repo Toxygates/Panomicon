@@ -14,28 +14,33 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let batch of (adminData.batches$ | async); index as i">
-        <th scope="row">{{batch.id}}</th>
-        <td>{{batch.dataset}}</td>
-        <td>{{batch.timestamp}}</td>
-        <td>{{batch.enabledInstances.join(", ")}}</td>
-        <td>{{batch.numSamples}}</td>
-        <td>{{batch.comment}}</td>
-        <td>{{batch.publicComment}}</td>
+      <tr *ngFor="let batch of adminData.batches$ | async; index as i">
+        <th scope="row">{{ batch.id }}</th>
+        <td>{{ batch.dataset }}</td>
+        <td>{{ batch.timestamp }}</td>
+        <td>{{ batch.enabledInstances.join(", ") }}</td>
+        <td>{{ batch.numSamples }}</td>
+        <td>{{ batch.comment }}</td>
+        <td>{{ batch.publicComment }}</td>
         <td>
-          <a class="btn btn-primary" role="button"
+          <a
+            class="btn btn-primary"
+            role="button"
             [routerLink]="'edit/' + batch.id"
-          >Edit</a>
+            >Edit</a
+          >
         </td>
         <td>
-          <button type="button" class="btn btn-danger"
-            (click)="deleteBatch(batch.id)">
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="deleteBatch(batch.id)"
+          >
             Delete
           </button>
         </td>
       </tr>
     </tbody>
   </table>
-  <a class="btn btn-primary" role="button" routerLink="add"
-  >Add new batch</a>
+  <a class="btn btn-primary" role="button" routerLink="add">Add new batch</a>
 </div>

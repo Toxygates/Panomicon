@@ -1,5 +1,5 @@
 <div>
-  <h3>{{ addMode ? "Add" : "Edit"}} Dataset</h3>
+  <h3>{{ addMode ? "Add" : "Edit" }} Dataset</h3>
 
   <form>
     <app-validated-input
@@ -33,12 +33,12 @@
     >
     </app-validated-input>
   </form>
-  <button type="button" class="btn btn-primary"
-    (click)="submit(dataset)">
-    {{ addMode ? "Add" : "Save"}} dataset
+  <button type="button" class="btn btn-primary" (click)="submit(dataset)">
+    {{ addMode ? "Add" : "Save" }} dataset
   </button>
   <span class="float-right">
     <a class="btn btn-danger" role="button" routerLink="/admin/datasets"
-    >Cancel</a>
+      >Cancel</a
+    >
   </span>
 </div>

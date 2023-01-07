@@ -1,26 +1,44 @@
 <div class="btn-group" dropdown [isDisabled]="!datasets">
-    <button id="button-basic" dropdownToggle type="button"
-            class="btn btn-primary dropdown-toggle mr-2"
-            [class]="datasets ? 'btn-primary' : 'btn-secondary'"
-            aria-controls="dropdown-basic">
-        <span *ngIf="!datasets" class="spinner-border spinner-border-sm"
-            role="status" aria-hidden="true"></span>
-        {{  datasets ?
-                selectedDataset ?
-                    "Dataset: " + selectedDataset
-                    : "No dataset selected"
-                : "Loading..."
-        }}
-         <span class="caret"></span>
-    </button>
-    <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-        role="menu" aria-labelledby="button-basic">
-        <h6 class="dropdown-header">Select dataset:</h6>
-        <li *ngFor="let dataset of datasets" role="menuitem">
-            <a class="dropdown-item" (click)="selectDataset(dataset.id)"
-            [routerLink]="[]"queryParamsHandling="preserve">
-            {{dataset.description}} ({{dataset.id}})
-            </a>
-        </li>
-    </ul>
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    [class]="datasets ? 'btn-primary' : 'btn-secondary'"
+    aria-controls="dropdown-basic"
+  >
+    <span
+      *ngIf="!datasets"
+      class="spinner-border spinner-border-sm"
+      role="status"
+      aria-hidden="true"
+    ></span>
+    {{
+      datasets
+        ? selectedDataset
+          ? "Dataset: " + selectedDataset
+          : "No dataset selected"
+        : "Loading..."
+    }}
+    <span class="caret"></span>
+  </button>
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
+    <h6 class="dropdown-header">Select dataset:</h6>
+    <li *ngFor="let dataset of datasets" role="menuitem">
+      <a
+        class="dropdown-item"
+        (click)="selectDataset(dataset.id)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        {{ dataset.description }} ({{ dataset.id }})
+      </a>
+    </li>
+  </ul>
 </div>

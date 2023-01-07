@@ -17,11 +17,11 @@ export interface Attribute {
 
 export interface Matrix {
   columns: {
-    name: string,
-  }[],
+    name: string;
+  }[];
   sorting: {
-    column: number,
-    ascending: boolean
-  },
-  rows: Record<string, string | string[]>
+    column: number;
+    ascending: boolean;
+  };
+  rows: Record<string, string | string[]>;
 }

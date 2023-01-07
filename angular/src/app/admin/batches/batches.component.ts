@@ -7,22 +7,25 @@ import { BackendService } from '../services/backend.service';
 @Component({
   selector: 'app-batches',
   templateUrl: './batches.component.html',
-  styleUrls: ['./batches.component.scss']
+  styleUrls: ['./batches.component.scss'],
 })
-export class BatchesComponent  {
-
-  constructor(public adminData: AdminDataService,
+export class BatchesComponent {
+  constructor(
+    public adminData: AdminDataService,
     private router: Router,
-    private backend: BackendService) { }
+    private backend: BackendService
+  ) {}
 
   deleteBatch(id: string): void {
     void this.router.navigate(['/admin/progress']);
-    this.backend.deleteBatch(id).pipe(
-      mergeMap(() => this.adminData.startTrackingProgress()),
-      last()
-    ).subscribe(_res => {
-      this.adminData.refreshBatches();
-    });
+    this.backend
+      .deleteBatch(id)
+      .pipe(
+        mergeMap(() => this.adminData.startTrackingProgress()),
+        last()
+      )
+      .subscribe((_res) => {
+        this.adminData.refreshBatches();
+      });
   }
-
 }

@@ -8,27 +8,25 @@ import { AdminDataService } from '../services/admin-data';
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss']
+  styleUrls: ['./admin.component.scss'],
 })
 export class AdminComponent implements OnInit {
-
   constructor(
     private backend: BackendService,
     private fetchedData: FetchedDataService,
     public adminData: AdminDataService,
-    private router: Router,
-  ) { }
+    private router: Router
+  ) {}
 
   navbarIsCollapsed = true;
 
   ngOnInit(): void {
-    this.fetchedData.roles$
-      .subscribe(roles => {
-        if (!roles?.includes("admin")) {
-          alert("You do not have the admin role. Switching to viewer screen.");
-          void this.router.navigateByUrl('/');
-        }
-      })
+    this.fetchedData.roles$.subscribe((roles) => {
+      if (!roles?.includes('admin')) {
+        alert('You do not have the admin role. Switching to viewer screen.');
+        void this.router.navigateByUrl('/');
+      }
+    });
   }
 
   logout(): void {
@@ -39,21 +37,23 @@ export class AdminComponent implements OnInit {
     const input = target as HTMLInputElement;
     const file = input.files?.item(0);
     if (!file) {
-      throw new Error("No file selected for upload");
+      throw new Error('No file selected for upload');
     }
-    this.backend.uploadFile(file).subscribe(data => {
-      console.log(data);
-      // do something, if upload success
-    }, error => {
-      console.log(error);
-    });
+    this.backend.uploadFile(file).subscribe(
+      (data) => {
+        console.log(data);
+        // do something, if upload success
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   }
 
   deleteBatch(batchId: string): void {
-    console.log("deleting batch " + batchId);
-    this.backend.deleteBatch(batchId)
-      .subscribe(result => {
-        console.log(result);
-      });
+    console.log('deleting batch ' + batchId);
+    this.backend.deleteBatch(batchId).subscribe((result) => {
+      console.log(result);
+    });
   }
 }
