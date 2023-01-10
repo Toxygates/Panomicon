@@ -684,12 +684,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   /**
-   * Import gene lists from the configured intermine instance.
+   * Import gene lists from the configured intermine instance. A preferred platform for the import must be supplied.
    */
   get("/intermine/list") {
     val user = paramOrHalt("user")
     val pass = paramOrHalt("pass")
-    write(intermineHandling.connector.importLists(user, pass))
+    val platform = paramOrHalt("platform")
+    contentType = "text/json"
+    write(intermineHandling.connector.importLists(user, pass, Some(platform)))
   }
 
   /** Export gene lists to the configured intermine instance, optionally overwriting existing lists with the same name. */

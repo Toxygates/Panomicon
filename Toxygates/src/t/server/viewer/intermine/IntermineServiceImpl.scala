@@ -50,7 +50,7 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
   // Task: pass in a preferred species, get status info back
   def importLists(inst: IntermineInstance, user: String, pass: String): Array[StringList] = {
     val conn = mines.connector(inst, platforms)
-    conn.importLists(user, pass).map(l =>
+    conn.importLists(user, pass, None).map(l =>
       new StringList(StringList.PROBES_LIST_TYPE, l.name, l.items.toArray)
     ).toArray
   }

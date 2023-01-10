@@ -54,9 +54,13 @@ class IntermineConnector(instance: IntermineInstance,
   def enrichmentRequest(ls: ListService) =
     ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
-  /** Convert an intermine ItemList into a GeneList,
-   * preserving only those items that are known to the platforms in our system. */
-  def asTGList(l: ItemList): Option[GeneList] = {
+  /**
+   * Convert an intermine ItemList into a GeneList,
+   * preserving only those items that are known to the platforms in our system.
+   * @param l the list to convert
+   * @param preferredPlatform if supplied, the result will only contain probes that are members of this platform.
+   * Otherwise, results from all platforms will be returned. */
+  def asTGList(l: ItemList, preferredPlatform: Option[String]): Option[GeneList] = {
     var items: Vector[Gene] = Vector()
     println(s"Importing ${l.getName}")
 
@@ -67,10 +71,17 @@ class IntermineConnector(instance: IntermineInstance,
 
     //we will have obtained the genes as ENTREZ identifiers
     println(s"${items take 100} ...")
-    val probes = items.flatMap(g => platforms.geneLookup.get(g)).
-      flatten.map(_.identifier).distinct
 
-    val filtered = platforms.filterProbesAllPlatforms(probes)
+    val filtered: Seq[String] = preferredPlatform match {
+      case Some(pp) =>
+        val lookup = platforms.geneLookup(pp)
+        val ids = for { g <- items
+                       probe <- lookup.getOrElse(g, Seq()) } yield probe.identifier
+        ids.distinct
+      case None =>
+        items.flatMap(g => platforms.geneLookup.get(g)).
+          flatten.map(_.identifier).distinct
+    }
 
     if (filtered.isEmpty) {
       println(s"Warning: the following imported list had no corresponding probes in the system: ${l.getName}")
@@ -140,7 +151,7 @@ class IntermineConnector(instance: IntermineInstance,
 
   /** Import gene lists.
    * @return pairs of (list items, name). */
-  def importLists(user: String, pass: String): Iterable[GeneList] = {
+  def importLists(user: String, pass: String, preferredPlatform: Option[String]): Iterable[GeneList] = {
   // Task: pass in a preferred species, get status info back
     try {
       val ls = getListService(Some(user), Some(pass))
@@ -153,7 +164,7 @@ class IntermineConnector(instance: IntermineInstance,
 
       for { iml <- imLists
            if iml.getType == "Gene"
-           list <- asTGList(iml)
+           list <- asTGList(iml, preferredPlatform)
            } yield list
     } catch {
       case e: Exception =>
