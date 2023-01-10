@@ -40,6 +40,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   lazy val batchStore = new BatchStore(baseConfig.triplestoreConfig)
   lazy val sampleStore = context.sampleStore
   lazy val probeStore =  context.probeStore
+  lazy val platformStore = new PlatformStore(baseConfig)
 
   val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
   val networkHandling = new NetworkHandling(context, matrixHandling)
@@ -591,25 +592,39 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("Instance deleted")
   }
 
+  private def platformsToJson(platforms: Iterable[String], admin: Boolean): String = {
+    val numProbes = probeStore.numProbes()
+    val comments = platformStore.getComments()
+    val pubComments = platformStore.getPublicComments()
+    val dates = platformStore.getTimestamps()
+    val types = platformStore.platformOmicsTypes
+
+    write(platforms.map(id => writeJs(
+      Map(
+        "id" -> writeJs(id),
+        "publicComment" -> writeJs(pubComments.getOrElse(id, "")),
+        "date" -> writeJs(dates.getOrElse(id, null)),
+        "probes" -> writeJs(numProbes.getOrElse(id, 0)),
+        "type" -> writeJs(types.getOrElse(id, ""))
+      ) ++ (if (admin) Map(
+        "comment" -> writeJs(comments.getOrElse(id, "")),
+      ) else Map.empty)
+    )))
+  }
+
   get("/platform") {
     verifyRole("admin")
     contentType = "text/json"
 
-    val probeStore = new ProbeStore(baseConfig.triplestoreConfig)
-    val numProbes = probeStore.numProbes()
-    val platformStore = new PlatformStore(baseConfig)
-    val comments = platformStore.getComments()
-    val pubComments = platformStore.getPublicComments()
-    val dates = platformStore.getTimestamps()
+    platformsToJson(platformStore.getList(), true)
+  }
 
+  get("/platform/user") {
     contentType = "text/json"
-    write(platformStore.getList().map(id => writeJs(Map(
-      "id" -> writeJs(id),
-      "comment" -> writeJs(comments.getOrElse(id, "")),
-      "date" -> writeJs(dates.getOrElse(id, null)),
-      "probes" -> writeJs(numProbes.getOrElse(id, 0)),
-      "publicComment" -> writeJs(pubComments.getOrElse(id, ""))
-    ))))
+
+    //bio_parameters is an internal platform that we do not expose to the user
+    val filteredPlatforms = platformStore.getList().filter(_ != "bio_parameters")
+    platformsToJson(filteredPlatforms, false)
   }
 
   post("/platform") {
