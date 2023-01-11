@@ -47,10 +47,10 @@ import { TaskProgressComponent } from './task-progress/task-progress.component';
           { path: 'instances/edit/:id', component: EditInstanceComponent },
           { path: 'instances/add', component: EditInstanceComponent },
           { path: 'progress', component: TaskProgressComponent },
-          { path: '**',   redirectTo: 'datasets', pathMatch: 'full' },
-        ]
-      }
+          { path: '**', redirectTo: 'datasets', pathMatch: 'full' },
+        ],
+      },
     ]),
-  ]
+  ],
 })
-export class AdminModule { }
+export class AdminModule {}

@@ -3,10 +3,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 @Component({
   selector: 'app-group-creation',
   templateUrl: './group-creation.component.html',
-  styleUrls: ['./group-creation.component.scss']
+  styleUrls: ['./group-creation.component.scss'],
 })
-export class GroupCreationComponent  {
-
+export class GroupCreationComponent {
   sampleGroupName: string | undefined;
   @Input() selectedTreatmentGroups = new Set<string>();
   @Input() collapsed = true;
@@ -16,5 +15,4 @@ export class GroupCreationComponent  {
     this.sampleGroupSaved.emit(this.sampleGroupName);
     this.sampleGroupName = undefined;
   }
-
 }

@@ -9,7 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Component, Directive, NO_ERRORS_SCHEMA, Type } from '@angular/core';
 
 class MockUserDataService {
-  sampleGroups$ =  new BehaviorSubject(new Map());
+  sampleGroups$ = new BehaviorSubject(new Map());
   isAcceptableGroupName() {
     return false;
   }
@@ -35,48 +35,52 @@ describe('GroupManagerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ FormsModule, BrowserAnimationsModule ],
+      imports: [FormsModule, BrowserAnimationsModule],
       declarations: [
         GroupManagerComponent,
         MockDirective({
           selector: '[collapse]',
-          inputs: ['collapse']
-        })
+          inputs: ['collapse'],
+        }),
       ],
       providers: [
         { provide: UserDataService, useValue: mockUserData },
-        { provide: ToastrService, useClass: MockToastrService }
+        { provide: ToastrService, useClass: MockToastrService },
       ],
-      schemas: [NO_ERRORS_SCHEMA]
-    })
-    .compileComponents();
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(GroupManagerComponent);
     component = fixture.componentInstance;
     mockUserData.sampleGroups$.next(
-      new Map([["florb", {"name": "florb", "samples": [444, 555, 666],
-                        "enabled": false}],
-             ["spabble", {"name": "spabble", "samples": [111, 222, 333],
-                          "enabled": true}],
-            ]));
-    component.currentRenamingGroup =  component.currentDeletingGroup = undefined;
+      new Map([
+        ['florb', { name: 'florb', samples: [444, 555, 666], enabled: false }],
+        [
+          'spabble',
+          { name: 'spabble', samples: [111, 222, 333], enabled: true },
+        ],
+      ])
+    );
+    component.currentRenamingGroup = component.currentDeletingGroup = undefined;
     fixture.detectChanges();
   });
 
   it('should have headers for each group, in alphabetical order', () => {
-    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
+    const groupManagerElement: HTMLElement =
+      fixture.nativeElement as HTMLElement;
     const nodes = groupManagerElement.querySelectorAll('.card-title');
-    const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
+    const innerHTMLs = Array.from(nodes).map((n) => n.innerHTML);
     void expect(innerHTMLs[0]).toContain('florb');
     void expect(innerHTMLs[1]).toContain('spabble');
   });
 
   it('should list sample IDs', () => {
-    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
+    const groupManagerElement: HTMLElement =
+      fixture.nativeElement as HTMLElement;
     const nodes = groupManagerElement.querySelectorAll('li');
-    const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
+    const innerHTMLs = Array.from(nodes).map((n) => n.innerHTML);
     void expect(innerHTMLs[0]).toContain('444');
     void expect(innerHTMLs[2]).toContain('666');
     void expect(innerHTMLs[4]).toContain('222');
@@ -84,40 +88,50 @@ describe('GroupManagerComponent', () => {
 
   it('should update when sample groups change', () => {
     mockUserData.sampleGroups$.next(
-      new Map([["barg", {"name": "barg", "samples": [444, 555, 666],
-                "enabled": false}],
-               ["slek", {"name": "slek", "samples": [111, 222, 333],
-                "enabled": true}],
-      ]));
+      new Map([
+        ['barg', { name: 'barg', samples: [444, 555, 666], enabled: false }],
+        ['slek', { name: 'slek', samples: [111, 222, 333], enabled: true }],
+      ])
+    );
     fixture.detectChanges();
-    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
+    const groupManagerElement: HTMLElement =
+      fixture.nativeElement as HTMLElement;
     const nodes = groupManagerElement.querySelectorAll('.card-title');
-    const innerHTMLs = Array.from(nodes).map(n => n.innerHTML)
+    const innerHTMLs = Array.from(nodes).map((n) => n.innerHTML);
     void expect(innerHTMLs[0]).toContain('barg');
     void expect(innerHTMLs[1]).toContain('slek');
-  })
+  });
 
   it('should expand renaming or deleting for one group at a time', () => {
-    const groupManagerElement: HTMLElement = fixture.nativeElement as HTMLElement;
-    const renameDivs = Array.from(groupManagerElement.querySelectorAll('div.renameCollapse'));
-    const deleteDivs = Array.from(groupManagerElement.querySelectorAll('div.deleteCollapse'));
-    const uncollapseds = function() {
-      return renameDivs.concat(deleteDivs).map(b =>
-        ((b as HTMLElement).getAttribute("ng-reflect-collapse") !== 'true' ? 1 : 0) as number
-      );
+    const groupManagerElement: HTMLElement =
+      fixture.nativeElement as HTMLElement;
+    const renameDivs = Array.from(
+      groupManagerElement.querySelectorAll('div.renameCollapse')
+    );
+    const deleteDivs = Array.from(
+      groupManagerElement.querySelectorAll('div.deleteCollapse')
+    );
+    const uncollapseds = function () {
+      return renameDivs
+        .concat(deleteDivs)
+        .map(
+          (b) =>
+            ((b as HTMLElement).getAttribute('ng-reflect-collapse') !== 'true'
+              ? 1
+              : 0) as number
+        );
     };
 
-    void expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(0);
+    void expect(uncollapseds().reduce((a, b) => a + b)).toEqual(0);
 
-    component.toggleRenamingGroup("florb");
+    component.toggleRenamingGroup('florb');
     fixture.detectChanges();
-    void expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(1);
+    void expect(uncollapseds().reduce((a, b) => a + b)).toEqual(1);
     void expect(uncollapseds()[0]).toEqual(1);
 
-    component.toggleDeletingGroup("spabble");
+    component.toggleDeletingGroup('spabble');
     fixture.detectChanges();
-    void expect(uncollapseds().reduce((a,b)=>a+b)).toEqual(1);
+    void expect(uncollapseds().reduce((a, b) => a + b)).toEqual(1);
     void expect(uncollapseds()[3]).toEqual(1);
-  })
-
+  });
 });

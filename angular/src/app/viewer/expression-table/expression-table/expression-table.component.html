@@ -1,33 +1,51 @@
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12 pcard_container">
-            <div class="pcard ui_panel">
-                <div class = "mb-3">
-                    <app-geneset-menu [geneSetNames]="(geneSetNames$ | async) || []"
-                        [currentGeneSet]="currentGeneSet"
-                        (selectGeneSet)="onSelectGeneSet($event)"
-                        (createGeneSet)="onCreateGeneSet($event)"
-                        (showAllGenes)="onShowAllGenes()">
-                    </app-geneset-menu>
-                </div>
-                <div #tabulatorContainer></div>
-            </div>
+  <div class="row">
+    <div class="col-12 pcard_container">
+      <div class="pcard ui_panel">
+        <div class="mb-3">
+          <app-geneset-menu
+            [geneSetNames]="(geneSetNames$ | async) || []"
+            [currentGeneSet]="currentGeneSet"
+            (selectGeneSet)="onSelectGeneSet($event)"
+            (createGeneSet)="onCreateGeneSet($event)"
+            (showAllGenes)="onShowAllGenes()"
+          >
+          </app-geneset-menu>
         </div>
+        <div #tabulatorContainer></div>
+      </div>
     </div>
+  </div>
 </div>
 
 <ng-template #gotoPageModal>
-    <div class="modal-header">
-      <h4 class="modal-title pull-left">Go to page</h4>
-      <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef?.hide()">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <div class="modal-body">
-        <label for="pageNumber">Enter page (1-{{lastPage}}):</label>
-        <input type="text" class="form-control mb-2" id="pageNumber"
-            [(ngModel)]="tablePageNumber" [appFocusInput]="true">
-        <button type="submit" class="btn btn-primary" (click)="onSubmitGotoPageModal()"
-            [disabled]="tablePageNumber <= 0 || tablePageNumber > lastPage">Go to page</button>
-    </div>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Go to page</h4>
+    <button
+      type="button"
+      class="close pull-right"
+      aria-label="Close"
+      (click)="modalRef?.hide()"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <label for="pageNumber">Enter page (1-{{ lastPage }}):</label>
+    <input
+      type="text"
+      class="form-control mb-2"
+      id="pageNumber"
+      [(ngModel)]="tablePageNumber"
+      [appFocusInput]="true"
+    />
+    <button
+      type="submit"
+      class="btn btn-primary"
+      (click)="onSubmitGotoPageModal()"
+      [disabled]="tablePageNumber <= 0 || tablePageNumber > lastPage"
+    >
+      Go to page
+    </button>
+  </div>
 </ng-template>

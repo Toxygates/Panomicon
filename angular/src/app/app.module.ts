@@ -14,11 +14,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ViewerComponent } from './viewer/viewer.component';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    ViewerComponent,
-    PageNotFoundComponent,
-  ],
+  declarations: [AppComponent, ViewerComponent, PageNotFoundComponent],
   imports: [
     BrowserModule,
     SharedModule,
@@ -31,6 +27,6 @@ import { ViewerComponent } from './viewer/viewer.component';
     }),
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
