@@ -48,43 +48,18 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
   }
 
   // Task: pass in a preferred species, get status info back
-  def importLists(inst: IntermineInstance, user: String, pass: String,
-    asProbes: Boolean): Array[StringList] = {
+  def importLists(inst: IntermineInstance, user: String, pass: String): Array[StringList] = {
     val conn = mines.connector(inst, platforms)
-    try {
-      val ls = conn.getListService(Some(user), Some(pass))
-      val imLists = ls.getAccessibleLists()
-
-      println("Accessible lists: ")
-
-      for (iml <- imLists.asScala) {
-        println(s"${iml.getName} ${iml.getType} ${iml.getSize}")
-      }
-
-      val tglists = for (iml <- imLists.asScala;
-        if iml.getType == "Gene";
-        tglist = conn.asTGList(iml, affyProbes, platforms.filterProbesAllPlatforms)
-        ) yield tglist
-
-      tglists.flatten.toArray
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        throw new IntermineException(s"$e")
-    }
+    conn.importLists(user, pass, None).map(l =>
+      new StringList(StringList.PROBES_LIST_TYPE, l.name, l.items.toArray)
+    ).toArray
   }
 
   def exportLists(inst: IntermineInstance, user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
     val conn = mines.connector(inst, platforms)
-    try {
-      val ls = conn.getListService(Some(user), Some(pass))
-      conn.addProbeLists(ls, lists.toList, replace)
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        throw new IntermineException(s"$e")
-    }
+    conn.exportLists(user, pass,
+      lists.map(l => GeneList(l.name(), l.items().toSeq)), replace)
   }
 
   // This is mainly to adjust the formatting of the p-value
@@ -107,7 +82,7 @@ class IntermineServiceImpl extends TServiceServlet with IntermineService {
     ls.setAuthentication(session)
     val tags = List()
 
-    val tempList = conn.addProbeList(ls, list.items(), "temp_enrichment", false, tags)
+    val tempList = conn.addProbeList(ls, GeneList("temp_enrichment", list.items()), false, tags)
 
     tempList match {
       case Some(tl) =>

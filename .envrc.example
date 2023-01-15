@@ -17,6 +17,11 @@ export T_DATA_DIR="kcchunk:/Users/yuji/dev/toxygates/kyoto_data"
 export T_DATA_MATDBCONFIG="#pccap=1073741824#msiz=4294967296"
 export T_INSTANCE_NAME="dev"
 
+#Intermine connection
+export T_INTERMINE_NAME=TargetMine
+export T_INTERMINE_ID=targetmine
+export T_INTERMINE_URL=https://targetmine.mizuguchilab.org
+
 # Additional back end variables for FusionAuth
 # (the values below work out of the box with the docker-compose file)
 export FUSIONAUTH_BASEURL="http://localhost:9011"

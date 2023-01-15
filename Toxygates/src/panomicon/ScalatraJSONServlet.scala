@@ -5,12 +5,12 @@ import org.scalatra._
 import org.scalatra.servlet.{FileUploadSupport, MultipartConfig}
 import t.db.Sample
 import t.model.sample.CoreParameter._
-import t.model.sample.OTGAttribute._
-import t.model.sample.{Attribute, AttributeSet, CoreParameter}
+import t.model.sample.Attribute
 import t.platform.{AffymetrixPlatform, BioPlatform, GeneralPlatform}
 import t.server.viewer.servlet.MinimalTServlet
 import t.server.viewer.Configuration
-import t.shared.common.maintenance.{BatchUploadException, MaintenanceException}
+import t.server.viewer.intermine.GeneList
+import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
 import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
@@ -40,10 +40,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   lazy val batchStore = new BatchStore(baseConfig.triplestoreConfig)
   lazy val sampleStore = context.sampleStore
   lazy val probeStore =  context.probeStore
+  lazy val platformStore = new PlatformStore(baseConfig)
 
   val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
   val networkHandling = new NetworkHandling(context, matrixHandling)
   val uploadHandling = new UploadHandling(context)
+  val intermineHandling = new IntermineHandling(context)
 
   val authentication = new Authentication()
 
@@ -266,7 +268,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    */
   get("/association/:assoc/:sample") {
     contentType = "text/json"
-    val probes = params.getOrElse("probes", halt(400))
+    val probes = paramOrHalt("probes")
     try {
       val requestedType = AType.valueOf(paramOrHalt("assoc"))
       val reprSample = paramOrHalt("sample")
@@ -590,25 +592,39 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     Ok("Instance deleted")
   }
 
+  private def platformsToJson(platforms: Iterable[String], admin: Boolean): String = {
+    val numProbes = probeStore.numProbes()
+    val comments = platformStore.getComments()
+    val pubComments = platformStore.getPublicComments()
+    val dates = platformStore.getTimestamps()
+    val types = platformStore.platformOmicsTypes
+
+    write(platforms.map(id => writeJs(
+      Map(
+        "id" -> writeJs(id),
+        "publicComment" -> writeJs(pubComments.getOrElse(id, "")),
+        "date" -> writeJs(dates.getOrElse(id, null)),
+        "probes" -> writeJs(numProbes.getOrElse(id, 0)),
+        "type" -> writeJs(types.getOrElse(id, ""))
+      ) ++ (if (admin) Map(
+        "comment" -> writeJs(comments.getOrElse(id, "")),
+      ) else Map.empty)
+    )))
+  }
+
   get("/platform") {
     verifyRole("admin")
     contentType = "text/json"
 
-    val probeStore = new ProbeStore(baseConfig.triplestoreConfig)
-    val numProbes = probeStore.numProbes()
-    val platformStore = new PlatformStore(baseConfig)
-    val comments = platformStore.getComments()
-    val pubComments = platformStore.getPublicComments()
-    val dates = platformStore.getTimestamps()
+    platformsToJson(platformStore.getList(), true)
+  }
 
+  get("/platform/user") {
     contentType = "text/json"
-    write(platformStore.getList().map(id => writeJs(Map(
-      "id" -> writeJs(id),
-      "comment" -> writeJs(comments.getOrElse(id, "")),
-      "date" -> writeJs(dates.getOrElse(id, null)),
-      "probes" -> writeJs(numProbes.getOrElse(id, 0)),
-      "publicComment" -> writeJs(pubComments.getOrElse(id, ""))
-    ))))
+
+    //bio_parameters is an internal platform that we do not expose to the user
+    val filteredPlatforms = platformStore.getList().filter(_ != "bio_parameters")
+    platformsToJson(filteredPlatforms, false)
   }
 
   post("/platform") {
@@ -665,5 +681,25 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     verifyRole("admin")
     contentType = "text/json"
     write(uploadHandling.getProgress())
+  }
+
+  /**
+   * Import gene lists from the configured intermine instance. A preferred platform for the import must be supplied.
+   */
+  get("/intermine/list") {
+    val user = paramOrHalt("user")
+    val pass = paramOrHalt("pass")
+    val platform = paramOrHalt("platform")
+    contentType = "text/json"
+    write(intermineHandling.connector.importLists(user, pass, Some(platform)))
+  }
+
+  /** Export gene lists to the configured intermine instance, optionally overwriting existing lists with the same name. */
+  post("/intermine/list") {
+    val user = paramOrHalt("user")
+    val pass = paramOrHalt("pass")
+    val replace = (paramOrHalt("replace") == "true")
+    val lists = read[Seq[GeneList]](request.body)
+    intermineHandling.connector.exportLists(user, pass, lists, replace)
   }
 }

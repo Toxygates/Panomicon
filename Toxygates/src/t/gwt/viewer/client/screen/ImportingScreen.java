@@ -63,7 +63,7 @@ public interface ImportingScreen extends Screen {
     MenuItem mi = new MenuItem(title + " data", mb);
 
     mb.addItem(new MenuItem("Import gene sets from " + title + "...", () -> {      
-      new InterMineData(this, inst).importLists(true);
+      new InterMineData(this, inst).importLists();
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT, Analytics.ACTION_IMPORT_GENE_SETS,
             title);      
     }));

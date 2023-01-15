@@ -198,19 +198,17 @@ class ProbeStore(val config: TriplestoreConfig) extends ListManager(config) with
   }
 
   def numProbes(): Map[String, Int] = {
-    val r = triplestore.mapQuery(s"""$tPrefixes
-                                    |SELECT (count(distinct ?p) as ?n) ?l WHERE {
-                                    |  ?pl a ${PlatformStore.itemClass} ; rdfs:label ?l .
-                                    |  GRAPH ?pl {
-                                    |    ?p a t:probe.
-                                    |   }
-                                    | } GROUP BY ?l""".stripMargin)
-    if (r(0).keySet.contains("l")) {
-      Map() ++ r.map(x => x("l") -> x("n").toInt)
-    } else {
-      // no records
-      Map()
-    }
+    val r = triplestore.mapQuery(
+      s"""$tPrefixes
+         |SELECT (count(?p) as ?n) ?l WHERE {
+         |  ?pl a ${PlatformStore.itemClass} ; rdfs:label ?l .
+         |  GRAPH ?pl {
+         |    ?p a t:probe.
+         |   }
+         | } GROUP BY ?l""".stripMargin)
+    if (r.nonEmpty && r.head.keySet.contains("l")) {
+      r.map(x => x("l") -> x("n").toInt).toMap
+    } else Map.empty
   }
 
   def probeQuery(identifiers: Iterable[String], relation: String,
