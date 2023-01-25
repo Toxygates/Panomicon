@@ -87,12 +87,12 @@ class PlatformStore(val config: TriplestoreConfig) extends ListManager(config) {
     EnsemblPlatform.constructPlatformFromEnsemblGraph(triplestore, PlatformStore.context(name))
   }
 
-  /**
-   * Note, the map may only be partially populated
-   */
-  def platformTypes: Map[String, String] = {
-    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?type WHERE { ?item a $itemClass; rdfs:label ?l ; " +
-      s"$platformType ?type } ").map(x => {
+  def platformOmicsTypes: Map[String, String] = {
+    Map() ++ triplestore.mapQuery(
+      s"""|$tPrefixes\n
+          | SELECT DISTINCT ?l ?type WHERE { ?item a $itemClass; rdfs:label ?l.
+          |   GRAPH ?batch { ?x a t:sample; t:platform_id ?l; t:type ?type }
+          | } """.stripMargin).map(x => {
       x("l") -> x("type")
     })
   }

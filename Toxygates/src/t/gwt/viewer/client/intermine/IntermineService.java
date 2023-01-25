@@ -32,12 +32,10 @@ public interface IntermineService extends RemoteService {
    * Import gene lists from an intermine user account.
    * 
    * @param user
-   * @param pass
-   * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
+   * @param pass*
    * @return
    */
-  StringList[] importLists(IntermineInstance instance,
-                           String user, String pass, boolean asProbes)
+  StringList[] importLists(IntermineInstance instance, String user, String pass)
       throws IntermineException;
 
   /**

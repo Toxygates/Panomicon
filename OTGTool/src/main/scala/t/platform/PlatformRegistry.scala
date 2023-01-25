@@ -21,6 +21,9 @@ package t.platform
 
 import t.platform.Species.Species
 import t.sparql.PlatformLoader
+import t.sparql.secondary.Gene
+
+import scala.collection.mutable
 
 /**
  * A loader that contains in-memory probes.
@@ -64,12 +67,22 @@ class PlatformRegistry(loader: PlatformLoader) {
   def platformProbes(platform: String): Iterable[Probe] =
     loader.probesForPlatform(platform)
 
-  lazy val geneLookup = {
-    val raw = (for (
-      (pf, probes) <- loader.allPlatforms.toSeq;
-      pr <- probes;
+  /** Maps genes (entrez) to probes across all platforms. Expensive to construct */
+  lazy val geneLookup: Map[Gene, Seq[Probe]] = {
+    val raw = (for {
+      (pf, probes) <- loader.allPlatforms.toSeq
+      pr <- probes
       gene <- pr.genes
-      ) yield (gene, pr))
+    } yield (gene, pr))
+    Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
+  }
+
+  /** Maps genes (entrez) to probes for one platform. */
+  def geneLookup(platform: String): Map[Gene, Seq[Probe]] = {
+    val raw = (for {
+      pr <- loader.probesForPlatform(platform).toSeq
+      gene <- pr.genes
+    } yield (gene, pr))
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
 
@@ -97,17 +110,17 @@ class PlatformRegistry(loader: PlatformLoader) {
 
   /**
    * Filter probes for a number of platforms.
+   * @param probes probes to be filtered (if empty, the result will contain all probes from the supplied platforms)
+   * @param platforms platforms that the result will be taken from
+   * @param species the preferred species of the return value, if any. For some platforms, this may not have any effect.
    */
-  def filterProbes(probes: Iterable[String],
-      platforms: Iterable[String],
-      species: Option[Species] = None): Iterable[String] = {
-    var rem = Set() ++ probes
-    var r = Set[String]()
-    for (p <- platforms; valid = filterProbes(rem, p, species)) {
-      rem --= valid
-      r ++= valid
+  def filterProbes(probes: Iterable[String], platforms: Iterable[String],
+                   species: Option[Species] = None): Seq[String] = {
+    val r = mutable.Buffer[String]()
+    for { p <- platforms } {
+      r ++= filterProbes(probes, p, species)
     }
-    r.toSeq
+    r.distinct
   }
 
   /**
@@ -123,10 +136,9 @@ class PlatformRegistry(loader: PlatformLoader) {
    * Filter probes for one platform. Returns all probes in the platform if the input
    * set is empty.
    */
-  def filterProbes(probes: Iterable[String], platform: String,
-      species: Option[Species]): Iterable[String] = {
-    if (probes.size == 0) {
-      allProbes(platform, species)
+  def filterProbes(probes: Iterable[String], platform: String, species: Option[Species]): Seq[String] = {
+    if (probes.isEmpty) {
+      allProbes(platform, species).toSeq
     } else {
       val pset = probes.toSet
       println(s"Filter (${pset.size}) ${pset take 20} ...")
