@@ -31,7 +31,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   )
 
   val tconfig = Configuration.fromServletContext(scontext)
-  var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
 
   tServletInit(tconfig)
   new PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
@@ -42,8 +41,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   lazy val probeStore =  context.probeStore
   lazy val platformStore = new PlatformStore(baseConfig)
 
-  val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
-  val networkHandling = new NetworkHandling(context, matrixHandling)
+  val networkHandling = new NetworkHandling(context)
+  //matrixHandling is available only when there is a request and when the JWT token has been set.
+  def matrixHandling = new MatrixHandling(context, sampleFilterFromRoles(), tconfig)
+
   val uploadHandling = new UploadHandling(context)
   val intermineHandling = new IntermineHandling(context)
 
@@ -66,23 +67,27 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
-  def isDataVisible(data: Dataset, userKey: String) = {
-    data.id == t.shared.common.Dataset.userDatasetId(userKey) ||
-      t.shared.common.Dataset.isSharedDataset(data.id) ||
-      !data.id.startsWith("user-")
+  def sampleFilterFromRoles(batchId: Option[String] = None): SampleFilter = {
+    val batchURI = batchId.map(BatchStore.packURI)
+    val dsIds = if (hasRole("admin")) List() else { //an empty list allows every dataset ID
+      getRoles(verifyJWT()).toList
+    }
+    SampleFilter(tconfig.instanceURI, batchURI, datasetIDs = dsIds)
   }
 
   get("/dataset") {
     contentType = "text/json"
-    val userKey = params.getOrElse("userDataKey", "")
+    val roleSet = getRoles(verifyJWT())
+    val hasAdmin = roleSet.contains("admin")
     val data = datasetStore.getItems(tconfig.instanceURI).
-      filter(isDataVisible(_, userKey))
+      filter(ds => hasAdmin || roleSet.contains(ds.id))
     write(data)
   }
 
   get("/dataset/:id") {
     contentType = "text/json"
     val reqId = paramOrHalt("id")
+    verifyDatasetAccess(reqId)
     val data = datasetStore.getItems(tconfig.instanceURI).
       find(_.id == reqId).getOrElse(halt(400))
     write(data)
@@ -91,7 +96,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/batch/dataset/:dataset") {
     contentType = "text/json"
     val requestedDatasetId = paramOrHalt("dataset")
-    verifyRole(requestedDatasetId)
+    verifyDatasetAccess(requestedDatasetId)
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
 
@@ -104,17 +109,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     contentType = "text/json"
     val requestedBatchId = paramOrHalt("batch")
     val queries = sampleStore.batchSpecific(requestedBatchId)
-
     val fullList = batchStore.getList()
     val exists = fullList.contains(requestedBatchId)
-    println("Here are the batch ids")
-    println(fullList)
     if (!exists) halt(400)
 
-    val batchURI = BatchStore.packURI(requestedBatchId)
-    val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
     val scf = SampleClassFilter()
-    val samples = queries.sampleQuery(scf, sf)().map(sampleToMap)
+    val samples = queries.sampleQuery(scf, sampleFilterFromRoles(Some(requestedBatchId)))().map(sampleToMap)
     write(samples)
   }
 
@@ -125,7 +125,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/sample/treatment/:treatment") {
     //Note: this request does not yet respect per-batch attributes, always uses systemwide
     contentType = "text/json"
-    val sf = SampleFilter(tconfig.instanceURI, None)
+    val sf = sampleFilterFromRoles()
     val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> paramOrHalt("treatment"))), sf)()
     write(data.map(sampleToMap))
   }
@@ -149,7 +149,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     )
     println(s"Decoded: ${scf.constraints}")
 
-    val samples = sampleStore.sampleQuery(scf, sampleFilter)().map(sampleToMap)
+    val samples = sampleStore.sampleQuery(scf, sampleFilterFromRoles())().map(sampleToMap)
 
     params.get("limit") match {
       case Some(l) =>
@@ -165,7 +165,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val attr = Option(baseConfig.attributes.byId(requestedParam)).
       getOrElse(halt(400))
     val values = sampleStore.attributeValues(SampleClassFilter().filterAll,
-      attr, sampleFilter).toArray
+      attr, sampleFilterFromRoles()).toArray
     write(values)
   }
 
@@ -200,6 +200,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       case None => defaultPageSize
     }
 
+    //matrixHandling will filter out any samples that the user's roles do not have access to
     val (matrix, page) = matrixHandling.findOrLoadMatrix(matParams, valueType, offset, pageSize)
     val numPages = (matrix.info.numRows.toFloat / pageSize).ceil.toInt
     val ci = matrixHandling.columnInfoToJS(matrix.info)
@@ -248,7 +249,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
 
-    val network = networkHandling.loadNetwork(valueType, netParams)
+    //matrixHandling will filter out any samples that the user's roles do not have access to
+    val network = networkHandling.loadNetwork(matrixHandling, valueType, netParams)
     write(networkHandling.networkToJson(network))
   }
 
@@ -289,6 +291,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/attribute/batch/:batch") {
     contentType = "text/json"
     val batch = paramOrHalt("batch")
+    verifyBatchAccess(batch)
     val attributes = sampleStore.batchSpecific(batch).attributeSet.getAll
 
     val values = attributes.asScala.map(attrib => writeJs(Map(
@@ -306,6 +309,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val params = ujson.read(request.body)
     val sampleIds: Seq[String] = params.obj.get("samples").map(_.arr).getOrElse(List()).map(v => v.str)
     val batches: Seq[String] = params.obj.get("batches").map(_.arr).getOrElse(List()).map(v => v.str)
+    val permittedDatasets = getRoles(verifyJWT())
+    val requestedDatasets = params.obj.get("datasets").map(_.arr.map(_.str))
+    val datasets: Seq[String] = if (hasRole("admin")) {
+      requestedDatasets.getOrElse(List()) //An empty list requests every dataset
+    } else {
+      requestedDatasets.getOrElse(permittedDatasets.toList).filter(permittedDatasets.contains)
+  }
 
     val queries = if (batches.size == 1) {
       //Note: in the future, we could support this request even for multiple batches if needed
@@ -316,7 +326,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
 
     val attributes: Seq[Attribute] = params("attributes").arr.map(v => queries.attributeSet.byId(v.str))
-    val samplesWithValues = queries.sampleAttributeValues(sampleIds, batches, attributes)
+    val samplesWithValues = queries.sampleAttributeValues(sampleIds, batches, datasets, attributes)
     write(samplesWithValues.map(sampleToMap))
   }
 
@@ -374,10 +384,32 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
+  /* Role IDs also correspond to the set of datasets a user can access. */
+  def getRoles(jwt: JWT): Set[String] = {
+    jwt.getList("roles").asInstanceOf[util.List[String]].asScala.toSet
+  }
+
   def verifyRole(role: String): JWT = {
     val jwt = verifyJWT()
-    val roles = jwt.getList("roles").asInstanceOf[util.List[String]]
-    if (!roles.contains(role)) halt(401, s"You do not have role $role") else jwt
+    if (!getRoles(jwt).contains(role)) halt(401, s"You do not have role $role") else jwt
+  }
+
+  def hasRole(role: String): Boolean =
+    getRoles(verifyJWT()).contains(role)
+
+  def verifyDatasetAccess(datasetID: String) = {
+    val roles = getRoles(verifyJWT())
+    if (!roles.contains("admin")) {
+      if (!roles.contains(datasetID)) halt(401, s"You do not have access to this dataset")
+    }
+  }
+
+  def verifyBatchAccess(batchID: String) = {
+    val roles = getRoles(verifyJWT())
+    if (!roles.contains("admin")) {
+      val batchToDataset = batchStore.getDatasets()
+      if (!roles.contains(batchToDataset(batchID))) halt(401, s"You do not have access to this batch")
+    }
   }
 
   get("/check-cookie") {

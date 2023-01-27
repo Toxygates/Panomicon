@@ -13,10 +13,10 @@ import scala.collection.JavaConverters._
 /**
  * Routines that support network loading requests
  */
-class NetworkHandling(context: Context, matrixHandling: MatrixHandling) {
+class NetworkHandling(context: Context) {
   lazy val netLoader = new NetworkLoader(context, context.config.data.mirnaDir)
 
-  def loadNetwork(valueType: ValueType, netParams: NetworkParams): Network = {
+  def loadNetwork(matrixHandling: MatrixHandling, valueType: ValueType, netParams: NetworkParams): Network = {
 
     val r = new TargetTableBuilder
     for (t <- netLoader.mirnaTargetTable(netParams.mirnaSource)) {

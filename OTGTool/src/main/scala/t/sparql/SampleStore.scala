@@ -40,21 +40,21 @@ object SampleStore extends RDFClass {
  */
 case class SampleFilter(instanceURI: Option[String] = None,
                         batchURI: Option[String] = None,
-                        datasetURIs: List[String] = List()) {
+                        datasetIDs: List[String] = List()) {
 
   def visibilityRel(variable: String) = instanceURI match {
     case Some(u) => s"$variable ${BatchStore.memberRelation} <$u> ."
     case None    => ""
   }
 
+  val datasetURIs = datasetIDs.map(DatasetStore.packURI)
+
   def instanceFilter: String = visibilityRel("?batchGraph")
   def datasetFilter: String = {
     if (datasetURIs.isEmpty)
       ""
     else
-      " FILTER(?dataset IN (" +
-        datasetURIs.map(x => s"<$x>").mkString(",") +
-        ") )."
+      " FILTER(?dataset IN (" + datasetURIs.map(x => s"<$x>").mkString(",") + ") )."
   }
 
   def batchFilter: String = batchURI match {
@@ -168,10 +168,13 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
      *                  If empty, all samples will be searched.
      * @param batches the batches in which to search for samples. If empty,
      *                all batches will be searched.
+     * @param datasetIds the dataset IDs in which to search for samples. If empty,
+     *                   all datasets will be searched.
      * @param queryAttribs the parameters to fetch. Ordering is preserved in the result
      */
     def sampleAttributeValues(sampleIDs: Iterable[String], batches: Iterable[String],
-                              queryAttribs: Iterable[Attribute] = Seq()
+                              datasetIds: Iterable[String],
+                              queryAttribs: Iterable[Attribute] = Seq(),
                              ): Seq[Sample] = {
       val queryParams = normalizePredicateAttributes(queryAttribs)
       val withIndex = queryParams.zipWithIndex
@@ -179,27 +182,30 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
       val triples = withIndex.map(x => "?x t:" + x._1.id + " ?k" + x._2 + ".").mkString(" ")
       val sampleIds = sampleIDs.map("\"" + _ + "\" ").mkString
 
-      val sampleIdValues = if (sampleIds.isEmpty) {
-        ""
-      } else {
+      val sampleIdValues = if (sampleIds.isEmpty) "" else {
         s"VALUES ?sample_id {$sampleIds}"
       }
 
-      val batchFilter = if (batches.isEmpty) {
-        ""
-      } else {
-        val batchURIs = batches.map(b => "<" + BatchStore.packURI(b) + ">").mkString("||")
-        s"FILTER( ?g=$batchURIs )"
+      val batchFilter = if (batches.isEmpty) "" else {
+        val batchURIs = batches.map(BatchStore.packURI)
+        "FILTER(?batchGraph IN (" + batchURIs.map(x => s"<$x>").mkString(",") + ") )."
+      }
+
+      val datasetFilter = if (datasetIds.isEmpty) "" else {
+        val datasetURIs = datasetIds.map(DatasetStore.packURI)
+        "FILTER(?dataset IN (" + datasetURIs.map(x => s"<$x>").mkString(",") + ") )."
       }
 
       val queryResult: Seq[Map[String, String]] =
         triplestore.mapQuery(s"""$tPrefixes
                                 |SELECT ?sample_id $vars WHERE {
-                                |  GRAPH ?g {
+                                |  GRAPH ?batchGraph {
                                 |    $triples
                                 |    ?x rdfs:label ?sample_id. $sampleIdValues
                                 |  }
+                                |  ?batchGraph ${DatasetStore.memberRelation} ?dataset.
                                 |  $batchFilter
+                                |  $datasetFilter
                                 |}""".stripMargin)
 
       (for {
@@ -207,7 +213,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
         sampleId <- stringMap.get("sample_id")
         attributesSeq = withIndex.map(x => (x._1, stringMap.getOrElse("k" + x._2, null))) :+ (SampleId, sampleId)
         attributesMap = (Map() ++ attributesSeq).asJava
-      } yield new Sample(sampleId, new SampleClass(attributesMap))).toSeq
+      } yield new Sample(sampleId, new SampleClass(attributesMap)))
     }
 
     /**
@@ -462,7 +468,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
     sampleAttributeQuery(attribute, sf).constrain(filter)()
 
   def withRequiredAttributes(filter: SampleClassFilter, sf: SampleFilter, sampleIds: Iterable[String]) =
-    sampleQuery(SampleClassFilter(), sf).constrain(
+    sampleQuery(filter, sf).constrain(
       "FILTER (?id IN (" + sampleIds.map('"' + _ + '"').mkString(",") + ")).")
 
 
