@@ -49,6 +49,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   val intermineHandling = new IntermineHandling(context)
 
   val authentication = new Authentication()
+  val ADMIN_ROLE = "admin"
 
   error {
     //Catches exceptions during request processing.
@@ -69,7 +70,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   def sampleFilterFromRoles(batchId: Option[String] = None): SampleFilter = {
     val batchURI = batchId.map(BatchStore.packURI)
-    val dsIds = if (hasRole("admin")) List() else { //an empty list allows every dataset ID
+    val dsIds = if (hasRole(ADMIN_ROLE)) List() else { //an empty list allows every dataset ID
       getRoles(verifyJWT()).toList
     }
     SampleFilter(tconfig.instanceURI, batchURI, datasetIDs = dsIds)
@@ -78,7 +79,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/dataset") {
     contentType = "text/json"
     val roleSet = getRoles(verifyJWT())
-    val hasAdmin = roleSet.contains("admin")
+    val hasAdmin = roleSet.contains(ADMIN_ROLE)
     val data = datasetStore.getItems(tconfig.instanceURI).
       filter(ds => hasAdmin || roleSet.contains(ds.id))
     write(data)
@@ -311,7 +312,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val batches: Seq[String] = params.obj.get("batches").map(_.arr).getOrElse(List()).map(v => v.str)
     val permittedDatasets = getRoles(verifyJWT())
     val requestedDatasets = params.obj.get("datasets").map(_.arr.map(_.str))
-    val datasets: Seq[String] = if (hasRole("admin")) {
+    val datasets: Seq[String] = if (hasRole(ADMIN_ROLE)) {
       requestedDatasets.getOrElse(List()) //An empty list requests every dataset
     } else {
       requestedDatasets.getOrElse(permittedDatasets.toList).filter(permittedDatasets.contains)
@@ -399,14 +400,14 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   def verifyDatasetAccess(datasetID: String) = {
     val roles = getRoles(verifyJWT())
-    if (!roles.contains("admin")) {
+    if (!roles.contains(ADMIN_ROLE)) {
       if (!roles.contains(datasetID)) halt(401, s"You do not have access to this dataset")
     }
   }
 
   def verifyBatchAccess(batchID: String) = {
     val roles = getRoles(verifyJWT())
-    if (!roles.contains("admin")) {
+    if (!roles.contains(ADMIN_ROLE)) {
       val batchToDataset = batchStore.getDatasets()
       if (!roles.contains(batchToDataset(batchID))) halt(401, s"You do not have access to this batch")
     }
@@ -430,7 +431,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
 
     val batchStore = new BatchStore(baseConfig.triplestoreConfig)
@@ -452,7 +453,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    *   -F exprData=@vitamin_a_expr.csv http://127.0.0.1:4200/json/uploadBatch?batch=vatest
    * */
   post("/batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = params.get("comment").getOrElse("")
@@ -489,7 +490,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * overwritten (for existing samples). Metadata must then describe exactly the same samples that exprData describes.
    */
   put("/batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = params.get("comment").getOrElse("")
@@ -510,21 +511,21 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/batch/:batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val batchId = paramOrHalt("batch")
     uploadHandling.deleteBatch(batchId)
     Ok("Task started")
   }
 
   get("/dataset/all") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
     val data = datasetStore.getItems(None)
     write(data)
   }
 
   post("/dataset") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
 
@@ -549,7 +550,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   put("/dataset") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
@@ -565,7 +566,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/dataset/:id") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val datasetId = paramOrHalt("id")
     val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
     datasetStore.delete(datasetId)
@@ -574,7 +575,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/instance") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
 
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
@@ -589,7 +590,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/instance") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
 
@@ -599,7 +600,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   put("/instance") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
@@ -613,7 +614,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/instance/:id") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
     val id = paramOrHalt("id")
 
@@ -645,7 +646,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/platform") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
 
     platformsToJson(platformStore.getList(), true)
@@ -660,7 +661,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/platform") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val platformType = paramOrHalt("type")
@@ -684,7 +685,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   put("/platform") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
@@ -697,7 +698,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/platform/:id") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
 
@@ -710,7 +711,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * Task: associate log messages with the user that started the current task, so they cannot be maliciously removed
    */
   get("/taskProgress") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
     write(uploadHandling.getProgress())
   }
