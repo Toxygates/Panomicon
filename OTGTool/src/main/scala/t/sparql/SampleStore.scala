@@ -353,7 +353,7 @@ class SampleStore(bc: BaseConfig) extends ListManager(bc.triplestoreConfig)
    */
   def sampleAttributeValues(sampleIDs: Iterable[String], batches: Iterable[String],
                             queryAttribs: Iterable[Attribute] = Seq()): Seq[Sample] =
-    defaultAttributeQueries.sampleAttributeValues(sampleIDs, batches, queryAttribs)
+    defaultAttributeQueries.sampleAttributeValues(sampleIDs, batches, List(), queryAttribs)
 
 
   /**
