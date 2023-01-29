@@ -6,10 +6,9 @@ import { GeneSet } from 'src/app/shared/models/frontend-types.model';
 @Component({
   selector: 'app-gene-set-picker',
   templateUrl: './gene-set-picker.component.html',
-  styleUrls: ['./gene-set-picker.component.scss']
+  styleUrls: ['./gene-set-picker.component.scss'],
 })
 export class GeneSetPickerComponent implements OnInit {
-
   selectedGeneSet: GeneSet | null = null;
   @Output() selectedGeneSetChange = new EventEmitter<string>();
 
@@ -21,15 +20,15 @@ export class GeneSetPickerComponent implements OnInit {
 
   ngOnInit(): void {
     this.mrnaGeneSets$ = this.geneSets$.pipe(
-      map(geneSets => {
-        return geneSets.filter(geneSet => geneSet.type === 'mRNA');
+      map((geneSets) => {
+        return geneSets.filter((geneSet) => geneSet.type === 'mRNA');
       })
-    )
+    );
     this.mirnaGeneSets$ = this.geneSets$.pipe(
-      map(geneSets => {
-        return geneSets.filter(geneSet => geneSet.type === 'miRNA');
+      map((geneSets) => {
+        return geneSets.filter((geneSet) => geneSet.type === 'miRNA');
       })
-    )
+    );
   }
 
   selectGeneSet(geneSet: GeneSet): void {
