@@ -9,13 +9,8 @@ import { GenesetMenuComponent } from './geneset-menu/geneset-menu.component';
   imports: [
     CommonModule,
     SharedModule,
-    RouterModule.forChild([
-      { path: '', component: ExpressionTableComponent }
-    ]),
+    RouterModule.forChild([{ path: '', component: ExpressionTableComponent }]),
   ],
-  declarations: [
-    ExpressionTableComponent,
-    GenesetMenuComponent
-  ]
+  declarations: [ExpressionTableComponent, GenesetMenuComponent],
 })
-export class ExpressionTableModule { }
+export class ExpressionTableModule {}

@@ -28,7 +28,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface IntermineServiceAsync {
 
 	void importLists(IntermineInstance instance, String user,
-                     String pass, boolean asProbes, AsyncCallback<StringList[]> callback);
+                     String pass, AsyncCallback<StringList[]> callback);
 
 	void exportLists(IntermineInstance instance, String user,
                      String pass, StringList[] lists, boolean replace,

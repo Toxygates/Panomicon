@@ -9,14 +9,15 @@ import { filter, map } from 'rxjs/operators';
 @Component({
   selector: 'app-sample-browser',
   templateUrl: './sample-browser.component.html',
-  styleUrls: ['./sample-browser.component.scss']
+  styleUrls: ['./sample-browser.component.scss'],
 })
 export class SampleBrowserComponent implements OnInit {
-
-  constructor(private userData: UserDataService,
+  constructor(
+    private userData: UserDataService,
     private fetchedData: FetchedDataService,
     private router: Router,
-    private route: ActivatedRoute) {}
+    private route: ActivatedRoute
+  ) {}
 
   datasets$!: Observable<Dataset[] | null>;
   batches$!: Observable<Batch[] | null>;
@@ -25,20 +26,21 @@ export class SampleBrowserComponent implements OnInit {
   batchId$!: BehaviorSubject<string | null>;
 
   modeOptions = [
-    { name: "Sample table", path: "table"},
-    { name: "Batch statistics", path: "batch-statistics"},
+    { name: 'Sample table', path: 'table' },
+    { name: 'Batch statistics', path: 'batch-statistics' },
   ];
 
   nameForPath(path: string | undefined): string {
-    return this.modeOptions.find(mode =>
-      mode.path === path)?.name || "";
+    return this.modeOptions.find((mode) => mode.path === path)?.name || '';
   }
 
   currentMode$ = concat(
     of(this.nameForPath(this.route.snapshot.firstChild?.url[0].path)),
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      map(event => this.nameForPath((event as NavigationEnd).url.split("/").pop())),
+      filter((event) => event instanceof NavigationEnd),
+      map((event) =>
+        this.nameForPath((event as NavigationEnd).url.split('/').pop())
+      )
     )
   );
 

@@ -62,7 +62,7 @@ public class InterMineData {
   /**
    * PreferredInstance must not be null
    */
-  public void importLists(final boolean asProbes) {
+  public void importLists() {
     final String slowImportMsg =
         "List import may take a long time if the data warehouse has many public lists.";
     InteractionDialog ui =
@@ -71,7 +71,7 @@ public class InterMineData {
           protected void userProceed(IntermineInstance instance, String user, String pass,
               boolean replace) {
             super.userProceed();
-            doImport(instance, user, pass, asProbes, replace);
+            doImport(instance, user, pass, replace);
           }
 
         };
@@ -79,8 +79,8 @@ public class InterMineData {
   }
 
   private void doImport(final IntermineInstance instance, final String user, final String pass,
-      final boolean asProbes, final boolean replace) {
-    tmService.importLists(instance, user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
+      final boolean replace) {
+    tmService.importLists(instance, user, pass, new PendingAsyncCallback<StringList[]>(
         parent.manager(), "Unable to import lists from " + instance.title()) {
       @Override
       public void handleSuccess(StringList[] data) {

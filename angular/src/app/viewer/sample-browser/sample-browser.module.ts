@@ -1,13 +1,13 @@
-import { CommonModule } from "@angular/common";
-import { NgModule } from "@angular/core";
-import { RouterModule } from "@angular/router";
-import { SharedModule } from "../../shared/shared.module";
-import { BatchPickerComponent } from "./batch-picker/batch-picker.component";
-import { DatasetPickerComponent } from "./dataset-picker/dataset-picker.component";
-import { GroupCreationComponent } from "./group-creation/group-creation.component";
-import { SampleBrowserComponent } from "./sample-browser/sample-browser.component";
-import { SampleFilteringComponent } from "./sample-filtering/sample-filtering.component";
-import { SampleTableComponent } from "./sample-table/sample-table.component";
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { SharedModule } from '../../shared/shared.module';
+import { BatchPickerComponent } from './batch-picker/batch-picker.component';
+import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
+import { GroupCreationComponent } from './group-creation/group-creation.component';
+import { SampleBrowserComponent } from './sample-browser/sample-browser.component';
+import { SampleFilteringComponent } from './sample-filtering/sample-filtering.component';
+import { SampleTableComponent } from './sample-table/sample-table.component';
 import { BatchStatisticsComponent } from './batch-statistics/batch-statistics.component';
 
 @NgModule({
@@ -21,9 +21,9 @@ import { BatchStatisticsComponent } from './batch-statistics/batch-statistics.co
         children: [
           { path: 'table', component: SampleTableComponent },
           { path: 'batch-statistics', component: BatchStatisticsComponent },
-          { path: '**',   redirectTo: 'table', pathMatch: 'full' },
-        ]
-      }
+          { path: '**', redirectTo: 'table', pathMatch: 'full' },
+        ],
+      },
     ]),
   ],
   declarations: [
@@ -33,7 +33,7 @@ import { BatchStatisticsComponent } from './batch-statistics/batch-statistics.co
     GroupCreationComponent,
     SampleFilteringComponent,
     SampleTableComponent,
-    BatchStatisticsComponent
-  ]
+    BatchStatisticsComponent,
+  ],
 })
-export class SampleBrowserModule { }
+export class SampleBrowserModule {}

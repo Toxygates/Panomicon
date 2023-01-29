@@ -4,10 +4,9 @@ import { Batch } from '../../../shared/models/backend-types.model';
 @Component({
   selector: 'app-batch-picker',
   templateUrl: './batch-picker.component.html',
-  styleUrls: ['./batch-picker.component.scss']
+  styleUrls: ['./batch-picker.component.scss'],
 })
 export class BatchPickerComponent {
-
   @Input() datasetId!: string | null;
   @Input() batches!: Batch[] | null;
 

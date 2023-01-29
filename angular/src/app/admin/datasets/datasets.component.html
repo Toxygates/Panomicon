@@ -13,27 +13,32 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let dataset of (adminData.datasets$ | async); index as i">
-        <th scope="row">{{dataset.id}}</th>
-        <td>{{dataset.timestamp}}</td>
-        <td>{{dataset.numBatches || 0}}</td>
-        <td>{{dataset.description}}</td>
-        <td>{{dataset.comment}}</td>
-        <td>{{dataset.publicComment}}</td>
+      <tr *ngFor="let dataset of adminData.datasets$ | async; index as i">
+        <th scope="row">{{ dataset.id }}</th>
+        <td>{{ dataset.timestamp }}</td>
+        <td>{{ dataset.numBatches || 0 }}</td>
+        <td>{{ dataset.description }}</td>
+        <td>{{ dataset.comment }}</td>
+        <td>{{ dataset.publicComment }}</td>
         <td>
-          <a class="btn btn-primary" role="button"
+          <a
+            class="btn btn-primary"
+            role="button"
             [routerLink]="'edit/' + dataset.id"
-          >Edit</a>
+            >Edit</a
+          >
         </td>
         <td>
-          <button type="button" class="btn btn-danger"
-            (click)="deleteDataset(dataset.id)">
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="deleteDataset(dataset.id)"
+          >
             Delete
           </button>
         </td>
       </tr>
     </tbody>
   </table>
-  <a class="btn btn-primary" role="button" routerLink="add"
-  >Add new dataset</a>
+  <a class="btn btn-primary" role="button" routerLink="add">Add new dataset</a>
 </div>

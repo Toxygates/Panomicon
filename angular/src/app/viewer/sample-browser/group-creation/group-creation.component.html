@@ -1,26 +1,40 @@
-
-<div id="collapseGroupCreation" class="mb-1" [collapse]="collapsed"
-    [isAnimated]="true">
-    {{selectedTreatmentGroups.size > 0 ?
-        selectedTreatmentGroups.size + " groups selected." :
-        "Select some treatment groups to create a sample group:"
-    }}
-    <form>
-        <div class="form-row align-items-center mt-1">
-            <div class="col-auto">
-                <label class="sr-only" for="sampleGroupNameInput">Sample group name</label>
-                <input type="text" name="sampleGroupNameInput" [(ngModel)]="sampleGroupName" 
-                    class="form-control mb-2" placeholder="Enter a name"
-                    [appFocusInput]="!collapsed"
-                    (keyup.enter)="saveSampleGroup()">
-            </div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-primary mb-2"
-                    (click)="saveSampleGroup()"
-                    [disabled]="!sampleGroupName || selectedTreatmentGroups.size === 0">
-                    Save sample group
-                </button>
-            </div>
-        </div>
-    </form>
+<div
+  id="collapseGroupCreation"
+  class="mb-1"
+  [collapse]="collapsed"
+  [isAnimated]="true"
+>
+  {{
+    selectedTreatmentGroups.size > 0
+      ? selectedTreatmentGroups.size + " groups selected."
+      : "Select some treatment groups to create a sample group:"
+  }}
+  <form>
+    <div class="form-row align-items-center mt-1">
+      <div class="col-auto">
+        <label class="sr-only" for="sampleGroupNameInput"
+          >Sample group name</label
+        >
+        <input
+          type="text"
+          name="sampleGroupNameInput"
+          [(ngModel)]="sampleGroupName"
+          class="form-control mb-2"
+          placeholder="Enter a name"
+          [appFocusInput]="!collapsed"
+          (keyup.enter)="saveSampleGroup()"
+        />
+      </div>
+      <div class="col-auto">
+        <button
+          type="button"
+          class="btn btn-primary mb-2"
+          (click)="saveSampleGroup()"
+          [disabled]="!sampleGroupName || selectedTreatmentGroups.size === 0"
+        >
+          Save sample group
+        </button>
+      </div>
+    </div>
+  </form>
 </div>
