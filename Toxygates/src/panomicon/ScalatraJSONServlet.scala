@@ -13,7 +13,7 @@ import t.server.viewer.intermine.GeneList
 import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
-import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
+import t.sparql.{Batch, BatchStore, DatasetStore, InstanceStore, PlatformStore, SampleClassFilter, SampleFilter, TRDF}
 import upickle.default._
 
 import java.util
@@ -43,7 +43,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   val networkHandling = new NetworkHandling(context)
   //matrixHandling is available only when there is a request and when the JWT token has been set.
-  def matrixHandling = new MatrixHandling(context, sampleFilterFromRoles(), tconfig)
+  def matrixHandling = new MatrixHandling(context, sampleFilterFromRoles())
 
   val uploadHandling = new UploadHandling(context)
   val intermineHandling = new IntermineHandling(context)
@@ -201,7 +201,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       case None => defaultPageSize
     }
 
-    //matrixHandling will filter out any samples that the user's roles do not have access to
+    //matrixHandling will filter out any samples that the user's roles do not have access to.
+    //This is mainly to block malicious or incorrect API usage, as legitimate users should not have seen such samples
+    //to begin with.
     val (matrix, page) = matrixHandling.findOrLoadMatrix(matParams, valueType, offset, pageSize)
     val numPages = (matrix.info.numRows.toFloat / pageSize).ceil.toInt
     val ci = matrixHandling.columnInfoToJS(matrix.info)
@@ -398,18 +400,18 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   def hasRole(role: String): Boolean =
     getRoles(verifyJWT()).contains(role)
 
-  def verifyDatasetAccess(datasetID: String) = {
+  def verifyDatasetAccess(datasetID: String): Unit = {
     val roles = getRoles(verifyJWT())
-    if (!roles.contains(ADMIN_ROLE)) {
-      if (!roles.contains(datasetID)) halt(401, s"You do not have access to this dataset")
+    if (!roles.contains(ADMIN_ROLE) && !roles.contains(datasetID)) {
+      halt(401, s"You do not have access to this dataset")
     }
   }
 
-  def verifyBatchAccess(batchID: String) = {
+  def verifyBatchAccess(batchID: String): Unit = {
     val roles = getRoles(verifyJWT())
-    if (!roles.contains(ADMIN_ROLE)) {
-      val batchToDataset = batchStore.getDatasets()
-      if (!roles.contains(batchToDataset(batchID))) halt(401, s"You do not have access to this batch")
+    val batchToDataset = batchStore.getDatasets()
+    if (!roles.contains(ADMIN_ROLE) && !roles.contains(batchToDataset(batchID))) {
+      halt(401, s"You do not have access to this batch")
     }
   }
 
@@ -654,6 +656,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/platform/user") {
     contentType = "text/json"
+    //We do not filter platforms by user/role as they are not considered to contain sensitive information.
 
     //bio_parameters is an internal platform that we do not expose to the user
     val filteredPlatforms = platformStore.getList().filter(_ != "bio_parameters")
