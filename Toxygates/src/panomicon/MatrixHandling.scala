@@ -15,10 +15,10 @@ import ujson.Value
 import upickle.default.writeJs
 
 /**
- * Routines that support matrix loading requests
+ * Routines that support matrix loading requests.
+ * @param sampleFilter allows filtering all data requests by batches, datasets, and/or instances.
  */
-class MatrixHandling(context: Context, sampleFilter: SampleFilter,
-                     tconfig: Configuration) {
+class MatrixHandling(context: Context, sampleFilter: SampleFilter) {
   lazy val associationLookup = new AssociationMasterLookup(context, sampleFilter)
 
   def filledGroups(matParams: json.MatrixParams) = {
@@ -70,7 +70,7 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
       return new t.shared.common.sample.Group(name, Array[TUnit](), Array[TUnit]())
     }
     val batchURI = group.head.apply(CoreParameter.Batch)
-    val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
+    val sf = sampleFilter.copy(batchURI = Some(batchURI))
 
     val treatedTreatments = group.map(s => s.sampleClass(Treatment)).distinct
     val controlTreatments = group.map(s => s.sampleClass(ControlTreatment)).distinct
