@@ -328,7 +328,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       sampleStore.defaultAttributeQueries
     }
 
-    val attributes: Seq[Attribute] = params("attributes").arr.map(v => queries.attributeSet.byId(v.str))
+    val attributes: Seq[Attribute] = params("attributes").arr.flatMap(v => {
+      Option(queries.attributeSet.byId(v.str)) match {
+        case Some(a) =>
+          Some(a)
+        case None =>
+          println(s"Unknown attribute requested: ${v.str}")
+          None
+      }
+    })
     val samplesWithValues = queries.sampleAttributeValues(sampleIds, batches, datasets, attributes)
     write(samplesWithValues.map(sampleToMap))
   }

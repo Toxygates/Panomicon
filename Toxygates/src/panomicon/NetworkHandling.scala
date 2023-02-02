@@ -9,6 +9,7 @@ import t.shared.viewer.network.{Interaction, Network, Node}
 import ujson.Value
 import upickle.default._
 import scala.collection.JavaConverters._
+import java.util.{ArrayList => JAList}
 
 /**
  * Routines that support network loading requests
@@ -32,6 +33,12 @@ class NetworkHandling(context: Context) {
     val mainGroups = matrixHandling.filledGroups(netParams.matrix1)
     val mainInitProbes = netParams.matrix1.probes
     val sideGroups = matrixHandling.filledGroups(netParams.matrix2)
+
+    //Groups may be empty due to sample filter
+    if (mainGroups.isEmpty || sideGroups.isEmpty) {
+      return new Network("empty", new JAList(), new JAList())
+    }
+
     val netController = netLoader.load(targetTable, mainGroups, mainInitProbes.toArray,
       sideGroups, valueType)
     netController.makeNetwork
