@@ -375,6 +375,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   def verifyJWT(): JWT = {
+    if (request.getCookies == null) {
+      println("Request has no cookies, unable to verify JWT")
+      halt(401)
+    }
     authentication.getJwtToken(request.getCookies) match {
       case Left((token, tokenString)) => {
         response.addHeader("Set-Cookie", authentication.cookieHeader(tokenString))
@@ -389,7 +393,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   /* Role IDs also correspond to the set of datasets a user can access. */
   def getRoles(jwt: JWT): Set[String] = {
-    jwt.getList("roles").asInstanceOf[util.List[String]].asScala.toSet
+    Option(jwt.getList("roles")) match {
+      case Some(l) => l.asInstanceOf[util.List[String]].asScala.toSet
+      case None => Set.empty
+    }
   }
 
   def verifyRole(role: String): JWT = {

@@ -61,7 +61,9 @@ class Authentication {
 
   def getJwtToken(cookies: Array[Cookie]): Either[(JWT, String), String] = {
     try {
-      val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").get
+      val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").getOrElse(
+        return Right("JWT cookie __Host-jwt was not set")
+      )
 
       val jwt = new JWTDecoder().decode(tokenCookie.getValue,
         RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
