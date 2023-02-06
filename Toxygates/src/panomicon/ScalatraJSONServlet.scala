@@ -418,15 +418,17 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   def verifyDatasetAccess(datasetID: String): Unit = {
     val roles = getRoles(verifyJWT())
     if (!roles.contains(ADMIN_ROLE) && !roles.contains(datasetID)) {
-      halt(401, s"You do not have access to this dataset")
+      halt(401, s"You do not have access to dataset $datasetID. Your roles are: ${roles.mkString(", ")}")
     }
   }
 
   def verifyBatchAccess(batchID: String): Unit = {
     val roles = getRoles(verifyJWT())
     val batchToDataset = batchStore.getDatasets()
-    if (!roles.contains(ADMIN_ROLE) && !roles.contains(batchToDataset(batchID))) {
-      halt(401, s"You do not have access to this batch")
+    val neededRole = batchToDataset(batchID)
+    if (!roles.contains(ADMIN_ROLE) && !roles.contains(neededRole)) {
+      halt(401, s"You do not have access to batch $batchID. Your roles are: ${roles.mkString(", ")}." +
+        s" You would need the role: $neededRole")
     }
   }
 
