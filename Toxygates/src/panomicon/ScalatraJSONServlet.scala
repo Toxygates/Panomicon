@@ -13,7 +13,7 @@ import t.server.viewer.intermine.GeneList
 import t.shared.common.maintenance.BatchUploadException
 import t.shared.common.{AType, ValueType}
 import t.shared.viewer._
-import t.sparql.{Batch, BatchStore, Dataset, DatasetStore, InstanceStore, PlatformStore, ProbeStore, SampleClassFilter, SampleFilter, TRDF}
+import t.sparql.{Batch, BatchStore, DatasetStore, InstanceStore, PlatformStore, SampleClassFilter, SampleFilter, TRDF}
 import upickle.default._
 
 import java.util
@@ -31,7 +31,6 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   )
 
   val tconfig = Configuration.fromServletContext(scontext)
-  var sampleFilter: SampleFilter = SampleFilter(tconfig.instanceURI)
 
   tServletInit(tconfig)
   new PlatformStore(baseConfig).populateAttributes(baseConfig.attributes)
@@ -42,12 +41,15 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   lazy val probeStore =  context.probeStore
   lazy val platformStore = new PlatformStore(baseConfig)
 
-  val matrixHandling = new MatrixHandling(context, sampleFilter, tconfig)
-  val networkHandling = new NetworkHandling(context, matrixHandling)
+  val networkHandling = new NetworkHandling(context)
+  //matrixHandling is available only when there is a request and when the JWT token has been set.
+  def matrixHandling = new MatrixHandling(context, sampleFilterFromRoles())
+
   val uploadHandling = new UploadHandling(context)
   val intermineHandling = new IntermineHandling(context)
 
   val authentication = new Authentication()
+  val ADMIN_ROLE = "admin"
 
   error {
     //Catches exceptions during request processing.
@@ -66,23 +68,27 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
-  def isDataVisible(data: Dataset, userKey: String) = {
-    data.id == t.shared.common.Dataset.userDatasetId(userKey) ||
-      t.shared.common.Dataset.isSharedDataset(data.id) ||
-      !data.id.startsWith("user-")
+  def sampleFilterFromRoles(batchId: Option[String] = None): SampleFilter = {
+    val batchURI = batchId.map(BatchStore.packURI)
+    val dsIds = if (hasRole(ADMIN_ROLE)) List() else { //an empty list allows every dataset ID
+      getRoles(verifyJWT()).toList
+    }
+    SampleFilter(tconfig.instanceURI, batchURI, datasetIDs = dsIds)
   }
 
   get("/dataset") {
     contentType = "text/json"
-    val userKey = params.getOrElse("userDataKey", "")
+    val roleSet = getRoles(verifyJWT())
+    val hasAdmin = roleSet.contains(ADMIN_ROLE)
     val data = datasetStore.getItems(tconfig.instanceURI).
-      filter(isDataVisible(_, userKey))
+      filter(ds => hasAdmin || roleSet.contains(ds.id))
     write(data)
   }
 
   get("/dataset/:id") {
     contentType = "text/json"
     val reqId = paramOrHalt("id")
+    verifyDatasetAccess(reqId)
     val data = datasetStore.getItems(tconfig.instanceURI).
       find(_.id == reqId).getOrElse(halt(400))
     write(data)
@@ -91,7 +97,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/batch/dataset/:dataset") {
     contentType = "text/json"
     val requestedDatasetId = paramOrHalt("dataset")
-    verifyRole(requestedDatasetId)
+    verifyDatasetAccess(requestedDatasetId)
     val exists = datasetStore.list(tconfig.instanceURI).contains(requestedDatasetId)
     if (!exists) halt(400)
 
@@ -104,17 +110,12 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     contentType = "text/json"
     val requestedBatchId = paramOrHalt("batch")
     val queries = sampleStore.batchSpecific(requestedBatchId)
-
     val fullList = batchStore.getList()
     val exists = fullList.contains(requestedBatchId)
-    println("Here are the batch ids")
-    println(fullList)
     if (!exists) halt(400)
 
-    val batchURI = BatchStore.packURI(requestedBatchId)
-    val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
     val scf = SampleClassFilter()
-    val samples = queries.sampleQuery(scf, sf)().map(sampleToMap)
+    val samples = queries.sampleQuery(scf, sampleFilterFromRoles(Some(requestedBatchId)))().map(sampleToMap)
     write(samples)
   }
 
@@ -125,7 +126,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/sample/treatment/:treatment") {
     //Note: this request does not yet respect per-batch attributes, always uses systemwide
     contentType = "text/json"
-    val sf = SampleFilter(tconfig.instanceURI, None)
+    val sf = sampleFilterFromRoles()
     val data = sampleStore.sampleQuery(SampleClassFilter(Map(Treatment -> paramOrHalt("treatment"))), sf)()
     write(data.map(sampleToMap))
   }
@@ -149,7 +150,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     )
     println(s"Decoded: ${scf.constraints}")
 
-    val samples = sampleStore.sampleQuery(scf, sampleFilter)().map(sampleToMap)
+    val samples = sampleStore.sampleQuery(scf, sampleFilterFromRoles())().map(sampleToMap)
 
     params.get("limit") match {
       case Some(l) =>
@@ -165,7 +166,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val attr = Option(baseConfig.attributes.byId(requestedParam)).
       getOrElse(halt(400))
     val values = sampleStore.attributeValues(SampleClassFilter().filterAll,
-      attr, sampleFilter).toArray
+      attr, sampleFilterFromRoles()).toArray
     write(values)
   }
 
@@ -200,6 +201,9 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       case None => defaultPageSize
     }
 
+    //matrixHandling will filter out any samples that the user's roles do not have access to.
+    //This is mainly to block malicious or incorrect API usage, as legitimate users should not have seen such samples
+    //to begin with.
     val (matrix, page) = matrixHandling.findOrLoadMatrix(matParams, valueType, offset, pageSize)
     val numPages = (matrix.info.numRows.toFloat / pageSize).ceil.toInt
     val ci = matrixHandling.columnInfoToJS(matrix.info)
@@ -248,7 +252,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val valueType = ValueType.valueOf(
       params.getOrElse("valueType", "Folds"))
 
-    val network = networkHandling.loadNetwork(valueType, netParams)
+    //matrixHandling will filter out any samples that the user's roles do not have access to
+    val network = networkHandling.loadNetwork(matrixHandling, valueType, netParams)
     write(networkHandling.networkToJson(network))
   }
 
@@ -289,6 +294,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   get("/attribute/batch/:batch") {
     contentType = "text/json"
     val batch = paramOrHalt("batch")
+    verifyBatchAccess(batch)
     val attributes = sampleStore.batchSpecific(batch).attributeSet.getAll
 
     val values = attributes.asScala.map(attrib => writeJs(Map(
@@ -306,6 +312,13 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val params = ujson.read(request.body)
     val sampleIds: Seq[String] = params.obj.get("samples").map(_.arr).getOrElse(List()).map(v => v.str)
     val batches: Seq[String] = params.obj.get("batches").map(_.arr).getOrElse(List()).map(v => v.str)
+    val permittedDatasets = getRoles(verifyJWT())
+    val requestedDatasets = params.obj.get("datasets").map(_.arr.map(_.str))
+    val datasets: Seq[String] = if (hasRole(ADMIN_ROLE)) {
+      requestedDatasets.getOrElse(List()) //An empty list requests every dataset
+    } else {
+      requestedDatasets.getOrElse(permittedDatasets.toList).filter(permittedDatasets.contains)
+  }
 
     val queries = if (batches.size == 1) {
       //Note: in the future, we could support this request even for multiple batches if needed
@@ -315,8 +328,16 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
       sampleStore.defaultAttributeQueries
     }
 
-    val attributes: Seq[Attribute] = params("attributes").arr.map(v => queries.attributeSet.byId(v.str))
-    val samplesWithValues = queries.sampleAttributeValues(sampleIds, batches, attributes)
+    val attributes: Seq[Attribute] = params("attributes").arr.flatMap(v => {
+      Option(queries.attributeSet.byId(v.str)) match {
+        case Some(a) =>
+          Some(a)
+        case None =>
+          println(s"Unknown attribute requested: ${v.str}")
+          None
+      }
+    })
+    val samplesWithValues = queries.sampleAttributeValues(sampleIds, batches, datasets, attributes)
     write(samplesWithValues.map(sampleToMap))
   }
 
@@ -362,6 +383,10 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   def verifyJWT(): JWT = {
+    if (request.getCookies == null) {
+      println("Request has no cookies, unable to verify JWT")
+      halt(401)
+    }
     authentication.getJwtToken(request.getCookies) match {
       case Left((token, tokenString)) => {
         response.addHeader("Set-Cookie", authentication.cookieHeader(tokenString))
@@ -374,10 +399,37 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     }
   }
 
+  /* Role IDs also correspond to the set of datasets a user can access. */
+  def getRoles(jwt: JWT): Set[String] = {
+    Option(jwt.getList("roles")) match {
+      case Some(l) => l.asInstanceOf[util.List[String]].asScala.toSet
+      case None => Set.empty
+    }
+  }
+
   def verifyRole(role: String): JWT = {
     val jwt = verifyJWT()
-    val roles = jwt.getList("roles").asInstanceOf[util.List[String]]
-    if (!roles.contains(role)) halt(401, s"You do not have role $role") else jwt
+    if (!getRoles(jwt).contains(role)) halt(401, s"You do not have role $role") else jwt
+  }
+
+  def hasRole(role: String): Boolean =
+    getRoles(verifyJWT()).contains(role)
+
+  def verifyDatasetAccess(datasetID: String): Unit = {
+    val roles = getRoles(verifyJWT())
+    if (!roles.contains(ADMIN_ROLE) && !roles.contains(datasetID)) {
+      halt(401, s"You do not have access to dataset $datasetID. Your roles are: ${roles.mkString(", ")}")
+    }
+  }
+
+  def verifyBatchAccess(batchID: String): Unit = {
+    val roles = getRoles(verifyJWT())
+    val batchToDataset = batchStore.getDatasets()
+    val neededRole = batchToDataset(batchID)
+    if (!roles.contains(ADMIN_ROLE) && !roles.contains(neededRole)) {
+      Console.err.println(s"The user requested access to batch $batchID, but they do not have the role $neededRole")
+      halt(401, s"You do not have access to batch $batchID. Your roles are: ${roles.mkString(", ")}.")
+    }
   }
 
   get("/check-cookie") {
@@ -398,7 +450,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
 
     val batchStore = new BatchStore(baseConfig.triplestoreConfig)
@@ -420,7 +472,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    *   -F exprData=@vitamin_a_expr.csv http://127.0.0.1:4200/json/uploadBatch?batch=vatest
    * */
   post("/batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = params.get("comment").getOrElse("")
@@ -457,7 +509,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * overwritten (for existing samples). Metadata must then describe exactly the same samples that exprData describes.
    */
   put("/batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = params.get("comment").getOrElse("")
@@ -478,21 +530,21 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/batch/:batch") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val batchId = paramOrHalt("batch")
     uploadHandling.deleteBatch(batchId)
     Ok("Task started")
   }
 
   get("/dataset/all") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
     val data = datasetStore.getItems(None)
     write(data)
   }
 
   post("/dataset") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
 
@@ -517,7 +569,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   put("/dataset") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
@@ -533,7 +585,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/dataset/:id") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val datasetId = paramOrHalt("id")
     val datasetStore = new DatasetStore(baseConfig.triplestoreConfig)
     datasetStore.delete(datasetId)
@@ -542,7 +594,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/instance") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
 
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
@@ -557,7 +609,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/instance") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
 
@@ -567,7 +619,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   put("/instance") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
@@ -581,7 +633,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/instance/:id") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     val instanceStore = new InstanceStore(baseConfig.triplestoreConfig)
     val id = paramOrHalt("id")
 
@@ -613,7 +665,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   get("/platform") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
 
     platformsToJson(platformStore.getList(), true)
@@ -621,6 +673,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
 
   get("/platform/user") {
     contentType = "text/json"
+    //We do not filter platforms by user/role as they are not considered to contain sensitive information.
 
     //bio_parameters is an internal platform that we do not expose to the user
     val filteredPlatforms = platformStore.getList().filter(_ != "bio_parameters")
@@ -628,7 +681,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   post("/platform") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val platformType = paramOrHalt("type")
@@ -652,7 +705,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   put("/platform") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
     val comment = paramOrHalt("comment")
@@ -665,7 +718,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
   }
 
   delete("/platform/:id") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
 
     val id = paramOrHalt("id")
 
@@ -678,7 +731,7 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
    * Task: associate log messages with the user that started the current task, so they cannot be maliciously removed
    */
   get("/taskProgress") {
-    verifyRole("admin")
+    verifyRole(ADMIN_ROLE)
     contentType = "text/json"
     write(uploadHandling.getProgress())
   }

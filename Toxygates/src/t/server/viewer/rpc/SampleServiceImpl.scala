@@ -90,10 +90,9 @@ class SampleServiceImpl extends StatefulServlet[SampleState] with SampleService 
 
   private def sampleFilterFor(datasets: Iterable[Dataset], base: Option[SampleFilter]) = {
      val ids = datasets.toList.map(_.getId)
-     val URIs = ids.map(DatasetStore.packURI(_))
      base match {
-       case Some(b) => b.copy(datasetURIs = URIs)
-       case None => SampleFilter(datasetURIs = URIs)
+       case Some(b) => b.copy(datasetIDs = ids)
+       case None => SampleFilter(datasetIDs = ids)
      }
   }
 

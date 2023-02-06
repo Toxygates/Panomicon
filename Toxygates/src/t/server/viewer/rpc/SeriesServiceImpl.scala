@@ -73,8 +73,7 @@ class SeriesServiceImpl extends TServiceServlet with SeriesService {
 
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
     val ids = ds.map(_.getId).distinct.toList
-    val sf = SampleFilter(instanceURI = config.instanceURI,
-        datasetURIs = ids.map(DatasetStore.packURI(_)))
+    val sf = SampleFilter(instanceURI = config.instanceURI, datasetIDs = ids)
 
     val majAttr = schema.majorParameter()
 
