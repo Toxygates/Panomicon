@@ -427,8 +427,8 @@ class ScalatraJSONServlet(scontext: ServletContext) extends ScalatraServlet
     val batchToDataset = batchStore.getDatasets()
     val neededRole = batchToDataset(batchID)
     if (!roles.contains(ADMIN_ROLE) && !roles.contains(neededRole)) {
-      halt(401, s"You do not have access to batch $batchID. Your roles are: ${roles.mkString(", ")}." +
-        s" You would need the role: $neededRole")
+      Console.err.println(s"The user requested access to batch $batchID, but they do not have the role $neededRole")
+      halt(401, s"You do not have access to batch $batchID. Your roles are: ${roles.mkString(", ")}.")
     }
   }
 
