@@ -13,7 +13,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - fusionauth_db_net
+      - panomicon_net
     restart: unless-stopped
     volumes:
       - fusionauth_db_data:/var/lib/postgresql/data
@@ -34,15 +34,25 @@ services:
       FUSIONAUTH_APP_RUNTIME_MODE: development
       FUSIONAUTH_APP_URL: http://fusionauth:9011
     networks:
-      - fusionauth_db_net
+      - panomicon_net
     restart: unless-stopped
     ports:
       - 9011:9011
     volumes:
       - fusionauth_config:/usr/local/fusionauth/config
 
+  fuseki:
+    image: stain/jena-fuseki
+    networks:
+      - panomicon_net
+    restart: unless-stopped
+    ports:
+      - 3030:3030
+    volumes:
+      - /fast/scratch/fuseki:/fuseki
+
 networks:
-  fusionauth_db_net:
+  panomicon_net:
     driver: bridge
 
 volumes:
