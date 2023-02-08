@@ -42,14 +42,19 @@ services:
       - fusionauth_config:/usr/local/fusionauth/config
 
   fuseki:
-    image: stain/jena-fuseki
+    container_name: "jena-fuseki"
+    build:
+      context: ./docker/fuseki
+      dockerfile: Dockerfile
     networks:
       - panomicon_net
     restart: unless-stopped
+    environment:
+      JVM_ARGS: ${FUSEKI_JVM_ARGS}
     ports:
       - 3030:3030
     volumes:
-      - /fast/scratch/fuseki:/fuseki
+      - ${FUSEKI_DATA_DIR}:/fuseki
 
 networks:
   panomicon_net:
