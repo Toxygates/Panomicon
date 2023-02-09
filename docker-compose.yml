@@ -56,6 +56,31 @@ services:
     volumes:
       - ${FUSEKI_DATA_DIR}:/fuseki
 
+  scalatra:
+    container_name: "scalatra"
+    build:
+      context: ./docker/scalatra
+      dockerfile: Dockerfile
+    depends_on:
+      - fusionauth
+      - fuseki
+    networks:
+      - panomicon_net
+    restart: unless-stopped
+    ports:
+      - 8888:8888
+    environment:
+      JVM_ARGS: ${SCALATRA_JVM_ARGS}
+      PORT: 8888
+      T_TS_URL: http://fuseki:3030/Toxygates/query
+      T_TS_UPDATE_URL: http://fuseki:3030/Toxygates/update
+      T_DATA_MATDBCONFIG: ${T_DATA_MATDBCONFIG}
+      T_DATA_DIR: kcchunk:/data
+      T_TS_USER: ${T_TS_USER}
+      T_INSTANCE_NAME: ${T_INSTANCE_NAME}
+    volumes:
+      - ${T_DATA_PATH}:/data
+
 networks:
   panomicon_net:
     driver: bridge

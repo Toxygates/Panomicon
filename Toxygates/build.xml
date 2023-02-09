@@ -158,6 +158,21 @@
     </java>
   </target>
 
+  <property name="dockerdir" value="../docker/scalatra/panomicon" />
+
+  <target name="dockerimage" depends="classfiles" description="Build scalatra docker image">
+    <delete dir="${dockerdir}/lib" failonerror="false" />
+    <delete dir="${dockerdir}/classes" failonerror="false" />
+    <copy  todir="${dockerdir}/lib">
+      <fileset dir="${wardir}/WEB-INF/lib"/>
+    </copy>
+    <copy  todir="${dockerdir}/classes">
+      <fileset dir="${wardir}/WEB-INF/classes"/>
+    </copy>
+    <ivy:retrieve pattern="${dockerdir}/lib/[artifact]-[revision].[ext]" conf="deploy" type="bundle,jar"/>
+
+  </target>
+
   <target name="clean">
     <delete dir="${war.build.dir}" failonerror="false" />
     <delete dir="${testbuild.dir}" failonerror="false" />

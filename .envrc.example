@@ -13,7 +13,8 @@ export T_TS_URL="http://localhost:3030/otg/query"
 export T_TS_UPDATE_URL="http://localhost:3030/otg/update"
 export T_TS_USER="x"
 export T_TS_PASS="y"
-export T_DATA_DIR="kcchunk:/Users/yuji/dev/toxygates/kyoto_data"
+export T_DATA_PATH="/Users/yuji/dev/toxygates/kyoto_data"
+export T_DATA_DIR=kcchunk:$T_DATA_PATH
 export T_DATA_MATDBCONFIG="#pccap=1073741824#msiz=4294967296"
 export T_INSTANCE_NAME="dev"
 
