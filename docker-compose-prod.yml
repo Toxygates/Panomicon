@@ -61,6 +61,7 @@ services:
       T_DATA_MATDBCONFIG: ${T_DATA_MATDBCONFIG}
       T_DATA_DIR: kcchunk:/data
       T_TS_USER: ${T_TS_USER}
+      T_TS_PASS: ${T_TS_PASS}
       T_INSTANCE_NAME: ${T_INSTANCE_NAME}
       FUSIONAUTH_BASEURL: ${FUSIONAUTH_BASEURL}
       FUSIONAUTH_INTERNAL_URL: http://fusionauth:9011
