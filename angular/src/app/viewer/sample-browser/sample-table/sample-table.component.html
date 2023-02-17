@@ -1,21 +1,29 @@
-<div *ngIf="(selectedBatch$ | async) === null">Select a batch to show samples</div>
+<div *ngIf="(selectedBatch$ | async) === null">
+  Select a batch to show samples
+</div>
 
-<ng-container *ngIf="(selectedBatch$ | async) !== null && (samples$ | async) === null">
-    <div>Loading samples...</div>
-    <div  class="d-flex justify-content-center">
-        <div class="spinner-border text-secondary" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
+<ng-container
+  *ngIf="(selectedBatch$ | async) !== null && (samples$ | async) === null"
+>
+  <div>Loading samples...</div>
+  <div class="d-flex justify-content-center">
+    <div class="spinner-border text-secondary" role="status">
+      <span class="sr-only">Loading...</span>
     </div>
+  </div>
 </ng-container>
 
 <div *ngIf="samples$ | async" class="mb-2">
-    <button type="button" class="btn btn-primary mb-2 mr-2"
-        (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
-        [attr.aria-expanded]="!sampleCreationIsCollapsed" aria-controls="collapseGroupCreation">
-        Create sample group...
-    </button>
-    <!-- <button type="button" class="btn btn-secondary mb-1 mr-2"
+  <button
+    type="button"
+    class="btn btn-primary mb-2 mr-2"
+    (click)="sampleCreationIsCollapsed = !sampleCreationIsCollapsed"
+    [attr.aria-expanded]="!sampleCreationIsCollapsed"
+    aria-controls="collapseGroupCreation"
+  >
+    Create sample group...
+  </button>
+  <!-- <button type="button" class="btn btn-secondary mb-1 mr-2"
         (click)="toggleControlGroups()">
         {{ controlGroupsExpanded ? "Collapse" : "Expand" }}
         control groups
@@ -25,57 +33,94 @@
         {{ treatmentGroupsExpanded ? "Collapse" : "Expand" }}
         treatment groups
     </button> -->
-    <div class="btn-group" dropdown [isDisabled]="(attributes$ | async) === null"
-        style="vertical-align:top">
-        <button id="button-basic" dropdownToggle type="button"
-                class="btn dropdown-toggle mb-2 mr-2"
-                [class]="(attributes$ | async) ? 'btn-primary' : 'btn-secondary'"
-                aria-controls="dropdown-basic">
-            <span *ngIf="(attributes$ | async) === null" class="spinner-border spinner-border-sm"
-                role="status" aria-hidden="true"></span>
-            Attributes
-             <span class="caret"></span>
-        </button>
-        <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-            role="menu" aria-labelledby="button-basic">
-            <!--<h6 class="dropdown-header">Select batch:</h6>-->
-            <li *ngFor="let attribute of attributes$ | async" role="menuitem">
-                <a class="dropdown-item" [class.disabled]="fetchedData.requiredAttributes.has(attribute.id)"
-                (click)="toggleColumn(attribute)" [routerLink]="[]"queryParamsHandling="preserve">
-                <i *ngIf="findColumnForAttribute(attribute)" class="bi bi-check"></i>
-                {{attribute.title}}
-                </a>
-            </li>
-        </ul>
-    </div>
-    <button type="button" class="btn btn-primary mb-2 mr-2"
-        [class]="sampleFilters$.value.length > 0 ? 'btn-success' : 'btn-primary'"
-        (click)="openSampleFilteringModal(sampleFilteringModal)">
-        {{ sampleFilters$.value.length > 0 ? "Edit filters" : "Filter samples" }}
+  <div
+    class="btn-group"
+    dropdown
+    [isDisabled]="(attributes$ | async) === null"
+    style="vertical-align: top"
+  >
+    <button
+      id="button-basic"
+      dropdownToggle
+      type="button"
+      class="btn dropdown-toggle mb-2 mr-2"
+      [class]="(attributes$ | async) ? 'btn-primary' : 'btn-secondary'"
+      aria-controls="dropdown-basic"
+    >
+      <span
+        *ngIf="(attributes$ | async) === null"
+        class="spinner-border spinner-border-sm"
+        role="status"
+        aria-hidden="true"
+      ></span>
+      Attributes
+      <span class="caret"></span>
     </button>
-    <button *ngIf="sampleFilters$.value.length > 0"
-        type="button" class="btn btn-danger mb-2 mr-2"
-        (click)="clearFilters()">
-        Clear filters
-    </button>
+    <ul
+      id="dropdown-basic"
+      *dropdownMenu
+      class="dropdown-menu dropdown-scrollable"
+      role="menu"
+      aria-labelledby="button-basic"
+    >
+      <!--<h6 class="dropdown-header">Select batch:</h6>-->
+      <li *ngFor="let attribute of attributes$ | async" role="menuitem">
+        <a
+          class="dropdown-item"
+          [class.disabled]="fetchedData.requiredAttributes.has(attribute.id)"
+          (click)="toggleColumn(attribute)"
+          [routerLink]="[]"
+          queryParamsHandling="preserve"
+        >
+          <i *ngIf="findColumnForAttribute(attribute)" class="bi bi-check"></i>
+          {{ attribute.title }}
+        </a>
+      </li>
+    </ul>
+  </div>
+  <button
+    type="button"
+    class="btn btn-primary mb-2 mr-2"
+    [class]="sampleFilters$.value.length > 0 ? 'btn-success' : 'btn-primary'"
+    (click)="openSampleFilteringModal(sampleFilteringModal)"
+  >
+    {{ sampleFilters$.value.length > 0 ? "Edit filters" : "Filter samples" }}
+  </button>
+  <button
+    *ngIf="sampleFilters$.value.length > 0"
+    type="button"
+    class="btn btn-danger mb-2 mr-2"
+    (click)="clearFilters()"
+  >
+    Clear filters
+  </button>
 </div>
 
-<app-group-creation [collapsed]="sampleCreationIsCollapsed"
-    [selectedTreatmentGroups]="selectedTreatmentGroups"
-    (sampleGroupSaved)="onSampleGroupSaved($event)">
+<app-group-creation
+  [collapsed]="sampleCreationIsCollapsed"
+  [selectedTreatmentGroups]="selectedTreatmentGroups"
+  (sampleGroupSaved)="onSampleGroupSaved($event)"
+>
 </app-group-creation>
 
 <div #tabulatorContainer class="mt-2"></div>
 
 <div *ngIf="samples$ | async">
-    {{ sampleFilters$.value !== null ? filteredSamples$.value?.length + " matching samples out of" : "" }}
-    {{(samples$ | async)?.length}} samples in batch {{selectedBatch$ | async}}
+  {{
+    sampleFilters$.value !== null
+      ? filteredSamples$.value?.length + " matching samples out of"
+      : ""
+  }}
+  {{ (samples$ | async)?.length }} samples in batch {{ selectedBatch$ | async }}
 </div>
 
 <ng-template #sampleFilteringModal>
-    <app-sample-filtering [attributes]="fetchedAttributes$ | async"
-        [filters]="sampleFilters$.value" [attributeMap]="attributeMap$ | async"
-        (submitFilters)="onSubmitFilters($event)"
-        (cancelEditFilters)="onCancelEditFilters()">
-    </app-sample-filtering>
+  <app-sample-filtering
+    [attributes]="fetchedAttributes$ | async"
+    [filters]="sampleFilters$.value"
+    [attributeMap]="attributeMap$ | async"
+    (submitFilters)="onSubmitFilters($event)"
+    (cancelEditFilters)="onCancelEditFilters()"
+  >
+  </app-sample-filtering>
 </ng-template>

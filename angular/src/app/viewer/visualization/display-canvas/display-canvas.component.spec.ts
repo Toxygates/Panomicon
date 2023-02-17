@@ -8,9 +8,8 @@ describe('DisplayCanvasComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DisplayCanvasComponent ]
-    })
-    .compileComponents();
+      declarations: [DisplayCanvasComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {
@@ -20,6 +19,6 @@ describe('DisplayCanvasComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    void expect(component).toBeTruthy();
   });
 });

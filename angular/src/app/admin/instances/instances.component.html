@@ -10,24 +10,29 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let instance of (adminData.instances$ | async); index as i">
-        <th scope="row">{{instance.id}}</th>
-        <td>{{instance.timestamp}}</td>
-        <td>{{instance.comment}}</td>
+      <tr *ngFor="let instance of adminData.instances$ | async; index as i">
+        <th scope="row">{{ instance.id }}</th>
+        <td>{{ instance.timestamp }}</td>
+        <td>{{ instance.comment }}</td>
         <td>
-          <a class="btn btn-primary" role="button"
+          <a
+            class="btn btn-primary"
+            role="button"
             [routerLink]="'edit/' + instance.id"
-          >Edit</a>
+            >Edit</a
+          >
         </td>
         <td>
-          <button type="button" class="btn btn-danger"
-            (click)="deleteInstance(instance.id)">
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="deleteInstance(instance.id)"
+          >
             Delete
           </button>
         </td>
       </tr>
     </tbody>
   </table>
-  <a class="btn btn-primary" role="button" routerLink="add"
-  >Add new instance</a>
+  <a class="btn btn-primary" role="button" routerLink="add">Add new instance</a>
 </div>

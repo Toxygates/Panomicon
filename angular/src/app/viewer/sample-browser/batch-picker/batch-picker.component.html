@@ -1,28 +1,46 @@
 <div class="btn-group" dropdown [isDisabled]="!batches">
-    <button id="button-basic" dropdownToggle type="button"
-            class="btn btn-primary dropdown-toggle mr-2"
-            [class]="batches ? 'btn-primary' : 'btn-secondary'"
-            aria-controls="dropdown-basic">
-        <span *ngIf="datasetId && !batches" class="spinner-border spinner-border-sm"
-            role="status" aria-hidden="true"></span>
-        {{  batches ?
-                (selectedBatch ?
-                    "Batch: " + selectedBatch :
-                    "No batch selected") :
-                (datasetId ?
-                    "Loading..." :
-                    "Select dataset to load batches")
-        }}
-         <span class="caret"></span>
-    </button>
-    <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-        role="menu" aria-labelledby="button-basic">
-        <h6 class="dropdown-header">Select batch:</h6>
-        <li *ngFor="let batch of batches" role="menuitem">
-            <a class="dropdown-item" (click)="selectBatch(batch.id)"
-            [routerLink]="[]"queryParamsHandling="preserve">
-            {{batch.id}}
-            </a>
-        </li>
-    </ul>
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    [class]="batches ? 'btn-primary' : 'btn-secondary'"
+    aria-controls="dropdown-basic"
+  >
+    <span
+      *ngIf="datasetId && !batches"
+      class="spinner-border spinner-border-sm"
+      role="status"
+      aria-hidden="true"
+    ></span>
+    {{
+      batches
+        ? selectedBatch
+          ? "Batch: " + selectedBatch
+          : "No batch selected"
+        : datasetId
+        ? "Loading..."
+        : "Select dataset to load batches"
+    }}
+    <span class="caret"></span>
+  </button>
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
+    <h6 class="dropdown-header">Select batch:</h6>
+    <li *ngFor="let batch of batches" role="menuitem">
+      <a
+        class="dropdown-item"
+        (click)="selectBatch(batch.id)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        {{ batch.id }}
+      </a>
+    </li>
+  </ul>
 </div>

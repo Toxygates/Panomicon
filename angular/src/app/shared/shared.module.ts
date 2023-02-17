@@ -11,14 +11,9 @@ import { ValidatedInputComponent } from './components/validated-input/validated-
   declarations: [
     ForbiddenValueListValidatorDirective,
     FocusInputDirective,
-    ValidatedInputComponent
+    ValidatedInputComponent,
   ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    BsDropdownModule,
-    CollapseModule,
-  ],
+  imports: [CommonModule, FormsModule, BsDropdownModule, CollapseModule],
   exports: [
     CommonModule,
     FormsModule,
@@ -27,6 +22,6 @@ import { ValidatedInputComponent } from './components/validated-input/validated-
     ForbiddenValueListValidatorDirective,
     FocusInputDirective,
     ValidatedInputComponent,
-  ]
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

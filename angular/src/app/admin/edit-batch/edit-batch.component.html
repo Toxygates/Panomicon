@@ -1,5 +1,5 @@
 <div>
-  <h3>{{ addMode ? "Add" : "Edit"}} Batch</h3>
+  <h3>{{ addMode ? "Add" : "Edit" }} Batch</h3>
 
   <app-validated-input
     id="id"
@@ -21,27 +21,30 @@
       [class.is-invalid]="!batch.dataset"
     >
       <option
-        *ngFor="let dataset of (adminData.datasets$ | async); index as i"
+        *ngFor="let dataset of adminData.datasets$ | async; index as i"
         [ngValue]="dataset.id"
-      >{{dataset.id}}</option>
+      >
+        {{ dataset.id }}
+      </option>
     </select>
-    <div class="invalid-feedback">
-      Please select a dataset
-    </div>
+    <div class="invalid-feedback">Please select a dataset</div>
   </div>
 
   <div class="form-group">
     <label>Instances</label>
-    <div class="form-check" *ngFor="let instance of (adminData.instances$ | async); index as i">
+    <div
+      class="form-check"
+      *ngFor="let instance of adminData.instances$ | async; index as i"
+    >
       <input
         class="form-check-input"
         type="checkbox"
         [checked]="batch.enabledInstances?.includes(instance.id)"
         (change)="toggleInstance(instance.id)"
-        id="instance-{{instance.id}}"
-      >
-      <label class="form-check-label" for="instance-{{instance.id}}">
-        {{instance.id}}
+        id="instance-{{ instance.id }}"
+      />
+      <label class="form-check-label" for="instance-{{ instance.id }}">
+        {{ instance.id }}
       </label>
     </div>
   </div>
@@ -62,43 +65,43 @@
 
   <div class="form-group">
     <label for="file">Metadata file (TSV)</label>
-    <input type="file"
+    <input
+      type="file"
       id="file"
       (change)="handleFileInput($event.target, 'metadata')"
       [class.is-invalid]="!files.get('metadata')"
-    >
-    <div class="invalid-feedback">
-      Please select a metadata file
-    </div>
+    />
+    <div class="invalid-feedback">Please select a metadata file</div>
   </div>
 
   <ng-container *ngIf="addMode">
     <div class="form-group">
       <label for="file">Expression file (CSV)</label>
-      <input type="file"
+      <input
+        type="file"
         id="file"
         (change)="handleFileInput($event.target, 'exprData')"
         [class.is-invalid]="!files.get('exprData')"
-      >
-      <div class="invalid-feedback">
-        Please select an expression file
-      </div>
+      />
+      <div class="invalid-feedback">Please select an expression file</div>
     </div>
 
     <div class="form-group">
       <label for="file">Calls file (CSV; optional)</label>
-      <input type="file"
+      <input
+        type="file"
         id="file"
         (change)="handleFileInput($event.target, 'callsData')"
-      >
+      />
     </div>
 
     <div class="form-group">
       <label for="file">Probes file (CSV; optional)</label>
-      <input type="file"
+      <input
+        type="file"
         id="file"
         (change)="handleFileInput($event.target, 'probesData')"
-      >
+      />
     </div>
   </ng-container>
 
@@ -109,19 +112,19 @@
         type="checkbox"
         id="recalculate"
         [(ngModel)]="recalculate"
-      >
+      />
       <label class="form-check-label" for="recalculate">
         Recalculate folds and series
       </label>
     </div>
   </div>
 
-  <button type="button" class="btn btn-primary"
-    (click)="submit(batch)">
-    {{ addMode ? "Add" : "Save"}} batch
+  <button type="button" class="btn btn-primary" (click)="submit(batch)">
+    {{ addMode ? "Add" : "Save" }} batch
   </button>
   <span class="float-right">
     <a class="btn btn-danger" role="button" routerLink="/admin/batches"
-    >Cancel</a>
+      >Cancel</a
+    >
   </span>
 </div>

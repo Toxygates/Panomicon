@@ -10,18 +10,16 @@ import { GeneSetEditorComponent } from './gene-set-editor/gene-set-editor.compon
     CommonModule,
     SharedModule,
     RouterModule.forChild([
-      { path: '',
+      {
+        path: '',
         component: GeneSetManagerComponent,
         children: [
           { path: '', component: GeneSetEditorComponent },
-          { path: ':geneSetName', component: GeneSetEditorComponent }
-        ]
-      }
+          { path: ':geneSetName', component: GeneSetEditorComponent },
+        ],
+      },
     ]),
   ],
-  declarations: [
-    GeneSetManagerComponent,
-    GeneSetEditorComponent
-  ],
+  declarations: [GeneSetManagerComponent, GeneSetEditorComponent],
 })
-export class GeneSetsModule { }
+export class GeneSetsModule {}

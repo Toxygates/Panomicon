@@ -1,19 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { renameItem, UserDataService } from '../../shared/services/user-data.service';
-import { SampleGroup } from '../../shared/models/frontend-types.model'
+import {
+  renameItem,
+  UserDataService,
+} from '../../shared/services/user-data.service';
+import { SampleGroup } from '../../shared/models/frontend-types.model';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-group-manager',
   templateUrl: './group-manager.component.html',
-  styleUrls: ['./group-manager.component.scss']
+  styleUrls: ['./group-manager.component.scss'],
 })
 export class GroupManagerComponent implements OnInit {
-
-  constructor(public userData: UserDataService,
-    private toastr: ToastrService) { }
+  constructor(
+    public userData: UserDataService,
+    private toastr: ToastrService
+  ) {}
 
   groupNames$!: Observable<string[]>;
   sampleGroups$!: Observable<Map<string, SampleGroup>>;
@@ -28,10 +32,10 @@ export class GroupManagerComponent implements OnInit {
   ngOnInit(): void {
     this.sampleGroups$ = this.userData.sampleGroups$;
     this.groupNames$ = this.sampleGroups$.pipe(
-      map(groups => {
+      map((groups) => {
         return Array.from(groups.keys()).sort();
       })
-    )
+    );
   }
 
   isAcceptableGroupName(name: string | undefined): boolean {
@@ -49,7 +53,7 @@ export class GroupManagerComponent implements OnInit {
 
   toggleDeletingGroup(name: string): void {
     if (this.currentDeletingGroup == name) {
-      this.currentDeletingGroup= undefined;
+      this.currentDeletingGroup = undefined;
     } else {
       this.currentRenamingGroup = undefined;
       this.currentDeletingGroup = name;
@@ -57,19 +61,28 @@ export class GroupManagerComponent implements OnInit {
   }
 
   submitRenamingGroup(): void {
-    if (!this.currentRenamingGroup) throw new Error("currentRenamingGroup is not defined");
-    if (!this.newGroupName) throw new Error("newGroupName is not defined");
-    renameItem(this.userData.sampleGroups$.value, this.currentRenamingGroup, this.newGroupName);
+    if (!this.currentRenamingGroup)
+      throw new Error('currentRenamingGroup is not defined');
+    if (!this.newGroupName) throw new Error('newGroupName is not defined');
+    renameItem(
+      this.userData.sampleGroups$.value,
+      this.currentRenamingGroup,
+      this.newGroupName
+    );
     this.userData.sampleGroups$.next(this.userData.sampleGroups$.value);
     this.currentRenamingGroup = undefined;
     this.newGroupName = undefined;
   }
 
   submitDeleteGroup(): void {
-    if (!this.currentDeletingGroup) throw new Error("currentDeletingGroup is not defined");
+    if (!this.currentDeletingGroup)
+      throw new Error('currentDeletingGroup is not defined');
     this.userData.sampleGroups$.value.delete(this.currentDeletingGroup);
     this.userData.sampleGroups$.next(this.userData.sampleGroups$.value);
-    this.toastr.success('Group name: ' + this.currentDeletingGroup, 'Sample group deleted');
+    this.toastr.success(
+      'Group name: ' + this.currentDeletingGroup,
+      'Sample group deleted'
+    );
     this.currentDeletingGroup = undefined;
   }
 }
