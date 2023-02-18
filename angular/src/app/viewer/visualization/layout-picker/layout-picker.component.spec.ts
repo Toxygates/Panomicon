@@ -8,9 +8,8 @@ describe('LayoutPickerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LayoutPickerComponent ]
-    })
-    .compileComponents();
+      declarations: [LayoutPickerComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

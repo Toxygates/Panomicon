@@ -17,30 +17,30 @@ export interface Attribute {
 
 export interface Matrix {
   columns: {
-    name: string,
-  }[],
+    name: string;
+  }[];
   sorting: {
-    column: number,
-    ascending: boolean
-  },
-  rows: Record<string, string | string[]>
+    column: number;
+    ascending: boolean;
+  };
+  rows: Record<string, string | string[]>;
 }
 
 interface Node {
-  id: string,
-  type: "mRNA" | "miRNA",
-  weights: Record<string, string | number>,
-  symbols: string[],
+  id: string;
+  type: 'mRNA' | 'miRNA';
+  weights: Record<string, string | number>;
+  symbols: string[];
 }
 
 interface Interaction {
-  from: string,
-  to: string,
-  label: string,
-  weight: number,
+  from: string;
+  to: string;
+  label: string;
+  weight: number;
 }
 
 export interface Network {
-  nodes: Node[],
-  interactions: Interaction[],
+  nodes: Node[];
+  interactions: Interaction[];
 }

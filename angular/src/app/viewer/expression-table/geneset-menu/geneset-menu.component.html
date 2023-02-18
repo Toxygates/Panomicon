@@ -1,31 +1,52 @@
-<div class="btn-group" dropdown style="vertical-align:top">
-  <button id="button-basic" dropdownToggle type="button"
-          class="btn btn-primary dropdown-toggle mr-2"
-          aria-controls="dropdown-basic">
-      Gene sets
-      <span class="caret"></span>
+<div class="btn-group" dropdown style="vertical-align: top">
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    aria-controls="dropdown-basic"
+  >
+    Gene sets
+    <span class="caret"></span>
   </button>
-  <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu dropdown-scrollable"
-      role="menu" aria-labelledby="button-basic">
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
     <li role="menuitem">
-      <a class="dropdown-item" (click)="openGeneSetNameModal()"
-          [routerLink]="[]" queryParamsHandling="preserve">
-          New gene set
+      <a
+        class="dropdown-item"
+        (click)="openGeneSetNameModal()"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        New gene set
       </a>
     </li>
     <li role="menuitem">
-      <a class="dropdown-item" (click)="showAllGenes.emit()"
-          [routerLink]="[]" queryParamsHandling="preserve">
-          Show all genes
+      <a
+        class="dropdown-item"
+        (click)="showAllGenes.emit()"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        Show all genes
       </a>
     </li>
     <div class="dropdown-divider"></div>
     <li *ngFor="let name of geneSetNames" role="menuitem">
-        <a class="dropdown-item" (click)="selectGeneSet.emit(name)"
-            [routerLink]="[]" queryParamsHandling="preserve">
-            <i *ngIf="currentGeneSet === name" class="bi bi-check"></i>
-            {{name}}
-        </a>
+      <a
+        class="dropdown-item"
+        (click)="selectGeneSet.emit(name)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        <i *ngIf="currentGeneSet === name" class="bi bi-check"></i>
+        {{ name }}
+      </a>
     </li>
   </ul>
 </div>
@@ -33,24 +54,41 @@
 <ng-template #nameGeneSetModal>
   <div class="modal-header">
     <h4 class="modal-title pull-left">Save gene set</h4>
-    <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+    <button
+      type="button"
+      class="close pull-right"
+      aria-label="Close"
+      (click)="modalRef?.hide()"
+    >
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
-      <label for="geneSetName">Enter name for gene set:</label>
-      <input type="text" class="form-control" id="geneSetName"
-        [(ngModel)]="newGeneSetName" #name="ngModel"
-        [class.is-invalid]="name.invalid && (name.dirty || name.touched)"
-        [appFocusInput]="true"
-        [appForbiddenList]="geneSetNames" required>
-        <div *ngIf="name.errors?.forbiddenValue" class="invalid-feedback">
-          Gene set already exists
-        </div>
-        <div *ngIf="name.errors?.required" class="invalid-feedback">
-          Enter a gene set name
-        </div>
-      <button type="submit" class="btn btn-primary mt-2" (click)="submitModal()"
-        [disabled]="name.invalid">Save</button>
+    <label for="geneSetName">Enter name for gene set:</label>
+    <input
+      type="text"
+      class="form-control"
+      id="geneSetName"
+      [(ngModel)]="newGeneSetName"
+      #name="ngModel"
+      [class.is-invalid]="name.invalid && (name.dirty || name.touched)"
+      [appFocusInput]="true"
+      [appForbiddenList]="geneSetNames"
+      required
+    />
+    <div *ngIf="name.errors?.forbiddenValue" class="invalid-feedback">
+      Gene set already exists
+    </div>
+    <div *ngIf="name.errors?.required" class="invalid-feedback">
+      Enter a gene set name
+    </div>
+    <button
+      type="submit"
+      class="btn btn-primary mt-2"
+      (click)="submitModal()"
+      [disabled]="name.invalid"
+    >
+      Save
+    </button>
   </div>
 </ng-template>

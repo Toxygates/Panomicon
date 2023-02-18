@@ -1,6 +1,7 @@
 package panomicon.json
 
 import t.db.BasicExprValue
+import t.server.viewer.intermine.GeneList
 import t.server.viewer.matrix.{ExpressionRow, ManagedMatrix}
 import t.shared.viewer.mirna.MirnaSource
 import t.shared.viewer.{ColumnFilter, FilterType}
@@ -94,4 +95,5 @@ object Encoders {
   implicit val erRw: RW[ExpressionRow] = macroRW
   implicit val dsRW: RW[Dataset] = macroRW
   implicit val batRW: RW[Batch] = macroRW
+  implicit val glRW: RW[GeneList] = macroRW
 }

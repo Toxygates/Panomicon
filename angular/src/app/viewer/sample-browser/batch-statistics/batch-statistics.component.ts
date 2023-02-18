@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
-import { Attribute, Sample } from '../../../shared/models/backend-types.model'
+import { Attribute, Sample } from '../../../shared/models/backend-types.model';
 
 interface OverviewRow {
   representative: Sample;
@@ -10,11 +10,10 @@ interface OverviewRow {
 @Component({
   selector: 'app-batch-statistics',
   templateUrl: './batch-statistics.component.html',
-  styleUrls: ['./batch-statistics.component.scss']
+  styleUrls: ['./batch-statistics.component.scss'],
 })
 export class BatchStatisticsComponent {
-
-  constructor(public fetchedData: FetchedDataService) { }
+  constructor(public fetchedData: FetchedDataService) {}
 
   samples$ = this.fetchedData.samples$;
   attributes$ = this.fetchedData.attributes$;
@@ -28,7 +27,7 @@ export class BatchStatisticsComponent {
   addAttribute(attribute: Attribute): void {
     this.selectedAttributes.push(attribute);
     if (!this.fetchedData.fetchedAttributes$.value.has(attribute.id)) {
-      console.log("fetching", attribute);
+      console.log('fetching', attribute);
       this.fetchedData.fetchAttribute(attribute);
     }
   }
@@ -42,8 +41,9 @@ export class BatchStatisticsComponent {
   }
 
   keyForSample(sample: Sample): string {
-    return this.selectedAttributes.map(attribute =>
-      [attribute.id, sample[attribute.id]]).join("-");
+    return this.selectedAttributes
+      .map((attribute) => [attribute.id, sample[attribute.id]])
+      .join('-');
   }
 
   compare = (r1: OverviewRow, r2: OverviewRow): number => {
@@ -63,24 +63,24 @@ export class BatchStatisticsComponent {
       }
     }
     return 0;
-  }
+  };
 
   generateEntries(): void {
     this.entries = [];
     this.entryMap.clear();
     if (this.samples$.value) {
-      this.samples$.value?.forEach(sample => {
+      this.samples$.value?.forEach((sample) => {
         const key = this.keyForSample(sample);
         if (this.entryMap.has(key)) {
           const entry = this.entryMap.get(key) as OverviewRow;
           entry.count += 1;
         } else {
-          const newEntry = {representative: sample, count: 1};
+          const newEntry = { representative: sample, count: 1 };
           this.entryMap.set(key, newEntry);
           this.entries.push(newEntry);
         }
       });
-      this.entries.sort(this.compare)
+      this.entries.sort(this.compare);
     }
     this.displayedAttributes = [...this.selectedAttributes];
     console.log(this.entries);

@@ -8,12 +8,8 @@ import { GroupManagerComponent } from './group-manager.component';
   imports: [
     CommonModule,
     SharedModule,
-    RouterModule.forChild([
-      { path: '', component: GroupManagerComponent }
-    ]),
+    RouterModule.forChild([{ path: '', component: GroupManagerComponent }]),
   ],
-  declarations: [
-    GroupManagerComponent
-  ]
+  declarations: [GroupManagerComponent],
 })
-export class GroupManagerModule { }
+export class GroupManagerModule {}

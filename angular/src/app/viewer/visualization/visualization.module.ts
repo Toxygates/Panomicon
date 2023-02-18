@@ -18,13 +18,13 @@ import { GeneSetPickerComponent } from './gene-set-picker/gene-set-picker.compon
   ],
   imports: [
     CommonModule,
-		SharedModule,
-		RouterModule.forChild([
-			{
-				path:'',
-				component: NetworkDisplayComponent,
-			}
-		])
-  ]
+    SharedModule,
+    RouterModule.forChild([
+      {
+        path: '',
+        component: NetworkDisplayComponent,
+      },
+    ]),
+  ],
 })
-export class VisualizationModule { }
+export class VisualizationModule {}

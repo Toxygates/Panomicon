@@ -1,18 +1,29 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { Attribute } from '../../../shared/models/backend-types.model';
-import { SampleFilter, SampleFilterType } from '../../../shared/models/sample-filter.model';
+import {
+  SampleFilter,
+  SampleFilterType,
+} from '../../../shared/models/sample-filter.model';
 
 @Component({
   selector: 'app-sample-filtering',
   templateUrl: './sample-filtering.component.html',
-  styleUrls: ['./sample-filtering.component.scss']
+  styleUrls: ['./sample-filtering.component.scss'],
 })
 export class SampleFilteringComponent implements OnInit {
-
   constructor(private toastr: ToastrService) {}
 
-  @Input() attributes!:  Set<string> | null;
+  @Input() attributes!: Set<string> | null;
   @Input() attributeMap!: Map<string, Attribute> | null;
   @Input() filters!: SampleFilter[];
   @Output() submitFilters = new EventEmitter<SampleFilter[]>();
@@ -28,11 +39,11 @@ export class SampleFilteringComponent implements OnInit {
   haveTriedToSubmit = false;
 
   ngOnInit(): void {
-    this.filters = this.filters.map(f => f.clone());
+    this.filters = this.filters.map((f) => f.clone());
 
     // Need to set this flag with a delay in order to ignore the
     // user button click that opened this modal.
-    setTimeout(() => this.documentClickEnabled = true, 0);
+    setTimeout(() => (this.documentClickEnabled = true), 0);
   }
 
   appendNewFilter(): void {
@@ -48,7 +59,11 @@ export class SampleFilteringComponent implements OnInit {
 
   applyFilters(): void {
     if (this.attributeMap) {
-      if (this.filters.every(f => f.validate(this.attributeMap as Map<string, Attribute>))) {
+      if (
+        this.filters.every((f) =>
+          f.validate(this.attributeMap as Map<string, Attribute>)
+        )
+      ) {
         this.submitFilters.emit(this.filters);
       } else {
         this.haveTriedToSubmit = true;
@@ -62,10 +77,14 @@ export class SampleFilteringComponent implements OnInit {
   }
 
   possiblyCloseModal(): void {
-    if (this.dirty ||
-        this.formElement.nativeElement.classList.contains("ng-dirty")) {
-      this.toastr.error("Press 'Cancel' to discard changes",
-        "Unsaved filter changes");
+    if (
+      this.dirty ||
+      this.formElement.nativeElement.classList.contains('ng-dirty')
+    ) {
+      this.toastr.error(
+        "Press 'Cancel' to discard changes",
+        'Unsaved filter changes'
+      );
     } else {
       this.cancel();
     }
@@ -73,7 +92,7 @@ export class SampleFilteringComponent implements OnInit {
 
   @HostListener('window:keydown.esc', ['$event'])
   onEsc(event: KeyboardEvent): void {
-    if (event.key == "Escape") {
+    if (event.key == 'Escape') {
       event.preventDefault();
       this.possiblyCloseModal();
     }
@@ -82,10 +101,9 @@ export class SampleFilteringComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onClick(event: Event): void {
     if (this.documentClickEnabled) {
-      if (!this.modalDiv.nativeElement.contains((event.target as Element))) {
+      if (!this.modalDiv.nativeElement.contains(event.target as Element)) {
         this.possiblyCloseModal();
       }
     }
   }
-
 }

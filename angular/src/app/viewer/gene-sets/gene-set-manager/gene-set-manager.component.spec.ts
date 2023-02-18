@@ -8,9 +8,8 @@ describe('GeneSetManagerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GeneSetManagerComponent ],
-    })
-    .compileComponents();
+      declarations: [GeneSetManagerComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

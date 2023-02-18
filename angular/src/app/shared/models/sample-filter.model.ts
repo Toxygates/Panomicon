@@ -1,4 +1,4 @@
-import { Attribute } from "./backend-types.model";
+import { Attribute } from './backend-types.model';
 
 export class SampleFilter {
   attribute: string | undefined;
@@ -6,27 +6,27 @@ export class SampleFilter {
   parameter: string | undefined;
 
   passesFilter(testValue: string): boolean {
-    if (!this.parameter) throw new Error("filter parameter is not defined");
+    if (!this.parameter) throw new Error('filter parameter is not defined');
     switch (this.type) {
-      case (SampleFilterType.LessThan):
+      case SampleFilterType.LessThan:
         return Number(testValue) < parseFloat(this.parameter);
-      case (SampleFilterType.GreaterThan):
+      case SampleFilterType.GreaterThan:
         return Number(testValue) > parseFloat(this.parameter);
-      case (SampleFilterType.LessThanOrEqualTo):
+      case SampleFilterType.LessThanOrEqualTo:
         return Number(testValue) <= parseInt(this.parameter);
-      case (SampleFilterType.GreaterThanOrEqualTo):
+      case SampleFilterType.GreaterThanOrEqualTo:
         return Number(testValue) >= parseInt(this.parameter);
-      case (SampleFilterType.EqualTo):
+      case SampleFilterType.EqualTo:
         return Number(testValue) == parseInt(this.parameter);
-      case (SampleFilterType.NotEqualTo):
+      case SampleFilterType.NotEqualTo:
         return Number(testValue) != parseInt(this.parameter);
-      case (SampleFilterType.Contains):
+      case SampleFilterType.Contains:
         return testValue.includes(this.parameter);
-      case (SampleFilterType.DoesNotContain):
+      case SampleFilterType.DoesNotContain:
         return !testValue.includes(this.parameter);
-      case (SampleFilterType.AlphabeticallyBefore):
+      case SampleFilterType.AlphabeticallyBefore:
         return testValue.toLowerCase() <= this.parameter.toLowerCase();
-      case (SampleFilterType.AlphabeticallyAfter):
+      case SampleFilterType.AlphabeticallyAfter:
         return testValue.toLowerCase() >= this.parameter.toLowerCase();
       default:
         return false;
@@ -34,32 +34,36 @@ export class SampleFilter {
   }
 
   validate(attributeMap: Map<string, Attribute>): boolean {
-    return this.validateAttribute(attributeMap) &&
+    return (
+      this.validateAttribute(attributeMap) &&
       this.validateType(attributeMap) &&
-      this.validateParameter();
+      this.validateParameter()
+    );
   }
 
   validateAttribute(attributeMap: Map<string, Attribute>): boolean {
-    return this.attribute != null && (attributeMap.has(this.attribute));
+    return this.attribute != null && attributeMap.has(this.attribute);
   }
 
-  validateType(attributeMap: Map<string, Attribute>,
-      type: SampleFilterType | undefined = this.type): boolean {
+  validateType(
+    attributeMap: Map<string, Attribute>,
+    type: SampleFilterType | undefined = this.type
+  ): boolean {
     const foundAttribute =
       this.attribute != null && attributeMap.get(this.attribute);
     if (foundAttribute) {
       switch (type) {
-        case (SampleFilterType.LessThan):
-        case (SampleFilterType.GreaterThan):
-        case (SampleFilterType.LessThanOrEqualTo):
-        case (SampleFilterType.GreaterThanOrEqualTo):
-        case (SampleFilterType.EqualTo):
-        case (SampleFilterType.NotEqualTo):
+        case SampleFilterType.LessThan:
+        case SampleFilterType.GreaterThan:
+        case SampleFilterType.LessThanOrEqualTo:
+        case SampleFilterType.GreaterThanOrEqualTo:
+        case SampleFilterType.EqualTo:
+        case SampleFilterType.NotEqualTo:
           return foundAttribute.isNumerical;
-        case (SampleFilterType.Contains):
-        case (SampleFilterType.DoesNotContain):
-        case (SampleFilterType.AlphabeticallyBefore):
-        case (SampleFilterType.AlphabeticallyAfter):
+        case SampleFilterType.Contains:
+        case SampleFilterType.DoesNotContain:
+        case SampleFilterType.AlphabeticallyBefore:
+        case SampleFilterType.AlphabeticallyAfter:
           return true;
         default:
           return false;
@@ -71,20 +75,23 @@ export class SampleFilter {
 
   validateParameter(): boolean {
     switch (this.type) {
-      case (SampleFilterType.LessThan):
-      case (SampleFilterType.GreaterThan):
-        return !isNaN(Number(this.parameter)) && this.parameter != "";
-      case (SampleFilterType.LessThanOrEqualTo):
-      case (SampleFilterType.GreaterThanOrEqualTo):
-      case (SampleFilterType.EqualTo):
-      case (SampleFilterType.NotEqualTo):
-        return (this.parameter != undefined) && Number(this.parameter) == parseInt(this.parameter);
-      case (SampleFilterType.Contains):
-      case (SampleFilterType.DoesNotContain):
-      case (SampleFilterType.AlphabeticallyBefore):
-      case (SampleFilterType.AlphabeticallyAfter):
+      case SampleFilterType.LessThan:
+      case SampleFilterType.GreaterThan:
+        return !isNaN(Number(this.parameter)) && this.parameter != '';
+      case SampleFilterType.LessThanOrEqualTo:
+      case SampleFilterType.GreaterThanOrEqualTo:
+      case SampleFilterType.EqualTo:
+      case SampleFilterType.NotEqualTo:
+        return (
+          this.parameter != undefined &&
+          Number(this.parameter) == parseInt(this.parameter)
+        );
+      case SampleFilterType.Contains:
+      case SampleFilterType.DoesNotContain:
+      case SampleFilterType.AlphabeticallyBefore:
+      case SampleFilterType.AlphabeticallyAfter:
       default:
-        return this.parameter != undefined && this.parameter != "";
+        return this.parameter != undefined && this.parameter != '';
     }
   }
 
@@ -93,34 +100,34 @@ export class SampleFilter {
       this.attribute != null && attributeMap.get(this.attribute);
     if (foundAttribute && !foundAttribute.isNumerical) {
       switch (this.type) {
-        case (SampleFilterType.LessThan):
-        case (SampleFilterType.GreaterThan):
-        case (SampleFilterType.LessThanOrEqualTo):
-        case (SampleFilterType.GreaterThanOrEqualTo):
-        case (SampleFilterType.EqualTo):
-        case (SampleFilterType.NotEqualTo):
-          return "a non-numerical filter type"
+        case SampleFilterType.LessThan:
+        case SampleFilterType.GreaterThan:
+        case SampleFilterType.LessThanOrEqualTo:
+        case SampleFilterType.GreaterThanOrEqualTo:
+        case SampleFilterType.EqualTo:
+        case SampleFilterType.NotEqualTo:
+          return 'a non-numerical filter type';
       }
     }
-    return "a filter type";
+    return 'a filter type';
   }
 
   correctParameterInfo(): string {
     switch (this.type) {
-      case (SampleFilterType.LessThan):
-      case (SampleFilterType.GreaterThan):
-        return "a number"
-      case (SampleFilterType.LessThanOrEqualTo):
-      case (SampleFilterType.GreaterThanOrEqualTo):
-      case (SampleFilterType.EqualTo):
-      case (SampleFilterType.NotEqualTo):
-        return "an integer"
-      case (SampleFilterType.Contains):
-      case (SampleFilterType.DoesNotContain):
-      case (SampleFilterType.AlphabeticallyBefore):
-      case (SampleFilterType.AlphabeticallyAfter):
+      case SampleFilterType.LessThan:
+      case SampleFilterType.GreaterThan:
+        return 'a number';
+      case SampleFilterType.LessThanOrEqualTo:
+      case SampleFilterType.GreaterThanOrEqualTo:
+      case SampleFilterType.EqualTo:
+      case SampleFilterType.NotEqualTo:
+        return 'an integer';
+      case SampleFilterType.Contains:
+      case SampleFilterType.DoesNotContain:
+      case SampleFilterType.AlphabeticallyBefore:
+      case SampleFilterType.AlphabeticallyAfter:
       default:
-        return "a string";
+        return 'a string';
     }
   }
 
@@ -134,14 +141,14 @@ export class SampleFilter {
 }
 
 export enum SampleFilterType {
-  LessThan = "<",
-  GreaterThan = ">",
-  LessThanOrEqualTo = "<=",
-  GreaterThanOrEqualTo = ">=",
-  EqualTo = "=",
-  NotEqualTo = "!=",
-  Contains = "contains",
-  DoesNotContain = "does not contain",
-  AlphabeticallyBefore = "is alphabetically before (inclusive)",
-  AlphabeticallyAfter = "is alphabetically after (inclusive)",
+  LessThan = '<',
+  GreaterThan = '>',
+  LessThanOrEqualTo = '<=',
+  GreaterThanOrEqualTo = '>=',
+  EqualTo = '=',
+  NotEqualTo = '!=',
+  Contains = 'contains',
+  DoesNotContain = 'does not contain',
+  AlphabeticallyBefore = 'is alphabetically before (inclusive)',
+  AlphabeticallyAfter = 'is alphabetically after (inclusive)',
 }

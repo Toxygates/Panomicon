@@ -5,17 +5,17 @@ import { BackendService } from '../services/backend.service';
 @Component({
   selector: 'app-instances',
   templateUrl: './instances.component.html',
-  styleUrls: ['./instances.component.scss']
+  styleUrls: ['./instances.component.scss'],
 })
 export class InstancesComponent {
-
-  constructor(public adminData: AdminDataService,
-    private backend: BackendService) { }
+  constructor(
+    public adminData: AdminDataService,
+    private backend: BackendService
+  ) {}
 
   deleteInstance(id: string): void {
-    this.backend.deleteInstance(id).subscribe(_res => {
+    this.backend.deleteInstance(id).subscribe((_res) => {
       this.adminData.refreshInstances();
     });
   }
-
 }

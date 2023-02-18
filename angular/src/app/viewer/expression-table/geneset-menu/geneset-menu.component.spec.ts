@@ -10,12 +10,9 @@ describe('GenesetMenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GenesetMenuComponent ],
-      providers: [
-        { provide: BsModalService, useValue: MockModalService },
-      ],
-    })
-    .compileComponents();
+      declarations: [GenesetMenuComponent],
+      providers: [{ provide: BsModalService, useValue: MockModalService }],
+    }).compileComponents();
   });
 
   beforeEach(() => {

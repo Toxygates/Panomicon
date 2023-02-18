@@ -1,17 +1,36 @@
 <div class="p-4">
-  <pre *ngFor="let message of (adminData.progressMessages$ | async)">
-    {{message}}
+  <pre *ngFor="let message of adminData.progressMessages$ | async">
+    {{ message }}
   </pre>
-  <pre *ngIf="((adminData.progressMessages$ | async)?.length) && !!(adminData.progressState$ | async) && !!(adminData.progressState$ | async)?.finished">
+  <pre
+    *ngIf="
+      (adminData.progressMessages$ | async)?.length &&
+      !!(adminData.progressState$ | async) &&
+      !!(adminData.progressState$ | async)?.finished
+    "
+  >
     All tasks complete!
   </pre>
-  <pre *ngIf="!((adminData.progressMessages$ | async)?.length) && !(adminData.progressState$ | async)?.completion && (adminData.progressState$ | async)?.finished">
+  <pre
+    *ngIf="
+      !(adminData.progressMessages$ | async)?.length &&
+      !(adminData.progressState$ | async)?.completion &&
+      (adminData.progressState$ | async)?.finished
+    "
+  >
     No task in progress
   </pre>
   <pre *ngIf="!(adminData.progressState$ | async)?.finished">
-    Current task: {{(adminData.progressState$ | async)?.task}}
+    Current task: {{ (adminData.progressState$ | async)?.task }}
   </pre>
-  <pre *ngIf="!!(adminData.progressState$ | async) && !!(adminData.progressState$ | async)?.completion">
-    {{(adminData.progressState$ | async)?.task }} {{(adminData.progressState$ | async)?.completion}}% complete
+  <pre
+    *ngIf="
+      !!(adminData.progressState$ | async) &&
+      !!(adminData.progressState$ | async)?.completion
+    "
+  >
+    {{ (adminData.progressState$ | async)?.task }} {{
+      (adminData.progressState$ | async)?.completion
+    }}% complete
   </pre>
 </div>

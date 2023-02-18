@@ -4,10 +4,8 @@ import { AdminDataService } from '../services/admin-data';
 @Component({
   selector: 'app-task-progress',
   templateUrl: './task-progress.component.html',
-  styleUrls: ['./task-progress.component.scss']
+  styleUrls: ['./task-progress.component.scss'],
 })
 export class TaskProgressComponent {
-
-  constructor(public adminData: AdminDataService) { }
-
+  constructor(public adminData: AdminDataService) {}
 }

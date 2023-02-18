@@ -11,12 +11,9 @@ describe('NetworkDisplayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NetworkDisplayComponent ],
-      providers: [
-        { provide: HttpClient, useClass: MockService },
-      ],
-    })
-    .compileComponents();
+      declarations: [NetworkDisplayComponent],
+      providers: [{ provide: HttpClient, useClass: MockService }],
+    }).compileComponents();
   });
 
   beforeEach(() => {

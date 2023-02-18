@@ -1,5 +1,5 @@
 <div>
-  <h3>{{ addMode ? "Add" : "Edit"}} Platform</h3>
+  <h3>{{ addMode ? "Add" : "Edit" }} Platform</h3>
 
   <app-validated-input
     id="id"
@@ -28,14 +28,13 @@
   <ng-container *ngIf="addMode">
     <div class="form-group">
       <label for="file">Platform definition file</label>
-      <input type="file"
+      <input
+        type="file"
         id="file"
         (change)="handleFileInput($event.target)"
         [class.is-invalid]="!platformFile"
-      >
-      <div class="invalid-feedback">
-        Please select a platform file
-      </div>
+      />
+      <div class="invalid-feedback">Please select a platform file</div>
     </div>
 
     <div class="form-group">
@@ -51,20 +50,16 @@
         <option value="Standard">T platform TSV</option>
         <option value="Biological">Biological data TSV</option>
       </select>
-      <div class="invalid-feedback">
-        Please select a platform type
-      </div>
+      <div class="invalid-feedback">Please select a platform type</div>
     </div>
-
-
   </ng-container>
 
-  <button type="button" class="btn btn-primary"
-    (click)="submit(platform)">
-    {{ addMode ? "Add" : "Save"}} platform
+  <button type="button" class="btn btn-primary" (click)="submit(platform)">
+    {{ addMode ? "Add" : "Save" }} platform
   </button>
   <span class="float-right">
     <a class="btn btn-danger" role="button" routerLink="/admin/platforms"
-    >Cancel</a>
+      >Cancel</a
+    >
   </span>
 </div>

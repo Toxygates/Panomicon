@@ -1,42 +1,60 @@
 <h2>Gene set editor</h2>
 
-<div *ngIf="(geneSet$ | async) as geneSet else geneSetNotFound">
-  <h3>{{geneSet.name}} ({{geneSet.platform}} / {{geneSet.type}})</h3>
-    <div class="form-group">
-      <label for="probeSelect">Probes</label>
-      <select #probeSelect="ngModel" ngModel multiple
-        id="probeSelect" class="form-control" size="10">
-        <option *ngFor="let probe of (geneSet.probes.sort())">{{probe}}</option>
-      </select>
-      <button type="button" class="btn btn-danger mt-3"
-        (click)="deleteProbes(geneSet, probeSelect.value)"
-        [disabled]="probeSelect.value?.length===0">
-        Delete selected probes
-      </button>
-    </div>
-    <div class="form-group">
-      <label for="newProbe">Probe IDs</label>
-      <textarea [(ngModel)]="newProbesText" id="newProbes"
-        class="form-control" rows="5">
-      </textarea>
-      <button type="button" class="btn btn-primary mt-3"
-        (click)="addProbes(geneSet, newProbesText)"
-        [disabled]="newProbesText===''">
-        Add probes
-      </button>
-    </div>
-    <div class="form-group">
-      <button type="button" class="btn btn-danger" (click)="deleteGeneSet(geneSet.name)">
-        Delete gene set
-      </button>
-    </div>
+<div *ngIf="geneSet$ | async as geneSet; else geneSetNotFound">
+  <h3>{{ geneSet.name }} ({{ geneSet.platform }} / {{ geneSet.type }})</h3>
+  <div class="form-group">
+    <label for="probeSelect">Probes</label>
+    <select
+      #probeSelect="ngModel"
+      ngModel
+      multiple
+      id="probeSelect"
+      class="form-control"
+      size="10"
+    >
+      <option *ngFor="let probe of geneSet.probes.sort()">{{ probe }}</option>
+    </select>
+    <button
+      type="button"
+      class="btn btn-danger mt-3"
+      (click)="deleteProbes(geneSet, probeSelect.value)"
+      [disabled]="probeSelect.value?.length === 0"
+    >
+      Delete selected probes
+    </button>
+  </div>
+  <div class="form-group">
+    <label for="newProbe">Probe IDs</label>
+    <textarea
+      [(ngModel)]="newProbesText"
+      id="newProbes"
+      class="form-control"
+      rows="5"
+    >
+    </textarea>
+    <button
+      type="button"
+      class="btn btn-primary mt-3"
+      (click)="addProbes(geneSet, newProbesText)"
+      [disabled]="newProbesText === ''"
+    >
+      Add probes
+    </button>
+  </div>
+  <div class="form-group">
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="deleteGeneSet(geneSet.name)"
+    >
+      Delete gene set
+    </button>
+  </div>
 </div>
 
 <ng-template #geneSetNotFound>
-  <div *ngIf="(geneSetName$ | async) as geneSetName else selectAGeneSet">
-    Gene set {{geneSetName$ | async}} not found
+  <div *ngIf="geneSetName$ | async as geneSetName; else selectAGeneSet">
+    Gene set {{ geneSetName$ | async }} not found
   </div>
-  <ng-template #selectAGeneSet>
-    Select a gene set to edit
-  </ng-template>
+  <ng-template #selectAGeneSet> Select a gene set to edit </ng-template>
 </ng-template>

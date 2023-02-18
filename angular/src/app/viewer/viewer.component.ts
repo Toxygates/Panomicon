@@ -9,13 +9,12 @@ import { map } from 'rxjs/operators';
 @Component({
   selector: 'app-viewer',
   templateUrl: './viewer.component.html',
-  styleUrls: ['./viewer.component.scss']
+  styleUrls: ['./viewer.component.scss'],
 })
 export class ViewerComponent implements OnInit {
-
   constructor(
     private userData: UserDataService,
-    private fetcheddata: FetchedDataService,
+    private fetcheddata: FetchedDataService
   ) {}
 
   navbarIsCollapsed = true;
@@ -23,7 +22,7 @@ export class ViewerComponent implements OnInit {
 
   enabledGroups$!: Observable<SampleGroup[]>;
   showAdminLink$ = this.fetcheddata.roles$.pipe(
-    map(roles => roles?.includes('admin'))
+    map((roles) => roles?.includes('admin'))
   );
 
   ngOnInit(): void {

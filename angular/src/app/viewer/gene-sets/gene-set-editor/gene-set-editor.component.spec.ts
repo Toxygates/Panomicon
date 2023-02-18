@@ -7,7 +7,7 @@ import { GeneSetEditorComponent } from './gene-set-editor.component';
 
 class MockService {}
 class MockActivatedRoute {
-  paramMap = { pipe: () => of({geneSetName: "some gene set"}) }
+  paramMap = { pipe: () => of({ geneSetName: 'some gene set' }) };
 }
 
 describe('GeneSetEditorComponent', () => {
@@ -16,14 +16,13 @@ describe('GeneSetEditorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GeneSetEditorComponent ],
+      declarations: [GeneSetEditorComponent],
       providers: [
         { provide: ToastrService, useClass: MockService },
         { provide: ActivatedRoute, useClass: MockActivatedRoute },
         { provide: Router, useClass: MockService },
       ],
-    })
-    .compileComponents();
+    }).compileComponents();
   });
 
   beforeEach(() => {
