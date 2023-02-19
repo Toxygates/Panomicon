@@ -17,6 +17,15 @@
             </li>
           </ul>
         </div>
+        <div class="form-group">
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="openGeneSetImportModal(geneSetImportModal)"
+          >
+            Import gene sets from TargetMine
+          </button>
+        </div>
       </div>
     </div>
     <div class="col-md-9 pcard_container">
@@ -26,3 +35,55 @@
     </div>
   </div>
 </div>
+
+<ng-template #geneSetImportModal>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Import gene sets from TargetMine</h4>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          [ngModel]="targetMineUsername$ | async"
+          (ngModelChange)="targetMineUsername$.next($event)"
+          name="username"
+          class="form-control mb-2"
+          placeholder="Enter your TargetMine username"
+          [disabled]="waitingForApiResponse"
+        />
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [ngModel]="targetMinePassword$ | async"
+          (ngModelChange)="targetMinePassword$.next($event)"
+          name="password"
+          class="form-control mb-2"
+          placeholder="Enter your TargetMine password"
+          [disabled]="waitingForApiResponse"
+        />
+        <button
+          type="button"
+          class="btn btn-success mt-2"
+          (click)="importGeneSets()"
+          [disabled]="
+            waitingForApiResponse ||
+            !targetMineUsername$.value ||
+            !targetMinePassword$.value
+          "
+        >
+          <span
+            *ngIf="waitingForApiResponse"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          {{ waitingForApiResponse ? "Importing" : "Import" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>

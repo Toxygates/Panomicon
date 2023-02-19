@@ -11,9 +11,10 @@ import {
   Batch,
   Dataset,
   Sample,
+  GeneSet,
 } from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
-import { GeneSet } from '../models/frontend-types.model';
+import { GeneSet as FrontendGeneSet } from '../models/frontend-types.model';
 
 @Injectable({
   providedIn: 'root',
@@ -127,7 +128,7 @@ export class BackendService {
   exportGeneSet(
     username: string,
     password: string,
-    geneSet: GeneSet
+    geneSet: FrontendGeneSet
   ): Observable<HttpResponse<string>> {
     const url =
       this.serviceUrl +
@@ -151,6 +152,23 @@ export class BackendService {
           throw error;
         })
       );
+  }
+
+  importGeneSets(
+    username: string,
+    password: string,
+    platform: string
+  ): Observable<GeneSet[]> {
+    const url =
+      this.serviceUrl +
+      `intermine/list?user=${username}&pass=${password}&platform=${platform}`;
+    return this.http.get<GeneSet[]>(url).pipe(
+      tap(() => console.log('imported gene sets')),
+      catchError((error: HttpErrorResponse) => {
+        console.log(`Error exporting gene set: ${error.message}`);
+        throw error;
+      })
+    );
   }
 
   logout(): Observable<string> {

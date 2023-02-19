@@ -3,7 +3,7 @@ import { Component, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
-import { combineLatest, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { catchError, first, map } from 'rxjs/operators';
 import { BackendService } from 'src/app/shared/services/backend.service';
 import { GeneSet } from '../../../shared/models/frontend-types.model';
@@ -22,7 +22,10 @@ export class GeneSetEditorComponent implements OnInit {
     private router: Router,
     private backend: BackendService,
     private modalService: BsModalService
-  ) {}
+  ) {
+    this.targetMineUsername$ = this.userData.targetMineUsername$;
+    this.targetMinePassword$ = this.userData.targetMinePassword$;
+  }
 
   geneSetName$!: Observable<string | undefined>;
   geneSet$!: Observable<GeneSet | undefined>;
@@ -30,10 +33,8 @@ export class GeneSetEditorComponent implements OnInit {
   newProbesText = '';
 
   modalRef: BsModalRef | undefined;
-
-  targetMineUsername = '';
-  targetMinePassword = '';
-
+  targetMineUsername$: BehaviorSubject<string>;
+  targetMinePassword$: BehaviorSubject<string>;
   waitingForApiResponse = false;
 
   ngOnInit(): void {
@@ -102,8 +103,8 @@ export class GeneSetEditorComponent implements OnInit {
       }
       this.backend
         .exportGeneSet(
-          this.targetMineUsername,
-          this.targetMinePassword,
+          this.targetMineUsername$.value,
+          this.targetMinePassword$.value,
           geneSet
         )
         .pipe(

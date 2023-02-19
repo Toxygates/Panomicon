@@ -25,3 +25,8 @@ export interface Matrix {
   };
   rows: Record<string, string | string[]>;
 }
+
+export interface GeneSet {
+  name: string;
+  items: string[];
+}
