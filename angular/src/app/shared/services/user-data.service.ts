@@ -15,6 +15,9 @@ export class UserDataService {
   selectedDataset$: BehaviorSubject<string | null>;
   selectedBatch$: BehaviorSubject<string | null>;
 
+  targetMineUsername$ = new BehaviorSubject('');
+  targetMinePassword$ = new BehaviorSubject('');
+
   private enabledGroupsBehaviorSubject: BehaviorSubject<SampleGroup[]>;
   enabledGroups$: Observable<SampleGroup[]>;
   platform$: Observable<string | undefined>;

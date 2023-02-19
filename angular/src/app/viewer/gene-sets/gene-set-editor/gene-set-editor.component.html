@@ -79,7 +79,8 @@
         <input
           type="text"
           id="username"
-          [(ngModel)]="targetMineUsername"
+          [ngModel]="targetMineUsername$ | async"
+          (ngModelChange)="targetMineUsername$.next($event)"
           name="username"
           class="form-control mb-2"
           placeholder="Enter your TargetMine username"
@@ -89,7 +90,8 @@
         <input
           type="password"
           id="password"
-          [(ngModel)]="targetMinePassword"
+          [ngModel]="targetMinePassword$ | async"
+          (ngModelChange)="targetMinePassword$.next($event)"
           name="password"
           class="form-control mb-2"
           placeholder="Enter your TargetMine password"
@@ -100,7 +102,9 @@
           class="btn btn-success mt-2"
           (click)="exportGeneSet()"
           [disabled]="
-            waitingForApiResponse || !targetMineUsername || !targetMinePassword
+            waitingForApiResponse ||
+            !targetMineUsername$.value ||
+            !targetMinePassword$.value
           "
         >
           <span
