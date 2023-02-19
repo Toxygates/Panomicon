@@ -32,6 +32,7 @@ export class GeneSetManagerComponent implements OnInit {
   modalRef: BsModalRef | undefined;
   targetMineUsername$: BehaviorSubject<string>;
   targetMinePassword$: BehaviorSubject<string>;
+  replaceGeneSets = true;
   waitingForApiResponse = false;
 
   selectedPlatform = '';
@@ -81,7 +82,9 @@ export class GeneSetManagerComponent implements OnInit {
             platform: this.selectedPlatform,
             probes: fetchedGeneSet.items,
           };
-          geneSets.set(fetchedGeneSet.name, newGeneSet);
+          if (this.replaceGeneSets || !geneSets.has(fetchedGeneSet.name)) {
+            geneSets.set(fetchedGeneSet.name, newGeneSet);
+          }
         }
         this.userData.geneSets$.next(geneSets);
         alert(`Gene sets imported`);
