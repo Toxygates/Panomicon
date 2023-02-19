@@ -44,6 +44,15 @@
   <div class="form-group">
     <button
       type="button"
+      class="btn btn-success"
+      (click)="openGeneSetExportModal(geneSetExportModal)"
+    >
+      Export gene set to TargetMine
+    </button>
+  </div>
+  <div class="form-group">
+    <button
+      type="button"
       class="btn btn-danger"
       (click)="deleteGeneSet(geneSet.name)"
     >
@@ -57,4 +66,52 @@
     Gene set {{ geneSetName$ | async }} not found
   </div>
   <ng-template #selectAGeneSet> Select a gene set to edit </ng-template>
+</ng-template>
+
+<ng-template #geneSetExportModal>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Export gene set to TargetMine</h4>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          [(ngModel)]="targetMineUsername"
+          name="username"
+          class="form-control mb-2"
+          placeholder="Enter your TargetMine username"
+          [disabled]="waitingForApiResponse"
+        />
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="targetMinePassword"
+          name="password"
+          class="form-control mb-2"
+          placeholder="Enter your TargetMine password"
+          [disabled]="waitingForApiResponse"
+        />
+        <button
+          type="button"
+          class="btn btn-success mt-2"
+          (click)="exportGeneSet()"
+          [disabled]="
+            waitingForApiResponse || !targetMineUsername || !targetMinePassword
+          "
+        >
+          <span
+            *ngIf="waitingForApiResponse"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          {{ waitingForApiResponse ? "Exporting" : "Export" }}
+        </button>
+      </div>
+    </form>
+  </div>
 </ng-template>

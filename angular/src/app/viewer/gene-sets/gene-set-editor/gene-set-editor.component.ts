@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, first, map } from 'rxjs/operators';
+import { BackendService } from 'src/app/shared/services/backend.service';
 import { GeneSet } from '../../../shared/models/frontend-types.model';
 import { UserDataService } from '../../../shared/services/user-data.service';
 
@@ -16,7 +19,9 @@ export class GeneSetEditorComponent implements OnInit {
     private userData: UserDataService,
     private toastr: ToastrService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private backend: BackendService,
+    private modalService: BsModalService
   ) {}
 
   geneSetName$!: Observable<string | undefined>;
@@ -24,7 +29,12 @@ export class GeneSetEditorComponent implements OnInit {
 
   newProbesText = '';
 
-  // selectedProbes: string[] | undefined;
+  modalRef: BsModalRef | undefined;
+
+  targetMineUsername = '';
+  targetMinePassword = '';
+
+  waitingForApiResponse = false;
 
   ngOnInit(): void {
     this.geneSetName$ = this.route.paramMap.pipe(
@@ -73,5 +83,41 @@ export class GeneSetEditorComponent implements OnInit {
     this.userData.geneSets$.value.delete(name);
     this.userData.geneSets$.next(this.userData.geneSets$.value);
     void this.router.navigate(['..'], { relativeTo: this.route });
+  }
+
+  openGeneSetExportModal(template: TemplateRef<unknown>): void {
+    this.modalRef = this.modalService.show(template, {
+      class: 'modal-dialog-centered modal-lg',
+      keyboard: false,
+    });
+  }
+
+  exportGeneSet(): void {
+    this.waitingForApiResponse = true;
+    this.geneSet$.pipe(first()).subscribe((geneSet) => {
+      if (!geneSet) {
+        // The export button is only displayed if a valid gene set is selected,
+        // so this code path should be unreachable
+        return;
+      }
+      this.backend
+        .exportGeneSet(
+          this.targetMineUsername,
+          this.targetMinePassword,
+          geneSet
+        )
+        .pipe(
+          catchError((error: HttpErrorResponse) => {
+            this.waitingForApiResponse = false;
+            alert(`Error exporting gene set: ${error.message}`);
+            throw error;
+          })
+        )
+        .subscribe((_result) => {
+          this.waitingForApiResponse = false;
+          alert(`Gene set ${geneSet?.name || ''} exported`);
+          this.modalRef?.hide();
+        });
+    });
   }
 }

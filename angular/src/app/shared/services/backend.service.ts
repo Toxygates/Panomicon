@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import {
@@ -9,6 +13,7 @@ import {
   Sample,
 } from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
+import { GeneSet } from '../models/frontend-types.model';
 
 @Injectable({
   providedIn: 'root',
@@ -114,6 +119,35 @@ export class BackendService {
         tap(() => console.log('uploaded file')),
         catchError((error: HttpErrorResponse) => {
           console.log(`Error uploading file: ${error.message}`);
+          throw error;
+        })
+      );
+  }
+
+  exportGeneSet(
+    username: string,
+    password: string,
+    geneSet: GeneSet
+  ): Observable<HttpResponse<string>> {
+    const url =
+      this.serviceUrl +
+      `intermine/list?user=${username}&pass=${password}&replace=true`;
+    const data = [
+      {
+        name: geneSet.name,
+        items: geneSet.probes,
+      },
+    ];
+    return this.http
+      .post<HttpResponse<string>>(url, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .pipe(
+        tap(() => console.log('exported gene set')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error exporting gene set: ${error.message}`);
           throw error;
         })
       );
