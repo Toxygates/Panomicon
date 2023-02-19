@@ -139,11 +139,12 @@ export class BackendService {
   exportGeneSet(
     username: string,
     password: string,
+    replace: boolean,
     geneSet: FrontendGeneSet
   ): Observable<HttpResponse<string>> {
     const url =
       this.serviceUrl +
-      `intermine/list?user=${username}&pass=${password}&replace=true`;
+      `intermine/list?user=${username}&pass=${password}&replace=${replace.toString()}`;
     const data = [
       {
         name: geneSet.name,

@@ -35,6 +35,7 @@ export class GeneSetEditorComponent implements OnInit {
   modalRef: BsModalRef | undefined;
   targetMineUsername$: BehaviorSubject<string>;
   targetMinePassword$: BehaviorSubject<string>;
+  replaceGeneSet = false;
   waitingForApiResponse = false;
 
   ngOnInit(): void {
@@ -105,6 +106,7 @@ export class GeneSetEditorComponent implements OnInit {
         .exportGeneSet(
           this.targetMineUsername$.value,
           this.targetMinePassword$.value,
+          this.replaceGeneSet,
           geneSet
         )
         .pipe(
