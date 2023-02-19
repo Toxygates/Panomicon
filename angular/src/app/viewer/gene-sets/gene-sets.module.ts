@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { GeneSetManagerComponent } from './gene-set-manager/gene-set-manager.component';
 import { GeneSetEditorComponent } from './gene-set-editor/gene-set-editor.component';
+import { PlatformPickerComponent } from './platform-picker/platform-picker.component';
 
 @NgModule({
   imports: [
@@ -20,6 +21,10 @@ import { GeneSetEditorComponent } from './gene-set-editor/gene-set-editor.compon
       },
     ]),
   ],
-  declarations: [GeneSetManagerComponent, GeneSetEditorComponent],
+  declarations: [
+    GeneSetManagerComponent,
+    GeneSetEditorComponent,
+    PlatformPickerComponent,
+  ],
 })
 export class GeneSetsModule {}

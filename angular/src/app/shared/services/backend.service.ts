@@ -12,6 +12,7 @@ import {
   Dataset,
   Sample,
   GeneSet,
+  Platform,
 } from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
 import { GeneSet as FrontendGeneSet } from '../models/frontend-types.model';
@@ -95,6 +96,16 @@ export class BackendService {
       tap(() => console.log('fetched roles')),
       catchError((error: HttpErrorResponse) => {
         console.log(`Error fetching roles: ${error.message}`);
+        throw error;
+      })
+    );
+  }
+
+  getPlatforms(): Observable<Platform[]> {
+    return this.http.get<Platform[]>(this.serviceUrl + 'platform/user').pipe(
+      tap(() => console.log('fetched platforms')),
+      catchError((error: HttpErrorResponse) => {
+        console.log(`Error fetching platforms: ${error.message}`);
         throw error;
       })
     );

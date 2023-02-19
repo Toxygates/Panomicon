@@ -2,20 +2,30 @@
   <div class="row">
     <div class="col-md-3 pcard_container">
       <div class="pcard ui_panel">
-        <div *ngFor="let platform of platforms$ | async; index as i">
-          <h3>{{ platform }}</h3>
-          <ul class="list-unstyled">
-            <li
-              *ngFor="
-                let geneSet of geneSetsForPlatform$(platform) | async;
-                index as j
-              "
-            >
-              <a routerLink="{{ geneSet.name }}"
-                >{{ geneSet.name }} ({{ geneSet.probes.length }} probes)</a
+        <ng-container *ngFor="let platform of platforms$ | async; index as i">
+          <div *ngIf="(geneSetsForPlatform$(platform.id) | async)?.length">
+            <h3>{{ platform.id }}</h3>
+            <ul class="list-unstyled">
+              <li
+                *ngFor="
+                  let geneSet of geneSetsForPlatform$(platform.id) | async;
+                  index as j
+                "
               >
-            </li>
-          </ul>
+                <a routerLink="{{ geneSet.name }}"
+                  >{{ geneSet.name }} ({{ geneSet.probes.length }} probes)</a
+                >
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+        <div
+          class="d-flex justify-content-center mt-2 mb-2"
+          *ngIf="!(platforms$ | async)?.length"
+        >
+          <div class="spinner-border text-secondary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
         </div>
         <div class="form-group">
           <button
@@ -65,24 +75,33 @@
           placeholder="Enter your TargetMine password"
           [disabled]="waitingForApiResponse"
         />
-        <button
-          type="button"
-          class="btn btn-success mt-2"
-          (click)="importGeneSets()"
-          [disabled]="
-            waitingForApiResponse ||
-            !targetMineUsername$.value ||
-            !targetMinePassword$.value
-          "
-        >
-          <span
-            *ngIf="waitingForApiResponse"
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          {{ waitingForApiResponse ? "Importing" : "Import" }}
-        </button>
+        <div class="mt-2">
+          <app-platform-picker
+            [platforms]="platforms$ | async"
+            [(selectedPlatform)]="selectedPlatform"
+          ></app-platform-picker>
+        </div>
+        <div>
+          <button
+            type="button"
+            class="btn btn-success mt-2"
+            (click)="importGeneSets()"
+            [disabled]="
+              waitingForApiResponse ||
+              !targetMineUsername$.value ||
+              !targetMinePassword$.value ||
+              !selectedPlatform
+            "
+          >
+            <span
+              *ngIf="waitingForApiResponse"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            {{ waitingForApiResponse ? "Importing" : "Import" }}
+          </button>
+        </div>
       </div>
     </form>
   </div>

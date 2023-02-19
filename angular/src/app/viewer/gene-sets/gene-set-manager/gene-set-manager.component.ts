@@ -1,9 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { Platform } from 'src/app/shared/models/backend-types.model';
 import { BackendService } from 'src/app/shared/services/backend.service';
+import { FetchedDataService } from 'src/app/shared/services/fetched-data.service';
 import { GeneSet } from '../../../shared/models/frontend-types.model';
 import { UserDataService } from '../../../shared/services/user-data.service';
 
@@ -16,33 +18,26 @@ export class GeneSetManagerComponent implements OnInit {
   constructor(
     private userData: UserDataService,
     private backend: BackendService,
+    private fetchedData: FetchedDataService,
     private modalService: BsModalService
   ) {
     this.targetMineUsername$ = this.userData.targetMineUsername$;
     this.targetMinePassword$ = this.userData.targetMinePassword$;
+    this.platforms$ = this.fetchedData.platforms$;
   }
 
-  @Input() geneSets$!: Observable<Map<string, GeneSet>>;
-  platforms$!: Observable<Set<string>>;
+  geneSets$!: Observable<Map<string, GeneSet>>;
+  platforms$!: BehaviorSubject<Platform[] | null>;
 
   modalRef: BsModalRef | undefined;
   targetMineUsername$: BehaviorSubject<string>;
   targetMinePassword$: BehaviorSubject<string>;
   waitingForApiResponse = false;
 
-  platform = 'Rat230_2';
+  selectedPlatform = '';
 
   ngOnInit(): void {
     this.geneSets$ = this.userData.geneSets$;
-    this.platforms$ = this.geneSets$.pipe(
-      map((geneSetMap) => {
-        const platforms = new Set<string>();
-        geneSetMap.forEach((geneSet) => {
-          platforms.add(geneSet.platform);
-        });
-        return platforms;
-      })
-    );
   }
 
   geneSetsForPlatform$(platform: string): Observable<GeneSet[]> {
@@ -68,7 +63,7 @@ export class GeneSetManagerComponent implements OnInit {
       .importGeneSets(
         this.targetMineUsername$.value,
         this.targetMinePassword$.value,
-        'Rat230_2'
+        this.selectedPlatform
       )
       .pipe(
         catchError((error: HttpErrorResponse) => {
@@ -79,12 +74,11 @@ export class GeneSetManagerComponent implements OnInit {
       )
       .subscribe((fetchedGeneSets) => {
         this.waitingForApiResponse = false;
-        console.dir(fetchedGeneSets);
         const geneSets = this.userData.geneSets$.value;
         for (const fetchedGeneSet of fetchedGeneSets) {
           const newGeneSet = {
             name: fetchedGeneSet.name,
-            platform: this.platform,
+            platform: this.selectedPlatform,
             probes: fetchedGeneSet.items,
           };
           geneSets.set(fetchedGeneSet.name, newGeneSet);

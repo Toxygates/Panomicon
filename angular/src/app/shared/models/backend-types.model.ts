@@ -30,3 +30,11 @@ export interface GeneSet {
   name: string;
   items: string[];
 }
+
+export interface Platform {
+  id: string;
+  probes: number;
+  date: string;
+  publicComment: string;
+  type: string;
+}
