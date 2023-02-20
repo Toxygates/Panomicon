@@ -56,10 +56,10 @@ services:
     environment:
       JVM_ARGS: ${SCALATRA_JVM_ARGS}
       PORT: 8888
-      T_TS_URL: http://server-address:3030/Toxygates/query
-      T_TS_UPDATE_URL: http://server-address:3030/Toxygates/update
+      T_TS_URL: http://jena-fuseki:3030/Toxygates/query
+      T_TS_UPDATE_URL: http://jena-fuseki:3030/Toxygates/update
       T_DATA_MATDBCONFIG: ${T_DATA_MATDBCONFIG}
-      T_DATA_DIR: kcchunk:/data
+      T_DATA_DIR: /data
       T_TS_USER: ${T_TS_USER}
       T_TS_PASS: ${T_TS_PASS}
       T_INSTANCE_NAME: ${T_INSTANCE_NAME}
@@ -75,7 +75,7 @@ services:
       T_INTERMINE_URL: ${T_INTERMINE_URL}
 
     volumes:
-      - ${T_DATA_PATH}:/data
+      - ${T_DATA_DIR}:/data
 
 networks:
   panomicon_net:

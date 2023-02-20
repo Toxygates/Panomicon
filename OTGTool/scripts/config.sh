@@ -12,8 +12,7 @@ export TOXY_SCRATCH=/path/to/Toxygates/tmp
 export OTGTOOL_CLASSPATH="${OTGTOOL_ROOT}/lib/jar/*:${OTGTOOL_ROOT}/lib/bundle/*:${OTGTOOL_ROOT}/mlib/*:${OTGTOOL_ROOT}/classes"
 
 #Directory where databases are stored
-export T_DATA_PATH=/path/to/databases
-export T_DATA_DIR=kcchunk:$T_DATA_PATH
+export T_DATA_DIR=/path/to/kyoto_data
 export T_DATA_MATDBCONFIG="#msiz=4294967296"
 
 #Triplestore access parameters (e.g. Fuseki)
