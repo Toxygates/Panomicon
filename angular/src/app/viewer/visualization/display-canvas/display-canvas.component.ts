@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 import { Component, Input, OnInit } from '@angular/core';
 import { Network } from '../network-display/network';
-import * as cytoscape from 'cytoscape';
+import cytoscape from 'cytoscape';
 
 @Component({
   selector: 'app-display-canvas',
@@ -13,14 +15,15 @@ import * as cytoscape from 'cytoscape';
 export class DisplayCanvasComponent implements OnInit {
   @Input() network: Network | undefined;
 
-  private _cy: any;
+  private _cy!: cytoscape.Core;
 
   constructor() {
     //cytoscape('core', 'updateLayout', updateLayout);
   }
 
-  ngOnInit(): void {
-    console.log(this.network);
+  ngOnInit(): void {}
+
+  public display() {
     if (this.network !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       this._cy = cytoscape({
@@ -54,10 +57,9 @@ export class DisplayCanvasComponent implements OnInit {
     const layout = this._cy.layout({ name: 'concentric' });
     layout.run();
     this._cy.fit();
-    console.log(this._cy.updateLayout());
   }
 
-  public updateLayout(name = null, boundingBox = undefined) {
+  public updateLayout(name = '', boundingBox = undefined) {
     const layout = this._cy.layout({
       name: name,
       fit: true, // whether to fit to viewport
@@ -71,7 +73,7 @@ export class DisplayCanvasComponent implements OnInit {
       // stop: function() { window.removePendingRequest(); }, // callback on layoutstop
       // transform: function (node, position ){ return position; }, // transform a given node position. Useful for changing flow direction in discrete layouts
       // weaver: weaver
-    });
+    } as cytoscape.LayoutOptions);
     layout.run();
     this._cy.fit();
   }
