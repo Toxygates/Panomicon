@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 import { Component, Input, OnInit } from '@angular/core';
-import { Network } from '../network-display/network';
+import { Network } from 'src/app/shared/models/backend-types.model';
 import cytoscape from 'cytoscape';
 
 @Component({
@@ -50,8 +50,8 @@ export class DisplayCanvasComponent implements OnInit {
         ],
       });
 
-      this._cy.add(this.network.getNodes());
-      this._cy.add(this.network.getInteractions());
+      // this._cy.add(this.network.getNodes());
+      // this._cy.add(this.network.getInteractions());
     }
 
     const layout = this._cy.layout({ name: 'concentric' });
