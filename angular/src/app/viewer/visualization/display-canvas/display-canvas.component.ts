@@ -1,11 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 import { Component, Input, OnInit } from '@angular/core';
 import { Network } from 'src/app/shared/models/backend-types.model';
-import cytoscape from 'cytoscape';
+import cytoscape, { NodeDataDefinition } from 'cytoscape';
 
 @Component({
   selector: 'app-display-canvas',
@@ -13,19 +8,36 @@ import cytoscape from 'cytoscape';
   styleUrls: ['./display-canvas.component.scss'],
 })
 export class DisplayCanvasComponent implements OnInit {
-  @Input() network: Network | undefined;
+  @Input()
+  set network(net: Network | null) {
+    if (net === null) return;
+    console.log('changes', net);
+    // cytoscape.
+    const nodes: cytoscape.ElementDefinition[] = net.nodes.map((n) => {
+      return {
+        group: 'nodes',
+        data: {
+          id: n.id,
+          type: n.type,
+          symbols: n.symbols,
+          weights: n.weights,
+        } as NodeDataDefinition,
+      } as cytoscape.ElementDefinition;
+    });
+    this._cy.add(nodes);
+    // this._cy.add(net.interactions);
+  }
 
   private _cy!: cytoscape.Core;
 
-  constructor() {
-    //cytoscape('core', 'updateLayout', updateLayout);
+  ngOnInit(): void {
+    this._cy = cytoscape({
+      container: document.getElementById('cy'),
+    } as cytoscape.CytoscapeOptions);
   }
 
-  ngOnInit(): void {}
-
-  public display() {
+  public display(): void {
     if (this.network !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       this._cy = cytoscape({
         container: document.getElementById('cy'),
         style: [
@@ -49,9 +61,6 @@ export class DisplayCanvasComponent implements OnInit {
           },
         ],
       });
-
-      // this._cy.add(this.network.getNodes());
-      // this._cy.add(this.network.getInteractions());
     }
 
     const layout = this._cy.layout({ name: 'concentric' });
@@ -59,7 +68,7 @@ export class DisplayCanvasComponent implements OnInit {
     this._cy.fit();
   }
 
-  public updateLayout(name = '', boundingBox = undefined) {
+  public updateLayout(name = '', boundingBox = undefined): void {
     const layout = this._cy.layout({
       name: name,
       fit: true, // whether to fit to viewport

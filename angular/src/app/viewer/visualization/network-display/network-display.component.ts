@@ -37,6 +37,9 @@ export class NetworkDisplayComponent implements AfterViewInit {
 
   fetchedNetwork$: BehaviorSubject<Network | null> =
     new BehaviorSubject<Network | null>(null);
+  get fetchedNetwork(): Network | null {
+    return this.fetchedNetwork$.value;
+  }
   fetchingNetwork = false;
 
   constructor(
