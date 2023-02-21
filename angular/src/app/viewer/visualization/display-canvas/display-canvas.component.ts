@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Network } from 'src/app/shared/models/backend-types.model';
-import cytoscape, { NodeDataDefinition } from 'cytoscape';
+import cytoscape, { EdgeDataDefinition, NodeDataDefinition } from 'cytoscape';
 
 @Component({
   selector: 'app-display-canvas',
@@ -11,8 +11,6 @@ export class DisplayCanvasComponent implements OnInit {
   @Input()
   set network(net: Network | null) {
     if (net === null) return;
-    console.log('changes', net);
-    // cytoscape.
     const nodes: cytoscape.ElementDefinition[] = net.nodes.map((n) => {
       return {
         group: 'nodes',
@@ -25,7 +23,24 @@ export class DisplayCanvasComponent implements OnInit {
       } as cytoscape.ElementDefinition;
     });
     this._cy.add(nodes);
-    // this._cy.add(net.interactions);
+
+    const edges: cytoscape.ElementDefinition[] = net.interactions.map((i) => {
+      return {
+        group: 'edges',
+        data: {
+          id: i.from + i.to,
+          source: i.from,
+          target: i.to,
+          label: i.label,
+          weight: i.weight,
+        } as EdgeDataDefinition,
+      } as cytoscape.ElementDefinition;
+    });
+    this._cy.add(edges);
+
+    const layout = this._cy.layout({ name: 'concentric' });
+    layout.run();
+    this._cy.fit();
   }
 
   private _cy!: cytoscape.Core;
@@ -33,39 +48,27 @@ export class DisplayCanvasComponent implements OnInit {
   ngOnInit(): void {
     this._cy = cytoscape({
       container: document.getElementById('cy'),
+      style: [
+        {
+          selector: 'node',
+          style: {
+            label: 'data(label)',
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'background-color': 'data(color)',
+            'border-color': 'data(borderColor)',
+            'border-width': '1px',
+            display: 'element',
+          },
+        },
+        {
+          selector: 'edge',
+          style: {
+            'line-color': 'data(color)',
+          },
+        },
+      ],
     } as cytoscape.CytoscapeOptions);
-  }
-
-  public display(): void {
-    if (this.network !== undefined) {
-      this._cy = cytoscape({
-        container: document.getElementById('cy'),
-        style: [
-          {
-            selector: 'node',
-            style: {
-              label: 'data(label)',
-              'text-valign': 'center',
-              'text-halign': 'center',
-              'background-color': 'data(color)',
-              'border-color': 'data(borderColor)',
-              'border-width': '1px',
-              display: 'element',
-            },
-          },
-          {
-            selector: 'edge',
-            style: {
-              'line-color': 'data(color)',
-            },
-          },
-        ],
-      });
-    }
-
-    const layout = this._cy.layout({ name: 'concentric' });
-    layout.run();
-    this._cy.fit();
   }
 
   public updateLayout(name = '', boundingBox = undefined): void {
