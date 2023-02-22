@@ -1,4 +1,4 @@
-<div class="btn-group" dropdown [isDisabled]="!layouts">
+<div dropdown class="btn-group" [isDisabled]="disabled">
   <button
     id="layout-button-basic"
     dropdownToggle
@@ -6,7 +6,7 @@
     class="btn btn-primary dropdown-toggle mr-2"
     aria-controls="layout-dropdown-basic"
   >
-    {{ selectedLayout ? "Layout: " + selectedLayout.id : "No selected layout" }}
+    Layout: {{ currentLayout }}
     <span class="caret"></span>
   </button>
   <ul
@@ -17,9 +17,9 @@
     aria-labelledby="layout-button-basic"
   >
     <h6 class="dropdown-header">Select Layout:</h6>
-    <li *ngFor="let layout of layouts" role="menuitem">
-      <a class="dropdown-item" (click)="changeLayout(layout)">
-        {{ layout.id }}
+    <li *ngFor="let l of layouts" role="menuitem">
+      <a class="dropdown-item" (click)="changeLayout(l)">
+        {{ l.label }}
       </a>
     </li>
   </ul>

@@ -7,7 +7,6 @@ import {
 } from 'src/app/shared/models/frontend-types.model';
 import { UserDataService } from 'src/app/shared/services/user-data.service';
 import { DisplayCanvasComponent } from '../display-canvas/display-canvas.component';
-import { LayoutPickerComponent } from '../layout-picker/layout-picker.component';
 import { Network } from 'src/app/shared/models/backend-types.model';
 import { BackendService } from 'src/app/shared/services/backend.service';
 
@@ -17,10 +16,9 @@ import { BackendService } from 'src/app/shared/services/backend.service';
   styleUrls: ['./network-display.component.scss'],
 })
 export class NetworkDisplayComponent implements AfterViewInit {
-  public selectedLayout: Layout = { value: 'concentric' };
-
-  @ViewChild('layoutPicker')
-  layoutPicker!: LayoutPickerComponent;
+  // @ViewChild('layoutPicker')
+  // layoutPicker!: LayoutPickerComponent;
+  // public layout: string = 'concentric';
 
   @ViewChild('networkCanvas')
   networkCanvas!: DisplayCanvasComponent;
@@ -89,7 +87,6 @@ export class NetworkDisplayComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     console.log('Values at NetDisplayComp on ngAfterViewinit():');
-    console.log('layoutPicker: ', this.layoutPicker);
   }
 
   generateNetwork(): void {
@@ -137,14 +134,4 @@ export class NetworkDisplayComponent implements AfterViewInit {
       this.fetchingNetwork = false;
     });
   }
-
-  setSelectedLayout(layout: Event): void {
-    console.log(layout);
-    // this.selectedLayout = layout;
-    // this.networkCanvas.updateLayout(this.selectedLayout.value);
-  }
-}
-
-interface Layout {
-  value: string;
 }

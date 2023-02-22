@@ -8,9 +8,36 @@ import cytoscape, { EdgeDataDefinition, NodeDataDefinition } from 'cytoscape';
   styleUrls: ['./display-canvas.component.scss'],
 })
 export class DisplayCanvasComponent implements OnInit {
+  private _fetching!: boolean;
+  get fetching(): boolean {
+    return this._fetching;
+  }
+  @Input()
+  set fetching(fetching: boolean) {
+    this._fetching = fetching;
+  }
+
+  private _colspan!: string;
+  @Input()
+  set colspan(colspan: string) {
+    this._colspan = colspan;
+  }
+  get colspan(): string {
+    return this._colspan;
+  }
+
+  protected _isEmpty = true;
+  get isEmpty(): boolean {
+    return this._isEmpty;
+  }
+
   @Input()
   set network(net: Network | null) {
-    if (net === null) return;
+    if (net === null) {
+      this._isEmpty = true;
+      return;
+    }
+    this._isEmpty = false;
     const nodes: cytoscape.ElementDefinition[] = net.nodes.map((n) => {
       return {
         group: 'nodes',
