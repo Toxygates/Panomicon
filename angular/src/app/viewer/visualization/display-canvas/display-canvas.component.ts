@@ -1,10 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Network } from 'src/app/shared/models/backend-types.model';
 import cytoscape, {
   EdgeDataDefinition,
   NodeDataDefinition,
   Stylesheet,
+  EventObjectNode,
 } from 'cytoscape';
+
+import popper from 'cytoscape-popper';
+cytoscape.use(popper);
 
 /** default colours for nodes in the graph */
 const nodeColor = Object.freeze({
@@ -26,7 +37,7 @@ const nodeShape = Object.freeze({
   templateUrl: './display-canvas.component.html',
   styleUrls: ['./display-canvas.component.scss'],
 })
-export class DisplayCanvasComponent implements OnInit {
+export class DisplayCanvasComponent implements OnInit, AfterViewInit {
   private _fetching!: boolean;
   get fetching(): boolean {
     return this._fetching;
@@ -93,11 +104,18 @@ export class DisplayCanvasComponent implements OnInit {
 
   private _cy!: cytoscape.Core;
 
+  @ViewChild('div') nodePopper!: ElementRef<HTMLDivElement>;
+  public popperLabel = '';
+
   ngOnInit(): void {
     this._cy = cytoscape({
       container: document.getElementById('cy'),
     } as cytoscape.CytoscapeOptions);
     this.initStyle();
+  }
+
+  ngAfterViewInit(): void {
+    this._cy.on('mouseover', 'node', this.onNodeOver);
   }
 
   public updateLayout(name = '', boundingBox = undefined): void {
@@ -118,13 +136,11 @@ export class DisplayCanvasComponent implements OnInit {
     const nodeStyle: Stylesheet = {
       selector: 'node',
       css: {
-        label: 'data(label)',
         'text-valign': 'center',
         'text-halign': 'center',
         shape:
           'data(shape)' as cytoscape.Css.PropertyValueNode<cytoscape.Css.NodeShape>,
         'background-color': 'data(color)',
-        'border-color': 'data(borderColor)',
         'border-width': '1px',
         display: 'element',
       },
@@ -132,4 +148,11 @@ export class DisplayCanvasComponent implements OnInit {
 
     this._cy.style([nodeStyle]);
   }
+
+  onNodeOver = (event: EventObjectNode): void => {
+    const node: cytoscape.NodeSingular = event.target;
+    const data: cytoscape.NodeDataDefinition =
+      node.data() as cytoscape.NodeDataDefinition;
+    this.popperLabel = data['id'] ? data['id'] : 'no-data';
+  };
 }
