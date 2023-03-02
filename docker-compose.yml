@@ -13,7 +13,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - fusionauth_db_net
+      - panomicon_net
     restart: unless-stopped
     volumes:
       - fusionauth_db_data:/var/lib/postgresql/data
@@ -34,15 +34,30 @@ services:
       FUSIONAUTH_APP_RUNTIME_MODE: development
       FUSIONAUTH_APP_URL: http://fusionauth:9011
     networks:
-      - fusionauth_db_net
+      - panomicon_net
     restart: unless-stopped
     ports:
       - 9011:9011
     volumes:
       - fusionauth_config:/usr/local/fusionauth/config
 
+  fuseki:
+    container_name: "jena-fuseki"
+    build:
+      context: ./docker/fuseki
+      dockerfile: Dockerfile
+    networks:
+      - panomicon_net
+    restart: unless-stopped
+    environment:
+      JVM_ARGS: ${FUSEKI_JVM_ARGS}
+    ports:
+      - 3030:3030
+    volumes:
+      - ${FUSEKI_DATA_DIR}:/fuseki
+
 networks:
-  fusionauth_db_net:
+  panomicon_net:
     driver: bridge
 
 volumes:

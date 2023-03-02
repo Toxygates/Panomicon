@@ -13,6 +13,7 @@ import {
   Attribute,
   Batch,
   Dataset,
+  Platform,
   Sample,
 } from '../models/backend-types.model';
 import { SampleFilter } from '../models/sample-filter.model';
@@ -24,6 +25,8 @@ import { UserDataService } from './user-data.service';
 })
 export class FetchedDataService {
   roles$: Observable<string[] | null>;
+
+  platforms$: BehaviorSubject<Platform[] | null>;
 
   datasets$: BehaviorSubject<Dataset[] | null>;
   batches$: BehaviorSubject<Batch[] | null>;
@@ -42,6 +45,8 @@ export class FetchedDataService {
     private backend: BackendService,
     private userData: UserDataService
   ) {
+    this.platforms$ = new BehaviorSubject<Platform[] | null>(null);
+
     this.datasets$ = new BehaviorSubject<Dataset[] | null>(null);
     this.batches$ = new BehaviorSubject<Batch[] | null>(null);
     this.samples$ = new BehaviorSubject<Sample[] | null>(null);
@@ -79,6 +84,11 @@ export class FetchedDataService {
   }
 
   private fetchData() {
+    // fetch platforms
+    this.backend
+      .getPlatforms()
+      .subscribe((platforms) => this.platforms$.next(platforms));
+
     // fetch datasets
     this.backend
       .getDatasets()

@@ -31,3 +31,5 @@ export REDIRECT_AFTER_AUTH_URL="http://localhost:4200/json/oauth-redirect"
 export JWT_ISSUER="toxygates.nibiohn.go.jp"
 export RSA_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs03pveF/NZZ05R9xGqNezpKAe3rC93aVQYl1PSzArv8gOfiqlRBeaQDidT+9eg3ZKcqnkrPKWOAfmBuCoMZhpEnnmT4+WNbYsD1XpwGc3umu233IZ2itB4kLbAivjnwYRY5/8T5h2KYzvfBijARFZZG812RcMHlvXsrmOfrC3t/S2v9cWP4EpcHNUD8muhlYWzzCuHpjlNlvF7z+xVBK6ZgBVbP2iFKxNuhPrrVjCUvgz1Tsgxjkl1Ewr74gcHDiiQRSG105cYtLLrj+gC3tUeqONk0S2mugamSCO+DsGC246BxBzJsB5nGteMp6+he50iI6jBTxWsTUofCoBuiR3QIDAQAB-----END PUBLIC KEY-----"
 
+#Fuseki configuration
+export FUSEKI_DATA_DIR=~/apache-jena-fuseki-2.6.0/run
