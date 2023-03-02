@@ -13,7 +13,7 @@ import javax.servlet.http.Cookie
 
 class Authentication {
   //FusionAuth URL for connecting on the internal network
-  val fusionAuthInternalUrl = System.getenv("FUSIONAUTH_INTERNAL_URL")
+  val fusionAuthAppUrl = System.getenv("FUSIONAUTH_APP_URL")
 
   //Publicly accessible FusionAuth URL
   val fusionAuthBaseUrl = System.getenv("FUSIONAUTH_BASEURL")
@@ -24,7 +24,7 @@ class Authentication {
 
   val logoutUrl = s"$fusionAuthBaseUrl/oauth2/logout?client_id=$fusionAuthClientId"
 
-  val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthInternalUrl);
+  val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthAppUrl);
   val random = new SecureRandom()
 
   def loginRedirectUri(challenge: String): String =

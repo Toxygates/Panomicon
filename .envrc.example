@@ -24,7 +24,11 @@ export T_INTERMINE_URL=https://targetmine.mizuguchilab.org
 
 # Additional back end variables for FusionAuth
 # (the values below work out of the box with the docker-compose file)
+
+#External URL that the user can be redirected to
 export FUSIONAUTH_BASEURL="http://localhost:9011"
+#Internal URL for connecting to fusionauth
+export FUSIONAUTH_APP_URL="http://localhost:9011"
 export FUSIONAUTH_CLIENTID="056867c7-e20a-4af9-8570-47100496229f"
 export FUSIONAUTH_CLIENTSECRET="Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg"
 export REDIRECT_AFTER_AUTH_URL="http://localhost:4200/json/oauth-redirect"
