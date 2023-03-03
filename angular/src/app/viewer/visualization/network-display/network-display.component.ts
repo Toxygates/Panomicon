@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
@@ -15,11 +15,7 @@ import { BackendService } from 'src/app/shared/services/backend.service';
   templateUrl: './network-display.component.html',
   styleUrls: ['./network-display.component.scss'],
 })
-export class NetworkDisplayComponent implements AfterViewInit {
-  // @ViewChild('layoutPicker')
-  // layoutPicker!: LayoutPickerComponent;
-  // public layout: string = 'concentric';
-
+export class NetworkDisplayComponent {
   @ViewChild('networkCanvas')
   networkCanvas!: DisplayCanvasComponent;
 
@@ -78,15 +74,6 @@ export class NetworkDisplayComponent implements AfterViewInit {
           !!firstGroup && !!secondGroup && !!geneSet
       )
     );
-
-    // TODO: remove this since it's just for debugging
-    this.fetchedNetwork$.subscribe((network) =>
-      console.log(JSON.stringify(network))
-    );
-  }
-
-  ngAfterViewInit(): void {
-    console.log('Values at NetDisplayComp on ngAfterViewinit():');
   }
 
   generateNetwork(): void {
