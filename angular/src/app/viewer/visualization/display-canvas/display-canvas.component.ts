@@ -45,6 +45,12 @@ export class DisplayCanvasComponent implements OnInit, AfterViewInit {
   @Input()
   set fetching(fetching: boolean) {
     this._fetching = fetching;
+    if (fetching) {
+      this._cy = cytoscape({
+        container: document.getElementById('cy'),
+      } as cytoscape.CytoscapeOptions);
+      this.initStyle();
+    }
   }
 
   private _colspan!: string;
