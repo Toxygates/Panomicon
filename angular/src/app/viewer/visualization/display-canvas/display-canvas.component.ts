@@ -53,27 +53,18 @@ export class DisplayCanvasComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private _colspan!: string;
   @Input()
-  set colspan(colspan: string) {
-    this._colspan = colspan;
-  }
-  get colspan(): string {
-    return this._colspan;
-  }
+  colspan!: string;
 
-  protected _isEmpty = true;
-  get isEmpty(): boolean {
-    return this._isEmpty;
-  }
+  isEmpty = true;
 
   @Input()
   set network(net: Network | null) {
     if (net === null) {
-      this._isEmpty = true;
+      this.isEmpty = true;
       return;
     }
-    this._isEmpty = false;
+    this.isEmpty = false;
     const nodes: cytoscape.ElementDefinition[] = net.nodes.map((n) => {
       return {
         group: 'nodes',
