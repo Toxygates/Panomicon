@@ -15,18 +15,21 @@ import ujson.Value
 import upickle.default.writeJs
 
 /**
- * Routines that support matrix loading requests
+ * Routines that support matrix loading requests.
+ * @param sampleFilter allows filtering all data requests by batches, datasets, and/or instances.
  */
-class MatrixHandling(context: Context, sampleFilter: SampleFilter,
-                     tconfig: Configuration) {
+class MatrixHandling(context: Context, sampleFilter: SampleFilter) {
   lazy val associationLookup = new AssociationMasterLookup(context, sampleFilter)
 
   def filledGroups(matParams: json.MatrixParams) = {
     val sampleIds = matParams.groups.flatMap(_.sampleIds)
+    //This will get all attributes and also filter samples that we do not have access to.
+    //Accordingly, not all requested sample IDs may be present in fullSamples.
+
     val fullSamples = Map.empty ++
       context.sampleStore.withRequiredAttributes(SampleClassFilter(), sampleFilter, sampleIds)().map(
         s => (s.sampleId -> s))
-    matParams.groups.map(g => fillGroup(g.name, g.sampleIds.map(s => fullSamples(s))))
+    matParams.groups.flatMap(g => checkAndFillGroup(g.name, g.sampleIds.flatMap(s => fullSamples.get(s))))
   }
 
   def loadMatrix(matParams: json.MatrixParams, valueType: ValueType): MatrixController = {
@@ -60,17 +63,15 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
   }
 
   /**
-   * By using the sample treatment ID, ensure that the group contains
-   * all the available samples for a given treatment.
-   * This is the default behaviour for /matrix requests for now; in the future, we may want to
-   * make it optional, since the system in principle supports sub-treatment level sample groups.
+   * By using the sample treatment ID, ensure that the group contains all the available samples for a given treatment.
+   * @return A group with filled samples for the treatment if available, or None if the group could not be validated.
    */
-  def fillGroup(name: String, group: Seq[Sample]): t.shared.common.sample.Group = {
+  def checkAndFillGroup(name: String, group: Seq[Sample]): Option[t.shared.common.sample.Group] = {
     if (group.isEmpty) {
-      return new t.shared.common.sample.Group(name, Array[TUnit](), Array[TUnit]())
+      return None
     }
     val batchURI = group.head.apply(CoreParameter.Batch)
-    val sf = SampleFilter(tconfig.instanceURI, Some(batchURI))
+    val sf = sampleFilter.copy(batchURI = Some(batchURI))
 
     val treatedTreatments = group.map(s => s.sampleClass(Treatment)).distinct
     val controlTreatments = group.map(s => s.sampleClass(ControlTreatment)).distinct
@@ -80,7 +81,7 @@ class MatrixHandling(context: Context, sampleFilter: SampleFilter,
     val treatedUnits = treatedTreatments.flatMap(t => unitForTreatment(sf, t))
     val controlUnits = controlTreatments.flatMap(t => unitForTreatment(sf, t))
 
-    new t.shared.common.sample.Group(name, treatedUnits.toArray, controlUnits.toArray)
+    Some(new t.shared.common.sample.Group(name, treatedUnits.toArray, controlUnits.toArray))
   }
 
   def rowsToJS(rows: Seq[ExpressionRow], matrixInfo: ManagedMatrixInfo): Seq[Map[String, Value]] = {

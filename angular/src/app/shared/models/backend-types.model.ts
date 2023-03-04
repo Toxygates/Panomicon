@@ -43,4 +43,16 @@ interface Interaction {
 export interface Network {
   nodes: Node[];
   interactions: Interaction[];
+
+export interface GeneSet {
+  name: string;
+  items: string[];
+}
+
+export interface Platform {
+  id: string;
+  probes: number;
+  date: string;
+  publicComment: string;
+  type: string;
 }

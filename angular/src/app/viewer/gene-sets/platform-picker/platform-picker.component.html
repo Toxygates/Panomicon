@@ -1,0 +1,44 @@
+<div class="btn-group" dropdown [isDisabled]="!platforms">
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    [class]="platforms ? 'btn-primary' : 'btn-secondary'"
+    aria-controls="dropdown-basic"
+  >
+    <span
+      *ngIf="!platforms"
+      class="spinner-border spinner-border-sm"
+      role="status"
+      aria-hidden="true"
+    ></span>
+    {{
+      platforms
+        ? selectedPlatform
+          ? "Platform: " + selectedPlatform
+          : "No platform selected"
+        : "Loading..."
+    }}
+    <span class="caret"></span>
+  </button>
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
+    <h6 class="dropdown-header">Select platform:</h6>
+    <li *ngFor="let platform of platforms" role="menuitem">
+      <a
+        class="dropdown-item"
+        (click)="selectPlatform(platform.id)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        {{ platform.id }}
+      </a>
+    </li>
+  </ul>
+</div>

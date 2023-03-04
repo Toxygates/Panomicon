@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import {
@@ -8,9 +12,10 @@ import {
   Dataset,
   Sample,
   Network,
-} from '../models/backend-types.model';
+  GeneSet,
+  Platform,
 import { environment } from 'src/environments/environment';
-import { GeneSet, SampleGroup } from '../models/frontend-types.model';
+import { GeneSet as FrontendGeneSet, SampleGroup } from '../models/frontend-types.model';
 
 @Injectable({
   providedIn: 'root',
@@ -130,29 +135,61 @@ export class BackendService {
     );
   }
 
-  deleteBatch(batchId: string): Observable<string> {
-    console.log(this.serviceUrl + 'batch/' + batchId);
-    return this.http.delete<string>(this.serviceUrl + 'batch/' + batchId).pipe(
-      tap(() => console.log('deleted batch')),
+  getPlatforms(): Observable<Platform[]> {
+    return this.http.get<Platform[]>(this.serviceUrl + 'platform/user').pipe(
+      tap(() => console.log('fetched platforms')),
       catchError((error: HttpErrorResponse) => {
-        console.log(`Error deleting batch: ${error.message}`);
+        console.log(`Error fetching platforms: ${error.message}`);
         throw error;
       })
     );
   }
 
-  uploadFile(file: File): Observable<string> {
-    const formData: FormData = new FormData();
-    formData.append('fileKey', file, file.name);
+  exportGeneSet(
+    username: string,
+    password: string,
+    replace: boolean,
+    geneSet: FrontendGeneSet
+  ): Observable<HttpResponse<string>> {
+    const url =
+      this.serviceUrl +
+      `intermine/list?user=${username}&pass=${password}&replace=${replace.toString()}`;
+    const data = [
+      {
+        name: geneSet.name,
+        items: geneSet.probes,
+      },
+    ];
     return this.http
-      .post(this.serviceUrl + 'upload', formData, { responseType: 'text' })
+      .post<HttpResponse<string>>(url, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
       .pipe(
-        tap(() => console.log('uploaded file')),
+        tap(() => console.log('exported gene set')),
         catchError((error: HttpErrorResponse) => {
-          console.log(`Error uploading file: ${error.message}`);
+          console.log(`Error exporting gene set: ${error.message}`);
           throw error;
         })
       );
+  }
+
+  importGeneSets(
+    username: string,
+    password: string,
+    platform: string
+  ): Observable<GeneSet[]> {
+    const url =
+      this.serviceUrl +
+      `intermine/list?user=${username}&pass=${password}&platform=${platform}`;
+    return this.http.get<GeneSet[]>(url).pipe(
+      tap(() => console.log('imported gene sets')),
+      catchError((error: HttpErrorResponse) => {
+        console.log(`Error exporting gene set: ${error.message}`);
+        throw error;
+      })
+    );
   }
 
   logout(): Observable<string> {

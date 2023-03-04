@@ -2,20 +2,39 @@
   <div class="row">
     <div class="col-md-3 pcard_container">
       <div class="pcard ui_panel">
-        <div *ngFor="let platform of platforms$ | async; index as i">
-          <h3>{{ platform }}</h3>
-          <ul class="list-unstyled">
-            <li
-              *ngFor="
-                let geneSet of geneSetsForPlatform$(platform) | async;
-                index as j
-              "
-            >
-              <a routerLink="{{ geneSet.name }}"
-                >{{ geneSet.name }} ({{ geneSet.probes.length }} probes)</a
+        <ng-container *ngFor="let platform of platforms$ | async; index as i">
+          <div *ngIf="(geneSetsForPlatform$(platform.id) | async)?.length">
+            <h3>{{ platform.id }}</h3>
+            <ul class="list-unstyled">
+              <li
+                *ngFor="
+                  let geneSet of geneSetsForPlatform$(platform.id) | async;
+                  index as j
+                "
               >
-            </li>
-          </ul>
+                <a routerLink="{{ geneSet.name }}"
+                  >{{ geneSet.name }} ({{ geneSet.probes.length }} probes)</a
+                >
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+        <div
+          class="d-flex justify-content-center mt-2 mb-2"
+          *ngIf="!(platforms$ | async)?.length"
+        >
+          <div class="spinner-border text-secondary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="openGeneSetImportModal(geneSetImportModal)"
+          >
+            Import gene sets from TargetMine
+          </button>
         </div>
       </div>
     </div>
@@ -26,3 +45,73 @@
     </div>
   </div>
 </div>
+
+<ng-template #geneSetImportModal>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Import gene sets from TargetMine</h4>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        [ngModel]="targetMineUsername$ | async"
+        (ngModelChange)="targetMineUsername$.next($event)"
+        name="username"
+        class="form-control mb-2"
+        placeholder="Enter your TargetMine username"
+        [disabled]="waitingForApiResponse"
+      />
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        [ngModel]="targetMinePassword$ | async"
+        (ngModelChange)="targetMinePassword$.next($event)"
+        name="password"
+        class="form-control mb-2"
+        placeholder="Enter your TargetMine password"
+        [disabled]="waitingForApiResponse"
+      />
+      <div class="mt-2">
+        <app-platform-picker
+          [platforms]="platforms$ | async"
+          [(selectedPlatform)]="selectedPlatform"
+        ></app-platform-picker>
+      </div>
+      <div class="form-check mt-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [(ngModel)]="replaceGeneSets"
+          id="replace-gene-sets"
+        />
+        <label class="form-check-label" for="replace-gene-sets">
+          Replace existing gene sets
+        </label>
+      </div>
+      <div>
+        <button
+          type="button"
+          class="btn btn-success mt-2"
+          (click)="importGeneSets()"
+          [disabled]="
+            waitingForApiResponse ||
+            !targetMineUsername$.value ||
+            !targetMinePassword$.value ||
+            !selectedPlatform
+          "
+        >
+          <span
+            *ngIf="waitingForApiResponse"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          {{ waitingForApiResponse ? "Importing" : "Import" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
