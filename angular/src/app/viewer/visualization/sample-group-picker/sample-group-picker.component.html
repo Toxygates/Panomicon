@@ -1,0 +1,37 @@
+<div class="btn-group" dropdown [isDisabled]="!sampleGroups">
+  <button
+    id="button-basic"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle mr-2"
+    [disabled]="disabled"
+    aria-controls="dropdown-basic"
+  >
+    {{
+      selectedSampleGroup
+        ? sampleGroupType + " sample group: " + selectedSampleGroup
+        : "Select " + sampleGroupType + " sample group"
+    }}
+    <span class="caret"></span>
+  </button>
+  <ul
+    id="dropdown-basic"
+    *dropdownMenu
+    class="dropdown-menu dropdown-scrollable"
+    role="menu"
+    aria-labelledby="button-basic"
+  >
+    <h6 class="dropdown-header">Select {{ sampleGroupType }} sample group:</h6>
+    <li *ngFor="let sampleGroup of sampleGroups" role="menuitem">
+      <a
+        class="dropdown-item"
+        (click)="selectSampleGroup(sampleGroup.name)"
+        [routerLink]="[]"
+        queryParamsHandling="preserve"
+      >
+        {{ sampleGroup.name }} ({{ sampleGroup.platform }} /
+        {{ sampleGroup.type }})
+      </a>
+    </li>
+  </ul>
+</div>

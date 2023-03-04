@@ -11,11 +11,15 @@ import {
   Batch,
   Dataset,
   Sample,
+  Network,
   GeneSet,
   Platform,
 } from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
-import { GeneSet as FrontendGeneSet } from '../models/frontend-types.model';
+import {
+  GeneSet as FrontendGeneSet,
+  SampleGroup,
+} from '../models/frontend-types.model';
 
 @Injectable({
   providedIn: 'root',
@@ -86,6 +90,40 @@ export class BackendService {
         tap(() => console.log('fetched attributes values')),
         catchError((error: HttpErrorResponse) => {
           console.error(`Error fetching attributes values: ${error.message}`);
+          throw error;
+        })
+      );
+  }
+
+  getNetwork(
+    sourceGroup: SampleGroup,
+    targetGroup: SampleGroup,
+    sourceGeneSet: FrontendGeneSet
+  ): Observable<Network> {
+    const requestBody = {
+      groups1: [
+        {
+          name: sourceGroup.name,
+          sampleIds: sourceGroup.samples,
+        },
+      ],
+      groups2: [
+        {
+          name: targetGroup.name,
+          sampleIds: targetGroup.samples,
+        },
+      ],
+      probes1: sourceGeneSet.probes,
+      associationSource: 'miRDB',
+      associationLimit: '90',
+    };
+
+    return this.http
+      .post<Network>(this.serviceUrl + 'network', requestBody)
+      .pipe(
+        tap(() => console.log('fetched network')),
+        catchError((error: HttpErrorResponse) => {
+          console.log(`Error fetching network: ${error.message}`);
           throw error;
         })
       );

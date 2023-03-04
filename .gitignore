@@ -38,5 +38,6 @@ out/*
 
 *.class
 
+#misc
 .envrc
 
