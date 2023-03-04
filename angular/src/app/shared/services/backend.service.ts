@@ -14,8 +14,12 @@ import {
   Network,
   GeneSet,
   Platform,
+} from '../models/backend-types.model';
 import { environment } from 'src/environments/environment';
-import { GeneSet as FrontendGeneSet, SampleGroup } from '../models/frontend-types.model';
+import {
+  GeneSet as FrontendGeneSet,
+  SampleGroup,
+} from '../models/frontend-types.model';
 
 @Injectable({
   providedIn: 'root',
@@ -94,7 +98,7 @@ export class BackendService {
   getNetwork(
     sourceGroup: SampleGroup,
     targetGroup: SampleGroup,
-    sourceGeneSet: GeneSet
+    sourceGeneSet: FrontendGeneSet
   ): Observable<Network> {
     const requestBody = {
       groups1: [

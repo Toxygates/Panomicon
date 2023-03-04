@@ -77,10 +77,18 @@ export class GeneSetManagerComponent implements OnInit {
         this.waitingForApiResponse = false;
         const geneSets = this.userData.geneSets$.value;
         for (const fetchedGeneSet of fetchedGeneSets) {
+          const platforms = this.fetchedData.platforms$.value;
+          const platform = platforms?.find(
+            (p) => p.id === this.selectedPlatform
+          );
+          const type = platform?.type;
+          if (type === undefined) continue;
+
           const newGeneSet = {
             name: fetchedGeneSet.name,
             platform: this.selectedPlatform,
             probes: fetchedGeneSet.items,
+            type,
           };
           if (this.replaceGeneSets || !geneSets.has(fetchedGeneSet.name)) {
             geneSets.set(fetchedGeneSet.name, newGeneSet);

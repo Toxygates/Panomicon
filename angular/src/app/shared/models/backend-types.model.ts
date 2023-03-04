@@ -43,7 +43,7 @@ interface Interaction {
 export interface Network {
   nodes: Node[];
   interactions: Interaction[];
-
+}
 export interface GeneSet {
   name: string;
   items: string[];
