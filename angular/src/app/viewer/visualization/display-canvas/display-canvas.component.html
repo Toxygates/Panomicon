@@ -1,1 +1,32 @@
-<div id="cy" class="canvas"></div>
+<div class="row">
+  <div class="pcard_container {{ colspan }}">
+    <div class="pcard ui_panel">
+      <ng-container *ngIf="!fetching; else loading">
+        <div class="pcard ui_panel">
+          <app-layout-picker
+            #layoutPicker
+            [disabled]="isEmpty"
+            (changeLayoutEmitter)="updateLayout($event)"
+          ></app-layout-picker>
+        </div>
+      </ng-container>
+      <ng-template #loading>
+        <div>Loading network...</div>
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border text-secondary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </ng-template>
+      <div id="cy" class="canvas"></div>
+      <div #nodePopper class="popper">
+        <table #popperTable>
+          <tr>
+            <td>Label:</td>
+            <td>{{ popperLabel }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
