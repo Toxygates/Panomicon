@@ -15,9 +15,16 @@ export class UserDataService {
   selectedDataset$: BehaviorSubject<string | null>;
   selectedBatch$: BehaviorSubject<string | null>;
 
+  targetMineUsername$ = new BehaviorSubject('');
+  targetMinePassword$ = new BehaviorSubject('');
+
   private enabledGroupsBehaviorSubject: BehaviorSubject<SampleGroup[]>;
   enabledGroups$: Observable<SampleGroup[]>;
   platform$: Observable<string | undefined>;
+
+  firstNetworkSampleGroupName$: BehaviorSubject<string | null>;
+  secondNetworkSampleGroupName$: BehaviorSubject<string | null>;
+  networkGeneSetName$: BehaviorSubject<string | null>;
 
   static readonly SELECTED_DATASET_KEY: string = 'selectedDataset_v1';
   static readonly SELECTED_BATCH_KEY: string = 'selectedBatch_v1';
@@ -77,6 +84,14 @@ export class UserDataService {
     this.platform$ = this.enabledGroups$.pipe(
       map((groups) => (groups.length > 0 ? groups[0].platform : undefined))
     );
+
+    this.firstNetworkSampleGroupName$ = new BehaviorSubject<string | null>(
+      null
+    );
+    this.secondNetworkSampleGroupName$ = new BehaviorSubject<string | null>(
+      null
+    );
+    this.networkGeneSetName$ = new BehaviorSubject<string | null>(null);
   }
 
   canSelectGroup(group: SampleGroup): boolean {
