@@ -44,8 +44,8 @@ services:
   scalatra:
     container_name: "scalatra"
     build:
-      context: ./docker/scalatra
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Toxygates/Dockerfile
     depends_on:
       - fusionauth
     networks:
