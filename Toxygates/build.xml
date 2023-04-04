@@ -147,7 +147,6 @@
     </java>
   </target>
 
-  <!-- Run scalatra server -->
   <target name="scalatra" depends="classfiles" description="Run Scalatra on Jetty">
     <echo>${toString:compile.classpath}</echo>
     <java failonerror="true" fork="true" classname="panomicon.ScalatraLauncher">
@@ -158,18 +157,18 @@
     </java>
   </target>
 
-  <property name="dockerdir" value="../docker/scalatra/panomicon" />
+  <property name="scalatradir" value="scalatra-jetty" />
 
-  <target name="dockerimage" depends="classfiles" description="Build scalatra docker image">
-    <delete dir="${dockerdir}/lib" failonerror="false" />
-    <delete dir="${dockerdir}/classes" failonerror="false" />
-    <copy  todir="${dockerdir}/lib">
+  <target name="scalatra-jetty" depends="classfiles" description="Build Scalatra backend with Jetty for deployment">
+    <delete dir="${scalatradir}/lib" failonerror="false" />
+    <delete dir="${scalatradir}/classes" failonerror="false" />
+    <copy  todir="${scalatradir}/lib">
       <fileset dir="${wardir}/WEB-INF/lib"/>
     </copy>
-    <copy  todir="${dockerdir}/classes">
+    <copy  todir="${scalatradir}/classes">
       <fileset dir="${wardir}/WEB-INF/classes"/>
     </copy>
-    <ivy:retrieve pattern="${dockerdir}/lib/[artifact]-[revision].[ext]" conf="deploy" type="bundle,jar"/>
+    <ivy:retrieve pattern="${scalatradir}/lib/[artifact]-[revision].[ext]" conf="deploy" type="bundle,jar"/>
 
   </target>
 

@@ -14,8 +14,7 @@ OTGTool/lib/*
 Toxygates/lib/*
 Toxygates/gwtTomcatFilter.jar
 
-docker/scalatra/panomicon/classes
-docker/scalatra/panomicon/lib
+Toxygates/scalatra-jetty/*
 
 .DS_Store
 
