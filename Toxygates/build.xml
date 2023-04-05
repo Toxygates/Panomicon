@@ -157,18 +157,19 @@
     </java>
   </target>
 
-  <property name="scalatradir" value="scalatra-jetty" />
+  <property name="scalatra.dir" value="scalatra-jetty" />
 
   <target name="scalatra-jetty" depends="classfiles" description="Build Scalatra backend with Jetty for deployment">
-    <delete dir="${scalatradir}/lib" failonerror="false" />
-    <delete dir="${scalatradir}/classes" failonerror="false" />
-    <copy  todir="${scalatradir}/lib">
+    <mkdir dir="${scalatra.dir}" />
+    <delete dir="${scalatra.dir}/lib" failonerror="false" />
+    <delete dir="${scalatra.dir}/classes" failonerror="false" />
+    <copy  todir="${scalatra.dir}/lib">
       <fileset dir="${wardir}/WEB-INF/lib"/>
     </copy>
-    <copy  todir="${scalatradir}/classes">
+    <copy  todir="${scalatra.dir}/classes">
       <fileset dir="${wardir}/WEB-INF/classes"/>
     </copy>
-    <ivy:retrieve pattern="${scalatradir}/lib/[artifact]-[revision].[ext]" conf="deploy" type="bundle,jar"/>
+    <ivy:retrieve pattern="${scalatra.dir}/lib/[artifact]-[revision].[ext]" conf="deploy" type="bundle,jar"/>
 
   </target>
 
