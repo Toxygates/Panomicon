@@ -169,7 +169,7 @@
     <copy  todir="${scalatra.dir}/classes">
       <fileset dir="${wardir}/WEB-INF/classes"/>
     </copy>
-    <ivy:retrieve pattern="${scalatra.dir}/lib/[artifact]-[revision].[ext]" conf="deploy" type="bundle,jar"/>
+    <ivy:retrieve pattern="${scalatra.dir}/lib/[artifact]-[revision].[ext]" conf="jetty" type="bundle,jar"/>
 
   </target>
 
