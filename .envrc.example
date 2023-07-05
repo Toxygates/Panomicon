@@ -9,7 +9,7 @@ PATH_add "/Users/yuji/dev/toxygates/apache-ant-1.10.12/bin"
 PATH_add "/Users/yuji/dev/toxygates/scala-2.12.17/bin"
 
 # Necessary environment variables for the back end
-#If running fuseki from docker-compose, point to the appropriate docker service here e.g. http://fuseki:3030/...
+#If running scalatra and fuseki from docker-compose, point to the appropriate docker service here e.g. http://fuseki:3030/...
 export T_TS_URL="http://localhost:3030/otg/query"
 export T_TS_UPDATE_URL="http://localhost:3030/otg/update"
 export T_TS_USER="x"
@@ -28,8 +28,9 @@ export T_INTERMINE_URL=https://targetmine.mizuguchilab.org
 
 #External URL that the user can be redirected to
 export FUSIONAUTH_BASEURL="http://localhost:9011"
-#Internal URL for connecting to fusionauth.
-export FUSIONAUTH_APP_URL="http://fusionauth:9011"
+#Internal URL for connecting to fusionauth. 
+#If running scalatra and fusionauth from docker-compose, point to the appropriate docker service here e.g. http://fusionauth:9011
+export FUSIONAUTH_APP_URL="http://localhost:9011"
 export FUSIONAUTH_CLIENTID="056867c7-e20a-4af9-8570-47100496229f"
 export FUSIONAUTH_CLIENTSECRET="Tjm7lugRNeFRQkP3P_FqLdzwrZxhOTF_30YvZCp66rg"
 export REDIRECT_AFTER_AUTH_URL="http://localhost:4200/json/oauth-redirect"
