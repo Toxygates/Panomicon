@@ -22,9 +22,7 @@ package t.testing
 import t.{BaseConfig, _}
 
 object TestConfig {
-  //Not in use
-  val dataConfig = DataConfig("kcchunk:/path/to/data_chunk_dir",
-    "#bnum=6250000#pccap=1073741824#msiz=4294967296")
+  val dataConfig = DataConfig("/path/to/kyoto_data", "#bnum=6250000#pccap=1073741824#msiz=4294967296")
 
   /*
    * Triplestore tests currently depend on this server.

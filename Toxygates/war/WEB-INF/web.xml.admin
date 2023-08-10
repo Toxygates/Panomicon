@@ -20,7 +20,7 @@
 
 	<context-param>
 		<param-name>dataDir</param-name>
-		<param-value>kcchunk:/opt/toxygates-chunk</param-value>
+		<param-value>/opt/toxygates-chunk</param-value>
 	</context-param>
 	<context-param>
 		<param-name>matrixDbOptions</param-name>

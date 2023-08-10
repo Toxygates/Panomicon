@@ -1,0 +1,7 @@
+<!-- This project exists just to pre-fetch ivy dependencies. Helpful when building docker images. -->
+
+<project name="IvyCache" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+
+
+    <ivy:cachepath file="ivy.xml" pathid="ivy.classpath" />
+</project>

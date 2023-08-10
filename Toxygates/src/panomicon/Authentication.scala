@@ -12,15 +12,19 @@ import java.util.Base64
 import javax.servlet.http.Cookie
 
 class Authentication {
+  //FusionAuth URL for connecting on the internal network
+  val fusionAuthAppUrl = System.getenv("FUSIONAUTH_APP_URL")
+
+  //Publicly accessible FusionAuth URL
   val fusionAuthBaseUrl = System.getenv("FUSIONAUTH_BASEURL")
   val fusionAuthClientId = System.getenv("FUSIONAUTH_CLIENTID")
   val fusionAuthClientSecret = System.getenv("FUSIONAUTH_CLIENTSECRET")
   val redirectAfterAuthUrl = System.getenv("REDIRECT_AFTER_AUTH_URL")
   val jwtIssuer = System.getenv("JWT_ISSUER")
 
-  val logoutUrl = s"http://localhost:9011/oauth2/logout?client_id=$fusionAuthClientId"
+  val logoutUrl = s"$fusionAuthBaseUrl/oauth2/logout?client_id=$fusionAuthClientId"
 
-  val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthBaseUrl);
+  val fusionAuthClient = new FusionAuthClient("noapikeyneeded", fusionAuthAppUrl);
   val random = new SecureRandom()
 
   def loginRedirectUri(challenge: String): String =
@@ -60,11 +64,11 @@ class Authentication {
   }
 
   def getJwtToken(cookies: Array[Cookie]): Either[(JWT, String), String] = {
-    try {
-      val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").getOrElse(
-        return Right("JWT cookie __Host-jwt was not set")
-      )
+    val tokenCookie = cookies.find(c => c.getName == "__Host-jwt").getOrElse(
+      return Right("JWT cookie __Host-jwt was not set")
+    )
 
+    try {
       val jwt = new JWTDecoder().decode(tokenCookie.getValue,
         RSAVerifier.newVerifier(System.getenv("RSA_PUBLIC_KEY"))
       )
@@ -90,9 +94,7 @@ class Authentication {
         Left(jwt, tokenCookie.getValue)
       }
     } catch {
-      case e: Throwable => {
-        Right(s"Error getting token: ${e.toString}")
-      }
+      case e: Throwable => Right(s"Error getting token: ${e.toString}")
     }
   }
 

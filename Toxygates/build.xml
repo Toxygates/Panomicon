@@ -147,7 +147,6 @@
     </java>
   </target>
 
-  <!-- Run scalatra server -->
   <target name="scalatra" depends="classfiles" description="Run Scalatra on Jetty">
     <echo>${toString:compile.classpath}</echo>
     <java failonerror="true" fork="true" classname="panomicon.ScalatraLauncher">
@@ -156,6 +155,22 @@
       </classpath>
       <jvmarg value="-Xmx3g"/>
     </java>
+  </target>
+
+  <property name="scalatra.dir" value="scalatra-jetty" />
+
+  <target name="scalatra-jetty" depends="classfiles" description="Build Scalatra backend with Jetty for deployment">
+    <mkdir dir="${scalatra.dir}" />
+    <delete dir="${scalatra.dir}/lib" failonerror="false" />
+    <delete dir="${scalatra.dir}/classes" failonerror="false" />
+    <copy  todir="${scalatra.dir}/lib">
+      <fileset dir="${wardir}/WEB-INF/lib"/>
+    </copy>
+    <copy  todir="${scalatra.dir}/classes">
+      <fileset dir="${wardir}/WEB-INF/classes"/>
+    </copy>
+    <ivy:retrieve pattern="${scalatra.dir}/lib/[artifact]-[revision].[ext]" conf="jetty" type="bundle,jar"/>
+
   </target>
 
   <target name="clean">

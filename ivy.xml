@@ -8,6 +8,7 @@
   <conf name="runtime"  description="Additional run-time dependencies" extends="compile"/>
   <conf name="test"     description="Required for test only" extends="runtime"/>
   <conf name="provided" description="Needed for compile, but will be present on the target platform."/>
+  <conf name="jetty"    description="Run-time dependencies for scalatra deployment with Jetty" extends="runtime"/>
 </configurations>
 
 <!-- Dependencies go into the 'compile' configuration by default. -->
@@ -78,6 +79,9 @@
 
 
   <dependency org="io.fusionauth" name="fusionauth-java-client" rev="1.42.0" />
+
+  <dependency org="org.eclipse.jetty" name="jetty-webapp" rev="9.4.6.v20170531" conf="jetty->default" />
+  <dependency org="javax.servlet" name="javax.servlet-api" rev="3.1.0" conf="jetty->default" />
 
 </dependencies>
 </ivy-module>

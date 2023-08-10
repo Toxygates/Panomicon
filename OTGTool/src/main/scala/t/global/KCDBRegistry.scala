@@ -25,37 +25,38 @@ import scala.collection.mutable.Map
 
 /**
  * The KCDBRegistry tracks open Kyoto Cabinet databases.
- * 
+ *
+ * Users can request readers and writers. Both should be closed after use.
+ * Only one writer per file may be open at once; attempts to open a file twice will block until the existing writer
+ * is returned.
+ *
  * Cases that need to be kept in mind when changing this class are:
  *
- * 1. Multiple readers/writers accessing concurrently (users can upload data,
- * the admin GUI can be used to insert data). Handled by only allowing one outstanding writer per file.
- * 2. Other instances of Toxygates accessing the same files concurrently, 
- * but from the same JVM (e.g. /adjuvant). If this is a possibility, handled
- * by ensuring that a global classloader in the servlet container (e.g. Tomcat) loads this class.
- * Otherwise different webapps could have different instances of it.
- * 3. Other JVMs accessing the same files concurrently 
- * (this case is not currently supported/considered)
+ * 1. From instance this instance of Panomicon, multiple readers/writers accessing concurrently (users can upload data,
+ * the admin GUI can be used to insert data). Handled by the writer lock mechanism.
+ * 2. Other instances of Panomicon accessing the same files concurrently,
+ * but from the same JVM process. Because this class is in the t.global package (loaded using a shared classloader in
+ * Tomcat) a single KCDBRegistry can be shared between such instances and the writer lock will also be effective.
+ * 3. Other processes accessing the same databases concurrently. Handled through file locking at the OS level.
  */
 object KCDBRegistry {
 
   /**
    * Maps file path to DB object for open writers
    */
-  @volatile
-  private var openWriters = Map[String, DB]()
+  private val openWriters = Map[String, DB]()
 
   private var maintenance: Boolean = false
 
   def isMaintenanceMode: Boolean = maintenance
 
   /**
-   * If maintenance mode is on, everybody gets the same DB handle for a given path,
-   * always in write mode, and they are
-   * kept open until closeWriters is called at the end.
+   * If maintenance mode is on, everybody gets the same DB handle for a given path, always in write mode, and they are
+   * kept open until closeWriters is called at the end. (Blocking is disabled, it is assumed that there are no other
+   * users)
    * Useful for unrestricted, simple use, if concurrent use is not a concern.
    */
-  def setMaintenance(maintenance: Boolean) {
+  def setMaintenance(maintenance: Boolean): Unit = {
     this.maintenance = maintenance
   }
 
@@ -64,6 +65,11 @@ object KCDBRegistry {
    */
   private def onlyFileName(file: String) = file.split("#")(0)
 
+  /** Get a reader or writer.
+   * Attempting to get a writer may block indefinitely, until other writers are closed.
+   * If a reader is requested it may be closed directly; for a writer, the user should call
+   * [[KCDBRegistry.releaseWriter()]].
+   */
   def get(file: String, writeMode: Boolean): Option[DB] = {
     if (writeMode) {
       getWriter(file)
@@ -76,9 +82,8 @@ object KCDBRegistry {
    * Get a reader.
    * This class will not track readers. Users should close them manually after use.
    */
-  def getReader(file: String): Option[DB] = synchronized {
+  private[global] def getReader(file: String): Option[DB] = synchronized {
     println(s"Read request for $file")
-    val rp = onlyFileName(file)
     if (maintenance) {
       getWriter(file)
     } else {
@@ -86,6 +91,8 @@ object KCDBRegistry {
     }
   }
 
+  /** In a non-blocking way, try to get a writer for a file.
+   * @return  A writer if it could be obtained, or None if somebody else was already writing the file. */
   private def tryGetWriter(file: String): Option[DB] = synchronized {
     val onlyFile = onlyFileName(file)
     if (openWriters.contains(onlyFile)) {
@@ -104,13 +111,11 @@ object KCDBRegistry {
 
   /**
    * Get a writer.
-   * Only one outstanding writer per file is allowed. The request
-   * will block until any current writers are closed.
+   * Only one outstanding writer per file is allowed. The request will block until any current writers are closed.
    * Writers should be released after use.
-   * Note that not even the same thread may request the same writer twice without
-   * first closing the first one.
+   * Note that not even the same thread may request the same writer twice without first closing the first one.
    */
-  def getWriter(file: String): Option[DB] = {
+  private[global] def getWriter(file: String): Option[DB] = {
     println(s"Write request for $file")
 
     val filePath = onlyFileName(file)
@@ -129,6 +134,7 @@ object KCDBRegistry {
     w
   }
 
+  /** Release a writer that was previously obtained. */
   def releaseWriter(path: String): Unit = synchronized {
     val file = onlyFileName(path)
     assert (openWriters.contains(file))
@@ -140,10 +146,10 @@ object KCDBRegistry {
   /**
    * This method should be called when we shut down to close all writers.
    * Intended for maintenance mode and as a failsafe to guard against data corruption.
-   * In normal operation, each writer should be released individually after use.
+   * In normal operation, each writer should be released individually after use with [[releaseWriter()]] above.
    */
   def closeWriters(): Unit = synchronized {
-    for ((f, db) <- openWriters) {
+    for ((f, _) <- openWriters) {
       releaseWriter(f)
     }
   }
