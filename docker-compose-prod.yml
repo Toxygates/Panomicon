@@ -77,6 +77,22 @@ services:
     volumes:
       - ${T_DATA_DIR}:/data
 
+  node:
+     build:
+       context: angular/ 
+       dockerfile: "Dockerfile"
+     depends_on:
+       - scalatra
+       - fusionauth
+     ports:
+       - "4200:80"
+     tty: true
+     restart: unless-stopped
+     networks:
+       - panomicon_net
+     volumes:
+       - ./angular/nginx/conf.d:/etc/nginx/conf.d
+
 networks:
   panomicon_net:
     driver: bridge
@@ -84,3 +100,4 @@ networks:
 volumes:
   fusionauth_db_data:
   fusionauth_config:
+
