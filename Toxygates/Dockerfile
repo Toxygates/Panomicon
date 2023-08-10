@@ -1,12 +1,16 @@
 #Dockerfile for running scalatra on jetty.
-
-FROM eclipse-temurin:11 as build
+ 
+FROM bitnami/minideb:bookworm as build
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=eclipse-temurin:11 $JAVA_HOME $JAVA_HOME
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 #Ant installation sequence mostly from https://github.com/frekele/docker-ant/blob/master/Dockerfile
 ENV ANT_VERSION=1.10.12
 ENV ANT_HOME=/opt/ant
 
 WORKDIR /tmp
+RUN apt-get update && apt-get install -y unzip wget
 
 # Download and extract apache ant to opt folder
 RUN wget --no-check-certificate --no-cookies http://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz \
@@ -39,8 +43,6 @@ COPY Toxygates /build/Toxygates/
 COPY build_common.xml /build/
 WORKDIR /build/Toxygates
 
-RUN apt-get update && apt-get install -y unzip
-
 #Download GWT
 ENV GWT_VERSION=2.9.0
 RUN wget https://storage.googleapis.com/gwt-releases/gwt-${GWT_VERSION}.zip \
@@ -50,7 +52,12 @@ ENV GWT_SDK=/opt/gwt-${GWT_VERSION}
 
 RUN ant -lib /build scalatra-jetty
 
-FROM eclipse-temurin:11-jre-alpine as main
+#Build done, set up the final runtime image
+FROM bitnami/minideb:bookworm as main
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=eclipse-temurin:11 $JAVA_HOME $JAVA_HOME
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
 COPY --from=build /build/Toxygates/scalatra-jetty /panomicon
 COPY docker/scalatra/panomicon/* /panomicon/
 
