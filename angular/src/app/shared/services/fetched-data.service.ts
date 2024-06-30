@@ -229,7 +229,7 @@ export class FetchedDataService {
   initialColumns(): Tabulator.ColumnDefinition[] {
     return [
       //{formatter:"rowSelection", titleFormatter:"rowSelection", align:"center", headerSort:false},
-      { title: 'Sample ID', field: 'sample_id' },
+      { title: 'Sample ID', field: 'sample_id', frozen: true },
     ];
   }
 
