@@ -43,7 +43,7 @@
     <!-- Directory where Kyoto Cabinet databases are kept. -->
 	<context-param>
 		<param-name>dataDir</param-name>
-		<param-value>kcchunk:/path/to/panomicon-data</param-value>
+		<param-value>/path/to/panomicon-data</param-value>
 	</context-param>
 
 	<!-- Kyoto cabinet database tuning parameters, see

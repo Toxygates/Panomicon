@@ -16,8 +16,8 @@ set T_TS_USER=x
 set T_TS_PASS=y
 ::set T_TS_REPO=ttest
 
-set T_DATA_DIR=kcchunk:C:\Users\yuji\Documents\Toxygates\kyoto_data
-::set T_DATA_DIR=kcchunk:C:\Users\yuji\Documents\Toxygates\kyoto_testdata
+set T_DATA_DIR=C:\Users\yuji\Documents\Toxygates\kyoto_data
+::set T_DATA_DIR=C:\Users\yuji\Documents\Toxygates\kyoto_testdata
 set T_DATA_MATDBCONFIG=#pccap=1073741824#msiz=4294967296
 
 ::echo "%OTGTOOL_ROOT%\lib\jar;%OTGTOOL_ROOT%\lib\bundle;%OTGTOOL_ROOT%\mlib;%OTGTOOL_ROOT%\classes;%CLASSPATH%"
