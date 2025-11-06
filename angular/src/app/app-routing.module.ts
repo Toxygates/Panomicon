@@ -36,6 +36,13 @@ const routes: Routes = [
             (m) => m.GeneSetsModule
           ),
       },
+      {
+        path: 'visualization',
+        loadChildren: () =>
+          import('./viewer/visualization/visualization.module').then(
+            (m) => m.VisualizationModule
+          ),
+      },
       { path: '', redirectTo: 'sample-browser', pathMatch: 'full' },
       { path: '**', component: PageNotFoundComponent },
     ],

@@ -1,0 +1,53 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 pcard_container">
+      <div class="pcard ui_panel">
+        <app-sample-group-picker
+          [sampleGroups]="firstNetworkSampleGroupOptions$ | async"
+          sampleGroupType="mRNA"
+          (selectedSampleGroupChange)="firstNetworkSampleGroup$.next($event)"
+          [disabled]="fetchingNetwork"
+        >
+        </app-sample-group-picker>
+        <app-sample-group-picker
+          [sampleGroups]="secondNetworkSampleGroupOptions$ | async"
+          sampleGroupType="miRNA"
+          (selectedSampleGroupChange)="secondNetworkSampleGroup$.next($event)"
+          [disabled]="fetchingNetwork"
+        >
+        </app-sample-group-picker>
+        <app-gene-set-picker
+          [geneSets$]="geneSets$"
+          (selectedGeneSetChange)="networkGeneSet$.next($event)"
+          [disabled]="fetchingNetwork"
+        >
+        </app-gene-set-picker>
+        <button
+          type="button"
+          class="btn btn-success mr-2"
+          [disabled]="
+            fetchingNetwork || (isReadyToGenerateNetwork$ | async) === false
+          "
+          (click)="generateNetwork()"
+        >
+          <span
+            *ngIf="fetchingNetwork"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          Generate network
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <app-display-canvas
+    #networkCanvas
+    [colspan]="'col-12'"
+    [network]="fetchedNetwork"
+    [fetching]="fetchingNetwork"
+  >
+  </app-display-canvas>
+  <router-outlet> </router-outlet>
+</div>

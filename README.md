@@ -16,28 +16,17 @@ GWT-based web frontend
 
 ## Compiling
 
-In order to compile Panomicon, the following dependencies are required:
+### Angular application (new)
 
-* Java version 8 (compiling on higher versions is not recommended).
+`docker build -f Toxygates/Dockerfile .`
 
-* GWT SDK 2.8.2 or higher, available from http://www.gwtproject.org/download.html
+### GWT application (old)
 
-* Scala SDK (any 2.12 version)
+The GWT application can be compiled with Docker even if it is ultimately run using a servlet container such as Tomcat.
 
-* The ant build tool.
+`docker build -f Toxygates/Dockerfile.gwt . --output=.`
 
-In order to run Panomicon, it is also necessary to run a RDF triplestore supporting SPARQL 1.1. We use Apache Jena Fuseki.
-
-First, export the following environment variables:
-
-* SCALA_HOME - path to Scala SDK
-
-* GWT_SDK - path to GWT SDK
-
-Then, build the back end by going into the Toxygates directory and running:
-`
-ant compile
-`
+The resulting WAR files will be copied to `./tg-build`.
 
 ## Configuration
 

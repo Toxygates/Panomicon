@@ -9,6 +9,7 @@ export interface SampleGroup {
 
 export interface GeneSet {
   name: string;
+  type: string;
   platform: string;
   probes: string[];
 }

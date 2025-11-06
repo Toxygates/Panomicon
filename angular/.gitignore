@@ -43,6 +43,8 @@ testem.log
 /typings
 .eslintcache
 
+.nvmrc
+
 # System Files
 .DS_Store
 Thumbs.db

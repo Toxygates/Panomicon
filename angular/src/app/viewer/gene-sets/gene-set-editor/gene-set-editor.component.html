@@ -1,7 +1,7 @@
 <h2>Gene set editor</h2>
 
 <div *ngIf="geneSet$ | async as geneSet; else geneSetNotFound">
-  <h3>{{ geneSet.name }} ({{ geneSet.platform }})</h3>
+  <h3>{{ geneSet.name }} ({{ geneSet.platform }} / {{ geneSet.type }})</h3>
   <div class="form-group">
     <label for="probeSelect">Probes</label>
     <select
@@ -44,6 +44,15 @@
   <div class="form-group">
     <button
       type="button"
+      class="btn btn-success"
+      (click)="openGeneSetExportModal(geneSetExportModal)"
+    >
+      Export gene set to TargetMine
+    </button>
+  </div>
+  <div class="form-group">
+    <button
+      type="button"
       class="btn btn-danger"
       (click)="deleteGeneSet(geneSet.name)"
     >
@@ -57,4 +66,65 @@
     Gene set {{ geneSetName$ | async }} not found
   </div>
   <ng-template #selectAGeneSet> Select a gene set to edit </ng-template>
+</ng-template>
+
+<ng-template #geneSetExportModal>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Export gene set to TargetMine</h4>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        [ngModel]="targetMineUsername$ | async"
+        (ngModelChange)="targetMineUsername$.next($event)"
+        name="username"
+        class="form-control mb-2"
+        placeholder="Enter your TargetMine username"
+        [disabled]="waitingForApiResponse"
+      />
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        [ngModel]="targetMinePassword$ | async"
+        (ngModelChange)="targetMinePassword$.next($event)"
+        name="password"
+        class="form-control mb-2"
+        placeholder="Enter your TargetMine password"
+        [disabled]="waitingForApiResponse"
+      />
+      <div class="form-check mt-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [(ngModel)]="replaceGeneSet"
+          id="replace-gene-set"
+        />
+        <label class="form-check-label" for="replace-gene-set">
+          Replace existing gene set if present
+        </label>
+      </div>
+      <button
+        type="button"
+        class="btn btn-success mt-2"
+        (click)="exportGeneSet()"
+        [disabled]="
+          waitingForApiResponse ||
+          !targetMineUsername$.value ||
+          !targetMinePassword$.value
+        "
+      >
+        <span
+          *ngIf="waitingForApiResponse"
+          class="spinner-border spinner-border-sm"
+          role="status"
+          aria-hidden="true"
+        ></span>
+        {{ waitingForApiResponse ? "Exporting" : "Export" }}
+      </button>
+    </div>
+  </div>
 </ng-template>

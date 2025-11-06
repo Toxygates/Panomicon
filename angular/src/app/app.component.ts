@@ -21,6 +21,8 @@ export class AppComponent implements OnInit {
       if (roles == null) {
         this.modalService.show(this.loginTemplate, {
           class: 'modal-dialog-centered',
+          ignoreBackdropClick: true,
+          keyboard: false,
         });
       }
     });

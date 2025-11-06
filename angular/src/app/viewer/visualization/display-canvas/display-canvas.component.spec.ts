@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GeneSetManagerComponent } from './gene-set-manager.component';
+import { DisplayCanvasComponent } from './display-canvas.component';
 
-describe('GeneSetManagerComponent', () => {
-  let component: GeneSetManagerComponent;
-  let fixture: ComponentFixture<GeneSetManagerComponent>;
+describe('DisplayCanvasComponent', () => {
+  let component: DisplayCanvasComponent;
+  let fixture: ComponentFixture<DisplayCanvasComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [GeneSetManagerComponent],
+      declarations: [DisplayCanvasComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(GeneSetManagerComponent);
+    fixture = TestBed.createComponent(DisplayCanvasComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
