@@ -1,6 +1,6 @@
 #Dockerfile for compiling the GWT application.
  
-FROM bitnami/minideb:bookworm as build
+FROM bitnami/minideb:bookworm AS build
 ENV JAVA_HOME=/opt/java/openjdk
 COPY --from=eclipse-temurin:11 $JAVA_HOME $JAVA_HOME
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
@@ -38,8 +38,8 @@ COPY ivy.xml ivy_cache.xml ivy.jar /build/
 #Populate the ivy cache (slow step, helpful to do early so we can cache it)
 RUN ant -lib /build -f /build/ivy_cache.xml
 
-COPY OTGTool /build/OTGTool/
 COPY Toxygates /build/Toxygates/
+COPY OTGTool /build/OTGTool/
 COPY build_common.xml /build/
 WORKDIR /build/Toxygates
 
@@ -52,11 +52,17 @@ ENV GWT_SDK=/opt/gwt-${GWT_VERSION}
 
 RUN ant -lib /build compile
 
-WORKDIR /build/Toxygates
 RUN ./deploy.sh
 
-FROM scratch
+FROM tomcat:9-jre21-temurin-jammy AS result
 
-COPY --from=build /build/Toxygates/war/admin.war /tg-build/admin.war
-COPY --from=build /build/Toxygates/war/toxygates-template.war /tg-build/toxygates-template.war
+ENV TG_ROOT=/build/Toxygates
+ENV WAR_ROOT=${TG_ROOT}/war
+ENV CATALINA_HOME=/usr/local/tomcat
+
+COPY --from=build ${TG_ROOT}/tglobal.jar ${CATALINA_HOME}/lib
+COPY --from=build ${TG_ROOT}/gwtTomcatFilter.jar ${CATALINA_HOME}/lib
+
+COPY --from=build ${WAR_ROOT}/admin.war ${CATALINA_HOME}/webapps
+COPY --from=build ${WAR_ROOT}/toxygates-template.war ${CATALINA_HOME}/webapps
 

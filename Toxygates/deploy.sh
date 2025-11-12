@@ -2,12 +2,9 @@
 
 WAR=war
 TGCP=$WAR/WEB-INF/classes
-TOOLCP=../OTGTool/classes
 
 function makeWar {
     OUTPUT=toxygates-template.war
-    cp -r $TOOLCP/friedrich $TGCP
-    cp -r $TOOLCP/t $TGCP
     pushd $WAR
     rm $OUTPUT
     rm WEB-INF/web.xml
@@ -22,8 +19,6 @@ function makeWar {
 }
 
 function makeAdminWar {
-    cp -r $TOOLCP/friedrich $TGCP
-    cp -r $TOOLCP/t $TGCP
     pushd $WAR
     cp WEB-INF/web.xml.admin WEB-INF/web.xml
     rm admin.war
@@ -36,12 +31,6 @@ function makeAdminWar {
 
 WARLIB=$WAR/WEB-INF/lib
 
-#These should be in the shared tomcat lib dir (tglobal.jar)
-rm $WARLIB/kyotocabinet*jar
-rm $WARLIB/scala-library*.jar
-rm $WARLIB/scala-parser-combinators*jar
-rm $WARLIB/scala-xml*.jar
-
 cp $WAR/WEB-INF/web.xml $WAR/WEB-INF/web.xml.bak
 
 makeWar
@@ -51,3 +40,4 @@ makeAdminWar
 mv $WAR/WEB-INF/web.xml.bak $WAR/WEB-INF/web.xml
 
 jar cf gwtTomcatFilter.jar -C $TGCP t/tomcat
+jar cf tglobal.jar -C $TGCP t/global
