@@ -27,6 +27,15 @@
         <param-value>#pccap=1073741824#msiz=4294967296</param-value>
     </context-param>
 
+    <!-- Username and password for update access to the RDF triplestore. -->
+    <context-param>
+        <param-name>repositoryUser</param-name>
+        <param-value>${toxygates.repositoryUser}</param-value>
+    </context-param>
+    <context-param>
+        <param-name>repositoryPassword</param-name>
+        <param-value>${toxygates.repositoryPassword}</param-value>
+    </context-param>
 
     <!-- For AdminGUI -->
     <context-param>

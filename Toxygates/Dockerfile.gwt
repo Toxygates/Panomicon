@@ -60,7 +60,6 @@ ENV TG_ROOT=/build/Toxygates
 ENV WAR_ROOT=${TG_ROOT}/war
 ENV CATALINA_HOME=/usr/local/tomcat
 
-COPY --from=build ${TG_ROOT}/tglobal.jar ${CATALINA_HOME}/lib
 COPY --from=build ${TG_ROOT}/gwtTomcatFilter.jar ${CATALINA_HOME}/lib
 
 COPY --from=build ${WAR_ROOT}/admin.war ${CATALINA_HOME}/webapps
