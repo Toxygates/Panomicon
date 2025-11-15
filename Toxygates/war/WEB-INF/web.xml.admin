@@ -9,97 +9,97 @@
     Please see web.xml.template for comments on what most of these parameters do, and also
     see the specific comments about security at the end of this file. -->
 
-	<context-param>
-		<param-name>repositoryURL</param-name>
-                <param-value>${toxygates.repositoryURL}</param-value>		
-	</context-param>
-	<context-param>
-		<param-name>webappHomeDir</param-name>
-		<param-value>/var/lib/tomcat/webapps</param-value>
-	</context-param>
+    <context-param>
+        <param-name>repositoryURL</param-name>
+        <param-value>${toxygates.repositoryURL}</param-value>
+    </context-param>
+    <context-param>
+        <param-name>webappHomeDir</param-name>
+        <param-value>/var/lib/tomcat/webapps</param-value>
+    </context-param>
 
-	<context-param>
-		<param-name>dataDir</param-name>
-                <param-value>${toxygates.dataDir}</param-value>
-	</context-param>
-	<context-param>
-		<param-name>matrixDbOptions</param-name>
-		<param-value>#pccap=1073741824#msiz=4294967296</param-value>
-	</context-param>
- 
+    <context-param>
+        <param-name>dataDir</param-name>
+        <param-value>${toxygates.dataDir}</param-value>
+    </context-param>
+    <context-param>
+        <param-name>matrixDbOptions</param-name>
+        <param-value>#pccap=1073741824#msiz=4294967296</param-value>
+    </context-param>
 
-	<!-- For AdminGUI -->
-	<context-param>
-		<!-- 256 MB -->
-		<param-name>maxSize</param-name>
-		<param-value>268435456</param-value>
-	</context-param>
-	<context-param>
-		<!-- 256 MB -->
-		<param-name>maxFileSize</param-name>
-		<param-value>268435456</param-value>
-	</context-param>
-	<context-param>
-		<param-name>updateURL</param-name>
-                <param-value>${toxygates.updateURL}</param-value>
-	</context-param>
-	
-	
-  <!-- Servlets -->
 
-  	<!-- For AdminGUI -->
-	<servlet>
-		<servlet-name>uploadServlet</servlet-name>
-		<!-- This is the default servlet, it puts files in session -->
-		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>uploadServlet</servlet-name>
-		<url-pattern>*.gupld</url-pattern>
-	</servlet-mapping>	
+    <!-- For AdminGUI -->
+    <context-param>
+        <!-- 256 MB -->
+        <param-name>maxSize</param-name>
+        <param-value>268435456</param-value>
+    </context-param>
+    <context-param>
+        <!-- 256 MB -->
+        <param-name>maxFileSize</param-name>
+        <param-value>268435456</param-value>
+    </context-param>
+    <context-param>
+        <param-name>updateURL</param-name>
+        <param-value>${toxygates.updateURL}</param-value>
+    </context-param>
 
-	<servlet>
-		<servlet-name>maintenanceServlet</servlet-name>
-		<servlet-class>t.server.admin.MaintenanceServiceImpl</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>maintenanceServlet</servlet-name>
-		<url-pattern>/AdminConsole/maintenance</url-pattern>
-	</servlet-mapping>
-  
-  
-  <!-- Default page to serve -->
-  <welcome-file-list>
-    <welcome-file>admin.html</welcome-file>
-  </welcome-file-list>
 
-  <!-- Cache header editing filter, to ensure the application 
-  refreshes properly after updates. Must be in the tomcat classpath for the filter to work -->
-  <filter>
-    <filter-name>gwtCacheControlFilter</filter-name>
-    <filter-class>t.tomcat.NocacheFilter</filter-class>
-  </filter>
-  
-  <filter-mapping>
-    <filter-name>gwtCacheControlFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
+    <!-- Servlets -->
 
-<!-- For dev mode, or if no access control to the admin GUI is needed (note that this interface can view,
-  edit and delete all data), remove or comment the security-constraint and login-config sections below. -->
-<security-constraint>
-  <web-resource-collection>
-     <web-resource-name>Toxygates (Development version)</web-resource-name>
-     <url-pattern>/*</url-pattern>
-  </web-resource-collection>
-  <auth-constraint>
-    <role-name>toxygates-test</role-name>
-  </auth-constraint>
-</security-constraint>
+    <!-- For AdminGUI -->
+    <servlet>
+        <servlet-name>uploadServlet</servlet-name>
+        <!-- This is the default servlet, it puts files in session -->
+        <servlet-class>gwtupload.server.UploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>uploadServlet</servlet-name>
+        <url-pattern>*.gupld</url-pattern>
+    </servlet-mapping>
 
-<login-config>
-  <auth-method>BASIC</auth-method>
-  <realm-name>Panomicon GWT Admin</realm-name>
-</login-config>
+    <servlet>
+        <servlet-name>maintenanceServlet</servlet-name>
+        <servlet-class>t.server.admin.MaintenanceServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>maintenanceServlet</servlet-name>
+        <url-pattern>/AdminConsole/maintenance</url-pattern>
+    </servlet-mapping>
+
+
+    <!-- Default page to serve -->
+    <welcome-file-list>
+        <welcome-file>admin.html</welcome-file>
+    </welcome-file-list>
+
+    <!-- Cache header editing filter, to ensure the application
+    refreshes properly after updates. Must be in the tomcat classpath for the filter to work -->
+    <filter>
+        <filter-name>gwtCacheControlFilter</filter-name>
+        <filter-class>t.tomcat.NocacheFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>gwtCacheControlFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- For dev mode, or if no access control to the admin GUI is needed (note that this interface can view,
+      edit and delete all data), remove or comment the security-constraint and login-config sections below. -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Toxygates (Development version)</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>toxygates-test</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>Panomicon GWT Admin</realm-name>
+    </login-config>
 
 </web-app>
