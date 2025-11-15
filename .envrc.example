@@ -23,6 +23,8 @@ export T_INTERMINE_NAME=TargetMine
 export T_INTERMINE_ID=targetmine
 export T_INTERMINE_URL=https://targetmine.mizuguchilab.org
 
+export TOMCAT_JVM_ARGS="-Xmx16g"
+
 # Additional back end variables for FusionAuth
 # (the values below work out of the box with the docker-compose file)
 

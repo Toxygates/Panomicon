@@ -77,6 +77,39 @@ services:
     volumes:
       - ${T_DATA_DIR}:/data
 
+  toxygates:
+    image: toxygates-gwt
+    #container_name: "toxygates-gwt"
+    #build:
+    #  context: .
+    #  dockerfile: Toxygates/Dockerfile.gwt
+    #depends_on:
+    #  - fuseki
+    networks:
+      - panomicon_net
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    volumes:
+      - ${T_DATA_DIR}:/data
+    environment:
+      JAVA_OPTS : "
+        ${TOMCAT_JVM_ARGS} 
+        -Dtoxygates.repositoryURL=${T_TS_URL} 
+        -Dtoxygates.updateURL=${T_TS_UPDATE_URL}
+        -Dtoxygates.instanceName=${T_INSTANCE_NAME}
+        -Dtoxygates.repositoryUser=${T_TS_USER}
+        -Dtoxygates.repositoryPassword=${T_TS_PASS}
+        -Dtoxygates.dataDir=/data
+        -Dtoxygates.csvDir=/usr/local/tomcat/webapps/toxygates/csv
+        -Dtoxygates.cvsUrlBase=${T_CSV_URLBASE}
+        -Dtoxygates.feedbackReceivers=jtnystrom@gmail.com
+        -Dtoxygates.feedbackFromAddress=root@panomicon.nibn.go.jp
+        -Dtoxygates.intermine.target.appname=${T_INTERMINE_NAME}
+        -Dtoxygates.intermine.target.title=${T_INTERMINE_ID}
+        -Dtoxygates.intermine.target.userurl=${T_INTERMINE_URL}
+        "
+
 networks:
   panomicon_net:
     driver: bridge

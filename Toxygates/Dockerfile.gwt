@@ -38,17 +38,17 @@ COPY ivy.xml ivy_cache.xml ivy.jar /build/
 #Populate the ivy cache (slow step, helpful to do early so we can cache it)
 RUN ant -lib /build -f /build/ivy_cache.xml
 
-COPY Toxygates /build/Toxygates/
-COPY OTGTool /build/OTGTool/
-COPY build_common.xml /build/
-WORKDIR /build/Toxygates
-
 #Download GWT
 ENV GWT_VERSION=2.9.0
 RUN wget https://storage.googleapis.com/gwt-releases/gwt-${GWT_VERSION}.zip \
   && unzip gwt-${GWT_VERSION}.zip -d /opt/ \
   && rm -f gwt-${GWT_VERSION}.zip
 ENV GWT_SDK=/opt/gwt-${GWT_VERSION}  
+
+COPY Toxygates /build/Toxygates/
+COPY OTGTool /build/OTGTool/
+COPY build_common.xml /build/
+WORKDIR /build/Toxygates
 
 RUN ant -lib /build compile
 
@@ -64,5 +64,6 @@ COPY --from=build ${TG_ROOT}/tglobal.jar ${CATALINA_HOME}/lib
 COPY --from=build ${TG_ROOT}/gwtTomcatFilter.jar ${CATALINA_HOME}/lib
 
 COPY --from=build ${WAR_ROOT}/admin.war ${CATALINA_HOME}/webapps
-COPY --from=build ${WAR_ROOT}/toxygates-template.war ${CATALINA_HOME}/webapps
+COPY --from=build ${WAR_ROOT}/toxygates.war ${CATALINA_HOME}/webapps
 
+COPY Toxygates/tomcat-users.xml ${CATALINA_HOME}/conf

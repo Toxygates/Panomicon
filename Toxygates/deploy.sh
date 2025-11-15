@@ -4,16 +4,24 @@ WAR=war
 TGCP=$WAR/WEB-INF/classes
 
 function makeWar {
-    OUTPUT=toxygates-template.war
+    OUTPUT=$1 
+    shift
+    WEBXML=$1
+    shift
+
     pushd $WAR
     rm $OUTPUT
-    rm WEB-INF/web.xml
+    cp $WEBXML WEB-INF/web.xml 
     [ ! -d csv ] && mkdir csv
     rm csv/*.csv
-    jar cf $OUTPUT toxygates images csv *.pdf *.css *.html.template *.zip
+
+    #html.template is for the deprecated new_instance/delete_instance system
+    #jar cf $OUTPUT toxygates images csv *.pdf *.css *.html.template *.zip 
+
+    jar cf $OUTPUT toxygates images csv *.pdf *.css toxygates.html *.zip 
     #Exclude classes in some packages
-    jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
-      -path WEB-INF/classes/t/global -o \
+    jar uf $OUTPUT $(find WEB-INF \( \
+      -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/tomcat \) -prune -o \( -type f -print \) )
     popd
 }
@@ -23,21 +31,24 @@ function makeAdminWar {
     cp WEB-INF/web.xml.admin WEB-INF/web.xml
     rm admin.war
     jar cf admin.war AdminConsole admin.html *.css images
-    jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
-      -path WEB-INF/classes/t/tomcat -o \
+    jar uf admin.war $(find WEB-INF \
+      -path WEB-INF/classes/t/tomcat -prune -o \
       \( -type f -print \) )
     popd
 }
 
-WARLIB=$WAR/WEB-INF/lib
 
 cp $WAR/WEB-INF/web.xml $WAR/WEB-INF/web.xml.bak
 
-makeWar
+#This template war is intended for the new_instance/delete_instance scripts, now deprecated.
+#makeWar toxygates-template.jar WEB-INF/web.xml.template
+
+makeWar toxygates.war WEB-INF/web.xml.docker
 makeAdminWar
 
 #Restore
 mv $WAR/WEB-INF/web.xml.bak $WAR/WEB-INF/web.xml
 
 jar cf gwtTomcatFilter.jar -C $TGCP t/tomcat
-jar cf tglobal.jar -C $TGCP t/global
+
+#jar cf tglobal.jar -C $TGCP t/global

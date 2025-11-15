@@ -11,7 +11,7 @@
 
 	<context-param>
 		<param-name>repositoryURL</param-name>
-		<param-value>http://localhost:3030/Toxygates/query</param-value>		
+                <param-value>${toxygates.repositoryURL}</param-value>		
 	</context-param>
 	<context-param>
 		<param-name>webappHomeDir</param-name>
@@ -20,7 +20,7 @@
 
 	<context-param>
 		<param-name>dataDir</param-name>
-		<param-value>/opt/toxygates-chunk</param-value>
+                <param-value>${toxygates.dataDir}</param-value>
 	</context-param>
 	<context-param>
 		<param-name>matrixDbOptions</param-name>
@@ -41,7 +41,7 @@
 	</context-param>
 	<context-param>
 		<param-name>updateURL</param-name>
-		<param-value>http://localhost:3030/Toxygates/update</param-value>
+                <param-value>${toxygates.updateURL}</param-value>
 	</context-param>
 	
 	
@@ -99,7 +99,7 @@
 
 <login-config>
   <auth-method>BASIC</auth-method>
-  <realm-name>Toxygates (Adjuvant test)</realm-name>
+  <realm-name>Panomicon GWT Admin</realm-name>
 </login-config>
 
 </web-app>
