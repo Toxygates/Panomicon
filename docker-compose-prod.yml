@@ -46,6 +46,7 @@ services:
       dockerfile: Toxygates/Dockerfile
     depends_on:
       - fusionauth
+      - fuseki
     networks:
       - panomicon_net
     restart: unless-stopped
@@ -75,14 +76,28 @@ services:
     volumes:
       - ${T_DATA_DIR}:/data
 
+  fuseki:
+    container_name: "jena-fuseki"
+    build:
+      context: ./docker/fuseki
+      dockerfile: Dockerfile
+    networks:
+      - panomicon_net
+    restart: unless-stopped
+    environment:
+      JVM_ARGS: ${FUSEKI_JVM_ARGS}
+    ports:
+      - 3030:3030
+    volumes:
+      - ${FUSEKI_DATA_DIR}:/fuseki
+
   toxygates:
-    image: toxygates-gwt
-    #container_name: "toxygates-gwt"
-    #build:
-    #  context: .
-    #  dockerfile: Toxygates/Dockerfile.gwt
-    #depends_on:
-    #  - fuseki
+    container_name: "toxygates-gwt"
+    build:
+      context: .
+      dockerfile: Toxygates/Dockerfile.gwt
+    depends_on:
+      - fuseki
     networks:
       - panomicon_net
     restart: unless-stopped
