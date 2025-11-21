@@ -122,6 +122,21 @@ services:
         -Dtoxygates.intermine.target.title=${T_INTERMINE_ID}
         -Dtoxygates.intermine.target.userurl=${T_INTERMINE_URL}
         "
+  node:
+     build:
+       context: angular/ 
+       dockerfile: "Dockerfile"
+     depends_on:
+       - scalatra
+       - fusionauth
+     ports:
+       - "4200:80"
+     tty: true
+     restart: unless-stopped
+     networks:
+       - panomicon_net
+     volumes:
+       - ./angular/nginx/conf.d:/etc/nginx/conf.d
 
 networks:
   panomicon_net:
@@ -130,3 +145,4 @@ networks:
 volumes:
   fusionauth_db_data:
   fusionauth_config:
+
