@@ -54,6 +54,7 @@
   <user username="role1" password="<must-be-changed>" roles="role1"/>
 -->
 
+  <!-- NOTE: when deploying, fill in the actual password below. -->
   <role rolename="toxygates-test"/>
   <user username="admin" password="secret password" roles="toxygates-test"/>
 
