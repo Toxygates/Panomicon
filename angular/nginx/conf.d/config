@@ -1,0 +1,11 @@
+#This file exists purely to be able to select between different configurations.
+#This file's directory (conf.d) can easily be bind mounted in docker, unlike the parent directory
+#which already has pre-existing files in the docker image.
+#Thus, the selection is made here and not in default.conf, so that the setting can be changed without 
+#rebuilding the image.
+
+#For development
+include conf.d/default;
+
+#For deployment on NIBN machine
+#include conf.d/default-nibn;
