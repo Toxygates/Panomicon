@@ -45,7 +45,7 @@ WORKDIR /build/Toxygates
 
 #Download GWT
 ENV GWT_VERSION=2.9.0
-RUN wget https://storage.googleapis.com/gwt-releases/gwt-${GWT_VERSION}.zip \
+RUN wget https://github.com/gwtproject/gwt/releases/download/${GWT_VERSION}/gwt-${GWT_VERSION}.zip \
   && unzip gwt-${GWT_VERSION}.zip -d /opt/ \
   && rm -f gwt-${GWT_VERSION}.zip
 ENV GWT_SDK=/opt/gwt-${GWT_VERSION}  
